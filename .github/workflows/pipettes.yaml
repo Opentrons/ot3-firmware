@@ -51,7 +51,7 @@ jobs:
       - name: 'Configure'
         run: cmake --preset=cross .
       - name: 'Format'
-        run: cmake --build ./build-cross --target format-ci
+        run: cmake --build ./build-cross --target pipettes-format-ci
       - name: 'Lint'
         run: cmake --build ./build-cross --target pipettes-lint
       - name: 'Build'
