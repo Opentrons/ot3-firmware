@@ -1,0 +1,9 @@
+.DS_Store
+
+CMakeFiles
+
+cmake_install.cmake
+
+build-cross/
+stm32-tools/
+build-host/
