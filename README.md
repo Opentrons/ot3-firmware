@@ -11,13 +11,13 @@ Aside from the common directory, each repository should contain a `firmware`, `i
 
 ## Setup
 To setup this directory to run on a nucleo board, you should run:
-1. `cmake --preset=cross`
-2. `cmake --build ./stm32-cross`
+1. `cmake --preset=cross .`
+2. `cmake --build ./build-cross --target <TARGET>`
 
 To setup this directory to run tests, you should run:
-1. `cmake --preset=stm32-host .`
-2. `cmake --build ./build-stm32-host --target build-and-test`, which will run all of the tests available in each periphery.
-3. or, `cmake --build ./build-stm32-host --target <TARGET>-build-and-test`
+1. `cmake --preset=host .`
+2. `cmake --build ./build-host --target build-and-test`, which will run all of the tests available in each periphery.
+3. or, `cmake --build ./build-host --target <TARGET>-build-and-test`
 
 ### Cross-compiling vs Host-compiling
 As you saw above, two different presets were used to run tests vs running on a physical device. Cross-compiling will generally be used when the code needs to be ported to other devices (in this case the microcontroller) while host-compiling is used when you want to run things like tests. For more information check out this helpful [article](https://landley.net/writing/docs/cross-compiling.html).
@@ -25,14 +25,14 @@ As you saw above, two different presets were used to run tests vs running on a p
 ## Run
 Connect to an STM32 nucleo board and run either:
 1. `make <TARGET>-debug` inside the build-cross folder
-2. or, `cmake --build ./build-stm32-cross --target <TARGET>-debug` from the top-level folder.
+2. or, `cmake --build ./build-cross --target <TARGET>-debug` from the top-level folder.
 
 ### Debug
 If you run into trouble starting a gcc connection to your nucleo board, you should (while connected to the board):
 
 Start openocd:
-
-`./bin  Scripts/Darwin/board/st_nucleo_f3.cfg`
+1. Navigate to `stm32-tools/openocd/Darwin`
+2. `./bin  scripts/board/st_nucleo_f3.cfg`
 
 Start gcc:
 1. `./stm32-tools/gcc-arm-embedded/Darwin/bin/arm-none-eabi-gdb-py <TARGET>`
@@ -41,7 +41,7 @@ Start gcc:
 And then run all the lines before the error to see what is causing the problem.
 
 ## Common
-The common directory will hold code that should be shared amongst all peripherial systems.
+The common directory will hold code that should be shared amongst all peripheral systems.
 
 ## Pipettes
-This is the top-level directory for running the pipette perihperal system. Eventually, we will most likely have separate directories for different applications on the pipettes.
+This is the top-level directory for running the pipette peripheral system. Eventually, we will most likely have separate directories for different applications on the pipettes.
