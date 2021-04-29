@@ -111,15 +111,15 @@ extern "C" {
  */
 #if !defined(LSI_VALUE)
 #define LSI_VALUE (40000U)
-#endif /* LSI_VALUE */ /*!< Value of the Internal Low Speed oscillator in Hz \
-                        The real value may vary depending on the variations  \
+#endif /* LSI_VALUE */ /*!< Value of the Internal Low Speed oscillator in Hz   \
+                        The real value may vary depending on the variations    \
                         in voltage and temperature.  */
 /**
  * @brief External Low Speed oscillator (LSE) value.
  */
 #if !defined(LSE_VALUE)
-#define LSE_VALUE \
-    (32768U) /*!< Value of the External Low Speed oscillator in Hz */
+#define LSE_VALUE                                                              \
+  (32768U) /*!< Value of the External Low Speed oscillator in Hz */
 #endif /* LSE_VALUE */
 
 /**
@@ -138,8 +138,8 @@ extern "C" {
  *        - External clock not generated on EVAL 373
  */
 #if !defined(EXTERNAL_CLOCK_VALUE)
-#define EXTERNAL_CLOCK_VALUE \
-    (8000000U) /*!< Value of the External oscillator in Hz*/
+#define EXTERNAL_CLOCK_VALUE                                                   \
+  (8000000U) /*!< Value of the External oscillator in Hz*/
 #endif /* EXTERNAL_CLOCK_VALUE */
 
 /* Tip: To avoid modifying this file each time you need to use different HSE,
@@ -150,65 +150,65 @@ extern "C" {
  * @brief This is the HAL system configuration section
  */
 #define VDD_VALUE (3300U) /*!< Value of VDD in mv */
-#define TICK_INT_PRIORITY                 \
-    ((uint32_t)(1U << __NVIC_PRIO_BITS) - \
-     1U) /*!< tick interrupt priority (lowest by default) */
+#define TICK_INT_PRIORITY                                                      \
+  ((uint32_t)(1U << __NVIC_PRIO_BITS) -                                        \
+   1U) /*!< tick interrupt priority (lowest by default) */
 #define USE_RTOS 0U
 #define PREFETCH_ENABLE 1U
 #define INSTRUCTION_CACHE_ENABLE 0U
 #define DATA_CACHE_ENABLE 0U
 #define USE_SPI_CRC 1U
 
-#define USE_HAL_ADC_REGISTER_CALLBACKS \
-    0U /* ADC register callback disabled       */
-#define USE_HAL_CAN_REGISTER_CALLBACKS \
-    0U /* CAN register callback disabled       */
-#define USE_HAL_COMP_REGISTER_CALLBACKS \
-    0U /* COMP register callback disabled      */
-#define USE_HAL_CEC_REGISTER_CALLBACKS \
-    0U /* CEC register callback disabled       */
-#define USE_HAL_DAC_REGISTER_CALLBACKS \
-    0U /* DAC register callback disabled       */
-#define USE_HAL_SRAM_REGISTER_CALLBACKS \
-    0U /* SRAM register callback disabled      */
-#define USE_HAL_SMBUS_REGISTER_CALLBACKS \
-    0U /* SMBUS register callback disabled     */
-#define USE_HAL_SDADC_REGISTER_CALLBACKS \
-    0U /* SDADC register callback disabled     */
-#define USE_HAL_NAND_REGISTER_CALLBACKS \
-    0U /* NAND register callback disabled      */
-#define USE_HAL_NOR_REGISTER_CALLBACKS \
-    0U /* NOR register callback disabled       */
-#define USE_HAL_PCCARD_REGISTER_CALLBACKS \
-    0U /* PCCARD register callback disabled    */
-#define USE_HAL_HRTIM_REGISTER_CALLBACKS \
-    0U /* HRTIM register callback disabled     */
-#define USE_HAL_I2C_REGISTER_CALLBACKS \
-    0U /* I2C register callback disabled       */
-#define USE_HAL_UART_REGISTER_CALLBACKS \
-    0U /* UART register callback disabled      */
-#define USE_HAL_USART_REGISTER_CALLBACKS \
-    0U /* USART register callback disabled     */
-#define USE_HAL_IRDA_REGISTER_CALLBACKS \
-    0U /* IRDA register callback disabled      */
-#define USE_HAL_SMARTCARD_REGISTER_CALLBACKS \
-    0U /* SMARTCARD register callback disabled */
-#define USE_HAL_WWDG_REGISTER_CALLBACKS \
-    0U /* WWDG register callback disabled      */
-#define USE_HAL_OPAMP_REGISTER_CALLBACKS \
-    0U /* OPAMP register callback disabled     */
-#define USE_HAL_RTC_REGISTER_CALLBACKS \
-    0U /* RTC register callback disabled       */
-#define USE_HAL_SPI_REGISTER_CALLBACKS \
-    0U /* SPI register callback disabled       */
-#define USE_HAL_I2S_REGISTER_CALLBACKS \
-    0U /* I2S register callback disabled       */
-#define USE_HAL_TIM_REGISTER_CALLBACKS \
-    0U /* TIM register callback disabled       */
-#define USE_HAL_TSC_REGISTER_CALLBACKS \
-    0U /* TSC register callback disabled       */
-#define USE_HAL_PCD_REGISTER_CALLBACKS \
-    0U /* PCD register callback disabled       */
+#define USE_HAL_ADC_REGISTER_CALLBACKS                                         \
+  0U /* ADC register callback disabled       */
+#define USE_HAL_CAN_REGISTER_CALLBACKS                                         \
+  0U /* CAN register callback disabled       */
+#define USE_HAL_COMP_REGISTER_CALLBACKS                                        \
+  0U /* COMP register callback disabled      */
+#define USE_HAL_CEC_REGISTER_CALLBACKS                                         \
+  0U /* CEC register callback disabled       */
+#define USE_HAL_DAC_REGISTER_CALLBACKS                                         \
+  0U /* DAC register callback disabled       */
+#define USE_HAL_SRAM_REGISTER_CALLBACKS                                        \
+  0U /* SRAM register callback disabled      */
+#define USE_HAL_SMBUS_REGISTER_CALLBACKS                                       \
+  0U /* SMBUS register callback disabled     */
+#define USE_HAL_SDADC_REGISTER_CALLBACKS                                       \
+  0U /* SDADC register callback disabled     */
+#define USE_HAL_NAND_REGISTER_CALLBACKS                                        \
+  0U /* NAND register callback disabled      */
+#define USE_HAL_NOR_REGISTER_CALLBACKS                                         \
+  0U /* NOR register callback disabled       */
+#define USE_HAL_PCCARD_REGISTER_CALLBACKS                                      \
+  0U /* PCCARD register callback disabled    */
+#define USE_HAL_HRTIM_REGISTER_CALLBACKS                                       \
+  0U /* HRTIM register callback disabled     */
+#define USE_HAL_I2C_REGISTER_CALLBACKS                                         \
+  0U /* I2C register callback disabled       */
+#define USE_HAL_UART_REGISTER_CALLBACKS                                        \
+  0U /* UART register callback disabled      */
+#define USE_HAL_USART_REGISTER_CALLBACKS                                       \
+  0U /* USART register callback disabled     */
+#define USE_HAL_IRDA_REGISTER_CALLBACKS                                        \
+  0U /* IRDA register callback disabled      */
+#define USE_HAL_SMARTCARD_REGISTER_CALLBACKS                                   \
+  0U /* SMARTCARD register callback disabled */
+#define USE_HAL_WWDG_REGISTER_CALLBACKS                                        \
+  0U /* WWDG register callback disabled      */
+#define USE_HAL_OPAMP_REGISTER_CALLBACKS                                       \
+  0U /* OPAMP register callback disabled     */
+#define USE_HAL_RTC_REGISTER_CALLBACKS                                         \
+  0U /* RTC register callback disabled       */
+#define USE_HAL_SPI_REGISTER_CALLBACKS                                         \
+  0U /* SPI register callback disabled       */
+#define USE_HAL_I2S_REGISTER_CALLBACKS                                         \
+  0U /* I2S register callback disabled       */
+#define USE_HAL_TIM_REGISTER_CALLBACKS                                         \
+  0U /* TIM register callback disabled       */
+#define USE_HAL_TSC_REGISTER_CALLBACKS                                         \
+  0U /* TSC register callback disabled       */
+#define USE_HAL_PCD_REGISTER_CALLBACKS                                         \
+  0U /* PCD register callback disabled       */
 
 /* ########################## Assert Selection ############################## */
 /**
@@ -372,10 +372,10 @@ extern "C" {
  *         If expr is true, it returns no value.
  * @retval None
  */
-#define assert_param(expr) \
-    ((expr) ? (void)0U : assert_failed((uint8_t*)__FILE__, __LINE__))
+#define assert_param(expr)                                                     \
+  ((expr) ? (void)0U : assert_failed((uint8_t *)__FILE__, __LINE__))
 /* Exported functions ------------------------------------------------------- */
-void assert_failed(uint8_t* file, uint32_t line);
+void assert_failed(uint8_t *file, uint32_t line);
 #else
 #define assert_param(expr) ((void)0U)
 #endif /* USE_FULL_ASSERT */

@@ -11,17 +11,18 @@
 #include "task.h"
 
 StaticTask_t
-    idle_task_tcb;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    idle_task_tcb; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 std::array<StackType_t, configMINIMAL_STACK_SIZE>
-    idle_task_stack;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    idle_task_stack; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // This is a callback defined in a C file so it has to be linked as such
-extern "C" void vApplicationGetIdleTaskMemory(
-    StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer,
-    uint32_t *pulIdleTaskStackSize) {
-    // Same configuration as in the other tasks, but a smaller stack
-    *ppxIdleTaskTCBBuffer = &idle_task_tcb;
-    *ppxIdleTaskStackBuffer = idle_task_stack.data();
-    *pulIdleTaskStackSize = idle_task_stack.size();
+extern "C" void
+vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer,
+                              StackType_t **ppxIdleTaskStackBuffer,
+                              uint32_t *pulIdleTaskStackSize) {
+  // Same configuration as in the other tasks, but a smaller stack
+  *ppxIdleTaskTCBBuffer = &idle_task_tcb;
+  *ppxIdleTaskStackBuffer = idle_task_stack.data();
+  *pulIdleTaskStackSize = idle_task_stack.size();
 }
