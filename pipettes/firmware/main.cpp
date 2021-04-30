@@ -5,7 +5,7 @@
 #include "task.h"
 
 auto main() -> int {
-  HardwareInit();
-  vTaskStartScheduler();
-  return 0;
+    HardwareInit();
+    vTaskStartScheduler();
+    return 0;
 }
