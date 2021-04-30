@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'pipettes'
+      - 'common'
       - 'cmake/*'
       - 'CMakeLists.txt'
       - 'pipettes/CMakeLists.txt'
@@ -47,7 +48,7 @@ jobs:
       - uses: 'actions/cache@v2'
         with:
           path: './stm32-tools'
-          key: ${{ runner.os }}-${{ hashFiles('**/pipettes/firmware') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
       - name: 'Configure'
         run: cmake --preset=cross .
       - name: 'Format'
@@ -73,7 +74,7 @@ jobs:
       - uses: 'actions/cache@v2'
         with:
           path: './stm32-tools'
-          key: ${{ runner.os }}-${{ hashFiles('**/pipettes/tests') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
       - name: 'Configure'
         run: cmake --preset=host .
       - name: 'Build'
