@@ -26,6 +26,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "MinSizeRel" "RelWithDebInfo")
 endif()
 message("Build type is ${CMAKE_BUILD_TYPE}")
+add_subdirectory(system)
 add_subdirectory(common)
 add_subdirectory(pipettes)
 
