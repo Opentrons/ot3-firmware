@@ -16,6 +16,10 @@ To setup this directory to run on a nucleo board, you should run:
 
 To setup this directory to run tests, you should run:
 1. `cmake --preset=host .`
+	If you are on OSX, you almost certainly want to force cmake to select gcc as the compiler used for building tests, because the version of clang built into osx is weird. We don't really want to always specify the compiler to use in tests, so forcing gcc is a separate cmake config preset, and it requires installing gcc 10:
+
+	`brew install gcc@10`
+	`cmake --preset=host-gcc10 .`
 2. `cmake --build ./build-host --target build-and-test`, which will run all of the tests available in each periphery.
 3. or, `cmake --build ./build-host --target <TARGET>-build-and-test`
 
