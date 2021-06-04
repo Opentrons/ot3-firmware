@@ -4,15 +4,18 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
-add_executable(common)
+add_executable(
+  system
+  task_builder.cpp
+  test_main.cpp)
 
-target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-set_target_properties(common
+target_include_directories(system PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+set_target_properties(system
   PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(common
+target_compile_options(system
   PUBLIC
   -Wall
   -Werror
@@ -22,7 +25,7 @@ target_compile_options(common
   -Wextra-semi
   -Wctor-dtor-privacy
   -fno-rtti)
-target_link_libraries(common common-core Catch2::Catch2)
+target_link_libraries(system common-core Catch2::Catch2)
 
-catch_discover_tests(common)
-add_build_and_test_target(common)
+catch_discover_tests(system)
+add_build_and_test_target(system)
