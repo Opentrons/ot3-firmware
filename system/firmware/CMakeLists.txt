@@ -9,7 +9,9 @@ find_package(OpenOCD)
 # Add source files that should be checked by clang-tidy here
 set(SYSTEM_FW_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_task.cpp)
 
 # Add source files that should NOT be checked by clang-tidy here
 set(SYSTEM_FW_NONLINTABLE_SRCS

@@ -4,7 +4,7 @@
 
 #include "firmware/host_comms_task.hpp"
 #include "firmware/tasks.hpp"
-#include "test/test_message_queue.hpp"
+#include "test_message_queue.hpp"
 
 struct TaskBuilder {
     ~TaskBuilder() = default;

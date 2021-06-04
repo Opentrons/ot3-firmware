@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "message_queue.hpp"
 #include "host_comms_task.hpp"
+#include "message_queue.hpp"
 #include "messages.hpp"
 
 namespace host_comms_task {
