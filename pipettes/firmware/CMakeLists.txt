@@ -5,8 +5,7 @@ find_package(STM32G4xx
 find_package(CrossGCC)
 find_package(OpenOCD)
 
-set(SYSTEM_DIR "${CMAKE_SOURCE_DIR}/include/STM32G491RETx")
-set(COMMS_DIR "${CMAKE_SOURCE_DIR}/include/common")
+set(SYSTEM_DIR "${CMAKE_SOURCE_DIR}/include/firmware/STM32G491RETx")
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -26,9 +25,7 @@ target_link_options(pipettes
   PRIVATE
   "LINKER:-T,${SYSTEM_DIR}/STM32G491RETx_FLASH.ld"
   "LINKER:--print-memory-usage"
-  "LINKER:--error-unresolved-symbols"
-  "LINKER:-u,_printf_float"
-  "LINKER:-u,_scanf_float")
+  "LINKER:--error-unresolved-symbols")
 
 set_target_properties(pipettes
   PROPERTIES CXX_STANDARD 20
@@ -38,7 +35,7 @@ set_target_properties(pipettes
 
 target_include_directories(
   pipettes
-  SYSTEM BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/include)
+  SYSTEM BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/include/firmware)
 target_include_directories(
   pipettes
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
@@ -105,13 +102,13 @@ find_package(Clang)
 # # own implementation of the STL) don't get added to the compile db that clang-tidy uses to figure out
 # # include directories. So we can use the actually fairly cool transform command to turn them all into
 # # extra-arg invocations and it'll figure it out.
-# set(CLANG_EXTRA_ARGS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-# list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
-# # This helps with clang accepting what GCC accepts around the implementations of the message queue
-# list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
+set(CLANG_EXTRA_ARGS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
+# This helps with clang accepting what GCC accepts around the implementations of the message queue
+list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(pipettes-lint
   ALL
-  COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${core_sources} --config=)
+  COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
 
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with

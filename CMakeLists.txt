@@ -27,7 +27,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 endif()
 message("Build type is ${CMAKE_BUILD_TYPE}")
 
-add_subdirectory(src)
+add_subdirectory(pipettes)
 
 find_package(Clang)
 
