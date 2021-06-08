@@ -7,8 +7,8 @@
 
 #include "FreeRTOS.h"
 #include "common/freertos_message_queue.hpp"
-#include "host_comms_task.hpp"
 #include "common/tasks.hpp"
+#include "host_comms_task.hpp"
 #include "task.h"
 
 namespace host_comms_control_task {
