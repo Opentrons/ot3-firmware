@@ -1,17 +1,34 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
+find_package(STM32G4xx
+  COMPONENTS Drivers FreeRTOS)
+find_package(CrossGCC)
+find_package(OpenOCD)
 
+set(SYSTEM_DIR "${CMAKE_SOURCE_DIR}/include/STM32G491RETx")
+set(COMMS_DIR "${CMAKE_SOURCE_DIR}/include/common")
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_task.cpp)
+
+set(PIPETTE_FW_NON_LINTABLE_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c)
 
 add_executable(pipettes
-  ${PIPETTE_FW_LINTABLE_SRCS})
+  ${PIPETTE_FW_LINTABLE_SRCS}
+  ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
 target_link_options(pipettes
   PRIVATE
+  "LINKER:-T,${SYSTEM_DIR}/STM32G491RETx_FLASH.ld"
   "LINKER:--print-memory-usage"
-  "LINKER:--error-unresolved-symbols")
+  "LINKER:--error-unresolved-symbols"
+  "LINKER:-u,_printf_float"
+  "LINKER:-u,_scanf_float")
 
 set_target_properties(pipettes
   PROPERTIES CXX_STANDARD 20
@@ -19,12 +36,17 @@ set_target_properties(pipettes
              C_STANDARD 11
              C_STANDARD_REQUIRED TRUE)
 
-target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(
+  pipettes
+  SYSTEM BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(
+  pipettes
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
 
 target_compile_options(pipettes
   PUBLIC
   -Wall
-  -Werror
   $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
   $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
   $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -32,11 +54,42 @@ target_compile_options(pipettes
   $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
   $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
-
 target_link_libraries(
   pipettes
-  LINK_PUBLIC
-  system)
+  STM32G4xx_Drivers STM32G4xx_FreeRTOS)
+
+target_include_directories(STM32G4xx_Drivers
+  PUBLIC .)
+target_include_directories(STM32G4xx_FreeRTOS
+  PUBLIC .)
+
+target_compile_definitions(STM32G4xx_Drivers
+  PUBLIC STM32G491xx)
+target_compile_definitions(STM32G4xx_FreeRTOS
+  PUBLIC STM32G491xx)
+
+set_target_properties(
+  STM32G4xx_FreeRTOS
+  PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
+
+find_package(GDBSVDTools)
+
+# Fills in the template with values specified by the find_package(OpenOCD) call above
+configure_file(${SYSTEM_DIR}/gdbinit.template ./gdbinit)
+
+
+find_program(ARM_GDB
+  arm-none-eabi-gdb-py
+  PATHS "${CrossGCC_BINDIR}"
+  NO_DEFAULT_PATH
+  REQUIRED)
+message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
+# Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
+# this dir
+set_target_properties(pipettes
+  PROPERTIES
+  CROSSCOMPILING_EMULATOR
+  "${ARM_GDB}")
 
 
 find_package(Clang)

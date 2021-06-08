@@ -20,8 +20,8 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32g4xx_it.h"
-#include "stm32g4xx_hal.h"
+#include "STM32G491RETx/stm32g4xx_it.h"
+#include "STM32G491RETx/stm32g4xx_hal.h"
 
 /** @addtogroup STM32G4xx_HAL_Examples
   * @{
