@@ -38,14 +38,30 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
 # can therefore operate on file globs, unlike lint/static analysis
 
 # Target for use during dev - edits files
-add_custom_target(
-  format
-  ALL
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${SOURCES_FOR_FORMAT}
-  )
+# add_custom_target(
+#   format
+#   ALL
+#   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${SOURCES_FOR_FORMAT}
+#   )
+
 
 # Target for use in ci - warnings are errors, doesn't edit files
 add_custom_target(
   format-ci
   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${SOURCES_FOR_FORMAT}
 )
+
+find_package(flatbuffers)
+
+# The flatbuffer CMakeLists.txt file will use Apple's toolchain if
+# CMAKE_TOOLCHAIN_FILE is not defined. This circumvents that.
+if (CMAKE_COMPILER_IS_GNUCXX)
+  set(APPLE FALSE)
+endif()
+
+# Add FlatBuffers directly to our build. This defines the `flatbuffers` target.
+add_subdirectory(${FlatBuffers_SOURCE_DIR}
+                 ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build
+                 EXCLUDE_FROM_ALL)
+
+add_subdirectory(messages)

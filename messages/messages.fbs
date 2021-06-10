@@ -1,0 +1,14 @@
+namespace Opentrons;
+
+
+struct SetSpeed {
+  speed_mm_second:uint16;
+}
+
+struct GetPosition {
+  position:uint16;
+}
+
+struct Move {
+  distance_mm: uint16;
+}
