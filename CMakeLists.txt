@@ -61,7 +61,7 @@ endif()
 
 # Add FlatBuffers directly to our build. This defines the `flatbuffers` target.
 add_subdirectory(${FlatBuffers_SOURCE_DIR}
-                 ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build
+                 ${FlatBuffers_BINARY_DIR}
                  EXCLUDE_FROM_ALL)
 
 add_subdirectory(messages)
