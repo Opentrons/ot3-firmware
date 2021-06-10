@@ -13,6 +13,7 @@ set_target_properties(pipettes-core
 target_include_directories(pipettes-core
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+
 target_compile_options(pipettes-core
   PRIVATE
   -Wall
