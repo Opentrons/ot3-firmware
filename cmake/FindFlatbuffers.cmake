@@ -9,16 +9,17 @@ its own.
 
 Include(FetchContent)
 
+
 FetchContent_Declare(
-  flatbuffers
+  Flatbuffers
   GIT_REPOSITORY "https://github.com/google/flatbuffers.git"
   GIT_TAG        "v1.12.1"
   PREFIX         ${CMAKE_SOURCE_DIR}/stm32-tools/flatbuffers
 )
 
-FetchContent_Populate(flatbuffers)
+FetchContent_Populate(Flatbuffers)
 
-FetchContent_GetProperties(flatbuffers
+FetchContent_GetProperties(Flatbuffers
     POPULATED Flatbuffers_POPULATED
     SOURCE_DIR FlatBuffers_SOURCE_DIR
     BINARY_DIR FlatBuffers_BINARY_DIR
