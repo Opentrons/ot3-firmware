@@ -16,7 +16,7 @@ target_include_directories(pipettes-simulator
 
 # Now simply link against flatbuffers as needed to your already declared target.
 # The flatbuffers target carry header search path automatically if CMake > 2.8.11.
-target_link_libraries(pipettes-simulator PRIVATE flatbuffers)
+target_link_libraries(pipettes-simulator PRIVATE Flatbuffers)
 
 target_compile_options(pipettes-simulator
   PRIVATE

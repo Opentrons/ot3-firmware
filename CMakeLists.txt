@@ -51,7 +51,7 @@ add_custom_target(
   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${SOURCES_FOR_FORMAT}
 )
 
-find_package(flatbuffers)
+find_package(Flatbuffers)
 
 # The flatbuffer CMakeLists.txt file will use Apple's toolchain if
 # CMAKE_TOOLCHAIN_FILE is not defined. This circumvents that.
