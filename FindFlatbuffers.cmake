@@ -11,8 +11,8 @@ Include(FetchContent)
 
 FetchContent_Declare(
   flatbuffers
-  GIT_REPOSITORY "https://github.com/google/flatbuffers"
-  GIT_TAG        "v1.12.0"
+  GIT_REPOSITORY "https://github.com/google/flatbuffers.git"
+  GIT_TAG        "v1.12.1"
   PREFIX         ${CMAKE_SOURCE_DIR}/stm32-tools/flatbuffers
 )
 
