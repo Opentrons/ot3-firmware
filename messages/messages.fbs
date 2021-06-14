@@ -1,4 +1,4 @@
-namespace Opentrons;
+namespace Serialization;
 
 
 struct SetSpeed {

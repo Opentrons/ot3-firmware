@@ -23,7 +23,7 @@ target_link_libraries(pipettes-simulator PRIVATE flatbuffers)
 target_compile_options(pipettes-simulator
   PRIVATE
   -Wall
-  # -Werror
+  -Werror
   -Weffc++
   -Wreorder
   -Wsign-promo

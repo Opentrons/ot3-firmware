@@ -2,6 +2,10 @@
 # (https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
 # cmake_minimum_required(VERSION 3.19)
 
+
+find_package(Flatbuffers REQUIRED)
+
+
 add_custom_target(
   format-flat
   ALL

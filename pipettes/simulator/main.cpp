@@ -1,9 +1,16 @@
+#pragma GCC diagnostic push
+/**
+ * Ignore warnings from flatbuffer lib and generated flatbuffer definitions.
+ */
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+#pragma GCC diagnostic ignored "-Weffc++"
 #include <messages/messages_generated.h>
+#pragma GCC diagnostic pop
 
 #include <iostream>
 
 int main() {
-    struct Opentrons::SetSpeed command {
+    struct Serialization::SetSpeed command {
         123
     };
 
