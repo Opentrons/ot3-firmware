@@ -2,53 +2,46 @@
 # cross-compiling, like the board support packages and special options.
 find_package(STM32G4xx
   COMPONENTS Drivers FreeRTOS)
-add_STM32G4_driver("Pipettes")
-add_STM32G4_freertos("Pipettes")
+add_STM32G4_driver("Gantry")
+add_STM32G4_freertos("Gantry")
 
 set(SYSTEM_DIR "${CMAKE_SOURCE_DIR}/include/firmware/STM32G491RETx")
 # Add source files that should be checked by clang-tidy here
-set(PIPETTE_FW_LINTABLE_SRCS
+set(GANTRY_FW_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/freertos_task.cpp)
 
-set(PIPETTE_FW_NON_LINTABLE_SRCS
+set(GANTRY_FW_NON_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32g491xx.s)
+  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c)
 
-add_executable(pipettes
-  ${PIPETTE_FW_LINTABLE_SRCS}
-  ${PIPETTE_FW_NON_LINTABLE_SRCS})
+add_executable(gantry
+  ${GANTRY_FW_LINTABLE_SRCS}
+  ${GANTRY_FW_NON_LINTABLE_SRCS})
 
-target_link_options(pipettes
+target_link_options(gantry
   PRIVATE
   "LINKER:-T,${SYSTEM_DIR}/STM32G491RETx_FLASH.ld"
   "LINKER:--print-memory-usage"
   "LINKER:--error-unresolved-symbols")
 
-# Incurs at least a relink when you change the linker file (and a recompile of main
-# but hopefully that's quick)
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  PROPERTIES
-  OBJECT_DEPENDS "${SYSTEM_DIR}/STM32G491RETx_FLASH.ld")
-
-set_target_properties(pipettes
+set_target_properties(gantry
   PROPERTIES CXX_STANDARD 20
              CXX_STANDARD_REQUIRED TRUE
              C_STANDARD 11
              C_STANDARD_REQUIRED TRUE)
 
 target_include_directories(
-  pipettes
+  gantry
   SYSTEM BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/include/firmware)
 target_include_directories(
-  pipettes
+  gantry
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 
-target_compile_options(pipettes
+target_compile_options(gantry
   PUBLIC
   -Wall
   $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
@@ -59,21 +52,21 @@ target_compile_options(pipettes
   $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
 target_link_libraries(
-  pipettes
-  STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes)
+  gantry
+  STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry)
 
-target_include_directories(STM32G4xx_Drivers_Pipettes
+target_include_directories(STM32G4xx_Drivers_Gantry
   PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Pipettes
+target_include_directories(STM32G4xx_FreeRTOS_Gantry
   PUBLIC .)
 
-target_compile_definitions(STM32G4xx_Drivers_Pipettes
+target_compile_definitions(STM32G4xx_Drivers_Gantry
   PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
+target_compile_definitions(STM32G4xx_FreeRTOS_Gantry
   PUBLIC STM32G491xx)
 
 set_target_properties(
-  STM32G4xx_FreeRTOS_Pipettes
+  STM32G4xx_FreeRTOS_Gantry
   PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 find_package(GDBSVDTools)
@@ -90,10 +83,10 @@ find_program(ARM_GDB
 message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
 # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
 # this dir
-set_target_properties(pipettes
+set_target_properties(gantry
   PROPERTIES
   CROSSCOMPILING_EMULATOR
-  "${ARM_GDB};--command=${CMAKE_CURRENT_BINARY_DIR}/gdbinit")
+  "${ARM_GDB}")
 
 
 find_package(Clang)
@@ -113,9 +106,9 @@ set(CLANG_EXTRA_ARGS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 # This helps with clang accepting what GCC accepts around the implementations of the message queue
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
-add_custom_target(pipettes-lint
+add_custom_target(gantry-lint
   ALL
-  COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
+  COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
 
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with
@@ -123,7 +116,7 @@ add_custom_target(pipettes-lint
 # done here because it won't be multi-os compatible, and also it
 # should be running the entire time and that's tough to accomplish
 # in a custom command
-add_custom_target(pipettes-debug
-  COMMAND pipettes
+add_custom_target(gantry-debug
+  COMMAND gantry
   USES_TERMINAL
   )
