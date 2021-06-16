@@ -28,13 +28,13 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 endif()
 message("Build type is ${CMAKE_BUILD_TYPE}")
 
+set(G4_BOARD_FILE_PATH ${ROOT_BOARD_FILE_PATH}/STM32G491RETx/stm32g4discovery.cfg ${G4_BOARD_FILE_PATH})
+
 add_subdirectory(pipettes)
 
 find_package(Clang)
 
 file(GLOB_RECURSE SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
-
-file(READ ${ROOT_BOARD_FILE_PATH}/STM32G491RETx/stm32g4discovery.cfg G4_BOARD_FILE)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
 # the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
