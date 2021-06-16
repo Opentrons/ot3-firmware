@@ -7,6 +7,7 @@ project("OT3Firmware"
   DESCRIPTION "Firmware for OT-3 System")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(ROOT_BOARD_FILE_PATH "${PROJECT_SOURCE_DIR}/include/firmware/" ${ROOT_BOARD_FILE_PATH})
 if (NOT ${CMAKE_CROSSCOMPILING})
   enable_testing()
   add_custom_target(build-and-test)
@@ -32,6 +33,8 @@ add_subdirectory(pipettes)
 find_package(Clang)
 
 file(GLOB_RECURSE SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
+
+file(READ ${ROOT_BOARD_FILE_PATH}/STM32G491RETx/stm32g4discovery.cfg G4_BOARD_FILE)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
 # the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
