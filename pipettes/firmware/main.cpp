@@ -1,20 +1,111 @@
 #include <cstdio>
 #include <cstring>
+#include <array>
 
 #include "FreeRTOS.h"
 #include "STM32G491RETx/system_stm32g4xx.h"
 #include "stm32g4xx_hal_conf.h"
 #include "task.h"
 
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static UART_HandleTypeDef huart1;
+static RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 static void Error_Handler();
 static void MX_USART1_UART_Init();
 
+/**
+  * Initializes the Global MSP.
+  */
+void HAL_MspInit(void)
+{
+    /* USER CODE BEGIN MspInit 0 */
+
+    /* USER CODE END MspInit 0 */
+
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
+
+    /* System interrupt init*/
+
+    /** Disable the internal Pull-Up in Dead Battery pins of UCPD peripheral
+    */
+    HAL_PWREx_DisableUCPDDeadBattery();
+
+    /* USER CODE BEGIN MspInit 1 */
+
+    /* USER CODE END MspInit 1 */
+}
+
+/**
+* @brief UART MSP Initialization
+* This function configures the hardware resources used in this example
+* @param huart: UART handle pointer
+* @retval None
+*/
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if(huart->Instance==LPUART1)
+    {
+        /* USER CODE BEGIN USART1_MspInit 0 */
+
+        /* USER CODE END USART1_MspInit 0 */
+        /* Peripheral clock enable */
+        __HAL_RCC_LPUART1_CLK_ENABLE();
+
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /**USART1 GPIO Configuration
+        PA9     ------> USART1_TX
+        PA10     ------> USART1_RX
+        */
+        GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Alternate = GPIO_AF12_LPUART1;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+        /* USER CODE BEGIN USART1_MspInit 1 */
+
+        /* USER CODE END USART1_MspInit 1 */
+    }
+
+}
+
+/**
+* @brief UART MSP De-Initialization
+* This function freeze the hardware resources used in this example
+* @param huart: UART handle pointer
+* @retval None
+*/
+void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+{
+    if(huart->Instance==LPUART1)
+    {
+        /* USER CODE BEGIN USART1_MspDeInit 0 */
+        __HAL_RCC_LPUART1_FORCE_RESET();
+        __HAL_RCC_LPUART1_RELEASE_RESET();
+        /* USER CODE END USART1_MspDeInit 0 */
+        /* Peripheral clock disable */
+        __HAL_RCC_LPUART1_CLK_DISABLE();
+
+        /**USART1 GPIO Configuration
+        PA9     ------> USART1_TX
+        PA10     ------> USART1_RX
+        */
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2|GPIO_PIN_3);
+
+        /* USER CODE BEGIN USART1_MspDeInit 1 */
+
+        /* USER CODE END USART1_MspDeInit 1 */
+    }
+
+}
+
 void vTaskCode(void* vParamater) {
     vParamater = nullptr;
-    MX_USART1_UART_Init();
 
     constexpr auto timeout = 0xFFFF;
 
@@ -24,7 +115,6 @@ void vTaskCode(void* vParamater) {
         HAL_UART_Receive(&huart1, &c, 1, timeout);
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-        printf("Received %d", c);
 
         HAL_UART_Transmit(&huart1, &c, 1, timeout);
     }
@@ -32,10 +122,24 @@ void vTaskCode(void* vParamater) {
 
 auto main() -> int {
     HardwareInit();
+    /** Initializes the peripherals clocks
+*/
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+    PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-    constexpr auto stack_size = 1000;
+    constexpr auto stack_size = 100;
+    static std::array<StackType_t, stack_size> stack;
 
-    xTaskCreate(vTaskCode, "USART Task", stack_size, nullptr, 0, nullptr);
+    // Internal FreeRTOS data structure
+    static StaticTask_t
+        data;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    MX_USART1_UART_Init();
+    xTaskCreateStatic(vTaskCode, "USART Task", stack.size(),
+                      nullptr, 1, stack.data(), &data);
 
     vTaskStartScheduler();
 
@@ -51,7 +155,7 @@ static void MX_USART1_UART_Init() {
 
     /* USER CODE END USART1_Init 1 */
     constexpr auto baud_rate = 115200;
-    huart1.Instance = USART1;  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    huart1.Instance = LPUART1;  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     huart1.Init.BaudRate = baud_rate;
     huart1.Init.WordLength = UART_WORDLENGTH_8B;
     huart1.Init.StopBits = UART_STOPBITS_1;
