@@ -1,5 +1,5 @@
 #pragma once
 
 struct comm {
-    void operator () {};
+    void operator()();
 };

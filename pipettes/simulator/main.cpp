@@ -4,8 +4,10 @@
 #include "comm.h"
 #include "task.h"
 
+
 int main() {
-    boost::thread t{comm()};
+    comm c;
+    boost::thread t(c);
     t.join();
 
     vTaskStartScheduler();
