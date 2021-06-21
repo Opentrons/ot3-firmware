@@ -41,11 +41,11 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
 # can therefore operate on file globs, unlike lint/static analysis
 
 # Target for use during dev - edits files
-add_custom_target(
-  format
-  ALL
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${SOURCES_FOR_FORMAT}
-  )
+#add_custom_target(
+#  format
+#  ALL
+#  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${SOURCES_FOR_FORMAT}
+#  )
 
 # Target for use in ci - warnings are errors, doesn't edit files
 add_custom_target(
