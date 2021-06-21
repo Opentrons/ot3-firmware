@@ -1,4 +1,4 @@
-
+find_package(Boost 1.71.0)
 
 # Load free for the posix port
 find_package(FreeRTOS)
@@ -34,4 +34,4 @@ add_executable(
         ../firmware/freertos_idle_timer_task.cpp
 )
 
-target_link_libraries(pipette-simulator PRIVATE freertos pthread)
+target_link_libraries(pipette-simulator PRIVATE freertos pthread Boost::boost)
