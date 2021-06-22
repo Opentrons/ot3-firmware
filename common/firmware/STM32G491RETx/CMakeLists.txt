@@ -10,6 +10,6 @@ add_library(
 
 target_link_options(STM32G491RETx
   INTERFACE
-  "LINKER:-T,$./STM32G491RETx_FLASH.ld"
+  "LINKER:-T,${CMAKE_CURRENT_SOURCE_DIR}/STM32G491RETx_FLASH.ld"
   "LINKER:--print-memory-usage"
   "LINKER:--error-unresolved-symbols")

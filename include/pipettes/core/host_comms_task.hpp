@@ -23,8 +23,7 @@ using Message = messages::HostCommsMessage;
 // this template to do so as HostCommsTask<SomeQueueImpl> rather than
 // HeaterTask<SomeQueueImpl<Message>>
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Message>, Message>
-class HostCommsTask {
+requires MessageQueue<QueueImpl<Message>, Message> class HostCommsTask {
     using Queue = QueueImpl<Message>;
 
   public:
