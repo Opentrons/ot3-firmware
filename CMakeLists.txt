@@ -7,6 +7,7 @@ project("OT3Firmware"
   DESCRIPTION "Firmware for OT-3 System")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(ROOT_BOARD_FILE_PATH "${PROJECT_SOURCE_DIR}/include/firmware/" ${ROOT_BOARD_FILE_PATH})
 if (NOT ${CMAKE_CROSSCOMPILING})
   enable_testing()
   add_custom_target(build-and-test)
@@ -26,6 +27,8 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "MinSizeRel" "RelWithDebInfo")
 endif()
 message("Build type is ${CMAKE_BUILD_TYPE}")
+
+set(G4_BOARD_FILE_PATH ${ROOT_BOARD_FILE_PATH}/STM32G491RETx/stm32g4discovery.cfg ${G4_BOARD_FILE_PATH})
 
 add_subdirectory(pipettes)
 

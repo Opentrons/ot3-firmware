@@ -62,7 +62,8 @@ SECTIONS
     *(.glue_7)         /* glue arm to thumb code */
     *(.glue_7t)        /* glue thumb to arm code */
     *(.eh_frame)
-
+    *(.got)
+    *(.got*)
     KEEP (*(.init))
     KEEP (*(.fini))
 

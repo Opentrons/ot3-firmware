@@ -15,7 +15,8 @@ set(PIPETTE_FW_LINTABLE_SRCS
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c)
+  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32g491xx.s)
 
 add_executable(pipettes
   ${PIPETTE_FW_LINTABLE_SRCS}
@@ -26,6 +27,12 @@ target_link_options(pipettes
   "LINKER:-T,${SYSTEM_DIR}/STM32G491RETx_FLASH.ld"
   "LINKER:--print-memory-usage"
   "LINKER:--error-unresolved-symbols")
+
+# Incurs at least a relink when you change the linker file (and a recompile of main
+# but hopefully that's quick)
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+  PROPERTIES
+  OBJECT_DEPENDS "${SYSTEM_DIR}/STM32G491RETx_FLASH.ld")
 
 set_target_properties(pipettes
   PROPERTIES CXX_STANDARD 20
@@ -86,7 +93,7 @@ message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
 set_target_properties(pipettes
   PROPERTIES
   CROSSCOMPILING_EMULATOR
-  "${ARM_GDB}")
+  "${ARM_GDB};--command=${CMAKE_CURRENT_BINARY_DIR}/gdbinit")
 
 
 find_package(Clang)
