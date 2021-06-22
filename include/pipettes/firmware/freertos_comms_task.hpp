@@ -4,9 +4,9 @@
 #pragma once
 
 #include "FreeRTOS.h"
-#include "common/freertos_message_queue.hpp"
-#include "host_comms_task.hpp"
-#include "common/tasks.hpp"
+#include "common/firmware/freertos_message_queue.hpp"
+#include "pipettes/core/host_comms_task.hpp"
+#include "pipettes/core/tasks.hpp"
 #include "task.h"
 
 namespace host_comms_control_task {

@@ -5,15 +5,16 @@
 
 #pragma once
 
+#include "common/core/message_queue.hpp"
 #include "host_comms_task.hpp"
-#include "message_queue.hpp"
 #include "messages.hpp"
 
 namespace host_comms_task {
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<messages::HostCommsMessage>,
-                      messages::HostCommsMessage> class HostCommsTask;
-}
+                      messages::HostCommsMessage>
+class HostCommsTask;
+}  // namespace host_comms_task
 
 namespace tasks {
 /* Container relating the RTOSTask for the implementation and the portable task

@@ -33,6 +33,7 @@ if (${CMAKE_CROSSCOMPILING})
   find_package(OpenOCD)
 endif()
 
+add_subdirectory(common)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
 

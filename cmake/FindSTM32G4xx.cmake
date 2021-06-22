@@ -132,11 +132,9 @@ macro(add_STM32G4_driver prefix)
 endmacro()
 set(STM32G4xx_Drivers_FOUND ${bsp_populated} PARENT_SCOPE)
 
-if ("FreeRTOS" IN_LIST STM32G4xx_FIND_COMPONENTS)
-        set(freertos_source ${bsp_source}/Middlewares/Third_Party/FreeRTOS/Source)
-        set(freertos_port_source ${freertos_source}/portable/GCC/ARM_CM4F)
-        file(GLOB freertos_common_sources ${freertos_source}/*.c)
-endif()
+set(freertos_source ${bsp_source}/Middlewares/Third_Party/FreeRTOS/Source)
+set(freertos_port_source ${freertos_source}/portable/GCC/ARM_CM4F)
+file(GLOB freertos_common_sources ${freertos_source}/*.c)
 
 macro(add_STM32G4_freertos prefix)
         add_library(

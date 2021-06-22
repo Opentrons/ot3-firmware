@@ -1,11 +1,9 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
-find_package(STM32G4xx
-  COMPONENTS Drivers FreeRTOS)
+find_package(STM32G4xx)
 add_STM32G4_driver("Gantry")
 add_STM32G4_freertos("Gantry")
 
-set(SYSTEM_DIR "${CMAKE_SOURCE_DIR}/include/firmware/STM32G491RETx")
 # Add source files that should be checked by clang-tidy here
 set(GANTRY_FW_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -21,11 +19,9 @@ add_executable(gantry
   ${GANTRY_FW_LINTABLE_SRCS}
   ${GANTRY_FW_NON_LINTABLE_SRCS})
 
-target_link_options(gantry
-  PRIVATE
-  "LINKER:-T,${SYSTEM_DIR}/STM32G491RETx_FLASH.ld"
-  "LINKER:--print-memory-usage"
-  "LINKER:--error-unresolved-symbols")
+target_link_libraries(gantry
+  PUBLIC STM32G491RETx
+  STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry)
 
 set_target_properties(gantry
   PROPERTIES CXX_STANDARD 20
@@ -33,13 +29,8 @@ set_target_properties(gantry
              C_STANDARD 11
              C_STANDARD_REQUIRED TRUE)
 
-target_include_directories(
-  gantry
-  SYSTEM BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/include/firmware)
-target_include_directories(
-  gantry
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-
+target_include_directories(gantry
+  PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 target_compile_options(gantry
   PUBLIC
@@ -50,10 +41,6 @@ target_compile_options(gantry
   $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
   $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
   $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
-
-target_link_libraries(
-  gantry
-  STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry)
 
 target_include_directories(STM32G4xx_Drivers_Gantry
   PUBLIC .)
@@ -68,12 +55,6 @@ target_compile_definitions(STM32G4xx_FreeRTOS_Gantry
 set_target_properties(
   STM32G4xx_FreeRTOS_Gantry
   PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
-
-find_package(GDBSVDTools)
-
-# Fills in the template with values specified by the find_package(OpenOCD) call above
-configure_file(${SYSTEM_DIR}/gdbinit.template ./gdbinit)
-
 
 find_program(ARM_GDB
   arm-none-eabi-gdb-py
