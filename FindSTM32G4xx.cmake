@@ -113,20 +113,20 @@ file(GLOB_RECURSE hal_driver_sources ${bsp_source}/Drivers/STM32G4xx_HAL_Driver/
 # and the correct function gets picked.
 list(REVERSE hal_driver_sources)
 
-macro(add_STM32G4_driver prefix)
+macro(add_STM32G4_driver suffix)
         add_library(
-                STM32G4xx_Drivers_${prefix} STATIC
+                STM32G4xx_Drivers_${suffix} STATIC
                 ${hal_driver_sources})
 
         target_include_directories(
-                STM32G4xx_Drivers_${prefix}
+                STM32G4xx_Drivers_${suffix}
                 PUBLIC ${bsp_source}/Drivers/STM32G4xx_HAL_Driver/Inc
                 ${bsp_source}/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy
                 ${bsp_source}/Drivers/CMSIS/Device/ST/STM32G4xx/Include
                 ${bsp_source}/Drivers/CMSIS/Core/Include)
 
         set_target_properties(
-                STM32G4xx_Drivers_${prefix}
+                STM32G4xx_Drivers_${suffix}
                 PROPERTIES C_STANDARD 11
                 C_STANDARD_REQUIRED TRUE)
 endmacro()
@@ -136,20 +136,20 @@ set(freertos_source ${bsp_source}/Middlewares/Third_Party/FreeRTOS/Source)
 set(freertos_port_source ${freertos_source}/portable/GCC/ARM_CM4F)
 file(GLOB freertos_common_sources ${freertos_source}/*.c)
 
-macro(add_STM32G4_freertos prefix)
+macro(add_STM32G4_freertos suffix)
         add_library(
-                STM32G4xx_FreeRTOS_${prefix} STATIC
+                STM32G4xx_FreeRTOS_${suffix} STATIC
                 ${freertos_common_sources}
                 ${freertos_port_source}/port.c
                 $<IF:$<BOOL:$<TARGET_PROPERTY:FREERTOS_HEAP_IMPLEMENTATION>>,${freertos_source}/portable/MemMang/$<TARGET_PROPERTY:FREERTOS_HEAP_IMPLEMENTATION>.c,"">)
 
         target_include_directories(
-                STM32G4xx_FreeRTOS_${prefix}
+                STM32G4xx_FreeRTOS_${suffix}
                 PUBLIC ${freertos_source}/include
                 ${freertos_port_source})
 
         set_target_properties(
-                STM32G4xx_FreeRTOS_${prefix}
+                STM32G4xx_FreeRTOS_${suffix}
                 PROPERTIES C_STANDARD 11
                 C_STANDARD_REQUIRED TRUE)
 endmacro()
