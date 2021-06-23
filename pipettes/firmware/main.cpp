@@ -4,10 +4,12 @@
 
 // clang-format off
 #include "FreeRTOS.h"
-#include "system_stm32g4xx.h"
+#include "STM32G491RETx/system_stm32g4xx.h"
 #include "stm32g4xx_hal_conf.h"
 #include "task.h"
 // clang-format on
+#include "common/UartComms.hpp"
+#include "communication.hpp"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static UART_HandleTypeDef huart1;
@@ -157,7 +159,7 @@ static void MX_USART1_UART_Init() {
     /* USER CODE BEGIN USART1_Init 1 */
 
     /* USER CODE END USART1_Init 1 */
-    constexpr auto baud_rate = 9600;
+    constexpr auto baud_rate = 115200;
     huart1.Instance =
         LPUART1;  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     huart1.Init.BaudRate = baud_rate;

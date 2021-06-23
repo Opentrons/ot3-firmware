@@ -1,0 +1,62 @@
+#include <array>
+
+#include "catch2/catch.hpp"
+#include "communication.hpp"
+
+template <typename T, std::size_t L>
+struct DataReader {
+    DataReader(const std::array<T, L>& buff)
+        : buff(buff), iter(this->buff.cbegin()) {}
+    void recv(int l, uint8_t* p) {
+        for (int i = 0; i < l; i++) {
+            *p++ = *iter++;
+        }
+    }
+
+  private:
+    std::array<T, L> buff;
+    typename std::array<T, L>::const_iterator iter;
+};
+
+SCENARIO("messages can be parsed") {
+    GIVEN("a message reader with a stop message") {
+        DataReader dr{std::array{0x4, 0x0, 0x0, 0, 0}};
+        MessageReader r;
+        auto response = r.read_command(dr);
+
+        WHEN("the message is read") {
+            THEN("the type should be stop") {
+                REQUIRE(response.value().first ==
+                        pipette_messages::MessageType::stop);
+            }
+        }
+    }
+
+    GIVEN("a message reader with a set speed message") {
+        DataReader dr{std::array{0x8, 0, 0, 0, 1, 1, 2, 3, 4}};
+        MessageReader r;
+        auto response = r.read_command(dr);
+
+        WHEN("the message is read") {
+            THEN("the type should be set speed and the speed should be 1234") {
+                REQUIRE(response.value().first ==
+                        pipette_messages::MessageType::set_speed);
+                REQUIRE(
+                    std::get<pipette_messages::Speed>(response.value().second)
+                        .mm_sec == 0x01020304);
+            }
+        }
+    }
+
+    GIVEN("a message reader with an unknown message type") {
+        DataReader dr{std::array{0x4, 0xff, 0xff, 0xff, 0xff, 0xff}};
+        MessageReader r;
+        auto response = r.read_command(dr);
+
+        WHEN("the message is read") {
+            THEN("the response should be empty") {
+                REQUIRE(!response.has_value());
+            }
+        }
+    }
+}
