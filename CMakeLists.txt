@@ -57,3 +57,9 @@ add_custom_target(
   format-ci
   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${SOURCES_FOR_FORMAT}
 )
+
+add_custom_target(
+  lint
+  ALL
+  DEPENDS gantry-lint pipettes-lint
+)

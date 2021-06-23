@@ -4,6 +4,8 @@ on:
     paths:
       - "gantry"
       - "common"
+      - "include/**"
+      - "!include/pipettes/**"
       - "cmake/*"
       - "CMakeLists.txt"
       - "gantry/CMakeLists.txt"
@@ -15,6 +17,9 @@ on:
   push:
     paths:
       - "gantry"
+      - "common"
+      - "include/**"
+      - "!include/pipettes/**"
       - "cmake/*"
       - "CMakeLists.txt"
       - "gantry/CMakeLists.txt"

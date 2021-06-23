@@ -1,65 +1,68 @@
-name: 'Pipettes build/test'
+name: "Pipettes build/test"
 on:
   pull_request:
     paths:
-      - 'pipettes'
-      - 'common'
-      - 'cmake/*'
-      - 'CMakeLists.txt'
-      - 'pipettes/CMakeLists.txt'
-      - 'CMakePresets.json'
-      - '.clang-format'
-      - '.clang-tidy'
+      - "pipettes"
+      - "common"
+      - "include/**"
+      - "!include/gantry/**"
+      - "cmake/*"
+      - "CMakeLists.txt"
+      - "pipettes/CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".clang-format"
+      - ".clang-tidy"
     paths_ignore:
-      - 'cmake/Arduino*'
+      - "cmake/Arduino*"
   push:
     paths:
-      - 'pipettes'
-      - 'cmake/*'
-      - 'CMakeLists.txt'
-      - 'pipettes/CMakeLists.txt'
-      - 'CMakePresets.json'
-      - '.clang-format'
-      - '.clang-tidy'
-      - '.github/workflows/pipettes.yaml'
+      - "pipettes"
+      - "common"
+      - "include/**"
+      - "!include/gantry/**"
+      - "cmake/*"
+      - "CMakeLists.txt"
+      - "pipettes/CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".clang-format"
+      - ".clang-tidy"
+      - ".github/workflows/pipettes.yaml"
     paths_ignore:
-      - 'cmake/Arduino*'
+      - "cmake/Arduino*"
     branches:
-      - '*'
+      - "*"
     tags:
-      - 'pipettes@*'
+      - "pipettes@*"
   workflow_dispatch:
-
 
 defaults:
   run:
     shell: bash
 
-
 jobs:
   cross-compile-check:
-    name: 'Cross-Compile/Check'
-    runs-on: 'ubuntu-20.04'
+    name: "Cross-Compile/Check"
+    runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
-      - uses: 'actions/checkout@v2'
+      - uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
-      - uses: 'actions/cache@v2'
+      - uses: "actions/cache@v2"
         with:
-          path: './stm32-tools'
+          path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
-      - name: 'Configure'
+      - name: "Configure"
         run: cmake --preset=cross .
-      - name: 'Format'
+      - name: "Format"
         run: cmake --build ./build-cross --target pipettes-format-ci
-      - name: 'Lint'
+      - name: "Lint"
         run: cmake --build ./build-cross --target pipettes-lint
-      - name: 'Build'
+      - name: "Build"
         run: cmake --build ./build-cross --target pipettes
   host-compile-test:
-    name: 'Host-Compile/Test'
-    runs-on: 'ubuntu-20.04'
+    name: "Host-Compile/Test"
+    runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     env:
       CC: gcc-10
@@ -68,12 +71,12 @@ jobs:
       - run: |
           sudo apt update
           sudo apt install gcc-10 g++-10
-      - uses: 'actions/checkout@v2'
+      - uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
-      - uses: 'actions/cache@v2'
+      - uses: "actions/cache@v2"
         with:
-          path: './stm32-tools'
+          path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
-      - name: 'Configure'
+      - name: "Configure"
         run: cmake --preset=host .

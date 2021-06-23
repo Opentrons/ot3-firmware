@@ -66,7 +66,7 @@ message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
 set_target_properties(gantry
   PROPERTIES
   CROSSCOMPILING_EMULATOR
-  "${ARM_GDB}")
+  "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
 
 
 find_package(Clang)
