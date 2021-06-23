@@ -4,7 +4,10 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
-add_executable(pipettes)
+add_executable(
+        pipettes
+        test_main.cpp
+)
 
 target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set_target_properties(pipettes
@@ -22,7 +25,7 @@ target_compile_options(pipettes
   -Wextra-semi
   -Wctor-dtor-privacy
   -fno-rtti)
-target_link_libraries(pipettes pipettes-core Catch2::Catch2)
+target_link_libraries(pipettes Catch2::Catch2)
 
 catch_discover_tests(pipettes)
 add_build_and_test_target(pipettes)
