@@ -5,7 +5,7 @@
 if (${CMAKE_CROSSCOMPILING})
   add_subdirectory(firmware)
 else()
-  # add_subdirectory(tests)
+   add_subdirectory(tests)
 endif()
 
 file(GLOB_RECURSE PIPETTES_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
