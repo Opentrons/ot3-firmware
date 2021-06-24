@@ -10,6 +10,7 @@
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static UART_HandleTypeDef huart1;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
 static void Error_Handler();
@@ -18,14 +19,14 @@ static void MX_USART1_UART_Init();
 /**
   * Initializes the Global MSP.
   */
-void HAL_MspInit(void)
+void HAL_MspInit()
 {
     /* USER CODE BEGIN MspInit 0 */
 
     /* USER CODE END MspInit 0 */
 
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_RCC_SYSCFG_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    __HAL_RCC_PWR_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
     /* System interrupt init*/
 
@@ -47,15 +48,15 @@ void HAL_MspInit(void)
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    if(huart->Instance==LPUART1)
+    if(huart->Instance==LPUART1)  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     {
         /* USER CODE BEGIN USART1_MspInit 0 */
 
         /* USER CODE END USART1_MspInit 0 */
         /* Peripheral clock enable */
-        __HAL_RCC_LPUART1_CLK_ENABLE();
+        __HAL_RCC_LPUART1_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
-        __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
         /**USART1 GPIO Configuration
         PA9     ------> USART1_TX
         PA10     ------> USART1_RX
@@ -65,7 +66,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF12_LPUART1;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         /* USER CODE BEGIN USART1_MspInit 1 */
 
@@ -82,20 +83,20 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 */
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
-    if(huart->Instance==LPUART1)
+    if(huart->Instance==LPUART1)  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     {
         /* USER CODE BEGIN USART1_MspDeInit 0 */
-        __HAL_RCC_LPUART1_FORCE_RESET();
-        __HAL_RCC_LPUART1_RELEASE_RESET();
+        __HAL_RCC_LPUART1_FORCE_RESET();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        __HAL_RCC_LPUART1_RELEASE_RESET();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
         /* USER CODE END USART1_MspDeInit 0 */
         /* Peripheral clock disable */
-        __HAL_RCC_LPUART1_CLK_DISABLE();
+        __HAL_RCC_LPUART1_CLK_DISABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         /**USART1 GPIO Configuration
         PA9     ------> USART1_TX
         PA10     ------> USART1_RX
         */
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2|GPIO_PIN_3);
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2|GPIO_PIN_3);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         /* USER CODE BEGIN USART1_MspDeInit 1 */
 
