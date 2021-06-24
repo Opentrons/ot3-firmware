@@ -82,5 +82,3 @@ jobs:
         run: cmake --preset=host .
       - name: 'Build'
         run: cmake --build ./build-host --target pipettes
-      - name: 'Test'
-        run: cmake --build ./build-host --target test

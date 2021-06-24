@@ -80,3 +80,5 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
       - name: "Configure"
         run: cmake --preset=host .
+      - name: 'Build'
+        run: cmake --build ./build-host --target gantry
