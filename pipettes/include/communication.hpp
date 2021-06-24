@@ -26,7 +26,6 @@ class MessageReader {
 template <ReaderProtocol reader>
 auto MessageReader::read_command(reader& communication)
     -> pipette_messages::ReceivedMessage {
-
     pipette_messages::ReceivedMessage r;
 
     uint8_t length = 0;
@@ -36,7 +35,7 @@ auto MessageReader::read_command(reader& communication)
     // Read the remainder
     communication.recv(length, payload_buffer.data());
 
-    auto iterator = payload_buffer.cbegin();
+    const auto *iterator = payload_buffer.cbegin();
 
     uint32_t arbitration_id = 0;
     arbitration_id |= (*iterator++ << 24);

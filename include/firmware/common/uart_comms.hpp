@@ -11,5 +11,6 @@ public:
     void recv(int l, uint8_t * buff);
 
 private:
+    static constexpr auto timeout = 0xFFFF;
     UART_HandleTypeDef * handle;
 };
