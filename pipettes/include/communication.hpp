@@ -6,7 +6,7 @@
 #include "pipette_messages.h"
 
 template <class C>
-concept Reader = requires(C c, int l, uint8_t* buff) {
+concept ReaderProtocol = requires(C c, int l, uint8_t* buff) {
     {c.recv(l, buff)};
 };
 
@@ -14,7 +14,7 @@ class MessageReader {
   public:
     MessageReader() = default;
 
-    template <Reader reader>
+    template <ReaderProtocol reader>
     auto read_command(reader& communication)
         -> std::optional<pipette_messages::Message>;
 
@@ -23,7 +23,7 @@ class MessageReader {
     std::array<uint8_t, max_payload_length> payload_buffer{};
 };
 
-template <Reader reader>
+template <ReaderProtocol reader>
 auto MessageReader::read_command(reader& communication)
     -> std::optional<pipette_messages::Message> {
     uint8_t length = 0;
