@@ -16,7 +16,7 @@ class MessageReader {
 
     template <ReaderProtocol reader>
     auto read_command(reader& communication)
-        -> std::optional<pipette_messages::Message>;
+        -> pipette_messages::ReceivedMessage;
 
   private:
     static constexpr auto max_payload_length = 8;
@@ -25,7 +25,10 @@ class MessageReader {
 
 template <ReaderProtocol reader>
 auto MessageReader::read_command(reader& communication)
-    -> std::optional<pipette_messages::Message> {
+    -> pipette_messages::ReceivedMessage {
+
+    pipette_messages::ReceivedMessage r;
+
     uint8_t length = 0;
     // Read the length
     communication.recv(1, &length);
@@ -43,24 +46,22 @@ auto MessageReader::read_command(reader& communication)
 
     switch (arbitration_id) {
         case static_cast<uint32_t>(pipette_messages::MessageType::stop):
-            return pipette_messages::Message{
-                pipette_messages::MessageType::stop, pipette_messages::Empty{}};
+            r = pipette_messages::Stop{};
+            break;
         case static_cast<uint32_t>(pipette_messages::MessageType::get_speed):
-            return pipette_messages::Message{
-                pipette_messages::MessageType::get_speed,
-                pipette_messages::Empty{}};
+            r = pipette_messages::GetSpeed{};
+            break;
         case static_cast<uint32_t>(pipette_messages::MessageType::set_speed): {
             uint32_t speed = 0;
             speed |= (*iterator++ << 24);
             speed |= (*iterator++ << 16);
             speed |= (*iterator++ << 8);
             speed |= *iterator++;
-            return pipette_messages::Message{
-                pipette_messages::MessageType::set_speed,
-                pipette_messages::Speed{speed}};
+            r = pipette_messages::SetSpeed{speed};
+            break;
         }
         default:
             break;
     }
-    return {};
+    return r;
 }

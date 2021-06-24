@@ -12,14 +12,19 @@ namespace pipette_messages {
         get_speed_result = 0x11
     };
 
-    struct Empty {
+    struct Stop {
     };
 
-    struct Speed {
+    struct SetSpeed {
         uint32_t mm_sec;
     };
 
-    using PayloadType = std::variant<Speed, Empty>;
+    struct GetSpeed {
+    };
 
-    using Message = std::pair<MessageType, PayloadType>;
+    struct GetSpeedResult {
+        uint32_t mm_sec;
+    };
+
+    using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed>;
 }

@@ -8,8 +8,9 @@
 #include "stm32g4xx_hal_conf.h"
 #include "task.h"
 // clang-format on
-#include "common/UartComms.hpp"
+#include "common/uart_comms.hpp"
 #include "communication.hpp"
+
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static UART_HandleTypeDef huart1;

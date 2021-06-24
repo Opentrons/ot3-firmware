@@ -26,8 +26,7 @@ SCENARIO("messages can be parsed") {
 
         WHEN("the message is read") {
             THEN("the type should be stop") {
-                REQUIRE(response.value().first ==
-                        pipette_messages::MessageType::stop);
+                REQUIRE(std::holds_alternative<pipette_messages::Stop>(response));
             }
         }
     }
@@ -39,11 +38,9 @@ SCENARIO("messages can be parsed") {
 
         WHEN("the message is read") {
             THEN("the type should be set speed and the speed should be 1234") {
-                REQUIRE(response.value().first ==
-                        pipette_messages::MessageType::set_speed);
+                REQUIRE(std::holds_alternative<pipette_messages::SetSpeed>(response));
                 REQUIRE(
-                    std::get<pipette_messages::Speed>(response.value().second)
-                        .mm_sec == 0x01020304);
+                    std::get<pipette_messages::SetSpeed>(response).mm_sec == 0x01020304);
             }
         }
     }
@@ -55,7 +52,7 @@ SCENARIO("messages can be parsed") {
 
         WHEN("the message is read") {
             THEN("the response should be empty") {
-                REQUIRE(!response.has_value());
+                REQUIRE(std::holds_alternative<std::monostate>(response));
             }
         }
     }
