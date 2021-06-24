@@ -1,14 +1,14 @@
 /*
  * firmware-specific functions, data, and hooks for host comms control
  */
-#include "pipettes/firmware/freertos_comms_task.hpp"
+#include "gantry/firmware/freertos_comms_task.hpp"
 
 #include <array>
 
 #include "FreeRTOS.h"
 #include "common/firmware/freertos_message_queue.hpp"
-#include "pipettes/core/host_comms_task.hpp"
-#include "pipettes/core/tasks.hpp"
+#include "gantry/core/host_comms_task.hpp"
+#include "gantry/core/tasks.hpp"
 #include "task.h"
 
 namespace host_comms_control_task {
