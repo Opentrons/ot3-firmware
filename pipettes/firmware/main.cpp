@@ -155,12 +155,12 @@ static void MX_USART1_UART_Init() {
     /* USER CODE BEGIN USART1_Init 1 */
 
     /* USER CODE END USART1_Init 1 */
-    constexpr auto baud_rate = 115200;
+    constexpr auto baud_rate = 9600;
     huart1.Instance = LPUART1;  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     huart1.Init.BaudRate = baud_rate;
     huart1.Init.WordLength = UART_WORDLENGTH_8B;
     huart1.Init.StopBits = UART_STOPBITS_1;
-    huart1.Init.Parity = UART_PARITY_ODD;
+    huart1.Init.Parity = UART_PARITY_NONE;
     huart1.Init.Mode = UART_MODE_TX_RX;
     huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     huart1.Init.OverSampling = UART_OVERSAMPLING_16;
