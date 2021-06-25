@@ -1,10 +1,12 @@
 
 #include "common/uart_comms.hpp"
 
-void Uart::send(int l, uint8_t* buff) {
-    HAL_UART_Transmit(handle, buff, l, timeout);
+using namespace uart_comms;
+
+void Uart::write(const std::span<uint8_t>& buff) {
+    HAL_UART_Transmit(handle, buff.data(), buff.size(), timeout);
 }
 
-void Uart::recv(int l, uint8_t* buff) {
-    HAL_UART_Receive(handle, buff, l, timeout);
+void Uart::read(std::span<uint8_t>& buff) {
+    HAL_UART_Receive(handle, buff.data(), buff.size(), timeout);
 }
