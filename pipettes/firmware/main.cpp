@@ -10,6 +10,8 @@
 // clang-format on
 #include "firmware/common/uart_comms.hpp"
 #include "pipettes/core/communication.hpp"
+#include "pipettes/core/uart_task.hpp"
+#include "pipettes/firmware/motor_control.hpp"
 
 #include "common/firmware/uart.h"
 
@@ -22,6 +24,7 @@ static StaticTask_t
     data;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 static void vTaskCode(void* vParamater);
+
 
 static void vTaskCode(void* vParamater) {
     vParamater = nullptr;

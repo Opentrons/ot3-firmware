@@ -1,23 +1,19 @@
 #pragma once
 
 #include <array>
-#include <concepts>
 #include <span>
 
+#include "common/hal/io.hpp"
 #include "bit_utils.hpp"
 #include "pipette_messages.h"
 
-template <class C>
-concept ReaderProtocol = requires(C c, std::span<uint8_t> buff) {
-    {c.read(buff)};
-};
 
 class MessageReader {
   public:
     MessageReader() = default;
 
-    template <ReaderProtocol reader>
-    auto read_command(reader& communication)
+    template <ReaderProtocol Reader>
+    auto read_command(Reader& communication)
         -> pipette_messages::ReceivedMessage;
 
   private:
