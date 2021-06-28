@@ -3,8 +3,8 @@
 #include <cstring>
 
 #include "FreeRTOS.h"
-#include "system_stm32g4xx.h"
 #include "stm32g4xx_hal_conf.h"
+#include "system_stm32g4xx.h"
 #include "task.h"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
