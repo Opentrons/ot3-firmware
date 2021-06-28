@@ -1,6 +1,6 @@
-#include <cstdio>
-
 #include "gantry/firmware/uart.hpp"
+
+#include <cstdio>
 
 /**
  * Initializes the Global MSP.
@@ -85,7 +85,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart) {
         HAL_GPIO_DeInit(
             GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             GPIO_PIN_2 |
-            GPIO_PIN_3);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                GPIO_PIN_3);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         /* USER CODE BEGIN USART1_MspDeInit 1 */
 
@@ -93,7 +93,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart) {
     }
 }
 
-UART_HandleTypeDef MX_USART1_UART_Init(UART_HandleTypeDef huart1) {
+auto MX_USART1_UART_Init(UART_HandleTypeDef huart1) -> UART_HandleTypeDef {
     /* USER CODE BEGIN USART1_Init 0 */
 
     /* USER CODE END USART1_Init 0 */

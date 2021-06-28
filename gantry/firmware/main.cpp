@@ -11,7 +11,6 @@
 
 #include "gantry/firmware/uart.hpp"
 
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -34,7 +33,6 @@ static void vTaskCode(void* vParamater) {
         HAL_UART_Transmit(&huart1, &c, 1, timeout);
     }
 }
-
 
 auto main() -> int {
     HardwareInit();
@@ -60,4 +58,3 @@ auto main() -> int {
 
     return 0;
 }
-
