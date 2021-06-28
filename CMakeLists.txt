@@ -28,9 +28,15 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 endif()
 message("Build type is ${CMAKE_BUILD_TYPE}")
 
-set(G4_BOARD_FILE_PATH ${ROOT_BOARD_FILE_PATH}/STM32G491RETx/stm32g4discovery.cfg ${G4_BOARD_FILE_PATH})
 
+if (${CMAKE_CROSSCOMPILING})
+  find_package(CrossGCC)
+  find_package(OpenOCD)
+endif()
+
+add_subdirectory(common)
 add_subdirectory(pipettes)
+add_subdirectory(gantry)
 
 find_package(Clang)
 
@@ -51,4 +57,10 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
 add_custom_target(
   format-ci
   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${SOURCES_FOR_FORMAT}
+)
+
+add_custom_target(
+  lint
+  ALL
+  DEPENDS gantry-lint pipettes-lint
 )

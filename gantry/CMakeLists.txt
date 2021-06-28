@@ -1,4 +1,4 @@
-# pipettes source tree
+# gantry source tree
 
 # add_subdirectory(src)
 
@@ -8,7 +8,7 @@ else()
    add_subdirectory(tests)
 endif()
 
-file(GLOB_RECURSE PIPETTES_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
+file(GLOB_RECURSE GANTRY_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
 # the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
@@ -16,13 +16,13 @@ file(GLOB_RECURSE PIPETTES_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
 
 # Target for use during dev - edits files
 add_custom_target(
-  pipettes-format
+  gantry-format
   ALL
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${PIPETTES_SOURCES_FOR_FORMAT}
+  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${GANTRY_SOURCES_FOR_FORMAT}
   )
 
 # Target for use in ci - warnings are errors, doesn't edit files
 add_custom_target(
-  pipettes-format-ci
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${PIPETTES_SOURCES_FOR_FORMAT}
+  gantry-format-ci
+  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${GANTRY_SOURCES_FOR_FORMAT}
 )

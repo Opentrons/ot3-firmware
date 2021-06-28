@@ -6,9 +6,9 @@
 #include <array>
 #include <variant>
 
-#include "common/message_queue.hpp"
-#include "common/messages.hpp"
-#include "common/tasks.hpp"
+#include "common/core/message_queue.hpp"
+#include "messages.hpp"
+#include "tasks.hpp"
 
 namespace tasks {
 template <template <class> class QueueImpl>
