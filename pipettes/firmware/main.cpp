@@ -159,7 +159,7 @@ static void MX_USART1_UART_Init() {
     /* USER CODE BEGIN USART1_Init 1 */
 
     /* USER CODE END USART1_Init 1 */
-    constexpr auto baud_rate = 115200;
+    constexpr auto baud_rate = 9600;
     huart1.Instance =
         LPUART1;  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     huart1.Init.BaudRate = baud_rate;
