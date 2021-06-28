@@ -8,7 +8,8 @@ add_STM32G4_freertos("Gantry")
 set(GANTRY_FW_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/uart.cpp)
 
 set(GANTRY_FW_NON_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
