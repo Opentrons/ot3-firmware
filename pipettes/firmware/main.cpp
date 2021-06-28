@@ -65,7 +65,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF12_LPUART1;
         HAL_GPIO_Init(
-            GPIOA,
+            GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         /* USER CODE BEGIN USART1_MspInit 1 */
@@ -96,7 +96,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart) {
         PA10     ------> USART1_RX
         */
         HAL_GPIO_DeInit(
-            GPIOA,
+            GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             GPIO_PIN_2 |
                 GPIO_PIN_3);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
