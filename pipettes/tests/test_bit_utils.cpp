@@ -10,7 +10,7 @@ SCENARIO("bytes_to_int works") {
         std::span sp{arr};
         WHEN("called") {
             uint16_t val = 0;
-            bit_utils::bytes_to_int<uint16_t , int>(sp, val);
+            bit_utils::bytes_to_int<uint16_t, int>(sp, val);
             THEN("it is converted to a uint16_t") { REQUIRE(val == 0x0102); }
         }
     }
@@ -19,8 +19,10 @@ SCENARIO("bytes_to_int works") {
         std::span sp{arr};
         WHEN("called") {
             uint32_t val = 0;
-            bit_utils::bytes_to_int<uint32_t , int>(sp, val);
-            THEN("it is converted to a uint32_t") { REQUIRE(val == 0xFFEF0301); }
+            bit_utils::bytes_to_int<uint32_t, int>(sp, val);
+            THEN("it is converted to a uint32_t") {
+                REQUIRE(val == 0xFFEF0301);
+            }
         }
     }
     GIVEN("a 1 byte span") {
@@ -28,7 +30,7 @@ SCENARIO("bytes_to_int works") {
         std::span sp{arr};
         WHEN("called") {
             uint8_t val = 0;
-            bit_utils::bytes_to_int<uint8_t , int>(sp, val);
+            bit_utils::bytes_to_int<uint8_t, int>(sp, val);
             THEN("it is converted to a uint8_t") { REQUIRE(val == 0xDD); }
         }
     }

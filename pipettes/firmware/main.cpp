@@ -11,7 +11,6 @@
 #include "common/uart_comms.hpp"
 #include "communication.hpp"
 
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static UART_HandleTypeDef huart1;
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
