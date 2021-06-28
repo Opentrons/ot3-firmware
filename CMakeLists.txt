@@ -28,6 +28,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
 endif()
 message("Build type is ${CMAKE_BUILD_TYPE}")
 
+
 if (${CMAKE_CROSSCOMPILING})
   find_package(CrossGCC)
   find_package(OpenOCD)
