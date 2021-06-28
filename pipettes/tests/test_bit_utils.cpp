@@ -1,7 +1,7 @@
 #include <array>
 #include <span>
 
-#include "bit_utils.hpp"
+#include "../../include/pipettes/core/bit_utils.hpp"
 #include "catch2/catch.hpp"
 
 SCENARIO("bytes_to_int works") {

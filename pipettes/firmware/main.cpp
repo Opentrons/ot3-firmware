@@ -4,12 +4,12 @@
 
 // clang-format off
 #include "FreeRTOS.h"
-#include "STM32G491RETx/system_stm32g4xx.h"
+#include "system_stm32g4xx.h"
 #include "stm32g4xx_hal_conf.h"
 #include "task.h"
 // clang-format on
-#include "common/uart_comms.hpp"
-#include "communication.hpp"
+#include "firmware/common/uart_comms.hpp"
+#include "pipettes/core/communication.hpp"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static UART_HandleTypeDef huart1;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdint.h>
 #include <span>
 #include "stm32g4xx_hal_conf.h"
 

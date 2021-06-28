@@ -2,7 +2,7 @@
 #include <span>
 
 #include "catch2/catch.hpp"
-#include "communication.hpp"
+#include "../../include/pipettes/core/communication.hpp"
 
 template <typename T, std::size_t L>
 struct DataReader {
