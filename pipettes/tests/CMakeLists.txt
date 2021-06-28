@@ -11,7 +11,7 @@ add_executable(
         test_bit_utils.cpp
 )
 
-target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(pipettes
   PROPERTIES
   CXX_STANDARD 20
