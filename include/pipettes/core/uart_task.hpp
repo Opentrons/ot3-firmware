@@ -14,26 +14,35 @@ class UartTask {
 public:
     explicit UartTask(T uart, Motor motor) : uart(uart), motor(motor) {};
 
+    /**
+     * Start the uart task.
+     */
     void run() {
         constexpr auto stack_size = 100;
         static std::array<StackType_t, stack_size> stack;
         StaticTask_t data;
 
+        // Create the task passing `this` as the parameter.
         xTaskCreateStatic(UartTask<T, Motor>::run, "USART Task", stack.size(),
                           this, 1, stack.data(), &data);
     };
 
 private:
+    /**
+     * The entry point of the freertos task
+     * @param parameter a pointer to a UartTask.
+     */
     static void run(void * parameter) {
         UartTask<T, Motor> & task = *static_cast<UartTask<T, Motor>*>(parameter);
 
         MessageReader messageReader;
 
-        auto l = [&task](auto m) {task.handle(m);};
+        auto handle = [&task](auto m) {task.handle(m);};
 
         for (;;) {
+            // Read a message and dispatch to handlers.
             auto message = messageReader.read_command(task.uart);
-            std::visit(l, message);
+            std::visit(handle, message);
         }
     }
 
