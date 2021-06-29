@@ -12,7 +12,8 @@
 #include "common/firmware/uart.h"
 
 constexpr auto stack_size = 100;
-static std::array<StackType_t, stack_size> stack;
+static std::array<StackType_t, stack_size>
+    stack;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // Internal FreeRTOS data structure
 static StaticTask_t
