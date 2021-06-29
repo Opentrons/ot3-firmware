@@ -4,6 +4,8 @@
 #include "catch2/catch.hpp"
 #include "pipettes/core/communication.hpp"
 
+using namespace communication;
+
 template <typename T, std::size_t L>
 struct DataReader {
     DataReader(const std::array<T, L>& buff)
@@ -26,7 +28,7 @@ SCENARIO("messages can be parsed") {
     GIVEN("a message reader with a stop message") {
         DataReader dr{std::array{0x0, 0x0, 0, 0}};
         MessageReader r;
-        auto response = r.read_command(dr);
+        auto response = r.read(dr);
 
         WHEN("the message is read") {
             THEN("the type should be stop") {
@@ -39,7 +41,7 @@ SCENARIO("messages can be parsed") {
     GIVEN("a message reader with a set speed message") {
         DataReader dr{std::array{0, 0, 0, 1, 1, 2, 3, 4}};
         MessageReader r;
-        auto response = r.read_command(dr);
+        auto response = r.read(dr);
 
         WHEN("the message is read") {
             THEN("the type should be set speed and the speed should be 1234") {
@@ -54,7 +56,7 @@ SCENARIO("messages can be parsed") {
     GIVEN("a message reader with an unknown message type") {
         DataReader dr{std::array{0xff, 0xff, 0xff, 0xff, 0xff}};
         MessageReader r;
-        auto response = r.read_command(dr);
+        auto response = r.read(dr);
 
         WHEN("the message is read") {
             THEN("the response should be empty") {

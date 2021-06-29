@@ -7,9 +7,10 @@
 #include <span>
 #include <variant>
 
+namespace uart_task {
 
-template <typename T, MotorProtocol Motor>
-requires ReaderProtocol<T> && WriterProtocol<T>
+template<typename T, motor_protocol::MotorProtocol Motor>
+requires io::ReaderProtocol<T> && io::WriterProtocol <T>
 class UartTask {
 public:
     explicit UartTask(T uart, Motor motor) : uart(uart), motor(motor) {};
@@ -19,11 +20,11 @@ public:
      */
     void run() {
         constexpr auto stack_size = 100;
-        static std::array<StackType_t, stack_size> stack;
+        static std::array <StackType_t, stack_size> stack;
         StaticTask_t data;
 
         // Create the task passing `this` as the parameter.
-        xTaskCreateStatic(UartTask<T, Motor>::run, "USART Task", stack.size(),
+        xTaskCreateStatic(UartTask < T, Motor > ::run, "USART Task", stack.size(),
                           this, 1, stack.data(), &data);
     };
 
@@ -32,25 +33,25 @@ private:
      * The entry point of the freertos task
      * @param parameter a pointer to a UartTask.
      */
-    static void run(void * parameter) {
-        UartTask<T, Motor> & task = *static_cast<UartTask<T, Motor>*>(parameter);
+    static void run(void *parameter) {
+        UartTask<T, Motor> &task = *static_cast<UartTask<T, Motor> *>(parameter);
 
-        MessageReader messageReader;
+        communication::MessageReader messageReader;
 
-        auto handle = [&task](auto m) {task.handle(m);};
+        auto handle = [&task](auto m) { task.handle(m); };
 
         for (;;) {
             // Read a message and dispatch to handlers.
-            auto message = messageReader.read_command(task.uart);
+            auto message = messageReader.read(task.uart);
             std::visit(handle, message);
         }
     }
 
-    void handle(const pipette_messages::Stop& m) {  // NOLINT(misc-unused-parameters)
+    void handle(const pipette_messages::Stop &m) {  // NOLINT(misc-unused-parameters)
         motor.set_speed(0);
     }
 
-    void handle(const pipette_messages::SetSpeed& m) {
+    void handle(const pipette_messages::SetSpeed &m) {
         motor.set_speed(m.mm_sec);
     }
 
@@ -58,11 +59,12 @@ private:
 
     }
 
-    void handle(const std::monostate& m) {
+    void handle(const std::monostate &m) {
 
     }
 
     T uart;
     Motor motor;
-    MessageReader messageReader{};
 };
+
+}

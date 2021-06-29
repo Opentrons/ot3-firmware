@@ -7,24 +7,27 @@
 #include "bit_utils.hpp"
 #include "pipette_messages.h"
 
+using namespace io;
+
+namespace communication {
 
 class MessageReader {
-  public:
+public:
     MessageReader() = default;
 
-    template <ReaderProtocol Reader>
-    auto read_command(Reader& communication)
-        -> pipette_messages::ReceivedMessage;
+    template<ReaderProtocol Reader>
+    auto read(Reader &communication)
+    -> pipette_messages::ReceivedMessage;
 
-  private:
+private:
     static constexpr auto max_payload_length = 8;
     std::array<uint8_t, max_payload_length> payload_buffer{};
     std::span<uint8_t> payload_span{payload_buffer};
 };
 
-template <ReaderProtocol reader>
-auto MessageReader::read_command(reader& communication)
-    -> pipette_messages::ReceivedMessage {
+template<ReaderProtocol Reader>
+auto MessageReader::read(Reader &communication)
+-> pipette_messages::ReceivedMessage {
     pipette_messages::ReceivedMessage r;
 
     auto arbitration_id_span = payload_span.subspan(0, 4);
@@ -57,4 +60,6 @@ auto MessageReader::read_command(reader& communication)
             break;
     }
     return r;
+}
+
 }

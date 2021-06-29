@@ -1,5 +1,6 @@
 #pragma once
 
+namespace motor_control {
 
 /**
  * Implementation of the Motor concept.
@@ -13,3 +14,5 @@ struct MotorControl {
 private:
     uint32_t speed{0};
 };
+
+}

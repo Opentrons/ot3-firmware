@@ -21,4 +21,5 @@ bytes_to_int(const std::span<InputType> &input, OutputType &output) {
         output |= (byte & byte_mask);
     }
 }
+
 }  // namespace bit_utils

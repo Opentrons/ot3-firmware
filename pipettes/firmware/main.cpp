@@ -48,7 +48,6 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     xTaskCreateStatic(vTaskCode, "USART Task", stack.size(), nullptr, 1,
                       stack.data(), &data);
-
     vTaskStartScheduler();
 
     return 0;
