@@ -47,7 +47,8 @@ private:
         }
     }
 
-    void handle(const pipette_messages::Stop &m) {  // NOLINT(misc-unused-parameters)
+    void handle(const pipette_messages::Stop &m) {
+        static_cast<void>(m)
         motor.set_speed(0);
     }
 
