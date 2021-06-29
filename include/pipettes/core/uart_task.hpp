@@ -19,10 +19,6 @@ public:
      * Start the uart task.
      */
     void run() {
-        constexpr auto stack_size = 100;
-        static std::array <StackType_t, stack_size> stack;
-        StaticTask_t data;
-
         // Create the task passing `this` as the parameter.
         xTaskCreateStatic(UartTask < T, Motor > ::run, "USART Task", stack.size(),
                           this, 1, stack.data(), &data);
@@ -48,7 +44,7 @@ private:
     }
 
     void handle(const pipette_messages::Stop &m) {
-        static_cast<void>(m)
+        static_cast<void>(m);
         motor.set_speed(0);
     }
 
@@ -66,6 +62,9 @@ private:
 
     T uart;
     Motor motor;
+    static constexpr auto stack_size = 100;
+    std::array <StackType_t, stack_size> stack;
+    StaticTask_t data{};
 };
 
 }
