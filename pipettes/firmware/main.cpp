@@ -9,12 +9,14 @@
 #include "task.h"
 // clang-format on
 
-#include "pipettes/firmware/uart.hpp"
+#include "common/firmware/uart.h"
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-UART_HandleTypeDef huart1;
+constexpr auto stack_size = 100;
+static std::array<StackType_t, stack_size> stack;
+
+// Internal FreeRTOS data structure
+static StaticTask_t
+    data;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 static void vTaskCode(void* vParamater);
 
@@ -24,6 +26,7 @@ static void vTaskCode(void* vParamater) {
     constexpr auto timeout = 0xFFFF;
 
     uint8_t c = 0;
+    UART_HandleTypeDef huart1 = MX_LPUART1_UART_Init();
 
     for (;;) {
         HAL_UART_Receive(&huart1, &c, 1, timeout);
@@ -36,21 +39,7 @@ static void vTaskCode(void* vParamater) {
 
 auto main() -> int {
     HardwareInit();
-    /** Initializes the peripherals clocks
-     */
-    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
-    PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
-        Error_Handler();
-    }
-
-    constexpr auto stack_size = 100;
-    static std::array<StackType_t, stack_size> stack;
-
-    // Internal FreeRTOS data structure
-    static StaticTask_t
-        data;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    huart1 = MX_USART1_UART_Init(huart1);
+    RCC_Peripheral_Clock_Select();
     xTaskCreateStatic(vTaskCode, "USART Task", stack.size(), nullptr, 1,
                       stack.data(), &data);
 

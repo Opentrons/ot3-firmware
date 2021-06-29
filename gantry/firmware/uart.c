@@ -1,7 +1,6 @@
-#include "gantry/firmware/uart.hpp"
+#include "common/firmware/uart.h"
 
-#include <cstdio>
-
+static void Error_Handler();
 /**
  * Initializes the Global MSP.
  */
@@ -93,7 +92,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart) {
     }
 }
 
-auto MX_USART1_UART_Init(UART_HandleTypeDef huart1) -> UART_HandleTypeDef {
+UART_HandleTypeDef MX_LPUART1_UART_Init() {
     /* USER CODE BEGIN USART1_Init 0 */
 
     /* USER CODE END USART1_Init 0 */
@@ -101,19 +100,25 @@ auto MX_USART1_UART_Init(UART_HandleTypeDef huart1) -> UART_HandleTypeDef {
     /* USER CODE BEGIN USART1_Init 1 */
 
     /* USER CODE END USART1_Init 1 */
-    constexpr auto baud_rate = 9600;
-    huart1.Instance =
-        LPUART1;  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-    huart1.Init.BaudRate = baud_rate;
-    huart1.Init.WordLength = UART_WORDLENGTH_8B;
-    huart1.Init.StopBits = UART_STOPBITS_1;
-    huart1.Init.Parity = UART_PARITY_NONE;
-    huart1.Init.Mode = UART_MODE_TX_RX;
-    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-    huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-    huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-    huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+    uint32_t baud_rate = 9600;
+    UART_HandleTypeDef huart1 = {
+        .Instance = LPUART1,
+        .Init = {
+            .BaudRate = baud_rate,
+            .WordLength = UART_WORDLENGTH_8B,
+            .StopBits = UART_STOPBITS_1,
+            .Parity = UART_PARITY_NONE,
+            .Mode = UART_MODE_TX_RX,
+            .HwFlowCtl = UART_HWCONTROL_NONE,
+            .OverSampling = UART_OVERSAMPLING_16,
+            .OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE,
+            .ClockPrescaler = UART_PRESCALER_DIV1
+        },
+        .AdvancedInit = {
+            .AdvFeatureInit = UART_ADVFEATURE_NO_INIT
+        }
+    };
+
     if (HAL_UART_Init(&huart1) != HAL_OK) {
         Error_Handler();
     }
@@ -134,4 +139,20 @@ auto MX_USART1_UART_Init(UART_HandleTypeDef huart1) -> UART_HandleTypeDef {
     return huart1;
 }
 
-void Error_Handler() { puts("We encountered an error"); }
+void RCC_Peripheral_Clock_Select() {
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+    PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+        Error_Handler();
+    }
+
+}
+
+static void Error_Handler() {
+    for(;;) {
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+        HAL_Delay(100);
+    }
+}
