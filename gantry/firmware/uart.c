@@ -10,7 +10,7 @@ void HAL_MspInit() {
     /* USER CODE END MspInit 0 */
 
     __HAL_RCC_SYSCFG_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-    __HAL_RCC_PWR_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    __HAL_RCC_PWR_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cst                     yle-cast)
 
     /* System interrupt init*/
 

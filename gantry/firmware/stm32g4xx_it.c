@@ -40,6 +40,10 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+/* External variables --------------------------------------------------------*/
+DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi1_rx;
+
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
@@ -117,6 +121,33 @@ void DebugMon_Handler(void) {}
 /*void PPP_IRQHandler(void)
 {
 }*/
+/**
+  * @brief This function handles DMA1 channel2 global interrupt.
+  */
+void DMA1_Channel2_IRQHandler(void)
+{
+    /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
+
+    /* USER CODE END DMA1_Channel2_IRQn 0 */
+    HAL_DMA_IRQHandler(&hdma_spi1_rx);
+    /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
+
+    /* USER CODE END DMA1_Channel2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA1 channel3 global interrupt.
+  */
+void DMA1_Channel3_IRQHandler(void)
+{
+    /* USER CODE BEGIN DMA1_Channel3_IRQn 0 */
+
+    /* USER CODE END DMA1_Channel3_IRQn 0 */
+    HAL_DMA_IRQHandler(&hdma_spi1_tx);
+    /* USER CODE BEGIN DMA1_Channel3_IRQn 1 */
+
+    /* USER CODE END DMA1_Channel3_IRQn 1 */
+}
 
 /**
  * @}
