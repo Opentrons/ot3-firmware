@@ -13,7 +13,7 @@ requires io::WriterProtocol<T> class MessageHandler {
   public:
     explicit MessageHandler(T &writer, Motor &motor,
                             communication::MessageWriter &message_writer)
-        : writer(writer), motor(motor), message_writer(message_writer){}
+        : writer(writer), motor(motor), message_writer(message_writer) {}
 
     void handle(const pipette_messages::ReceivedMessage &message) {
         auto handle = [this](auto m) { this->handle(m); };
