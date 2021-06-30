@@ -35,3 +35,28 @@ SCENARIO("bytes_to_int works") {
         }
     }
 }
+
+SCENARIO("int_to_bytes works") {
+    GIVEN("some integers") {
+        auto arr = std::array<int, 7>{};
+        uint32_t i32 = 0x01234567;
+        uint16_t i16 = 0x89ab;
+        uint8_t i8 = 0xcd;
+
+        WHEN("called") {
+            auto iter = arr.begin();
+            iter = bit_utils::int_to_bytes(i32, iter);
+            iter = bit_utils::int_to_bytes(i16, iter);
+            iter = bit_utils::int_to_bytes(i8, iter);
+            THEN("The values are written into the array") {
+                REQUIRE(arr[0] == 0x01);
+                REQUIRE(arr[1] == 0x23);
+                REQUIRE(arr[2] == 0x45);
+                REQUIRE(arr[3] == 0x67);
+                REQUIRE(arr[4] == 0x89);
+                REQUIRE(arr[5] == 0xab);
+                REQUIRE(arr[6] == 0xcd);
+            }
+        }
+    }
+}

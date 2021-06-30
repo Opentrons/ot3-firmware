@@ -28,5 +28,7 @@ struct GetSpeedResult {
 
 using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed>;
 
+using SentMessage = std::variant<std::monostate, GetSpeedResult>;
+
 }
 

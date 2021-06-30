@@ -25,6 +25,7 @@ private:
     std::span<uint8_t> payload_span{payload_buffer};
 };
 
+
 template<ReaderProtocol Reader>
 auto MessageReader::read(Reader &communication)
 -> pipette_messages::ReceivedMessage {
@@ -62,4 +63,42 @@ auto MessageReader::read(Reader &communication)
     return r;
 }
 
+
+class MessageWriter {
+public:
+    MessageWriter() = default;
+
+    template<WriterProtocol Writer>
+    void write(Writer &communication, const pipette_messages::SentMessage & m);
+
+private:
+    template<typename Iter>
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const pipette_messages::GetSpeedResult & m) -> Iter {
+        iter = bit_utils::int_to_bytes(static_cast<uint32_t>(pipette_messages::MessageType::get_speed_result), iter);
+        return bit_utils::int_to_bytes(m.mm_sec, iter);
+    }
+
+    template<typename Iter> requires std::forward_iterator<Iter>
+    auto write(Iter iter, const std::monostate & m) -> Iter {
+        static_cast<void>(m);
+        return iter;
+    }
+
+    static constexpr auto max_payload_length = 8;
+    std::array<uint8_t, max_payload_length> payload_buffer{};
+};
+
+template<WriterProtocol Writer>
+void MessageWriter::write(Writer &communication, const pipette_messages::SentMessage & m) {
+    auto * iter = payload_buffer.begin();
+
+    auto visitor = [&iter, this](auto val) {iter = this->write(iter, val);};
+
+    std::visit(visitor, m);
+
+    auto subspan = std::span(payload_buffer.begin(), iter);
+
+    communication.write(subspan);
+}
 }

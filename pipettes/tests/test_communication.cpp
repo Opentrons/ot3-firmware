@@ -65,3 +65,37 @@ SCENARIO("messages can be parsed") {
         }
     }
 }
+
+template <typename T, std::size_t L>
+struct DataWriter {
+    void write(std::span<uint8_t>& p) {
+        for (auto i : p) {
+            *iter++ = i;
+        }
+    }
+
+    std::array<T, L> buff{};
+    typename std::array<T, L>::iterator iter = buff.begin();
+};
+
+SCENARIO("messages can be written") {
+    GIVEN("a get speed result message") {
+        DataWriter<uint8_t, 8> dw{};
+        MessageWriter w;
+        auto message = pipette_messages::GetSpeedResult{0xbeef0bad};
+        w.write(dw, message);
+
+        WHEN("the message is read") {
+            THEN("the type should be stop") {
+                REQUIRE(dw.buff[0] == 0);
+                REQUIRE(dw.buff[1] == 0);
+                REQUIRE(dw.buff[2] == 0);
+                REQUIRE(dw.buff[3] == 0x11);
+                REQUIRE(dw.buff[4] == 0xbe);
+                REQUIRE(dw.buff[5] == 0xef);
+                REQUIRE(dw.buff[6] == 0x0b);
+                REQUIRE(dw.buff[7] == 0xad);
+            }
+        }
+    }
+}
