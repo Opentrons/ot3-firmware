@@ -7,7 +7,7 @@ namespace uart_comms {
 
 class Uart {
 public:
-    explicit Uart(UART_HandleTypeDef *handle) : handle{handle} {};
+    explicit Uart(UART_HandleTypeDef *handle) : handle{handle} {}
 
     void read(std::span <uint8_t> &buff);
 
