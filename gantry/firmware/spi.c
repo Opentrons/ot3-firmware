@@ -50,9 +50,34 @@ SPI_HandleTypeDef MX_SPI1_Init() {
   * @param None
   * @retval None
   */
-void MX_GPIO_Init(void)
+void MX_GPIOA_Init(void)
 {
 
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+//    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+    HAL_GPIO_Init(
+        GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    }
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_GPIOB_Init(void)
+{
+
+    //PB14 -> MISO
+    //PB12 -> CS
+    //PB13 -> CLK
+    //PB15 -> MOSI
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};

@@ -39,8 +39,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
         /* USER CODE END USART1_MspInit 0 */
         /* Peripheral clock enable */
         __HAL_RCC_LPUART1_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-
-        __HAL_RCC_GPIOA_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
         /**USART1 GPIO Configuration
         PA9     ------> USART1_TX
         PA10     ------> USART1_RX

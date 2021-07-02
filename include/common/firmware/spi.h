@@ -15,7 +15,8 @@ enum
 };
 
 SPI_HandleTypeDef MX_SPI1_Init();
-void MX_GPIO_Init();
+void MX_GPIOA_Init();
+void MX_GPIOB_Init();
 void MX_DMA_Init();
 void Spi_Error_Handler();
 

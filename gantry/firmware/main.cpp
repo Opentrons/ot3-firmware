@@ -22,19 +22,23 @@ static StaticTask_t
 
 static void vTaskCode(void* vParam);
 static void spiTask(void* spiParam);
+static void driveMotor();
 
-uint8_t aTxBuffer[] = "Hi";
-uint8_t aRxBuffer[BUFFERSIZE];
+uint8_t aTxBuffer[5] = {0, 0, 0, 0, 0};
+//uint8_t aTxBuffer[] = "Hi";
+uint8_t aRxBuffer[5];
 __IO uint32_t wTransferState = TRANSFER_WAIT;
 
 static uint16_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength);
-
 
 
 static void vTaskCode(void* vParam) {
     vParam = nullptr;
 
     constexpr auto timeout = 0xFFFF;
+    constexpr auto MOVE = 'm';
+    constexpr auto CHANGE = 'c';
+    constexpr auto OK = "OK";
 
     uint8_t c = 0;
     UART_HandleTypeDef huart1 = MX_LPUART1_UART_Init();
@@ -42,15 +46,19 @@ static void vTaskCode(void* vParam) {
     for (;;) {
         HAL_UART_Receive(&huart1, &c, 1, timeout);
 
+        if (c == MOVE) {
+            driveMotor();
+            HAL_UART_Transmit(&huart1, (uint8_t *)OK, sizeof(OK), timeout);
+        } else if (c == CHANGE) {
+            HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+        }
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-
-        HAL_UART_Transmit(&huart1, &c, 1, timeout);
     }
 }
 
 static void spiTask(void* spiParam) {
     spiParam = nullptr;
-    MX_GPIO_Init();
+    MX_GPIOB_Init();
     MX_DMA_Init();
     SPI_HandleTypeDef hspi1 = MX_SPI1_Init();
     constexpr auto timeout = 0xFFFF;
@@ -59,8 +67,9 @@ static void spiTask(void* spiParam) {
     /* While the SPI in TransmitReceive process, user can transmit data through
        "aTxBuffer" buffer & receive data through "aRxBuffer" */
     for (;;) {
-        HAL_SPI_Transmit(&hspi1, (uint8_t *)aTxBuffer, BUFFERSIZE, timeout);
-        vTaskDelay(2);
+        HAL_SPI_Transmit(&hspi1, aTxBuffer, sizeof(aTxBuffer), timeout);
+//        while(hspi1.State == HAL_SPI_STATE_BUSY);
+        vTaskDelay(20);
     }
 //    if (HAL_SPI_TransmitReceive_DMA(&hspi1, (uint8_t *)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE) != HAL_OK)
 //    {
@@ -68,16 +77,17 @@ static void spiTask(void* spiParam) {
 //        Spi_Error_Handler();
 //    }
 //
-//    /*##-2- Wait for the end of the transfer ###################################*/
-//    /*  Before starting a new communication transfer, you must wait the callback call
-//        to get the transfer complete confirmation or an error detection.
-//        For simplicity reasons, this example is just waiting till the end of the
-//        transfer, but application may perform other tasks while transfer operation
-//        is ongoing. */
+    /*##-2- Wait for the end of the transfer ###################################*/
+    /*  Before starting a new communication transfer, you must wait the callback call
+        to get the transfer complete confirmation or an error detection.
+        For simplicity reasons, this example is just waiting till the end of the
+        transfer, but application may perform other tasks while transfer operation
+        is ongoing. */
 //    while (wTransferState == TRANSFER_WAIT)
 //    {
+//        HAL_SPI_TransmitReceive(&hspi1, aTxBuffer, aRxBuffer, sizeof(aTxBuffer), timeout);
 //    }
-//
+
 //    switch (wTransferState)
 //    {
 //        case TRANSFER_COMPLETE :
@@ -93,11 +103,20 @@ static void spiTask(void* spiParam) {
 //            break;
 //    }
 }
+
+static void driveMotor() {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
+    vTaskDelay(120);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
+}
+
 auto main() -> int {
     HardwareInit();
     /** Initializes the peripherals clocks
      */
+    __HAL_RCC_GPIOA_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     RCC_Peripheral_Clock_Select();
+    MX_GPIOA_Init();
     __HAL_RCC_SPI2_CLK_ENABLE();
 
 //    xTaskCreateStatic(vTaskCode, "USART Task", stack.size(), nullptr, 1,
