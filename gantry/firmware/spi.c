@@ -22,7 +22,7 @@ SPI_HandleTypeDef MX_SPI1_Init() {
             .Direction = SPI_DIRECTION_2LINES,
             .DataSize = SPI_DATASIZE_8BIT,
             .CLKPolarity = SPI_POLARITY_LOW,
-            .CLKPhase = SPI_PHASE_1EDGE,
+            .CLKPhase = SPI_PHASE_2EDGE,
             .NSS = SPI_NSS_HARD_OUTPUT,
             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
             .FirstBit = SPI_FIRSTBIT_MSB,
@@ -30,7 +30,7 @@ SPI_HandleTypeDef MX_SPI1_Init() {
             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
             .CRCPolynomial = 7,
             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-            .NSSPMode = SPI_NSS_PULSE_ENABLE
+            .NSSPMode = SPI_NSS_PULSE_DISABLE
         }
 
     };
