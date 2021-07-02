@@ -25,12 +25,15 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         PB14     ------> SPI2_MISO
         PB15     ------> SPI2_MOSI
         */
-        GPIO_InitStruct.Pin =
-            GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+        GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         /* USER CODE BEGIN SPI2_MspInit 1 */
@@ -87,16 +90,16 @@ SPI_HandleTypeDef MX_SPI1_Init() {
         .Init = {.Mode = SPI_MODE_MASTER,
                  .Direction = SPI_DIRECTION_2LINES,
                  .DataSize = SPI_DATASIZE_8BIT,
-                 .CLKPolarity = SPI_POLARITY_LOW,
+                 .CLKPolarity = SPI_POLARITY_HIGH,
                  .CLKPhase = SPI_PHASE_2EDGE,
-                 .NSS = SPI_NSS_HARD_OUTPUT,
+                 .NSS = SPI_NSS_SOFT,
                  .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
                  .FirstBit = SPI_FIRSTBIT_MSB,
                  .TIMode = SPI_TIMODE_DISABLE,
                  .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
                  .CRCPolynomial = 7,
                  .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                 .NSSPMode = SPI_NSS_PULSE_ENABLE}
+                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
     };
 

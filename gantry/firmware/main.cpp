@@ -24,7 +24,7 @@ static void vTaskCode(void *vParam);
 static void spiTask(void *spiParam);
 static void driveMotor();
 
-uint8_t aTxBuffer[5] = {0x04, 0, 0, 0, 0};
+uint8_t aTxBuffer[5] = {0x6B, 0, 0, 0, 0};
 // uint8_t aTxBuffer[] = "Hi";
 uint8_t aRxBuffer[5];
 __IO uint32_t wTransferState = TRANSFER_WAIT;
@@ -58,58 +58,18 @@ static void vTaskCode(void *vParam) {
 
 static void spiTask(void *spiParam) {
     spiParam = nullptr;
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
     //    MX_DMA_Init();
     SPI_HandleTypeDef hspi1 = MX_SPI1_Init();
     constexpr auto timeout = 0xFFFF;
 
-    /*##-1- Start the Full Duplex Communication process
-     * ########################*/
-    /* While the SPI in TransmitReceive process, user can transmit data through
-       "aTxBuffer" buffer & receive data through "aRxBuffer" */
     for (;;) {
-        //        __HAL_SPI_DISABLE(&hspi1);
-        HAL_SPI_Transmit(&hspi1, aTxBuffer, sizeof(aTxBuffer), timeout);
-        __HAL_SPI_DISABLE(&hspi1);
-        //        __HAL_SPI_DISABLE(&hspi1);
-        //        while(hspi1.State == HAL_SPI_STATE_BUSY);
-        //        vTaskDelay(20);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+        HAL_SPI_TransmitReceive(&hspi1, aTxBuffer, aRxBuffer, sizeof(aTxBuffer),
+                                timeout);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+        vTaskDelay(20);
     }
-    //        if (HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)aTxBuffer, (uint8_t
-    //        *)aRxBuffer, BUFFERSIZE, timeout) != HAL_OK)
-    //        {
-    //            /* Transfer error in transmission process */
-    //            Spi_Error_Handler();
-    //        }
-    //
-    //        /*##-2- Wait for the end of the transfer
-    //        ###################################*/
-    //        /*  Before starting a new communication transfer, you must wait
-    //        the callback call
-    //            to get the transfer complete confirmation or an error
-    //            detection. For simplicity reasons, this example is just
-    //            waiting till the end of the transfer, but application may
-    //            perform other tasks while transfer operation is ongoing. */
-    //        while (wTransferState == TRANSFER_WAIT)
-    //        {
-    ////            HAL_SPI_TransmitReceive(&hspi1, aTxBuffer, aRxBuffer,
-    /// sizeof(aTxBuffer), timeout);
-    //        }
-    //
-    //        switch (wTransferState)
-    //        {
-    //            case TRANSFER_COMPLETE :
-    //                /*##-3- Compare the sent and received buffers
-    //                ##############################*/ if (Buffercmp((uint8_t
-    //                *)aTxBuffer, (uint8_t *)aRxBuffer, BUFFERSIZE))
-    //                {
-    //                    /* Processing Error */
-    //                    Spi_Error_Handler();
-    //                }
-    //                break;
-    //            default :
-    //                Spi_Error_Handler();
-    //                break;
-    //        }
 }
 
 static void driveMotor() {
