@@ -13,65 +13,66 @@ set(PIPETTE_FW_LINTABLE_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/uart.c)
+        ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/uart.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/spi.c)
 
 add_executable(pipettes
-  ${PIPETTE_FW_LINTABLE_SRCS}
-  ${PIPETTE_FW_NON_LINTABLE_SRCS})
+        ${PIPETTE_FW_LINTABLE_SRCS}
+        ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
 target_link_libraries(pipettes
-  PUBLIC STM32G491RETx
-  STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes)
+        PUBLIC STM32G491RETx
+        STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes)
 
 set_target_properties(pipettes
-  PROPERTIES CXX_STANDARD 20
-             CXX_STANDARD_REQUIRED TRUE
-             C_STANDARD 11
-             C_STANDARD_REQUIRED TRUE)
+        PROPERTIES CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED TRUE
+        C_STANDARD 11
+        C_STANDARD_REQUIRED TRUE)
 
 target_include_directories(
-  pipettes
-  PUBLIC ${CMAKE_SOURCE_DIR}/include)
+        pipettes
+        PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 
 target_compile_options(pipettes
-  PUBLIC
-  -Wall
-  $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-  $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-  $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-  $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-  $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-  $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+        PUBLIC
+        -Wall
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
 target_include_directories(STM32G4xx_Drivers_Pipettes
-  PUBLIC .)
+        PUBLIC .)
 target_include_directories(STM32G4xx_FreeRTOS_Pipettes
-  PUBLIC .)
+        PUBLIC .)
 
 target_compile_definitions(STM32G4xx_Drivers_Pipettes
-  PUBLIC STM32G491xx)
+        PUBLIC STM32G491xx)
 target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
-  PUBLIC STM32G491xx)
+        PUBLIC STM32G491xx)
 
 set_target_properties(
-  STM32G4xx_FreeRTOS_Pipettes
-  PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
+        STM32G4xx_FreeRTOS_Pipettes
+        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 
 find_program(ARM_GDB
-  arm-none-eabi-gdb-py
-  PATHS "${CrossGCC_BINDIR}"
-  NO_DEFAULT_PATH
-  REQUIRED)
+        arm-none-eabi-gdb-py
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
 # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
 # this dir
 set_target_properties(pipettes
-  PROPERTIES
-  CROSSCOMPILING_EMULATOR
-  "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+        PROPERTIES
+        CROSSCOMPILING_EMULATOR
+        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
 
 
 find_package(Clang)
@@ -92,8 +93,8 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 # This helps with clang accepting what GCC accepts around the implementations of the message queue
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(pipettes-lint
-  ALL
-  COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
+        ALL
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
 
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with
@@ -102,6 +103,6 @@ add_custom_target(pipettes-lint
 # should be running the entire time and that's tough to accomplish
 # in a custom command
 add_custom_target(pipettes-debug
-  COMMAND pipettes
-  USES_TERMINAL
-  )
+        COMMAND pipettes
+        USES_TERMINAL
+        )
