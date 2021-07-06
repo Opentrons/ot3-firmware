@@ -20,7 +20,7 @@ static std::array<StackType_t, stack_size>
 static StaticTask_t
     data;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-static void vTaskCode(void *vParam);
+static void uartTask(void *vParam);
 static void spiTask(void *spiParam);
 
 static const int BUFFER_SIZE = 5;
@@ -42,7 +42,7 @@ static void uartTask(void *vParam) {
     }
 }
 
-void spiTask(void *spiParam) {
+static void spiTask(void *spiParam) {
     spiParam = nullptr;
     std::array<uint8_t, BUFFER_SIZE> aTxBuffer = {COMMAND, 0, 0, 0, 0};
     std::array<uint8_t, BUFFER_SIZE> aRxBuffer{};
