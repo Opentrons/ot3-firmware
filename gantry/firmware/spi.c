@@ -85,6 +85,7 @@ SPI_HandleTypeDef MX_SPI1_Init() {
 
     /* USER CODE END SPI2_Init 1 */
     /* SPI2 parameter configuration*/
+    __HAL_RCC_SPI2_CLK_ENABLE();
     SPI_HandleTypeDef hspi1 = {
         .Instance = SPI2,
         .Init = {.Mode = SPI_MODE_MASTER,
@@ -156,4 +157,10 @@ void Spi_Error_Handler(void) {
     while (1) {
     }
     /* USER CODE END Error_Handler_Debug */
+}
+
+void Set_CS_Pin(void) { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
+
+void Reset_CS_Pin(void) {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
 }

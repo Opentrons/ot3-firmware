@@ -10,7 +10,8 @@ void HAL_MspInit() {
     /* USER CODE END MspInit 0 */
 
     __HAL_RCC_SYSCFG_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-    __HAL_RCC_PWR_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cst                     yle-cast)
+    __HAL_RCC_PWR_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cst
+                                 // yle-cast)
 
     /* System interrupt init*/
 
@@ -31,14 +32,13 @@ void HAL_MspInit() {
  */
 void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    if (huart->Instance ==
-        LPUART1)  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-    {
+    if (huart->Instance == LPUART1) {
         /* USER CODE BEGIN USART1_MspInit 0 */
 
         /* USER CODE END USART1_MspInit 0 */
         /* Peripheral clock enable */
-        __HAL_RCC_LPUART1_CLK_ENABLE();  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        __HAL_RCC_LPUART1_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();
         /**USART1 GPIO Configuration
         PA9     ------> USART1_TX
         PA10     ------> USART1_RX
@@ -48,9 +48,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart) {
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF12_LPUART1;
-        HAL_GPIO_Init(
-            GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-            &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         /* USER CODE BEGIN USART1_MspInit 1 */
 
@@ -101,21 +99,16 @@ UART_HandleTypeDef MX_LPUART1_UART_Init() {
     uint32_t baud_rate = 9600;
     UART_HandleTypeDef huart1 = {
         .Instance = LPUART1,
-        .Init = {
-            .BaudRate = baud_rate,
-            .WordLength = UART_WORDLENGTH_8B,
-            .StopBits = UART_STOPBITS_1,
-            .Parity = UART_PARITY_NONE,
-            .Mode = UART_MODE_TX_RX,
-            .HwFlowCtl = UART_HWCONTROL_NONE,
-            .OverSampling = UART_OVERSAMPLING_16,
-            .OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE,
-            .ClockPrescaler = UART_PRESCALER_DIV1
-        },
-        .AdvancedInit = {
-            .AdvFeatureInit = UART_ADVFEATURE_NO_INIT
-        }
-    };
+        .Init = {.BaudRate = baud_rate,
+                 .WordLength = UART_WORDLENGTH_8B,
+                 .StopBits = UART_STOPBITS_1,
+                 .Parity = UART_PARITY_NONE,
+                 .Mode = UART_MODE_TX_RX,
+                 .HwFlowCtl = UART_HWCONTROL_NONE,
+                 .OverSampling = UART_OVERSAMPLING_16,
+                 .OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE,
+                 .ClockPrescaler = UART_PRESCALER_DIV1},
+        .AdvancedInit = {.AdvFeatureInit = UART_ADVFEATURE_NO_INIT}};
 
     if (HAL_UART_Init(&huart1) != HAL_OK) {
         Error_Handler();
@@ -145,11 +138,10 @@ void RCC_Peripheral_Clock_Select() {
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
         Error_Handler();
     }
-
 }
 
 static void Error_Handler() {
-    for(;;) {
+    for (;;) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
         HAL_Delay(100);
     }
