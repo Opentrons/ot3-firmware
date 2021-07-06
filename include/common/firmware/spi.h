@@ -4,12 +4,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-#define COUNTOF(__BUFFER__) (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
-#define BUFFERSIZE (COUNTOF(aTxBuffer) - 1)
-
-enum { TRANSFER_WAIT, TRANSFER_COMPLETE, TRANSFER_ERROR };
-
-SPI_HandleTypeDef MX_SPI1_Init();
+SPI_HandleTypeDef MX_SPI2_Init();
 void MX_GPIOA_Init();
 void MX_GPIOB_Init();
 void MX_DMA_Init();

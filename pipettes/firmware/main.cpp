@@ -9,11 +9,11 @@
 #include "task.h"
 // clang-format on
 
-#include "pipettes/firmware/uart_task.hpp"
+#include "common/firmware/spi.h"
 #include "common/firmware/uart.h"
 #include "firmware/common/uart_comms.hpp"
-#include "common/firmware/spi.h"
 #include "pipettes/core/communication.hpp"
+#include "pipettes/firmware/uart_task.hpp"
 
 constexpr auto stack_size = 100;
 static std::array<StackType_t, stack_size>
@@ -35,12 +35,12 @@ static void spiTask(void* spiParam) {
     std::array<uint8_t, BUFFER_SIZE> aRxBuffer{};
     Set_CS_Pin();
     //        MX_DMA_Init();
-    SPI_HandleTypeDef hspi1 = MX_SPI1_Init();
+    SPI_HandleTypeDef hspi2 = MX_SPI2_Init();
     constexpr auto timeout = 0xFFFF;
 
     for (;;) {
         Reset_CS_Pin();
-        HAL_SPI_TransmitReceive(&hspi1, aTxBuffer.data(), aRxBuffer.data(),
+        HAL_SPI_TransmitReceive(&hspi2, aTxBuffer.data(), aRxBuffer.data(),
                                 BUFFER_SIZE, timeout);
         Set_CS_Pin();
         vTaskDelay(SPI_TASK_DELAY);

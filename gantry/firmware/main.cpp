@@ -28,7 +28,7 @@ static const int SPI_TASK_DELAY = 20;
 static const uint8_t COMMAND = 0x6B;
 
 static void uartTask(void *vParam) {
-    vParam = nullptr;
+    static_cast<void>(vParam);
 
     constexpr auto timeout = 0xFFFF;
 
@@ -43,17 +43,18 @@ static void uartTask(void *vParam) {
 }
 
 static void spiTask(void *spiParam) {
-    spiParam = nullptr;
+    static_cast<void>(spiParam);
+
     std::array<uint8_t, BUFFER_SIZE> aTxBuffer = {COMMAND, 0, 0, 0, 0};
     std::array<uint8_t, BUFFER_SIZE> aRxBuffer{};
     Set_CS_Pin();
     //        MX_DMA_Init();
-    SPI_HandleTypeDef hspi1 = MX_SPI1_Init();
+    SPI_HandleTypeDef hspi2 = MX_SPI2_Init();
     constexpr auto timeout = 0xFFFF;
 
     for (;;) {
         Reset_CS_Pin();
-        HAL_SPI_TransmitReceive(&hspi1, aTxBuffer.data(), aRxBuffer.data(),
+        HAL_SPI_TransmitReceive(&hspi2, aTxBuffer.data(), aRxBuffer.data(),
                                 BUFFER_SIZE, timeout);
         Set_CS_Pin();
         vTaskDelay(SPI_TASK_DELAY);

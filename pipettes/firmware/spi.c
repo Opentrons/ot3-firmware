@@ -12,9 +12,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     // PB15 -> MOSI
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
-        /* USER CODE BEGIN SPI2_MspInit 0 */
-
-        /* USER CODE END SPI2_MspInit 0 */
         /* Peripheral clock enable */
         __HAL_RCC_SPI2_CLK_ENABLE();
 
@@ -35,10 +32,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-        /* USER CODE BEGIN SPI2_MspInit 1 */
-
-        /* USER CODE END SPI2_MspInit 1 */
     }
 }
 
@@ -50,9 +43,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
  */
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     if (hspi->Instance == SPI2) {
-        /* USER CODE BEGIN SPI2_MspDeInit 0 */
-
-        /* USER CODE END SPI2_MspDeInit 0 */
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
 
@@ -64,10 +54,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         */
         HAL_GPIO_DeInit(GPIOB,
                         GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
-
-        /* USER CODE BEGIN SPI2_MspDeInit 1 */
-
-        /* USER CODE END SPI2_MspDeInit 1 */
     }
 }
 
@@ -76,17 +62,10 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
  * @param None
  * @retval None
  */
-SPI_HandleTypeDef MX_SPI1_Init() {
-    /* USER CODE BEGIN SPI2_Init 0 */
-
-    /* USER CODE END SPI2_Init 0 */
-
-    /* USER CODE BEGIN SPI2_Init 1 */
-
-    /* USER CODE END SPI2_Init 1 */
+SPI_HandleTypeDef MX_SPI2_Init() {
     /* SPI2 parameter configuration*/
     __HAL_RCC_SPI2_CLK_ENABLE();
-    SPI_HandleTypeDef hspi1 = {
+    SPI_HandleTypeDef hspi2 = {
         .Instance = SPI2,
         .Init = {.Mode = SPI_MODE_MASTER,
                  .Direction = SPI_DIRECTION_2LINES,
@@ -104,13 +83,10 @@ SPI_HandleTypeDef MX_SPI1_Init() {
 
     };
 
-    if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
         Spi_Error_Handler();
     }
-    /* USER CODE BEGIN SPI2_Init 2 */
-
-    /* USER CODE END SPI2_Init 2 */
-    return hspi1;
+    return hspi2;
 }
 
 /**
