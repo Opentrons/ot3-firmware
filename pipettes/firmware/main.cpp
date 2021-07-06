@@ -23,29 +23,11 @@ static std::array<StackType_t, stack_size>
 static StaticTask_t
     data;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-static void uartTask(void* vParamater);
 static void spiTask(void* spiParam);
 
 static const int BUFFER_SIZE = 5;
 static const int SPI_TASK_DELAY = 20;
 static const uint8_t COMMAND = 0x6B;
-
-static void uartTask(void* vParamater) {
-    vParamater = nullptr;
-
-    constexpr auto timeout = 0xFFFF;
-
-    uint8_t c = 0;
-    UART_HandleTypeDef huart1 = MX_LPUART1_UART_Init();
-
-    for (;;) {
-        HAL_UART_Receive(&huart1, &c, 1, timeout);
-
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-
-        HAL_UART_Transmit(&huart1, &c, 1, timeout);
-    }
-}
 
 static void spiTask(void* spiParam) {
     spiParam = nullptr;
