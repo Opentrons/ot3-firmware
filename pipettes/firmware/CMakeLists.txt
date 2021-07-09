@@ -6,12 +6,14 @@ add_STM32G4_freertos("Pipettes")
 
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/uart_comms.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_comms_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/uart_comms.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/spi_comms.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_control.cpp)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
@@ -19,7 +21,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/uart.c
         ${CMAKE_CURRENT_SOURCE_DIR}/spi.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-        )
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor.c)
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
