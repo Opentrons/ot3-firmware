@@ -22,7 +22,6 @@ bytes_to_int(const std::span<InputType> &input, OutputType &output) {
     }
 }
 
-
 /**
  * Write an integer into an iterator. Big Endian.
  * @tparam OutputIter An iterator to write into.
@@ -31,9 +30,9 @@ bytes_to_int(const std::span<InputType> &input, OutputType &output) {
  * @param output An iterator
  * @returns iterator at end of written bytes
  */
- template<typename InputType, typename OutputIter>
- requires std::forward_iterator<OutputIter> &&std::is_integral_v<InputType>
- auto int_to_bytes(InputType input, OutputIter iter) -> OutputIter  {
+template <typename InputType, typename OutputIter>
+requires std::forward_iterator<OutputIter> &&std::is_integral_v<InputType> auto
+int_to_bytes(InputType input, OutputIter iter) -> OutputIter {
     for (int x = sizeof(input) - 1; x >= 0; x--) {
         *iter++ = (input >> (x * 8)) & byte_mask;
     }
