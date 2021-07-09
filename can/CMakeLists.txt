@@ -5,6 +5,7 @@ else()
     add_subdirectory(tests)
 endif()
 
+find_package(Clang)
 
 file(GLOB_RECURSE CAN_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
 

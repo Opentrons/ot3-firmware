@@ -48,8 +48,8 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
       - name: "Configure"
         run: cmake --preset=cross .
-#      - name: "Format"
-#        run: cmake --build ./build-cross --target common-format-ci
+      - name: "Format"
+        run: cmake --build ./build-cross --target common-format-ci
 #      - name: "Lint"
 #        run: cmake --build ./build-cross --target common-lint
       - name: "Build"
