@@ -50,6 +50,7 @@ jobs:
         run: cmake --preset=cross .
       - name: "Format"
         run: cmake --build ./build-cross --target common-format-ci
+        # TODO (AL 2021-07-09) - uncomment when adding common-lint is added
 #      - name: "Lint"
 #        run: cmake --build ./build-cross --target common-lint
       - name: "Build"
