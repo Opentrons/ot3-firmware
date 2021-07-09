@@ -3,8 +3,8 @@
 #include <array>
 #include <span>
 
-#include "bit_utils.hpp"
 #include "common/hal/io.hpp"
+#include "common/core/bit_utils.hpp"
 #include "pipette_messages.h"
 
 using namespace io;

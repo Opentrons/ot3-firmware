@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include "arbitration_ids.hpp"
+#include "ids.hpp"
 
-using namespace can_arbitration_ids;
+using namespace can_ids;
 
 namespace can_messages {
 

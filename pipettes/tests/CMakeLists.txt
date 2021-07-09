@@ -8,7 +8,6 @@ add_executable(
         pipettes
         test_main.cpp
         test_communication.cpp
-        test_bit_utils.cpp
 )
 
 target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)

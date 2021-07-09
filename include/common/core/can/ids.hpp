@@ -1,6 +1,6 @@
 #pragma once
 
-namespace can_arbitration_ids {
+namespace can_ids {
 
 /**
  * The components of a 29-bit arbitration id as a bitfield.

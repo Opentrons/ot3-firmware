@@ -4,7 +4,12 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
-add_executable(common test_main.cpp test_parse.cpp)
+add_executable(
+        common
+        test_main.cpp
+        test_parse.cpp
+        test_bit_utils.cpp
+)
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(common
