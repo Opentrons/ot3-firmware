@@ -2,8 +2,8 @@ name: "Common build/test"
 on:
   pull_request:
     paths:
-      - "common"
-      - "include/common/**"
+      - "can"
+      - "include/can/**"
       - "cmake/*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
@@ -13,20 +13,21 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "common"
+      - "can"
+      - "include/can/**"
       - "include/common/**"
       - "cmake/*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/common.yaml"
+      - ".github/workflows/can.yaml"
     paths_ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
     tags:
-      - "common@*"
+      - "can@*"
   workflow_dispatch:
 
 defaults:
@@ -48,12 +49,12 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
       - name: "Configure"
         run: cmake --preset=cross .
-#      - name: "Format"
-#        run: cmake --build ./build-cross --target common-format-ci
+      - name: "Format"
+        run: cmake --build ./build-cross --target can-format-ci
 #      - name: "Lint"
-#        run: cmake --build ./build-cross --target common-lint
+#        run: cmake --build ./build-cross --target can-lint
       - name: "Build"
-        run: cmake --build ./build-cross --target common
+        run: cmake --build ./build-cross --target can
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -75,4 +76,4 @@ jobs:
       - name: "Configure"
         run: cmake --preset=host .
       - name: 'Build'
-        run: cmake --build ./build-host --target common
+        run: cmake --build ./build-host --target can

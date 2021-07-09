@@ -1,10 +1,10 @@
 #include <array>
 #include <span>
 
+#include "can/ids.hpp"
+#include "can/messages.hpp"
+#include "can/parse.hpp"
 #include "catch2/catch.hpp"
-#include "common/core/can/ids.hpp"
-#include "common/core/can/messages.hpp"
-#include "common/core/can/parse.hpp"
 
 using namespace can_ids;
 using namespace can_messages;
