@@ -1,4 +1,4 @@
-name: "Common build/test"
+name: "Can build/test"
 on:
   pull_request:
     paths:
