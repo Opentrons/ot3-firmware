@@ -7,7 +7,6 @@ namespace motor_control {
 /**
  * Implementation of the Motor concept.
  *
- * TODO (2021-06-29): Issue SPI commands to motor.
  */
 
 enum class MotorRegisters : uint8_t {
@@ -38,6 +37,7 @@ class MotorControl {
     spi::Spi spi_comms;
     void build_command(MotorRegisters command, std::span<uint8_t>& output);
     uint32_t reset_data();
+    uint32_t reset_status();
 };
 
 }  // namespace motor_control

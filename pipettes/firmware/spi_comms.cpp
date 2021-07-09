@@ -9,15 +9,38 @@
 
 using namespace spi;
 
-Spi::Spi() { handle = MX_SPI2_Init(); }
+/*
+ * SPI class and namespace.
+ * Private:
+ * transmit_receive takes a reference to the transmit and receive
+ * buffers. It will then initiate a SPI transmit/receive call.
+ *
+ * Global Private:
+ * BUFFER_SIZE -> 5
+ * TIMEOUT -> 0xFFFF
+ *
+ * Public:
+ * send_command takes a transmit buffer (with the command and data
+ * already formatted), a uint8_t empty data which will be modified by
+ * the information received from the stepper driver and status which will also
+ * be modified by information received from the driver.
+ */
 
+/*
+ * Private Functions
+ */
 void Spi::transmit_receive(BufferType& transmit, BufferType& receive) {
-    //    std::array<uint8_t, BUFFER_SIZE> aRxBuffer{};
     Reset_CS_Pin();
     HAL_SPI_TransmitReceive(&handle, transmit.data(), receive.data(),
                             BUFFER_SIZE, TIMEOUT);
     Set_CS_Pin();
 }
+
+/*
+ * Public Functions
+ */
+
+Spi::Spi() { handle = MX_SPI2_Init(); }
 
 void Spi::send_command(BufferType aTxBuffer, uint32_t& data, uint8_t& status) {
     auto aRxBuffer = std::array<uint8_t, BUFFER_SIZE>{};
