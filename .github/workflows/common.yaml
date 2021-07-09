@@ -50,8 +50,8 @@ jobs:
         run: cmake --preset=cross .
       - name: "Format"
         run: cmake --build ./build-cross --target common-format-ci
-      - name: "Lint"
-        run: cmake --build ./build-cross --target common-lint
+      #- name: "Lint"
+      #  run: cmake --build ./build-cross --target common-lint
       - name: "Build"
         run: cmake --build ./build-cross --target common
   host-compile-test:
