@@ -5,11 +5,15 @@
 
 namespace pipette_messages {
 
-enum class MessageType {
+enum class MessageType : uint8_t {
     stop = 0x00,
-    set_speed = 0x01,
-    get_speed = 0x10,
-    get_speed_result = 0x11
+    status = 0x01,
+    move = 0x10,
+    setup = 0x02,
+    set_speed = 0x03,
+    get_speed = 0x04,
+    get_speed_result = 0x11,
+    get_status_result = 0x05
 };
 
 struct Stop {
@@ -26,9 +30,22 @@ struct GetSpeedResult {
     uint32_t mm_sec;
 };
 
-using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed>;
+struct GetStatusResult {
+    uint32_t status;
+};
 
-using SentMessage = std::variant<std::monostate, GetSpeedResult>;
+struct Status {
+};
+
+struct Move {
+};
+
+struct Setup {
+};
+
+using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed, Move, Setup, Status>;
+
+using SentMessage = std::variant<std::monostate, GetSpeedResult, GetStatusResult>;
 
 }
 

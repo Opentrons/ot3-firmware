@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "common/firmware/uart.h"
 #include "common/hal/motor.hpp"
+#include "firmware/common/spi_comms.hpp"
 #include "firmware/common/uart_comms.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/firmware/motor_control.hpp"
@@ -24,6 +25,18 @@ requires io::WriterProtocol<T> class MessageHandler {
     void handle(const pipette_messages::Stop &m) {
         static_cast<void>(m);
         motor.set_speed(0);
+    }
+
+    void handle(const pipette_messages::Move &m) {
+        motor.move();
+    }
+
+    void handle(const pipette_messages::Status &m) {
+        motor.get_status();
+    }
+
+    void handle(const pipette_messages::Setup &m) {
+        motor.setup();
     }
 
     void handle(const pipette_messages::SetSpeed &m) {
@@ -48,7 +61,8 @@ static communication::MessageReader message_reader{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_control::MotorControl motor{};
+static spi::Spi spi_comms{};
+static motor_control::MotorControl motor{spi_comms};
 
 static void run(void *parameter) {
     parameter = nullptr;

@@ -3,11 +3,15 @@
 #include <array>
 #include <span>
 
+<<<<<<< HEAD
 #include "common/core/bit_utils.hpp"
-#include "common/hal/io.hpp"
+=======
+#include "bit_utils.hpp"
+>>>>>>> 413f11c (Add new motor commands to accepted commands for uart)
+    #include "common/hal/io.hpp"
 #include "pipette_messages.h"
 
-using namespace io;
+    using namespace io;
 
 namespace communication {
 
@@ -41,6 +45,15 @@ auto MessageReader::read(Reader &communication)
         case static_cast<uint32_t>(pipette_messages::MessageType::stop):
             r = pipette_messages::Stop{};
             break;
+        case static_cast<uint32_t>(pipette_messages::MessageType::setup):
+            r = pipette_messages::Setup{};
+            break;
+        case static_cast<uint32_t>(pipette_messages::MessageType::move):
+            r = pipette_messages::Move{};
+            break;
+        case static_cast<uint32_t>(pipette_messages::MessageType::status):
+            r = pipette_messages::Status{};
+            break;
         case static_cast<uint32_t>(pipette_messages::MessageType::get_speed):
             r = pipette_messages::GetSpeed{};
             break;
@@ -70,19 +83,26 @@ class MessageWriter {
 
   private:
     template <typename Iter>
-    requires std::forward_iterator<Iter> auto write(
-        Iter iter, const pipette_messages::GetSpeedResult &m) -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const pipette_messages::GetSpeedResult &m) -> Iter {
         iter = bit_utils::int_to_bytes(
             static_cast<uint32_t>(
                 pipette_messages::MessageType::get_speed_result),
             iter);
         return bit_utils::int_to_bytes(m.mm_sec, iter);
     }
-
     template <typename Iter>
-    requires std::forward_iterator<Iter> auto write(Iter iter,
-                                                    const std::monostate &m)
-        -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const pipette_messages::GetStatusResult &m) -> Iter {
+        iter = bit_utils::int_to_bytes(
+            static_cast<uint32_t>(
+                pipette_messages::MessageType::get_status_result),
+            iter);
+        return bit_utils::int_to_bytes(m.status, iter);
+    }
+    template <typename Iter>
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const std::monostate &m) -> Iter {
         static_cast<void>(m);
         return iter;
     }
