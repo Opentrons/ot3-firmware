@@ -1,19 +1,19 @@
-#include <span>
 #include <array>
-#include "common/core/can/messages.hpp"
-#include "common/core/can/ids.hpp"
-#include "common/core/can/parse.hpp"
+#include <span>
+
 #include "catch2/catch.hpp"
+#include "common/core/can/ids.hpp"
+#include "common/core/can/messages.hpp"
+#include "common/core/can/parse.hpp"
 
 using namespace can_ids;
 using namespace can_messages;
 using namespace can_parse;
 
-
 SCENARIO("can parse works") {
-    auto parser = Parser < HeartbeatRequest > {};
+    auto parser = Parser<HeartbeatRequest>{};
     GIVEN("a heartbeat request id and body") {
-        auto arr = std::array < uint8_t, 0>{ };
+        auto arr = std::array<uint8_t, 0>{};
         auto sp = std::span{arr};
         auto message_id = MessageId::heartbeat_request;
         WHEN("parsed") {
@@ -24,7 +24,7 @@ SCENARIO("can parse works") {
         }
     }
     GIVEN("an unsupported message id and body") {
-        auto arr = std::array < uint8_t, 0>{ };
+        auto arr = std::array<uint8_t, 0>{};
         auto sp = std::span{arr};
         auto message_id = MessageId::heartbeat_response;
         WHEN("parsed") {

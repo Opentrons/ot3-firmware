@@ -1,8 +1,8 @@
 #include <array>
 #include <span>
 
-#include "common/core/bit_utils.hpp"
 #include "catch2/catch.hpp"
+#include "common/core/bit_utils.hpp"
 
 SCENARIO("bytes_to_int works") {
     GIVEN("a 2 byte span") {
