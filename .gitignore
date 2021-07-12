@@ -8,3 +8,4 @@ cmake_install.cmake
 build-cross/
 stm32-tools/
 build-host/
+cmake-build-debug/

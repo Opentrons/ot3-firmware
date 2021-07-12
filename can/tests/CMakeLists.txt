@@ -5,18 +5,18 @@ include(Catch)
 include(AddBuildAndTestTarget)
 
 add_executable(
-        pipettes
+        can
         test_main.cpp
-        test_communication.cpp
+        test_parse.cpp
 )
 
-target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-set_target_properties(pipettes
+target_include_directories(can PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+set_target_properties(can
   PROPERTIES
   CXX_STANDARD 20
   CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(pipettes
+target_compile_options(can
   PUBLIC
   -Wall
   -Werror
@@ -26,7 +26,7 @@ target_compile_options(pipettes
   -Wextra-semi
   -Wctor-dtor-privacy
   -fno-rtti)
-target_link_libraries(pipettes Catch2::Catch2)
+target_link_libraries(can can-core Catch2::Catch2)
 
-catch_discover_tests(pipettes)
-add_build_and_test_target(pipettes)
+catch_discover_tests(can)
+add_build_and_test_target(can)

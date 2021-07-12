@@ -1,0 +1,79 @@
+name: "Common build/test"
+on:
+  pull_request:
+    paths:
+      - "common"
+      - "include/common/**"
+      - "cmake/*"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".clang-format"
+      - ".clang-tidy"
+    paths_ignore:
+      - "cmake/Arduino*"
+  push:
+    paths:
+      - "common"
+      - "include/common/**"
+      - "cmake/*"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".clang-format"
+      - ".clang-tidy"
+      - ".github/workflows/common.yaml"
+    paths_ignore:
+      - "cmake/Arduino*"
+    branches:
+      - "*"
+    tags:
+      - "common@*"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  cross-compile-check:
+    name: "Cross-Compile/Check"
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 10
+    steps:
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - uses: "actions/cache@v2"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+      - name: "Configure"
+        run: cmake --preset=cross .
+      - name: "Format"
+        run: cmake --build ./build-cross --target common-format-ci
+        # TODO (AL 2021-07-09) - uncomment when adding common-lint is added
+#      - name: "Lint"
+#        run: cmake --build ./build-cross --target common-lint
+      - name: "Build"
+        run: cmake --build ./build-cross --target common
+  host-compile-test:
+    name: "Host-Compile/Test"
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 10
+    env:
+      CC: gcc-10
+      CXX: g++-10
+    steps:
+      - run: |
+          sudo apt update
+          sudo apt install gcc-10 g++-10
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - uses: "actions/cache@v2"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+      - name: "Configure"
+        run: cmake --preset=host .
+      - name: 'Build'
+        run: cmake --build ./build-host --target common
