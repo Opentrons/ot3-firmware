@@ -10,7 +10,8 @@
 #include "task.h"
 
 template <typename T, motor_protocol::MotorProtocol Motor>
-requires io::WriterProtocol<T> class MessageHandler {
+requires io::WriterProtocol<T>
+class MessageHandler {
   public:
     explicit MessageHandler(T &writer, Motor &motor,
                             communication::MessageWriter &message_writer)
@@ -24,20 +25,14 @@ requires io::WriterProtocol<T> class MessageHandler {
   private:
     void handle(const pipette_messages::Stop &m) {
         static_cast<void>(m);
-        motor.set_speed(0);
+        motor.stop();
     }
 
-    void handle(const pipette_messages::Move &m) {
-        motor.move();
-    }
+    void handle(const pipette_messages::Move &m) { motor.move(); }
 
-    void handle(const pipette_messages::Status &m) {
-        motor.get_status();
-    }
+    void handle(const pipette_messages::Status &m) { motor.get_status(); }
 
-    void handle(const pipette_messages::Setup &m) {
-        motor.setup();
-    }
+    void handle(const pipette_messages::Setup &m) { motor.setup(); }
 
     void handle(const pipette_messages::SetSpeed &m) {
         motor.set_speed(m.mm_sec);

@@ -41,18 +41,17 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        // Step pin
+        // Dir/Step pin
         GPIO_InitStruct.Pin = GPIO_PIN_1;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-        GPIO_InitStruct.Pin = GPIO_PIN_8;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(
-            GPIOA,              // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-            &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        HAL_GPIO_Init(GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                      &GPIO_InitStruct);
     }
 }
 

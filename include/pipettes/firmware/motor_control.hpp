@@ -4,13 +4,13 @@
 
 namespace motor_control {
 
+const uint8_t WRITE = 0x80;
 /**
  * Implementation of the Motor concept.
  *
  */
 
 enum class MotorRegisters : uint8_t {
-    WRITE = 0x80,
     IHOLD_IRUN = 0x10,
     GCONF = 0x00,
     GSTAT = 0x01,
@@ -26,16 +26,17 @@ class MotorControl {
     uint8_t status = 0x0;
     uint32_t data = 0x0;
     MotorControl(spi::Spi spi_comms) : spi_comms(spi_comms) {}
-    void set_speed(uint32_t s);
+    void set_speed(uint32_t s) { speed = s; }
     [[nodiscard]] auto get_speed() const -> uint32_t { return speed; }
     void move();
     void setup();
     void get_status();
+    void stop();
 
   private:
     uint32_t speed{0};
     spi::Spi spi_comms;
-    void build_command(MotorRegisters command, std::span<uint8_t>& output);
+    void build_command(uint8_t command, uint32_t& data, unsigned char* output);
     uint32_t reset_data();
     uint32_t reset_status();
 };
