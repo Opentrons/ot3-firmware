@@ -9,6 +9,12 @@ using namespace can_ids;
 
 namespace can_messages {
 
+/**
+ * These types model the messages being sent and received over the can bus.
+ *
+ * The objects must implement the Parsable concept to deserialize the payload.
+ */
+
 struct HeartbeatRequest {
     static const auto id = MessageId::heartbeat_request;
 
