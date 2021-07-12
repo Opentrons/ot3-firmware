@@ -46,7 +46,8 @@ class Parser {
      * @param payload The body
      * @return A Result variant
      */
-    auto parse(MessageId message_id, const std::span<uint8_t>& payload) -> Result {
+    auto parse(MessageId message_id, const std::span<uint8_t>& payload)
+        -> Result {
         auto result = Result{std::monostate{}};
         // Fold expression over Parsable template type.
         // Create a lambda that accepts the id and body.
