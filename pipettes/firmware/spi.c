@@ -24,6 +24,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_MISO
         PB15     ------> SPI2_MOSI
+
+         Step/Dir
+         PB1  ---> Dir Pin Motor 1
+         PA8  ---> Step Pin Motor 1
         */
         GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -32,15 +36,20 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+        // Chip select
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+        // Step pin
+        GPIO_InitStruct.Pin = GPIO_PIN_1;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = GPIO_PIN_8;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(
             GPIOA,              // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);
