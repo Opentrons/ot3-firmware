@@ -9,6 +9,7 @@
 #include "task.h"
 // clang-format on
 
+#include "pipettes/firmware/can_task.hpp"
 #include "common/firmware/spi.h"
 #include "common/firmware/uart.h"
 #include "firmware/common/uart_comms.hpp"
@@ -52,6 +53,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
 
     uart_task::start();
+    can_task::start();
 
     xTaskCreateStatic(spiTask, "SPI Task", stack.size(), nullptr, 1,
                       stack.data(), &data);

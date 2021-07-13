@@ -1,6 +1,8 @@
 #include "common/firmware/can.h"
 
 
+
+
 HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef * handle)
 {
     handle->Instance = FDCAN1;
@@ -23,3 +25,4 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef * handle)
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     return HAL_FDCAN_Init(handle);
 }
+
