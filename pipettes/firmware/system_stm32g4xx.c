@@ -76,7 +76,6 @@
   * @{
   */
 
-#include <stdint.h>
 #include "stm32g4xx.h"
 #include "stm32g4xx_hal.h"
 #include "system_stm32g4xx.h"

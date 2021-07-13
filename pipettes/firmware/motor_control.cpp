@@ -1,8 +1,10 @@
 #include "pipettes/firmware/motor_control.hpp"
 
+#include "FreeRTOS.h"
 #include "firmware/common/motor.h"
 #include "pipettes/core/bit_utils.hpp"
 #include "stm32g4xx_hal.h"
+#include "task.h"
 
 using namespace motor_control;
 
@@ -70,9 +72,9 @@ void MotorControl::move() {
     // still not 100% how to do that.
     Set_Direction();
     while (1) {
-        HAL_Delay(1);
+        vTaskDelay(1);
         Set_Step();
-        HAL_Delay(1);
+        vTaskDelay(1);
         stop();
     }
 }

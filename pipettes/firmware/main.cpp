@@ -19,7 +19,7 @@
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
     uart_task::start();
     can_task::start();
 
