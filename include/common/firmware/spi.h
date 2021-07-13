@@ -1,5 +1,8 @@
 #include "stm32g4xx_hal_conf.h"
 
+#ifndef __SPI_H__
+#define __SPI_H__
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -15,3 +18,5 @@ void Reset_CS_Pin();
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
+
+#endif // __SPI_H__

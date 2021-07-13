@@ -16,7 +16,9 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/uart.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/spi.c)
+        ${CMAKE_CURRENT_SOURCE_DIR}/spi.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/can.c
+        )
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
