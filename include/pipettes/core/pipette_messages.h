@@ -31,7 +31,8 @@ struct GetSpeedResult {
 };
 
 struct GetStatusResult {
-    uint32_t status;
+    uint8_t status;
+    uint32_t data;
 };
 
 struct Status {

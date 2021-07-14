@@ -98,7 +98,8 @@ class MessageWriter {
             static_cast<uint32_t>(
                 pipette_messages::MessageType::get_status_result),
             iter);
-        return bit_utils::int_to_bytes(m.status, iter);
+        iter = bit_utils::int_to_bytes(m.status, iter);
+        return bit_utils::int_to_bytes(m.data, iter);
     }
     template <typename Iter>
     requires std::forward_iterator<Iter>

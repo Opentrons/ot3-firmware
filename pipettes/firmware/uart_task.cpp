@@ -30,7 +30,12 @@ class MessageHandler {
 
     void handle(const pipette_messages::Move &m) { motor.move(); }
 
-    void handle(const pipette_messages::Status &m) { motor.get_status(); }
+    void handle(const pipette_messages::Status &m) {
+        static_cast<void>(m);
+        motor.get_status();
+        pipette_messages::GetStatusResult message{motor.status, motor.data};
+        message_writer.write(writer, message);
+    }
 
     void handle(const pipette_messages::Setup &m) { motor.setup(); }
 

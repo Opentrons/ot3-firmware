@@ -32,8 +32,9 @@ using namespace motor_control;
  * Private Functions
  */
 void MotorControl::build_command(uint8_t command, uint32_t& data,
-                                 unsigned char* output) {
+                                 std::array<uint8_t, 5>& txBuffer) {
     // need to pass in data parameter and use int_to_bytes here
+    auto output = txBuffer.begin();
     output = bit_utils::int_to_bytes(command, output);
     output = bit_utils::int_to_bytes(data, output);
 }
@@ -51,31 +52,17 @@ uint32_t MotorControl::reset_status() {
 /*
  * Public Functions
  */
-// void MotorControl::set_speed(uint32_t s) {
-//     // This should just save a global variable called
-//     // speed. We should decide on our pulse per rotation
-//     // based on this number.
-//     //    auto txBuffer = std::array<uint8_t, 5>{};
-//     //    build_command(MotorRegisters.WRITE | MotorRegisters, txBuffer);
-//     //    spi_comms.send_command(txBuffer, data, status);
-// }
-
-// auto MotorControl::get_speed() {
-//     //    auto txBuffer = std::array<uint8_t, 5>{};
-//     //    build_command(MotorRegisters.WRITE | MotorRegisters, data,
-//     txBuffer);
-//     //    spi_comms.send_command(txBuffer, data, status);
-// }
 
 void MotorControl::move() {
     // Here we need to sync the clock line and pulse
     // still not 100% how to do that.
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
     Set_Direction();
     while (1) {
         vTaskDelay(1);
         Set_Step();
         vTaskDelay(1);
-        stop();
+        Reset_Step();
     }
 }
 
@@ -84,26 +71,31 @@ void MotorControl::setup() {
     // IHOLD_IRUN 0x1010
     // CHOPCONF 0x8008
     auto txBuffer = std::array<uint8_t, 5>{};
-    auto txiter = txBuffer.begin();
     uint32_t gconf_data = 0x01;
     uint32_t ihold_irun_data = 0x1010;
     uint32_t chopconf = 0x8008;
     build_command(WRITE | static_cast<uint8_t>(MotorRegisters::GCONF),
-                  gconf_data, txiter);
+                  gconf_data, txBuffer);
     spi_comms.send_command(txBuffer, data, status);
     build_command(WRITE | static_cast<uint8_t>(MotorRegisters::IHOLD_IRUN),
-                  ihold_irun_data, txiter);
+                  ihold_irun_data, txBuffer);
     spi_comms.send_command(txBuffer, data, status);
     build_command(WRITE | static_cast<uint8_t>(MotorRegisters::CHOPCONF),
-                  chopconf, txiter);
+                  chopconf, txBuffer);
     spi_comms.send_command(txBuffer, data, status);
 }
 
 void MotorControl::get_status() {
     auto txBuffer = std::array<uint8_t, 5>{};
-    auto txiter = txBuffer.begin();
-    build_command(static_cast<uint8_t>(MotorRegisters::GSTAT), data, txiter);
+    reset_data();
+    reset_status();
+    build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data, txBuffer);
     spi_comms.send_command(txBuffer, data, status);
 }
 
-void MotorControl::stop() { Reset_Step(); }
+void MotorControl::stop() {
+    Reset_Step();
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+
+
+}
