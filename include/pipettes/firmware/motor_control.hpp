@@ -28,7 +28,7 @@ class MotorControl {
     MotorControl(spi::Spi spi_comms) : spi_comms(spi_comms) {}
     void set_speed(uint32_t s) { speed = s; }
     [[nodiscard]] auto get_speed() const -> uint32_t { return speed; }
-    void move();
+    static void move();
     void setup();
     void get_status();
     void stop();
@@ -36,8 +36,10 @@ class MotorControl {
   private:
     uint32_t speed{0};
     spi::Spi spi_comms;
-    void build_command(uint8_t command, uint32_t& data,
-                       std::array<uint8_t, 5>& output);
+    static constexpr auto BUFFER_SIZE = 5;
+    using BufferType = std::array<uint8_t, BUFFER_SIZE>;
+    static void build_command(uint8_t command, uint32_t& command_data,
+                              BufferType& txBuffer);
     void reset_data();
     void reset_status();
 };

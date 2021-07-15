@@ -31,12 +31,12 @@ using namespace motor_control;
 /*
  * Private Functions
  */
-void MotorControl::build_command(uint8_t command, uint32_t& data,
-                                 std::array<uint8_t, 5>& txBuffer) {
+void MotorControl::build_command(uint8_t command, uint32_t& command_data,
+                                        BufferType& txBuffer) {
     // need to pass in data parameter and use int_to_bytes here
-    auto output = txBuffer.begin();
+    auto *output = txBuffer.begin();
     output = bit_utils::int_to_bytes(command, output);
-    output = bit_utils::int_to_bytes(data, output);
+    output = bit_utils::int_to_bytes(command_data, output);
 }
 
 void MotorControl::reset_data() {
@@ -54,7 +54,8 @@ void MotorControl::reset_status() {
 void MotorControl::move() {
     // Here we need to sync the clock line and pulse
     // still not 100% how to do that.
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+
+    Set_Enable_Pin();
     Set_Direction();
     while (1) {
         vTaskDelay(1);
@@ -68,10 +69,10 @@ void MotorControl::setup() {
     // GCONF 0x01
     // IHOLD_IRUN 0x1010
     // CHOPCONF 0x8008
-    auto txBuffer = std::array<uint8_t, 5>{};
-    uint32_t gconf_data = 0x01;
-    uint32_t ihold_irun_data = 0x1010;
-    uint32_t chopconf = 0x8008;
+    auto txBuffer = std::array<uint8_t, BUFFER_SIZE>{};
+    constexpr uint32_t gconf_data = 0x01;
+    constexpr uint32_t ihold_irun_data = 0x1010;
+    constexpr uint32_t chopconf = 0x8008;
     build_command(WRITE | static_cast<uint8_t>(MotorRegisters::GCONF),
                   gconf_data, txBuffer);
     spi_comms.send_command(txBuffer, data, status);
@@ -84,7 +85,7 @@ void MotorControl::setup() {
 }
 
 void MotorControl::get_status() {
-    auto txBuffer = std::array<uint8_t, 5>{};
+    auto txBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     reset_data();
     reset_status();
     build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data, txBuffer);
@@ -93,7 +94,8 @@ void MotorControl::get_status() {
 
 void MotorControl::stop() {
     Reset_Step();
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+    Reset_Enable_Pin();
+
 
 
 }
