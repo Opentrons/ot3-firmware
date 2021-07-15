@@ -36,9 +36,10 @@ class MotorControl {
   private:
     uint32_t speed{0};
     spi::Spi spi_comms;
-    void build_command(uint8_t command, uint32_t& data, std::array<uint8_t, 5>& output);
-    uint32_t reset_data();
-    uint32_t reset_status();
+    void build_command(uint8_t command, uint32_t& data,
+                       std::array<uint8_t, 5>& output);
+    void reset_data();
+    void reset_status();
 };
 
 }  // namespace motor_control
