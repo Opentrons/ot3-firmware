@@ -39,14 +39,12 @@ void MotorControl::build_command(uint8_t command, uint32_t& data,
     output = bit_utils::int_to_bytes(data, output);
 }
 
-uint32_t MotorControl::reset_data() {
-    uint32_t clear = 0x0;
-    return data & clear;
+void MotorControl::reset_data() {
+    data = 0x0;
 }
 
-uint32_t MotorControl::reset_status() {
-    uint32_t clear = 0x0;
-    return status & clear;
+void MotorControl::reset_status() {
+    status = 0x0;
 }
 
 /*
