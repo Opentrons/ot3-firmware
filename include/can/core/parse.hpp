@@ -31,11 +31,12 @@ concept Parsable = requires(BodyType& input) {
  * @tparam T
  */
 template <typename T>
-concept Serializable = requires(const T& t, BodyType& out) {
+concept Serializable = requires(const T& t, BodyType::iterator out) {
     /**
      * It has a serialize method
      */
-    {t.serialize(out)};
+    { t.serialize(out) }
+    ->std::same_as<BodyType::iterator>;
 };
 
 /**

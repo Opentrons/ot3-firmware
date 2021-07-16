@@ -12,6 +12,7 @@ auto GetStatusResponse::parse(const BodyType& body) -> GetStatusResponse {
 
     iter = bit_utils::bytes_to_int(iter, status);
     bit_utils::bytes_to_int(iter, data);
+
     return GetStatusResponse{status, data};
 }
 

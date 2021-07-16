@@ -29,7 +29,8 @@ add_executable(pipettes
 
 target_link_libraries(pipettes
         PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes)
+        STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes
+        can-core)
 
 set_target_properties(pipettes
         PROPERTIES CXX_STANDARD 20
