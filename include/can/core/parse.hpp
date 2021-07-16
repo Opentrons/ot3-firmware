@@ -30,6 +30,18 @@ concept Parsable = requires(std::span<uint8_t>& input) {
 };
 
 /**
+ * The concept describing the interface of a serializable can message.
+ * @tparam T
+ */
+template <typename T>
+concept Serializable = requires(const T& t, std::span<uint8_t>& out) {
+    /**
+     * It has a serialize method
+     */
+    {t.serialize(out)};
+};
+
+/**
  * Parser of can message bodies.
  *
  * @tparam T The types of Parsables (messages) this parser will support.

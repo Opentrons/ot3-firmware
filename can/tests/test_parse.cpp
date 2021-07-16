@@ -1,9 +1,9 @@
 #include <array>
 #include <span>
 
-#include "can/ids.hpp"
-#include "can/messages.hpp"
-#include "can/parse.hpp"
+#include "can/core/ids.hpp"
+#include "can/core/messages.hpp"
+#include "can/core/parse.hpp"
 #include "catch2/catch.hpp"
 
 using namespace can_ids;

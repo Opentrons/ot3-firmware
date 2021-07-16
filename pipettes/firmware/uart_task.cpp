@@ -50,7 +50,7 @@ static communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static motor_control::MotorControl motor{};
 
-void run(void *parameter) {
+static void run(void *parameter) {
     parameter = nullptr;
 
     UART_HandleTypeDef huart1 = MX_LPUART1_UART_Init();
