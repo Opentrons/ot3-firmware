@@ -31,6 +31,20 @@ enum class MessageId : uint16_t {
 
     device_info_request,
     device_info_response,
+
+    stop_request,
+
+    get_status_request,
+    get_status_response,
+
+    move_request,
+
+    setup_request,
+
+    set_speed_request,
+
+    get_speed_request,
+    get_speed_response,
 };
 
 }  // namespace can_ids
