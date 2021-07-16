@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <span>
 #include <variant>
 
 #include "messages.hpp"
@@ -15,7 +14,7 @@ namespace can_parse {
  * @tparam T
  */
 template <typename T>
-concept Parsable = requires(std::span<uint8_t>& input) {
+concept Parsable = requires(BodyType& input) {
     /**
      * It has a static parse factory method.
      */
@@ -32,7 +31,7 @@ concept Parsable = requires(std::span<uint8_t>& input) {
  * @tparam T
  */
 template <typename T>
-concept Serializable = requires(const T& t, std::span<uint8_t>& out) {
+concept Serializable = requires(const T& t, BodyType& out) {
     /**
      * It has a serialize method
      */
@@ -56,8 +55,7 @@ class Parser {
      * @param payload The body
      * @return A Result variant
      */
-    auto parse(MessageId message_id, const std::span<uint8_t>& payload)
-        -> Result {
+    auto parse(MessageId message_id, const BodyType& payload) -> Result {
         auto result = Result{std::monostate{}};
         // Fold expression over Parsable template type.
         // Create a lambda that accepts the id and body.

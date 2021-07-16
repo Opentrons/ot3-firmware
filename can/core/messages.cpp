@@ -1,19 +1,8 @@
 #include "can/core/messages.hpp"
+
 #include "common/core/bit_utils.hpp"
 
-
 using namespace can_messages;
-
-auto HeartbeatRequest::parse(const BodyType& body)
-    -> HeartbeatRequest {
-    return HeartbeatRequest{};
-}
-
-auto HeartbeatResponse::parse(const BodyType& body)
-    -> HeartbeatResponse {
-    return HeartbeatResponse{};
-}
-
 
 auto GetStatusResponse::parse(const BodyType& body) -> GetStatusResponse {
     uint8_t status = 0;
@@ -26,21 +15,32 @@ auto GetStatusResponse::parse(const BodyType& body) -> GetStatusResponse {
     return GetStatusResponse{status, data};
 }
 
-auto SetSpeedRequest::parse(const BodyType& body) -> SetSpeedRequest {
-    uint32_t speed = 0;
-
+void GetStatusResponse::serialize(BodyType& body) const {
     auto iter = body.begin();
-    bit_utils::bytes_to_int(iter, speed);
-
-    return SetSpeedRequest{speed};
+    iter = bit_utils::int_to_bytes(status, iter);
+    bit_utils::int_to_bytes(data, iter);
 }
 
+auto SetSpeedRequest::parse(const BodyType& body) -> SetSpeedRequest {
+    uint32_t mm_sec = 0;
+    auto iter = body.begin();
+    bit_utils::bytes_to_int(iter, mm_sec);
+    return SetSpeedRequest{mm_sec};
+}
+
+void SetSpeedRequest::serialize(BodyType& body) const {
+    auto iter = body.begin();
+    bit_utils::int_to_bytes(mm_sec, iter);
+}
 
 auto GetSpeedResponse::parse(const BodyType& body) -> GetSpeedResponse {
-    uint32_t speed = 0;
-
+    uint32_t mm_sec = 0;
     auto iter = body.begin();
-    bit_utils::bytes_to_int(iter, speed);
+    bit_utils::bytes_to_int(iter, mm_sec);
+    return GetSpeedResponse{mm_sec};
+}
 
-    return GetSpeedResponse{speed};
+void GetSpeedResponse::serialize(BodyType& body) const {
+    auto iter = body.begin();
+    bit_utils::int_to_bytes(mm_sec, iter);
 }
