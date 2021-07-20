@@ -3,8 +3,7 @@
 #include <array>
 #include <cstdio>
 
-#include "pipettes/core/bit_utils.hpp"
-
+#include "common/core/bit_utils.hpp"
 
 /*
  * Motor Control and namespace.
@@ -37,24 +36,22 @@ enum class MotorRegisters : uint8_t {
     DRVSTATUS = 0x6F,
 };
 
-
 class TestMotorControl {
   public:
     uint8_t status = 0x0;
     uint32_t data = 0x0;
-    TestMotorControl();
     void setup() {
         auto txBuffer = std::array<uint8_t, 5>{};
         uint32_t gconf_data = 0x01;
         build_command(WRITE | static_cast<uint8_t>(MotorRegisters::GCONF),
                       gconf_data, txBuffer);
-
     }
     void get_status() {
         auto txBuffer = std::array<uint8_t, 5>{};
         reset_data();
         reset_status();
-        build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data, txBuffer);
+        build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data,
+                      txBuffer);
     }
 
   private:
@@ -66,8 +63,6 @@ class TestMotorControl {
         status = *output;
         std::span sp{txBuffer};
         bit_utils::bytes_to_int<uint32_t, uint8_t>(sp.subspan(1, 4), data);
-
-
     }
     void reset_data();
     void reset_status();

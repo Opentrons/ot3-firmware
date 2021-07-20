@@ -3,15 +3,11 @@
 #include <array>
 #include <span>
 
-<<<<<<< HEAD
 #include "common/core/bit_utils.hpp"
-=======
-#include "bit_utils.hpp"
->>>>>>> 413f11c (Add new motor commands to accepted commands for uart)
-    #include "common/hal/io.hpp"
+#include "common/hal/io.hpp"
 #include "pipette_messages.h"
 
-    using namespace io;
+using namespace io;
 
 namespace communication {
 

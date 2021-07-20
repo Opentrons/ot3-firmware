@@ -8,7 +8,6 @@ add_executable(
         pipettes
         test_main.cpp
         test_communication.cpp
-        test_bit_utils.cpp
         test_spi_comms.cpp
         test_motor_control.cpp)
 
