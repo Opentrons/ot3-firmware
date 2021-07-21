@@ -8,8 +8,7 @@
 #include "pipettes/core/pipette_messages.hpp"
 
 template <typename T, motor_protocol::MotorProtocol Motor>
-requires io::WriterProtocol<T>
-class MessageHandler {
+requires io::WriterProtocol<T> class MessageHandler {
   public:
     explicit MessageHandler(T &writer, Motor &motor,
                             communication::MessageWriter &message_writer)

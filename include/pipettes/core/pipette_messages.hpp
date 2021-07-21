@@ -2,7 +2,6 @@
 
 #include <variant>
 
-
 namespace pipette_messages {
 
 enum class MessageType : uint8_t {
@@ -16,15 +15,13 @@ enum class MessageType : uint8_t {
     get_status_result = 0x05
 };
 
-struct Stop {
-};
+struct Stop {};
 
 struct SetSpeed {
     uint32_t mm_sec;
 };
 
-struct GetSpeed {
-};
+struct GetSpeed {};
 
 struct GetSpeedResult {
     uint32_t mm_sec;
@@ -35,18 +32,16 @@ struct GetStatusResult {
     uint32_t data;
 };
 
-struct Status {
-};
+struct Status {};
 
-struct Move {
-};
+struct Move {};
 
-struct Setup {
-};
+struct Setup {};
 
-using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed, Move, Setup, Status>;
+using ReceivedMessage =
+    std::variant<std::monostate, Stop, SetSpeed, GetSpeed, Move, Setup, Status>;
 
-using SentMessage = std::variant<std::monostate, GetSpeedResult, GetStatusResult>;
+using SentMessage =
+    std::variant<std::monostate, GetSpeedResult, GetStatusResult>;
 
-}
-
+}  // namespace pipette_messages
