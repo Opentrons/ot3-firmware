@@ -19,14 +19,12 @@ concept Parsable = requires(std::span<uint8_t>& input) {
     /**
      * It has a static parse factory method.
      */
-    { T::parse(input) }
-    ->std::same_as<T>;
+    { T::parse(input) } -> std::same_as<T>;
     /**
      * Has a static public id member. This is the MessageId that the Parsable
      * knows how to parse.
      */
-    { T::id }
-    ->std::convertible_to<MessageId>;
+    { T::id } -> std::convertible_to<MessageId>;
 };
 
 /**
