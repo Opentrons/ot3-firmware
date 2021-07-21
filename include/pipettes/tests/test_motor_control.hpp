@@ -1,9 +1,12 @@
 #pragma once
 
 #include <array>
-#include <cstdio>
+#include <cstdint>
+#include <iostream>
+#include <span>
 
 #include "common/core/bit_utils.hpp"
+//#include "pipettes/firmware/motor_control.hpp"
 
 /*
  * Motor Control and namespace.
@@ -29,6 +32,10 @@
  * Private Functions
  */
 
+using namespace bit_utils;
+
+namespace test_motor_control {
+
 const uint8_t WRITE = 0x80;
 
 enum class MotorRegisters : uint8_t {
@@ -38,32 +45,27 @@ enum class MotorRegisters : uint8_t {
 
 class TestMotorControl {
   public:
+    std::string state;
     uint8_t status = 0x0;
     uint32_t data = 0x0;
-    void setup() {
-        auto txBuffer = std::array<uint8_t, 5>{};
-        uint32_t gconf_data = 0x01;
-        build_command(WRITE | static_cast<uint8_t>(MotorRegisters::GCONF),
-                      gconf_data, txBuffer);
-    }
+
+    void setup() { state = "setup"; }
+    void stop() { state = "stopped"; }
     void get_status() {
-        auto txBuffer = std::array<uint8_t, 5>{};
-        reset_data();
-        reset_status();
-        build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data,
-                      txBuffer);
+        status = 0x0;
+        data = 0x0;
+        state = "got_status";
     }
+    void set_speed(uint32_t speed) { data = speed; }
+    uint32_t get_speed() { return 0x00; }
+    void move() { state = "moved"; }
 
   private:
     void build_command(uint8_t command, uint32_t& command_data,
-                       std::array<uint8_t, 5>& txBuffer) {
-        auto output = txBuffer.begin();
-        output = bit_utils::int_to_bytes(command, output);
-        output = bit_utils::int_to_bytes(command_data, output);
-        status = *output;
-        std::span sp{txBuffer};
-        bit_utils::bytes_to_int<uint32_t, uint8_t>(sp.subspan(1, 4), data);
-    }
-    void reset_data();
-    void reset_status();
+                       std::array<uint8_t, 5>& txBuffer) {}
+
+    void reset_data() { data = 0x0; }
+    void reset_status() { status = 0; }
 };
+
+}  // namespace test_motor_control

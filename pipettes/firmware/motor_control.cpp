@@ -1,8 +1,8 @@
 #include "pipettes/firmware/motor_control.hpp"
 
 #include "FreeRTOS.h"
+#include "common/core/bit_utils.hpp"
 #include "firmware/common/motor.h"
-#include "pipettes/core/bit_utils.hpp"
 #include "stm32g4xx_hal.h"
 #include "task.h"
 
@@ -31,21 +31,17 @@ using namespace motor_control;
 /*
  * Private Functions
  */
-void MotorControl::build_command(uint8_t command, uint32_t& command_data,
-                                        BufferType& txBuffer) {
+void MotorControl::build_command(uint8_t command, const uint32_t& command_data,
+                                 BufferType& txBuffer) {
     // need to pass in data parameter and use int_to_bytes here
-    auto *output = txBuffer.begin();
+    auto* output = txBuffer.begin();
     output = bit_utils::int_to_bytes(command, output);
     output = bit_utils::int_to_bytes(command_data, output);
 }
 
-void MotorControl::reset_data() {
-    data = 0x0;
-}
+void MotorControl::reset_data() { data = 0x0; }
 
-void MotorControl::reset_status() {
-    status = 0x0;
-}
+void MotorControl::reset_status() { status = 0x0; }
 
 /*
  * Public Functions
@@ -88,14 +84,12 @@ void MotorControl::get_status() {
     auto txBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     reset_data();
     reset_status();
-    build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data, txBuffer);
+    build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data,
+                  txBuffer);
     spi_comms.send_command(txBuffer, data, status);
 }
 
 void MotorControl::stop() {
     Reset_Step();
     Reset_Enable_Pin();
-
-
-
 }

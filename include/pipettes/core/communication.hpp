@@ -5,7 +5,7 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/hal/io.hpp"
-#include "pipette_messages.h"
+#include "pipette_messages.hpp"
 
 using namespace io;
 
@@ -95,7 +95,8 @@ class MessageWriter {
                 pipette_messages::MessageType::get_status_result),
             iter);
         iter = bit_utils::int_to_bytes(m.status, iter);
-        return bit_utils::int_to_bytes(m.data, iter);
+        iter = bit_utils::int_to_bytes(m.data, iter);
+        return iter;
     }
     template <typename Iter>
     requires std::forward_iterator<Iter>

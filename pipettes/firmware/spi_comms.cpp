@@ -3,8 +3,8 @@
 #include <array>
 #include <cstdio>
 
+#include "common/core/bit_utils.hpp"
 #include "common/firmware/spi.h"
-#include "pipettes/core/bit_utils.hpp"
 #include "pipettes/firmware/motor_control.hpp"
 
 using namespace spi;

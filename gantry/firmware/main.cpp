@@ -66,7 +66,7 @@ auto main() -> int {
     /** Initializes the peripherals clocks
      */
     RCC_Peripheral_Clock_Select();
-    MX_GPIOA_Init();
+    MX_SPI2_Init();
 
     //    xTaskCreateStatic(uartTask, "USART Task", stack.size(), nullptr, 1,
     //                      stack.data(), &data);

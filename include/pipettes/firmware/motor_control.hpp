@@ -38,7 +38,7 @@ class MotorControl {
     spi::Spi spi_comms;
     static constexpr auto BUFFER_SIZE = 5;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
-    static void build_command(uint8_t command, uint32_t& command_data,
+    static void build_command(uint8_t command, const uint32_t& command_data,
                               BufferType& txBuffer);
     void reset_data();
     void reset_status();
