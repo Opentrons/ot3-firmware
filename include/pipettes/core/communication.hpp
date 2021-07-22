@@ -59,7 +59,7 @@ auto MessageReader::read(Reader &communication)
             return pipette_messages::SetSpeed{speed};
         }
         default:
-            break;
+            return r;
     }
 }
 
