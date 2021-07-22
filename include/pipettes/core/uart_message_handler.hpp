@@ -8,7 +8,8 @@
 #include "pipettes/core/pipette_messages.hpp"
 
 template <typename T, motor_protocol::MotorProtocol Motor>
-requires io::WriterProtocol<T> class MessageHandler {
+requires io::WriterProtocol<T>
+class MessageHandler {
   public:
     explicit MessageHandler(T &writer, Motor &motor,
                             communication::MessageWriter &message_writer)
@@ -25,7 +26,10 @@ requires io::WriterProtocol<T> class MessageHandler {
         motor.stop();
     }
 
-    void handle(const pipette_messages::Move &m) { motor.move(); }
+    void handle(const pipette_messages::Move &m) {
+        static_cast<void>(m);
+        motor.move();
+    }
 
     void handle(const pipette_messages::Status &m) {
         static_cast<void>(m);
@@ -34,7 +38,10 @@ requires io::WriterProtocol<T> class MessageHandler {
         message_writer.write(writer, message);
     }
 
-    void handle(const pipette_messages::Setup &m) { motor.setup(); }
+    void handle(const pipette_messages::Setup &m) {
+        static_cast<void>(m);
+        motor.setup();
+    }
 
     void handle(const pipette_messages::SetSpeed &m) {
         motor.set_speed(m.mm_sec);
