@@ -34,7 +34,7 @@ using namespace motor_control;
 void MotorControl::build_command(uint8_t command, const uint32_t& command_data,
                                  BufferType& txBuffer) {
     // need to pass in data parameter and use int_to_bytes here
-    auto* output = txBuffer.begin();
+    auto output = txBuffer.begin();
     output = bit_utils::int_to_bytes(command, output);
     output = bit_utils::int_to_bytes(command_data, output);
 }
@@ -53,7 +53,7 @@ void MotorControl::move() {
 
     Set_Enable_Pin();
     Set_Direction();
-    while (1) {
+    for (int i = 0; i < 10000; i++) {
         vTaskDelay(1);
         Set_Step();
         vTaskDelay(1);
@@ -69,14 +69,14 @@ void MotorControl::setup() {
     constexpr uint32_t gconf_data = 0x01;
     constexpr uint32_t ihold_irun_data = 0x1010;
     constexpr uint32_t chopconf = 0x8008;
-    build_command(WRITE | static_cast<uint8_t>(MotorRegisters::GCONF),
-                  gconf_data, txBuffer);
+    build_command(command_byte(Mode::WRITE, MotorRegisters::GCONF), gconf_data,
+                  txBuffer);
     spi_comms.send_command(txBuffer, data, status);
-    build_command(WRITE | static_cast<uint8_t>(MotorRegisters::IHOLD_IRUN),
+    build_command(command_byte(Mode::WRITE, MotorRegisters::IHOLD_IRUN),
                   ihold_irun_data, txBuffer);
     spi_comms.send_command(txBuffer, data, status);
-    build_command(WRITE | static_cast<uint8_t>(MotorRegisters::CHOPCONF),
-                  chopconf, txBuffer);
+    build_command(command_byte(Mode::WRITE, MotorRegisters::CHOPCONF), chopconf,
+                  txBuffer);
     spi_comms.send_command(txBuffer, data, status);
 }
 
@@ -84,7 +84,7 @@ void MotorControl::get_status() {
     auto txBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     reset_data();
     reset_status();
-    build_command(static_cast<uint8_t>(MotorRegisters::DRVSTATUS), data,
+    build_command(command_byte(Mode::READ, MotorRegisters::DRVSTATUS), data,
                   txBuffer);
     spi_comms.send_command(txBuffer, data, status);
 }

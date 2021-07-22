@@ -68,9 +68,6 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     MX_SPI2_Init();
 
-    //    xTaskCreateStatic(uartTask, "USART Task", stack.size(), nullptr, 1,
-    //                      stack.data(), &data);
-
     xTaskCreateStatic(spiTask, "SPI Task", stack.size(), nullptr, 1,
                       stack.data(), &data);
     vTaskStartScheduler();

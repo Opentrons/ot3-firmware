@@ -39,20 +39,15 @@ auto MessageReader::read(Reader &communication)
 
     switch (arbitration_id) {
         case static_cast<uint32_t>(pipette_messages::MessageType::stop):
-            r = pipette_messages::Stop{};
-            break;
+            return pipette_messages::Stop{};
         case static_cast<uint32_t>(pipette_messages::MessageType::setup):
-            r = pipette_messages::Setup{};
-            break;
+            return pipette_messages::Setup{};
         case static_cast<uint32_t>(pipette_messages::MessageType::move):
-            r = pipette_messages::Move{};
-            break;
+            return pipette_messages::Move{};
         case static_cast<uint32_t>(pipette_messages::MessageType::status):
-            r = pipette_messages::Status{};
-            break;
+            return pipette_messages::Status{};
         case static_cast<uint32_t>(pipette_messages::MessageType::get_speed):
-            r = pipette_messages::GetSpeed{};
-            break;
+            return pipette_messages::GetSpeed{};
         case static_cast<uint32_t>(pipette_messages::MessageType::set_speed): {
             // Read the speed
             auto speed_span = payload_span.subspan(0, 4);
@@ -61,13 +56,11 @@ auto MessageReader::read(Reader &communication)
             uint32_t speed = 0;
             bit_utils::bytes_to_int(speed_span, speed);
 
-            r = pipette_messages::SetSpeed{speed};
-            break;
+            return pipette_messages::SetSpeed{speed};
         }
         default:
             break;
     }
-    return r;
 }
 
 class MessageWriter {
@@ -79,8 +72,8 @@ class MessageWriter {
 
   private:
     template <typename Iter>
-    requires std::forward_iterator<Iter> auto write(
-        Iter iter, const pipette_messages::GetSpeedResult &m) -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const pipette_messages::GetSpeedResult &m) -> Iter {
         iter = bit_utils::int_to_bytes(
             static_cast<uint32_t>(
                 pipette_messages::MessageType::get_speed_result),
@@ -88,8 +81,8 @@ class MessageWriter {
         return bit_utils::int_to_bytes(m.mm_sec, iter);
     }
     template <typename Iter>
-    requires std::forward_iterator<Iter> auto write(
-        Iter iter, const pipette_messages::GetStatusResult &m) -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const pipette_messages::GetStatusResult &m) -> Iter {
         iter = bit_utils::int_to_bytes(
             static_cast<uint32_t>(
                 pipette_messages::MessageType::get_status_result),
@@ -99,9 +92,8 @@ class MessageWriter {
         return iter;
     }
     template <typename Iter>
-    requires std::forward_iterator<Iter> auto write(Iter iter,
-                                                    const std::monostate &m)
-        -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const std::monostate &m) -> Iter {
         static_cast<void>(m);
         return iter;
     }

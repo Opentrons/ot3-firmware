@@ -6,30 +6,9 @@
 #include <span>
 
 #include "common/core/bit_utils.hpp"
-//#include "pipettes/firmware/motor_control.hpp"
 
 /*
- * Motor Control and namespace.
- * Private:
- * build_command takes in a command address, a reference
- * to the data to be transmitted and the output array to
- * store this in.
- * reset_data takes nothing and resets the global data variable
- *
- * Public Globals:
- * data, the data returned from the driver
- * status, the status of the driver
- *
- * Public:
- * setup, sets the initial configurations of the driver
- * set_speed, sets a global variable called speed
- * get_speed, gets a global variable called speed
- * move, moves the motor for an unlimited amount of time
- * get_status, get the status of the GSTAT register
- */
-
-/*
- * Private Functions
+ * Test mock for MotorControl
  */
 
 using namespace bit_utils;

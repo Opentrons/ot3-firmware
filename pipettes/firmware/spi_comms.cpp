@@ -29,10 +29,10 @@ using namespace spi;
 /*
  * Private Functions
  */
-void Spi::transmit_receive(BufferType& transmit, BufferType& receive) {
+void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     Reset_CS_Pin();
-    HAL_SPI_TransmitReceive(&handle, transmit.data(), receive.data(),
-                            BUFFER_SIZE, TIMEOUT);
+    HAL_SPI_TransmitReceive(&handle, const_cast<uint8_t*>(transmit.data()),
+                            receive.data(), BUFFER_SIZE, TIMEOUT);
     Set_CS_Pin();
 }
 
@@ -42,7 +42,8 @@ void Spi::transmit_receive(BufferType& transmit, BufferType& receive) {
 
 Spi::Spi() { handle = MX_SPI2_Init(); }
 
-void Spi::send_command(BufferType aTxBuffer, uint32_t& data, uint8_t& status) {
+void Spi::send_command(const BufferType& aTxBuffer, uint32_t& data,
+                       uint8_t& status) {
     auto aRxBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     auto rxiter = aRxBuffer.begin();
     rxiter = bit_utils::int_to_bytes(status, rxiter);

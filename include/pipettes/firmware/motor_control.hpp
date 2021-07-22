@@ -21,6 +21,12 @@ enum class MotorRegisters : uint8_t {
     CHOPCONF = 0x6C
 };
 
+enum class Mode : uint8_t { WRITE = 0x80, READ = 0x0 };
+
+constexpr uint8_t command_byte(Mode mode, MotorRegisters motor_reg) {
+    return static_cast<uint8_t>(mode) | static_cast<uint8_t>(motor_reg);
+}
+
 class MotorControl {
   public:
     uint8_t status = 0x0;
