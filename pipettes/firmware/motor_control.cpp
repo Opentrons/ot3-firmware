@@ -34,9 +34,9 @@ using namespace motor_control;
 void MotorControl::build_command(uint8_t command, const uint32_t& command_data,
                                  BufferType& txBuffer) {
     // need to pass in data parameter and use int_to_bytes here
-    auto output = txBuffer.begin();
+    auto* output = txBuffer.begin();
     output = bit_utils::int_to_bytes(command, output);
-    output = bit_utils::int_to_bytes(command_data, output);
+    bit_utils::int_to_bytes(command_data, output);
 }
 
 void MotorControl::reset_data() { data = 0x0; }
@@ -53,7 +53,8 @@ void MotorControl::move() {
 
     Set_Enable_Pin();
     Set_Direction();
-    for (int i = 0; i < 10000; i++) {
+    const int tries = 10000;
+    for (int i = 0; i < tries; i++) {
         vTaskDelay(1);
         Set_Step();
         vTaskDelay(1);

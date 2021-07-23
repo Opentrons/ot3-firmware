@@ -34,7 +34,8 @@ class MessageHandler {
     void handle(const pipette_messages::Status &m) {
         static_cast<void>(m);
         motor.get_status();
-        pipette_messages::GetStatusResult message{motor.status, motor.data};
+        pipette_messages::GetStatusResult message{motor.get_current_status(),
+                                                  motor.get_current_data()};
         message_writer.write(writer, message);
     }
 

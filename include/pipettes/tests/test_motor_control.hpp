@@ -24,10 +24,7 @@ enum class MotorRegisters : uint8_t {
 
 class TestMotorControl {
   public:
-    std::string state;
-    uint8_t status = 0x0;
-    uint32_t data = 0x0;
-
+    std::string state = "init";
     void setup() { state = "setup"; }
     void stop() { state = "stopped"; }
     void get_status() {
@@ -38,8 +35,12 @@ class TestMotorControl {
     void set_speed(uint32_t speed) { data = speed; }
     uint32_t get_speed() { return 0x00; }
     void move() { state = "moved"; }
+    [[nodiscard]] auto get_current_status() const -> uint8_t { return status; }
+    [[nodiscard]] auto get_current_data() const -> uint32_t { return data; }
 
   private:
+    uint8_t status = 0x0;
+    uint32_t data = 0x0;
     void build_command(uint8_t command, uint32_t& command_data,
                        std::array<uint8_t, 5>& txBuffer) {}
 

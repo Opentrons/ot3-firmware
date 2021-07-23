@@ -117,7 +117,7 @@ SCENARIO("messages can control motor") {
 
         WHEN("the message is handled") {
             THEN("the motor data should be updated") {
-                REQUIRE(motor.data == 0x10);
+                REQUIRE(motor.get_current_data() == 0x10);
             }
         }
     }

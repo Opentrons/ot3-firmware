@@ -16,6 +16,7 @@ static communication::MessageReader message_reader{};
 static communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static spi::Spi spi_comms{};
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static motor_control::MotorControl motor{spi_comms};
 
 static void run(void *parameter) {
