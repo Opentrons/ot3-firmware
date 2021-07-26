@@ -1,42 +1,88 @@
 #pragma once
+#include <iterator>
+#include <ranges>
+#include <type_traits>
 
 namespace bit_utils {
-
-static const int byte_mask = 0xFF;
 
 /**
  * Convert a span of bytes into a single integer. The first index being the most
  * significant byte. Big endian.
- * @tparam OutputType The type of the result. Must be an integer.
- * @tparam InputType The type contained in the span. Must be an integer.
- * @param input A span of integers
+ * @tparam InputIter The input iterator to read from, which must refer to a
+ * byte and satisfy InputIterator
+ * @tparam InputEnd The limit to the input, which must satisfy
+ * is_sentinel_for<InputIter>
+ * @tparam OutputIntType The type of the result. Must be an integer.
+ * @param input Input iterator to read from
+ * @param limit Input limit to read until
  * @param output The output parameter.
+ * @returns Iterator to one-past where the last byte was read from.
+ *
+ * If the input iterator pair does not contain enough data to completely specify
+ * OutputType, then OutputType will remain incomplete in the less-significant
+ * parts, e.g. trying to parse a uint32_t from 0x112233 will result in output =
+ * 0x11223300.
  */
-template <typename OutputType, typename InputType>
-requires std::is_integral_v<OutputType> && std::is_integral_v<InputType>
-void bytes_to_int(const std::span<InputType> &input, OutputType &output) {
+template <typename Input, typename Limit, typename OutputIntType>
+requires std::is_integral_v<OutputIntType>&& std::forward_iterator<Input>&&
+    std::sentinel_for<Limit, Input>&&
+        std::is_same_v<std::iter_value_t<Input>, uint8_t> [[nodiscard]] auto
+        bytes_to_int(Input input, const Limit limit, OutputIntType& output)
+            -> Input {
     output = 0;
-    for (auto byte : input) {
-        output <<= 8;
-        output |= (byte & byte_mask);
+    for (ssize_t byte_index = sizeof(output) - 1;
+         input != limit && byte_index >= 0; input++, byte_index--) {
+        output |= (static_cast<OutputIntType>(*input) << (byte_index * 8));
     }
+    return input;
 }
 
 /**
- * Write an integer into an iterator. Big Endian.
- * @tparam OutputIter An iterator to write into.
- * @tparam InputType The type written into the iterator. Must be an integer.
- * @param input integer
- * @param output An iterator
- * @returns iterator at end of written bytes
+ * overload of bytes_to_int to support direct range or view calls
+ * @tparam InputContainer A type satisfying forward_range containing uint8_t
+ * @tparam OutputIntType The type of the int to return; must satisfy
+ * is_integral_v
+ * @param input The input container to read from
+ * @param output The output int to write to
+ * @returns Iterator at one past the last byte that was read.
+ *
+ * For more details see the overload taking iterators.
  */
-template <typename InputType, typename OutputIter>
-requires std::forward_iterator<OutputIter> && std::is_integral_v<InputType>
-auto int_to_bytes(InputType input, OutputIter iter) -> OutputIter {
-    for (int x = sizeof(input) - 1; x >= 0; x--) {
-        *iter++ = (input >> (x * 8)) & byte_mask;
+
+template <typename InputContainer, typename OutputIntType>
+requires std::is_integral_v<OutputIntType>&&
+    std::ranges::forward_range<InputContainer>&&
+        std::is_same_v<std::ranges::range_value_t<InputContainer>, uint8_t> auto
+        bytes_to_int(const InputContainer& input, OutputIntType& output)
+            -> std::ranges::iterator_t<const InputContainer> {
+    return bytes_to_int(input.begin(), input.end(), output);
+}
+
+/**
+ * Write an integer into a container. Big Endian.
+ * @tparam Output Output iterator type satisfying output_iterator
+ * @tparam Limit Limit for writing. Must satisfy sentinel_for<Output>.
+ * @tparam InputIntType The type written into the iterator. Must be an integer.
+ * Must satisfy is_integral_v.
+ * @param output iterator to write to
+ * @param limit Limit to write to
+ * @param input integer
+ * @returns iterator one-past-end of written bytes
+ *
+ * Bytes will be written into the container until either the size of the integer
+ * or the size of the container is reached, meaning that output may be partial.
+ */
+template <typename InputIntType, typename Output, typename Limit>
+requires std::is_integral_v<InputIntType>&& std::output_iterator<
+    Output, uint8_t>&& std::same_as<std::iter_value_t<Output>, uint8_t>&&
+    std::forward_iterator<Output>&&
+        std::sentinel_for<Limit, Output> [[nodiscard]] auto
+        int_to_bytes(InputIntType input, Output output, Limit limit) -> Output {
+    for (ssize_t x = sizeof(input) - 1; x >= 0 && output != limit;
+         x--, output++) {
+        *output = (input >> (x * 8));
     }
-    return iter;
+    return output;
 }
 
 }  // namespace bit_utils

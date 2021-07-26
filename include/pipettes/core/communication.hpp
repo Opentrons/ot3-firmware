@@ -69,20 +69,35 @@ class MessageWriter {
     void write(Writer &communication, const pipette_messages::SentMessage &m);
 
   private:
+<<<<<<< HEAD
     template <typename Iter>
     requires std::forward_iterator<Iter>
     auto write(Iter iter, const pipette_messages::GetSpeedResult &m) -> Iter {
+=======
+    template <typename Iter, typename Limit>
+    requires std::forward_iterator<Iter> auto write(
+        Iter iter, const Limit limit, const pipette_messages::GetSpeedResult &m)
+        -> Iter {
+>>>>>>> main
         iter = bit_utils::int_to_bytes(
             static_cast<uint32_t>(
                 pipette_messages::MessageType::get_speed_result),
-            iter);
-        return bit_utils::int_to_bytes(m.mm_sec, iter);
+            iter, limit);
+        return bit_utils::int_to_bytes(m.mm_sec, iter, limit);
     }
 
+<<<<<<< HEAD
     template <typename Iter>
     requires std::forward_iterator<Iter>
     auto write(Iter iter, const std::monostate &m) -> Iter {
+=======
+    template <typename Iter, typename Limit>
+    requires std::forward_iterator<Iter> auto write(Iter iter, Limit limit,
+                                                    const std::monostate &m)
+        -> Iter {
+>>>>>>> main
         static_cast<void>(m);
+        static_cast<void>(limit);
         return iter;
     }
 
@@ -95,7 +110,9 @@ void MessageWriter::write(Writer &communication,
                           const pipette_messages::SentMessage &m) {
     auto *iter = payload_buffer.begin();
 
-    auto visitor = [&iter, this](auto val) { iter = this->write(iter, val); };
+    auto visitor = [&iter, this](auto val) {
+        iter = this->write(iter, payload_buffer.end(), val);
+    };
 
     std::visit(visitor, m);
 
