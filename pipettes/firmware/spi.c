@@ -1,4 +1,7 @@
 #include "common/firmware/spi.h"
+
+static void Spi_Error_Handler(void);
+
 /**
  * @brief SPI MSP Initialization
  * This function configures the hardware resources used in this example
@@ -14,13 +17,17 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     if (hspi->Instance == SPI2) {
         /* Peripheral clock enable */
         __HAL_RCC_SPI2_CLK_ENABLE();
-
+        __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
         /**SPI2 GPIO Configuration
         PB12     ------> SPI2_NSS
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_MISO
         PB15     ------> SPI2_MOSI
+
+         Step/Dir
+         PB1  ---> Dir Pin Motor 1
+         PA8  ---> Step Pin Motor 1
         */
         GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -29,9 +36,22 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+        // Chip select
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        // Dir/Step pin
+        GPIO_InitStruct.Pin = GPIO_PIN_1;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        HAL_GPIO_Init(GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                      &GPIO_InitStruct);
     }
 }
 
@@ -54,6 +74,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         */
         HAL_GPIO_DeInit(GPIOB,
                         GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8 | GPIO_PIN_9);
     }
 }
 
@@ -90,25 +111,6 @@ SPI_HandleTypeDef MX_SPI2_Init() {
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-void MX_GPIOA_Init(void) {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    //    GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-    HAL_GPIO_Init(
-        GPIOA,              // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-        &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-}
-
-/**
  * Enable DMA controller clock
  */
 void MX_DMA_Init(void) {
@@ -125,7 +127,7 @@ void MX_DMA_Init(void) {
     HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 }
 
-void Spi_Error_Handler(void) {
+static void Spi_Error_Handler(void) {
     /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state
      */

@@ -5,7 +5,7 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/hal/io.hpp"
-#include "pipette_messages.h"
+#include "pipette_messages.hpp"
 
 using namespace io;
 
@@ -39,11 +39,15 @@ auto MessageReader::read(Reader &communication)
 
     switch (arbitration_id) {
         case static_cast<uint32_t>(pipette_messages::MessageType::stop):
-            r = pipette_messages::Stop{};
-            break;
+            return pipette_messages::Stop{};
+        case static_cast<uint32_t>(pipette_messages::MessageType::setup):
+            return pipette_messages::Setup{};
+        case static_cast<uint32_t>(pipette_messages::MessageType::move):
+            return pipette_messages::Move{};
+        case static_cast<uint32_t>(pipette_messages::MessageType::status):
+            return pipette_messages::Status{};
         case static_cast<uint32_t>(pipette_messages::MessageType::get_speed):
-            r = pipette_messages::GetSpeed{};
-            break;
+            return pipette_messages::GetSpeed{};
         case static_cast<uint32_t>(pipette_messages::MessageType::set_speed): {
             // Read the speed
             auto speed_span = payload_span.subspan(0, 4);
@@ -52,13 +56,11 @@ auto MessageReader::read(Reader &communication)
             uint32_t speed = 0;
             bit_utils::bytes_to_int(speed_span, speed);
 
-            r = pipette_messages::SetSpeed{speed};
-            break;
+            return pipette_messages::SetSpeed{speed};
         }
         default:
-            break;
+            return r;
     }
-    return r;
 }
 
 class MessageWriter {
@@ -78,6 +80,19 @@ class MessageWriter {
                 pipette_messages::MessageType::get_speed_result),
             iter, limit);
         return bit_utils::int_to_bytes(m.mm_sec, iter, limit);
+    }
+
+    template <typename Iter, typename Limit>
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const Limit limit,
+               const pipette_messages::GetStatusResult &m) -> Iter {
+        iter = bit_utils::int_to_bytes(
+            static_cast<uint32_t>(
+                pipette_messages::MessageType::get_status_result),
+            iter, limit);
+        iter = bit_utils::int_to_bytes(m.status, iter, limit);
+        iter = bit_utils::int_to_bytes(m.data, iter, limit);
+        return iter;
     }
 
     template <typename Iter, typename Limit>

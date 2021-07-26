@@ -39,7 +39,7 @@ SCENARIO("messages can be parsed") {
     }
 
     GIVEN("a message reader with a set speed message") {
-        DataReader dr{std::array{0, 0, 0, 1, 1, 2, 3, 4}};
+        DataReader dr{std::array{0, 0, 0, 3, 1, 2, 3, 4}};
         MessageReader r;
         auto response = r.read(dr);
 

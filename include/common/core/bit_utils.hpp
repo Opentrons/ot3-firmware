@@ -1,6 +1,8 @@
 #pragma once
+
 #include <iterator>
 #include <ranges>
+#include <span>
 #include <type_traits>
 
 namespace bit_utils {
