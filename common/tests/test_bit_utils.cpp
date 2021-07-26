@@ -90,29 +90,6 @@ SCENARIO("bytes_to_int works") {
     }
 }
 
-SCENARIO("bytes_to_int with iterator works") {
-    GIVEN("an array") {
-        auto arr = std::array{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd};
-
-        WHEN("called") {
-            uint32_t i32 = 0;
-            uint16_t i16 = 0;
-            uint8_t i8 = 0;
-
-            auto iter = arr.begin();
-            iter = bit_utils::bytes_to_int(iter, i32);
-            iter = bit_utils::bytes_to_int(iter, i16);
-            iter = bit_utils::bytes_to_int(iter, i8);
-            THEN("The values are read from the array") {
-                REQUIRE(i32 == 0x01234567);
-                REQUIRE(i16 == 0x89ab);
-                REQUIRE(i8 == 0xcd);
-            }
-        }
-    }
-}
-
-
 SCENARIO("int_to_bytes works") {
     GIVEN("some integers") {
         auto arr = std::array<uint8_t, 7>{};

@@ -35,8 +35,7 @@ concept Serializable = requires(const T& t, BodyType::iterator out) {
     /**
      * It has a serialize method
      */
-    { t.serialize(out) }
-    ->std::same_as<BodyType::iterator>;
+    { t.serialize(out) } -> std::same_as<BodyType::iterator>;
 };
 
 /**

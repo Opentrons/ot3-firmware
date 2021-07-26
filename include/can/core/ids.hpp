@@ -26,25 +26,25 @@ union ArbitrationId {
  * Message Ids
  */
 enum class MessageId : uint16_t {
-    heartbeat_request,
-    heartbeat_response,
+    heartbeat_request = 0xF000,
+    heartbeat_response = 0xF001,
 
-    device_info_request,
-    device_info_response,
+    device_info_request = 0xF002,
+    device_info_response = 0xF003,
 
-    stop_request,
+    stop_request = 0x00,
 
-    get_status_request,
-    get_status_response,
+    get_status_request = 0x01,
+    get_status_response = 0x05,
 
-    move_request,
+    move_request = 0x10,
 
-    setup_request,
+    setup_request = 0x02,
 
-    set_speed_request,
+    set_speed_request = 0x03,
 
-    get_speed_request,
-    get_speed_response,
+    get_speed_request = 0x04,
+    get_speed_response = 0x11,
 };
 
 }  // namespace can_ids

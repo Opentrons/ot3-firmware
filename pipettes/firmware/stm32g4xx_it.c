@@ -121,6 +121,21 @@ void DebugMon_Handler(void) {}
 /**
  * @}
  */
+/**
+ * @brief This function handles FDCAN1 interrupt 0.
+ */
+extern FDCAN_HandleTypeDef can;
+void FDCAN1_IT0_IRQHandler(void)
+{
+    /* USER CODE BEGIN FDCAN1_IT0_IRQn 0 */
+
+    /* USER CODE END FDCAN1_IT0_IRQn 0 */
+    HAL_FDCAN_IRQHandler(&can);
+    /* USER CODE BEGIN FDCAN1_IT0_IRQn 1 */
+
+    /* USER CODE END FDCAN1_IT0_IRQn 1 */
+}
+
 
 /**
  * @}

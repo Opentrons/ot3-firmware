@@ -17,7 +17,7 @@ using BodyType = std::span<uint8_t>;
  * The objects must implement the Parsable concept to deserialize the payload.
  */
 
-struct HeartbeatRequest{
+struct HeartbeatRequest {
     static const auto id = MessageId::heartbeat_request;
 
     static auto parse(const BodyType& body) -> HeartbeatRequest {
