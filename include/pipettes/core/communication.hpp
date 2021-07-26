@@ -70,9 +70,9 @@ class MessageWriter {
 
   private:
     template <typename Iter, typename Limit>
-    requires std::forward_iterator<Iter> auto write(
-        Iter iter, const Limit limit, const pipette_messages::GetSpeedResult &m)
-        -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, const Limit limit,
+               const pipette_messages::GetSpeedResult &m) -> Iter {
         iter = bit_utils::int_to_bytes(
             static_cast<uint32_t>(
                 pipette_messages::MessageType::get_speed_result),
@@ -81,9 +81,8 @@ class MessageWriter {
     }
 
     template <typename Iter, typename Limit>
-    requires std::forward_iterator<Iter> auto write(Iter iter, Limit limit,
-                                                    const std::monostate &m)
-        -> Iter {
+    requires std::forward_iterator<Iter>
+    auto write(Iter iter, Limit limit, const std::monostate &m) -> Iter {
         static_cast<void>(m);
         static_cast<void>(limit);
         return iter;

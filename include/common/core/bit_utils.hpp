@@ -24,11 +24,11 @@ namespace bit_utils {
  * 0x11223300.
  */
 template <typename Input, typename Limit, typename OutputIntType>
-requires std::is_integral_v<OutputIntType>&& std::forward_iterator<Input>&&
-    std::sentinel_for<Limit, Input>&&
-        std::is_same_v<std::iter_value_t<Input>, uint8_t> [[nodiscard]] auto
-        bytes_to_int(Input input, const Limit limit, OutputIntType& output)
-            -> Input {
+requires std::is_integral_v<OutputIntType> && std::forward_iterator<Input> &&
+    std::sentinel_for<Limit, Input> &&
+    std::is_same_v<std::iter_value_t<Input>, uint8_t>
+[[nodiscard]] auto bytes_to_int(Input input, const Limit limit,
+                                OutputIntType& output) -> Input {
     output = 0;
     for (ssize_t byte_index = sizeof(output) - 1;
          input != limit && byte_index >= 0; input++, byte_index--) {
@@ -50,11 +50,11 @@ requires std::is_integral_v<OutputIntType>&& std::forward_iterator<Input>&&
  */
 
 template <typename InputContainer, typename OutputIntType>
-requires std::is_integral_v<OutputIntType>&&
-    std::ranges::forward_range<InputContainer>&&
-        std::is_same_v<std::ranges::range_value_t<InputContainer>, uint8_t> auto
-        bytes_to_int(const InputContainer& input, OutputIntType& output)
-            -> std::ranges::iterator_t<const InputContainer> {
+requires std::is_integral_v<OutputIntType> &&
+    std::ranges::forward_range<InputContainer> &&
+    std::is_same_v<std::ranges::range_value_t<InputContainer>, uint8_t>
+auto bytes_to_int(const InputContainer& input, OutputIntType& output)
+    -> std::ranges::iterator_t<const InputContainer> {
     return bytes_to_int(input.begin(), input.end(), output);
 }
 
@@ -73,11 +73,12 @@ requires std::is_integral_v<OutputIntType>&&
  * or the size of the container is reached, meaning that output may be partial.
  */
 template <typename InputIntType, typename Output, typename Limit>
-requires std::is_integral_v<InputIntType>&& std::output_iterator<
-    Output, uint8_t>&& std::same_as<std::iter_value_t<Output>, uint8_t>&&
-    std::forward_iterator<Output>&&
-        std::sentinel_for<Limit, Output> [[nodiscard]] auto
-        int_to_bytes(InputIntType input, Output output, Limit limit) -> Output {
+requires std::is_integral_v<InputIntType> &&
+    std::output_iterator<Output, uint8_t> &&
+    std::same_as<std::iter_value_t<Output>, uint8_t> &&
+    std::forward_iterator<Output> && std::sentinel_for<Limit, Output>
+[[nodiscard]] auto int_to_bytes(InputIntType input, Output output, Limit limit)
+    -> Output {
     for (ssize_t x = sizeof(input) - 1; x >= 0 && output != limit;
          x--, output++) {
         *output = (input >> (x * 8));

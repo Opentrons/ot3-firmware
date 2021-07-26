@@ -12,7 +12,8 @@
 namespace host_comms_task {
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<messages::HostCommsMessage>,
-                      messages::HostCommsMessage> class HostCommsTask;
+                      messages::HostCommsMessage>
+class HostCommsTask;
 }  // namespace host_comms_task
 
 namespace tasks {

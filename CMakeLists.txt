@@ -41,7 +41,13 @@ add_subdirectory(gantry)
 
 find_package(Clang)
 
-file(GLOB_RECURSE SOURCES_FOR_FORMAT ./*.cpp ./*.hpp)
+file(GLOB_RECURSE SOURCES_FOR_FORMAT
+  ./include/*.hpp
+  ./can/*.hpp ./can/*.cpp
+  ./common/*.hpp ./common/*.cpp
+  ./gantry/*.hpp ./gantry/*.cpp
+  ./pipettes/*.hpp ./pipettes/*.cpp
+)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
 # the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
