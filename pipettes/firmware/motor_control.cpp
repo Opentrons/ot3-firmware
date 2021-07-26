@@ -31,13 +31,15 @@ using namespace motor_control;
 /*
  * Private Functions
  */
-void MotorControl::build_command(uint8_t command, const uint32_t& command_data,
-                                 BufferType& txBuffer) {
+auto MotorControl::build_command(uint8_t command, const uint32_t& command_data)
+    -> BufferType {
     // need to pass in data parameter and use int_to_bytes here
+    auto txBuffer = BufferType{0};
     auto iter = txBuffer.begin();
     iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
     // NOLINTNEXTLINE(clang-diagnostic-unused-result)
     bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
+    return txBuffer;
 }
 
 void MotorControl::reset_data() { data = 0x0; }
@@ -67,28 +69,36 @@ void MotorControl::setup() {
     // GCONF 0x01
     // IHOLD_IRUN 0x1010
     // CHOPCONF 0x8008
-    auto txBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     constexpr uint32_t gconf_data = 0x01;
     constexpr uint32_t ihold_irun_data = 0x1010;
     constexpr uint32_t chopconf = 0x8008;
-    build_command(command_byte(Mode::WRITE, MotorRegisters::GCONF), gconf_data,
-                  txBuffer);
-    spi_comms.send_command(txBuffer, data, status);
-    build_command(command_byte(Mode::WRITE, MotorRegisters::IHOLD_IRUN),
-                  ihold_irun_data, txBuffer);
-    spi_comms.send_command(txBuffer, data, status);
-    build_command(command_byte(Mode::WRITE, MotorRegisters::CHOPCONF), chopconf,
-                  txBuffer);
-    spi_comms.send_command(txBuffer, data, status);
+    auto txBuffer = build_command(
+        command_byte(Mode::WRITE, MotorRegisters::GCONF), gconf_data);
+    spi_comms.transmit_receive(txBuffer, rxBuffer);
+    txBuffer = build_command(
+        command_byte(Mode::WRITE, MotorRegisters::IHOLD_IRUN), ihold_irun_data);
+    spi_comms.transmit_receive(txBuffer, rxBuffer);
+    txBuffer = build_command(
+        command_byte(Mode::WRITE, MotorRegisters::CHOPCONF), chopconf);
+    spi_comms.transmit_receive(txBuffer, rxBuffer);
+    process_buffer(rxBuffer, status, data);
+}
+
+void MotorControl::process_buffer(const BufferType& rxBuffer, uint8_t& status,
+                                  uint32_t& data) {
+    auto iter = rxBuffer.cbegin();
+    iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), status);
+    // NOLINTNEXTLINE(clang-diagnostic-unused-result)
+    bit_utils::bytes_to_int(iter, rxBuffer.cend(), data);
 }
 
 void MotorControl::get_status() {
-    auto txBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     reset_data();
     reset_status();
-    build_command(command_byte(Mode::READ, MotorRegisters::DRVSTATUS), data,
-                  txBuffer);
-    spi_comms.send_command(txBuffer, data, status);
+    auto txBuffer = build_command(
+        command_byte(Mode::READ, MotorRegisters::DRVSTATUS), data);
+    spi_comms.transmit_receive(txBuffer, rxBuffer);
+    process_buffer(rxBuffer, status, data);
 }
 
 void MotorControl::stop() {

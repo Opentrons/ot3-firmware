@@ -29,13 +29,6 @@ using namespace spi;
 /*
  * Private Functions
  */
-void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
-    Reset_CS_Pin();
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    HAL_SPI_TransmitReceive(&handle, const_cast<uint8_t*>(transmit.data()),
-                            receive.data(), BUFFER_SIZE, TIMEOUT);
-    Set_CS_Pin();
-}
 
 /*
  * Public Functions
@@ -43,17 +36,10 @@ void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
 
 Spi::Spi() : handle(MX_SPI2_Init()) {}
 
-void Spi::send_command(const BufferType& aTxBuffer, uint32_t& data,
-                       uint8_t& status) {
-    auto aRxBuffer = std::array<uint8_t, BUFFER_SIZE>{};
-    auto* rxiter = aRxBuffer.begin();
-    rxiter = bit_utils::int_to_bytes(status, rxiter, aRxBuffer.end());
-    // NOLINTNEXTLINE(clang-diagnostic-unused-result)
-    bit_utils::int_to_bytes(data, rxiter, aRxBuffer.end());
-
-    transmit_receive(aTxBuffer, aRxBuffer);
-
-    status = *aRxBuffer.begin();
-    // NOLINTNEXTLINE(clang-diagnostic-unused-result)
-    bit_utils::bytes_to_int(aRxBuffer.cbegin(), aRxBuffer.cend(), data);
+void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
+    Reset_CS_Pin();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    HAL_SPI_TransmitReceive(&handle, const_cast<uint8_t*>(transmit.data()),
+                            receive.data(), BUFFER_SIZE, TIMEOUT);
+    Set_CS_Pin();
 }

@@ -43,13 +43,16 @@ class MotorControl {
     uint8_t status = 0x0;
     uint32_t data = 0x0;
     uint32_t speed{0};
+    spi::Spi::BufferType rxBuffer{0};
     spi::Spi spi_comms;
     static constexpr auto BUFFER_SIZE = 5;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
-    static void build_command(uint8_t command, const uint32_t& command_data,
-                              BufferType& txBuffer);
+    auto build_command(uint8_t command, const uint32_t& command_data)
+        -> BufferType;
     void reset_data();
     void reset_status();
+    static void process_buffer(const BufferType& rxBuffer, uint8_t& status,
+                               uint32_t& data);
 };
 
 }  // namespace motor_control

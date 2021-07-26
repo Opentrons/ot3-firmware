@@ -7,14 +7,14 @@
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/pipette_messages.hpp"
 
-template <typename T, motor_protocol::MotorProtocol Motor>
-requires io::WriterProtocol<T> class MessageHandler {
+template <io::WriterProtocol Writer, motor_protocol::MotorProtocol Motor>
+class MessageHandler {
   public:
-    explicit MessageHandler(T &writer, Motor &motor,
+    explicit MessageHandler(Writer &writer, Motor &motor,
                             communication::MessageWriter &message_writer)
         : writer(writer), motor(motor), message_writer(message_writer) {}
 
-    void handle(const pipette_messages::ReceivedMessage &message) {
+    void handle_message(const pipette_messages::ReceivedMessage &message) {
         auto handle = [this](auto m) { this->handle(m); };
         std::visit(handle, message);
     }
@@ -55,7 +55,7 @@ requires io::WriterProtocol<T> class MessageHandler {
 
     void handle(const std::monostate &m) { static_cast<void>(m); }
 
-    T &writer;
+    Writer &writer;
     Motor &motor;
     communication::MessageWriter &message_writer;
 };

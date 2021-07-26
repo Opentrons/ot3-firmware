@@ -26,7 +26,7 @@ SCENARIO("messages can control motor") {
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
         message = pipette_messages::Stop{};
-        handler.handle(message);
+        handler.handle_message(message);
 
         WHEN("the message is handled") {
             THEN("the state of the motor should be stopped") {
@@ -42,7 +42,7 @@ SCENARIO("messages can control motor") {
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
         message = pipette_messages::Move{};
-        handler.handle(message);
+        handler.handle_message(message);
 
         WHEN("the message is handled") {
             THEN("the state of the motor is now moved") {
@@ -58,7 +58,7 @@ SCENARIO("messages can control motor") {
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
         message = pipette_messages::Status{};
-        handler.handle(message);
+        handler.handle_message(message);
 
         WHEN("the message is handled") {
             THEN("the writer should write the motor status and data") {
@@ -78,7 +78,7 @@ SCENARIO("messages can control motor") {
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
         message = pipette_messages::Setup{};
-        handler.handle(message);
+        handler.handle_message(message);
 
         WHEN("the message is handled") {
             THEN("the state of the motor should be updated") {
@@ -94,7 +94,7 @@ SCENARIO("messages can control motor") {
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
         message = pipette_messages::GetSpeed{};
-        handler.handle(message);
+        handler.handle_message(message);
 
         WHEN("the message is handled") {
             THEN("the writer should write the speed result") {
@@ -113,11 +113,26 @@ SCENARIO("messages can control motor") {
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
         message = pipette_messages::SetSpeed{0x10};
-        handler.handle(message);
+        handler.handle_message(message);
 
         WHEN("the message is handled") {
             THEN("the motor data should be updated") {
                 REQUIRE(motor.get_current_data() == 0x10);
+            }
+        }
+    }
+}
+
+SCENARIO("process_buffer works") {
+    GIVEN("a 5 byte buffer") {
+        auto rxBuffer = test_motor_control::BufferType{1, 2, 3, 4, 5};
+        uint8_t status = 0x0;
+        uint32_t data = 0x0;
+        TestMotorControl::process_buffer(rxBuffer, status, data);
+        WHEN("process_buffer is called") {
+            THEN("the status and data are updated") {
+                REQUIRE(status == 0x01);
+                REQUIRE(data == 0x2030405);
             }
         }
     }

@@ -28,7 +28,7 @@ static void run(void *parameter) {
 
     for (;;) {
         auto message = message_reader.read(uart);
-        handler.handle(message);
+        handler.handle_message(message);
     }
 }
 

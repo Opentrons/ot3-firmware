@@ -2,7 +2,6 @@
 
 #include <array>
 #include <cstdint>
-#include <iostream>
 #include <span>
 
 #include "common/core/bit_utils.hpp"
@@ -22,6 +21,9 @@ enum class MotorRegisters : uint8_t {
     DRVSTATUS = 0x6F,
 };
 
+static constexpr auto BUFFER_SIZE = 5;
+using BufferType = std::array<uint8_t, BUFFER_SIZE>;
+
 class TestMotorControl {
   public:
     std::string state = "init";
@@ -37,6 +39,13 @@ class TestMotorControl {
     void move() { state = "moved"; }
     [[nodiscard]] auto get_current_status() const -> uint8_t { return status; }
     [[nodiscard]] auto get_current_data() const -> uint32_t { return data; }
+    static void process_buffer(const BufferType& rxBuffer, uint8_t& status,
+                               uint32_t& data) {
+        auto iter = rxBuffer.cbegin();
+        iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), status);
+        // NOLINTNEXTLINE(clang-diagnostic-unused-result)
+        iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), data);
+    }
 
   private:
     uint8_t status = 0x0;
