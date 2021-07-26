@@ -41,18 +41,19 @@ void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
  * Public Functions
  */
 
-Spi::Spi() : handle(MX_SPI2_Init()){};
+Spi::Spi() : handle(MX_SPI2_Init()) {}
 
 void Spi::send_command(const BufferType& aTxBuffer, uint32_t& data,
                        uint8_t& status) {
     auto aRxBuffer = std::array<uint8_t, BUFFER_SIZE>{};
     auto* rxiter = aRxBuffer.begin();
-    rxiter = bit_utils::int_to_bytes(status, rxiter);
-    bit_utils::int_to_bytes(data, rxiter);
+    rxiter = bit_utils::int_to_bytes(status, rxiter, aRxBuffer.end());
+    // NOLINTNEXTLINE(clang-diagnostic-unused-result)
+    bit_utils::int_to_bytes(data, rxiter, aRxBuffer.end());
 
     transmit_receive(aTxBuffer, aRxBuffer);
 
     status = *aRxBuffer.begin();
-    std::span sp{aRxBuffer};
-    bit_utils::bytes_to_int<uint32_t, uint8_t>(sp.subspan(1, 4), data);
+    // NOLINTNEXTLINE(clang-diagnostic-unused-result)
+    bit_utils::bytes_to_int(aRxBuffer.cbegin(), aRxBuffer.cend(), data);
 }

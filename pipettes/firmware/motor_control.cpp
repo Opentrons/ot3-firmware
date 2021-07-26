@@ -34,9 +34,10 @@ using namespace motor_control;
 void MotorControl::build_command(uint8_t command, const uint32_t& command_data,
                                  BufferType& txBuffer) {
     // need to pass in data parameter and use int_to_bytes here
-    auto* output = txBuffer.begin();
-    output = bit_utils::int_to_bytes(command, output);
-    bit_utils::int_to_bytes(command_data, output);
+    auto iter = txBuffer.begin();
+    iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
+    // NOLINTNEXTLINE(clang-diagnostic-unused-result)
+    bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
 }
 
 void MotorControl::reset_data() { data = 0x0; }
