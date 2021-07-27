@@ -2,7 +2,7 @@
 
 #include "FreeRTOS.h"
 #include "common/core/bit_utils.hpp"
-#include "firmware/common/motor.h"
+#include "common/firmware/motor.h"
 #include "stm32g4xx_hal.h"
 #include "task.h"
 

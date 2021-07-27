@@ -4,7 +4,7 @@
 #include <span>
 
 #include "common/core/bit_utils.hpp"
-#include "common/hal/io.hpp"
+#include "common/core/io.hpp"
 #include "pipette_messages.hpp"
 
 using namespace io;

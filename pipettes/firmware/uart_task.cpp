@@ -1,10 +1,10 @@
 #include "pipettes/firmware/uart_task.hpp"
 
 #include "FreeRTOS.h"
+#include "common/core/motor.hpp"
+#include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
-#include "common/hal/motor.hpp"
-#include "firmware/common/spi_comms.hpp"
-#include "firmware/common/uart_comms.hpp"
+#include "common/firmware/uart_comms.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/uart_message_handler.hpp"
 #include "pipettes/firmware/motor_control.hpp"
