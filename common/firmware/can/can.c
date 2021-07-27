@@ -24,8 +24,8 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef * handle)
     handle->Init.DataSyncJumpWidth = 1;
     handle->Init.DataTimeSeg1 = 14;
     handle->Init.DataTimeSeg2 = 1;
-    handle->Init.StdFiltersNbr = 0;
-    handle->Init.ExtFiltersNbr = 0;
+    handle->Init.StdFiltersNbr = 20;
+    handle->Init.ExtFiltersNbr = 20;
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     return HAL_FDCAN_Init(handle);
 }
