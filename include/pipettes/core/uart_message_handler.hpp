@@ -2,8 +2,8 @@
 
 #include <variant>
 
-#include "common/hal/io.hpp"
-#include "common/hal/motor.hpp"
+#include "common/core/io.hpp"
+#include "common/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/pipette_messages.hpp"
 
