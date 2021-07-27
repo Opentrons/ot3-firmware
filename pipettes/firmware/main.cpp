@@ -11,7 +11,7 @@
 
 #include "common/firmware/spi.h"
 #include "common/firmware/uart.h"
-#include "firmware/common/uart_comms.hpp"
+#include "common/firmware/uart_comms.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/firmware/can_task.hpp"
 #include "pipettes/firmware/uart_task.hpp"

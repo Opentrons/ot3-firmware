@@ -1,6 +1,6 @@
 #pragma once
 
-#include "firmware/common/spi_comms.hpp"
+#include "common/firmware/spi_comms.hpp"
 
 namespace motor_control {
 

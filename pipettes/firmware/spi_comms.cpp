@@ -1,4 +1,4 @@
-#include "firmware/common/spi_comms.hpp"
+#include "common/firmware/spi_comms.hpp"
 
 #include <array>
 #include <cstdio>

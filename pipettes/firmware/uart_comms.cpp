@@ -1,5 +1,5 @@
 
-#include "firmware/common/uart_comms.hpp"
+#include "common/firmware/uart_comms.hpp"
 
 using namespace uart_comms;
 
