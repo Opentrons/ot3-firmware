@@ -14,11 +14,14 @@ HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
                 .TxEventFifoControl = FDCAN_NO_TX_EVENTS} {}
 
 /**
+ * Add an arbitration id filter.
  *
- * @param type
- * @param config
- * @param val1
- * @param val2
+ * @param type the type of filter
+ * @param config the filter configuration
+ * @param val1 depends on the type. Is either a filter, exact arbitration id, or
+ * minimum arbitration id
+ * @param val2 depends on the type. Is either a mask, exact arbitration id, or
+ * masimum arbitration id
  */
 void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,
                            uint32_t val1, uint32_t val2) {
@@ -30,6 +33,21 @@ void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,
         .FilterID1 = val1,
         .FilterID2 = val2};
     HAL_FDCAN_ConfigFilter(handle, &filter_def);
+}
+
+/**
+ * Send a buffer on can bus
+ * @param arbitration_id The arbitration id
+ * @param buffer buffer to send
+ * @param buffer_length length of buffer
+ */
+void HalCanBus::send(uint32_t arbitration_id, uint8_t* buffer,
+                     CanFDMessageLength buffer_length) {
+    tx_header.Identifier = arbitration_id;
+    tx_header.DataLength = HalCanBus::convert_length(buffer_length);
+    tx_header.MessageMarker = 0;
+
+    HAL_FDCAN_AddMessageToTxFifoQ(handle, &tx_header, buffer);
 }
 
 /**
@@ -85,45 +103,72 @@ auto HalCanBus::convert_type(CanFilterType type) -> uint32_t {
 }
 
 /**
- *
- * @param size
- * @return
+ * Convert a length to the hal encoded length.
+ * @param length length
+ * @return hal encoded length
  */
-auto HalCanBus::convert_size(uint32_t size) -> uint32_t {
-    switch (size) {
-        case 0:
+auto HalCanBus::convert_length(CanFDMessageLength length) -> uint32_t {
+    switch (length) {
+        case CanFDMessageLength::l0:
             return FDCAN_DLC_BYTES_0;
-        case 1:
+        case CanFDMessageLength::l1:
             return FDCAN_DLC_BYTES_1;
-        case 2:
+        case CanFDMessageLength::l2:
             return FDCAN_DLC_BYTES_2;
-        case 3:
+        case CanFDMessageLength::l3:
             return FDCAN_DLC_BYTES_3;
-        case 4:
+        case CanFDMessageLength::l4:
             return FDCAN_DLC_BYTES_4;
-        case 5:
+        case CanFDMessageLength::l5:
             return FDCAN_DLC_BYTES_5;
-        case 6:
+        case CanFDMessageLength::l6:
             return FDCAN_DLC_BYTES_6;
-        case 7:
+        case CanFDMessageLength::l7:
             return FDCAN_DLC_BYTES_7;
-        case 8:
+        case CanFDMessageLength::l8:
             return FDCAN_DLC_BYTES_8;
+        case CanFDMessageLength::l12:
+            return FDCAN_DLC_BYTES_12;
+        case CanFDMessageLength::l16:
+            return FDCAN_DLC_BYTES_16;
+        case CanFDMessageLength::l20:
+            return FDCAN_DLC_BYTES_20;
+        case CanFDMessageLength::l24:
+            return FDCAN_DLC_BYTES_24;
+        case CanFDMessageLength::l32:
+            return FDCAN_DLC_BYTES_32;
+        case CanFDMessageLength::l48:
+            return FDCAN_DLC_BYTES_48;
+        case CanFDMessageLength::l64:
+            return FDCAN_DLC_BYTES_64;
         default:
-            break;
+            return FDCAN_DLC_BYTES_64;
     }
-    if (size < 12)
-        return FDCAN_DLC_BYTES_12;
-    else if (size < 16)
-        return FDCAN_DLC_BYTES_16;
-    else if (size < 20)
-        return FDCAN_DLC_BYTES_20;
-    else if (size < 24)
-        return FDCAN_DLC_BYTES_24;
-    else if (size < 32)
-        return FDCAN_DLC_BYTES_32;
-    else if (size < 48)
-        return FDCAN_DLC_BYTES_48;
-    else
-        return FDCAN_DLC_BYTES_64;
+}
+
+/**
+ * Convert a hal encoded length to a CanFDMessageLength
+ * @param length hal encoded length
+ * @return CanFDMessageLength
+ */
+auto HalCanBus::convert_length(uint32_t length) -> CanFDMessageLength {
+    switch (length) {
+        case FDCAN_DLC_BYTES_0: return CanFDMessageLength::l0;
+        case FDCAN_DLC_BYTES_1: return CanFDMessageLength::l1;
+        case FDCAN_DLC_BYTES_2: return CanFDMessageLength::l2;
+        case FDCAN_DLC_BYTES_3: return CanFDMessageLength::l3;
+        case FDCAN_DLC_BYTES_4: return CanFDMessageLength::l4;
+        case FDCAN_DLC_BYTES_5: return CanFDMessageLength::l5;
+        case FDCAN_DLC_BYTES_6: return CanFDMessageLength::l6;
+        case FDCAN_DLC_BYTES_7: return CanFDMessageLength::l7;
+        case FDCAN_DLC_BYTES_8: return CanFDMessageLength::l8;
+        case FDCAN_DLC_BYTES_12: return CanFDMessageLength::l12;
+        case FDCAN_DLC_BYTES_16: return CanFDMessageLength::l16;
+        case FDCAN_DLC_BYTES_20: return CanFDMessageLength::l20;
+        case FDCAN_DLC_BYTES_24: return CanFDMessageLength::l24;
+        case FDCAN_DLC_BYTES_32: return CanFDMessageLength::l32;
+        case FDCAN_DLC_BYTES_48: return CanFDMessageLength::l48;
+        case FDCAN_DLC_BYTES_64: return CanFDMessageLength::l64;
+    }
+    return CanFDMessageLength::l64;
 }

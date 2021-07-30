@@ -9,6 +9,7 @@ add_executable(
         test_main.cpp
         test_parse.cpp
         test_messages.cpp
+        test_can_bus.cpp
 )
 
 target_include_directories(can PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
@@ -27,7 +28,7 @@ target_compile_options(can
   -Wextra-semi
   -Wctor-dtor-privacy
   -fno-rtti)
-target_link_libraries(can Catch2::Catch2)
+target_link_libraries(can can-core Catch2::Catch2)
 
 catch_discover_tests(can)
 add_build_and_test_target(can)

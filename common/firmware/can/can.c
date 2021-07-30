@@ -2,6 +2,12 @@
 
 
 /**
+ * The can handle.
+ */
+FDCAN_HandleTypeDef fdcan1;
+
+
+/**
  * Initialize a connection to FDCAN1
  *
  * @param handle Pointer to an FDCAN handle
@@ -29,7 +35,6 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef * handle)
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     return HAL_FDCAN_Init(handle);
 }
-
 
 
 /**

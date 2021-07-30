@@ -23,7 +23,27 @@ union ArbitrationId {
 };
 
 /**
- * Message Ids
+ * Function code definitions.
+ */
+enum class FunctionCode : uint8_t {
+    network_management = 0x0,
+    sync = 0x2,
+    error = 0x4,
+    command = 0x10,
+    status = 0x12,
+    parameters = 0x14,
+    bootloader = 0x7c,
+    heartbeat = 0x7e
+};
+
+enum class NodeId : uint8_t {
+    host,
+    pipette,
+    gantry,
+};
+
+/**
+ * Message Id definitions.
  */
 enum class MessageId : uint16_t {
     heartbeat_request = 0xF000,

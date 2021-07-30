@@ -25,16 +25,47 @@ enum class CanFilterType {
 };
 
 /**
- * Concept describing a Can Bus.
+ * Can FD message length.
+ */
+enum class CanFDMessageLength {
+    l0 = 0,
+    l1 = 1,
+    l2 = 2,
+    l3 = 3,
+    l4 = 4,
+    l5 = 5,
+    l6 = 6,
+    l7 = 7,
+    l8 = 8,
+    l12 = 12,
+    l16 = 16,
+    l20 = 20,
+    l24 = 24,
+    l32 = 32,
+    l48 = 48,
+    l64 = 64,
+};
+
+/**
+ * Round length to the nearest CanFDMessageLength
+ * @param length a value between 0-64.
+ * @return rounded length
+ */
+auto to_canfd_length(uint32_t length) -> CanFDMessageLength;
+
+/**
+ * Concept describing a Can Bus .
  *
  * @tparam CAN The can bus implementation
  */
-template <class CAN, class MESSAGE>
-concept CanBus = requires(CAN can, MESSAGE message, uint32_t filter_val,
+template <class CAN>
+concept CanBus = requires(CAN can, uint32_t arbitration_id, uint8_t* buffer,
+                          CanFDMessageLength buffer_length,
                           CanFilterType filter_type,
                           CanFilterConfig filter_config) {
-    {can.add_filter(filter_type, filter_config, filter_val, filter_val)};
-    {can.send(filter_val, message)};
+    {can.add_filter(filter_type, filter_config, arbitration_id,
+                    arbitration_id)};
+    {can.send(arbitration_id, buffer, buffer_length)};
 };
 
 }  // namespace can_bus

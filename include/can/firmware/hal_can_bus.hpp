@@ -10,6 +10,9 @@
 using namespace can_bus;
 using namespace can_ids;
 
+/**
+ * HAL FD CAN wrapper. Matches the CanBus concept.
+ */
 class HalCanBus {
   public:
     explicit HalCanBus(FDCAN_HandleTypeDef* handle);
@@ -17,14 +20,14 @@ class HalCanBus {
     void add_filter(CanFilterType type, CanFilterConfig config, uint32_t val1,
                     uint32_t val2);
 
-    template <can_parse::Serializable Message>
-    void send(uint32_t arbitration_id, const Message& message);
+    void send(uint32_t arbitration_id, uint8_t* buffer,
+              CanFDMessageLength buffer_length);
 
+    static auto convert_length(uint32_t length) -> CanFDMessageLength;
   private:
     FDCAN_HandleTypeDef* handle;
     uint32_t filter_index = 0;
     FDCAN_TxHeaderTypeDef tx_header;
-    std::array<uint8_t, 64> tx_buffer;
 
     static constexpr auto arbitration_id_type = FDCAN_STANDARD_ID;
 
@@ -32,16 +35,6 @@ class HalCanBus {
 
     static auto convert_type(CanFilterType type) -> uint32_t;
 
-    static auto convert_size(uint32_t size) -> uint32_t;
+    static auto convert_length(CanFDMessageLength length) -> uint32_t;
+
 };
-
-template <can_parse::Serializable Message>
-void HalCanBus::send(uint32_t arbitration_id, const Message& message) {
-    auto length = message.serialize(tx_buffer.begin(), tx_buffer.end());
-
-    tx_header.Identifier = arbitration_id;
-    tx_header.DataLength = HalCanBus::convert_size(length);
-    tx_header.MessageMarker = 0;
-
-    HAL_FDCAN_AddMessageToTxFifoQ(handle, &tx_header, tx_buffer.data());
-}

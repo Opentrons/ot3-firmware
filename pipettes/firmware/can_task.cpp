@@ -3,23 +3,34 @@
 #include <array>
 
 #include "FreeRTOS.h"
+#include "can/core/message_writer.hpp"
+#include "common/core/bit_utils.hpp"
 #include "can/core/messages.hpp"
 #include "can/core/parse.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/can.h"
 #include "task.h"
+#include "message_buffer.h"
+
+
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static MessageBufferHandle_t message_buffer;
+static constexpr auto message_buffer_size = 1024;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static auto message_buffer_backing = std::array<uint8_t, message_buffer_size>{};
+static StaticMessageBuffer_t message_buffer_struct;
+
 
 static void Error_Handler();
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_TxHeaderTypeDef TxHeader;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static FDCAN_RxHeaderTypeDef RxHeader;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-FDCAN_HandleTypeDef can;
-static constexpr auto buffsize = 64;
+static constexpr auto buffsize = 68;
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static auto buff = std::array<uint8_t, buffsize>{};
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+extern FDCAN_HandleTypeDef fdcan1;
 //
 // template <typename... MessageTypes>
 // class MessageHandler {
@@ -104,57 +115,97 @@ static auto buff = std::array<uint8_t, buffsize>{};
 //                   can_messages::SetupRequest, can_messages::GetStatusRequest,
 //                   can_messages::GetSpeedRequest>{};
 
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
-                               uint32_t RxFifo0ITs) {
-    if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0) {
-        if (HAL_FDCAN_GetRxFifoFillLevel(&can, FDCAN_RX_FIFO0) > 0) {
-            // Send CAN RX data over debug UART
-            HAL_FDCAN_GetRxMessage(&can, FDCAN_RX_FIFO0, &RxHeader,
-                                   buff.data());
 
-            //            BodyType bod{buff};
-            //            message_handler.handle(
-            //                &can,
-            //                static_cast<can_ids::MessageId>(RxHeader.Identifier),
-            //                bod);
+
+/**
+ *
+ * @param hfdcan pointer to a can handle
+ * @param fifo either FDCAN_RX_FIFO0 or FDCAN_RX_FIFO1
+ */
+static void try_read_from_fifo(FDCAN_HandleTypeDef* hfdcan, uint32_t fifo) {
+    if (HAL_FDCAN_GetRxFifoFillLevel(hfdcan, fifo) > 0) {
+        // Put the message data after the arbitration id
+        auto start_of_data = buff.data() + sizeof(uint32_t);
+
+        if (HAL_FDCAN_GetRxMessage(hfdcan, fifo, &RxHeader, start_of_data) != HAL_OK) {
+            Error_Handler();
+        }
+
+        // Convert the length from HAL to integer
+        auto data_length = static_cast<uint32_t>(HalCanBus::convert_length(RxHeader.DataLength));
+        auto message_length = data_length + sizeof(data_length);
+
+        // Write the arbitration id into the buffer
+        bit_utils::int_to_bytes(RxHeader.Identifier, buff.begin(), start_of_data);
+
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+        auto written_bytes = xMessageBufferSendFromISR(message_buffer, buff.data(), message_length, &xHigherPriorityTaskWoken);
+
+        if (written_bytes == message_length) {
+            // see https://www.freertos.org/xMessageBufferSendFromISR.html for explanation
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
     }
 }
 
-static auto message = can_messages::GetSpeedResponse{1234};
+
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
+                               uint32_t RxFifo0ITs) {
+    if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0) {
+        try_read_from_fifo(hfdcan, FDCAN_RX_FIFO0);
+    }
+}
+
+void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
+                               uint32_t RxFifo1ITs) {
+    if ((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != 0) {
+        try_read_from_fifo(hfdcan, FDCAN_RX_FIFO1);
+    }
+}
+//
+//static auto message = can_messages::GetSpeedResponse{1234};
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static auto otbuff = std::array<uint8_t, buffsize>{};
+
 
 static void run(void *parameter) {
     parameter = nullptr;
 
-    if (MX_FDCAN1_Init(&can) != HAL_OK) {
+    message_buffer = xMessageBufferCreateStatic(
+        message_buffer_size,message_buffer_backing.data(),&message_buffer_struct );
+
+    if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
         Error_Handler();
     }
 
-    auto cc = HalCanBus(&can);
-    cc.add_filter(CanFilterType::exact, CanFilterConfig::reject, 1, 2);
+//    auto writer = can_message_writer::MessageWriter(cc);
 
-    //    FDCAN_FilterTypeDef filter_def{
-    //        .IdType=FDCAN_STANDARD_ID,
-    //        .FilterIndex=0,
-    //        .FilterType=FDCAN_FILTER_RANGE,
-    //        .FilterConfig=FDCAN_FILTER_REJECT,
-    //        .FilterID1=1,
-    //        .FilterID2=4
-    //    };
-    //    if (HAL_FDCAN_ConfigFilter(&can, &filter_def) != HAL_OK) {
-    //        Error_Handler();
-    //    }
-
-    if (HAL_FDCAN_ActivateNotification(&can, FDCAN_IT_RX_FIFO0_NEW_MESSAGE,
+    if (HAL_FDCAN_ActivateNotification(&fdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, // | FDCAN_IT_RX_FIFO1_NEW_MESSAGE,
                                        0) != HAL_OK) {
         Error_Handler();
     }
 
-    if (HAL_FDCAN_Start(&can) != HAL_OK) {
+    if (HAL_FDCAN_Start(&fdcan1) != HAL_OK) {
         Error_Handler();
     }
 
+    const auto xBlockTime = portMAX_DELAY;
+
+
     for (;;) {
+
+        auto read_bytes = xMessageBufferReceive(message_buffer,
+                                               otbuff.data(),
+                                               otbuff.size(),
+                                               xBlockTime);
+        if (read_bytes > 0) {
+            uint32_t arb = 0;
+            auto p = bit_utils::bytes_to_int(otbuff.begin(), otbuff.end() + read_bytes, arb);
+            auto x = p;
+        }
+
         //        if (HAL_FDCAN_GetRxFifoFillLevel(&can, FDCAN_RX_FIFO0) > 0) {
         //            // Send CAN RX data over debug UART
         //            HAL_FDCAN_GetRxMessage(&can, FDCAN_RX_FIFO0, &RxHeader,
@@ -176,8 +227,8 @@ static void run(void *parameter) {
         //                Error_Handler();
         //            }
         //        }
-        cc.send(0, message);
-        vTaskDelay(1000);
+//        writer.write(NodeId::host, message);
+//        vTaskDelay(1000);
     }
 }
 
@@ -191,8 +242,7 @@ static StaticTask_t data{};
  * Create the task.
  */
 void can_task::start() {
-    xTaskCreateStatic(run, "CAN Task", stack.size(), nullptr, 1, stack.data(),
-                      &data);
+    xTaskCreateStatic(run, "CAN Task", stack.size(), nullptr, 1, stack.data(), &data);
 }
 
 void Error_Handler() {
