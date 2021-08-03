@@ -1,11 +1,6 @@
 #include "common/firmware/spi_comms.hpp"
 
-#include <array>
-#include <cstdio>
-
-#include "common/core/bit_utils.hpp"
 #include "common/firmware/spi.h"
-#include "pipettes/firmware/motor_control.hpp"
 
 using namespace spi;
 

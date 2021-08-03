@@ -5,9 +5,10 @@
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
+#include "motor-control/core/motor_control.hpp"
+#include "motor-control/core/spi.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/uart_message_handler.hpp"
-#include "pipettes/firmware/motor_control.hpp"
 #include "task.h"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)

@@ -11,8 +11,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/uart_comms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/spi_comms.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_control.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/spi_comms.cpp)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
