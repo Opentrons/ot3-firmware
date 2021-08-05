@@ -170,6 +170,8 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
 static auto otbuff = std::array<uint8_t, buffsize>{};
 
 
+
+
 static void run(void *parameter) {
     parameter = nullptr;
 
@@ -180,9 +182,9 @@ static void run(void *parameter) {
         Error_Handler();
     }
 
-//    auto writer = can_message_writer::MessageWriter(cc);
+    auto can_bus = HalCanBus(&fdcan1);
 
-    if (HAL_FDCAN_ActivateNotification(&fdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, // | FDCAN_IT_RX_FIFO1_NEW_MESSAGE,
+    if (HAL_FDCAN_ActivateNotification(&fdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE,
                                        0) != HAL_OK) {
         Error_Handler();
     }
@@ -193,7 +195,6 @@ static void run(void *parameter) {
 
     const auto xBlockTime = portMAX_DELAY;
 
-
     for (;;) {
 
         auto read_bytes = xMessageBufferReceive(message_buffer,
@@ -203,32 +204,8 @@ static void run(void *parameter) {
         if (read_bytes > 0) {
             uint32_t arb = 0;
             auto p = bit_utils::bytes_to_int(otbuff.begin(), otbuff.end() + read_bytes, arb);
-            auto x = p;
+            can_bus.send(arb, p, to_canfd_length(read_bytes - sizeof(arb)));
         }
-
-        //        if (HAL_FDCAN_GetRxFifoFillLevel(&can, FDCAN_RX_FIFO0) > 0) {
-        //            // Send CAN RX data over debug UART
-        //            HAL_FDCAN_GetRxMessage(&can, FDCAN_RX_FIFO0, &RxHeader,
-        //                                   buff.data());
-        //
-        //            BodyType bod{buff};
-        //            message_handler.handle(&can,
-        //            static_cast<can_ids::MessageId>(RxHeader.Identifier),
-        //            bod);
-        //
-        //            TxHeader.Identifier = RxHeader.Identifier;
-        //            TxHeader.DataLength = RxHeader.DataLength;
-        //            TxHeader.FDFormat = RxHeader.FDFormat;
-        //
-        //            if (HAL_FDCAN_AddMessageToTxFifoQ(&can, &TxHeader,
-        //            buff.data()) !=
-        //                HAL_OK) {
-        //                // Transmission request Error
-        //                Error_Handler();
-        //            }
-        //        }
-//        writer.write(NodeId::host, message);
-//        vTaskDelay(1000);
     }
 }
 
