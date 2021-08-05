@@ -2,13 +2,7 @@
  * A C file to act as a middle layer to HAL related functions for GPIO.
  */
 
-#ifdef PIPETTES
-#include "../../../pipettes/firmware/stm32g4xx_hal_conf.h"
-#endif /* PIPETTES */
-
-#ifdef GANTRY
-#include "../../../gantry/firmware/stm32g4xx_hal_conf.h"
-#endif /* GANTRY */
+#include "stm32g4xx_hal_conf.h"
 
 
 void Set_Direction() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); }

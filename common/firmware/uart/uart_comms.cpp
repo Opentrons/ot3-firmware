@@ -1,4 +1,3 @@
-
 #include "common/firmware/uart_comms.hpp"
 
 using namespace uart_comms;
