@@ -66,7 +66,9 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan)
         GPIO_InitStruct.Alternate = GPIO_AF9_FDCAN1;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-        HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 0);
+        // Priority is 0-15 (highest to lowest). Use lowest priority until we
+        // believe it is too low.
+        HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 15, 15);
         HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
         /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
