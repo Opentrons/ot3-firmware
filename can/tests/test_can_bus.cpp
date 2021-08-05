@@ -1,7 +1,7 @@
-#include "can/core/can_bus.hpp"
-#include "catch2/catch.hpp"
 #include <array>
 
+#include "can/core/can_bus.hpp"
+#include "catch2/catch.hpp"
 
 using namespace can_bus;
 
@@ -35,7 +35,7 @@ SCENARIO("to_canfd_length works") {
         };
         WHEN("converted to an fdcan length") {
             THEN("it is a CanFDMessageLength value") {
-                for (auto v: arr) {
+                for (auto v : arr) {
                     REQUIRE(to_canfd_length(v.first) == v.second);
                 }
             }

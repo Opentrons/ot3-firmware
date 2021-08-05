@@ -23,18 +23,10 @@ class HalCanBus {
     void send(uint32_t arbitration_id, uint8_t* buffer,
               CanFDMessageLength buffer_length);
 
-    static auto convert_length(uint32_t length) -> CanFDMessageLength;
   private:
     FDCAN_HandleTypeDef* handle;
     uint32_t filter_index = 0;
     FDCAN_TxHeaderTypeDef tx_header;
 
     static constexpr auto arbitration_id_type = FDCAN_STANDARD_ID;
-
-    static auto convert_config(CanFilterConfig config) -> uint32_t;
-
-    static auto convert_type(CanFilterType type) -> uint32_t;
-
-    static auto convert_length(CanFDMessageLength length) -> uint32_t;
-
 };
