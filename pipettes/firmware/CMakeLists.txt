@@ -8,18 +8,18 @@ add_STM32G4_freertos("Pipettes")
 set(PIPETTE_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/uart_comms.cpp
+        ../../common/firmware/uart/uart_comms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/spi_comms.cpp)
+        ../../common/firmware/spi/spi_comms.cpp)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/uart.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/spi.c
+        ../../common/firmware/uart/uart.c
+        ../../common/firmware/spi/spi.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor.c)
+        ../../common/firmware/motor_driver/motor.c)
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
