@@ -1,11 +1,6 @@
 #include "common/firmware/can.h"
 
 
-/**
- * The can handle.
- */
-FDCAN_HandleTypeDef fdcan1;
-
 
 /**
  * Initialize a connection to FDCAN1

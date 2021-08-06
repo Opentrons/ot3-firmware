@@ -3,6 +3,11 @@
 #include "can/firmware/utils.hpp"
 
 /**
+ * The fd can 1 handle.
+ */
+FDCAN_HandleTypeDef fdcan1;
+
+/**
  * Constructor
  * @param handle Handle to hal fdcan object.
  */
