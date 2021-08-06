@@ -96,7 +96,7 @@ UART_HandleTypeDef MX_LPUART1_UART_Init() {
     /* USER CODE BEGIN USART1_Init 1 */
 
     /* USER CODE END USART1_Init 1 */
-    uint32_t baud_rate = 9600;
+    uint32_t baud_rate = 115200;
     UART_HandleTypeDef huart1 = {
         .Instance = LPUART1,
         .Init = {.BaudRate = baud_rate,
