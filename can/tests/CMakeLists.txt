@@ -10,6 +10,8 @@ add_executable(
         test_parse.cpp
         test_messages.cpp
         test_can_bus.cpp
+        test_can_buffer_task.cpp
+        test_dispatch.cpp
 )
 
 target_include_directories(can PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)

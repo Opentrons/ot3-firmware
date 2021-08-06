@@ -1,9 +1,9 @@
 #pragma once
 
-#include <common/core/bit_utils.hpp>
 #include <cstdint>
 #include <span>
 
+#include "common/core/bit_utils.hpp"
 #include "ids.hpp"
 #include "parse.hpp"
 
@@ -20,12 +20,12 @@ namespace can_messages {
 struct HeartbeatRequest {
     static const auto id = MessageId::heartbeat_request;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> HeartbeatRequest {
         return HeartbeatRequest{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -34,12 +34,12 @@ struct HeartbeatRequest {
 struct HeartbeatResponse {
     static const auto id = MessageId::heartbeat_response;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> HeartbeatResponse {
         return HeartbeatResponse{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -48,12 +48,12 @@ struct HeartbeatResponse {
 struct StopRequest {
     static const auto id = MessageId::stop_request;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> StopRequest {
         return StopRequest{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -62,12 +62,12 @@ struct StopRequest {
 struct GetStatusRequest {
     static const auto id = MessageId::get_status_request;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GetStatusRequest {
         return GetStatusRequest{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -78,7 +78,7 @@ struct GetStatusResponse {
     uint8_t status;
     uint32_t data;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GetStatusResponse {
         uint8_t status = 0;
         uint32_t data = 0;
@@ -89,7 +89,7 @@ struct GetStatusResponse {
         return GetStatusResponse{status, data};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(status, body, limit);
         iter = bit_utils::int_to_bytes(data, iter, limit);
@@ -100,12 +100,12 @@ struct GetStatusResponse {
 struct MoveRequest {
     static const auto id = MessageId::move_request;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
         return MoveRequest{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -114,12 +114,12 @@ struct MoveRequest {
 struct SetupRequest {
     static const auto id = MessageId::setup_request;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetupRequest {
         return SetupRequest{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -129,14 +129,14 @@ struct SetSpeedRequest {
     static const auto id = MessageId::set_speed_request;
     uint32_t mm_sec;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSpeedRequest {
         uint32_t mm_sec = 0;
         body = bit_utils::bytes_to_int(body, limit, mm_sec);
         return SetSpeedRequest{mm_sec};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
         return iter - body;
@@ -146,12 +146,12 @@ struct SetSpeedRequest {
 struct GetSpeedRequest {
     static const auto id = MessageId::get_speed_request;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GetSpeedRequest {
         return GetSpeedRequest{};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
@@ -161,14 +161,14 @@ struct GetSpeedResponse {
     static const auto id = MessageId::get_speed_response;
     uint32_t mm_sec;
 
-    template <can_parse::ByteIterator Input, typename Limit>
+    template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GetSpeedResponse {
         uint32_t mm_sec = 0;
         body = bit_utils::bytes_to_int(body, limit, mm_sec);
         return GetSpeedResponse{mm_sec};
     }
 
-    template <can_parse::ByteIterator Output, typename Limit>
+    template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
         return iter - body;

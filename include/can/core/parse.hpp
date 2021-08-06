@@ -4,17 +4,12 @@
 #include <concepts>
 #include <variant>
 
+#include "common/core/bit_utils.hpp"
 #include "ids.hpp"
 
 using namespace can_ids;
 
 namespace can_parse {
-
-template <typename Iter>
-concept ByteIterator = requires {
-    {std::forward_iterator<Iter>};
-    {std::is_same_v<std::iter_value_t<Iter>, uint8_t>};
-};
 
 template <typename T>
 concept HasMessageID = requires {
@@ -31,7 +26,6 @@ concept HasMessageID = requires {
  */
 template <class T>
 concept Parsable = requires(std::array<uint8_t, 0> buffer) {
-    {HasMessageID<T>};
     /**
      * It has a static parse factory method.
      */
@@ -45,11 +39,21 @@ concept Parsable = requires(std::array<uint8_t, 0> buffer) {
  */
 template <typename T>
 concept Serializable = requires(T& t, std::array<uint8_t, 0> buffer) {
-    {HasMessageID<T>};
     /**
      * It has a serialize method which returns number of bytes written.
      */
     { t.serialize(buffer.begin(), buffer.end()) } -> std::same_as<uint8_t>;
+};
+
+/**
+ * The concept describing a can message.
+ * @tparam T
+ */
+template <typename T>
+concept CanMessage = requires(T& t) {
+    {HasMessageID<T>};
+    {Parsable<T>};
+    {Serializable<T>};
 };
 
 /**
@@ -69,7 +73,7 @@ class Parser {
      * @param payload The body
      * @return A Result variant
      */
-    template <ByteIterator Iterator>
+    template <bit_utils::ByteIterator Iterator>
     auto parse(MessageId message_id, const Iterator& payload,
                const Iterator& limit) -> Result {
         auto result = Result{std::monostate{}};
