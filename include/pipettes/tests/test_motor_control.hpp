@@ -5,6 +5,7 @@
 #include <span>
 
 #include "common/core/bit_utils.hpp"
+#include "motor-control/core/spi.hpp"
 
 /*
  * Test mock for Motor
@@ -24,8 +25,10 @@ enum class MotorRegisters : uint8_t {
 static constexpr auto BUFFER_SIZE = 5;
 using BufferType = std::array<uint8_t, BUFFER_SIZE>;
 
+template <spi::TMC2130Spi SpiDriver>
 class TestMotorDriver {
   public:
+    TestMotorDriver(SpiDriver& spi) : spi_comms(spi) {}
     std::string state = "init";
     void setup() { state = "setup"; }
     void get_status() {
@@ -46,6 +49,7 @@ class TestMotorDriver {
   private:
     uint8_t status = 0x0;
     uint32_t data = 0x0;
+    SpiDriver& spi_comms;
     void build_command(uint8_t command, uint32_t& command_data,
                        std::array<uint8_t, 5>& txBuffer) {}
 
@@ -53,8 +57,10 @@ class TestMotorDriver {
     void reset_status() { status = 0; }
 };
 
+template <spi::TMC2130Spi SpiDriver>
 class TestMotionController {
   public:
+    TestMotionController(SpiDriver& spi) : spi_comms(spi) {}
     void set_speed(uint32_t s) { speed = s; }
     void set_direction(bool d) { direction = d; }
     void set_acceleration(uint32_t a) { acc = a; }
@@ -69,12 +75,16 @@ class TestMotionController {
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;
     bool direction = true;
+    SpiDriver& spi_comms;
 };
 
-class TestMotor {
-  public:
-    TestMotorDriver driver = TestMotorDriver{};
-    TestMotionController motion_controller = TestMotionController{};
+template <spi::TMC2130Spi SpiDriver>
+struct TestMotor {
+    explicit TestMotor(SpiDriver& spi) : spi_comms(spi) {}
+    SpiDriver& spi_comms;
+    TestMotorDriver<SpiDriver> driver = TestMotorDriver{spi_comms};
+    TestMotionController<SpiDriver> motion_controller =
+        TestMotionController{spi_comms};
 };
 
 }  // namespace test_motor_control

@@ -29,7 +29,7 @@ constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
 }
 
 template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver, spi::BufferSize>
+requires spi::TMC2130Spi<SpiDriver>
 class MotorDriver {
   public:
     MotorDriver(SpiDriver& spi) : spi_comms(spi) {}

@@ -1,7 +1,6 @@
 #include "pipettes/firmware/uart_task.hpp"
 
 #include "FreeRTOS.h"
-#include "common/core/motor.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"

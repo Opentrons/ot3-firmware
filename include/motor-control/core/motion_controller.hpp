@@ -8,7 +8,7 @@
 namespace motion_controller {
 
 template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver, spi::BufferSize>
+requires spi::TMC2130Spi<SpiDriver>
 class MotionController {
   public:
     MotionController(SpiDriver& spi) : spi_comms(spi) {}
