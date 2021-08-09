@@ -7,7 +7,7 @@
 #include "common/core/bit_utils.hpp"
 
 /*
- * Test mock for MotorControl
+ * Test mock for Motor
  */
 
 using namespace bit_utils;
@@ -24,19 +24,15 @@ enum class MotorRegisters : uint8_t {
 static constexpr auto BUFFER_SIZE = 5;
 using BufferType = std::array<uint8_t, BUFFER_SIZE>;
 
-class TestMotorControl {
+class TestMotorDriver {
   public:
     std::string state = "init";
     void setup() { state = "setup"; }
-    void stop() { state = "stopped"; }
     void get_status() {
         status = 0x0;
         data = 0x0;
         state = "got_status";
     }
-    void set_speed(uint32_t speed) { data = speed; }
-    uint32_t get_speed() { return 0x00; }
-    void move() { state = "moved"; }
     [[nodiscard]] auto get_current_status() const -> uint8_t { return status; }
     [[nodiscard]] auto get_current_data() const -> uint32_t { return data; }
     static void process_buffer(const BufferType& rxBuffer, uint8_t& status,
@@ -55,6 +51,30 @@ class TestMotorControl {
 
     void reset_data() { data = 0x0; }
     void reset_status() { status = 0; }
+};
+
+class TestMotionController {
+  public:
+    void set_speed(uint32_t s) { speed = s; }
+    void set_direction(bool d) { direction = d; }
+    void set_acceleration(uint32_t a) { acc = a; }
+    void set_distance();
+    void move() { speed = 10000; }
+    void stop() { speed = 0; }
+    uint32_t get_acceleration() { return acc; }
+    uint32_t get_speed() { return speed; }
+    bool get_direction() { return direction; }
+
+  private:
+    uint32_t acc = 0x0;
+    uint32_t speed = 0x0;
+    bool direction = true;
+};
+
+class TestMotor {
+  public:
+    TestMotorDriver driver = TestMotorDriver{};
+    TestMotionController motion_controller = TestMotionController{};
 };
 
 }  // namespace test_motor_control
