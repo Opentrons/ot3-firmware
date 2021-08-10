@@ -22,34 +22,35 @@ class MessageHandler {
   private:
     void handle(const pipette_messages::Stop &m) {
         static_cast<void>(m);
-        motor.stop();
+        motor.motion_controller.stop();
     }
 
     void handle(const pipette_messages::Move &m) {
         static_cast<void>(m);
-        motor.move();
+        motor.motion_controller.move();
     }
 
     void handle(const pipette_messages::Status &m) {
         static_cast<void>(m);
-        motor.get_status();
-        pipette_messages::GetStatusResult message{motor.get_current_status(),
-                                                  motor.get_current_data()};
+        motor.driver.get_status();
+        pipette_messages::GetStatusResult message{
+            motor.driver.get_current_status(), motor.driver.get_current_data()};
         message_writer.write(writer, message);
     }
 
     void handle(const pipette_messages::Setup &m) {
         static_cast<void>(m);
-        motor.setup();
+        motor.driver.setup();
     }
 
     void handle(const pipette_messages::SetSpeed &m) {
-        motor.set_speed(m.mm_sec);
+        motor.motion_controller.set_speed(m.mm_sec);
     }
 
     void handle(const pipette_messages::GetSpeed &m) {
         static_cast<void>(m);
-        pipette_messages::GetSpeedResult message{motor.get_speed()};
+        pipette_messages::GetSpeedResult message{
+            motor.motion_controller.get_speed()};
         message_writer.write(writer, message);
     }
 

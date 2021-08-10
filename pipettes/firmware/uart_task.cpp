@@ -1,12 +1,11 @@
 #include "pipettes/firmware/uart_task.hpp"
 
 #include "FreeRTOS.h"
-#include "common/core/motor.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
-#include "motor-control/core/motor_control.hpp"
-#include "motor-control/core/spi.hpp"
+#include "motor-control/core/motor.hpp"
+//#include "motor-control/core/spi.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/uart_message_handler.hpp"
 #include "task.h"
@@ -18,7 +17,7 @@ static communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static spi::Spi spi_comms{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_control::MotorControl motor{spi_comms};
+static motor_class::Motor motor{spi_comms};
 
 static void run(void *parameter) {
     parameter = nullptr;

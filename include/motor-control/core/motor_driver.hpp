@@ -1,10 +1,9 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
-#include "common/firmware/motor.h"
 #include "spi.hpp"
 
-namespace motor_control {
+namespace motor_driver {
 
 const uint8_t WRITE = 0x80;
 /**
@@ -12,7 +11,7 @@ const uint8_t WRITE = 0x80;
  *
  */
 
-enum class MotorRegisters : uint8_t {
+enum class DriverRegisters : uint8_t {
     IHOLD_IRUN = 0x10,
     GCONF = 0x00,
     GSTAT = 0x01,
@@ -25,30 +24,15 @@ enum class MotorRegisters : uint8_t {
 
 enum class Mode : uint8_t { WRITE = 0x80, READ = 0x0 };
 
-constexpr auto command_byte(Mode mode, MotorRegisters motor_reg) -> uint8_t {
+constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
     return static_cast<uint8_t>(mode) | static_cast<uint8_t>(motor_reg);
 }
 
-constexpr const size_t BufferSize = 5;
-
 template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver, BufferSize>
-class MotorControl {
+requires spi::TMC2130Spi<SpiDriver>
+class MotorDriver {
   public:
-    MotorControl(SpiDriver& spi) : spi_comms(spi) {}
-
-    void set_speed(uint32_t s) { speed = s; }
-    [[nodiscard]] auto get_speed() const -> uint32_t { return speed; }
-
-    void move() {
-        Set_Enable_Pin();
-        Set_Direction();
-        const int tries = 10000;
-        for (int i = 0; i < tries; i++) {
-            Set_Step();
-            Reset_Step();
-        }
-    }
+    MotorDriver(SpiDriver& spi) : spi_comms(spi) {}
 
     void setup() {
         // GCONF 0x01
@@ -58,14 +42,14 @@ class MotorControl {
         constexpr uint32_t ihold_irun_data = 0x1010;
         constexpr uint32_t chopconf = 0x8008;
         auto txBuffer = build_command(
-            command_byte(Mode::WRITE, MotorRegisters::GCONF), gconf_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        txBuffer =
-            build_command(command_byte(Mode::WRITE, MotorRegisters::IHOLD_IRUN),
-                          ihold_irun_data);
+            command_byte(Mode::WRITE, DriverRegisters::GCONF), gconf_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
         txBuffer = build_command(
-            command_byte(Mode::WRITE, MotorRegisters::CHOPCONF), chopconf);
+            command_byte(Mode::WRITE, DriverRegisters::IHOLD_IRUN),
+            ihold_irun_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        txBuffer = build_command(
+            command_byte(Mode::WRITE, DriverRegisters::CHOPCONF), chopconf);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
         process_buffer(rxBuffer, status, data);
     }
@@ -74,14 +58,9 @@ class MotorControl {
         reset_data();
         reset_status();
         auto txBuffer = build_command(
-            command_byte(Mode::READ, MotorRegisters::DRVSTATUS), data);
+            command_byte(Mode::READ, DriverRegisters::DRVSTATUS), data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
         process_buffer(rxBuffer, status, data);
-    }
-
-    void stop() {
-        Reset_Step();
-        Reset_Enable_Pin();
     }
 
     [[nodiscard]] auto get_current_status() const -> uint8_t { return status; }
@@ -91,7 +70,6 @@ class MotorControl {
   private:
     uint8_t status = 0x0;
     uint32_t data = 0x0;
-    uint32_t speed = 0x0;
 
     static constexpr auto BUFFER_SIZE = 5;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
@@ -123,4 +101,4 @@ class MotorControl {
     SpiDriver spi_comms;
 };
 
-}  // namespace motor_control
+}  // namespace motor_driver

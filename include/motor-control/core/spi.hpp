@@ -6,7 +6,9 @@
 
 namespace spi {
 
-template <class Spi, int BufferSize>
+constexpr const size_t BufferSize = 5;
+
+template <class Spi>
 concept TMC2130Spi = requires(Spi spi_comms,
                               const std::array<uint8_t, BufferSize>& transmit,
                               std::array<uint8_t, BufferSize>& receive) {
