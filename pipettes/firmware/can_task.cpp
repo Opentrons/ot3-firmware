@@ -1,4 +1,4 @@
-#include "pipettes/firmware/can_task.hpp"
+#include "common/firmware/can_task.hpp"
 
 #include <array>
 
