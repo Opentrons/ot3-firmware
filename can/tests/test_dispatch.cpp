@@ -40,7 +40,7 @@ SCENARIO("Dispatcher") {
     }
 }
 
-SCENARIO("DispatchTarget") {
+SCENARIO("DispatchBufferTarget") {
     using BufferType = std::array<uint8_t, 1>;
 
     struct Buffer {
@@ -66,12 +66,12 @@ SCENARIO("DispatchTarget") {
     };
 
     GIVEN(
-        "A DispatchTarget that accepts HeartbeatRequest and "
+        "A DispatchBufferTarget that accepts HeartbeatRequest and "
         "HeartbeatResponse") {
         auto l = Buffer{};
         auto buff = BufferType{0xaa};
         auto subject =
-            DispatchTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
+            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
 
         WHEN("Given a HeartbeatRequest") {
             subject.handle(static_cast<uint32_t>(HeartbeatRequest::id),
@@ -93,7 +93,7 @@ SCENARIO("DispatchTarget") {
         auto l = Buffer{};
         auto buff = BufferType{0x55};
         auto subject =
-            DispatchTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
+            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
 
         WHEN("Given a HeartbeatResponse") {
             subject.handle(static_cast<uint32_t>(HeartbeatResponse::id),
@@ -115,7 +115,7 @@ SCENARIO("DispatchTarget") {
         auto l = Buffer{};
         auto buff = BufferType{};
         auto subject =
-            DispatchTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
+            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
 
         WHEN("Given a GetSpeedResponse") {
             subject.handle(static_cast<uint32_t>(GetSpeedResponse::id),
@@ -135,16 +135,21 @@ SCENARIO("DispatchParseTarget") {
         MessageTypes parsed_message{};
     };
 
-    GIVEN("A DispatchParseTarget that accepts hearbeat request and response types") {
+    GIVEN(
+        "A DispatchParseTarget that accepts hearbeat request and response "
+        "types") {
         auto l = Handler{};
         auto buff = BufferType{};
-        auto subject = DispatchParseTarget<Handler, HeartbeatRequest, HeartbeatResponse>(l);
+        auto subject =
+            DispatchParseTarget<Handler, HeartbeatRequest, HeartbeatResponse>(
+                l);
 
         WHEN("Given a HeartbeatRequest") {
             subject.handle(static_cast<uint32_t>(HeartbeatRequest::id),
                            buff.begin(), buff.end());
             THEN("handler is called with a parsed HeartbeatRequest object.") {
-                REQUIRE(std::holds_alternative<HeartbeatRequest>(l.parsed_message));
+                REQUIRE(
+                    std::holds_alternative<HeartbeatRequest>(l.parsed_message));
             }
         }
     }

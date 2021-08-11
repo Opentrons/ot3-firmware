@@ -11,8 +11,8 @@ using namespace can_message_buffer;
 namespace can_dispatch {
 
 /**
- *
- * @tparam T
+ * A message id lookup.
+ * @tparam T Types that match the HasMessageID concept.
  */
 template <HasMessageID... T>
 class MessageIdFilter {
@@ -53,7 +53,6 @@ concept HandlesMessages =
     {t.handle(message)};
 };
 
-
 /**
  * A CanMessageBufferListener that parses messages and notifies a Handler
  * @tparam HandlerType A HandlesMessages type
@@ -63,13 +62,13 @@ template <typename HandlerType, CanMessage... MessageTypes>
 requires HandlesMessages<HandlerType, MessageTypes...>
 class DispatchParseTarget {
   public:
-    DispatchParseTarget(HandlerType& handler)
-    : handler{handler}, parser{} {}
+    DispatchParseTarget(HandlerType& handler) : handler{handler}, parser{} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        auto result = parser.parse(static_cast<MessageId>(arbitration_id), input, limit);
+        auto result =
+            parser.parse(MessageId{(uint16_t)arbitration_id}, input, limit);
         handler.handle(result);
     }
 
@@ -87,9 +86,9 @@ class DispatchParseTarget {
  */
 template <message_buffer::MessageBuffer BufferType,
           HasMessageID... MessageTypes>
-class DispatchTarget {
+class DispatchBufferTarget {
   public:
-    explicit DispatchTarget(BufferType& buffer) : writer{buffer}, coll{} {}
+    explicit DispatchBufferTarget(BufferType& buffer) : writer{buffer}, coll{} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
