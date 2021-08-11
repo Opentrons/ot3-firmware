@@ -4,17 +4,22 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Gantry")
 add_STM32G4_freertos("Gantry")
 
+set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
+
 # Add source files that should be checked by clang-tidy here
 set(GANTRY_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         )
 
 set(GANTRY_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/uart.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/spi.c)
+        ${COMMON_EXECUTABLE_DIR}/uart/uart.c
+        ${COMMON_EXECUTABLE_DIR}/spi/spi.c
+        ${COMMON_EXECUTABLE_DIR}/can/can.c
+        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 
 add_executable(gantry
         ${GANTRY_FW_LINTABLE_SRCS}
