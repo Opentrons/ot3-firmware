@@ -71,7 +71,8 @@ SCENARIO("DispatchBufferTarget") {
         auto l = Buffer{};
         auto buff = BufferType{0xaa};
         auto subject =
-            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
+            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(
+                l);
 
         WHEN("Given a HeartbeatRequest") {
             subject.handle(static_cast<uint32_t>(HeartbeatRequest::id),
@@ -93,7 +94,8 @@ SCENARIO("DispatchBufferTarget") {
         auto l = Buffer{};
         auto buff = BufferType{0x55};
         auto subject =
-            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
+            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(
+                l);
 
         WHEN("Given a HeartbeatResponse") {
             subject.handle(static_cast<uint32_t>(HeartbeatResponse::id),
@@ -115,7 +117,8 @@ SCENARIO("DispatchBufferTarget") {
         auto l = Buffer{};
         auto buff = BufferType{};
         auto subject =
-            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(l);
+            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(
+                l);
 
         WHEN("Given a GetSpeedResponse") {
             subject.handle(static_cast<uint32_t>(GetSpeedResponse::id),

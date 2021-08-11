@@ -7,22 +7,23 @@
 
 namespace freertos_can_dispatch {
 
-template <message_buffer::MessageBuffer BufferType, can_message_buffer::CanMessageBufferListener Listener>
+template <message_buffer::MessageBuffer BufferType,
+          can_message_buffer::CanMessageBufferListener Listener>
 class FreeRTOSCanBufferPoller {
   public:
-    FreeRTOSCanBufferPoller(BufferType & buffer, Listener & listener): buffer{buffer},listener{listener}, reader{buffer, listener} {
-    }
+    FreeRTOSCanBufferPoller(BufferType& buffer, Listener& listener)
+        : buffer{buffer}, listener{listener}, reader{buffer, listener} {}
 
-    void operator() () {
+    void operator()() {
         for (;;) {
             reader.read(portMAX_DELAY);
         }
     }
 
   private:
-    BufferType & buffer;
-    Listener & listener;
+    BufferType& buffer;
+    Listener& listener;
     can_message_buffer::CanMessageBufferReader<BufferType, Listener> reader;
 };
 
-}
+}  // namespace freertos_can_dispatch

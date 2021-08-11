@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
+
 #include "message_buffer.h"
 
 namespace freertos_message_buffer {
@@ -36,18 +37,20 @@ FreeRTOMessageBuffer<BufferSize>::FreeRTOMessageBuffer() {
 }
 
 template <std::size_t BufferSize>
-FreeRTOMessageBuffer<BufferSize>::~FreeRTOMessageBuffer() { vMessageBufferDelete(handle); }
+FreeRTOMessageBuffer<BufferSize>::~FreeRTOMessageBuffer() {
+    vMessageBufferDelete(handle);
+}
 
 template <std::size_t BufferSize>
 auto FreeRTOMessageBuffer<BufferSize>::send(const uint8_t* buffer,
-                                std::size_t buffer_length, uint32_t timeout)
-    -> std::size_t {
+                                            std::size_t buffer_length,
+                                            uint32_t timeout) -> std::size_t {
     return xMessageBufferSend(handle, buffer, buffer_length, timeout);
 }
 
 template <std::size_t BufferSize>
 auto FreeRTOMessageBuffer<BufferSize>::send_from_isr(const uint8_t* buffer,
-                                         std::size_t buffer_length)
+                                                     std::size_t buffer_length)
     -> std::size_t {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
@@ -63,8 +66,10 @@ auto FreeRTOMessageBuffer<BufferSize>::send_from_isr(const uint8_t* buffer,
 }
 
 template <std::size_t BufferSize>
-auto FreeRTOMessageBuffer<BufferSize>::receive(uint8_t* buffer, std::size_t buffer_length,
-                                   uint32_t timeout) -> std::size_t {
+auto FreeRTOMessageBuffer<BufferSize>::receive(uint8_t* buffer,
+                                               std::size_t buffer_length,
+                                               uint32_t timeout)
+    -> std::size_t {
     return xMessageBufferReceive(handle, buffer, buffer_length, timeout);
 }
 

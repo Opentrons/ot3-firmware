@@ -88,7 +88,8 @@ template <message_buffer::MessageBuffer BufferType,
           HasMessageID... MessageTypes>
 class DispatchBufferTarget {
   public:
-    explicit DispatchBufferTarget(BufferType& buffer) : writer{buffer}, coll{} {}
+    explicit DispatchBufferTarget(BufferType& buffer)
+        : writer{buffer}, coll{} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
