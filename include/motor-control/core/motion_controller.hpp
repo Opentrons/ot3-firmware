@@ -33,6 +33,7 @@ class MotionController {
         const int tries = 10000;
         for (int i = 0; i < tries; i++) {
             Set_Step();
+            Delay(1);
             Reset_Step();
         }
     }

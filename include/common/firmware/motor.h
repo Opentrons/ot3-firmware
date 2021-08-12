@@ -8,6 +8,7 @@ void Set_Enable_Pin();
 void Reset_Step();
 void Reset_Direction();
 void Reset_Enable_Pin();
+void Delay(const int seconds);
 
 #ifdef __cplusplus
 }  // extern "C"
