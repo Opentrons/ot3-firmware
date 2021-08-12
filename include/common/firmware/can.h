@@ -7,6 +7,12 @@
 extern "C" {
 #endif  // __cplusplus
 
+
+/**
+ * The global can 1 handle.
+ */
+extern FDCAN_HandleTypeDef fdcan1;
+
 /**
  * Initializa FDCAN1
  *

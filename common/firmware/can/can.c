@@ -1,5 +1,9 @@
 #include "common/firmware/can.h"
 
+/**
+* The global can 1 handle.
+*/
+FDCAN_HandleTypeDef fdcan1;
 
 
 /**

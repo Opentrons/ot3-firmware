@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 
+#include "FreeRTOS.h"
 #include "message_buffer.h"
 
 namespace freertos_message_buffer {

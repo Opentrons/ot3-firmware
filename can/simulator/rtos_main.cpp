@@ -2,7 +2,7 @@
 #include <variant>
 
 #include "FreeRTOS.h"
-#include "can/core/can_buffer_task.hpp"
+#include "can/core/can_message_buffer.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/messages.hpp"

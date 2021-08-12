@@ -11,7 +11,7 @@ using namespace message_buffer;
 namespace can_message_buffer {
 
 /**
- * Class to write can messages into a MessageBuffer.
+ * Class to write can arbitration ids and data payload into a MessageBuffer.
  *
  * @tparam Buffer A MessageBuffer instance.
  */
@@ -79,7 +79,8 @@ class CanMessageBufferWriter {
 };
 
 /**
- * A can message buffer listener
+ * The CanMessageBufferReader callback interface
+ *
  * @tparam T type constrained by this concept
  */
 template <typename T>
@@ -89,14 +90,20 @@ concept CanMessageBufferListener = requires(T t, uint32_t arbitration_id,
 };
 
 /**
- * Class that reads from a can message from a MessageBuffer and notifies a
- * listener
- * @tparam Buffer a MessageBuffer
- * @tparam Listener a CanMessageBufferListener
+ * Class that reads a can message's arbitration id and data payload from a
+ * MessageBuffer and notifies a CanMessageBufferListener
+ *
+ * @tparam Buffer the MessageBuffer type
+ * @tparam Listener the CanMessageBufferListener type
  */
 template <MessageBuffer Buffer, CanMessageBufferListener Listener>
 class CanMessageBufferReader {
   public:
+    /**
+     * Constructor
+     * @param b A MessageBuffer instance to read from
+     * @param l The CanMessageBufferListener to notify on a read
+     */
     explicit CanMessageBufferReader(Buffer& b, Listener& l)
         : message_buffer{b}, listener{l} {}
 

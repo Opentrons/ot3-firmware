@@ -7,6 +7,7 @@ find_package(STM32G4xx)
 # Add source files that should be checked by clang-tidy here
 set(CAN_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/hal_can_bus.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/hal_can_message_buffer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp
         )
 

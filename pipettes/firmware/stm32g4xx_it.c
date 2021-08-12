@@ -23,6 +23,7 @@
 #include "stm32g4xx_it.h"
 
 #include "stm32g4xx_hal.h"
+#include "common/firmware/can.h"
 
 /** @addtogroup STM32G4xx_HAL_Examples
  * @{
@@ -118,14 +119,10 @@ void DebugMon_Handler(void) {}
 {
 }*/
 
-/**
- * @}
- */
+
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
-extern FDCAN_HandleTypeDef fdcan1;
-
 void FDCAN1_IT0_IRQHandler(void)
 {
     /* USER CODE BEGIN FDCAN1_IT0_IRQn 0 */

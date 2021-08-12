@@ -2,15 +2,6 @@
 
 #include "can/firmware/utils.hpp"
 
-/**
- * The fd can 1 handle.
- */
-FDCAN_HandleTypeDef fdcan1;
-
-/**
- * Constructor
- * @param handle Handle to hal fdcan object.
- */
 HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
     : handle(handle),
       tx_header{.IdType = arbitration_id_type,
@@ -20,16 +11,6 @@ HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
                 .FDFormat = FDCAN_FD_CAN,
                 .TxEventFifoControl = FDCAN_NO_TX_EVENTS} {}
 
-/**
- * Add an arbitration id filter.
- *
- * @param type the type of filter
- * @param config the filter configuration
- * @param val1 depends on the type. Is either a filter, exact arbitration id, or
- * minimum arbitration id
- * @param val2 depends on the type. Is either a mask, exact arbitration id, or
- * masimum arbitration id
- */
 void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,
                            uint32_t val1, uint32_t val2) {
     FDCAN_FilterTypeDef filter_def{
@@ -42,12 +23,6 @@ void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,
     HAL_FDCAN_ConfigFilter(handle, &filter_def);
 }
 
-/**
- * Send a buffer on can bus
- * @param arbitration_id The arbitration id
- * @param buffer buffer to send
- * @param buffer_length length of buffer
- */
 void HalCanBus::send(uint32_t arbitration_id, uint8_t* buffer,
                      CanFDMessageLength buffer_length) {
     tx_header.Identifier = arbitration_id;
@@ -55,4 +30,16 @@ void HalCanBus::send(uint32_t arbitration_id, uint8_t* buffer,
     tx_header.MessageMarker = 0;
 
     HAL_FDCAN_AddMessageToTxFifoQ(handle, &tx_header, buffer);
+}
+
+auto HalCanBus::start() -> HAL_StatusTypeDef {
+    auto result = HAL_FDCAN_ActivateNotification(
+        handle, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE,
+        0);
+
+    if (result != HAL_OK) {
+        return result;
+    }
+
+    return HAL_FDCAN_Start(handle);
 }

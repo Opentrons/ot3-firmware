@@ -22,7 +22,8 @@ class MessageWriter {
      */
     template <can_parse::Serializable Serializable>
     void write(can_ids::NodeId node, const Serializable& message) {
-        arbitration_id.parts.message_id = static_cast<unsigned int>(message.id);
+        arbitration_id.id = 0;
+        arbitration_id.parts.message_id = static_cast<uint16_t>(message.id);
         // TODO (al 2021-08-03): populate this from Message?
         arbitration_id.parts.function_code = 0;
         arbitration_id.parts.node_id = static_cast<unsigned int>(node);

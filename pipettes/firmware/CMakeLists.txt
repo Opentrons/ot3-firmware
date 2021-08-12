@@ -6,6 +6,8 @@ add_STM32G4_freertos("Pipettes")
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
+set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
+
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -13,7 +15,10 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${COMMON_EXECUTABLE_DIR}/uart/uart_comms.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
-    ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp)
+    ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
+    ${CAN_FW_DIR}/hal_can_bus.cpp
+    ${CAN_FW_DIR}/hal_can_message_buffer.cpp
+    ${CAN_FW_DIR}/utils.cpp)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
@@ -31,7 +36,7 @@ target_link_libraries(pipettes
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes
         can-core
-        can)
+        )
 
 set_target_properties(pipettes
         PROPERTIES CXX_STANDARD 20
@@ -58,6 +63,12 @@ target_include_directories(STM32G4xx_Drivers_Pipettes
         PUBLIC .)
 target_include_directories(STM32G4xx_FreeRTOS_Pipettes
         PUBLIC .)
+
+#target_include_directories(can
+#        PUBLIC
+#        .
+#        ${freertos_source}/include
+#        ${freertos_port_source})
 
 target_compile_definitions(STM32G4xx_Drivers_Pipettes
         PUBLIC STM32G491xx)
