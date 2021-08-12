@@ -1,6 +1,6 @@
 #pragma once
 
-#include "can_buffer_task.hpp"
+#include "can_message_buffer.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/message_buffer.hpp"
 #include "parse.hpp"

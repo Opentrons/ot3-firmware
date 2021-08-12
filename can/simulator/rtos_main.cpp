@@ -41,43 +41,27 @@ struct HandlerB {
         std::cout << "HandlerB monostate" << std::endl;
     }
 
-    void visit(StopRequest &m) {
-        std::cout << "HandlerB heartbeat" << std::endl;
-    }
+    void visit(StopRequest &m) { std::cout << "HandlerB stop" << std::endl; }
 };
-
-using BufferType = FreeRTOMessageBuffer<256>;
-
-// Separate message buffers
-static auto a_buffer = FreeRTOMessageBuffer<256>{};
-static auto b_buffer = FreeRTOMessageBuffer<256>{};
 
 // Handlers for the parsed messages
 static auto a_handler = HandlerA{};
 static auto b_handler = HandlerB{};
 
-// Parser listeners
-static auto a_builder =
-    DispatchParseTarget<HandlerA, GetSpeedRequest>(a_handler);
-static auto b_builder = DispatchParseTarget<HandlerB, StopRequest>(b_handler);
-
-// Buffer poller functions
-static auto poller_a =
-    freertos_can_dispatch::FreeRTOSCanBufferPoller{a_buffer, a_builder};
-static auto poller_b =
-    freertos_can_dispatch::FreeRTOSCanBufferPoller{b_buffer, b_builder};
+// The dispatch targets.
+static auto a = freertos_can_dispatch::FreeRTOSCanDispatcherTarget<
+    256, HandlerA, GetSpeedRequest>{a_handler};
+static auto b =
+    freertos_can_dispatch::FreeRTOSCanDispatcherTarget<256, HandlerB,
+                                                       StopRequest>{b_handler};
 
 // Buffer poller tasks
 static auto dispatcher_task_a =
-    FreeRTOSTask<256, 5, decltype(poller_a)>("dispatcher_a", poller_a);
+    FreeRTOSTask<256, 5, decltype(a.poller)>("dispatcher_a", a.poller);
 static auto dispatcher_task_b =
-    FreeRTOSTask<256, 5, decltype(poller_b)>("dispatcher_b", poller_b);
+    FreeRTOSTask<256, 5, decltype(b.poller)>("dispatcher_b", b.poller);
 
-static auto a_target =
-    DispatchBufferTarget<BufferType, GetSpeedRequest>{a_buffer};
-static auto b_target = DispatchBufferTarget<BufferType, StopRequest>{b_buffer};
-
-static auto dispatcher = Dispatcher(&a_target, &b_target);
+static auto dispatcher = Dispatcher(&a.buffer_target, &b.buffer_target);
 
 static auto buffer = FreeRTOMessageBuffer<1024>{};
 static auto poller =

@@ -3,6 +3,7 @@
 #include <array>
 
 #include "FreeRTOS.h"
+#include "task.h"
 
 namespace freertos_task {
 

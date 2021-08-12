@@ -1,6 +1,6 @@
 #include <array>
 
-#include "can/core/can_buffer_task.hpp"
+#include "can/core/can_message_buffer.hpp"
 #include "catch2/catch.hpp"
 
 using namespace can_message_buffer;

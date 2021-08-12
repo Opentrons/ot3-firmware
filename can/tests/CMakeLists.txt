@@ -10,7 +10,7 @@ add_executable(
         test_parse.cpp
         test_messages.cpp
         test_can_bus.cpp
-        test_can_buffer_task.cpp
+        test_can_message_buffer.cpp
         test_dispatch.cpp
 )
 
