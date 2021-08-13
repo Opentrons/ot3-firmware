@@ -4,7 +4,13 @@
 #include "can_message_buffer.hpp"
 #include "common/core/freertos_message_buffer.hpp"
 #include "dispatch.hpp"
-#include "parse.hpp"
+#include "message_core.hpp"
+
+using namespace message_core;
+using namespace message_buffer;
+using namespace can_message_buffer;
+using namespace can_dispatch;
+using namespace freertos_message_buffer;
 
 namespace freertos_can_dispatch {
 
@@ -13,8 +19,8 @@ namespace freertos_can_dispatch {
  * @tparam BufferType The MessageBuffer type
  * @tparam Listener The CanMessageBufferListener type
  */
-template <message_buffer::MessageBuffer BufferType,
-          can_message_buffer::CanMessageBufferListener Listener>
+template <MessageBuffer BufferType,
+          CanMessageBufferListener Listener>
 class FreeRTOSCanBufferPoller {
   public:
     /**
@@ -38,7 +44,7 @@ class FreeRTOSCanBufferPoller {
   private:
     BufferType& buffer;
     Listener& listener;
-    can_message_buffer::CanMessageBufferReader<BufferType, Listener> reader;
+    CanMessageBufferReader<BufferType, Listener> reader;
 };
 
 /**
@@ -52,8 +58,8 @@ class FreeRTOSCanBufferPoller {
  * in.
  */
 template <std::size_t BufferSize, typename HandlerType,
-          can_parse::CanMessage... MessageTypes>
-requires can_dispatch::HandlesMessages<HandlerType, MessageTypes...>
+          CanMessage... MessageTypes>
+requires HandlesMessages<HandlerType, MessageTypes...>
 struct FreeRTOSCanDispatcherTarget {
     /**
      * Constructor.
@@ -67,23 +73,18 @@ struct FreeRTOSCanDispatcherTarget {
           parse_target{handler},
           poller{message_buffer, parse_target} {}
 
-    using BufferType =
-        freertos_message_buffer::FreeRTOMessageBuffer<BufferSize>;
+    using BufferType = FreeRTOMessageBuffer<BufferSize>;
 
     // The message buffer
     BufferType message_buffer;
     // A CanMessageBufferListener writing CAN messages into message_buffer.
-    can_dispatch::DispatchBufferTarget<BufferType, MessageTypes...>
-        buffer_target;
+    DispatchBufferTarget<BufferType, MessageTypes...> buffer_target;
     // A CanMessageBufferListener that parses CAN messages and notifies a
     // handler
-    can_dispatch::DispatchParseTarget<HandlerType, MessageTypes...>
-        parse_target;
+    DispatchParseTarget<HandlerType, MessageTypes...> parse_target;
     // A freertos task entry point that polls message_buffer and notifies
     // parse_target.
-    FreeRTOSCanBufferPoller<BufferType, can_dispatch::DispatchParseTarget<
-                                            HandlerType, MessageTypes...>>
-        poller;
+    FreeRTOSCanBufferPoller<BufferType, DispatchParseTarget<HandlerType, MessageTypes...>> poller;
 };
 
 }  // namespace freertos_can_dispatch

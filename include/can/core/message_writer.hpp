@@ -4,7 +4,7 @@
 
 #include "can_bus.hpp"
 #include "ids.hpp"
-#include "parse.hpp"
+#include "message_core.hpp"
 
 namespace can_message_writer {
 
@@ -20,7 +20,7 @@ class MessageWriter {
      * @param node The node id
      * @param message The message to send
      */
-    template <can_parse::Serializable Serializable>
+    template <message_core::Serializable Serializable>
     void write(can_ids::NodeId node, const Serializable& message) {
         arbitration_id.id = 0;
         arbitration_id.parts.message_id = static_cast<uint16_t>(message.id);
