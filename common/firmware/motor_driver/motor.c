@@ -1,9 +1,11 @@
+#pragma once
 /*
  * A C file to act as a middle layer to HAL related functions for GPIO.
  */
 
+#include "FreeRTOS.h"
 #include "stm32g4xx_hal_conf.h"
-
+#include "task.h"
 
 void Set_Direction() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); }
 
@@ -16,3 +18,5 @@ void Reset_Direction() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); }
 void Set_Enable_Pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET); }
 
 void Reset_Enable_Pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET); }
+
+void Delay(const int seconds) { vTaskDelay(seconds); }

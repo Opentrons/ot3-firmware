@@ -132,7 +132,7 @@ extern "C" {
  * PLL).
  */
 #if !defined(HSI_VALUE)
-#define HSI_VALUE (32000000UL) /*!< Value of the Internal oscillator in Hz*/
+#define HSI_VALUE (16000000UL) /*!< Value of the Internal oscillator in Hz*/
 #endif                         /* HSI_VALUE */
 
 /**
