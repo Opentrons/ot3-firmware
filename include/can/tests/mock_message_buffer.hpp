@@ -11,15 +11,12 @@ namespace mock_message_buffer {
  */
 template <std::size_t MaxBufferSize>
 struct MockMessageBuffer {
-
     template <typename Iter, typename Limit>
-    MockMessageBuffer(Iter iter, Limit limit)
-    : length{limit - iter} {
+    MockMessageBuffer(Iter iter, Limit limit) : length{limit - iter} {
         std::copy(iter, limit, buff.begin());
     }
 
-    MockMessageBuffer() {
-    }
+    MockMessageBuffer() {}
 
     template <typename Iter, typename Limit>
     auto send(Iter iter, Limit limit, uint32_t timeout) -> std::size_t {
@@ -54,5 +51,4 @@ struct MockMessageBuffer {
     uint32_t timeout = 0;
 };
 
-
-} // namespace mock_message_buffer
+}  // namespace mock_message_buffer
