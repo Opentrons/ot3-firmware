@@ -19,8 +19,7 @@ namespace freertos_can_dispatch {
  * @tparam BufferType The MessageBuffer type
  * @tparam Listener The CanMessageBufferListener type
  */
-template <MessageBuffer BufferType,
-          CanMessageBufferListener Listener>
+template <MessageBuffer BufferType, CanMessageBufferListener Listener>
 class FreeRTOSCanBufferPoller {
   public:
     /**
@@ -84,7 +83,9 @@ struct FreeRTOSCanDispatcherTarget {
     DispatchParseTarget<HandlerType, MessageTypes...> parse_target;
     // A freertos task entry point that polls message_buffer and notifies
     // parse_target.
-    FreeRTOSCanBufferPoller<BufferType, DispatchParseTarget<HandlerType, MessageTypes...>> poller;
+    FreeRTOSCanBufferPoller<BufferType,
+                            DispatchParseTarget<HandlerType, MessageTypes...>>
+        poller;
 };
 
 }  // namespace freertos_can_dispatch

@@ -1,9 +1,12 @@
 #include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
+#include "can/tests/mock_message_buffer.hpp"
 #include "catch2/catch.hpp"
+#include "common/core/bit_utils.hpp"
 
 using namespace can_dispatch;
 using namespace can_messages;
+using namespace mock_message_buffer;
 
 SCENARIO("Dispatcher") {
     using BufferType = std::array<uint8_t, 1>;
@@ -43,47 +46,30 @@ SCENARIO("Dispatcher") {
 SCENARIO("DispatchBufferTarget") {
     using BufferType = std::array<uint8_t, 1>;
 
-    struct Buffer {
-        auto send(const uint8_t* buffer, std::size_t buffer_length,
-                  uint32_t timeout) -> std::size_t {
-            for (std::size_t i = 0; i < buffer_length; i++) {
-                result[i] = *(buffer + i);
-            }
-            size = buffer_length;
-            return buffer_length;
-        }
-        auto send_from_isr(const uint8_t* buffer, std::size_t buffer_length)
-            -> std::size_t {
-            return 0;
-        }
-        auto receive(uint8_t* buffer, std::size_t buffer_length,
-                     uint32_t timeout) -> std::size_t {
-            return 0;
-        }
-
-        std::array<uint8_t, 68> result;
-        std::size_t size = 0;
-    };
-
     GIVEN(
         "A DispatchBufferTarget that accepts HeartbeatRequest and "
         "HeartbeatResponse") {
-        auto l = Buffer{};
+        auto l = MockMessageBuffer<1>{};
         auto buff = BufferType{0xaa};
-        auto subject =
-            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(
-                l);
+        auto subject = DispatchBufferTarget<decltype(l), HeartbeatRequest,
+                                            HeartbeatResponse>(l);
 
         WHEN("Given a HeartbeatRequest") {
-            subject.handle(static_cast<uint32_t>(HeartbeatRequest::id),
-                           buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.message_id =
+                static_cast<uint16_t>(HeartbeatRequest::id);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
             THEN("send is called.") {
-                REQUIRE(l.size == 5);
-                REQUIRE(l.result[0] == 0);
-                REQUIRE(l.result[1] == 0);
-                REQUIRE(l.result[2] == 0xF0);
-                REQUIRE(l.result[3] == 0);
-                REQUIRE(l.result[4] == 0xaa);
+                auto arbitration_id_buffer = std::array<uint8_t, 4>{};
+                auto iter = arbitration_id_buffer.begin();
+                iter = bit_utils::int_to_bytes(arbitration_id.id, iter,
+                                               arbitration_id_buffer.end());
+                REQUIRE(l.length == 5);
+                REQUIRE(l.buff[0] == arbitration_id_buffer[0]);
+                REQUIRE(l.buff[1] == arbitration_id_buffer[1]);
+                REQUIRE(l.buff[2] == arbitration_id_buffer[2]);
+                REQUIRE(l.buff[3] == arbitration_id_buffer[3]);
+                REQUIRE(l.buff[4] == 0xaa);
             }
         }
     }
@@ -91,22 +77,27 @@ SCENARIO("DispatchBufferTarget") {
     GIVEN(
         "A DispatchTarget that accepts HeartbeatRequest and "
         "HeartbeatResponse") {
-        auto l = Buffer{};
+        auto l = MockMessageBuffer<1>{};
         auto buff = BufferType{0x55};
-        auto subject =
-            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(
-                l);
+        auto subject = DispatchBufferTarget<decltype(l), HeartbeatRequest,
+                                            HeartbeatResponse>(l);
 
         WHEN("Given a HeartbeatResponse") {
-            subject.handle(static_cast<uint32_t>(HeartbeatResponse::id),
-                           buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.message_id =
+                static_cast<uint16_t>(HeartbeatResponse::id);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
             THEN("send is called") {
-                REQUIRE(l.size == 5);
-                REQUIRE(l.result[0] == 0);
-                REQUIRE(l.result[1] == 0);
-                REQUIRE(l.result[2] == 0xF0);
-                REQUIRE(l.result[3] == 1);
-                REQUIRE(l.result[4] == 0x55);
+                auto arbitration_id_buffer = std::array<uint8_t, 4>{};
+                auto iter = arbitration_id_buffer.begin();
+                iter = bit_utils::int_to_bytes(arbitration_id.id, iter,
+                                               arbitration_id_buffer.end());
+                REQUIRE(l.length == 5);
+                REQUIRE(l.buff[0] == arbitration_id_buffer[0]);
+                REQUIRE(l.buff[1] == arbitration_id_buffer[1]);
+                REQUIRE(l.buff[2] == arbitration_id_buffer[2]);
+                REQUIRE(l.buff[3] == arbitration_id_buffer[3]);
+                REQUIRE(l.buff[4] == 0x55);
             }
         }
     }
@@ -114,16 +105,17 @@ SCENARIO("DispatchBufferTarget") {
     GIVEN(
         "A DispatchTarget that accepts HeartbeatRequest and "
         "HeartbeatResponse") {
-        auto l = Buffer{};
+        auto l = MockMessageBuffer<1>{};
         auto buff = BufferType{};
-        auto subject =
-            DispatchBufferTarget<Buffer, HeartbeatRequest, HeartbeatResponse>(
-                l);
+        auto subject = DispatchBufferTarget<decltype(l), HeartbeatRequest,
+                                            HeartbeatResponse>(l);
 
         WHEN("Given a GetSpeedResponse") {
-            subject.handle(static_cast<uint32_t>(GetSpeedResponse::id),
-                           buff.begin(), buff.end());
-            THEN("listeners are not called") { REQUIRE(l.size == 0); }
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.message_id =
+                static_cast<uint16_t>(GetSpeedResponse::id);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            THEN("listeners are not called") { REQUIRE(l.length == 0); }
         }
     }
 }
@@ -148,8 +140,10 @@ SCENARIO("DispatchParseTarget") {
                 l);
 
         WHEN("Given a HeartbeatRequest") {
-            subject.handle(static_cast<uint32_t>(HeartbeatRequest::id),
-                           buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.message_id =
+                static_cast<uint16_t>(HeartbeatRequest::id);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
             THEN("handler is called with a parsed HeartbeatRequest object.") {
                 REQUIRE(
                     std::holds_alternative<HeartbeatRequest>(l.parsed_message));

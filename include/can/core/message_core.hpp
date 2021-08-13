@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+
 #include "ids.hpp"
 
 using namespace can_ids;
@@ -30,13 +31,13 @@ concept HasMessageID = requires {
  * @tparam T
  */
 template <class T>
-    concept Parsable = requires(std::array<uint8_t, 0> buffer) {
-        /**
-         * It has a static parse factory method.
-         */
-        { T::parse(buffer.begin(), buffer.end()) } -> std::same_as<T>;
-        { T::parse(buffer.cbegin(), buffer.cend()) } -> std::same_as<T>;
-    };
+concept Parsable = requires(std::array<uint8_t, 0> buffer) {
+    /**
+     * It has a static parse factory method.
+     */
+    { T::parse(buffer.begin(), buffer.end()) } -> std::same_as<T>;
+    { T::parse(buffer.cbegin(), buffer.cend()) } -> std::same_as<T>;
+};
 
 /**
  * The concept describing the interface of a serializable can message.
@@ -61,4 +62,4 @@ concept CanMessage = requires(T& t) {
     {Serializable<T>};
 };
 
-}
+}  // namespace message_core

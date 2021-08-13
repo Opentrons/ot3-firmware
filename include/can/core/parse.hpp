@@ -1,6 +1,7 @@
 #pragma once
 
 #include <variant>
+
 #include "common/core/bit_utils.hpp"
 #include "ids.hpp"
 #include "message_core.hpp"

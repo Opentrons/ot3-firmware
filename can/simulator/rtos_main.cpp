@@ -9,7 +9,6 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/freertos_message_buffer.hpp"
 #include "common/core/freertos_task.hpp"
-#include "queue.h"
 
 using namespace freertos_message_buffer;
 using namespace can_dispatch;
@@ -28,7 +27,7 @@ struct HandlerA {
     }
 
     void visit(GetSpeedRequest &m) {
-        std::cout << "HandlerA set speed" << std::endl;
+        std::cout << "HandlerA get speed request" << std::endl;
     }
 };
 
@@ -70,13 +69,20 @@ static auto dispatcher_task =
     FreeRTOSTask<256, 5, decltype(poller)>("dispatcher", poller);
 
 void vATaskFunction(void *pvParameters) {
-    int i = 0;
+    auto ids = std::array<MessageId, 3>{StopRequest::id, GetSpeedRequest::id,
+                                        MoveRequest::id};
+    auto i = 0;
     auto buff = std::array<uint8_t, 4>{};
     for (;;) {
+        auto arbitration_id = ArbitrationId{.id = 0};
+        arbitration_id.parts.message_id = static_cast<uint16_t>(ids[i]);
+        std::cout << "Sending arbitration id " << std::hex << arbitration_id.id
+                  << std::endl;
         vTaskDelay(1000);
-        auto a = bit_utils::int_to_bytes(i, buff.begin(), buff.end());
-        buffer.send(buff.data(), buff.size(), 0);
-        ++i;
+        auto a = bit_utils::int_to_bytes(arbitration_id.id, buff.begin(),
+                                         buff.end());
+        buffer.send(buff.begin(), buff.end(), 0);
+        i = ++i % ids.size();
     }
     vTaskDelete(NULL);
 }

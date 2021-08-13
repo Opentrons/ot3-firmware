@@ -1,42 +1,21 @@
 #include <array>
 
 #include "can/core/can_message_buffer.hpp"
+#include "can/tests/mock_message_buffer.hpp"
 #include "catch2/catch.hpp"
 
 using namespace can_message_buffer;
+using namespace mock_message_buffer;
 
 SCENARIO("can message buffer writer send works") {
-    struct MockMessageBuffer {
-        auto send(const uint8_t* buffer, uint32_t buffer_length,
-                  uint32_t timeout) -> std::size_t {
-            for (uint32_t i = 0; i < buffer_length; i++) {
-                buff[i] = *(buffer + i);
-            }
-            this->timeout = timeout;
-            length = buffer_length;
-            return buffer_length;
-        }
+    using TestBufferType = std::array<uint8_t, 2>;
 
-        auto send_from_isr(const uint8_t* buffer, uint32_t buffer_length)
-            -> std::size_t {
-            return 0;
-        }
-        auto receive(uint8_t* buffer, uint32_t buffer_length, uint32_t timeout)
-            -> std::size_t {
-            return 0;
-        }
-
-        std::array<uint32_t, 68> buff;
-        uint32_t length;
-        uint32_t timeout;
-    };
-
-    auto buffer = MockMessageBuffer();
+    auto buffer = MockMessageBuffer<2>();
     auto subject = CanMessageBufferWriter(buffer);
 
     GIVEN("a message and arbitration id") {
         WHEN("sent") {
-            auto body = std::array<uint8_t, 2>{0, 1};
+            auto body = TestBufferType{0, 1};
             auto arbitration_id = 0x332211ff;
             uint32_t timeout = 100;
             auto r =
@@ -57,11 +36,11 @@ SCENARIO("can message buffer writer send works") {
 
     GIVEN("an arbitration id") {
         WHEN("sent") {
-            auto body = std::array<uint8_t, 0>{};
+            auto body = TestBufferType{};
             auto arbitration_id = 0x332211ff;
             uint32_t timeout = 1;
-            auto r =
-                subject.send(arbitration_id, body.begin(), body.end(), timeout);
+            auto r = subject.send(arbitration_id, body.begin(), body.begin(),
+                                  timeout);
             THEN("it is serialized correctly") {
                 REQUIRE(buffer.buff[0] == 0x33);
                 REQUIRE(buffer.buff[1] == 0x22);
@@ -76,35 +55,14 @@ SCENARIO("can message buffer writer send works") {
 }
 
 SCENARIO("can message buffer writer send_from_isr works") {
-    struct MockMessageBuffer {
-        auto send_from_isr(const uint8_t* buffer, uint32_t buffer_length)
-            -> std::size_t {
-            for (uint32_t i = 0; i < buffer_length; i++) {
-                buff[i] = *(buffer + i);
-            }
-            length = buffer_length;
-            return buffer_length;
-        }
+    using TestBufferType = std::array<uint8_t, 2>;
 
-        auto send(const uint8_t* buffer, uint32_t buffer_length,
-                  uint32_t timeout) -> std::size_t {
-            return 0;
-        }
-        auto receive(uint8_t* buffer, uint32_t buffer_length, uint32_t timeout)
-            -> std::size_t {
-            return 0;
-        }
-
-        std::array<uint32_t, 68> buff;
-        uint32_t length;
-    };
-
-    auto buffer = MockMessageBuffer();
+    auto buffer = MockMessageBuffer<2>();
     auto subject = CanMessageBufferWriter(buffer);
 
     GIVEN("a message and arbitration id") {
         WHEN("sent") {
-            auto body = std::array<uint8_t, 2>{0, 1};
+            auto body = TestBufferType{0, 1};
             auto arbitration_id = 0x332211ff;
             auto r =
                 subject.send_from_isr(arbitration_id, body.begin(), body.end());
@@ -123,10 +81,10 @@ SCENARIO("can message buffer writer send_from_isr works") {
 
     GIVEN("an arbitration id") {
         WHEN("sent") {
-            auto body = std::array<uint8_t, 0>{};
+            auto body = TestBufferType{};
             auto arbitration_id = 0x332211ff;
-            auto r =
-                subject.send_from_isr(arbitration_id, body.begin(), body.end());
+            auto r = subject.send_from_isr(arbitration_id, body.begin(),
+                                           body.begin());
             THEN("it is serialized correctly") {
                 REQUIRE(buffer.buff[0] == 0x33);
                 REQUIRE(buffer.buff[1] == 0x22);
@@ -140,42 +98,14 @@ SCENARIO("can message buffer writer send_from_isr works") {
 }
 
 SCENARIO("can message buffer reader read works") {
-    struct MockMessageBuffer {
-        MockMessageBuffer(const uint8_t* buff, uint32_t length)
-            : length{length} {
-            for (uint32_t i = 0; i < length; i++) {
-                buffer[i] = *(buff + i);
-            }
-        }
-
-        auto send_from_isr(const uint8_t* buffer, uint32_t buffer_length)
-            -> std::size_t {
-            return 0;
-        }
-
-        auto send(const uint8_t* buffer, uint32_t buffer_length,
-                  uint32_t timeout) -> std::size_t {
-            return 0;
-        }
-        auto receive(uint8_t* buffer, uint32_t buffer_length, uint32_t timeout)
-            -> std::size_t {
-            for (uint32_t i = 0; i < length; i++) {
-                *(buffer + i) = this->buffer[i];
-            }
-            this->timeout = timeout;
-            return buffer_length;
-        }
-
-        std::array<uint8_t, 68> buffer{};
-        uint32_t length = 0;
-        uint32_t timeout = 0;
-    };
+    using TestBufferType = std::array<uint8_t, 8>;
 
     struct Listener {
         void handle(uint32_t arbitration_id,
                     std::array<uint8_t, 68>::iterator start,
                     std::array<uint8_t, 68>::iterator limit) {
             this->arbitration_id = arbitration_id;
+
             auto iter = buff.begin();
             for (; start < limit && iter < buff.end(); start++, iter++) {
                 *iter = *start;
@@ -188,9 +118,9 @@ SCENARIO("can message buffer reader read works") {
 
     GIVEN("a buffer with an arbitration id and message") {
         WHEN("read") {
-            auto body = std::array<uint8_t, 8>{1, 2, 3, 4, 5, 6, 7, 8};
+            auto body = TestBufferType{1, 2, 3, 4, 5, 6, 7, 8};
             auto listener = Listener();
-            auto buffer = MockMessageBuffer(body.data(), body.size());
+            auto buffer = MockMessageBuffer<8>(body.begin(), body.end());
             auto subject = CanMessageBufferReader(buffer, listener);
 
             subject.read(100);
@@ -207,9 +137,9 @@ SCENARIO("can message buffer reader read works") {
 
     GIVEN("a buffer with an arbitration id") {
         WHEN("read") {
-            auto body = std::array<uint8_t, 4>{0xff, 0xfe, 0xfd, 0xfc};
+            auto body = TestBufferType{0xff, 0xfe, 0xfd, 0xfc};
             auto listener = Listener();
-            auto buffer = MockMessageBuffer(body.data(), body.size());
+            auto buffer = MockMessageBuffer<4>(body.begin(), body.begin() + 4);
             auto subject = CanMessageBufferReader(buffer, listener);
 
             subject.read(100);

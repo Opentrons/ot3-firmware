@@ -36,8 +36,8 @@ class CanMessageBufferWriter {
     auto send(uint32_t arbitration_id, Input buffer, Limit limit,
               uint32_t timeout) -> bool {
         uint32_t num_bytes = write_to_backing(arbitration_id, buffer, limit);
-        return message_buffer.send(backing.data(), num_bytes, timeout) ==
-               num_bytes;
+        return message_buffer.send(backing.begin(), backing.begin() + num_bytes,
+                                   timeout) == num_bytes;
     }
 
     /**
@@ -55,8 +55,8 @@ class CanMessageBufferWriter {
     auto send_from_isr(uint32_t arbitration_id, Input buffer, Limit limit)
         -> bool {
         uint32_t num_bytes = write_to_backing(arbitration_id, buffer, limit);
-        return message_buffer.send_from_isr(backing.data(), num_bytes) ==
-               num_bytes;
+        return message_buffer.send_from_isr(
+                   backing.begin(), backing.begin() + num_bytes) == num_bytes;
     }
 
   private:
@@ -113,7 +113,7 @@ class CanMessageBufferReader {
      */
     auto read(uint32_t timeout) -> void {
         auto read_amount =
-            message_buffer.receive(backing.data(), backing.size(), timeout);
+            message_buffer.receive(backing.begin(), backing.end(), timeout);
         if (read_amount > 0) {
             uint32_t arbitration_id = 0;
             auto end = backing.begin() + read_amount;

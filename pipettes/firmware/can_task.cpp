@@ -30,19 +30,13 @@ struct MotorHandler {
 
     void visit(std::monostate &m) {}
 
-    void visit(SetSpeedRequest &m) {
-        message_writer_1.write(NodeId::host, m);
-    }
+    void visit(SetSpeedRequest &m) { message_writer_1.write(NodeId::host, m); }
 
-    void visit(GetSpeedRequest &m) {
-        message_writer_1.write(NodeId::host, m);
-    }
+    void visit(GetSpeedRequest &m) { message_writer_1.write(NodeId::host, m); }
 
     void visit(StopRequest &m) { message_writer_1.write(NodeId::gantry, m); }
 
-    void visit(GetStatusRequest &m) {
-        message_writer_1.write(NodeId::host, m);
-    }
+    void visit(GetStatusRequest &m) { message_writer_1.write(NodeId::host, m); }
 
     void visit(MoveRequest &m) { message_writer_1.write(NodeId::host, m); }
 };

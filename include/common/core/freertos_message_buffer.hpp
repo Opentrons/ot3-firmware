@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "FreeRTOS.h"
+#include "common/core/bit_utils.hpp"
 #include "message_buffer.h"
 
 namespace freertos_message_buffer {
@@ -18,12 +19,38 @@ class FreeRTOMessageBuffer {
     explicit FreeRTOMessageBuffer();
     ~FreeRTOMessageBuffer();
 
-    auto send(const uint8_t* buffer, std::size_t buffer_length,
-              uint32_t timeout) -> std::size_t;
-    auto send_from_isr(const uint8_t* buffer, std::size_t buffer_length)
-        -> std::size_t;
-    auto receive(uint8_t* buffer, std::size_t buffer_length, uint32_t timeout)
-        -> std::size_t;
+    template <typename Iterator, typename Limit>
+    requires bit_utils::ByteIterator<Iterator> &&
+        std::sentinel_for<Limit, Iterator>
+    auto send(const Iterator iter, const Limit limit, uint32_t timeout)
+        -> std::size_t {
+        return xMessageBufferSend(handle, iter, limit - iter, timeout);
+    }
+
+    template <typename Iterator, typename Limit>
+    requires bit_utils::ByteIterator<Iterator> &&
+        std::sentinel_for<Limit, Iterator>
+    auto send_from_isr(const Iterator iter, const Limit limit) -> std::size_t {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        auto buffer_length = limit - iter;
+
+        auto written_bytes = xMessageBufferSendFromISR(
+            handle, iter, buffer_length, &xHigherPriorityTaskWoken);
+
+        if (written_bytes == buffer_length) {
+            // see https://www.freertos.org/xMessageBufferSendFromISR.html for
+            // explanation
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+        return written_bytes;
+    }
+
+    template <typename Iterator, typename Limit>
+    requires bit_utils::ByteIterator<Iterator> &&
+        std::sentinel_for<Limit, Iterator>
+    auto receive(Iterator iter, Limit limit, uint32_t timeout) -> std::size_t {
+        return xMessageBufferReceive(handle, iter, limit - iter, timeout);
+    }
 
   private:
     StaticMessageBuffer_t message_buffer{};
@@ -40,38 +67,6 @@ FreeRTOMessageBuffer<BufferSize>::FreeRTOMessageBuffer() {
 template <std::size_t BufferSize>
 FreeRTOMessageBuffer<BufferSize>::~FreeRTOMessageBuffer() {
     vMessageBufferDelete(handle);
-}
-
-template <std::size_t BufferSize>
-auto FreeRTOMessageBuffer<BufferSize>::send(const uint8_t* buffer,
-                                            std::size_t buffer_length,
-                                            uint32_t timeout) -> std::size_t {
-    return xMessageBufferSend(handle, buffer, buffer_length, timeout);
-}
-
-template <std::size_t BufferSize>
-auto FreeRTOMessageBuffer<BufferSize>::send_from_isr(const uint8_t* buffer,
-                                                     std::size_t buffer_length)
-    -> std::size_t {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-    auto written_bytes = xMessageBufferSendFromISR(
-        handle, buffer, buffer_length, &xHigherPriorityTaskWoken);
-
-    if (written_bytes == buffer_length) {
-        // see https://www.freertos.org/xMessageBufferSendFromISR.html for
-        // explanation
-        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-    return written_bytes;
-}
-
-template <std::size_t BufferSize>
-auto FreeRTOMessageBuffer<BufferSize>::receive(uint8_t* buffer,
-                                               std::size_t buffer_length,
-                                               uint32_t timeout)
-    -> std::size_t {
-    return xMessageBufferReceive(handle, buffer, buffer_length, timeout);
 }
 
 }  // namespace freertos_message_buffer

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "can/core/ids.hpp"
 #include "can_message_buffer.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/message_buffer.hpp"
@@ -15,17 +16,14 @@ namespace can_dispatch {
  * @tparam T Types that match the HasMessageID concept.
  */
 template <HasMessageID... T>
-class MessageIdFilter {
+class MessageIdCollection {
   public:
-    MessageIdFilter() {
+    MessageIdCollection() {
         // Use fold to populate array
         auto i = 0;
-        ((([&i, this]() -> void {
-             this->a[i++] = static_cast<uint32_t>(T::id);
-         })()),
-         ...);
+        ((([&i, this]() -> void { this->arr[i++] = T::id; })()), ...);
         // Sort for binary search
-        std::sort(a.begin(), a.end());
+        std::sort(arr.begin(), arr.end());
     }
 
     /**
@@ -33,12 +31,12 @@ class MessageIdFilter {
      * @param id message id
      * @return True if present
      */
-    [[nodiscard]] auto in(uint32_t id) const -> bool {
-        return std::binary_search(a.cbegin(), a.cend(), id);
+    [[nodiscard]] auto in(can_ids::MessageId id) const -> bool {
+        return std::binary_search(arr.cbegin(), arr.cend(), id);
     }
 
   private:
-    std::array<uint32_t, sizeof...(T)> a{};
+    std::array<can_ids::MessageId, sizeof...(T)> arr{};
 };
 
 /**
@@ -67,8 +65,9 @@ class DispatchParseTarget {
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
+        auto arb = ArbitrationId{.id = arbitration_id};
         auto result =
-            parser.parse(MessageId{(uint16_t)arbitration_id}, input, limit);
+            parser.parse(MessageId{arb.parts.message_id}, input, limit);
         handler.handle(result);
     }
 
@@ -94,15 +93,15 @@ class DispatchBufferTarget {
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        // TODO pick out the message id
-        if (coll.in(arbitration_id)) {
+        auto arb = ArbitrationId{.id = arbitration_id};
+        if (coll.in(can_ids::MessageId{arb.parts.message_id})) {
             writer.send(arbitration_id, input, limit, 100);
         }
     }
 
   private:
     CanMessageBufferWriter<BufferType> writer;
-    MessageIdFilter<MessageTypes...> coll;
+    MessageIdCollection<MessageTypes...> coll;
 };
 
 /**
