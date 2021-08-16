@@ -64,12 +64,6 @@ target_include_directories(STM32G4xx_Drivers_Pipettes
 target_include_directories(STM32G4xx_FreeRTOS_Pipettes
         PUBLIC .)
 
-#target_include_directories(can
-#        PUBLIC
-#        .
-#        ${freertos_source}/include
-#        ${freertos_port_source})
-
 target_compile_definitions(STM32G4xx_Drivers_Pipettes
         PUBLIC STM32G491xx)
 target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
