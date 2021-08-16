@@ -1,6 +1,6 @@
 #include "common/firmware/spi.h"
+#include "common/firmware/errors.h"
 
-static void Spi_Error_Handler(void);
 
 /**
  * @brief SPI MSP Initialization
@@ -105,7 +105,7 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     };
 
     if (HAL_SPI_Init(&hspi2) != HAL_OK) {
-        Spi_Error_Handler();
+        Error_Handler();
     }
     return hspi2;
 }
@@ -127,15 +127,6 @@ void MX_DMA_Init(void) {
     HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 }
 
-static void Spi_Error_Handler(void) {
-    /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state
-     */
-    __disable_irq();
-    while (1) {
-    }
-    /* USER CODE END Error_Handler_Debug */
-}
 
 void Set_CS_Pin(void) { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
 

@@ -21,6 +21,8 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${COMMON_EXECUTABLE_DIR}/uart/uart.c
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/can/can.c
+    ${COMMON_EXECUTABLE_DIR}/errors/errors.c
+    ${COMMON_EXECUTABLE_DIR}/STM32G491RETx/clocking.c
     ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 
 add_executable(pipettes
