@@ -58,8 +58,8 @@ concept HandlesMessages =
  */
 template <typename HandlerType, CanMessage... MessageTypes>
 requires HandlesMessages<HandlerType, MessageTypes...> &&
-    (!std::movable<HandlerType> &&
-     !std::copyable<HandlerType>)class DispatchParseTarget {
+    (!std::movable<HandlerType> && !std::copyable<HandlerType>)
+class DispatchParseTarget {
   public:
     DispatchParseTarget(HandlerType& handler) : handler{handler}, parser{} {}
 
@@ -86,8 +86,8 @@ requires HandlesMessages<HandlerType, MessageTypes...> &&
  */
 template <message_buffer::MessageBuffer BufferType,
           HasMessageID... MessageTypes>
-requires(!std::movable<BufferType> &&
-         !std::copyable<BufferType>) class DispatchBufferTarget {
+requires(!std::movable<BufferType> && !std::copyable<BufferType>)
+class DispatchBufferTarget {
   public:
     explicit DispatchBufferTarget(BufferType& buffer)
         : writer{buffer}, coll{} {}
@@ -114,20 +114,20 @@ requires(!std::movable<BufferType> &&
 template <CanMessageBufferListener... Listener>
 class Dispatcher {
   public:
-    explicit Dispatcher(Listener*... listener) : registered{listener...} {}
+    explicit Dispatcher(Listener&... listener) : registered{listener...} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
         std::apply(
-            [arbitration_id, input, limit](auto... x) {
-                (x->handle(arbitration_id, input, limit), ...);
+            [arbitration_id, input, limit](auto&... x) {
+                (x.handle(arbitration_id, input, limit), ...);
             },
             registered);
     }
 
   private:
-    std::tuple<Listener*...> registered;
+    std::tuple<Listener&...> registered;
 };
 
 }  // namespace can_dispatch

@@ -33,7 +33,7 @@ SCENARIO("Dispatcher") {
         auto l2 = Listener{};
         auto buff = BufferType{1};
         uint32_t arb_id = 1234;
-        auto subject = Dispatcher(&l1, &l2);
+        auto subject = Dispatcher(l1, l2);
 
         WHEN("dispatching a message") {
             subject.handle(arb_id, buff.begin(), buff.end());

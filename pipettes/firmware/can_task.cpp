@@ -58,7 +58,7 @@ static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
     can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
 
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(&motor_dispatch_target.parse_target);
+static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target);
 
 struct Task {
     [[noreturn]] void operator()() {

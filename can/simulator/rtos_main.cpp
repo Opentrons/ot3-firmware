@@ -72,7 +72,7 @@ static auto dispatcher_task_a =
 static auto dispatcher_task_b =
     FreeRTOSTask<256, 5, decltype(b.poller)>("dispatcher_b", b.poller);
 
-static auto dispatcher = Dispatcher(&a.buffer_target, &b.buffer_target);
+static auto dispatcher = Dispatcher(a.buffer_target, b.buffer_target);
 
 static auto buffer = FreeRTOMessageBuffer<1024>{};
 static auto poller =
