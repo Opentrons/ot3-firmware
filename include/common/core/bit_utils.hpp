@@ -7,6 +7,12 @@
 
 namespace bit_utils {
 
+template <typename Iter>
+concept ByteIterator = requires {
+    {std::forward_iterator<Iter>};
+    {std::is_same_v<std::iter_value_t<Iter>, uint8_t>};
+};
+
 /**
  * Convert a span of bytes into a single integer. The first index being the most
  * significant byte. Big endian.
@@ -26,9 +32,8 @@ namespace bit_utils {
  * 0x11223300.
  */
 template <typename Input, typename Limit, typename OutputIntType>
-requires std::is_integral_v<OutputIntType> && std::forward_iterator<Input> &&
-    std::sentinel_for<Limit, Input> &&
-    std::is_same_v<std::iter_value_t<Input>, uint8_t>
+requires std::is_integral_v<OutputIntType> && ByteIterator<Input> &&
+    std::sentinel_for<Limit, Input>
 [[nodiscard]] auto bytes_to_int(Input input, const Limit limit,
                                 OutputIntType& output) -> Input {
     output = 0;
@@ -76,9 +81,8 @@ auto bytes_to_int(const InputContainer& input, OutputIntType& output)
  */
 template <typename InputIntType, typename Output, typename Limit>
 requires std::is_integral_v<InputIntType> &&
-    std::output_iterator<Output, uint8_t> &&
-    std::same_as<std::iter_value_t<Output>, uint8_t> &&
-    std::forward_iterator<Output> && std::sentinel_for<Limit, Output>
+    std::output_iterator<Output, uint8_t> && ByteIterator<Output> &&
+    std::sentinel_for<Limit, Output>
 [[nodiscard]] auto int_to_bytes(InputIntType input, Output output, Limit limit)
     -> Output {
     for (ssize_t x = sizeof(input) - 1; x >= 0 && output != limit;

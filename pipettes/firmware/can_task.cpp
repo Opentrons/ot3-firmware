@@ -1,82 +1,81 @@
 #include "common/firmware/can_task.hpp"
 
-#include <array>
+#include <variant>
 
-#include "FreeRTOS.h"
+#include "can/core/dispatch.hpp"
+#include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/message_writer.hpp"
+#include "can/core/messages.hpp"
+#include "can/firmware/hal_can_message_buffer.hpp"
+#include "common/core/freertos_task.hpp"
 #include "common/firmware/can.h"
-#include "task.h"
 
-static void Error_Handler();
+using namespace can_messages;
+using namespace freertos_can_dispatch;
+using namespace can_dispatch;
+using namespace freertos_task;
+using namespace can_message_writer;
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_TxHeaderTypeDef TxHeader;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_RxHeaderTypeDef RxHeader;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_HandleTypeDef can;
-static constexpr auto buffsize = 64;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static auto buff = std::array<uint8_t, buffsize>{};
+extern FDCAN_HandleTypeDef fdcan1;
 
-static void run(void *parameter) {
-    parameter = nullptr;
+static auto can_bus_1 = HalCanBus(&fdcan1);
+static auto message_writer_1 = MessageWriter(can_bus_1);
 
-    if (MX_FDCAN1_Init(&can) != HAL_OK) {
-        Error_Handler();
+struct MotorHandler {
+    using MessageType =
+        std::variant<std::monostate, SetSpeedRequest, GetSpeedRequest,
+                     StopRequest, GetStatusRequest, MoveRequest>;
+    MotorHandler() {}
+    MotorHandler(const MotorHandler &) = delete;
+    MotorHandler(const MotorHandler &&) = delete;
+    MotorHandler &operator=(const MotorHandler &) = delete;
+    MotorHandler &&operator=(const MotorHandler &&) = delete;
+
+    void handle(MessageType &m) {
+        std::visit([this](auto o) { this->visit(o); }, m);
     }
 
-    if (HAL_FDCAN_Start(&can) != HAL_OK) {
-        Error_Handler();
-    }
+    void visit(std::monostate &m) {}
 
-    TxHeader.IdType = FDCAN_EXTENDED_ID;
-    TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-    TxHeader.DataLength = FDCAN_DLC_BYTES_8;
-    TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
-    TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
-    TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
-    TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    TxHeader.MessageMarker = 0;
+    void visit(SetSpeedRequest &m) { message_writer_1.write(NodeId::host, m); }
 
-    for (;;) {
-        if (HAL_FDCAN_GetRxFifoFillLevel(&can, FDCAN_RX_FIFO0) > 0) {
-            // Send CAN RX data over debug UART
-            HAL_FDCAN_GetRxMessage(&can, FDCAN_RX_FIFO0, &RxHeader,
-                                   buff.data());
+    void visit(GetSpeedRequest &m) { message_writer_1.write(NodeId::host, m); }
 
-            TxHeader.Identifier = RxHeader.Identifier;
-            TxHeader.DataLength = RxHeader.DataLength;
-            TxHeader.FDFormat = RxHeader.FDFormat;
+    void visit(StopRequest &m) { message_writer_1.write(NodeId::gantry, m); }
 
-            if (HAL_FDCAN_AddMessageToTxFifoQ(&can, &TxHeader, buff.data()) !=
-                HAL_OK) {
-                // Transmission request Error
-                Error_Handler();
-            }
+    void visit(GetStatusRequest &m) { message_writer_1.write(NodeId::host, m); }
+
+    void visit(MoveRequest &m) { message_writer_1.write(NodeId::host, m); }
+};
+
+/** The parsed message handler */
+static auto motor_handler = MotorHandler{};
+
+/** The connection between the motor handler and message buffer */
+static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
+    256, MotorHandler, can_messages::SetSpeedRequest,
+    can_messages::GetSpeedRequest, can_messages::StopRequest,
+    can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
+
+/** Dispatcher to the various handlers */
+static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target);
+
+struct Task {
+    [[noreturn]] void operator()() {
+        if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
+            //            Error_Handler();
         }
-        vTaskDelay(1);
+
+        can_bus_1.start();
+
+        auto poller = FreeRTOSCanBufferPoller(
+            hal_can_message_buffer::get_message_buffer(), dispatcher);
+        poller();
     }
-}
+};
 
-static constexpr auto stack_size = 300;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static std::array<StackType_t, stack_size> stack;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static StaticTask_t data{};
+static auto task_entry = Task{};
 
-/**
- * Create the task.
- */
-void can_task::start() {
-    xTaskCreateStatic(run, "CAN Task", stack.size(), nullptr, 1, stack.data(),
-                      &data);
-}
+auto static task = FreeRTOSTask<256, 5, Task>("can task", task_entry);
 
-void Error_Handler() {
-    for (;;) {
-        HAL_GPIO_TogglePin(
-            GPIOA,         // NOLINTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            GPIO_PIN_5);   // NOLINTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        vTaskDelay(1000);  // NOLINTLINE(cppcoreguidelines-avoid-magic-numbers)
-    }
-}
+void can_task::start() {}
