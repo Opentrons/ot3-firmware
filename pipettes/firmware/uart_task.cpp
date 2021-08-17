@@ -8,6 +8,7 @@
 #include "common/firmware/uart_comms.hpp"
 #include "motor-control/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
+//#include "pipettes/firmware/hardware_config.hpp"
 #include "task.h"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -16,8 +17,15 @@ static communication::MessageReader message_reader{};
 static communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static spi::Spi spi_comms{};
+
+struct motion_controller::HardwareConfig GPIOConfig {
+    .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
+    .step = {.port = GPIOA, .pin = GPIO_PIN_8},
+    .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
+};
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms};
+static motor_class::Motor motor{spi_comms, GPIOConfig};
 
 static void run(void *parameter) {
     parameter = nullptr;

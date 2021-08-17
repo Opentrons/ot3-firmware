@@ -12,10 +12,13 @@ namespace motor_class {
 template <typename SpiDriver>
 requires spi::TMC2130Spi<SpiDriver>
 struct Motor {
-    explicit Motor(SpiDriver& spi) : spi_comms(spi) {}
+    explicit Motor(SpiDriver& spi, HardwareConfig& config)
+        : spi_comms(spi), hardware_config(config) {}
     SpiDriver& spi_comms;
+    HardwareConfig& hardware_config;
     MotorDriver<SpiDriver> driver = MotorDriver{spi_comms};
-    MotionController<SpiDriver> motion_controller = MotionController{spi_comms};
+    MotionController<SpiDriver> motion_controller =
+        MotionController{spi_comms, hardware_config};
 };
 
 }  // namespace motor_class
