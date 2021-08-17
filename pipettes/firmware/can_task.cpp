@@ -16,6 +16,9 @@ using namespace can_dispatch;
 using namespace freertos_task;
 using namespace can_message_writer;
 
+
+extern FDCAN_HandleTypeDef fdcan1;
+
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 

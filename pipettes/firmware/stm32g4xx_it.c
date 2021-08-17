@@ -23,7 +23,6 @@
 #include "stm32g4xx_it.h"
 
 #include "stm32g4xx_hal.h"
-#include "common/firmware/can.h"
 
 /** @addtogroup STM32G4xx_HAL_Examples
  * @{
@@ -118,6 +117,8 @@ void DebugMon_Handler(void) {}
 /*void PPP_IRQHandler(void)
 {
 }*/
+
+extern FDCAN_HandleTypeDef fdcan1;
 
 
 /**

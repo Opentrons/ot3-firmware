@@ -9,11 +9,6 @@ extern "C" {
 
 
 /**
- * The global can 1 handle.
- */
-extern FDCAN_HandleTypeDef fdcan1;
-
-/**
  * Initializa FDCAN1
  *
  * @param handle Pointer to a FDCAN_HandleTypeDef
