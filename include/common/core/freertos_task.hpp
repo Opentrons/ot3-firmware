@@ -14,6 +14,11 @@ class FreeRTOSTask {
         handle = xTaskCreateStatic(f, task_name, StackDepth, this, Priority,
                                    backing.data(), &static_task);
     }
+    FreeRTOSTask& operator=(FreeRTOSTask&) = delete;
+    FreeRTOSTask&& operator=(FreeRTOSTask&&) = delete;
+    FreeRTOSTask(FreeRTOSTask&) = delete;
+    FreeRTOSTask(FreeRTOSTask&&) = delete;
+
     ~FreeRTOSTask() { vTaskDelete(handle); }
 
   private:

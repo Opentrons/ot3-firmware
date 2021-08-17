@@ -17,6 +17,11 @@ template <std::size_t BufferSize>
 class FreeRTOMessageBuffer {
   public:
     explicit FreeRTOMessageBuffer();
+    FreeRTOMessageBuffer& operator=(FreeRTOMessageBuffer&) = delete;
+    FreeRTOMessageBuffer&& operator=(FreeRTOMessageBuffer&&) = delete;
+    FreeRTOMessageBuffer(FreeRTOMessageBuffer&) = delete;
+    FreeRTOMessageBuffer(FreeRTOMessageBuffer&&) = delete;
+
     ~FreeRTOMessageBuffer();
 
     template <typename Iterator, typename Limit>

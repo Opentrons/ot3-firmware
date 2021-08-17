@@ -3,6 +3,8 @@
  * we're using static allocation. Provides the same configuration as the other
  * stacks, but in callback form (vApplicationGetIdleTaskMemory is called by the
  * RTOS internals)
+ *
+ * This file is only present to support the FreeRTOS POSIX Port.
  */
 
 #include <array>

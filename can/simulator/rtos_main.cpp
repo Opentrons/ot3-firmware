@@ -68,7 +68,7 @@ static auto poller =
 static auto dispatcher_task =
     FreeRTOSTask<256, 5, decltype(poller)>("dispatcher", poller);
 
-void vATaskFunction(void *pvParameters) {
+void task_message_buffer_populator(void *pvParameters) {
     auto ids = std::array<MessageId, 3>{StopRequest::id, GetSpeedRequest::id,
                                         MoveRequest::id};
     auto i = 0;
@@ -88,7 +88,7 @@ void vATaskFunction(void *pvParameters) {
 }
 
 int main() {
-    xTaskCreate(vATaskFunction, "Name", 100, nullptr, 0, nullptr);
+    xTaskCreate(task_message_buffer_populator, "Name", 100, nullptr, 0, nullptr);
     vTaskStartScheduler();
     return 0;
 }

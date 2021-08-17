@@ -26,6 +26,14 @@
  * 1 tab == 4 spaces!
  */
 
+
+/**
+* This file is only present to support the FreeRTOS POSIX Port.
+ *
+* TODO (AmitL, 2021-08-17): This file is entirely lifted from our FW projects. It should
+*  be specialized for the POSIX port.
+*/
+
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 

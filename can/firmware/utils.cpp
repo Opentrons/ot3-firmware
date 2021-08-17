@@ -42,7 +42,7 @@ auto hal_can_utils::filter_type_to_hal(CanFilterType type) -> uint32_t {
     auto result = FDCAN_FILTER_RANGE;
     switch (type) {
         case CanFilterType::exact:
-            result = FDCAN_FILTER_RANGE;
+            result = FDCAN_FILTER_DUAL;
             break;
         case CanFilterType::range:
             result = FDCAN_FILTER_RANGE;
