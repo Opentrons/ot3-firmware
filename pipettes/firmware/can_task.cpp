@@ -16,7 +16,6 @@ using namespace can_dispatch;
 using namespace freertos_task;
 using namespace can_message_writer;
 
-
 extern FDCAN_HandleTypeDef fdcan1;
 
 static auto can_bus_1 = HalCanBus(&fdcan1);
@@ -26,6 +25,11 @@ struct MotorHandler {
     using MessageType =
         std::variant<std::monostate, SetSpeedRequest, GetSpeedRequest,
                      StopRequest, GetStatusRequest, MoveRequest>;
+    MotorHandler() {}
+    MotorHandler(const MotorHandler &) = delete;
+    MotorHandler(const MotorHandler &&) = delete;
+    MotorHandler &operator=(const MotorHandler &) = delete;
+    MotorHandler &&operator=(const MotorHandler &&) = delete;
 
     void handle(MessageType &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
@@ -57,7 +61,7 @@ static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
 static auto dispatcher = Dispatcher(&motor_dispatch_target.parse_target);
 
 struct Task {
-    void operator()() {
+    [[noreturn]] void operator()() {
         if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
             //            Error_Handler();
         }

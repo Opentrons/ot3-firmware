@@ -18,6 +18,11 @@ struct MockMessageBuffer {
 
     MockMessageBuffer() {}
 
+    MockMessageBuffer(const MockMessageBuffer&) = delete;
+    MockMessageBuffer(const MockMessageBuffer&&) = delete;
+    MockMessageBuffer& operator=(const MockMessageBuffer&) = delete;
+    MockMessageBuffer operator=(const MockMessageBuffer&&) = delete;
+
     template <typename Iter, typename Limit>
     auto send(Iter iter, Limit limit, uint32_t timeout) -> std::size_t {
         auto buffer_length = limit - iter;

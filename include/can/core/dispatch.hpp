@@ -57,8 +57,9 @@ concept HandlesMessages =
  * @tparam MessageTypes The Message types this handles
  */
 template <typename HandlerType, CanMessage... MessageTypes>
-requires HandlesMessages<HandlerType, MessageTypes...>
-class DispatchParseTarget {
+requires HandlesMessages<HandlerType, MessageTypes...> &&
+    (!std::movable<HandlerType> &&
+     !std::copyable<HandlerType>)class DispatchParseTarget {
   public:
     DispatchParseTarget(HandlerType& handler) : handler{handler}, parser{} {}
 
@@ -85,7 +86,8 @@ class DispatchParseTarget {
  */
 template <message_buffer::MessageBuffer BufferType,
           HasMessageID... MessageTypes>
-class DispatchBufferTarget {
+requires(!std::movable<BufferType> &&
+         !std::copyable<BufferType>) class DispatchBufferTarget {
   public:
     explicit DispatchBufferTarget(BufferType& buffer)
         : writer{buffer}, coll{} {}

@@ -13,6 +13,12 @@ SCENARIO("Dispatcher") {
     using BufferIterator = BufferType::iterator;
 
     struct Listener {
+        Listener() : id{0}, iter{nullptr}, limit{nullptr} {}
+        Listener(const Listener&) = delete;
+        Listener(const Listener&&) = delete;
+        Listener& operator=(const Listener&) = delete;
+        Listener&& operator=(const Listener&&) = delete;
+
         void handle(uint32_t id, BufferIterator i, BufferIterator limit) {
             this->id = id;
             this->iter = i;
@@ -126,6 +132,12 @@ SCENARIO("DispatchParseTarget") {
         std::variant<std::monostate, HeartbeatRequest, HeartbeatResponse>;
 
     struct Handler {
+        Handler() {}
+        Handler(const Handler&) = delete;
+        Handler(const Handler&&) = delete;
+        Handler& operator=(const Handler&) = delete;
+        Handler&& operator=(const Handler&&) = delete;
+
         void handle(MessageTypes& m) { parsed_message = m; }
         MessageTypes parsed_message{};
     };

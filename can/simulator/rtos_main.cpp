@@ -18,6 +18,12 @@ using namespace freertos_can_dispatch;
 using namespace freertos_task;
 
 struct HandlerA {
+    HandlerA() {}
+    HandlerA(const HandlerA &) = delete;
+    HandlerA(const HandlerA &&) = delete;
+    HandlerA &operator=(const HandlerA &) = delete;
+    HandlerA &&operator=(const HandlerA &&) = delete;
+
     void handle(std::variant<std::monostate, GetSpeedRequest> &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
@@ -32,6 +38,12 @@ struct HandlerA {
 };
 
 struct HandlerB {
+    HandlerB() {}
+    HandlerB(const HandlerB &) = delete;
+    HandlerB(const HandlerB &&) = delete;
+    HandlerB &operator=(const HandlerB &) = delete;
+    HandlerB &&operator=(const HandlerB &&) = delete;
+
     void handle(std::variant<std::monostate, StopRequest> &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
@@ -88,7 +100,8 @@ void task_message_buffer_populator(void *pvParameters) {
 }
 
 int main() {
-    xTaskCreate(task_message_buffer_populator, "Name", 100, nullptr, 0, nullptr);
+    xTaskCreate(task_message_buffer_populator, "Name", 100, nullptr, 0,
+                nullptr);
     vTaskStartScheduler();
     return 0;
 }
