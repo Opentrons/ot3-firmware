@@ -5,8 +5,8 @@
 #include "can/core/can_bus.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/parse.hpp"
-#include "stm32g4xx_hal_fdcan.h"
 #include "common/core/freertos_synchronization.hpp"
+#include "stm32g4xx_hal_fdcan.h"
 
 using namespace can_bus;
 using namespace can_ids;

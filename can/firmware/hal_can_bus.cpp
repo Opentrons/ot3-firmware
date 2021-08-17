@@ -1,4 +1,5 @@
 #include "can/firmware/hal_can_bus.hpp"
+
 #include "can/firmware/utils.hpp"
 #include "common/core/synchronization.hpp"
 

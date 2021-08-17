@@ -26,4 +26,4 @@ class FreeRTOSMutex {
     StaticSemaphore_t static_data;
 };
 
-}
+}  // namespace freertos_synchronization
