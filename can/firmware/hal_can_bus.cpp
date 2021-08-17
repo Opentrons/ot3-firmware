@@ -1,6 +1,6 @@
 #include "can/firmware/hal_can_bus.hpp"
-
 #include "can/firmware/utils.hpp"
+#include "common/core/synchronization.hpp"
 
 HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
     : handle(handle),
@@ -25,6 +25,8 @@ void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,
 
 void HalCanBus::send(uint32_t arbitration_id, uint8_t* buffer,
                      CanFDMessageLength buffer_length) {
+    auto lock = synchronization::Lock{mutex};
+
     tx_header.Identifier = arbitration_id;
     tx_header.DataLength = hal_can_utils::length_to_hal(buffer_length);
     tx_header.MessageMarker = 0;

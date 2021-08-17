@@ -6,6 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/parse.hpp"
 #include "stm32g4xx_hal_fdcan.h"
+#include "common/core/freertos_synchronization.hpp"
 
 using namespace can_bus;
 using namespace can_ids;
@@ -53,6 +54,7 @@ class HalCanBus {
     FDCAN_HandleTypeDef* handle;
     uint32_t filter_index = 0;
     FDCAN_TxHeaderTypeDef tx_header;
+    freertos_synchronization::FreeRTOSMutex mutex{};
 
     static constexpr auto arbitration_id_type = FDCAN_EXTENDED_ID;
 };

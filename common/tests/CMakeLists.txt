@@ -8,6 +8,7 @@ add_executable(
         common
         test_main.cpp
         test_bit_utils.cpp
+        test_synchronization.cpp
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
