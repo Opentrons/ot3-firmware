@@ -1,7 +1,9 @@
+#pragma once
+
+#include <cstdint>
+#include <array>
 
 namespace test_eeprom {
-
-constexpr const size_t BUFFER_SIZE = 5;
 
 class TestI2C {
   public:
