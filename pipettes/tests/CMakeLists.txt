@@ -8,7 +8,8 @@ add_executable(
         pipettes
         test_main.cpp
         test_communication.cpp
-        test_message_handler.cpp)
+        test_message_handler.cpp
+        test_eeprom.cpp)
 
 target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(pipettes
@@ -24,8 +25,7 @@ target_compile_options(pipettes
         -Wreorder
         -Wsign-promo
         -Wextra-semi
-        -Wctor-dtor-privacy
-        -fno-rtti)
+        -Wctor-dtor-privacy)
 target_link_libraries(pipettes Catch2::Catch2)
 
 catch_discover_tests(pipettes)

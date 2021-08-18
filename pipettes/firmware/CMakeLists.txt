@@ -16,6 +16,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
+    ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
     ${CAN_FW_DIR}/hal_can_bus.cpp
     ${CAN_FW_DIR}/hal_can_message_buffer.cpp
     ${CAN_FW_DIR}/utils.cpp)
@@ -28,7 +29,8 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/can/can.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-    ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
+    ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c
+    ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c)
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
