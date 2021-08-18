@@ -8,7 +8,6 @@
 #include "common/firmware/uart_comms.hpp"
 #include "motor-control/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
-//#include "pipettes/firmware/hardware_config.hpp"
 #include "task.h"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
