@@ -1,3 +1,7 @@
+#pragma once
+
+#include "stm32g4xx_hal_conf.h"
+
 #include "common/firmware/errors.h"
 
 void Error_Handler(void) {
