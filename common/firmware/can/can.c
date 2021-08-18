@@ -1,5 +1,10 @@
 #include "common/firmware/can.h"
 
+/**
+* The global can 1 handle.
+*/
+FDCAN_HandleTypeDef fdcan1;
+
 
 /**
  * Initialize a connection to FDCAN1
@@ -24,12 +29,11 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef * handle)
     handle->Init.DataSyncJumpWidth = 1;
     handle->Init.DataTimeSeg1 = 14;
     handle->Init.DataTimeSeg2 = 1;
-    handle->Init.StdFiltersNbr = 0;
-    handle->Init.ExtFiltersNbr = 0;
+    handle->Init.StdFiltersNbr = 20;
+    handle->Init.ExtFiltersNbr = 20;
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     return HAL_FDCAN_Init(handle);
 }
-
 
 
 /**
@@ -61,6 +65,10 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan)
         GPIO_InitStruct.Alternate = GPIO_AF9_FDCAN1;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+        // Priority is 0-15 (highest to lowest). Use lowest priority until we
+        // believe it is too low.
+        HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 15, 15);
+        HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
         /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
         /* USER CODE END FDCAN1_MspInit 1 */
@@ -94,6 +102,4 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* hfdcan)
 
         /* USER CODE END FDCAN1_MspDeInit 1 */
     }
-
 }
-

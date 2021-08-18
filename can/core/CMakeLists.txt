@@ -3,7 +3,7 @@
 # library. It is included in both host and cross configurations.
 
 add_library(can-core STATIC
-        messages.cpp
+        can_bus.cpp
         )
 
 set_target_properties(can-core
