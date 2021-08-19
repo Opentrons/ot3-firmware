@@ -1,6 +1,7 @@
 #include "common/firmware/uart.h"
+#include "common/firmware/errors.h"
 
-static void Error_Handler();
+
 /**
  * Initializes the Global MSP.
  */
@@ -137,23 +138,4 @@ UART_HandleTypeDef MX_LPUART1_UART_Init() {
 
     /* USER CODE END USART1_Init 2 */
     return huart1;
-}
-
-void RCC_Peripheral_Clock_Select() {
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-
-    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_FDCAN;
-    PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-    PeriphClkInit.FdcanClockSelection = RCC_FDCANCLKSOURCE_PCLK1;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
-        Error_Handler();
-    }
-
-}
-
-static void Error_Handler() {
-    for(;;) {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        HAL_Delay(100);
-    }
 }
