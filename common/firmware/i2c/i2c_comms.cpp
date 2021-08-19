@@ -16,24 +16,16 @@ using namespace i2c;
  * BUFFER_SIZE -> 5
  * TIMEOUT -> 0xFFFF
  *
- * Public:
- * send_command takes a transmit buffer (with the command and data
- * already formatted), a uint8_t empty data which will be modified by
- * the information received from the stepper driver and status which will also
- * be modified by information received from the driver.
  */
 
 /*
- * Private Functions
- */
+ * TODO(LC 08/19/2021): We should set this configuration whenever an I2C
+ * instance is created. Because we are currently not creating one, this should
+ * be moved in a followup PR.
+ * */
 
-/*
- * Public Functions
- */
 I2CConfig conf{
-    .instance=REGISTER1,
-    .address=0x0,
-    .address_mode=ADDRESSMODE_7BIT};
+    .instance = REGISTER1, .address = 0x0, .address_mode = ADDRESSMODE_7BIT};
 
 I2C::I2C() : handle(MX_I2C_Init(&conf)) {}
 

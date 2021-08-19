@@ -25,9 +25,9 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+        GPIO_InitStruct.Alternate = GPIO_AF4_I2C2;
         HAL_GPIO_Init(
-            GPIOB,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+            GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     }
 }
