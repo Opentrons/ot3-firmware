@@ -30,8 +30,12 @@ using namespace i2c;
 /*
  * Public Functions
  */
+I2CConfig conf{
+    .instance=REGISTER1,
+    .address=0x0,
+    .address_mode=ADDRESSMODE_7BIT};
 
-I2C::I2C() : handle(MX_I2C1_Init()) {}
+I2C::I2C() : handle(MX_I2C_Init(&conf)) {}
 
 void I2C::transmit(uint8_t value) {
     HAL_I2C_Master_Transmit(&handle, DEVICE_ADDRESS, &value, 1, TIMEOUT);
