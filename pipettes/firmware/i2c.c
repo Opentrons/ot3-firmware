@@ -1,6 +1,8 @@
 #include "common/firmware/i2c.h"
 #include "common/firmware/errors.h"
 
+static I2C_HandleTypeDef hi2c;
+
 void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
 
     // PIN PB7 is SCL
@@ -20,9 +22,8 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
     }
 }
 
-I2C_HandleTypeDef MX_I2C_Init(struct I2CConfig* conf)
+I2C_HandleTypeDef* MX_I2C_Init(struct I2CConfig* conf)
 {
-    I2C_HandleTypeDef hi2c;
     hi2c.Instance = conf->instance;
     hi2c.Init.Timing = 0x30A0A7FB;
     hi2c.Init.OwnAddress1 = conf->address;
@@ -49,6 +50,6 @@ I2C_HandleTypeDef MX_I2C_Init(struct I2CConfig* conf)
         Error_Handler();
     }
 
-    return hi2c;
+    return &hi2c;
 
 }
