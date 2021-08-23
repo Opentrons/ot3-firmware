@@ -42,10 +42,6 @@ jobs:
       - uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
-      - uses: "actions/cache@v2"
-        with:
-          path: "./stm32-tools"
-          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}
       - name: "Configure"
         run: cmake --preset=cross .
       - name: "Format"
@@ -69,10 +65,6 @@ jobs:
       - uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
-#      - uses: "actions/cache@v2"
-#        with:
-#          path: "./stm32-tools"
-#          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}
       - name: "Configure"
         run: cmake --preset=host .
       - name: 'Build'
