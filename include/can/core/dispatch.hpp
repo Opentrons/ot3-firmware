@@ -68,8 +68,7 @@ requires HandlesMessages<HandlerType, MessageTypes...> &&
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
         auto arb = ArbitrationId{.id = arbitration_id};
         auto result =
-            parser.parse(MessageId{static_cast<uint16_t>(arb.parts.message_id)},
-                         input, limit);
+            parser.parse(MessageId{arb.parts.message_id}, input, limit);
         handler.handle(result);
     }
 
@@ -97,8 +96,7 @@ requires(!std::movable<BufferType> &&
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
         auto arb = ArbitrationId{.id = arbitration_id};
-        if (coll.in(can_ids::MessageId{
-                static_cast<uint16_t>(arb.parts.message_id)})) {
+        if (coll.in(can_ids::MessageId{arb.parts.message_id})) {
             writer.send(arbitration_id, input, limit, 100);
         }
     }

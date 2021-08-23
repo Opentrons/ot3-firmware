@@ -8,9 +8,9 @@ namespace can_ids {
  * The components of a 29-bit arbitration id as a bitfield.
  */
 struct ArbitrationIdParts {
-    unsigned function_code : 7;
-    unsigned node_id : 8;
-    unsigned message_id : 14;
+    uint8_t function_code : 7;
+    uint8_t node_id : 8;
+    uint16_t message_id : 14;
     unsigned int padding : 3;
 };
 

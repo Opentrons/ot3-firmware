@@ -5,7 +5,6 @@
 
 namespace motor_driver {
 
-const uint8_t WRITE = 0x80;
 /**
  * Implementation of the Motor concept.
  *

@@ -1,0 +1,39 @@
+#pragma once
+
+#include <array>
+#include <concepts>
+#include <cstdint>
+
+#include "common/core/bit_utils.hpp"
+
+/*
+ * A template and helper functions describing
+ */
+
+namespace i2c {
+template <class I2C>
+concept EEPromPolicy =
+    requires(I2C i2c_comms, const uint8_t transmit,
+             std::array<uint8_t, I2C::BUFFER_SIZE>& receive) {
+    {i2c_comms.BUFFER_SIZE};
+    {i2c_comms.transmit(transmit)};
+    {i2c_comms.receive(receive)};
+};
+
+template <i2c::EEPromPolicy EEPromWriter>
+void write(EEPromWriter writer, const uint8_t serial_number) {
+    writer.transmit(serial_number);
+}
+
+template <i2c::EEPromPolicy EEPromWriter>
+uint8_t read(EEPromWriter writer) {
+    using BufferType = std::array<uint8_t, writer.BUFFER_SIZE>;
+    BufferType rxBuffer{0};
+    uint8_t data = 0x0;
+
+    writer.receive(rxBuffer);
+
+    bit_utils::bytes_to_int(rxBuffer, data);
+    return data;
+}
+}  // namespace i2c

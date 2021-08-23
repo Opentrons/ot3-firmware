@@ -30,10 +30,9 @@ add_executable(
         can-simulator
         rtos_main.cpp
         freertos_idle_timer_task.cpp
-        socket_can.cpp
 )
 
-target_link_libraries(can-simulator PRIVATE can-core freertos pthread)
+target_link_libraries(can-simulator PRIVATE freertos pthread)
 
 set_target_properties(can-simulator
         PROPERTIES CXX_STANDARD 20

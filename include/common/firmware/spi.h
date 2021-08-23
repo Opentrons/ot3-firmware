@@ -1,3 +1,5 @@
+#pragma once
+
 #include "stm32g4xx_hal_conf.h"
 
 #ifndef __SPI_H__
