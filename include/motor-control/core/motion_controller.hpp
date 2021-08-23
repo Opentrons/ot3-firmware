@@ -7,19 +7,26 @@
 
 namespace motion_controller {
 
+struct HardwareConfig {
+    struct PinConfig direction;
+    struct PinConfig step;
+    struct PinConfig enable;
+};
+
 template <typename SpiDriver>
 requires spi::TMC2130Spi<SpiDriver>
 class MotionController {
   public:
-    MotionController(SpiDriver& spi) : spi_comms(spi) {}
+    explicit MotionController(SpiDriver& spi, HardwareConfig& config)
+        : spi_comms(spi), hardware_config(config) {}
 
     void set_speed(uint32_t s) { speed = s; }
 
     void set_direction(bool d) {
         if (d) {
-            Set_Direction();
+            set_pin(hardware_config.direction);
         } else {
-            Reset_Direction();
+            reset_pin(hardware_config.direction);
         }
         direction = d;
     }
@@ -28,19 +35,19 @@ class MotionController {
     void set_distance();
 
     void move() {
-        Set_Enable_Pin();
-        Set_Direction();
+        set_pin(hardware_config.enable);
+        set_pin(hardware_config.direction);
         const int tries = 10000;
         for (int i = 0; i < tries; i++) {
-            Set_Step();
-            Delay(1);
-            Reset_Step();
+            set_pin(hardware_config.step);
+            delay(1);
+            reset_pin(hardware_config.step);
         }
     }
 
     void stop() {
-        Reset_Step();
-        Reset_Enable_Pin();
+        reset_pin(hardware_config.step);
+        reset_pin(hardware_config.enable);
     }
 
     auto get_speed() -> uint32_t { return speed; }
@@ -51,7 +58,8 @@ class MotionController {
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;
     bool direction = true;  // direction true: forward, false: backward
-    SpiDriver spi_comms;
+    SpiDriver& spi_comms;
+    HardwareConfig& hardware_config;
 };
 
 }  // namespace motion_controller

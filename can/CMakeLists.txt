@@ -2,7 +2,10 @@ if (${CMAKE_CROSSCOMPILING})
 #    add_subdirectory(firmware)
 else()
     add_subdirectory(tests)
-    add_subdirectory(simulator)
+    if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+        # Simulator requires linux only kernel interfaces
+        add_subdirectory(simulator)
+    endif()
 endif()
 
 add_subdirectory(core)

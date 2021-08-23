@@ -9,6 +9,7 @@
 #include "task.h"
 // clang-format on
 
+#include "common/firmware/clocking.h"
 #include "common/firmware/spi.h"
 #include "common/firmware/uart.h"
 

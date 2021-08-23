@@ -10,6 +10,7 @@
 // clang-format on
 
 #include "common/firmware/can_task.hpp"
+#include "common/firmware/clocking.h"
 #include "common/firmware/spi.h"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
