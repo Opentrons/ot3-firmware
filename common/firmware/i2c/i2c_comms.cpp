@@ -13,7 +13,7 @@ using namespace i2c;
  * receive takes
  *
  * Global Private:
- * BUFFER_SIZE -> 5
+ * BUFFER_SIZE -> 1 (uint8_t)
  * TIMEOUT -> 0xFFFF
  *
  */

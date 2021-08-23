@@ -25,12 +25,12 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
     ${COMMON_EXECUTABLE_DIR}/uart/uart.c
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/can/can.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-    ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c
-    ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c)
+    ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
