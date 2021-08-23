@@ -72,7 +72,7 @@ jobs:
       - uses: "actions/cache@v2"
         with:
           path: "./stm32-tools"
-          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}
       - name: "Configure"
         run: cmake --preset=host .
       - name: 'Build'
