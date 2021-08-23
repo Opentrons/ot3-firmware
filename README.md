@@ -1,35 +1,51 @@
-# cmake-utils
+# ot3_firmware
 
-This is a repository containing cmake scripts useful in embedded c/c++ projects used at opentrons.
+This repository holds the firmware for the OT-3 and all of its peripheral systems. **Note** that the cmake directory is actually a subtree of cmake-utils. Do not make changes to the `cmake-utils` directory in the ot3_firmware repository. Instead, navigate to the [CMake Utils Repository](https://github.com/Opentrons/cmake-utils). 
 
-If you are at opentrons and you are reading this file somewhere other than the web interface for https://github.com/Opentrons/cmake-utils , it is almost certainly checked into your project with [git subtree](https://www.atlassian.com/git/tutorials/git-subtree), and *you should not check in changes in your own repo's source.* Instead, you should open a pull request on cmake-utils.
+## Structure of directories
+Aside from the common directory, each repository should contain a `firmware`, `include`, `src`, `tests` folder.
+1. `firmware` should hold code that will be controlling the peripheral system.
+2. `include` should hold the majority of the header files you will need. This folder should include another subset of directories labeled `firmware`, `src` and `tests` for import cleaness.
+3. `src` should include any libraries, 3D party or otherwise, that are required for `firmware` to control the peripheral system.
+4. `tests` should include tests for the firmware folder.
 
-## Updating cmake-utils subtree in your project
+## Setup
+To setup this directory to run on a nucleo board, you should run:
+1. `cmake --preset=cross .`
+2. `cmake --build ./build-cross --target <TARGET>`
 
-When you want to get changes from cmake-utils, you can update your local subtree and commit that change into either your branch or your mainline:
-`git checkout -b chore_update-cmake-utils`
-`git subtree pull --prefix cmake cmake-utils main --squash`
-`git push --set-upstream origin chore_update-cmake-utils`
-Then open a PR in your local repo.
+To setup this directory to run tests, you should run:
+1. `cmake --preset=host .`
+	If you are on OSX, you almost certainly want to force cmake to select gcc as the compiler used for building tests, because the version of clang built into osx is weird. We don't really want to always specify the compiler to use in tests, so forcing gcc is a separate cmake config preset, and it requires installing gcc 10:
 
-The subtree checkout should be managed like any other file and changed only in pull requests.
+	`brew install gcc@10`
+	`cmake --preset=host-gcc10 .`
+2. `cmake --build ./build-host --target build-and-test`, which will run all of the tests available in each periphery.
+3. or, `cmake --build ./build-host --target <TARGET>-build-and-test`
 
-## Testing changes to other projects
+### Cross-compiling vs Host-compiling
+As you saw above, two different presets were used to run tests vs running on a physical device. Cross-compiling will generally be used when the code needs to be ported to other devices (in this case the microcontroller) while host-compiling is used when you want to run things like tests. For more information check out this helpful [article](https://landley.net/writing/docs/cross-compiling.html).
 
-Since there's no indication in this repo of which projects use this repo, we can only do a best-effort attempt to test the cmake changes here with other projects. Please make this best-effort attempt! This can be done by either copying the changes to those other projects temporarily, or doing a `git subtree pull` in those other projects to the branch you're testing here.
+## Run
+Connect to an STM32 nucleo board and run either:
+1. `make <TARGET>-debug` inside the build-cross folder
+2. or, `cmake --build ./build-cross --target <TARGET>-debug` from the top-level folder.
 
-## How should I use this in my project?
+### Debug
+If you run into trouble starting a gcc connection to your nucleo board, you should (while connected to the board):
 
-The CMake modules here are designed for reuse, but to reuse cmake modules they have to be somewhere that cmake can find them. You should either submodule or subtree this repo into where you want to use it, probably in a directory called `cmake`. You can then add the directory to cmake's module path in your top-level `CMakeList.txt` (or whichever `CMakeList.txt` you want to use the utils in if it's not the top level):
+Start openocd:
+1. Navigate to `stm32-tools/openocd/Darwin`
+2. `./bin  scripts/board/st_nucleo_f3.cfg`
 
-`set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})`
+Start gcc:
+1. `./stm32-tools/gcc-arm-embedded/Darwin/bin/arm-none-eabi-gdb-py <TARGET>`
+2. `target extended-remote :3333`
 
-Adding this project by subtree is a better way to work than adding it as a submodule because it will conform more closely to the way this project is developed. If you add this project by subtree to another (this other project will be called the "host project" after this), then the host project controls which commit is subtreed in - it's whatever commit was specified the last time a `git subtree pull` was done in the host project. If `git subtree pull` specified a branch, then the commit that was the head of that branch at the time of the `git subtree pull` will be checked in and never changed.
+And then run all the lines before the error to see what is causing the problem.
 
-However, if the host project uses `git submodule add` to add this repo, then it adds it by symbolic name, which means that subsequent `git submodule update`s may change the commit used in the host project without changing the host project's tracked state. Since this project's `main` branch might be updated anytime, it is generally not a good idea to do this. So use `git subtree`, and anytime you do a `git subtree pull` make sure to test the results.
+## Common
+The common directory will hold code that should be shared amongst all peripheral systems.
 
-## What will the modules here do?
-
-The modules in this repo are mostly designed to download and create build systems for various native code dependencies; there are also a couple that download and create synthetic targets for various useful tools. The exact way to use each module depends on what that module is.
-
-Modules that download dependencies or tools will download to a subdirectory called `stm32-tools/${name}/${system}`. For instance, `FindSTM32F303BSP` will download the BSP to `stm32-tools/stm32f303bsp/Linux` on Linux, or `stm32-tools/stm32f303bsp/Darwin` on OSX. Modules whose names start with `Find` generally adhere to the expectations of a [cmake find package module](https://cmake.org/cmake/help/v3.19/manual/cmake-packages.7.html) and set the appropriate cache variables.
+## Pipettes
+This is the top-level directory for running the pipette peripheral system. Eventually, we will most likely have separate directories for different applications on the pipettes.

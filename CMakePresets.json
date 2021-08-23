@@ -1,0 +1,43 @@
+{
+    "version": 1,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 19,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "cross",
+        "displayName": "STM32 OT-3 cross-compilation",
+        "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
+        "generator": "Unix Makefiles",
+        "binaryDir": "${sourceDir}/build-cross",
+        "cacheVariables": {
+          "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+          "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+          "CMAKE_FIND_APPBUNDLE": "NEVER",
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32GCCCrossToolchain.cmake"
+        }
+      },
+      {
+        "name": "host",
+        "displayName": "STM32 OT-3 host compilation for tests",
+        "description": "Build libraries and test executables for OT-3 systems that use STM32",
+        "generator": "Unix Makefiles",
+        "binaryDir": "${sourceDir}/build-host",
+        "cacheVariables": {
+          "CMAKE_FIND_APPBUNDLE": "NEVER",
+          "CMAKE_EXPORT_COMPILE_COMMANDS": true
+        }
+      },
+      {
+        "name": "host-gcc10",
+        "inherits": "host",
+        "displayName": "STM32 module host builds forcing g++",
+        "cacheVariables": {
+          "CMAKE_C_COMPILER": "gcc-10",
+          "CMAKE_CXX_COMPILER": "g++-10"
+        }
+      }
+    ]
+  }
