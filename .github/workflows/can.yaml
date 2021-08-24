@@ -46,7 +46,7 @@ jobs:
       - uses: "actions/cache@v2"
         with:
           path: "./stm32-tools"
-          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
         run: cmake --preset=cross .
       - name: "Format"
@@ -73,7 +73,7 @@ jobs:
       - uses: "actions/cache@v2"
         with:
           path: "./stm32-tools"
-          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
         run: cmake --preset=host .
       - name: 'Build'
