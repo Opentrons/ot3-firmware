@@ -1,7 +1,6 @@
 #include "common/firmware/i2c_comms.hpp"
 
 #include "common/firmware/i2c.h"
-#include "stm32g4xx_hal_conf.h"
 
 using namespace i2c;
 
@@ -25,11 +24,7 @@ using namespace i2c;
  * be moved in a followup PR.
  * */
 
-I2CConfig conf{
-    .instance = I2C1, .address = 0x0, .address_mode = I2C_ADDRESSINGMODE_7BIT};
-
-static I2C_HandleTypeDef* i2c_handle = MX_I2C_Init(&conf);
-I2C::I2C() : handle(i2c_handle) {}
+I2C::I2C() : handle(MX_I2C_Init()) {}
 
 void I2C::transmit(uint8_t value) {
     HAL_I2C_Master_Transmit(static_cast<I2C_HandleTypeDef*>(handle),
