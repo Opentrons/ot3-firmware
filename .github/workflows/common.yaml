@@ -74,6 +74,6 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=host .
+        run: cmake --preset=host-gcc10 .
       - name: 'Build'
         run: cmake --build ./build-host --target common
