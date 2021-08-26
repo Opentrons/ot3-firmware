@@ -12,14 +12,22 @@ const uint8_t WRITE = 0x80;
  */
 
 enum class DriverRegisters : uint8_t {
-    IHOLD_IRUN = 0x10,
     GCONF = 0x00,
     GSTAT = 0x01,
     IOIN = 0x04,
-    DRVSTATUS = 0x6F,
-    DCCTRL = 0x6E,
+    IHOLD_IRUN = 0x10,
+    TPOWERDOWN = 0x11,
+    TPWMTHRS = 0x13,
+    TCOOLTHRS = 0x14,
+    THIGH = 0x15,
+    XDIRECT = 0x2D,
+    VDCMIN = 0x33,
+    CHOPCONF = 0x6C,
     COOLCONF = 0x6D,
-    CHOPCONF = 0x6C
+    DCCTRL = 0x6E,
+    DRVSTATUS = 0x6F,
+    PWMCONF = 0x70,
+    ENCM_CTRL = 0x72
 };
 
 enum class Mode : uint8_t { WRITE = 0x80, READ = 0x0 };
@@ -35,12 +43,16 @@ class MotorDriver {
     MotorDriver(SpiDriver& spi) : spi_comms(spi) {}
 
     void setup() {
-        // GCONF 0x01
-        // IHOLD_IRUN 0x1010
-        // CHOPCONF 0x8008
         constexpr uint32_t gconf_data = 0x01;
         constexpr uint32_t ihold_irun_data = 0x1010;
         constexpr uint32_t chopconf = 0x8008;
+
+//        constexpr uint32_t gconf_data = 0x04;
+//        constexpr uint32_t ihold_irun_data = 0x71703;
+//        constexpr uint32_t chopconf = 0x101D5;
+//        constexpr uint32_t thigh = 0xFFFFF;
+//        constexpr uint32_t coolconf = 0x60000;
+
         auto txBuffer = build_command(
             command_byte(Mode::WRITE, DriverRegisters::GCONF), gconf_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);

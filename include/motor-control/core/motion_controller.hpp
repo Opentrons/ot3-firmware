@@ -31,14 +31,14 @@ class MotionController {
         direction = d;
     }
 
+
     void set_acceleration(uint32_t a) { acc = a; }
     void set_distance();
 
     void move() {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
-        const int tries = 10000;
-        for (int i = 0; i < tries; i++) {
+        for (;;) {
             set_pin(hardware_config.step);
             delay(1);
             reset_pin(hardware_config.step);
