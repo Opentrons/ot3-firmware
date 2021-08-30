@@ -5,6 +5,7 @@ jobs:
     runs-on: "ubuntu-20.04"
     name: OT-3 Emulator
     steps:
+      - run: sudo apt-get install linux-modules-extra-$(uname -r)
       - run: sudo modprobe vcan
       - uses: actions/checkout@v2
       - uses: Opentrons/ot3-emulator@v0.1
