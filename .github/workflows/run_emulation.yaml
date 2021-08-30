@@ -7,6 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: foo
+        run: sudo modprobe vcan
         uses: Opentrons/ot3-emulator@v0.1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}
