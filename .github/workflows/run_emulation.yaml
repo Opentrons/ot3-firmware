@@ -10,4 +10,5 @@ jobs:
         uses: Opentrons/ot3-emulator@v1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}
-        run: echo "Hello World"
+      - run: echo "Hello World"
+        shell: bash
