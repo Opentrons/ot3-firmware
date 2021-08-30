@@ -2,7 +2,7 @@ on: [push]
 
 jobs:
   ot3-emulator:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-20.04"
     name: OT-3 Emulator
     steps:
       - uses: actions/checkout@v2
@@ -10,5 +10,3 @@ jobs:
         uses: Opentrons/ot3-emulator@v0.1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}
-      - run: echo "Hello World"
-        shell: bash
