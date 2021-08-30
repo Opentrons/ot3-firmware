@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: foo
-        uses: Opentrons/ot3-emulator@v1
+        uses: Opentrons/ot3-emulator@v0.1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}
       - run: echo "Hello World"
