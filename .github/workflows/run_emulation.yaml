@@ -5,8 +5,8 @@ jobs:
     runs-on: "ubuntu-20.04"
     name: OT-3 Emulator
     steps:
-      - uses: actions/checkout@v2
       - run: sudo modprobe vcan
-        uses: Opentrons/ot3-emulator@v0.1
+      - uses: actions/checkout@v2
+      - uses: Opentrons/ot3-emulator@v0.1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}
