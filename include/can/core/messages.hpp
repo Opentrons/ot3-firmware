@@ -175,4 +175,42 @@ struct GetSpeedResponse {
     }
 };
 
+struct WriteToEEPromRequest {
+    static const auto id = MessageId::write_eeprom;
+    uint32_t mm_sec;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
+        uint32_t mm_sec = 0;
+        body = bit_utils::bytes_to_int(body, limit, mm_sec);
+        return WriteToEEPromRequest{mm_sec};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
+        return iter - body;
+    }
+};
+
+
+struct ReadFromEEPromRequest {
+    static const auto id = MessageId::read_eeprom;
+    uint32_t mm_sec;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadFromEEPromRequest {
+        uint32_t mm_sec = 0;
+        body = bit_utils::bytes_to_int(body, limit, mm_sec);
+        return ReadFromEEPromRequest{mm_sec};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
+        return iter - body;
+    }
+};
+
+
 }  // namespace can_messages

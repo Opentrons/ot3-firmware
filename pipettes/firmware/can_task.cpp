@@ -48,8 +48,31 @@ struct MotorHandler {
     void visit(MoveRequest &m) { message_writer_1.write(NodeId::host, m); }
 };
 
+
+struct EEPromHandler {
+    using MessageType =
+        std::variant<std::monostate, WriteToEEPromRequest, ReadFromEEPromRequest>;
+    EEPromHandler() {}
+    EEPromHandler(const EEPromHandler &) = delete;
+    EEPromHandler(const EEPromHandler &&) = delete;
+    EEPromHandler &operator=(const EEPromHandler &) = delete;
+    EEPromHandler &&operator=(const EEPromHandler &&) = delete;
+
+    void handle(MessageType &m) {
+        std::visit([this](auto o) { this->visit(o); }, m);
+    }
+
+    void visit(std::monostate &m) {}
+
+    void visit(WriteToEEPromRequest &m) { message_writer_1.write(NodeId::host, m); }
+
+    void visit(ReadFromEEPromRequest &m) { message_writer_1.write(NodeId::host, m); }
+
+};
+
 /** The parsed message handler */
 static auto motor_handler = MotorHandler{};
+static auto eeprom_handler = EEPromHandler{};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
@@ -57,8 +80,11 @@ static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
     can_messages::GetSpeedRequest, can_messages::StopRequest,
     can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
 
+static auto eeprom_dispatch_target = FreeRTOSCanDispatcherTarget<
+    256, EEPromHandler, can_messages::WriteToEEPromRequest,
+    can_messages::ReadFromEEPromRequest>{eeprom_handler};
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target);
+static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target, eeprom_dispatch_target.parse_target);
 
 struct Task {
     [[noreturn]] void operator()() {
