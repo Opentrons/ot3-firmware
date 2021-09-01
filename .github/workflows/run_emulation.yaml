@@ -6,9 +6,9 @@ jobs:
     name: OT-3 Emulator
     steps:
       - name: Setup SocketCan
-      run: |
-        sudo apt-get install linux-modules-extra-$(uname -r)
-        sudo modprobe vcan
+        run: |
+          sudo apt-get install linux-modules-extra-$(uname -r)
+          sudo modprobe vcan
       - name: Checkout firmware repo
         uses: actions/checkout@v2
       - name: Run OT-3 Emulator
