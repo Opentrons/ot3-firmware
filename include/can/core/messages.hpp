@@ -175,4 +175,54 @@ struct GetSpeedResponse {
     }
 };
 
+struct WriteToEEPromRequest {
+    static const auto id = MessageId::write_eeprom;
+    uint8_t serial_number;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
+        uint8_t serial_number = 0;
+        body = bit_utils::bytes_to_int(body, limit, serial_number);
+        return WriteToEEPromRequest{serial_number};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
+        return iter - body;
+    }
+};
+
+struct ReadFromEEPromRequest {
+    static const auto id = MessageId::read_eeprom_request;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadFromEEPromRequest {
+        return ReadFromEEPromRequest{};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        return 0;
+    }
+};
+
+struct ReadFromEEPromResponse {
+    static const auto id = MessageId::read_eeprom_response;
+    uint8_t serial_number;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadFromEEPromResponse {
+        uint8_t serial_number = 0;
+        body = bit_utils::bytes_to_int(body, limit, serial_number);
+        return ReadFromEEPromResponse{serial_number};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
+        return iter - body;
+    }
+};
+
 }  // namespace can_messages

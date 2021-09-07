@@ -18,12 +18,6 @@ using namespace i2c;
  *
  */
 
-/*
- * TODO(LC 08/19/2021): We should set this configuration whenever an I2C
- * instance is created. Because we are currently not creating one, this should
- * be moved in a followup PR.
- * */
-
 I2C::I2C() : handle(MX_I2C_Init()) {}
 
 void I2C::transmit(uint8_t value) {

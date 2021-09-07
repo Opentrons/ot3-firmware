@@ -4,7 +4,7 @@
 #include "pipettes/core/eeprom.hpp"
 
 using namespace test_eeprom;
-using namespace i2c;
+using namespace eeprom;
 
 SCENARIO("read and write pipette serial numbers") {
     GIVEN("write command") {

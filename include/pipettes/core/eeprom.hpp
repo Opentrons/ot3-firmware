@@ -10,7 +10,7 @@
  * A template and helper functions describing
  */
 
-namespace i2c {
+namespace eeprom {
 template <class I2C>
 concept EEPromPolicy =
     requires(I2C i2c_comms, const uint8_t transmit,
@@ -20,12 +20,12 @@ concept EEPromPolicy =
     {i2c_comms.receive(receive)};
 };
 
-template <i2c::EEPromPolicy EEPromWriter>
+template <eeprom::EEPromPolicy EEPromWriter>
 void write(EEPromWriter writer, const uint8_t serial_number) {
     writer.transmit(serial_number);
 }
 
-template <i2c::EEPromPolicy EEPromWriter>
+template <eeprom::EEPromPolicy EEPromWriter>
 uint8_t read(EEPromWriter writer) {
     using BufferType = std::array<uint8_t, writer.BUFFER_SIZE>;
     BufferType rxBuffer{0};
@@ -36,4 +36,4 @@ uint8_t read(EEPromWriter writer) {
     bit_utils::bytes_to_int(rxBuffer, data);
     return data;
 }
-}  // namespace i2c
+}  // namespace eeprom
