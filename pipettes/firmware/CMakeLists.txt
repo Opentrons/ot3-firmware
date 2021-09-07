@@ -16,6 +16,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
+    ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
     ${CAN_FW_DIR}/hal_can_bus.cpp
     ${CAN_FW_DIR}/hal_can_message_buffer.cpp
     ${CAN_FW_DIR}/utils.cpp)
@@ -25,6 +26,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
     ${COMMON_EXECUTABLE_DIR}/uart/uart.c
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/can/can.c

@@ -51,7 +51,7 @@ jobs:
       - uses: "actions/cache@v2"
         with:
           path: "./stm32-tools"
-          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
         run: cmake --preset=cross .
       - name: "Format"
@@ -64,9 +64,6 @@ jobs:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
-    env:
-      CC: gcc-10
-      CXX: g++-10
     steps:
       - run: |
           sudo apt update
@@ -77,8 +74,8 @@ jobs:
       - uses: "actions/cache@v2"
         with:
           path: "./stm32-tools"
-          key: ${{ runner.os }}-${{ hashFiles('**/cmake') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=host .
+        run: cmake --preset=host-gcc10 .
       - name: 'Build'
         run: cmake --build ./build-host --target gantry
