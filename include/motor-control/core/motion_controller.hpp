@@ -31,7 +31,6 @@ class MotionController {
         direction = d;
     }
 
-
     void set_acceleration(uint32_t a) { acc = a; }
     void set_distance();
 

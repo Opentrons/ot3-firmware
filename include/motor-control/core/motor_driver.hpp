@@ -47,11 +47,11 @@ class MotorDriver {
         constexpr uint32_t ihold_irun_data = 0x1010;
         constexpr uint32_t chopconf = 0x8008;
 
-//        constexpr uint32_t gconf_data = 0x04;
-//        constexpr uint32_t ihold_irun_data = 0x71703;
-//        constexpr uint32_t chopconf = 0x101D5;
-//        constexpr uint32_t thigh = 0xFFFFF;
-//        constexpr uint32_t coolconf = 0x60000;
+        //        constexpr uint32_t gconf_data = 0x04;
+        //        constexpr uint32_t ihold_irun_data = 0x71703;
+        //        constexpr uint32_t chopconf = 0x101D5;
+        //        constexpr uint32_t thigh = 0xFFFFF;
+        //        constexpr uint32_t coolconf = 0x60000;
 
         auto txBuffer = build_command(
             command_byte(Mode::WRITE, DriverRegisters::GCONF), gconf_data);

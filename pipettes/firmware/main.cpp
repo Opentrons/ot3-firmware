@@ -13,17 +13,13 @@
 #include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi.h"
+#include "common/firmware/spi_comms.hpp"
 #include "common/firmware/tim7.h"
 #include "common/firmware/uart.h"
-#include "motor-control/core/motor.hpp"
-
-#include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart_comms.hpp"
 #include "common/firmware/uart_task.hpp"
+#include "motor-control/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
-
-
-
 
 auto main() -> int {
     HardwareInit();
