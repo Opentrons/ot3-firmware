@@ -38,11 +38,7 @@ class MotionController {
     void move() {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
-        for (;;) {
-            set_pin(hardware_config.step);
-            delay(1);
-            reset_pin(hardware_config.step);
-        }
+        start_it();
     }
 
     void stop() {

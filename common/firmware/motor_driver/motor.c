@@ -8,6 +8,7 @@
 #include "FreeRTOS.h"
 #include "stm32g4xx_hal_conf.h"
 #include "task.h"
+#include "common/firmware/tim7.h"
 
 void set_pin(struct PinConfig config) {
     HAL_GPIO_WritePin(config.port, config.pin, GPIO_PIN_SET);
@@ -18,3 +19,11 @@ void reset_pin(struct PinConfig config) {
 }
 
 void delay(const int seconds) { vTaskDelay(seconds); }
+
+void start_it() {
+    TIM7_Start_IT();
+}
+
+void stop_it() {
+    TIM7_Stop_IT();
+}
