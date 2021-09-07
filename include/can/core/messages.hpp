@@ -177,40 +177,52 @@ struct GetSpeedResponse {
 
 struct WriteToEEPromRequest {
     static const auto id = MessageId::write_eeprom;
-    uint32_t mm_sec;
+    uint8_t serial_number;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
-        uint32_t mm_sec = 0;
-        body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return WriteToEEPromRequest{mm_sec};
+        uint8_t serial_number = 0;
+        body = bit_utils::bytes_to_int(body, limit, serial_number);
+        return WriteToEEPromRequest{serial_number};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
+        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
         return iter - body;
     }
 };
 
-
 struct ReadFromEEPromRequest {
-    static const auto id = MessageId::read_eeprom;
-    uint32_t mm_sec;
+    static const auto id = MessageId::read_eeprom_request;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> ReadFromEEPromRequest {
-        uint32_t mm_sec = 0;
-        body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return ReadFromEEPromRequest{mm_sec};
+        return ReadFromEEPromRequest{};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
-        return iter - body;
+        return 0;
     }
 };
 
+struct ReadFromEEPromResponse {
+    static const auto id = MessageId::read_eeprom_response;
+    uint8_t serial_number;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadFromEEPromResponse {
+        uint8_t serial_number = 0;
+        body = bit_utils::bytes_to_int(body, limit, serial_number);
+        return ReadFromEEPromResponse{serial_number};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
+        return iter - body;
+    }
+};
 
 }  // namespace can_messages

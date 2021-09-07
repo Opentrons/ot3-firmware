@@ -65,8 +65,9 @@ enum class MessageId : uint16_t {
 
     get_speed_request = 0x04,
     get_speed_response = 0x11,
-    read_eeprom = 0x2001,
-    write_eeprom = 0x2002
+    write_eeprom = 0x2001,
+    read_eeprom_request = 0x2002,
+    read_eeprom_response = 0x2003
 };
 
 }  // namespace can_ids

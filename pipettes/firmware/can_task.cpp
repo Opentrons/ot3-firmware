@@ -9,12 +9,15 @@
 #include "can/firmware/hal_can_message_buffer.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/can.h"
+#include "common/firmware/i2c_comms.hpp"
+#include "pipettes/core/eeprom.hpp"
 
 using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace can_dispatch;
 using namespace freertos_task;
 using namespace can_message_writer;
+using namespace i2c;
 
 extern FDCAN_HandleTypeDef fdcan1;
 
@@ -48,15 +51,15 @@ struct MotorHandler {
     void visit(MoveRequest &m) { message_writer_1.write(NodeId::host, m); }
 };
 
-
 struct EEPromHandler {
-    using MessageType =
-        std::variant<std::monostate, WriteToEEPromRequest, ReadFromEEPromRequest>;
-    EEPromHandler() {}
+    using MessageType = std::variant<std::monostate, WriteToEEPromRequest,
+                                     ReadFromEEPromRequest>;
+    explicit EEPromHandler(I2C &i2c) : i2c(i2c) {}
     EEPromHandler(const EEPromHandler &) = delete;
     EEPromHandler(const EEPromHandler &&) = delete;
     EEPromHandler &operator=(const EEPromHandler &) = delete;
     EEPromHandler &&operator=(const EEPromHandler &&) = delete;
+    I2C &i2c;
 
     void handle(MessageType &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
@@ -64,15 +67,19 @@ struct EEPromHandler {
 
     void visit(std::monostate &m) {}
 
-    void visit(WriteToEEPromRequest &m) { message_writer_1.write(NodeId::host, m); }
+    void visit(WriteToEEPromRequest &m) { eeprom::write(i2c, m.serial_number); }
 
-    void visit(ReadFromEEPromRequest &m) { message_writer_1.write(NodeId::host, m); }
-
+    void visit(ReadFromEEPromRequest &m) {
+        const uint8_t serial_number = eeprom::read(i2c);
+        auto message = ReadFromEEPromResponse{serial_number};
+        message_writer_1.write(NodeId::host, message);
+    }
 };
 
 /** The parsed message handler */
 static auto motor_handler = MotorHandler{};
-static auto eeprom_handler = EEPromHandler{};
+static auto i2c_comms = I2C();
+static auto eeprom_handler = EEPromHandler{i2c_comms};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
@@ -80,11 +87,14 @@ static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
     can_messages::GetSpeedRequest, can_messages::StopRequest,
     can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
 
-static auto eeprom_dispatch_target = FreeRTOSCanDispatcherTarget<
-    256, EEPromHandler, can_messages::WriteToEEPromRequest,
-    can_messages::ReadFromEEPromRequest>{eeprom_handler};
+static auto eeprom_dispatch_target =
+    FreeRTOSCanDispatcherTarget<256, EEPromHandler,
+                                can_messages::WriteToEEPromRequest,
+                                can_messages::ReadFromEEPromRequest>{
+        eeprom_handler};
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target, eeprom_dispatch_target.parse_target);
+static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target,
+                                    eeprom_dispatch_target.parse_target);
 
 struct Task {
     [[noreturn]] void operator()() {
