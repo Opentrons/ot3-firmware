@@ -37,12 +37,13 @@ class MotionController {
     void move() {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
-        start_it();
+        start_interrupt();
     }
 
     void stop() {
         reset_pin(hardware_config.step);
         reset_pin(hardware_config.enable);
+        stop_interrupt();
     }
 
     auto get_speed() -> uint32_t { return speed; }

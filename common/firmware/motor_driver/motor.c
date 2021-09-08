@@ -20,6 +20,6 @@ void reset_pin(struct PinConfig config) {
 
 void delay(const int seconds) { vTaskDelay(seconds); }
 
-void start_it() { TIM7_Start_IT(); }
+void start_interrupt() { TIM7_Start_IT(); }
 
-void stop_it() { TIM7_Stop_IT(); }
+void stop_interrupt() { TIM7_Stop_IT(); }
