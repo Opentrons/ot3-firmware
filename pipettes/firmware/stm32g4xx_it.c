@@ -119,6 +119,7 @@ void DebugMon_Handler(void) {}
 }*/
 
 extern FDCAN_HandleTypeDef fdcan1;
+extern TIM_HandleTypeDef htim7;
 
 
 /**
@@ -135,7 +136,13 @@ void FDCAN1_IT0_IRQHandler(void)
     /* USER CODE END FDCAN1_IT0_IRQn 1 */
 }
 
-
+/**
+  * @brief This function handles TIM7 global interrupt.
+  */
+void TIM7_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim7);
+}
 /**
  * @}
  */
