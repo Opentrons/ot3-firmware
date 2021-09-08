@@ -1,5 +1,6 @@
-#include "common/firmware/tim7.h"
+#include "stm32g4xx_hal.h"
 
+#include "common/firmware/timer_interrupt.h"
 #include "common/firmware/errors.h"
 
 TIM_HandleTypeDef htim7;
@@ -66,11 +67,12 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-void TIM7_Init(void) {
+void timer_init(void) {
     MX_GPIO_Init();
     MX_TIM7_Init();
 }
 
-void TIM7_Start_IT(void) { HAL_TIM_Base_Start_IT(&htim7); }
+void timer_interrupt_start(void) { HAL_TIM_Base_Start_IT(&htim7); }
 
-void TIM7_Stop_IT(void) { HAL_TIM_Base_Stop_IT(&htim7); }
+void timer_interrupt_stop(void) { HAL_TIM_Base_Stop_IT(&htim7); }
+

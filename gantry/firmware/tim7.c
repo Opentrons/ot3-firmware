@@ -1,5 +1,6 @@
-#include "common/firmware/tim7.h"
+#include "stm32g4xx_hal.h"
 
+#include "common/firmware/timer_interrupt.h"
 #include "common/firmware/errors.h"
 
 TIM_HandleTypeDef htim7;
@@ -24,9 +25,6 @@ void MX_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* EXTI interrupt init*/
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 void MX_TIM7_Init(void) {
@@ -61,16 +59,16 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
         __HAL_RCC_TIM7_CLK_ENABLE();
 
         /* TIM7 interrupt Init */
-        HAL_NVIC_SetPriority(TIM7_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(TIM7_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM7_IRQn);
     }
 }
 
-void TIM7_Init(void) {
+void timer_init(void) {
     MX_GPIO_Init();
     MX_TIM7_Init();
 }
 
-void TIM7_Start_IT(void) { HAL_TIM_Base_Start_IT(&htim7); }
+void timer_interrupt_start(void) { HAL_TIM_Base_Start_IT(&htim7); }
 
-void TIM7_Stop_IT(void) { HAL_TIM_Base_Stop_IT(&htim7); }
+void timer_interrupt_stop(void) { HAL_TIM_Base_Stop_IT(&htim7); }

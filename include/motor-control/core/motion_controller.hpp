@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "common/firmware/motor.h"
+#include "common/firmware/timer_interrupt.h"
 #include "spi.hpp"
 
 namespace motion_controller {
@@ -18,7 +19,9 @@ requires spi::TMC2130Spi<SpiDriver>
 class MotionController {
   public:
     explicit MotionController(SpiDriver& spi, HardwareConfig& config)
-        : spi_comms(spi), hardware_config(config) {}
+        : spi_comms(spi), hardware_config(config) {
+        timer_init();
+    }
 
     void set_speed(uint32_t s) { speed = s; }
 
@@ -37,13 +40,13 @@ class MotionController {
     void move() {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
-        start_interrupt();
+        timer_interrupt_start();
     }
 
     void stop() {
         reset_pin(hardware_config.step);
         reset_pin(hardware_config.enable);
-        stop_interrupt();
+        timer_interrupt_stop();
     }
 
     auto get_speed() -> uint32_t { return speed; }

@@ -14,7 +14,6 @@
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi.h"
 #include "common/firmware/spi_comms.hpp"
-#include "common/firmware/tim7.h"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
 #include "common/firmware/uart_task.hpp"
@@ -24,7 +23,6 @@
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-    TIM7_Init();
     uart_task::start();
     can_task::start();
 
