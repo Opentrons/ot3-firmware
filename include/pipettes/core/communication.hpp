@@ -58,6 +58,17 @@ auto MessageReader::read(Reader &communication)
 
             return pipette_messages::SetSpeed{speed};
         }
+        case static_cast<uint32_t>(
+            pipette_messages::MessageType::set_distance): {
+            // Read the speed
+            auto dist_span = payload_span.subspan(0, 4);
+            communication.read(dist_span);
+
+            uint32_t dist = 0;
+            bit_utils::bytes_to_int(dist_span, dist);
+
+            return pipette_messages::SetDistance{dist};
+        }
         default:
             return r;
     }

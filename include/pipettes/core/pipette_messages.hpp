@@ -12,7 +12,8 @@ enum class MessageType : uint8_t {
     set_speed = 0x03,
     get_speed = 0x04,
     get_speed_result = 0x11,
-    get_status_result = 0x05
+    get_status_result = 0x05,
+    set_distance = 0x6,
 };
 
 struct Stop {};
@@ -32,14 +33,18 @@ struct GetStatusResult {
     uint32_t data;
 };
 
+struct SetDistance {
+    uint32_t mm;
+};
+
 struct Status {};
 
 struct Move {};
 
 struct Setup {};
 
-using ReceivedMessage =
-    std::variant<std::monostate, Stop, SetSpeed, GetSpeed, Move, Setup, Status>;
+using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed,
+                                     SetDistance, Move, Setup, Status>;
 
 using SentMessage =
     std::variant<std::monostate, GetSpeedResult, GetStatusResult>;

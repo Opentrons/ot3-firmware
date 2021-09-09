@@ -52,6 +52,10 @@ class MessageHandler {
         message_writer.write(writer, message);
     }
 
+    void handle(const pipette_messages::SetDistance &m) {
+        motor.motion_controller.set_distance(m.mm);
+    }
+
     void handle(const std::monostate &m) { static_cast<void>(m); }
 
     Writer &writer;

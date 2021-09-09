@@ -34,7 +34,10 @@ class MotionController {
     }
 
     void set_acceleration(uint32_t a) { acc = a; }
-    void set_distance();
+    void set_distance(uint32_t d) {
+        dist = d;
+        set_steps(d);
+    }
 
     void move() {
         set_pin(hardware_config.enable);
@@ -55,6 +58,7 @@ class MotionController {
   private:
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;
+    uint32_t dist = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     SpiDriver& spi_comms;
     HardwareConfig& hardware_config;

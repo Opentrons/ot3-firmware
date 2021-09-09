@@ -1,9 +1,10 @@
+#include "common/firmware/errors.h"
+#include "common/firmware/timer_interrupt.h"
 #include "stm32g4xx_hal.h"
 
-#include "common/firmware/timer_interrupt.h"
-#include "common/firmware/errors.h"
-
 TIM_HandleTypeDef htim7;
+uint32_t inc;
+uint32_t steps;
 
 /**
  * @brief GPIO Initialization Function
@@ -34,7 +35,7 @@ void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
-    htim7.Init.Prescaler = 500;
+    htim7.Init.Prescaler = 5000;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
     htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -52,7 +53,10 @@ void MX_TIM7_Init(void) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7) {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+        inc++;
+        if (!steps || inc < steps * 2) {
+            HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+        }
     }
 }
 
@@ -74,5 +78,9 @@ void timer_init(void) {
 
 void timer_interrupt_start(void) { HAL_TIM_Base_Start_IT(&htim7); }
 
-void timer_interrupt_stop(void) { HAL_TIM_Base_Stop_IT(&htim7); }
+void timer_interrupt_stop(void) {
+    HAL_TIM_Base_Stop_IT(&htim7);
+    inc = 0;
+}
 
+void set_steps(uint32_t val) { steps = val; }
