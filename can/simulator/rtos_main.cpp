@@ -17,7 +17,7 @@ using namespace freertos_can_dispatch;
 using namespace freertos_task;
 
 static auto constexpr ReceiveBufferSize = 1024;
-static auto buffer = FreeRTOMessageBuffer<ReceiveBufferSize>{};
+static auto buffer = FreeRTOSMessageBuffer<ReceiveBufferSize>{};
 static auto transport = socket_can::SocketCanTransport{};
 static auto canbus = sim_canbus::SimCANBus(transport, buffer);
 
