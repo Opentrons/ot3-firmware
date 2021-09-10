@@ -14,15 +14,15 @@ namespace freertos_message_buffer {
  * @tparam BufferSize The buffer size in bytes.
  */
 template <std::size_t BufferSize>
-class FreeRTOMessageBuffer {
+class FreeRTOSMessageBuffer {
   public:
-    explicit FreeRTOMessageBuffer();
-    FreeRTOMessageBuffer& operator=(FreeRTOMessageBuffer&) = delete;
-    FreeRTOMessageBuffer&& operator=(FreeRTOMessageBuffer&&) = delete;
-    FreeRTOMessageBuffer(FreeRTOMessageBuffer&) = delete;
-    FreeRTOMessageBuffer(FreeRTOMessageBuffer&&) = delete;
+    explicit FreeRTOSMessageBuffer();
+    FreeRTOSMessageBuffer& operator=(FreeRTOSMessageBuffer&) = delete;
+    FreeRTOSMessageBuffer&& operator=(FreeRTOSMessageBuffer&&) = delete;
+    FreeRTOSMessageBuffer(FreeRTOSMessageBuffer&) = delete;
+    FreeRTOSMessageBuffer(FreeRTOSMessageBuffer&&) = delete;
 
-    ~FreeRTOMessageBuffer();
+    ~FreeRTOSMessageBuffer();
 
     template <typename Iterator, typename Limit>
     requires bit_utils::ByteIterator<Iterator> &&
@@ -64,13 +64,13 @@ class FreeRTOMessageBuffer {
 };
 
 template <std::size_t BufferSize>
-FreeRTOMessageBuffer<BufferSize>::FreeRTOMessageBuffer() {
+FreeRTOSMessageBuffer<BufferSize>::FreeRTOSMessageBuffer() {
     handle = xMessageBufferCreateStatic(backing.size(), backing.data(),
                                         &message_buffer);
 }
 
 template <std::size_t BufferSize>
-FreeRTOMessageBuffer<BufferSize>::~FreeRTOMessageBuffer() {
+FreeRTOSMessageBuffer<BufferSize>::~FreeRTOSMessageBuffer() {
     vMessageBufferDelete(handle);
 }
 

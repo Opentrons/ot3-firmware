@@ -47,10 +47,10 @@ class FreeRTOSCanBufferPoller {
 };
 
 /**
- * A helper to build a FreeRTOMessageBuffer holding can messages to build
+ * A helper to build a FreeRTOSMessageBuffer holding can messages to build
  * supporting classes to poll and parse the messages.
  *
- * @tparam BufferSize The size of the FreeRTOMessageBuffer in bytes
+ * @tparam BufferSize The size of the FreeRTOSMessageBuffer in bytes
  * @tparam HandlerType The type of the parsed message callback. Must conform to
  * HandlesMessages concept.
  * @tparam MessageTypes The CanMessage types this MessageBuffer is interested
@@ -72,7 +72,7 @@ struct FreeRTOSCanDispatcherTarget {
           parse_target{handler},
           poller{message_buffer, parse_target} {}
 
-    using BufferType = FreeRTOMessageBuffer<BufferSize>;
+    using BufferType = FreeRTOSMessageBuffer<BufferSize>;
 
     // The message buffer
     BufferType message_buffer;
