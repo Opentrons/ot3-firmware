@@ -29,7 +29,7 @@ class DeviceInfoHandler {
      */
     DeviceInfoHandler(MessageWriter<Writer> &writer, NodeId node_id,
                       uint32_t version)
-        : writer(writer), response(node_id, version) {}
+        : writer(writer), response{node_id, version} {}
     DeviceInfoHandler(const DeviceInfoHandler &) = delete;
     DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
     DeviceInfoHandler &operator=(const DeviceInfoHandler &) = delete;
@@ -50,8 +50,8 @@ class DeviceInfoHandler {
 
     void visit(DeviceInfoRequest &m) { writer.write(NodeId::host, response); }
 
-    DeviceInfoResponse response;
     MessageWriter<Writer> &writer;
+    DeviceInfoResponse response;
 };
 
 }  // namespace can_device_info
