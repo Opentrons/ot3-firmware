@@ -34,6 +34,17 @@ SCENARIO("message deserializing works") {
             }
         }
     }
+
+    GIVEN("a device info response body") {
+        auto arr = std::array<uint8_t, 5>{1, 2, 3, 4, 5};
+        WHEN("constructed") {
+            auto r = DeviceInfoResponse::parse(arr.begin(), arr.end());
+            THEN("it is converted to a the correct structure") {
+                REQUIRE(r.node_id == NodeId::pipette);
+                REQUIRE(r.version == 0x02030405);
+            }
+        }
+    }
 }
 
 SCENARIO("message serializing works") {
@@ -83,6 +94,23 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[3] == 0x21);
             }
             THEN("size must be returned") { REQUIRE(size == 4); }
+        }
+    }
+
+    GIVEN("a device info response message") {
+        auto message = DeviceInfoResponse{NodeId::pipette, 0x00220033};
+        auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
+        auto body = std::span{arr};
+        WHEN("serialized") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is written into the buffer correctly") {
+                REQUIRE(body.data()[0] == 0x01);
+                REQUIRE(body.data()[1] == 0x00);
+                REQUIRE(body.data()[2] == 0x22);
+                REQUIRE(body.data()[3] == 0x00);
+                REQUIRE(body.data()[4] == 0x33);
+            }
+            THEN("size must be returned") { REQUIRE(size == 5); }
         }
     }
 }
