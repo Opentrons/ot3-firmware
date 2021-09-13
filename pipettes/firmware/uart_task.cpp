@@ -39,7 +39,7 @@ static void run(void *parameter) {
     }
 }
 
-static constexpr auto stack_size = 200;
+static constexpr auto stack_size = 500;
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static std::array<StackType_t, stack_size> stack;
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
