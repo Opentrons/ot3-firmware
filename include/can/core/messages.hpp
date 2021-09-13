@@ -45,6 +45,44 @@ struct HeartbeatResponse {
     }
 };
 
+struct DeviceInfoRequest {
+    static const auto id = MessageId::device_info_request;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> DeviceInfoRequest {
+        return DeviceInfoRequest{};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        return 0;
+    }
+};
+
+struct DeviceInfoResponse {
+    static const auto id = MessageId::device_info_response;
+
+    NodeId node_id;
+    uint32_t version;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> DeviceInfoResponse {
+        uint8_t node_id;
+        uint32_t version;
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        body = bit_utils::bytes_to_int(body, limit, version);
+        return DeviceInfoResponse{static_cast<NodeId>(node_id), version};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), body, limit);
+        iter = bit_utils::int_to_bytes(version, iter, limit);
+        return iter - body;
+    }
+};
+
+
 struct StopRequest {
     static const auto id = MessageId::stop_request;
 
