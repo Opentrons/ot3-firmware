@@ -60,7 +60,7 @@ auto MessageReader::read(Reader &communication)
         }
         case static_cast<uint32_t>(
             pipette_messages::MessageType::set_distance): {
-            // Read the speed
+            // Read the distance
             auto dist_span = payload_span.subspan(0, 4);
             communication.read(dist_span);
 
