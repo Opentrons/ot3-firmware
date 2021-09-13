@@ -76,12 +76,12 @@ struct DeviceInfoResponse {
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), body, limit);
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), body, limit);
         iter = bit_utils::int_to_bytes(version, iter, limit);
         return iter - body;
     }
 };
-
 
 struct StopRequest {
     static const auto id = MessageId::stop_request;

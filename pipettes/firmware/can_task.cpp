@@ -2,6 +2,7 @@
 
 #include <variant>
 
+#include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/message_writer.hpp"
@@ -18,6 +19,7 @@ using namespace can_dispatch;
 using namespace freertos_task;
 using namespace can_message_writer;
 using namespace i2c;
+using namespace can_device_info;
 
 extern FDCAN_HandleTypeDef fdcan1;
 
@@ -78,23 +80,31 @@ struct EEPromHandler {
 
 /** The parsed message handler */
 static auto motor_handler = MotorHandler{};
-static auto i2c_comms = I2C();
+static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{i2c_comms};
+static auto device_info_handler = DeviceInfoHandler{message_writer_1, NodeId::pipette, 0};
 
 /** The connection between the motor handler and message buffer */
-static auto motor_dispatch_target = FreeRTOSCanDispatcherTarget<
-    256, MotorHandler, can_messages::SetSpeedRequest,
+static auto motor_dispatch_target = DispatchParseTarget<
+    MotorHandler, can_messages::SetSpeedRequest,
     can_messages::GetSpeedRequest, can_messages::StopRequest,
     can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
 
 static auto eeprom_dispatch_target =
-    FreeRTOSCanDispatcherTarget<256, EEPromHandler,
+    DispatchParseTarget<EEPromHandler,
                                 can_messages::WriteToEEPromRequest,
                                 can_messages::ReadFromEEPromRequest>{
         eeprom_handler};
+
+static auto device_info_dispatch_target =
+    DispatchParseTarget<decltype(device_info_handler), can_messages::DeviceInfoRequest>{
+        device_info_handler};
+
+
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(motor_dispatch_target.parse_target,
-                                    eeprom_dispatch_target.parse_target);
+static auto dispatcher = Dispatcher(motor_dispatch_target,
+                                    eeprom_dispatch_target,
+                                    device_info_dispatch_target);
 
 struct Task {
     [[noreturn]] void operator()() {

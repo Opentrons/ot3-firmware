@@ -99,7 +99,7 @@ SCENARIO("message serializing works") {
 
     GIVEN("a device info response message") {
         auto message = DeviceInfoResponse{NodeId::pipette, 0x00220033};
-        auto arr = std::array<uint8_t, 5>{0,0, 0, 0, 0};
+        auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
