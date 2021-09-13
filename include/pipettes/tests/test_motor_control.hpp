@@ -64,7 +64,7 @@ class TestMotionController {
     void set_speed(uint32_t s) { speed = s; }
     void set_direction(bool d) { direction = d; }
     void set_acceleration(uint32_t a) { acc = a; }
-    void set_distance();
+    void set_distance(uint32_t d) { dist = d; }
     void move() { speed = 10000; }
     void stop() { speed = 0; }
     uint32_t get_acceleration() { return acc; }
@@ -74,6 +74,7 @@ class TestMotionController {
   private:
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;
+    uint32_t dist = 0x0;
     bool direction = true;
     SpiDriver& spi_comms;
 };
