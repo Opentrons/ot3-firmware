@@ -1,15 +1,13 @@
 #pragma once
 
+#include "can_bus.hpp"
 #include "ids.hpp"
 #include "message_writer.hpp"
 #include "messages.hpp"
-#include "can_bus.hpp"
-
 
 using namespace can_ids;
 using namespace can_message_writer;
 using namespace can_messages;
-
 
 namespace can_device_info {
 
@@ -29,7 +27,9 @@ class DeviceInfoHandler {
      * @param node_id The node id of this device
      * @param version The firmware version on this device
      */
-    DeviceInfoHandler(MessageWriter<Writer> & writer, NodeId node_id, uint32_t version): writer(writer), response(node_id, version) {}
+    DeviceInfoHandler(MessageWriter<Writer> &writer, NodeId node_id,
+                      uint32_t version)
+        : writer(writer), response(node_id, version) {}
     DeviceInfoHandler(const DeviceInfoHandler &) = delete;
     DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
     DeviceInfoHandler &operator=(const DeviceInfoHandler &) = delete;
@@ -48,12 +48,10 @@ class DeviceInfoHandler {
   private:
     void visit(std::monostate &m) {}
 
-    void visit(DeviceInfoRequest &m) {
-        writer.write(NodeId::host, response);
-    }
+    void visit(DeviceInfoRequest &m) { writer.write(NodeId::host, response); }
 
     DeviceInfoResponse response;
-    MessageWriter<Writer> & writer;
+    MessageWriter<Writer> &writer;
 };
 
-}
+}  // namespace can_device_info
