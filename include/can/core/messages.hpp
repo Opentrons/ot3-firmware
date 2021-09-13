@@ -65,15 +65,18 @@ struct DeviceInfoResponse {
     /**
      *   TODO (al, 2021-09-13)
      *   Seth's thoughts on future of payload
-     *   IMO we should set this up for a couple more things than just version, and
-     *   then can care about version in general a little less. I don't think it's
-     *   necessarily critical to get right the first time, but we could do something like:
+     *   IMO we should set this up for a couple more things than just version,
+     * and then can care about version in general a little less. I don't think
+     * it's necessarily critical to get right the first time, but we could do
+     * something like:
      *   - two bits of build type (dev, testing, release)
      *   - a byte or two of like message schema version
      *   - a four byte incrementing version seems fine i suppose
-     *   - a byte or two for well-known-id system identification through some centrally defined enum
+     *   - a byte or two for well-known-id system identification through some
+     * centrally defined enum
      *   - at some point we'll want a serial number probably
-     *   - a hardware revision unless we want to fold that into the well-known-id
+     *   - a hardware revision unless we want to fold that into the
+     * well-known-id
      */
     NodeId node_id;
     uint32_t version;
