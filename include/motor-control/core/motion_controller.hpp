@@ -4,6 +4,7 @@
 
 #include "common/firmware/motor.h"
 #include "common/firmware/timer_interrupt.h"
+#include "drive_train_system.hpp"
 #include "spi.hpp"
 
 namespace motion_controller {
@@ -14,12 +15,12 @@ struct HardwareConfig {
     struct PinConfig enable;
 };
 
-template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver>
+template <spi::TMC2130Spi SpiDriver, LinearMechanicalConfig MEConfig>
 class MotionController {
   public:
-    explicit MotionController(SpiDriver& spi, HardwareConfig& config)
-        : spi_comms(spi), hardware_config(config) {
+    explicit MotionController(SpiDriver& spi, MEConfig& me_config,
+                              HardwareConfig& config)
+        : spi_comms(spi), me_config(me_config), hardware_config(config) {
         timer_init();
     }
 
@@ -58,6 +59,7 @@ class MotionController {
     uint32_t speed = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     SpiDriver& spi_comms;
+    MEConfig& me_config;
     HardwareConfig& hardware_config;
 };
 

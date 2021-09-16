@@ -1,5 +1,6 @@
 #pragma once
 
+#include "drive_train_system.hpp"
 #include "motion_controller.hpp"
 #include "motor_driver.hpp"
 #include "spi.hpp"
@@ -9,16 +10,16 @@ using namespace motion_controller;
 
 namespace motor_class {
 
-template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver>
+template <spi::TMC2130Spi SpiDriver, LinearMechanicalConfig MEConfig>
 struct Motor {
-    explicit Motor(SpiDriver& spi, HardwareConfig& config)
-        : spi_comms(spi), hardware_config(config) {}
+    explicit Motor(SpiDriver& spi, MEConfig& me_config, HardwareConfig& config)
+        : spi_comms(spi), me_config(me_config), hardware_config(config) {}
     SpiDriver& spi_comms;
+    MEConfig& me_config;
     HardwareConfig& hardware_config;
     MotorDriver<SpiDriver> driver = MotorDriver{spi_comms};
-    MotionController<SpiDriver> motion_controller =
-        MotionController{spi_comms, hardware_config};
+    MotionController<SpiDriver, MEConfig> motion_controller =
+        MotionController{spi_comms, me_config, hardware_config};
 };
 
 }  // namespace motor_class
