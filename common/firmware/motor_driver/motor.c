@@ -1,4 +1,3 @@
-#pragma once
 /*
  * A C file to act as a middle layer to HAL related functions for GPIO.
  */
