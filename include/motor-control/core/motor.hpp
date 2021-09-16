@@ -1,25 +1,28 @@
 #pragma once
 
-#include "drive_train_system.hpp"
+#include "linear_motion_system.hpp"
 #include "motion_controller.hpp"
 #include "motor_driver.hpp"
 #include "spi.hpp"
 
 using namespace motor_driver;
 using namespace motion_controller;
+using namespace lms;
 
 namespace motor_class {
 
-template <spi::TMC2130Spi SpiDriver, LinearMechanicalConfig MEConfig>
+template <spi::TMC2130Spi SpiDriver, lms::LMSConfig LMSConf>
 struct Motor {
-    explicit Motor(SpiDriver& spi, MEConfig& me_config, HardwareConfig& config)
-        : spi_comms(spi), me_config(me_config), hardware_config(config) {}
+    explicit Motor(SpiDriver& spi, LMSConf& lms_config, HardwareConfig& config)
+        : spi_comms(spi),
+          linear_motion_sys_config(lms_config),
+          hardware_config(config) {}
     SpiDriver& spi_comms;
-    MEConfig& me_config;
+    LMSConf& linear_motion_sys_config;
     HardwareConfig& hardware_config;
     MotorDriver<SpiDriver> driver = MotorDriver{spi_comms};
-    MotionController<SpiDriver, MEConfig> motion_controller =
-        MotionController{spi_comms, me_config, hardware_config};
+    MotionController<SpiDriver, LMSConf> motion_controller =
+        MotionController{spi_comms, linear_motion_sys_config, hardware_config};
 };
 
 }  // namespace motor_class

@@ -6,7 +6,7 @@
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
-#include "motor-control/core/drive_train_system.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
 #include "task.h"
@@ -24,14 +24,16 @@ struct motion_controller::HardwareConfig GPIOConfig {
     .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
 };
 
-struct LeadScrewConfig LinearConfig {
-    .lead_screw_pitch = 2
+struct lms::LeadScrewConfig LSConfig {
+    2  // lead_screw_pitch in mm
 };
 
-static LinearSystemConfig MEConfig{LinearConfig, 200, 16};
+static lms::LinearMotionSystemConfig linear_motion_sys_config{LSConfig, 200,
+                                                              16};
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, MEConfig, GPIOConfig};
+static motor_class::Motor motor{spi_comms, linear_motion_sys_config,
+                                GPIOConfig};
 
 static void run(void *parameter) {
     parameter = nullptr;
