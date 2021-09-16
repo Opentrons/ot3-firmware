@@ -10,9 +10,8 @@
 #include "task.h"
 // clang-format on
 
-#include "common/firmware/clocking.h"
 #include "common/firmware/can_task.hpp"
-
+#include "common/firmware/clocking.h"
 
 auto main() -> int {
     HardwareInit();
