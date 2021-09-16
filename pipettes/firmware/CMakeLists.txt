@@ -1,8 +1,6 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
-find_package(STM32G4xx)
 add_STM32G4_driver("Pipettes")
-add_STM32G4_freertos("Pipettes")
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
@@ -11,7 +9,7 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ../core/freertos_idle_timer_task.cpp
     ${COMMON_EXECUTABLE_DIR}/uart/uart_comms.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
@@ -39,8 +37,8 @@ add_executable(pipettes
 
 target_link_libraries(pipettes
         PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes
-        can-core
+        STM32G4xx_Drivers_Pipettes
+        can-core pipettes-core
         )
 
 set_target_properties(pipettes
@@ -49,14 +47,12 @@ set_target_properties(pipettes
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
 
-target_include_directories(
-        pipettes
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
-
+# NOTE: warnings as errors should be set up again once we remove warnings related
+# to including HAL code in cpp code.
 target_compile_options(pipettes
         PUBLIC
         -Wall
+#        -Werror
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -66,18 +62,9 @@ target_compile_options(pipettes
 
 target_include_directories(STM32G4xx_Drivers_Pipettes
         PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Pipettes
-        PUBLIC .)
 
 target_compile_definitions(STM32G4xx_Drivers_Pipettes
         PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
-        PUBLIC STM32G491xx)
-
-set_target_properties(
-        STM32G4xx_FreeRTOS_Pipettes
-        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
-
 
 find_program(ARM_GDB
         arm-none-eabi-gdb-py

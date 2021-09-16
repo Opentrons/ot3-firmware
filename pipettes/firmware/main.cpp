@@ -10,20 +10,13 @@
 #include "task.h"
 // clang-format on
 
-#include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
-#include "common/firmware/spi.h"
-#include "common/firmware/spi_comms.hpp"
-#include "common/firmware/uart.h"
-#include "common/firmware/uart_comms.hpp"
-#include "common/firmware/uart_task.hpp"
-#include "motor-control/core/motor.hpp"
-#include "pipettes/core/communication.hpp"
+#include "common/firmware/can_task.hpp"
+
 
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-    uart_task::start();
     can_task::start();
 
     vTaskStartScheduler();

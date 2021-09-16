@@ -1,12 +1,27 @@
 # pipettes source tree
+find_package(STM32G4xx)
+add_STM32G4_freertos("Pipettes")
 
-# add_subdirectory(src)
+target_include_directories(STM32G4xx_FreeRTOS_Pipettes
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
+        PUBLIC STM32G491xx)
+
+set_target_properties(
+        STM32G4xx_FreeRTOS_Pipettes
+        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
+
+
+include_directories(BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+add_subdirectory(core)
 
 if (${CMAKE_CROSSCOMPILING})
   add_subdirectory(firmware)
 else()
-   add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()
+
 
 file(GLOB_RECURSE PIPETTES_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/pipettes/*.hpp)
 

@@ -28,8 +28,8 @@ class FreeRTOSTask {
         instance->entry();
     }
     Entry entry;
-    TaskHandle_t handle;
-    StaticTask_t static_task;
+    TaskHandle_t handle{};
+    StaticTask_t static_task{};
     std::array<StackType_t, StackDepth> backing{};
 };
 
