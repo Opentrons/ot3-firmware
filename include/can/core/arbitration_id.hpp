@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace can_arbitration_id {
 
 /**

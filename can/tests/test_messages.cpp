@@ -49,7 +49,7 @@ SCENARIO("message deserializing works") {
 
 SCENARIO("message serializing works") {
     GIVEN("a get status response message") {
-        auto message = GetStatusResponse{1, 2};
+        auto message = GetStatusResponse{{}, 1, 2};
         auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -66,7 +66,7 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a set speed request message") {
-        auto message = SetSpeedRequest{0x10023300};
+        auto message = SetSpeedRequest{{}, 0x10023300};
         auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -82,7 +82,7 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a get speed response message") {
-        auto message = GetSpeedResponse{0x12344321};
+        auto message = GetSpeedResponse{{}, 0x12344321};
         auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -98,7 +98,7 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a device info response message") {
-        auto message = DeviceInfoResponse{NodeId::pipette, 0x00220033};
+        auto message = DeviceInfoResponse{{}, NodeId::pipette, 0x00220033};
         auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -111,6 +111,16 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[4] == 0x33);
             }
             THEN("size must be returned") { REQUIRE(size == 5); }
+        }
+    }
+
+    GIVEN("a get speed request message") {
+        auto message = GetSpeedRequest{{}};
+        auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
+        auto body = std::span{arr};
+        WHEN("serialized") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("size must be returned") { REQUIRE(size == 0); }
         }
     }
 }
