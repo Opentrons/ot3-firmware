@@ -22,4 +22,4 @@ union ArbitrationId {
     uint32_t id;
 };
 
-}
+}  // namespace can_arbitration_id
