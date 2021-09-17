@@ -17,7 +17,7 @@ namespace can_device_info {
  *
  * @tparam Writer The can bus writer type.
  */
-template <can_bus::CanBus Writer>
+template <can_bus::CanBusWriter Writer>
 class DeviceInfoHandler {
   public:
     /**
