@@ -9,8 +9,7 @@ using namespace motion_controller;
 
 namespace motor_class {
 
-template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver>
+template <spi::TMC2130Spi SpiDriver>
 struct Motor {
     explicit Motor(SpiDriver& spi, HardwareConfig& config)
         : spi_comms(spi), hardware_config(config) {}

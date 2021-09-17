@@ -14,8 +14,7 @@ struct HardwareConfig {
     struct PinConfig enable;
 };
 
-template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver>
+template <spi::TMC2130Spi SpiDriver>
 class MotionController {
   public:
     explicit MotionController(SpiDriver& spi, HardwareConfig& config)

@@ -35,8 +35,7 @@ constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
     return static_cast<uint8_t>(mode) | static_cast<uint8_t>(motor_reg);
 }
 
-template <typename SpiDriver>
-requires spi::TMC2130Spi<SpiDriver>
+template <spi::TMC2130Spi SpiDriver>
 class MotorDriver {
   public:
     MotorDriver(SpiDriver& spi) : spi_comms(spi) {}
