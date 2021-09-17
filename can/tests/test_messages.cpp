@@ -36,7 +36,7 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a device info response body") {
-        auto arr = std::array<uint8_t, 5>{1, 2, 3, 4, 5};
+        auto arr = std::array<uint8_t, 5>{0x20, 2, 3, 4, 5};
         WHEN("constructed") {
             auto r = DeviceInfoResponse::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
@@ -104,7 +104,7 @@ SCENARIO("message serializing works") {
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer correctly") {
-                REQUIRE(body.data()[0] == 0x01);
+                REQUIRE(body.data()[0] == 0x20);
                 REQUIRE(body.data()[1] == 0x00);
                 REQUIRE(body.data()[2] == 0x22);
                 REQUIRE(body.data()[3] == 0x00);

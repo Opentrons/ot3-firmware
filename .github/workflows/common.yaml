@@ -72,5 +72,5 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
-      - name: 'Build'
-        run: cmake --build ./build-host --target common
+      - name: 'Build and test'
+        run: cmake --build ./build-host --target common-build-and-test
