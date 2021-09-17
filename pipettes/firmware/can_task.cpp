@@ -104,12 +104,7 @@ static auto dispatcher = Dispatcher(
     motor_dispatch_target, eeprom_dispatch_target, device_info_dispatch_target);
 
 struct Task {
-    /**
-     *     Technically, void operator does return due to weird overload reasons.
-     *     Not sure how to resolve this other than removing noreturn.
-     */
-
-    void operator()() {
+    [[noreturn]] void operator()() {
         if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
             //            Error_Handler();
         }

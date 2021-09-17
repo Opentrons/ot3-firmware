@@ -34,7 +34,7 @@ class FreeRTOSCanBufferPoller {
     /**
      * Task entry point.
      */
-    void operator()() {
+    [[noreturn]] void operator()() {
         for (;;) {
             reader.read(portMAX_DELAY);
         }
