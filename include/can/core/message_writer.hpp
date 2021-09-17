@@ -34,8 +34,8 @@ class MessageWriter {
 
   private:
     Writer& writer;
-    std::array<uint8_t, 64> buffer;
-    can_ids::ArbitrationId arbitration_id;
+    std::array<uint8_t, 64> buffer{};
+    can_ids::ArbitrationId arbitration_id{};
 };
 
 }  // namespace can_message_writer
