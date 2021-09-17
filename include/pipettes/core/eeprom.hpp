@@ -16,7 +16,7 @@ concept EEPromPolicy =
     requires(I2C i2c_comms, const uint8_t transmit,
              std::array<uint8_t, I2C::BUFFER_SIZE>& receive) {
     /** A static integer member */
-    {I2C::BUFFER_SIZE} -> std::convertible_to<int>;
+    { I2C::BUFFER_SIZE } -> std::convertible_to<int>;
     {i2c_comms.transmit(transmit)};
     {i2c_comms.receive(receive)};
 };
