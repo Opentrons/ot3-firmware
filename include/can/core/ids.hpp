@@ -36,10 +36,14 @@ enum class FunctionCode : uint8_t {
     heartbeat = 0x7e
 };
 
+/**
+ * Node id definitions.
+ */
 enum class NodeId : uint8_t {
-    host,
-    pipette,
-    gantry,
+    broadcast = 0x00,
+    host = 0x10,
+    pipette = 0x20,
+    gantry = 0x40,
 };
 
 /**
