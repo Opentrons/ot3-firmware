@@ -21,12 +21,12 @@ concept EEPromPolicy =
 };
 
 template <eeprom::EEPromPolicy EEPromWriter>
-void write(EEPromWriter writer, const uint8_t serial_number) {
+void write(EEPromWriter & writer, const uint8_t serial_number) {
     writer.transmit(serial_number);
 }
 
 template <eeprom::EEPromPolicy EEPromWriter>
-uint8_t read(EEPromWriter writer) {
+uint8_t read(EEPromWriter & writer) {
     using BufferType = std::array<uint8_t, writer.BUFFER_SIZE>;
     BufferType rxBuffer{0};
     uint8_t data = 0x0;
