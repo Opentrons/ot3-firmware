@@ -1,11 +1,9 @@
 #pragma once
 
-#include <variant>
-
 #include "common/core/io.hpp"
 #include "common/core/motor.hpp"
-#include "pipettes/core/communication.hpp"
-#include "pipettes/core/pipette_messages.hpp"
+#include "communication.hpp"
+#include "pipette_messages.hpp"
 
 template <io::WriterProtocol Writer, motor_protocol::MotorProtocol Motor>
 class MessageHandler {
