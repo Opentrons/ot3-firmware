@@ -1,6 +1,6 @@
+#include "can/core/arbitration_id.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
-#include "can/core/arbitration_id.hpp"
 #include "can/tests/mock_message_buffer.hpp"
 #include "catch2/catch.hpp"
 #include "common/core/bit_utils.hpp"

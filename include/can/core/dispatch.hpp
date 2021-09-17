@@ -1,11 +1,11 @@
 #pragma once
 
+#include "arbitration_id.hpp"
+#include "can_message_buffer.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/message_buffer.hpp"
-#include "parse.hpp"
 #include "ids.hpp"
-#include "can_message_buffer.hpp"
-#include "arbitration_id.hpp"
+#include "parse.hpp"
 
 using namespace can_parse;
 using namespace can_message_buffer;
