@@ -15,6 +15,10 @@ struct HardwareConfig {
     struct PinConfig enable;
 };
 
+/*
+ * MotionController is responsible for motor movement and communicate with the
+ * motor driver using the HAL driver API and SPI.
+ */
 template <spi::TMC2130Spi SpiDriver, lms::LMSConfig LMSConf>
 class MotionController {
   public:

@@ -35,6 +35,10 @@ constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
     return static_cast<uint8_t>(mode) | static_cast<uint8_t>(motor_reg);
 }
 
+/*
+ * MotorDriver uses SPI communication to initialize, send and receive status and
+ * data to and from the TMC2130 motor driver.
+ */
 template <spi::TMC2130Spi SpiDriver>
 class MotorDriver {
   public:
