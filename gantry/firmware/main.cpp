@@ -15,10 +15,12 @@
 #include "common/firmware/uart_task.hpp"
 #include "gantry/core/communication.hpp"
 
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+
     uart_task::start();
-    //    can_task::start();
+
     vTaskStartScheduler();
 }

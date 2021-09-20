@@ -1,3 +1,4 @@
+#include "can/core/arbitration_id.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
 #include "can/tests/mock_message_buffer.hpp"
@@ -6,6 +7,7 @@
 
 using namespace can_dispatch;
 using namespace can_messages;
+using namespace can_arbitration_id;
 using namespace mock_message_buffer;
 
 SCENARIO("Dispatcher") {

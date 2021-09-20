@@ -22,8 +22,8 @@ class FreeRTOSMutex {
     int get_count() { return uxSemaphoreGetCount(handle); }
 
   private:
-    SemaphoreHandle_t handle;
-    StaticSemaphore_t static_data;
+    SemaphoreHandle_t handle{};
+    StaticSemaphore_t static_data{};
 };
 
 }  // namespace freertos_synchronization

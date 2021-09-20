@@ -1,7 +1,6 @@
 #pragma once
+#include <cstdint>
 #include <span>
-
-#include "stm32g4xx_hal_conf.h"
 
 namespace spi {
 class Spi {
@@ -12,7 +11,6 @@ class Spi {
     void transmit_receive(const BufferType& transmit, BufferType& receive);
 
   private:
-    static constexpr auto TIMEOUT = 0xFFFF;
-    SPI_HandleTypeDef handle;
+    static constexpr uint32_t TIMEOUT = 0xFFFF;
 };
 }  // namespace spi
