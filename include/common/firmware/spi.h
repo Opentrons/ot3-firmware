@@ -1,21 +1,15 @@
 #pragma once
-
-#include "stm32g4xx_hal_conf.h"
-
-#ifndef __SPI_H__
-#define __SPI_H__
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
-SPI_HandleTypeDef MX_SPI2_Init();
-void MX_DMA_Init();
+void SPI2_init();
 void Set_CS_Pin();
 void Reset_CS_Pin();
+void hal_transmit_receive(uint8_t* transmit, uint8_t *receive, uint16_t buff_size, uint32_t timeout);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
-
-#endif // __SPI_H__
