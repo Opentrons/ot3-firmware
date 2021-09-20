@@ -11,6 +11,8 @@
 using namespace can_bus;
 using namespace can_ids;
 
+namespace hal_can_bus {
+
 /**
  * HAL FD CAN wrapper. Matches the CanBus concept.
  */
@@ -58,3 +60,5 @@ class HalCanBus {
 
     static constexpr auto arbitration_id_type = FDCAN_EXTENDED_ID;
 };
+
+}

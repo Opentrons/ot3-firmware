@@ -14,6 +14,7 @@
 #include "common/firmware/i2c_comms.hpp"
 #include "pipettes/core/eeprom.hpp"
 
+using namespace hal_can_bus;
 using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace can_dispatch;
