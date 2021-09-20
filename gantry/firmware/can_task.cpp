@@ -42,4 +42,4 @@ static auto dispatcher = Dispatcher(device_info_dispatch_target);
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5, void(*)(void)>("can task", task_entry);
+auto static task = FreeRTOSTask<256, 5, void (*)(void)>("can task", task_entry);
