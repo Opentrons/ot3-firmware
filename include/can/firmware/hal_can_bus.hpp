@@ -66,4 +66,4 @@ class HalCanBus {
     static constexpr auto arbitration_id_type = FDCAN_EXTENDED_ID;
 };
 
-}
+}  // namespace hal_can_bus

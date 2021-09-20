@@ -3,7 +3,6 @@
 #include "can/firmware/utils.hpp"
 #include "common/core/synchronization.hpp"
 
-
 using namespace hal_can_bus;
 
 HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
