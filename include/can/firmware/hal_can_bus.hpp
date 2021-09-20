@@ -24,6 +24,11 @@ class HalCanBus {
      */
     explicit HalCanBus(FDCAN_HandleTypeDef* handle);
 
+    HalCanBus(const HalCanBus&) = delete;
+    HalCanBus& operator=(const HalCanBus&) = delete;
+    HalCanBus(const HalCanBus&&) = delete;
+    HalCanBus&& operator=(const HalCanBus&&) = delete;
+
     /**
      * Start the can bus.
      * @return HAL_OK if all went well
