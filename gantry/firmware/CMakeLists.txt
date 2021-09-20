@@ -9,8 +9,10 @@ set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 # Add source files that should be checked by clang-tidy here
 set(GANTRY_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
+        ${COMMON_EXECUTABLE_DIR}/uart/uart_comms.cpp
         )
 
 set(GANTRY_FW_NON_LINTABLE_SRCS

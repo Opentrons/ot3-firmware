@@ -6,18 +6,20 @@
 #include "FreeRTOS.h"
 #include "system_stm32g4xx.h"
 #include "stm32g4xx_hal_conf.h"
+#include "stm32g4xx_hal.h"
 #include "task.h"
 // clang-format on
 
 #include "common/firmware/clocking.h"
-#include "common/firmware/uart.h"
+#include "common/firmware/uart_comms.hpp"
+#include "common/firmware/uart_task.hpp"
+#include "gantry/core/communication.hpp"
 
 auto main() -> int {
     HardwareInit();
-    /** Initializes the peripherals clocks
-     */
     RCC_Peripheral_Clock_Select();
-    vTaskStartScheduler();
 
-    return 0;
+    uart_task::start();
+
+    vTaskStartScheduler();
 }

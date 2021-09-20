@@ -1,7 +1,7 @@
 #include "catch2/catch.hpp"
 #include "common/core/io.hpp"
-#include "common/core/uart_message_handler.hpp"
 #include "pipettes/core/pipette_messages.hpp"
+#include "pipettes/core/uart_message_handler.hpp"
 #include "pipettes/tests/test_motor_control.hpp"
 #include "pipettes/tests/test_spi_comms.hpp"
 

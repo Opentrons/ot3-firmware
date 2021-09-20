@@ -5,15 +5,15 @@
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
+#include "gantry/core/communication.hpp"
+#include "gantry/core/uart_message_handler.hpp"
 #include "motor-control/core/motor.hpp"
-#include "pipettes/core/communication.hpp"
-#include "pipettes/core/uart_message_handler.hpp"
 #include "task.h"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static communication::MessageReader message_reader{};
+static gantry_communication::MessageReader message_reader{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static communication::MessageWriter message_writer{};
+static gantry_communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static spi::Spi spi_comms{};
 
