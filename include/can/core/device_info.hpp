@@ -17,7 +17,7 @@ namespace can_device_info {
  *
  * @tparam Writer The can bus writer type.
  */
-template <can_bus::CanBus Writer>
+template <can_bus::CanBusWriter Writer>
 class DeviceInfoHandler {
   public:
     /**
@@ -29,7 +29,7 @@ class DeviceInfoHandler {
      */
     DeviceInfoHandler(MessageWriter<Writer> &writer, NodeId node_id,
                       uint32_t version)
-        : writer(writer), response{node_id, version} {}
+        : writer(writer), response{{}, node_id, version} {}
     DeviceInfoHandler(const DeviceInfoHandler &) = delete;
     DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
     DeviceInfoHandler &operator=(const DeviceInfoHandler &) = delete;

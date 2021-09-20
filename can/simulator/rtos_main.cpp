@@ -26,7 +26,7 @@ static auto canbus = sim_canbus::SimCANBus(transport, buffer);
  * templetized with the same message types.
  * @tparam Bus A CanBus type
  */
-template <CanBus Bus>
+template <CanBusWriter Bus>
 struct Loopback {
     /**
      * Constructor

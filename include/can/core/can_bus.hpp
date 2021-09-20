@@ -54,18 +54,28 @@ enum class CanFDMessageLength {
 auto to_canfd_length(uint32_t length) -> CanFDMessageLength;
 
 /**
- * Concept describing a Can Bus .
+ * Concept describing a class that sends messages on a Can Bus .
  *
- * @tparam CAN The can bus implementation
+ * @tparam CAN The template argument
  */
 template <class CAN>
-concept CanBus = requires(CAN can, uint32_t arbitration_id, uint8_t* buffer,
-                          CanFDMessageLength buffer_length,
-                          CanFilterType filter_type,
-                          CanFilterConfig filter_config) {
+concept CanBusWriter = requires(CAN can, uint32_t arbitration_id,
+                                uint8_t* buffer,
+                                CanFDMessageLength buffer_length) {
+    {can.send(arbitration_id, buffer, buffer_length)};
+};
+
+/**
+ * Concept describing a class that filters inbound messages on Can Bus.
+ *
+ * @tparam CAN The template argument
+ */
+template <class CAN>
+concept CanBusFiltering = requires(CAN can, uint32_t arbitration_id,
+                                   CanFilterType filter_type,
+                                   CanFilterConfig filter_config) {
     {can.add_filter(filter_type, filter_config, arbitration_id,
                     arbitration_id)};
-    {can.send(arbitration_id, buffer, buffer_length)};
 };
 
 }  // namespace can_bus

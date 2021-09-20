@@ -73,7 +73,7 @@ struct EEPromHandler {
 
     void visit(ReadFromEEPromRequest &m) {
         const uint8_t serial_number = eeprom::read(i2c);
-        auto message = ReadFromEEPromResponse{serial_number};
+        auto message = ReadFromEEPromResponse{{}, serial_number};
         message_writer_1.write(NodeId::host, message);
     }
 };

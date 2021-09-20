@@ -2,13 +2,13 @@
 
 #include <array>
 
+#include "arbitration_id.hpp"
 #include "can_bus.hpp"
-#include "ids.hpp"
 #include "message_core.hpp"
 
 namespace can_message_writer {
 
-template <can_bus::CanBus Writer>
+template <can_bus::CanBusWriter Writer>
 class MessageWriter {
   public:
     explicit MessageWriter(Writer& writer) : writer{writer} {}
@@ -22,7 +22,7 @@ class MessageWriter {
      */
     template <message_core::Serializable Serializable>
     void write(can_ids::NodeId node, const Serializable& message) {
-        arbitration_id.id = 0;
+        auto arbitration_id = can_arbitration_id::ArbitrationId{.id = 0};
         arbitration_id.parts.message_id = static_cast<uint16_t>(message.id);
         // TODO (al 2021-08-03): populate this from Message?
         arbitration_id.parts.function_code = 0;
@@ -34,8 +34,7 @@ class MessageWriter {
 
   private:
     Writer& writer;
-    std::array<uint8_t, 64> buffer{};
-    can_ids::ArbitrationId arbitration_id{};
+    std::array<uint8_t, message_core::MaxMessageSize> buffer{};
 };
 
 }  // namespace can_message_writer
