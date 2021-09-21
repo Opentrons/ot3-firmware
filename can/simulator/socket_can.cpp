@@ -30,8 +30,8 @@ auto SocketCanTransport::open(const char *address) -> bool {
         return false;
     }
 
-    if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES,
-                   &use_canfd, sizeof(use_canfd))){
+    if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &use_canfd,
+                   sizeof(use_canfd))) {
         printf("Unable to enable can fd.");
         return false;
     }
