@@ -32,6 +32,8 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
+/** TODO (al, 2021-09-21): Remove this and replace with a proper FreeRTOS
+ * message queue. **/
 template <typename T>
 class MQ {
   public:
