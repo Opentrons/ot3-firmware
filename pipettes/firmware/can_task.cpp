@@ -32,14 +32,13 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-
-template<typename T>
+template <typename T>
 class MQ {
   public:
-    bool try_send(const T, uint32_t timeout) {return true;}
-    bool try_send(const T) {return true;}
-    bool try_recv(T *) {return true;}
-    bool has_message() const { return false;}
+    bool try_send(const T, uint32_t timeout) { return true; }
+    bool try_send(const T) { return true; }
+    bool try_recv(T *) { return true; }
+    bool has_message() const { return false; }
 };
 
 static auto mq = MQ<motor_command::Move>{};
@@ -53,12 +52,13 @@ static auto device_info_handler =
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = DispatchParseTarget<
-    decltype(motor_handler), can_messages::SetSpeedRequest, can_messages::GetSpeedRequest,
-    can_messages::StopRequest, can_messages::GetStatusRequest,
-    can_messages::MoveRequest>{motor_handler};
+    decltype(motor_handler), can_messages::SetSpeedRequest,
+    can_messages::GetSpeedRequest, can_messages::StopRequest,
+    can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
 
 static auto eeprom_dispatch_target =
-    DispatchParseTarget<decltype(eeprom_handler), can_messages::WriteToEEPromRequest,
+    DispatchParseTarget<decltype(eeprom_handler),
+                        can_messages::WriteToEEPromRequest,
                         can_messages::ReadFromEEPromRequest>{eeprom_handler};
 
 static auto device_info_dispatch_target =
@@ -79,6 +79,6 @@ static auto dispatcher = Dispatcher(
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5, void(*)()>("can task", task_entry);
+auto static task = FreeRTOSTask<256, 5, void (*)()>("can task", task_entry);
 
 void can_task::start() {}

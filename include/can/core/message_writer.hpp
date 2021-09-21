@@ -4,9 +4,9 @@
 
 #include "arbitration_id.hpp"
 #include "can_bus.hpp"
-#include "message_core.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/synchronization.hpp"
+#include "message_core.hpp"
 
 namespace can_message_writer {
 
