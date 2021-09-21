@@ -24,8 +24,15 @@ auto SocketCanTransport::open(const char *address) -> bool {
     struct sockaddr_can addr;
     struct ifreq ifr;
     int s = 0;
+    constexpr int use_canfd = 1;
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) == -1) {
+        return false;
+    }
+
+    if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES,
+                   &use_canfd, sizeof(use_canfd))){
+        printf("Unable to enable can fd.");
         return false;
     }
 
@@ -41,21 +48,22 @@ auto SocketCanTransport::open(const char *address) -> bool {
     handle = s;
     return true;
 }
+
 void SocketCanTransport::close() { ::close(handle); }
 
 auto SocketCanTransport::write(uint32_t arb_id, const uint8_t *cbuff,
                                uint32_t buff_len) -> bool {
-    struct can_frame frame;
+    struct canfd_frame frame;
     // Set MSB for extended id
     frame.can_id = arb_id | (1 << 31);
-    frame.can_dlc = buff_len;
+    frame.len = buff_len;
     ::memcpy(frame.data, cbuff, buff_len);
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
 
 auto SocketCanTransport::read(uint32_t &arb_id, uint8_t *buff,
                               uint32_t &buff_len) -> bool {
-    struct can_frame frame;
+    struct canfd_frame frame;
 
     taskENTER_CRITICAL();
     auto read_len = ::read(handle, &frame, sizeof(struct can_frame));
@@ -63,7 +71,7 @@ auto SocketCanTransport::read(uint32_t &arb_id, uint8_t *buff,
 
     if (read_len > 0) {
         arb_id = frame.can_id;
-        buff_len = frame.can_dlc;
+        buff_len = frame.len;
         ::memcpy(buff, frame.data, buff_len);
 
         std::cout << "arb_id: " << std::hex << arb_id << " "
