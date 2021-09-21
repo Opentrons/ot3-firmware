@@ -119,3 +119,11 @@ add_custom_target(gantry-debug
         COMMAND gantry
         USES_TERMINAL
         )
+
+
+# Runs openocd to flash the board (without using a debugger)
+add_custom_target(gantry-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:gantry>;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS gantry)
