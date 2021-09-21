@@ -10,9 +10,11 @@
 #include "can/firmware/hal_can_message_buffer.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/can.h"
+#include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
 #include "pipettes/core/eeprom.hpp"
 
+using namespace hal_can_bus;
 using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace can_dispatch;
@@ -106,7 +108,7 @@ static auto dispatcher = Dispatcher(
 struct Task {
     [[noreturn]] void operator()() {
         if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
-            //            Error_Handler();
+            Error_Handler();
         }
 
         can_bus_1.start();

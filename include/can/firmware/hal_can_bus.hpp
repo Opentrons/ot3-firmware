@@ -11,6 +11,8 @@
 using namespace can_bus;
 using namespace can_ids;
 
+namespace hal_can_bus {
+
 /**
  * HAL FD CAN wrapper. Matches the CanBus concept.
  */
@@ -21,6 +23,11 @@ class HalCanBus {
      * @param handle A pointer to an initialized FDCAN_HandleTypeDef
      */
     explicit HalCanBus(FDCAN_HandleTypeDef* handle);
+
+    HalCanBus(const HalCanBus&) = delete;
+    HalCanBus& operator=(const HalCanBus&) = delete;
+    HalCanBus(const HalCanBus&&) = delete;
+    HalCanBus&& operator=(const HalCanBus&&) = delete;
 
     /**
      * Start the can bus.
@@ -58,3 +65,5 @@ class HalCanBus {
 
     static constexpr auto arbitration_id_type = FDCAN_EXTENDED_ID;
 };
+
+}  // namespace hal_can_bus

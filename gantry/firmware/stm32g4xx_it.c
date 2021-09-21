@@ -43,6 +43,7 @@
 /* External variables --------------------------------------------------------*/
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
+extern FDCAN_HandleTypeDef fdcan1;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -132,11 +133,8 @@ void DMA1_Channel2_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_rx); }
 void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 
 /**
- * @}
+ * @brief This function handles FDCAN1 interrupt 0.
  */
-
-/**
- * @}
- */
+void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(&fdcan1); }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

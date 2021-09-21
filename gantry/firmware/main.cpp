@@ -18,8 +18,6 @@
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-
     uart_task::start();
-
     vTaskStartScheduler();
 }
