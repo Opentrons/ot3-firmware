@@ -56,7 +56,7 @@ auto SocketCanTransport::write(uint32_t arb_id, const uint8_t *cbuff,
     struct canfd_frame frame;
     // Set MSB for extended id
     frame.can_id = arb_id | (1 << 31);
-    frame.can_dlc = buff_len;
+    frame.len = buff_len;
     ::memcpy(frame.data, cbuff, buff_len);
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
@@ -71,7 +71,7 @@ auto SocketCanTransport::read(uint32_t &arb_id, uint8_t *buff,
 
     if (read_len > 0) {
         arb_id = frame.can_id;
-        buff_len = frame.can_dlc;
+        buff_len = frame.len;
         ::memcpy(buff, frame.data, buff_len);
 
         std::cout << "arb_id: " << std::hex << arb_id << " "
