@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <variant>
 
 #include "can/core/dispatch.hpp"
@@ -15,6 +16,9 @@ using namespace can_message_buffer;
 using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace freertos_task;
+
+static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
+static auto constexpr DefaultChannel = "vcan0";
 
 static auto constexpr ReceiveBufferSize = 1024;
 static auto buffer = FreeRTOSMessageBuffer<ReceiveBufferSize>{};
@@ -81,7 +85,10 @@ static auto dispatcher_task =
  * The socket can reader. Reads from socket and writes to message buffer.
  */
 void can_bus_poll_task(void *) {
-    transport.open("vcan0");
+    const char * env_channel_val = std::getenv(ChannelEnvironmentVariableName);
+    auto channel = env_channel_val ? env_channel_val : DefaultChannel;
+
+    transport.open(channel);
     while (canbus.read_message()) {
     }
 }
