@@ -2,8 +2,8 @@ name: "Gantry build/test"
 on:
   pull_request:
     paths:
-      - "gantry"
-      - "common"
+      - "gantry/**"
+      - "common/**"
       - "include/**"
       - "!include/pipettes/**"
       - "cmake/*"
@@ -16,8 +16,8 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "gantry"
-      - "common"
+      - "gantry/**"
+      - "common/**"
       - "include/**"
       - "!include/pipettes/**"
       - "cmake/*"
