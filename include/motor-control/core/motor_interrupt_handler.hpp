@@ -1,41 +1,56 @@
-#pragma <once>
+#pragma once
+#include <variant>
 
-#include "common/core/freertos_message_queue.hpp"
+#include "common/core/message_queue.hpp"
+#include "pipettes/core/pipette_messages.hpp"
 
-using namespace freertos_message_queue;
+namespace motor_handler {
 
-template<FreeRTOSGenericQueue GenericQueue>
+using Message = pipette_messages::Move;
+
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<Message>, Message>
 class MotorInterruptHandler {
   public:
-    explicit MotorInterruptHandler(GenericQueue queue) : queue(queue) {}
+    using GenericQueue = QueueImpl<Message>;
 
-    MoveMessage* active_move() {
-        return queue.peek();
-    }
+    MotorInterruptHandler() {}
 
-    bool space_available() {
-        return queue.is_full_isr();
-    }
+    void set_message_queue(GenericQueue* g_queue) { queue = g_queue; }
+
+    bool has_messages() { return queue->has_message_isr(); }
+
+    bool can_step() { return (has_move && inc < buffered_move.steps); }
+
+    //    void add_move(const Message& msg) {
+    //        bool add_success = queue->try_write(msg);
+    //        if (!has_move) {
+    //            update_move();
+    //        }
+    //    }
+
+    void update_move() { get_move(&buffered_move); }
 
     void finish_move() {
-        queue.pop();
-        is_done = true;
+        has_move = false;
+        buffered_move = Message{};
+        inc = 0x0;
     }
 
     void reset() {
-        queue.reset();
+        queue->reset();
         inc = 0x0;
-        steps = 0x0;
-        is_done = true;
+        has_move = false;
     }
 
+    void increment_counter() { inc++; }
 
   private:
-    uint32_t inc = 0;
-    uint32_t steps;
-    bool is_done = false;
-    GenericQueue queue;
-    bool should_step() {
-        return inc < steps;
-    }
+    uint32_t inc = 0x0;
+    GenericQueue* queue = nullptr;
+    bool has_move = false;
+    Message buffered_move = Message{};
+
+    void get_move(Message* msg) { has_move = queue->try_read_isr(msg); }
 };
+}  // namespace motor_handler

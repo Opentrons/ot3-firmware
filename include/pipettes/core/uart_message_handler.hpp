@@ -24,8 +24,7 @@ class MessageHandler {
     }
 
     void handle(const pipette_messages::Move &m) {
-        static_cast<void>(m);
-        motor.motion_controller.move();
+        motor.motion_controller.move(m);
     }
 
     void handle(const pipette_messages::Status &m) {

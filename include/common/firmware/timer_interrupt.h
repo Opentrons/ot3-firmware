@@ -13,11 +13,11 @@ extern "C" {
  * particular interrupt timer. timer_interrupt_start -> calls
  * HAL_TIM_Base_Start_IT timer_interrupt_stop -> calls HAL_TIM_Base_Stop_IT
  */
-
 void timer_init();
 void timer_interrupt_start();
 void timer_interrupt_stop();
-void set_steps(uint32_t val);
+void step_motor();
+void toggle_step_pin();
 
 #ifdef __cplusplus
 }  // extern "C"

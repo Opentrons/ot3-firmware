@@ -39,7 +39,9 @@ struct SetDistance {
 
 struct Status {};
 
-struct Move {};
+struct Move {
+    uint32_t steps;
+};
 
 struct Setup {};
 
