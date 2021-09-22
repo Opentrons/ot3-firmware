@@ -2,8 +2,8 @@ name: "Pipettes build/test"
 on:
   pull_request:
     paths:
-      - "pipettes"
-      - "common"
+      - "pipettes/**"
+      - "common/**"
       - "include/**"
       - "!include/gantry/**"
       - "cmake/*"
@@ -16,8 +16,8 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "pipettes"
-      - "common"
+      - "pipettes/**"
+      - "common/**"
       - "include/**"
       - "!include/gantry/**"
       - "cmake/*"
