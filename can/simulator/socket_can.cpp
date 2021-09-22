@@ -32,7 +32,7 @@ auto SocketCanTransport::open(const char *address) -> bool {
 
     if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &use_canfd,
                    sizeof(use_canfd))) {
-        printf("Failed to enable can fd.");
+        std::cout << "Failed to enable can fd." << std::endl;
         return false;
     }
 

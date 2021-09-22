@@ -85,8 +85,8 @@ static auto dispatcher_task =
  * The socket can reader. Reads from socket and writes to message buffer.
  */
 void can_bus_poll_task(void *) {
-    const char *channel = std::getenv(ChannelEnvironmentVariableName);
-    channel = channel ? channel : DefaultChannel;
+    const char * env_channel_val = std::getenv(ChannelEnvironmentVariableName);
+    auto channel = env_channel_val ? env_channel_val : DefaultChannel;
 
     transport.open(channel);
     while (canbus.read_message()) {
