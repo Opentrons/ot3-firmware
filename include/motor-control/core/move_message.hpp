@@ -10,4 +10,4 @@ struct Move {
     uint32_t increment;
 };
 
-}
+}  // namespace motor_command
