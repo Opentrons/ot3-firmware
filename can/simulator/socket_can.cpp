@@ -32,7 +32,7 @@ auto SocketCanTransport::open(const char *address) -> bool {
 
     if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &use_canfd,
                    sizeof(use_canfd))) {
-        printf("Unable to enable can fd.");
+        printf("Failed to enable can fd.");
         return false;
     }
 
@@ -45,6 +45,7 @@ auto SocketCanTransport::open(const char *address) -> bool {
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
+    std::cout << "Connected to " << address << std::endl;
     handle = s;
     return true;
 }
