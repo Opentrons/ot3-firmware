@@ -123,3 +123,10 @@ add_custom_target(pipettes-debug
         COMMAND pipettes
         USES_TERMINAL
         )
+
+# Runs openocd to flash the board (without using a debugger)
+add_custom_target(pipettes-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS pipettes)
