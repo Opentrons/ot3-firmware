@@ -6,6 +6,8 @@
 
 #include "common/core/bit_utils.hpp"
 #include "motor-control/core/spi.hpp"
+#include "pipettes/core/pipette_messages.hpp"
+#include "common/core/message_queue.hpp"
 
 /*
  * Test mock for Motor
@@ -57,15 +59,21 @@ class TestMotorDriver {
     void reset_status() { status = 0; }
 };
 
-template <spi::TMC2130Spi SpiDriver>
+
+using Message = pipette_messages::Move;
+
+template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<Message>, Message>
 class TestMotionController {
   public:
-    TestMotionController(SpiDriver& spi) : spi_comms(spi) {}
+    using GenericQueue = QueueImpl<Message>;
+    TestMotionController(SpiDriver& spi, GenericQueue& queue)
+        : spi_comms(spi), queue(queue) {}
     void set_speed(uint32_t s) { speed = s; }
     void set_direction(bool d) { direction = d; }
     void set_acceleration(uint32_t a) { acc = a; }
     void set_distance(uint32_t d) { dist = d; }
-    void move() { speed = 10000; }
+    void move(const Message& msg) { speed = 10000; }
     void stop() { speed = 0; }
     uint32_t get_acceleration() { return acc; }
     uint32_t get_speed() { return speed; }
@@ -77,15 +85,20 @@ class TestMotionController {
     uint32_t dist = 0x0;
     bool direction = true;
     SpiDriver& spi_comms;
+    GenericQueue& queue;
 };
 
-template <spi::TMC2130Spi SpiDriver>
+template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<Message>, Message>
 struct TestMotor {
-    explicit TestMotor(SpiDriver& spi) : spi_comms(spi) {}
+    using GenericQueue = QueueImpl<Message>;
+    explicit TestMotor(SpiDriver& spi, GenericQueue& queue)
+        : spi_comms(spi), queue(queue) {}
     SpiDriver& spi_comms;
+    GenericQueue& queue;
     TestMotorDriver<SpiDriver> driver = TestMotorDriver{spi_comms};
-    TestMotionController<SpiDriver> motion_controller =
-        TestMotionController{spi_comms};
+    TestMotionController<SpiDriver, QueueImpl> motion_controller =
+        TestMotionController{spi_comms, queue};
 };
 
 }  // namespace test_motor_control

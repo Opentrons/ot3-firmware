@@ -13,7 +13,7 @@ void step_motor() {
         if (handler_class.has_messages()) {
             handler_class.update_move();
         } else {
-            handler_class.finish_move();
+            handler.finish_current_move();
         }
     }
 }

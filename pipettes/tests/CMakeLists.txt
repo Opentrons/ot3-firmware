@@ -8,8 +8,10 @@ add_executable(
         pipettes
         test_main.cpp
         test_communication.cpp
-        test_message_handler.cpp
-        test_eeprom.cpp)
+#        test_message_handler.cpp
+        test_eeprom.cpp
+        test_motor_interrupt.cpp
+)
 
 target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(pipettes

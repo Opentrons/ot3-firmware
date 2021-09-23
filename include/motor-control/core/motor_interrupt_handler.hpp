@@ -22,16 +22,11 @@ class MotorInterruptHandler {
 
     bool can_step() { return (has_move && inc < buffered_move.steps); }
 
-    //    void add_move(const Message& msg) {
-    //        bool add_success = queue->try_write(msg);
-    //        if (!has_move) {
-    //            update_move();
-    //        }
-    //    }
+    void update_move() {
+        finish_current_move();
+        get_move(&buffered_move); }
 
-    void update_move() { get_move(&buffered_move); }
-
-    void finish_move() {
+    void finish_current_move() {
         has_move = false;
         buffered_move = Message{};
         inc = 0x0;
