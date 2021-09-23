@@ -38,11 +38,11 @@ SCENARIO("queue multiple move messages") {
                 queue.try_write(msg3);
                 queue.try_write(msg4);
                 REQUIRE(queue.get_size() == 4);
-                REQUIRE(handler.has_messages() == false);
+                REQUIRE(handler.has_messages() == true);
             }
         }
 
-        AND_WHEN("moves have been issued") {
+        WHEN("moves have been issued") {
             THEN("the step motor command should execute all of them") {
                 while (handler.has_messages()) {
                     step_motor();
