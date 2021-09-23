@@ -4,7 +4,8 @@
 
 using namespace motor_handler;
 
-static auto handler = MotorInterruptHandler<mock_message_queue::MockMessageQueue>();
+static auto handler =
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue>();
 
 void step_motor();
 
@@ -22,18 +23,16 @@ void step_motor() {
 
 SCENARIO("queue multiple move messages") {
     GIVEN("a motor interrupt handler") {
-        mock_message_queue::MockMessageQueue<Message> queue;
+        mock_message_queue::MockMessageQueue<Move> queue;
 
         handler.set_message_queue(&queue);
 
-
-
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {
-                constexpr Message msg1 = Message{100};
-                constexpr Message msg2 = Message{400};
-                constexpr Message msg3 = Message{7000};
-                constexpr Message msg4 = Message{800};
+                constexpr Move msg1 = Move{100};
+                constexpr Move msg2 = Move{400};
+                constexpr Move msg3 = Move{7000};
+                constexpr Move msg4 = Move{800};
                 queue.try_write(msg1);
                 queue.try_write(msg2);
                 queue.try_write(msg3);
@@ -43,7 +42,7 @@ SCENARIO("queue multiple move messages") {
             }
         }
 
-        WHEN("moves have been issued") {
+        AND_WHEN("moves have been issued") {
             THEN("the step motor command should execute all of them") {
                 while (handler.has_messages()) {
                     step_motor();
@@ -51,7 +50,5 @@ SCENARIO("queue multiple move messages") {
                 REQUIRE(handler.has_messages() == false);
             }
         }
-
     }
-
 }

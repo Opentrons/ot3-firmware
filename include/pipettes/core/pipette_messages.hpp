@@ -2,6 +2,8 @@
 
 #include <variant>
 
+#include "motor-control/core/motor_messages.hpp"
+
 namespace pipette_messages {
 
 enum class MessageType : uint8_t {
@@ -39,14 +41,11 @@ struct SetDistance {
 
 struct Status {};
 
-struct Move {
-    uint32_t steps;
-};
-
 struct Setup {};
 
-using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed,
-                                     SetDistance, Move, Setup, Status>;
+using ReceivedMessage =
+    std::variant<std::monostate, Stop, SetSpeed, GetSpeed, SetDistance,
+                 motor_messages::Move, Setup, Status>;
 
 using SentMessage =
     std::variant<std::monostate, GetSpeedResult, GetStatusResult>;

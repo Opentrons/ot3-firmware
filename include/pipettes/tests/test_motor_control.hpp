@@ -5,15 +5,16 @@
 #include <span>
 
 #include "common/core/bit_utils.hpp"
-#include "motor-control/core/spi.hpp"
-#include "pipettes/core/pipette_messages.hpp"
 #include "common/core/message_queue.hpp"
+#include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/spi.hpp"
 
 /*
  * Test mock for Motor
  */
 
 using namespace bit_utils;
+using namespace motor_messages;
 
 namespace test_motor_control {
 
@@ -59,21 +60,18 @@ class TestMotorDriver {
     void reset_status() { status = 0; }
 };
 
-
-using Message = pipette_messages::Move;
-
 template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Message>, Message>
+requires MessageQueue<QueueImpl<Move>, Move>
 class TestMotionController {
   public:
-    using GenericQueue = QueueImpl<Message>;
+    using GenericQueue = QueueImpl<Move>;
     TestMotionController(SpiDriver& spi, GenericQueue& queue)
         : spi_comms(spi), queue(queue) {}
     void set_speed(uint32_t s) { speed = s; }
     void set_direction(bool d) { direction = d; }
     void set_acceleration(uint32_t a) { acc = a; }
     void set_distance(uint32_t d) { dist = d; }
-    void move(const Message& msg) { speed = 10000; }
+    void move(const Move& msg) { speed = 10000; }
     void stop() { speed = 0; }
     uint32_t get_acceleration() { return acc; }
     uint32_t get_speed() { return speed; }
@@ -89,9 +87,9 @@ class TestMotionController {
 };
 
 template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Message>, Message>
+requires MessageQueue<QueueImpl<Move>, Move>
 struct TestMotor {
-    using GenericQueue = QueueImpl<Message>;
+    using GenericQueue = QueueImpl<Move>;
     explicit TestMotor(SpiDriver& spi, GenericQueue& queue)
         : spi_comms(spi), queue(queue) {}
     SpiDriver& spi_comms;

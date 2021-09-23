@@ -4,9 +4,11 @@
 
 #include "common/firmware/motor.h"
 #include "common/firmware/timer_interrupt.h"
-#include "pipettes/core/pipette_messages.hpp"
+#include "motor_messages.hpp"
 #include "spi.hpp"
 #include "step_motor.hpp"
+
+using namespace motor_messages;
 
 namespace motion_controller {
 
@@ -16,14 +18,11 @@ struct HardwareConfig {
     struct PinConfig enable;
 };
 
-
-using Message = pipette_messages::Move;
-
 template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Message>, Message>
+requires MessageQueue<QueueImpl<Move>, Move>
 class MotionController {
   public:
-    using GenericQueue = QueueImpl<Message>;
+    using GenericQueue = QueueImpl<Move>;
     explicit MotionController(SpiDriver& spi, HardwareConfig& config,
                               GenericQueue& queue)
         : spi_comms(spi), hardware_config(config), queue(queue) {
@@ -50,7 +49,7 @@ class MotionController {
     void set_acceleration(uint32_t a) { acc = a; }
     void set_distance(uint32_t d) { dist = d; }
 
-    void move(const Message& msg) {
+    void move(const Move& msg) {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
         queue.try_write(msg);

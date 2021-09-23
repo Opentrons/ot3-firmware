@@ -50,7 +50,7 @@ auto MessageReader::read(Reader &communication)
             uint32_t steps = 0;
             bit_utils::bytes_to_int(steps_span, steps);
 
-            return pipette_messages::Move{steps};
+            return motor_messages::Move{steps};
         }
         case static_cast<uint32_t>(pipette_messages::MessageType::status):
             return pipette_messages::Status{};

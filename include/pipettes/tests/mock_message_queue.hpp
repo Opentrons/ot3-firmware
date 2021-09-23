@@ -1,25 +1,24 @@
 #pragma once
 
 #include <array>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 namespace mock_message_queue {
 
 template <typename Message, std::size_t queue_size = 10>
 class MockMessageQueue {
   public:
-    explicit MockMessageQueue()
-        : queue_data_structure(), message() {}
+    explicit MockMessageQueue() : queue_data_structure(), message() {}
     MockMessageQueue& operator=(MockMessageQueue&) = delete;
     MockMessageQueue&& operator=(MockMessageQueue&&) = delete;
     MockMessageQueue(MockMessageQueue&) = delete;
     MockMessageQueue(MockMessageQueue&&) = delete;
 
-    ~MockMessageQueue() { }
+    ~MockMessageQueue() {}
 
-    auto try_write(const Message& message,
-                                 const uint32_t timeout_ticks = 0) -> bool {
+    auto try_write(const Message& message, const uint32_t timeout_ticks = 0)
+        -> bool {
         queue_data_structure.push_back(message);
         return true;
     }
@@ -34,9 +33,7 @@ class MockMessageQueue {
         return try_write(message);
     }
 
-    auto try_read_isr(Message* message) -> bool {
-        return try_read(message);
-    }
+    auto try_read_isr(Message* message) -> bool { return try_read(message); }
 
     auto has_message() const -> bool {
         return queue_data_structure.empty() != 0;
@@ -46,9 +43,7 @@ class MockMessageQueue {
         return queue_data_structure.empty() != 0;
     }
 
-    auto peek_isr(Message* message) const -> bool {
-        return try_read(message);
-    }
+    auto peek_isr(Message* message) const -> bool { return try_read(message); }
 
     void reset() {
         std::array<uint8_t, queue_size * sizeof(Message)> empty_queue{};

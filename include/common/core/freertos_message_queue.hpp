@@ -10,17 +10,15 @@ namespace freertos_message_queue {
 template <typename Message, size_t queue_size = 10>
 class FreeRTOSMessageQueue {
   public:
-    explicit FreeRTOSMessageQueue(uint8_t notification_bit, const char* name)
-        : FreeRTOSMessageQueue(notification_bit) {
+    explicit FreeRTOSMessageQueue(const char* name) : FreeRTOSMessageQueue() {
         vQueueAddToRegistry(queue, name);
     }
-    explicit FreeRTOSMessageQueue(uint8_t notification_bit)
+    explicit FreeRTOSMessageQueue()
         : queue_control_structure(),
           queue_data_structure(),
           queue(xQueueCreateStatic(queue_size, sizeof(Message),
                                    queue_data_structure.data(),
-                                   &queue_control_structure)),
-          sent_bit(notification_bit) {}
+                                   &queue_control_structure)) {}
     FreeRTOSMessageQueue& operator=(FreeRTOSMessageQueue&) = delete;
     FreeRTOSMessageQueue&& operator=(FreeRTOSMessageQueue&&) = delete;
     FreeRTOSMessageQueue(FreeRTOSMessageQueue&) = delete;
@@ -31,13 +29,9 @@ class FreeRTOSMessageQueue {
         vQueueDelete(queue);
     }
 
-    [[nodiscard]] auto try_write(const Message& message,
-                                 const uint32_t timeout_ticks = 0) -> bool {
-        auto sent = xQueueSendToBack(queue, &message, timeout_ticks) == pdTRUE;
-        //            if (sent) {
-        //                xTaskNotify(receiver_handle, 1 << sent_bit, eSetBits);
-        //            }
-        return sent;
+    auto try_write(const Message& message, const uint32_t timeout_ticks = 0)
+        -> bool {
+        return xQueueSendToBack(queue, &message, timeout_ticks) == pdTRUE;
     }
 
     auto try_read(Message* message, uint32_t timeout_ticks = 0) -> bool {
@@ -75,7 +69,6 @@ class FreeRTOSMessageQueue {
     StaticQueue_t queue_control_structure;
     std::array<uint8_t, queue_size * sizeof(Message)> queue_data_structure;
     QueueHandle_t queue;
-    uint8_t sent_bit;
 };
 
 }  // namespace freertos_message_queue

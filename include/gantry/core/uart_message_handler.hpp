@@ -23,9 +23,8 @@ class MessageHandler {
         motor.motion_controller.stop();
     }
 
-    void handle(const gantry_messages::Move &m) {
-        static_cast<void>(m);
-        motor.motion_controller.move();
+    void handle(const motor_messages::Move &m) {
+        motor.motion_controller.move(m);
     }
 
     void handle(const gantry_messages::Status &m) {

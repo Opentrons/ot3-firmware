@@ -23,7 +23,7 @@ class MessageHandler {
         motor.motion_controller.stop();
     }
 
-    void handle(const pipette_messages::Move &m) {
+    void handle(const motor_messages::Move &m) {
         motor.motion_controller.move(m);
     }
 

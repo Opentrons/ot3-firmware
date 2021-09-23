@@ -2,15 +2,14 @@
 #include "common/firmware/uart_task.hpp"
 
 #include "FreeRTOS.h"
-
 #include "common/core/freertos_message_queue.hpp"
-#include "common/core/uart_message_handler.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
 #include "motor-control/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/pipette_messages.hpp"
+#include "pipettes/core/uart_message_handler.hpp"
 #include "task.h"
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -20,13 +19,9 @@ static communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static spi::Spi spi_comms{};
 
-enum class Notifications : uint8_t {
-    INCOMING_MESSAGE = 1,
-};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static freertos_message_queue::FreeRTOSMessageQueue<pipette_messages::Move>
-    isr_queue(static_cast<uint8_t>(Notifications::INCOMING_MESSAGE),
-              "Motor ISR Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<Move> isr_queue(
+    "Motor ISR Queue");
 
 struct motion_controller::HardwareConfig GPIOConfig {
     .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
