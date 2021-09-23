@@ -2,10 +2,11 @@
 
 #include <array>
 #include <cstdint>
+#include <cstddef>
 
 namespace mock_message_queue {
 
-template <typename Message, size_t queue_size = 10>
+template <typename Message, std::size_t queue_size = 10>
 class MockMessageQueue {
   public:
     explicit MockMessageQueue()
@@ -17,34 +18,35 @@ class MockMessageQueue {
 
     ~MockMessageQueue() { }
 
-    [[nodiscard]] auto try_write(const Message& message,
+    auto try_write(const Message& message,
                                  const uint32_t timeout_ticks = 0) -> bool {
         queue_data_structure.push_back(message);
         return true;
     }
 
     auto try_read(Message* message, uint32_t timeout_ticks = 0) -> bool {
-        message = queue_data_structure.back();
+        Message msg = queue_data_structure.back();
+        message = &msg;
         return true;
     }
 
-    [[nodiscard]] auto try_write_isr(const Message& message) -> bool {
+    auto try_write_isr(const Message& message) -> bool {
         return try_write(message);
     }
 
-    auto try_read_isr(Message* message) const -> bool {
+    auto try_read_isr(Message* message) -> bool {
         return try_read(message);
     }
 
-    [[nodiscard]] auto has_message() const -> bool {
+    auto has_message() const -> bool {
         return queue_data_structure.empty() != 0;
     }
 
-    [[nodiscard]] auto has_message_isr() const -> bool {
+    auto has_message_isr() const -> bool {
         return queue_data_structure.empty() != 0;
     }
 
-    [[nodiscard]] auto peek_isr(Message* message) const -> bool {
+    auto peek_isr(Message* message) const -> bool {
         return try_read(message);
     }
 
@@ -56,8 +58,10 @@ class MockMessageQueue {
 
     void get_current_message() { return message; }
 
+    uint8_t get_size() { return queue_data_structure.size(); }
+
   private:
-    std::array<uint8_t, queue_size * sizeof(Message)> queue_data_structure;
+    std::vector<Message> queue_data_structure;
     Message message;
 };
 }  // namespace mock_message_queue

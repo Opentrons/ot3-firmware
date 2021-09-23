@@ -4,26 +4,29 @@
 
 using namespace motor_handler;
 
+static auto handler = MotorInterruptHandler<mock_message_queue::MockMessageQueue>();
+
+void step_motor();
+
+void step_motor() {
+    if (handler.can_step()) {
+        handler.increment_counter();
+    } else {
+        if (handler.has_messages()) {
+            handler.update_move();
+        } else {
+            handler.finish_current_move();
+        }
+    }
+}
+
 SCENARIO("queue multiple move messages") {
     GIVEN("a motor interrupt handler") {
-        mock_message_queue::MockMessageQueue<Message> queue();
+        mock_message_queue::MockMessageQueue<Message> queue;
 
-        static auto handler = MotorInterruptHandler<mock_message_queue::MockMessageQueue>();
-        handler.set_message_queue(queue);
+        handler.set_message_queue(&queue);
 
-        void step_motor();
 
-        void step_motor() {
-            if (handler.can_step()) {
-                handler.increment_counter();
-            } else {
-                if (handler.has_messages()) {
-                    handler.update_move();
-                } else {
-                    handler.finish_current_move();
-                }
-            }
-        }
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {
@@ -35,7 +38,8 @@ SCENARIO("queue multiple move messages") {
                 queue.try_write(msg2);
                 queue.try_write(msg3);
                 queue.try_write(msg4);
-//                REQUIRE(ZERO_VALUE == testI2C.stored);
+                REQUIRE(queue.get_size() == 4);
+                REQUIRE(handler.has_messages() == false);
             }
         }
 
@@ -44,7 +48,7 @@ SCENARIO("queue multiple move messages") {
                 while (handler.has_messages()) {
                     step_motor();
                 }
-                REQUIRE(handler.has_message_isr() == false)
+                REQUIRE(handler.has_messages() == false);
             }
         }
 
