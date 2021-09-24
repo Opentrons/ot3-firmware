@@ -28,7 +28,7 @@ add_library(freertos STATIC ${FREERTOS_SOURCES})
 
 add_executable(
         can-simulator
-        rtos_main.cpp
+        main.cpp
         freertos_idle_timer_task.cpp
         socket_can.cpp
 )
