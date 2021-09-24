@@ -20,8 +20,8 @@ class MotorHandler {
   public:
     using Queue = QueueImpl<MotorMessage>;
     using MessageType =
-        std::variant<std::monostate, SetSpeedRequest, GetSpeedRequest,
-                     StopRequest, GetStatusRequest, MoveRequest>;
+        std::variant<std::monostate, GetSpeedRequest, StopRequest,
+                     GetStatusRequest, MoveRequest>;
 
     MotorHandler(MessageWriter<Writer> &message_writer, Queue &message_queue)
         : message_writer{message_writer}, message_queue{message_queue} {}
@@ -36,8 +36,6 @@ class MotorHandler {
 
   private:
     void visit(std::monostate &m) {}
-
-    void visit(SetSpeedRequest &m) { message_writer.write(NodeId::host, m); }
 
     void visit(GetSpeedRequest &m) { message_writer.write(NodeId::host, m); }
 

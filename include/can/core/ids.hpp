@@ -47,10 +47,9 @@ enum class MessageId : uint16_t {
 
     setup_request = 0x02,
 
-    set_speed_request = 0x03,
-
     get_speed_request = 0x04,
     get_speed_response = 0x11,
+
     write_eeprom = 0x2001,
     read_eeprom_request = 0x2002,
     read_eeprom_response = 0x2003

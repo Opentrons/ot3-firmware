@@ -44,10 +44,11 @@ static auto device_info_handler =
     DeviceInfoHandler{message_writer_1, NodeId::pipette, 0};
 
 /** The connection between the motor handler and message buffer */
-static auto motor_dispatch_target = DispatchParseTarget<
-    decltype(motor_handler), can_messages::SetSpeedRequest,
-    can_messages::GetSpeedRequest, can_messages::StopRequest,
-    can_messages::GetStatusRequest, can_messages::MoveRequest>{motor_handler};
+static auto motor_dispatch_target =
+    DispatchParseTarget<decltype(motor_handler), can_messages::GetSpeedRequest,
+                        can_messages::StopRequest,
+                        can_messages::GetStatusRequest,
+                        can_messages::MoveRequest>{motor_handler};
 
 static auto eeprom_dispatch_target =
     DispatchParseTarget<decltype(eeprom_handler),
