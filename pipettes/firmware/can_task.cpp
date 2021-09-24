@@ -8,6 +8,7 @@
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_message_buffer.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
@@ -32,21 +33,11 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-/** TODO (al, 2021-09-21): Remove this and replace with a proper FreeRTOS
- * message queue. **/
-template <typename T>
-class MQ {
-  public:
-    bool try_send(const T, uint32_t timeout) { return true; }
-    bool try_send(const T) { return true; }
-    bool try_recv(T *) { return true; }
-    bool has_message() const { return false; }
-};
-
-static auto mq = MQ<motor_command::Move>{};
+static freertos_message_queue::FreeRTOSMessageQueue<MotorMessage> motor_queue(
+    "Motor Queue");
 
 /** The parsed message handler */
-static auto motor_handler = MotorHandler{message_writer_1, mq};
+static auto motor_handler = MotorHandler{message_writer_1, motor_queue};
 static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
 static auto device_info_handler =

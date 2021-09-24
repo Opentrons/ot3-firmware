@@ -2,6 +2,7 @@
 #include "common/firmware/uart_task.hpp"
 
 #include "FreeRTOS.h"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
@@ -16,6 +17,9 @@ static gantry_communication::MessageReader message_reader{};
 static gantry_communication::MessageWriter message_writer{};
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static spi::Spi spi_comms{};
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static freertos_message_queue::FreeRTOSMessageQueue<Move> isr_queue(
+    "Motor ISR Queue");
 
 struct motion_controller::HardwareConfig GPIOConfig {
     .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
@@ -24,7 +28,7 @@ struct motion_controller::HardwareConfig GPIOConfig {
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, GPIOConfig};
+static motor_class::Motor motor{spi_comms, GPIOConfig, isr_queue};
 
 static void run(void *parameter) {
     parameter = nullptr;

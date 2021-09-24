@@ -2,6 +2,8 @@
 
 #include <variant>
 
+#include "motor-control/core/motor_messages.hpp"
+
 namespace gantry_messages {
 
 enum class MessageType : uint8_t {
@@ -34,12 +36,10 @@ struct GetStatusResult {
 
 struct Status {};
 
-struct Move {};
-
 struct Setup {};
 
-using ReceivedMessage =
-    std::variant<std::monostate, Stop, SetSpeed, GetSpeed, Move, Setup, Status>;
+using ReceivedMessage = std::variant<std::monostate, Stop, SetSpeed, GetSpeed,
+                                     motor_messages::Move, Setup, Status>;
 
 using SentMessage =
     std::variant<std::monostate, GetSpeedResult, GetStatusResult>;

@@ -10,9 +10,15 @@ using namespace can_message_writer;
 
 namespace motor_message_handler {
 
-template <can_bus::CanBusWriter Writer, MessageQueue<motor_command::Move> Queue>
+struct MotorMessage {
+    uint32_t steps;
+};
+
+template <can_bus::CanBusWriter Writer, template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<MotorMessage>, MotorMessage>
 class MotorHandler {
   public:
+    using Queue = QueueImpl<MotorMessage>;
     using MessageType =
         std::variant<std::monostate, SetSpeedRequest, GetSpeedRequest,
                      StopRequest, GetStatusRequest, MoveRequest>;

@@ -23,9 +23,8 @@ class MessageHandler {
         motor.motion_controller.stop();
     }
 
-    void handle(const pipette_messages::Move &m) {
-        static_cast<void>(m);
-        motor.motion_controller.move();
+    void handle(const motor_messages::Move &m) {
+        motor.motion_controller.move(m);
     }
 
     void handle(const pipette_messages::Status &m) {
@@ -50,6 +49,10 @@ class MessageHandler {
         pipette_messages::GetSpeedResult message{
             motor.motion_controller.get_speed()};
         message_writer.write(writer, message);
+    }
+
+    void handle(const pipette_messages::SetDistance &m) {
+        motor.motion_controller.set_distance(m.mm);
     }
 
     void handle(const std::monostate &m) { static_cast<void>(m); }

@@ -64,11 +64,18 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-void timer_init(void) {
+void timer_init() {
     MX_GPIO_Init();
     MX_TIM7_Init();
 }
 
-void timer_interrupt_start(void) { HAL_TIM_Base_Start_IT(&htim7); }
+void timer_interrupt_start() { HAL_TIM_Base_Start_IT(&htim7); }
 
-void timer_interrupt_stop(void) { HAL_TIM_Base_Stop_IT(&htim7); }
+void timer_interrupt_stop() {
+    HAL_TIM_Base_Stop_IT(&htim7);
+}
+
+void toggle_step_pin() {
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+}
+

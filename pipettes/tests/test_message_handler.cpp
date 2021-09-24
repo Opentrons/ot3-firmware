@@ -1,12 +1,13 @@
 #include "catch2/catch.hpp"
 #include "common/core/io.hpp"
-#include "pipettes/core/pipette_messages.hpp"
 #include "pipettes/core/uart_message_handler.hpp"
+#include "pipettes/tests/mock_message_queue.hpp"
 #include "pipettes/tests/test_motor_control.hpp"
 #include "pipettes/tests/test_spi_comms.hpp"
 
 using namespace test_motor_control;
 using namespace test_spi;
+using namespace mock_message_queue;
 
 template <typename T, std::size_t L>
 struct DataWriter {
@@ -24,7 +25,9 @@ SCENARIO("messages can control motor") {
     GIVEN("set speed and stop command") {
         communication::MessageWriter message_writer{};
         TestSpi testSpi{};
-        TestMotor motor{testSpi};
+        MockMessageQueue<Move> queue;
+
+        TestMotor motor{testSpi, queue};
         DataWriter<uint8_t, 8> dw{};
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
@@ -49,11 +52,12 @@ SCENARIO("messages can control motor") {
     GIVEN("move command") {
         communication::MessageWriter message_writer{};
         TestSpi testSpi{};
-        TestMotor motor{testSpi};
+        MockMessageQueue<Move> queue;
+        TestMotor motor{testSpi, queue};
         DataWriter<uint8_t, 8> dw{};
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
-        message = pipette_messages::Move{};
+        message = Move{100};
         handler.handle_message(message);
 
         WHEN("the message is handled") {
@@ -66,7 +70,8 @@ SCENARIO("messages can control motor") {
     GIVEN("status command") {
         communication::MessageWriter message_writer{};
         TestSpi testSpi{};
-        TestMotor motor{testSpi};
+        MockMessageQueue<Move> queue;
+        TestMotor motor{testSpi, queue};
         DataWriter<uint8_t, 8> dw{};
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
@@ -85,8 +90,9 @@ SCENARIO("messages can control motor") {
 
     GIVEN("setup command") {
         communication::MessageWriter message_writer{};
+        MockMessageQueue<Move> queue;
         TestSpi testSpi{};
-        TestMotor motor{testSpi};
+        TestMotor motor{testSpi, queue};
         DataWriter<uint8_t, 8> dw{};
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
@@ -103,7 +109,8 @@ SCENARIO("messages can control motor") {
     GIVEN("get speed command") {
         communication::MessageWriter message_writer{};
         TestSpi testSpi{};
-        TestMotor motor{testSpi};
+        MockMessageQueue<Move> queue;
+        TestMotor motor{testSpi, queue};
         DataWriter<uint8_t, 8> dw{};
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;

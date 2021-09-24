@@ -4,7 +4,11 @@
 
 #include "common/firmware/motor.h"
 #include "common/firmware/timer_interrupt.h"
+#include "motor_messages.hpp"
 #include "spi.hpp"
+#include "step_motor.hpp"
+
+using namespace motor_messages;
 
 namespace motion_controller {
 
@@ -14,12 +18,21 @@ struct HardwareConfig {
     struct PinConfig enable;
 };
 
-template <spi::TMC2130Spi SpiDriver>
+template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<Move>, Move>
 class MotionController {
   public:
-    explicit MotionController(SpiDriver& spi, HardwareConfig& config)
-        : spi_comms(spi), hardware_config(config) {
+    using GenericQueue = QueueImpl<Move>;
+    explicit MotionController(SpiDriver& spi, HardwareConfig& config,
+                              GenericQueue& queue)
+        : spi_comms(spi), hardware_config(config), queue(queue) {
         timer_init();
+        setup();
+    }
+
+    void setup() {
+        start_motor_handler(queue);
+        timer_interrupt_start();
     }
 
     void set_speed(uint32_t s) { speed = s; }
@@ -34,12 +47,12 @@ class MotionController {
     }
 
     void set_acceleration(uint32_t a) { acc = a; }
-    void set_distance();
+    void set_distance(uint32_t d) { dist = d; }
 
-    void move() {
+    void move(const Move& msg) {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
-        timer_interrupt_start();
+        queue.try_write(msg);
     }
 
     void stop() {
@@ -55,9 +68,11 @@ class MotionController {
   private:
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;
+    uint32_t dist = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     SpiDriver& spi_comms;
     HardwareConfig& hardware_config;
+    GenericQueue& queue;
 };
 
 }  // namespace motion_controller
