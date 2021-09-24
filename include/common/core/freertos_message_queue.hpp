@@ -48,7 +48,10 @@ class FreeRTOSMessageQueue {
 
     auto try_read_isr(Message* message) const -> bool {
         BaseType_t higher_woken = pdFALSE;
-        return xQueueReceiveFromISR(queue, message, &higher_woken) == pdTRUE;
+        auto recv = xQueueReceiveFromISR(queue, message, &higher_woken);
+        portYIELD_FROM_ISR(  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+            higher_woken);
+        return recv;
     }
 
     [[nodiscard]] auto has_message() const -> bool {
