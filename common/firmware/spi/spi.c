@@ -1,6 +1,9 @@
 #include "common/firmware/spi.h"
 #include "common/firmware/errors.h"
 
+#include "stm32g4xx_hal_conf.h"
+
+SPI_HandleTypeDef handle;
 
 /**
  * @brief SPI MSP Initialization
@@ -110,26 +113,16 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     return hspi2;
 }
 
-/**
- * Enable DMA controller clock
- */
-void MX_DMA_Init(void) {
-    /* DMA controller clock enable */
-    __HAL_RCC_DMAMUX1_CLK_ENABLE();
-    __HAL_RCC_DMA1_CLK_ENABLE();
-
-    /* DMA interrupt init */
-    /* DMA1_Channel2_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-    /* DMA1_Channel3_IRQn interrupt configuration */
-    HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+void SPI2_init() {
+    handle = MX_SPI2_Init();
 }
 
+void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
 
-void Set_CS_Pin(void) { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
-
-void Reset_CS_Pin(void) {
+void Reset_CS_Pin() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+}
+
+void hal_transmit_receive(uint8_t* transmit, uint8_t* receive, uint16_t buff_size, uint32_t timeout) {
+    HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }

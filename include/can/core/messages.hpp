@@ -17,12 +17,22 @@ namespace can_messages {
  * The objects must implement the Parsable concept to deserialize the payload.
  */
 
-struct HeartbeatRequest {
-    static const auto id = MessageId::heartbeat_request;
+template <MessageId MId>
+struct BaseMessage {
+    /** Satisfy the HasMessageID concept */
+    static const auto id = MId;
+};
 
+/**
+ * A message with no payload.
+ *
+ * @tparam MId
+ */
+template <MessageId MId>
+struct Empty : BaseMessage<MId> {
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> HeartbeatRequest {
-        return HeartbeatRequest{};
+    static auto parse(Input body, Limit limit) -> Empty {
+        return Empty{};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -31,37 +41,13 @@ struct HeartbeatRequest {
     }
 };
 
-struct HeartbeatResponse {
-    static const auto id = MessageId::heartbeat_response;
+using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> HeartbeatResponse {
-        return HeartbeatResponse{};
-    }
+using HeartbeatResponse = Empty<MessageId::heartbeat_response>;
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
+using DeviceInfoRequest = Empty<MessageId::device_info_request>;
 
-struct DeviceInfoRequest {
-    static const auto id = MessageId::device_info_request;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> DeviceInfoRequest {
-        return DeviceInfoRequest{};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct DeviceInfoResponse {
-    static const auto id = MessageId::device_info_response;
-
+struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     /**
      *   TODO (al, 2021-09-13)
      *   Seth's thoughts on future of payload
@@ -87,7 +73,7 @@ struct DeviceInfoResponse {
         uint32_t version;
         body = bit_utils::bytes_to_int(body, limit, node_id);
         body = bit_utils::bytes_to_int(body, limit, version);
-        return DeviceInfoResponse{static_cast<NodeId>(node_id), version};
+        return DeviceInfoResponse{{}, static_cast<NodeId>(node_id), version};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -99,36 +85,11 @@ struct DeviceInfoResponse {
     }
 };
 
-struct StopRequest {
-    static const auto id = MessageId::stop_request;
+using StopRequest = Empty<MessageId::stop_request>;
 
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> StopRequest {
-        return StopRequest{};
-    }
+using GetStatusRequest = Empty<MessageId::get_status_request>;
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct GetStatusRequest {
-    static const auto id = MessageId::get_status_request;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> GetStatusRequest {
-        return GetStatusRequest{};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct GetStatusResponse {
-    static const auto id = MessageId::get_status_response;
+struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
     uint8_t status;
     uint32_t data;
 
@@ -140,7 +101,7 @@ struct GetStatusResponse {
         body = bit_utils::bytes_to_int(body, limit, status);
         body = bit_utils::bytes_to_int(body, limit, data);
 
-        return GetStatusResponse{status, data};
+        return GetStatusResponse{{}, status, data};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -151,75 +112,39 @@ struct GetStatusResponse {
     }
 };
 
-struct MoveRequest {
-    static const auto id = MessageId::move_request;
+struct MoveRequest : BaseMessage<MessageId::move_request> {
+    uint32_t distance;
+    uint32_t speed;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
-        return MoveRequest{};
+        uint32_t distance = 0;
+        uint32_t speed = 0;
+        body = bit_utils::bytes_to_int(body, limit, distance);
+        body = bit_utils::bytes_to_int(body, limit, speed);
+        return MoveRequest{{}, distance, speed};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct SetupRequest {
-    static const auto id = MessageId::setup_request;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> SetupRequest {
-        return SetupRequest{};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct SetSpeedRequest {
-    static const auto id = MessageId::set_speed_request;
-    uint32_t mm_sec;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> SetSpeedRequest {
-        uint32_t mm_sec = 0;
-        body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return SetSpeedRequest{mm_sec};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
+        auto iter = bit_utils::int_to_bytes(distance, body, limit);
+        iter = bit_utils::int_to_bytes(speed, iter, limit);
         return iter - body;
     }
 };
 
-struct GetSpeedRequest {
-    static const auto id = MessageId::get_speed_request;
+using SetupRequest = Empty<MessageId::setup_request>;
 
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> GetSpeedRequest {
-        return GetSpeedRequest{};
-    }
+using GetSpeedRequest = Empty<MessageId::get_speed_request>;
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct GetSpeedResponse {
-    static const auto id = MessageId::get_speed_response;
+struct GetSpeedResponse : BaseMessage<MessageId::get_speed_response> {
     uint32_t mm_sec;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GetSpeedResponse {
         uint32_t mm_sec = 0;
         body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return GetSpeedResponse{mm_sec};
+        return GetSpeedResponse{{}, mm_sec};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -229,15 +154,14 @@ struct GetSpeedResponse {
     }
 };
 
-struct WriteToEEPromRequest {
-    static const auto id = MessageId::write_eeprom;
+struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint8_t serial_number;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
         uint8_t serial_number = 0;
         body = bit_utils::bytes_to_int(body, limit, serial_number);
-        return WriteToEEPromRequest{serial_number};
+        return WriteToEEPromRequest{{}, serial_number};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -247,29 +171,16 @@ struct WriteToEEPromRequest {
     }
 };
 
-struct ReadFromEEPromRequest {
-    static const auto id = MessageId::read_eeprom_request;
+using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
 
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> ReadFromEEPromRequest {
-        return ReadFromEEPromRequest{};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        return 0;
-    }
-};
-
-struct ReadFromEEPromResponse {
-    static const auto id = MessageId::read_eeprom_response;
+struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     uint8_t serial_number;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> ReadFromEEPromResponse {
         uint8_t serial_number = 0;
         body = bit_utils::bytes_to_int(body, limit, serial_number);
-        return ReadFromEEPromResponse{serial_number};
+        return ReadFromEEPromResponse{{}, serial_number};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>

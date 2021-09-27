@@ -42,8 +42,16 @@ auto MessageReader::read(Reader &communication)
             return pipette_messages::Stop{};
         case static_cast<uint32_t>(pipette_messages::MessageType::setup):
             return pipette_messages::Setup{};
-        case static_cast<uint32_t>(pipette_messages::MessageType::move):
-            return pipette_messages::Move{};
+        case static_cast<uint32_t>(pipette_messages::MessageType::move): {
+            // Read the steps
+            auto steps_span = payload_span.subspan(0, 4);
+            communication.read(steps_span);
+
+            uint32_t steps = 0;
+            bit_utils::bytes_to_int(steps_span, steps);
+
+            return motor_messages::Move{steps};
+        }
         case static_cast<uint32_t>(pipette_messages::MessageType::status):
             return pipette_messages::Status{};
         case static_cast<uint32_t>(pipette_messages::MessageType::get_speed):
@@ -57,6 +65,17 @@ auto MessageReader::read(Reader &communication)
             bit_utils::bytes_to_int(speed_span, speed);
 
             return pipette_messages::SetSpeed{speed};
+        }
+        case static_cast<uint32_t>(
+            pipette_messages::MessageType::set_distance): {
+            // Read the distance
+            auto dist_span = payload_span.subspan(0, 4);
+            communication.read(dist_span);
+
+            uint32_t dist = 0;
+            bit_utils::bytes_to_int(dist_span, dist);
+
+            return pipette_messages::SetDistance{dist};
         }
         default:
             return r;

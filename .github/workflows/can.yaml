@@ -2,7 +2,7 @@ name: "Can build/test"
 on:
   pull_request:
     paths:
-      - "can"
+      - "can/**"
       - "include/can/**"
       - "cmake/*"
       - "CMakeLists.txt"
@@ -13,7 +13,7 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "can"
+      - "can/**"
       - "include/can/**"
       - "include/common/**"
       - "cmake/*"
@@ -51,9 +51,6 @@ jobs:
         run: cmake --preset=cross .
       - name: "Format"
         run: cmake --build ./build-cross --target can-format-ci
-        # TODO (AL 2021-07-09) - uncomment when adding common-lint is added
-#      - name: "Lint"
-#        run: cmake --build ./build-cross --target can-lint
       - name: "Build"
         run: cmake --build ./build-cross --target can
   host-compile-test:
@@ -73,5 +70,5 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
-      - name: 'Build'
-        run: cmake --build ./build-host --target can
+      - name: 'Build and test'
+        run: cmake --build ./build-host --target can-build-and-test

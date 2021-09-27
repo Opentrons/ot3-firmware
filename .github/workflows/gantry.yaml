@@ -2,8 +2,8 @@ name: "Gantry build/test"
 on:
   pull_request:
     paths:
-      - "gantry"
-      - "common"
+      - "gantry/**"
+      - "common/**"
       - "include/**"
       - "!include/pipettes/**"
       - "cmake/*"
@@ -16,8 +16,8 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "gantry"
-      - "common"
+      - "gantry/**"
+      - "common/**"
       - "include/**"
       - "!include/pipettes/**"
       - "cmake/*"
@@ -77,5 +77,5 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
-      - name: 'Build'
-        run: cmake --build ./build-host --target gantry
+      - name: 'Build and test'
+        run: cmake --build ./build-host --target gantry-build-and-test

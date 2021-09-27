@@ -7,11 +7,12 @@ jobs:
     steps:
       - name: Setup SocketCan
         run: |
+          sudo apt-get update
           sudo apt-get install linux-modules-extra-$(uname -r)
           sudo modprobe vcan
       - name: Checkout firmware repo
         uses: actions/checkout@v2
       - name: Run OT-3 Emulator
-        uses: Opentrons/ot3-emulator@v1.0
+        uses: Opentrons/ot3-emulator@v1.1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}

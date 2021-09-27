@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <variant>
 
 #include "can/core/dispatch.hpp"
@@ -16,6 +17,9 @@ using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace freertos_task;
 
+static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
+static auto constexpr DefaultChannel = "vcan0";
+
 static auto constexpr ReceiveBufferSize = 1024;
 static auto buffer = FreeRTOSMessageBuffer<ReceiveBufferSize>{};
 static auto transport = socket_can::SocketCanTransport{};
@@ -26,7 +30,7 @@ static auto canbus = sim_canbus::SimCANBus(transport, buffer);
  * templetized with the same message types.
  * @tparam Bus A CanBus type
  */
-template <CanBus Bus>
+template <CanBusWriter Bus>
 struct Loopback {
     /**
      * Constructor
@@ -42,8 +46,7 @@ struct Loopback {
      * The message handling function.
      * @param m A variant of the various message types.
      */
-    void handle(
-        std::variant<std::monostate, SetSpeedRequest, GetSpeedRequest> &m) {
+    void handle(std::variant<std::monostate, MoveRequest, GetSpeedRequest> &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
@@ -67,8 +70,9 @@ static auto handler = Loopback{canbus};
 
 // Create a DispatchParseTarget to parse messages in message buffer and pass
 // them to the handler.
-static auto dispatcher = can_dispatch::DispatchParseTarget<
-    Loopback<decltype(canbus)>, SetSpeedRequest, GetSpeedRequest>{handler};
+static auto dispatcher =
+    can_dispatch::DispatchParseTarget<Loopback<decltype(canbus)>, MoveRequest,
+                                      GetSpeedRequest>{handler};
 
 // A Message Buffer poller that reads from buffer and send to dispatcher
 static auto poller =
@@ -81,7 +85,10 @@ static auto dispatcher_task =
  * The socket can reader. Reads from socket and writes to message buffer.
  */
 void can_bus_poll_task(void *) {
-    transport.open("vcan0");
+    const char *env_channel_val = std::getenv(ChannelEnvironmentVariableName);
+    auto channel = env_channel_val ? env_channel_val : DefaultChannel;
+
+    transport.open(channel);
     while (canbus.read_message()) {
     }
 }

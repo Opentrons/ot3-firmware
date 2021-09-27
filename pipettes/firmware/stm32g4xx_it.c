@@ -121,28 +121,15 @@ void DebugMon_Handler(void) {}
 extern FDCAN_HandleTypeDef fdcan1;
 extern TIM_HandleTypeDef htim7;
 
-
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
-void FDCAN1_IT0_IRQHandler(void)
-{
-    /* USER CODE BEGIN FDCAN1_IT0_IRQn 0 */
-
-    /* USER CODE END FDCAN1_IT0_IRQn 0 */
-    HAL_FDCAN_IRQHandler(&fdcan1);
-    /* USER CODE BEGIN FDCAN1_IT0_IRQn 1 */
-
-    /* USER CODE END FDCAN1_IT0_IRQn 1 */
-}
+void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(&fdcan1); }
 
 /**
-  * @brief This function handles TIM7 global interrupt.
-  */
-void TIM7_IRQHandler(void)
-{
-    HAL_TIM_IRQHandler(&htim7);
-}
+ * @brief This function handles TIM7 global interrupt.
+ */
+void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
 /**
  * @}
  */

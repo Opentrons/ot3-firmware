@@ -5,7 +5,11 @@
 #include "common/firmware/motor.h"
 #include "common/firmware/timer_interrupt.h"
 #include "linear_motion_system.hpp"
+#include "motor_messages.hpp"
 #include "spi.hpp"
+#include "step_motor.hpp"
+
+using namespace motor_messages;
 
 namespace motion_controller {
 
@@ -19,15 +23,25 @@ struct HardwareConfig {
  * MotionController is responsible for motor movement and communicate with the
  * motor driver using the HAL driver API and SPI.
  */
-template <spi::TMC2130Spi SpiDriver, lms::LMSConfig LMSConf>
+template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl,
+          lms::LMSConfig LMSConf>
+requires MessageQueue<QueueImpl<Move>, Move>
 class MotionController {
   public:
+    using GenericQueue = QueueImpl<Move>;
     explicit MotionController(SpiDriver& spi, LMSConf& lms_config,
-                              HardwareConfig& config)
+                              HardwareConfig& config, GenericQueue& queue)
         : spi_comms(spi),
           linear_motion_sys_config(lms_config),
-          hardware_config(config) {
+          hardware_config(config),
+          queue(queue) {
         timer_init();
+        setup();
+    }
+
+    void setup() {
+        start_motor_handler(queue);
+        timer_interrupt_start();
         steps_per_mm = linear_motion_sys_config.get_steps_per_mm();
     }
 
@@ -48,10 +62,10 @@ class MotionController {
         // pass total steps to IRS
     }
 
-    void move() {
+    void move(const Move& msg) {
         set_pin(hardware_config.enable);
         set_pin(hardware_config.direction);
-        timer_interrupt_start();
+        queue.try_write(msg);
     }
 
     void stop() {
@@ -66,12 +80,14 @@ class MotionController {
 
   private:
     uint32_t acc = 0x0;
-    uint32_t speed = 0x0;   // mm/s
+    uint32_t speed = 0x0;  // mm/s
+    uint32_t dist = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     float steps_per_mm;
     SpiDriver& spi_comms;
     LMSConf& linear_motion_sys_config;
     HardwareConfig& hardware_config;
+    GenericQueue& queue;
 };
 
 }  // namespace motion_controller

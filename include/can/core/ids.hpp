@@ -5,24 +5,6 @@
 namespace can_ids {
 
 /**
- * The components of a 29-bit arbitration id as a bitfield.
- */
-struct ArbitrationIdParts {
-    unsigned function_code : 7;
-    unsigned node_id : 8;
-    unsigned message_id : 14;
-    unsigned int padding : 3;
-};
-
-/**
- * A union of arbitration id in parts or as an integer.
- */
-union ArbitrationId {
-    ArbitrationIdParts parts;
-    uint32_t id;
-};
-
-/**
  * Function code definitions.
  */
 enum class FunctionCode : uint8_t {
@@ -36,10 +18,14 @@ enum class FunctionCode : uint8_t {
     heartbeat = 0x7e
 };
 
+/**
+ * Node id definitions.
+ */
 enum class NodeId : uint8_t {
-    host,
-    pipette,
-    gantry,
+    broadcast = 0x00,
+    host = 0x10,
+    pipette = 0x20,
+    gantry = 0x40,
 };
 
 /**
@@ -61,10 +47,9 @@ enum class MessageId : uint16_t {
 
     setup_request = 0x02,
 
-    set_speed_request = 0x03,
-
     get_speed_request = 0x04,
     get_speed_response = 0x11,
+
     write_eeprom = 0x2001,
     read_eeprom_request = 0x2002,
     read_eeprom_response = 0x2003

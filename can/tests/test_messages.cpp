@@ -15,12 +15,13 @@ SCENARIO("message deserializing works") {
         }
     }
 
-    GIVEN("a set speed request body") {
-        auto arr = std::array<uint8_t, 4>{1, 2, 3, 4};
+    GIVEN("a move request body") {
+        auto arr = std::array<uint8_t, 8>{1, 2, 3, 4, 5, 6, 7, 8};
         WHEN("constructed") {
-            auto r = SetSpeedRequest::parse(arr.begin(), arr.end());
+            auto r = MoveRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.mm_sec == 0x01020304);
+                REQUIRE(r.distance == 0x01020304);
+                REQUIRE(r.speed == 0x05060708);
             }
         }
     }
@@ -36,7 +37,7 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a device info response body") {
-        auto arr = std::array<uint8_t, 5>{1, 2, 3, 4, 5};
+        auto arr = std::array<uint8_t, 5>{0x20, 2, 3, 4, 5};
         WHEN("constructed") {
             auto r = DeviceInfoResponse::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
@@ -49,7 +50,7 @@ SCENARIO("message deserializing works") {
 
 SCENARIO("message serializing works") {
     GIVEN("a get status response message") {
-        auto message = GetStatusResponse{1, 2};
+        auto message = GetStatusResponse{{}, 1, 2};
         auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -66,8 +67,8 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a set speed request message") {
-        auto message = SetSpeedRequest{0x10023300};
-        auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
+        auto message = MoveRequest{{}, 0x10023300, 0x33221100};
+        auto arr = std::array<uint8_t, 8>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
@@ -75,14 +76,18 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[0] == 0x10);
                 REQUIRE(body.data()[1] == 0x02);
                 REQUIRE(body.data()[2] == 0x33);
-                REQUIRE(body.data()[3] == 0);
+                REQUIRE(body.data()[3] == 0x00);
+                REQUIRE(body.data()[4] == 0x33);
+                REQUIRE(body.data()[5] == 0x22);
+                REQUIRE(body.data()[6] == 0x11);
+                REQUIRE(body.data()[7] == 0x00);
             }
-            THEN("size must be returned") { REQUIRE(size == 4); }
+            THEN("size must be returned") { REQUIRE(size == 8); }
         }
     }
 
     GIVEN("a get speed response message") {
-        auto message = GetSpeedResponse{0x12344321};
+        auto message = GetSpeedResponse{{}, 0x12344321};
         auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -98,19 +103,29 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a device info response message") {
-        auto message = DeviceInfoResponse{NodeId::pipette, 0x00220033};
+        auto message = DeviceInfoResponse{{}, NodeId::pipette, 0x00220033};
         auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer correctly") {
-                REQUIRE(body.data()[0] == 0x01);
+                REQUIRE(body.data()[0] == 0x20);
                 REQUIRE(body.data()[1] == 0x00);
                 REQUIRE(body.data()[2] == 0x22);
                 REQUIRE(body.data()[3] == 0x00);
                 REQUIRE(body.data()[4] == 0x33);
             }
             THEN("size must be returned") { REQUIRE(size == 5); }
+        }
+    }
+
+    GIVEN("a get speed request message") {
+        auto message = GetSpeedRequest{{}};
+        auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
+        auto body = std::span{arr};
+        WHEN("serialized") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("size must be returned") { REQUIRE(size == 0); }
         }
     }
 }

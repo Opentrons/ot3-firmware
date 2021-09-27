@@ -28,6 +28,7 @@ SCENARIO("read and write pipette serial numbers") {
 
         WHEN("the value is queried") {
             THEN("the stored value should be returned") {
+                write(testI2C, DUMMY_VALUE);
                 const uint8_t received_buff = read(testI2C);
                 REQUIRE(DUMMY_VALUE == received_buff);
             }
@@ -38,7 +39,7 @@ SCENARIO("read and write pipette serial numbers") {
         TestI2C testI2C{};
         WHEN("The new address is set") {
             THEN("Transmit and Receive should use the new device address") {
-                REQUIRE(testI2C.DEVICE_ADDRESS == 0x2);
+                REQUIRE(testI2C.DEVICE_ADDRESS == 0x1);
                 testI2C.DEVICE_ADDRESS = 0x3;
                 REQUIRE(testI2C.DEVICE_ADDRESS == 0x3);
             }

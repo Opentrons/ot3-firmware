@@ -3,6 +3,8 @@
 #include "can/firmware/utils.hpp"
 #include "common/core/synchronization.hpp"
 
+using namespace hal_can_bus;
+
 HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
     : handle(handle),
       tx_header{.IdType = arbitration_id_type,

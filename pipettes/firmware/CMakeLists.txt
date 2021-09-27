@@ -12,6 +12,7 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/step_motor.cpp
     ${COMMON_EXECUTABLE_DIR}/uart/uart_comms.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
@@ -123,3 +124,10 @@ add_custom_target(pipettes-debug
         COMMAND pipettes
         USES_TERMINAL
         )
+
+# Runs openocd to flash the board (without using a debugger)
+add_custom_target(pipettes-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS pipettes)

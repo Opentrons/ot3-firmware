@@ -37,7 +37,7 @@ class FreeRTOSMessageBuffer {
         std::sentinel_for<Limit, Iterator>
     auto send_from_isr(const Iterator iter, const Limit limit) -> std::size_t {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        auto buffer_length = limit - iter;
+        std::size_t buffer_length = limit - iter;
 
         auto written_bytes = xMessageBufferSendFromISR(
             handle, iter, buffer_length, &xHigherPriorityTaskWoken);
