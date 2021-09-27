@@ -8,6 +8,7 @@
 #include "common/firmware/uart_comms.hpp"
 #include "gantry/core/communication.hpp"
 #include "gantry/core/uart_message_handler.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "task.h"
 
@@ -27,8 +28,16 @@ struct motion_controller::HardwareConfig GPIOConfig {
     .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
 };
 
+struct lms::BeltConfig BConfig {
+    2,       // belt pitch in mm/count
+        10,  // pulley tooth count in count/rev
+};
+
+static lms::LinearMotionSystemConfig linear_motion_sys_config{BConfig, 200, 16};
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, GPIOConfig, isr_queue};
+static motor_class::Motor motor{spi_comms, linear_motion_sys_config, GPIOConfig,
+                                isr_queue};
 
 static void run(void *parameter) {
     parameter = nullptr;
