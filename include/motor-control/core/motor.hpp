@@ -12,9 +12,6 @@
 using namespace motor_driver;
 using namespace motion_controller;
 using namespace lms;
-
-namespace motor_class {
-
 using namespace spi;
 using namespace motor_messages;
 
