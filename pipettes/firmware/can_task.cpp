@@ -74,8 +74,8 @@ static auto eeprom_dispatch_target =
                         can_messages::ReadFromEEPromRequest>{eeprom_handler};
 
 static auto device_info_dispatch_target =
-    DispatchParseTarget<DeviceInfoHandler,
-                        can_messages::DeviceInfoRequest>{device_info_handler};
+    DispatchParseTarget<DeviceInfoHandler, can_messages::DeviceInfoRequest>{
+        device_info_handler};
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(

@@ -25,8 +25,7 @@ class FreeRTOSTask {
 
   private:
     static void f(void* v) {
-        auto instance =
-            static_cast<FreeRTOSTask<StackDepth, Priority>*>(v);
+        auto instance = static_cast<FreeRTOSTask<StackDepth, Priority>*>(v);
         instance->entry();
     }
     const EntryPoint entry;
