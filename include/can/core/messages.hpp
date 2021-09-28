@@ -113,22 +113,18 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
 };
 
 struct MoveRequest : BaseMessage<MessageId::move_request> {
-    uint32_t distance;
-    uint32_t speed;
+    uint32_t steps;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
-        uint32_t distance = 0;
-        uint32_t speed = 0;
-        body = bit_utils::bytes_to_int(body, limit, distance);
-        body = bit_utils::bytes_to_int(body, limit, speed);
-        return MoveRequest{{}, distance, speed};
+        uint32_t steps = 0;
+        body = bit_utils::bytes_to_int(body, limit, steps);
+        return MoveRequest{{}, steps};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(distance, body, limit);
-        iter = bit_utils::int_to_bytes(speed, iter, limit);
+        auto iter = bit_utils::int_to_bytes(steps, body, limit);
         return iter - body;
     }
 };

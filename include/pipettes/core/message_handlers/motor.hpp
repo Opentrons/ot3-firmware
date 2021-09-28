@@ -3,28 +3,21 @@
 #include "can/core/can_bus.hpp"
 #include "can/core/message_writer.hpp"
 #include "common/core/message_queue.hpp"
-#include "motor-control/core/move_message.hpp"
+#include "motor-control/core/motor_messages.hpp"
 
 using namespace can_bus;
 using namespace can_message_writer;
 
 namespace motor_message_handler {
 
-struct MotorMessage {
-    uint32_t steps;
-};
-
-template <can_bus::CanBusWriter Writer, template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<MotorMessage>, MotorMessage>
+template <can_bus::CanBusWriter Writer, class Motor>
 class MotorHandler {
   public:
-    using Queue = QueueImpl<MotorMessage>;
-    using MessageType =
-        std::variant<std::monostate, GetSpeedRequest, StopRequest,
-                     GetStatusRequest, MoveRequest>;
+    using MessageType = std::variant<std::monostate, SetupRequest, StopRequest,
+                                     GetStatusRequest, MoveRequest>;
 
-    MotorHandler(MessageWriter<Writer> &message_writer, Queue &message_queue)
-        : message_writer{message_writer}, message_queue{message_queue} {}
+    MotorHandler(MessageWriter<Writer> &message_writer, Motor &motor)
+        : message_writer{message_writer}, motor{motor} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
     MotorHandler &operator=(const MotorHandler &) = delete;
@@ -37,16 +30,26 @@ class MotorHandler {
   private:
     void visit(std::monostate &m) {}
 
-    void visit(GetSpeedRequest &m) { message_writer.write(NodeId::host, m); }
+    void visit(StopRequest &m) { motor.motion_controller.stop(); }
 
-    void visit(StopRequest &m) { message_writer.write(NodeId::gantry, m); }
+    void visit(SetupRequest &m) { motor.driver.setup(); }
 
-    void visit(GetStatusRequest &m) { message_writer.write(NodeId::host, m); }
+    void visit(GetStatusRequest &m) {
+        motor.driver.get_status();
+        // TODO Format request
+        GetStatusResponse response_msg{
+            .status = motor.driver.get_current_status(),
+            .data = motor.driver.get_current_data()};
+        message_writer.write(NodeId::host, response_msg);
+    }
 
-    void visit(MoveRequest &m) { message_writer.write(NodeId::host, m); }
+    void visit(MoveRequest &m) {
+        motor_messages::Move mv_msg{.steps = m.steps};
+        motor.motion_controller.move(mv_msg);
+    }
 
     MessageWriter<Writer> &message_writer;
-    Queue &message_queue;
+    Motor &motor;
 };
 
 }  // namespace motor_message_handler
