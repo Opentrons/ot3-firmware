@@ -4,24 +4,28 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
-add_executable(gantry test_main.cpp)
+add_executable(
+        gantry
+        test_main.cpp
+        test_linear_motion_config.cpp
+)
 
-target_include_directories(gantry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_include_directories(gantry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(gantry
-  PROPERTIES
-  CXX_STANDARD 20
-  CXX_STANDARD_REQUIRED TRUE)
+        PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED TRUE)
 
 target_compile_options(gantry
-  PUBLIC
-  -Wall
-  -Werror
-  -Weffc++
-  -Wreorder
-  -Wsign-promo
-  -Wextra-semi
-  -Wctor-dtor-privacy
-  -fno-rtti)
+        PUBLIC
+        -Wall
+        -Werror
+        -Weffc++
+        -Wreorder
+        -Wsign-promo
+        -Wextra-semi
+        -Wctor-dtor-privacy
+        -fno-rtti)
 target_link_libraries(gantry Catch2::Catch2)
 
 catch_discover_tests(gantry)
