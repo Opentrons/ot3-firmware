@@ -30,16 +30,14 @@ struct motion_controller::HardwareConfig GPIOConfig {
     .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
 };
 
-struct lms::LeadScrewConfig LSConfig {
-    2  // lead_screw_pitch in mm
-};
-
-static lms::LinearMotionSystemConfig linear_motion_sys_config{LSConfig, 200,
-                                                              16};
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, linear_motion_sys_config, GPIOConfig,
-                                isr_queue};
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    GPIOConfig, isr_queue};
 
 static void run(void *parameter) {
     parameter = nullptr;

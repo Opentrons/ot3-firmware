@@ -42,7 +42,7 @@ constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
 template <spi::TMC2130Spi SpiDriver>
 class MotorDriver {
   public:
-    MotorDriver(SpiDriver& spi) : spi_comms(spi) {}
+    explicit MotorDriver(SpiDriver& spi) : spi_comms(spi) {}
 
     void setup() {
         constexpr uint32_t gconf_data = 0x04;

@@ -9,33 +9,22 @@
 #include "motor_messages.hpp"
 #include "spi.hpp"
 
-using namespace motor_driver;
-using namespace motion_controller;
-using namespace lms;
-using namespace spi;
-using namespace motor_messages;
-
 namespace motor_class {
 
-template <TMC2130Spi SpiDriver, template <class> class QueueImpl,
-          lms::LMSConfig LMSConf>
+template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl,
+          lms::MotorMechanicalConfig MEConfig>
 requires MessageQueue<QueueImpl<Move>, Move>
 struct Motor {
     using GenericQueue = QueueImpl<Move>;
-    explicit Motor(SpiDriver& spi, LMSConf& lms_config, HardwareConfig& config,
-                   GenericQueue& queue)
-        : spi_comms(spi),
-          linear_motion_sys_config(lms_config),
-          hardware_config(config),
-          queue(queue) {}
-    SpiDriver& spi_comms;
-    LMSConf& linear_motion_sys_config;
-    HardwareConfig& hardware_config;
+    Motor(SpiDriver& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
+          motion_controller::HardwareConfig& config, GenericQueue& queue)
+        : queue(queue),
+          driver{spi},
+          motion_controller{lms_config, config, queue} {}
     GenericQueue& queue;
-    MotorDriver<SpiDriver> driver = MotorDriver{spi_comms};
-    MotionController<SpiDriver, QueueImpl, LMSConf> motion_controller =
-        MotionController{spi_comms, linear_motion_sys_config, hardware_config,
-                         queue};
+    motor_driver::MotorDriver<SpiDriver> driver;
+    motion_controller::MotionController<QueueImpl, MEConfig> motion_controller;
+    Motor(const Motor&) = delete;
 };
 
 }  // namespace motor_class

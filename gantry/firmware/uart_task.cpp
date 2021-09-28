@@ -28,16 +28,15 @@ struct motion_controller::HardwareConfig GPIOConfig {
     .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
 };
 
-struct lms::BeltConfig BConfig {
-    2,       // belt pitch in mm/count
-        10,  // pulley tooth count in count/rev
-};
-
-static lms::LinearMotionSystemConfig linear_motion_sys_config{BConfig, 200, 16};
-
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, linear_motion_sys_config, GPIOConfig,
-                                isr_queue};
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::BeltConfig>{
+        .mech_config =
+            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    GPIOConfig, isr_queue};
 
 static void run(void *parameter) {
     parameter = nullptr;
