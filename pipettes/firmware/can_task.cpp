@@ -13,6 +13,9 @@
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
+#include "common/firmware/spi_comms.hpp"
+#include "motor-control/core/motor.hpp"
+#include "motor-control/core/move_message.hpp"
 #include "pipettes/core/eeprom.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
 #include "pipettes/core/message_handlers/motor.hpp"
@@ -33,11 +36,26 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-static freertos_message_queue::FreeRTOSMessageQueue<MotorMessage> motor_queue(
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
+static spi::Spi spi_comms{};
+
+struct motion_controller::HardwareConfig PinConfigurations {
+    .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
+    .step = {.port = GPIOA, .pin = GPIO_PIN_8},
+    .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
+};
+
+/**
+ * TODO: This motor class is only used in motor handler and should be
+ * instantiated inside of the MotorHandler class. However, some refactors
+ * should be made to avoid a pretty gross template signature.
+ */
+
+static motor_class::Motor motor{spi_comms, PinConfigurations, motor_queue};
 
 /** The parsed message handler */
-static auto motor_handler = MotorHandler{message_writer_1, motor_queue};
+static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
 static auto device_info_handler =
@@ -45,10 +63,10 @@ static auto device_info_handler =
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target =
-    DispatchParseTarget<decltype(motor_handler), can_messages::GetSpeedRequest,
+    DispatchParseTarget<decltype(can_motor_handler), can_messages::SetupRequest,
                         can_messages::StopRequest,
                         can_messages::GetStatusRequest,
-                        can_messages::MoveRequest>{motor_handler};
+                        can_messages::MoveRequest>{can_motor_handler};
 
 static auto eeprom_dispatch_target =
     DispatchParseTarget<decltype(eeprom_handler),
