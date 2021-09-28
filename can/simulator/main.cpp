@@ -77,13 +77,12 @@ static auto dispatcher =
 static auto poller =
     freertos_can_dispatch::FreeRTOSCanBufferPoller(buffer, dispatcher);
 // The message buffer freertos task
-static auto dispatcher_task =
-    FreeRTOSTask<256, 5, decltype(poller)>("dispatcher", poller);
+static auto dispatcher_task = FreeRTOSTask<256, 5>("dispatcher", poller);
 
 /**
  * The socket can reader. Reads from socket and writes to message buffer.
  */
-void can_bus_poll_task(void *) {
+void can_bus_poll_task_entry() {
     const char *env_channel_val = std::getenv(ChannelEnvironmentVariableName);
     auto channel = env_channel_val ? env_channel_val : DefaultChannel;
 
@@ -92,8 +91,13 @@ void can_bus_poll_task(void *) {
     }
 }
 
+/**
+ * The message buffer polling task.
+ */
+static auto can_bus_poll_task =
+    FreeRTOSTask<2048, 5>("can_poll", can_bus_poll_task_entry);
+
 int main() {
-    xTaskCreate(can_bus_poll_task, "can_poll", 2048, nullptr, 1, nullptr);
     vTaskStartScheduler();
     return 0;
 }
