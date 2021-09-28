@@ -11,13 +11,13 @@ using namespace eeprom;
 
 namespace eeprom_message_handler {
 
-template <CanBusWriter Writer, EEPromPolicy I2CComm>
+template <EEPromPolicy I2CComm>
 class EEPromHandler {
   public:
     using MessageType = std::variant<std::monostate, WriteToEEPromRequest,
                                      ReadFromEEPromRequest>;
 
-    explicit EEPromHandler(MessageWriter<Writer> &message_writer, I2CComm &i2c)
+    explicit EEPromHandler(MessageWriter &message_writer, I2CComm &i2c)
         : message_writer(message_writer), i2c(i2c) {}
     EEPromHandler(const EEPromHandler &) = delete;
     EEPromHandler(const EEPromHandler &&) = delete;
@@ -39,7 +39,7 @@ class EEPromHandler {
         message_writer.write(NodeId::host, message);
     }
 
-    MessageWriter<Writer> &message_writer;
+    MessageWriter &message_writer;
     I2CComm &i2c;
 };
 

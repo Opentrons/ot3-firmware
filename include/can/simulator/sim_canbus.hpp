@@ -24,8 +24,8 @@ concept BusTransport = requires(T t, uint32_t arb_id, uint32_t& out_arb_id,
  */
 template <BusTransport Transport, message_buffer::MessageBuffer Buffer>
 requires(!std::movable<Buffer> && !std::copyable<Buffer> &&
-         !std::movable<Transport> &&
-         !std::copyable<Transport>) class SimCANBus {
+         !std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
+    : public CanBusWriter {
   public:
     explicit SimCANBus(Transport& transport, Buffer& buffer)
         : transport{transport}, reader{transport, buffer} {}

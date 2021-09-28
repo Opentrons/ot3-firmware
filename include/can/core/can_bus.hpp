@@ -54,28 +54,42 @@ enum class CanFDMessageLength {
 auto to_canfd_length(uint32_t length) -> CanFDMessageLength;
 
 /**
- * Concept describing a class that sends messages on a Can Bus .
- *
- * @tparam CAN The template argument
+ * Can bus writer abstract base class.
  */
-template <class CAN>
-concept CanBusWriter = requires(CAN can, uint32_t arbitration_id,
-                                uint8_t* buffer,
-                                CanFDMessageLength buffer_length) {
-    {can.send(arbitration_id, buffer, buffer_length)};
+class CanBusWriter {
+  public:
+    /**
+     * Write method.
+     *
+     * @param arbitration_id A 32-bit arbitration id
+     * @param buffer The data buffer.
+     * @param buffer_length The buffer length.
+     */
+    virtual void send(uint32_t arbitration_id, uint8_t* buffer,
+                      CanFDMessageLength buffer_length) = 0;
+
+    virtual ~CanBusWriter() {}
 };
 
 /**
- * Concept describing a class that filters inbound messages on Can Bus.
- *
- * @tparam CAN The template argument
+ * Can incoming message filter setup.
  */
-template <class CAN>
-concept CanBusFiltering = requires(CAN can, uint32_t arbitration_id,
-                                   CanFilterType filter_type,
-                                   CanFilterConfig filter_config) {
-    {can.add_filter(filter_type, filter_config, arbitration_id,
-                    arbitration_id)};
+class CanBusFilters {
+  public:
+    /**
+     * Create a filter for incoming messages.
+     *
+     * @param type the type of filter
+     * @param config the filter configuration
+     * @param val1 depends on the type. Is either a filter, exact arbitration
+     * id, or minimum arbitration id
+     * @param val2 depends on the type. Is either a mask, exact arbitration id,
+     * or maximum arbitration id
+     */
+    virtual void add_filter(CanFilterType type, CanFilterConfig config,
+                            uint32_t val1, uint32_t val2) = 0;
+
+    virtual ~CanBusFilters() {}
 };
 
 }  // namespace can_bus
