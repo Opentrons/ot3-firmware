@@ -20,8 +20,7 @@ SCENARIO("message deserializing works") {
         WHEN("constructed") {
             auto r = MoveRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.distance == 0x01020304);
-                REQUIRE(r.speed == 0x05060708);
+                REQUIRE(r.steps == 0x01020304);
             }
         }
     }
@@ -66,8 +65,8 @@ SCENARIO("message serializing works") {
         }
     }
 
-    GIVEN("a set speed request message") {
-        auto message = MoveRequest{{}, 0x10023300, 0x33221100};
+    GIVEN("a set steps request message") {
+        auto message = MoveRequest{{}, 0x10023300};
         auto arr = std::array<uint8_t, 8>{};
         auto body = std::span{arr};
         WHEN("serialized") {
@@ -77,12 +76,8 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[1] == 0x02);
                 REQUIRE(body.data()[2] == 0x33);
                 REQUIRE(body.data()[3] == 0x00);
-                REQUIRE(body.data()[4] == 0x33);
-                REQUIRE(body.data()[5] == 0x22);
-                REQUIRE(body.data()[6] == 0x11);
-                REQUIRE(body.data()[7] == 0x00);
             }
-            THEN("size must be returned") { REQUIRE(size == 8); }
+            THEN("size must be returned") { REQUIRE(size == 4); }
         }
     }
 
