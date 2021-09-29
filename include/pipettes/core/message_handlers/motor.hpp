@@ -10,13 +10,13 @@ using namespace can_message_writer;
 
 namespace motor_message_handler {
 
-template <can_bus::CanBusWriter Writer, class Motor>
+template <class Motor>
 class MotorHandler {
   public:
     using MessageType = std::variant<std::monostate, SetupRequest, StopRequest,
                                      GetStatusRequest, MoveRequest>;
 
-    MotorHandler(MessageWriter<Writer> &message_writer, Motor &motor)
+    MotorHandler(MessageWriter &message_writer, Motor &motor)
         : message_writer{message_writer}, motor{motor} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
@@ -48,7 +48,7 @@ class MotorHandler {
         motor.motion_controller.move(mv_msg);
     }
 
-    MessageWriter<Writer> &message_writer;
+    MessageWriter &message_writer;
     Motor &motor;
 };
 
