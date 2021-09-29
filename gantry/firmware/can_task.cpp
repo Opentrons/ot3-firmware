@@ -6,9 +6,14 @@
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "can/firmware/hal_can_message_buffer.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
+#include "common/firmware/spi_comms.hpp"
+#include "motor-control/core/motor.hpp"
+#include "motor-control/core/move_message.hpp"
+#include "pipettes/core/message_handlers/motor.hpp"
 
 using namespace freertos_task;
 using namespace freertos_can_dispatch;
@@ -16,10 +21,32 @@ using namespace hal_can_bus;
 using namespace can_message_writer;
 using namespace can_ids;
 using namespace can_dispatch;
+using namespace motor_message_handler;
 
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
+
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
+    "Motor Queue");
+static spi::Spi spi_comms{};
+
+struct motion_controller::HardwareConfig PinConfigurations {
+    .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
+    .step = {.port = GPIOA, .pin = GPIO_PIN_8},
+    .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
+};
+
+/**
+ * TODO: This motor class is only used in motor handler and should be
+ * instantiated inside of the MotorHandler class. However, some refactors
+ * should be made to avoid a pretty gross template signature.
+ */
+
+static motor_class::Motor motor{spi_comms, PinConfigurations, motor_queue};
+
+/** The parsed message handler */
+static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -28,8 +55,14 @@ static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};
 
+static auto motor_dispatch_target =
+    DispatchParseTarget<decltype(can_motor_handler), can_messages::SetupRequest,
+                        can_messages::StopRequest,
+                        can_messages::GetStatusRequest,
+                        can_messages::MoveRequest>{can_motor_handler};
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(device_info_dispatch_target);
+static auto dispatcher =
+    Dispatcher(motor_dispatch_target, device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
