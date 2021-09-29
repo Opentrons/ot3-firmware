@@ -4,8 +4,8 @@
 
 #include "common/firmware/motor.h"
 #include "common/firmware/timer_interrupt.h"
+#include "linear_motion_system.hpp"
 #include "motor_messages.hpp"
-#include "spi.hpp"
 #include "step_motor.hpp"
 
 using namespace motor_messages;
@@ -18,14 +18,20 @@ struct HardwareConfig {
     struct PinConfig enable;
 };
 
-template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
+/*
+ * MotionController is responsible for motor movement and communicate with the
+ * motor driver using the HAL driver API and SPI.
+ */
+template <template <class> class QueueImpl, lms::MotorMechanicalConfig MEConfig>
 requires MessageQueue<QueueImpl<Move>, Move>
 class MotionController {
   public:
     using GenericQueue = QueueImpl<Move>;
-    explicit MotionController(SpiDriver& spi, HardwareConfig& config,
-                              GenericQueue& queue)
-        : spi_comms(spi), hardware_config(config), queue(queue) {
+    MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
+                     HardwareConfig& config, GenericQueue& queue)
+        : linear_motion_sys_config(lms_config),
+          hardware_config(config),
+          queue(queue) {
         timer_init();
         setup();
     }
@@ -33,6 +39,7 @@ class MotionController {
     void setup() {
         start_motor_handler(queue);
         timer_interrupt_start();
+        steps_per_mm = linear_motion_sys_config.get_steps_per_mm();
     }
 
     void set_speed(uint32_t s) { speed = s; }
@@ -47,7 +54,10 @@ class MotionController {
     }
 
     void set_acceleration(uint32_t a) { acc = a; }
-    void set_distance(uint32_t d) { dist = d; }
+    void set_distance(float dist) {
+        float total_steps = dist * steps_per_mm;
+        // pass total steps to IRS
+    }
 
     void move(const Move& msg) {
         set_pin(hardware_config.enable);
@@ -67,10 +77,11 @@ class MotionController {
 
   private:
     uint32_t acc = 0x0;
-    uint32_t speed = 0x0;
+    uint32_t speed = 0x0;  // mm/s
     uint32_t dist = 0x0;
     bool direction = true;  // direction true: forward, false: backward
-    SpiDriver& spi_comms;
+    float steps_per_mm;
+    lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
     GenericQueue& queue;
 };

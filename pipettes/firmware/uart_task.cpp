@@ -6,6 +6,7 @@
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/uart.h"
 #include "common/firmware/uart_comms.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "pipettes/core/communication.hpp"
 #include "pipettes/core/pipette_messages.hpp"
@@ -30,7 +31,13 @@ struct motion_controller::HardwareConfig GPIOConfig {
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, GPIOConfig, isr_queue};
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    GPIOConfig, isr_queue};
 
 static void run(void *parameter) {
     parameter = nullptr;

@@ -43,7 +43,14 @@ struct motion_controller::HardwareConfig PinConfigurations {
  * should be made to avoid a pretty gross template signature.
  */
 
-static motor_class::Motor motor{spi_comms, PinConfigurations, motor_queue};
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::BeltConfig>{
+        .mech_config =
+            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    PinConfigurations, motor_queue};
 
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};

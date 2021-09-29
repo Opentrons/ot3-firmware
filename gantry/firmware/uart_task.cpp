@@ -8,6 +8,7 @@
 #include "common/firmware/uart_comms.hpp"
 #include "gantry/core/communication.hpp"
 #include "gantry/core/uart_message_handler.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "task.h"
 
@@ -28,7 +29,14 @@ struct motion_controller::HardwareConfig GPIOConfig {
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static motor_class::Motor motor{spi_comms, GPIOConfig, isr_queue};
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::BeltConfig>{
+        .mech_config =
+            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    GPIOConfig, isr_queue};
 
 static void run(void *parameter) {
     parameter = nullptr;
