@@ -14,6 +14,7 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/spi_comms.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/move_message.hpp"
 #include "pipettes/core/eeprom.hpp"
@@ -52,7 +53,13 @@ struct motion_controller::HardwareConfig PinConfigurations {
  * should be made to avoid a pretty gross template signature.
  */
 
-static motor_class::Motor motor{spi_comms, PinConfigurations, motor_queue};
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    PinConfigurations, motor_queue};
 
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
