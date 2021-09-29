@@ -74,8 +74,8 @@ static auto eeprom_dispatch_target =
                         can_messages::ReadFromEEPromRequest>{eeprom_handler};
 
 static auto device_info_dispatch_target =
-    DispatchParseTarget<decltype(device_info_handler),
-                        can_messages::DeviceInfoRequest>{device_info_handler};
+    DispatchParseTarget<DeviceInfoHandler, can_messages::DeviceInfoRequest>{
+        device_info_handler};
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
@@ -91,6 +91,6 @@ static auto dispatcher = Dispatcher(
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5, void (*)()>("can task", task_entry);
+auto static task = FreeRTOSTask<256, 5>("can task", task_entry);
 
 void can_task::start() {}

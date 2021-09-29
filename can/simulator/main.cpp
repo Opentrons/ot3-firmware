@@ -30,13 +30,12 @@ static auto canbus = sim_canbus::SimCANBus(transport, buffer);
  * templetized with the same message types.
  * @tparam Bus A CanBus type
  */
-template <CanBusWriter Bus>
 struct Loopback {
     /**
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(Bus &can_bus) : writer{canbus} {}
+    Loopback(CanBusWriter &can_bus) : writer{canbus} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
     auto operator=(const Loopback &) -> Loopback & = delete;
@@ -62,7 +61,7 @@ struct Loopback {
         writer.write(NodeId::host, m);
     }
 
-    can_message_writer::MessageWriter<decltype(canbus)> writer;
+    can_message_writer::MessageWriter writer;
 };
 
 // Create global handler
@@ -71,20 +70,19 @@ static auto handler = Loopback{canbus};
 // Create a DispatchParseTarget to parse messages in message buffer and pass
 // them to the handler.
 static auto dispatcher =
-    can_dispatch::DispatchParseTarget<Loopback<decltype(canbus)>, MoveRequest,
-                                      GetSpeedRequest>{handler};
+    can_dispatch::DispatchParseTarget<Loopback, MoveRequest, GetSpeedRequest>{
+        handler};
 
 // A Message Buffer poller that reads from buffer and send to dispatcher
 static auto poller =
     freertos_can_dispatch::FreeRTOSCanBufferPoller(buffer, dispatcher);
 // The message buffer freertos task
-static auto dispatcher_task =
-    FreeRTOSTask<256, 5, decltype(poller)>("dispatcher", poller);
+static auto dispatcher_task = FreeRTOSTask<256, 5>("dispatcher", poller);
 
 /**
  * The socket can reader. Reads from socket and writes to message buffer.
  */
-void can_bus_poll_task(void *) {
+void can_bus_poll_task_entry() {
     const char *env_channel_val = std::getenv(ChannelEnvironmentVariableName);
     auto channel = env_channel_val ? env_channel_val : DefaultChannel;
 
@@ -93,8 +91,13 @@ void can_bus_poll_task(void *) {
     }
 }
 
+/**
+ * The message buffer polling task.
+ */
+static auto can_bus_poll_task =
+    FreeRTOSTask<2048, 5>("can_poll", can_bus_poll_task_entry);
+
 int main() {
-    xTaskCreate(can_bus_poll_task, "can_poll", 2048, nullptr, 1, nullptr);
     vTaskStartScheduler();
     return 0;
 }

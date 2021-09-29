@@ -10,10 +10,9 @@
 
 namespace can_message_writer {
 
-template <can_bus::CanBusWriter Writer>
 class MessageWriter {
   public:
-    explicit MessageWriter(Writer& writer) : writer{writer} {}
+    explicit MessageWriter(can_bus::CanBusWriter& writer) : writer{writer} {}
 
     /**
      * Write a message to the can bus
@@ -36,7 +35,7 @@ class MessageWriter {
     }
 
   private:
-    Writer& writer;
+    can_bus::CanBusWriter& writer;
     freertos_synchronization::FreeRTOSMutex mutex{};
     can_arbitration_id::ArbitrationId arbitration_id{};
     std::array<uint8_t, message_core::MaxMessageSize> buffer{};

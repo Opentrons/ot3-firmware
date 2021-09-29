@@ -14,9 +14,9 @@ using namespace can_ids;
 namespace hal_can_bus {
 
 /**
- * HAL FD CAN wrapper. Matches the CanBus concept.
+ * HAL FD CAN wrapper.
  */
-class HalCanBus {
+class HalCanBus : public CanBusWriter, public CanBusFilters {
   public:
     /**
      * Construct
