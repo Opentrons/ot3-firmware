@@ -23,7 +23,6 @@ void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 }
 
 void MX_TIM7_Init(void) {
@@ -70,10 +69,10 @@ void timer_init() {
 
 void timer_interrupt_start() { HAL_TIM_Base_Start_IT(&htim7); }
 
-void timer_interrupt_stop() {
-    HAL_TIM_Base_Stop_IT(&htim7);
-}
+void timer_interrupt_stop() { HAL_TIM_Base_Stop_IT(&htim7); }
 
-void toggle_step_pin() {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); }
+
+void turn_off_step_pin() {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 }

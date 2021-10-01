@@ -17,10 +17,9 @@ struct HardwareConfig {
     struct PinConfig step;
     struct PinConfig enable;
 };
-
 /*
- * MotionController is responsible for motor movement and communicate with the
- * motor driver using the HAL driver API and SPI.
+ * MotionController is responsible for motor movement and communicate with
+ * the motor driver using the HAL driver API and SPI.
  */
 template <template <class> class QueueImpl, lms::MotorMechanicalConfig MEConfig>
 requires MessageQueue<QueueImpl<Move>, Move>
@@ -40,9 +39,14 @@ class MotionController {
         start_motor_handler(queue);
         timer_interrupt_start();
         steps_per_mm = linear_motion_sys_config.get_steps_per_mm();
+        //        speed = clk_frequency / 2 / steps_per_mm;
+        inc_multiplier = 1;
     }
 
-    void set_speed(uint32_t s) { speed = s; }
+    void set_speed(uint32_t s) {
+        speed = s;
+        //        inc_multiplier = speed * steps_per_mm / (2 * clk_frequency);
+    }
 
     void set_direction(bool d) {
         if (d) {
@@ -61,7 +65,8 @@ class MotionController {
 
     void move(const Move& msg) {
         set_pin(hardware_config.enable);
-        set_pin(hardware_config.direction);
+        //        set_pin(hardware_config.direction); // TODO: set direction in
+        //        motor interrupt handler instead
         queue.try_write(msg);
     }
 
@@ -79,6 +84,7 @@ class MotionController {
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;  // mm/s
     uint32_t dist = 0x0;
+    uint32_t inc_multiplier = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     float steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;

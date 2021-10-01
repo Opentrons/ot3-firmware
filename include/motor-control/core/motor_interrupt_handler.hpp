@@ -37,19 +37,29 @@ namespace motor_handler {
  * GenericQueue -> A FreeRTOS queue of any shape.
  */
 
+constexpr const int clk_frequency = 85000000 / (5001 * 2);
+
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<Move>, Move>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
 
-    MotorInterruptHandler() {}
+    MotorInterruptHandler() { steps_per_sec = clk_frequency * steps_per_tick; }
 
     void set_message_queue(GenericQueue* g_queue) { queue = g_queue; }
 
     bool has_messages() { return queue->has_message_isr(); }
 
-    bool can_step() { return (has_active_move && inc < buffered_move.steps); }
+    bool can_step() {
+        return (has_active_move && step_count == buffered_move.target_position);
+    }
+
+    bool tick() {
+        s32q31 old_step_count = step_count;
+        step_count += steps_per_tick;
+        return bool((old_step_count ^ step_count) & 0x100000000);
+    }
 
     void update_move() {
         finish_current_move();
@@ -59,19 +69,18 @@ class MotorInterruptHandler {
     void finish_current_move() {
         has_active_move = false;
         buffered_move = Move{};
-        inc = 0x0;
     }
-
-    void increment_counter() { inc++; }
 
     void reset() {
         queue->reset();
-        inc = 0x0;
+        step_count = 0x0;
         has_active_move = false;
     }
 
   private:
-    uint32_t inc = 0x0;
+    sq0_31 steps_per_tick = 0x40000000;
+    sq32_31 step_count = 0x0;
+    uint32_t steps_per_sec;
     GenericQueue* queue = nullptr;
     bool has_active_move = false;
     Move buffered_move = Move{};
