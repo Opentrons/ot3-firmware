@@ -26,4 +26,39 @@ class FreeRTOSMutex {
     StaticSemaphore_t static_data{};
 };
 
+class FreeRTOSMutexFromISR {
+  public:
+    FreeRTOSMutexFromISR() {
+        handle = xSemaphoreCreateMutexStatic(&static_data);
+    }
+    FreeRTOSMutexFromISR(const FreeRTOSMutexFromISR &) = delete;
+    FreeRTOSMutexFromISR(const FreeRTOSMutexFromISR &&) = delete;
+    FreeRTOSMutexFromISR &operator=(const FreeRTOSMutexFromISR &) = delete;
+    FreeRTOSMutexFromISR &&operator=(const FreeRTOSMutexFromISR &&) = delete;
+
+    ~FreeRTOSMutexFromISR() { vSemaphoreDelete(handle); }
+
+    void acquire() {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreTakeFromISR(handle, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken != pdFALSE) {
+            taskYIELD();
+        }
+    }
+
+    void release() {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(handle, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken != pdFALSE) {
+            taskYIELD();
+        }
+    }
+
+    int get_count() { return uxSemaphoreGetCount(handle); }
+
+  private:
+    SemaphoreHandle_t handle{};
+    StaticSemaphore_t static_data{};
+};
+
 }  // namespace freertos_synchronization
