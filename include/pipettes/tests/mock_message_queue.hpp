@@ -26,6 +26,7 @@ class MockMessageQueue {
     auto try_read(Message* message, uint32_t timeout_ticks = 0) -> bool {
         if (has_message()) {
             *message = queue_data_structure.back();
+            queue_data_structure.pop_back();
             return true;
         }
         return false;

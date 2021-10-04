@@ -63,11 +63,12 @@ class MotionController {
         // pass total steps to IRS
     }
 
-    void move(const Move& msg) {
+    void move(const CanMove& can_msg) {
         set_pin(hardware_config.enable);
         //        set_pin(hardware_config.direction); // TODO: set direction in
         //        motor interrupt handler instead
         queue.try_write(msg);
+        //        msg.target_position* steps_per_mm
     }
 
     void stop() {

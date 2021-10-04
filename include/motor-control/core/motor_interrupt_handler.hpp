@@ -45,18 +45,18 @@ class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
 
-    MotorInterruptHandler() { steps_per_sec = clk_frequency * steps_per_tick; }
+    MotorInterruptHandler() {}
 
     void set_message_queue(GenericQueue* g_queue) { queue = g_queue; }
 
     bool has_messages() { return queue->has_message_isr(); }
 
     bool can_step() {
-        return (has_active_move && step_count == buffered_move.target_position);
+        return (has_active_move && step_count <= buffered_move.target_position);
     }
 
     bool tick() {
-        s32q31 old_step_count = step_count;
+        sq32_31 old_step_count = step_count;
         step_count += steps_per_tick;
         return bool((old_step_count ^ step_count) & 0x100000000);
     }
@@ -77,10 +77,14 @@ class MotorInterruptHandler {
         has_active_move = false;
     }
 
+    sq32_31 get_current_position() { return step_count; }
+
+    Move get_buffered_move() { return buffered_move; }
+
   private:
-    sq0_31 steps_per_tick = 0x40000000;
+    sq0_31 steps_per_tick = 0x40000000;  // 0.5 steps per tick
     sq32_31 step_count = 0x0;
-    uint32_t steps_per_sec;
+    uint32_t steps_per_sec = clk_frequency * steps_per_tick;
     GenericQueue* queue = nullptr;
     bool has_active_move = false;
     Move buffered_move = Move{};

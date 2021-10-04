@@ -7,11 +7,12 @@ include(AddBuildAndTestTarget)
 add_executable(
         pipettes
         test_main.cpp
-        test_communication.cpp
-        test_message_handler.cpp
-        test_eeprom.cpp
-        test_motor_interrupt.cpp
-        test_linear_motion_config.cpp
+        #        test_communication.cpp
+        #        test_message_handler.cpp
+        #        test_eeprom.cpp
+        #        test_motor_interrupt.cpp
+        test_motor_pulse.cpp
+        #        test_linear_motion_config.cpp
 )
 
 target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
