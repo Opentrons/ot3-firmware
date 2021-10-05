@@ -63,7 +63,7 @@ class MotorInterruptHandler {
 
     void update_move() {
         finish_current_move();
-        get_move(&buffered_move);
+        get_move(buffered_move);
     }
 
     void finish_current_move() {
@@ -79,7 +79,7 @@ class MotorInterruptHandler {
 
     sq32_31 get_current_position() { return step_count; }
 
-    Move get_buffered_move() { return buffered_move; }
+    Move* get_buffered_move() { return &buffered_move; }
 
   private:
     sq0_31 steps_per_tick = 0x40000000;  // 0.5 steps per tick
@@ -89,6 +89,6 @@ class MotorInterruptHandler {
     bool has_active_move = false;
     Move buffered_move = Move{};
 
-    void get_move(Move* msg) { has_active_move = queue->try_read_isr(msg); }
+    void get_move(Move& msg) { has_active_move = queue->try_read_isr(&msg); }
 };
 }  // namespace motor_handler
