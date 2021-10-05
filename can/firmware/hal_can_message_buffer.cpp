@@ -6,6 +6,8 @@
 #include "can/core/can_message_buffer.hpp"
 #include "can/core/message_core.hpp"
 #include "can/firmware/utils.hpp"
+#include "common/core/freertos_synchronization.hpp"
+#include "common/core/synchronization.hpp"
 #include "stm32g4xx_hal_conf.h"
 
 using namespace hal_can_message_buffer;
@@ -21,6 +23,8 @@ static FDCAN_RxHeaderTypeDef RxHeader;
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static auto buff = std::array<uint8_t, message_core::MaxMessageSize>{};
 
+static auto mutex = freertos_synchronization::FreeRTOSMutexFromISR{};
+
 /**
  * Read from fifo and write read message to the read_can_message_buffer.
  *
@@ -29,6 +33,7 @@ static auto buff = std::array<uint8_t, message_core::MaxMessageSize>{};
  */
 static void try_read_from_fifo(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo) {
     if (HAL_FDCAN_GetRxFifoFillLevel(hfdcan, fifo) > 0) {
+        auto lock = synchronization::Lock{mutex};
         if (HAL_FDCAN_GetRxMessage(hfdcan, fifo, &RxHeader, buff.data()) ==
             HAL_OK) {
             // Convert the length from HAL to integer
