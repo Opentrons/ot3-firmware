@@ -24,7 +24,6 @@ void step_motor() {
 void start_motor_handler(
     freertos_message_queue::FreeRTOSMessageQueue<Move>& queue) {
     handler_class.set_message_queue(&queue);
-    ticker_multiplier = handler_class.get_increment_multiplier();
 }
 
 void reset_motor_handler() { handler_class.reset(); }

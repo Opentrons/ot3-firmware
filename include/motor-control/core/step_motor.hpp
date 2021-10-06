@@ -6,4 +6,3 @@
 void start_motor_handler(
     freertos_message_queue::FreeRTOSMessageQueue<Move>& queue);
 void reset_motor_handler();
-include / motor - control / core / move_message.hpp

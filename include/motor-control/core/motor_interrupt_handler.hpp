@@ -52,7 +52,7 @@ class MotorInterruptHandler {
     bool has_messages() { return queue->has_message_isr(); }
 
     bool can_step() {
-        return (has_active_move && step_count <= buffered_move.target_position);
+        return (has_active_move && step_count < buffered_move.target_position);
     }
 
     bool tick() {
