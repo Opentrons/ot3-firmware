@@ -20,7 +20,7 @@ SCENARIO("message deserializing works") {
         WHEN("constructed") {
             auto r = MoveRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.steps == 0x01020304);
+                REQUIRE(r.target_position == 0x01020304);
             }
         }
     }
