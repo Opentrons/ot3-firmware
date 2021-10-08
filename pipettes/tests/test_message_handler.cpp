@@ -57,7 +57,7 @@ SCENARIO("messages can control motor") {
         DataWriter<uint8_t, 8> dw{};
         MessageHandler handler{dw, motor, message_writer};
         pipette_messages::ReceivedMessage message;
-        message = Move{100};
+        message = CanMove{100};
         handler.handle_message(message);
 
         WHEN("the message is handled") {

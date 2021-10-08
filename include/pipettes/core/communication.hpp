@@ -47,7 +47,7 @@ auto MessageReader::read(Reader &communication)
             auto mm_span = payload_span.subspan(0, 4);
             communication.read(mm_span);
 
-            uint32_t mm = 0;
+            int32_t mm = 0;
             bit_utils::bytes_to_int(mm_span, mm);
 
             return motor_messages::CanMove{mm};

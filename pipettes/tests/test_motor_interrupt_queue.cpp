@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
+#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "pipettes/tests/mock_message_queue.hpp"
-#include "pipettes/tests/test_motor_interrupt_handler.hpp"
 
 using namespace motor_handler;
 
@@ -31,7 +31,7 @@ SCENARIO("queue multiple move messages") {
         WHEN("moves have been issued") {
             THEN("the step motor command should execute all of them") {
                 while (handler.has_messages()) {
-                    step_motor(handler);
+                    handler.pulse();
                 }
                 REQUIRE(handler.has_messages() == false);
             }

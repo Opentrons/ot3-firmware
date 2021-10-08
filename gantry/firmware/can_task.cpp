@@ -12,7 +12,7 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
 #include "motor-control/core/motor.hpp"
-#include "motor-control/core/move_message.hpp"
+#include "motor-control/core/motor_messages.hpp"
 #include "pipettes/core/message_handlers/motor.hpp"
 
 using namespace freertos_task;

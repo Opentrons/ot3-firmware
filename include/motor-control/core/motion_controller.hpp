@@ -35,13 +35,20 @@ class MotionController {
         setup();
     }
 
+    MotionController& operator=(MotionController&) = delete;
+    MotionController&& operator=(MotionController&&) = delete;
+    MotionController(MotionController&) = delete;
+    MotionController(MotionController&&) = delete;
+
     void setup() {
-        start_motor_handler(queue);
+        start_motor_handler(&queue);
         timer_interrupt_start();
         // convert steps to mm to fixed point here
-        steps_per_mm = static_cast<int32_t>(linear_motion_sys_config.get_steps_per_mm());
+        steps_per_mm =
+            static_cast<int32_t>(linear_motion_sys_config.get_steps_per_mm());
         //        speed = clk_frequency / 2 / steps_per_mm;
         inc_multiplier = 1;
+        set_pin(hardware_config.enable);
     }
 
     void set_speed(uint32_t s) {
@@ -49,26 +56,13 @@ class MotionController {
         //        inc_multiplier = speed * steps_per_mm / (2 * clk_frequency);
     }
 
-    void set_direction(bool d) {
-        if (d) {
-            set_pin(hardware_config.direction);
-        } else {
-            reset_pin(hardware_config.direction);
-        }
-        direction = d;
-    }
-
     void set_acceleration(uint32_t a) { acc = a; }
-    void set_distance(float dist) {
-//        float total_steps = dist * steps_per_mm;
-//        // pass total steps to IRS
-    }
 
     void move(const CanMove& can_msg) {
-        set_pin(hardware_config.enable);
-        //        set_pin(hardware_config.direction); // TODO: set direction in
+        // TODO: set direction in
         //        motor interrupt handler instead
-        int64_t converted_steps = static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
+        int64_t converted_steps =
+            static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
         Move msg{converted_steps};
         queue.try_write(msg);
     }

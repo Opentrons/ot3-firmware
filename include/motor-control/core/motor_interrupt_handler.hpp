@@ -44,51 +44,78 @@ requires MessageQueue<QueueImpl<Move>, Move>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
+    bool has_active_move = false;
 
     MotorInterruptHandler() {}
+    MotorInterruptHandler& operator=(MotorInterruptHandler&) = delete;
+    MotorInterruptHandler&& operator=(MotorInterruptHandler&&) = delete;
+    MotorInterruptHandler(MotorInterruptHandler&) = delete;
+    MotorInterruptHandler(MotorInterruptHandler&&) = delete;
 
     void set_message_queue(GenericQueue* g_queue) { queue = g_queue; }
 
     bool has_messages() { return queue->has_message_isr(); }
 
-    bool can_step() {
-        return (has_active_move && step_count < buffered_move.target_position);
-    }
+    bool can_step() { return (step_count < buffered_move.target_position); }
 
     bool tick() {
         sq32_31 old_step_count = step_count;
-        step_count += steps_per_tick;
-        return bool((old_step_count ^ step_count) & 0x100000000);
+        step_count += static_cast<sq32_31>(steps_per_tick);
+        return bool((old_step_count ^ step_count) & tick_flag);
     }
 
     void update_move() {
-        finish_current_move();
-        get_move(buffered_move);
+        has_active_move = queue->try_read_isr(&buffered_move);
+        // (TODO: lc) We should check the direction (and set respectively)
+        // the direction pin for the motor once a move is being pulled off the
+        // queue stack. We'll probably want to think about moving the hardware
+        // pin configurations out of motion controller.
     }
 
     void finish_current_move() {
+        // (TODO: lc) We need to handle overflow cases on the position
+        // tracker.
+        position_tracker += step_count;
         has_active_move = false;
         buffered_move = Move{};
+        step_count = 0x0;
+    }
+
+    bool pulse() {
+        if (!has_active_move && has_messages()) {
+            update_move();
+            return false;
+        } else if (has_active_move && can_step() && tick()) {
+            return true;
+        } else if (has_active_move && !can_step()) {
+            finish_current_move();
+            return false;
+        }
+        return false;
     }
 
     void reset() {
         queue->reset();
         step_count = 0x0;
+        position_tracker = 0x0;
         has_active_move = false;
     }
 
-    sq32_31 get_current_position() { return step_count; }
+    sq32_31 get_current_position() { return position_tracker; }
+
+    void set_current_position(sq32_31 pos_tracker) {
+        position_tracker = pos_tracker;
+    }
 
     Move* get_buffered_move() { return &buffered_move; }
 
   private:
-    sq0_31 steps_per_tick = 0x40000000;  // 0.5 steps per tick
+    sq0_31 steps_per_tick = 0x20000000;  // 0.5 steps per tick
+    sq32_31 tick_flag = 0x80000000;
     sq32_31 step_count = 0x0;
+    sq32_31 position_tracker = 0x0;
     uint32_t steps_per_sec = clk_frequency * steps_per_tick;
     GenericQueue* queue = nullptr;
-    bool has_active_move = false;
     Move buffered_move = Move{};
-
-    void get_move(Move& msg) { has_active_move = queue->try_read_isr(&msg); }
 };
 }  // namespace motor_handler

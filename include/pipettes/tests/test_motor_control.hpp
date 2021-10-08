@@ -71,7 +71,7 @@ class TestMotionController {
     void set_direction(bool d) { direction = d; }
     void set_acceleration(uint32_t a) { acc = a; }
     void set_distance(uint32_t d) { dist = d; }
-    void move(const Move& msg) { speed = 10000; }
+    void move(const CanMove& msg) { speed = 10000; }
     void stop() { speed = 0; }
     uint32_t get_acceleration() { return acc; }
     uint32_t get_speed() { return speed; }
