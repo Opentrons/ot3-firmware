@@ -44,7 +44,7 @@ class MotorHandler {
     }
 
     void visit(MoveRequest &m) {
-        motor_messages::Move mv_msg{.steps = m.steps};
+        motor_messages::CanMove mv_msg{.target_position = m.target_position};
         motor.motion_controller.move(mv_msg);
     }
 

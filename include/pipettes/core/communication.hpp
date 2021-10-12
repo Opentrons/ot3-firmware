@@ -44,13 +44,13 @@ auto MessageReader::read(Reader &communication)
             return pipette_messages::Setup{};
         case static_cast<uint32_t>(pipette_messages::MessageType::move): {
             // Read the steps
-            auto steps_span = payload_span.subspan(0, 4);
-            communication.read(steps_span);
+            auto mm_span = payload_span.subspan(0, 4);
+            communication.read(mm_span);
 
-            uint32_t steps = 0;
-            bit_utils::bytes_to_int(steps_span, steps);
+            uint32_t mm = 0;
+            bit_utils::bytes_to_int(mm_span, mm);
 
-            return motor_messages::Move{steps};
+            return motor_messages::CanMove{mm};
         }
         case static_cast<uint32_t>(pipette_messages::MessageType::status):
             return pipette_messages::Status{};

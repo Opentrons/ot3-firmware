@@ -45,7 +45,7 @@ struct Setup {};
 
 using ReceivedMessage =
     std::variant<std::monostate, Stop, SetSpeed, GetSpeed, SetDistance,
-                 motor_messages::Move, Setup, Status>;
+                 motor_messages::CanMove, Setup, Status>;
 
 using SentMessage =
     std::variant<std::monostate, GetSpeedResult, GetStatusResult>;
