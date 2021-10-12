@@ -1,4 +1,4 @@
-name: "Pipettes build/test"
+name: "Head build/test"
 on:
   pull_request:
     paths:
