@@ -7,8 +7,6 @@ include(AddBuildAndTestTarget)
 add_executable(
         pipettes
         test_main.cpp
-        test_communication.cpp
-        test_message_handler.cpp
         test_eeprom.cpp
         test_motor_interrupt_queue.cpp
         test_motor_pulse.cpp

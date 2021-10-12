@@ -10,7 +10,6 @@
 
 #include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
-#include "pipettes/core/communication.hpp"
 
 auto main() -> int {
     HardwareInit();
