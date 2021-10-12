@@ -38,6 +38,7 @@ add_subdirectory(common)
 add_subdirectory(can)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
+add_subdirectory(head)
 
 find_package(Clang)
 

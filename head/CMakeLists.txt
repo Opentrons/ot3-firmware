@@ -1,12 +1,10 @@
-# head source tree
-
-# add_subdirectory(src)
-
 if (${CMAKE_CROSSCOMPILING})
   add_subdirectory(firmware)
 else()
    add_subdirectory(tests)
 endif()
+
+add_subdirectory(core)
 
 file(GLOB_RECURSE HEAD_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/head/*.hpp)
 
