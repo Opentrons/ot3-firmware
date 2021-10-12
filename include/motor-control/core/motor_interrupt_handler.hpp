@@ -21,11 +21,10 @@ namespace motor_handler {
  * has_messages -> checks if there are messages available in the queue.
  * can_step -> determines whether a motor can step or not. Currently, it only
  * checks to see whether the incrementer is less than the steps to move.
- * update_move -> public function which calls get move and resets the
- * counter/buffered move.
- * finish_current_move -> reset the counter and the buffered move.
- * reset -> reset the queue and any other private global variables.
- * increment_counter -> increment the counter
+ * update_move -> public function which calls get move and resets the buffered
+ * move. finish_current_move -> reset the counter and the buffered move. reset
+ * -> reset the queue and any other private global variables. increment_counter
+ * -> increment the counter
  *
  * Private:
  * get_move -> read from the queue to get the next available move message.
@@ -37,6 +36,7 @@ namespace motor_handler {
  * GenericQueue -> A FreeRTOS queue of any shape.
  */
 
+// (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
 template <template <class> class QueueImpl>
@@ -56,16 +56,34 @@ class MotorInterruptHandler {
 
     bool has_messages() { return queue->has_message_isr(); }
 
-    bool can_step() { return (step_count < buffered_move.target_position); }
+    bool can_step() {
+        /*
+         * A motor should only try to take a step when the current position
+         * does not equal the target position.
+         */
+        return (position_tracker != buffered_move.target_position);
+    }
 
     bool tick() {
-        sq32_31 old_step_count = step_count;
-        step_count += static_cast<sq32_31>(steps_per_tick);
-        return bool((old_step_count ^ step_count) & tick_flag);
+        /*
+         * A function that increments the position tracker of a given motor.
+         * The position tracker is the absolute position of a motor which can
+         * only ever be positive (inclusive of zero).
+         */
+        sq32_31 old_position = position_tracker;
+        buffered_move.velocity += buffered_move.acceleration;
+        position_tracker += buffered_move.velocity;
+        if (overflow(old_position, position_tracker) == true) {
+            buffered_move.target_position = old_position;
+            position_tracker = old_position;
+            return false;
+        }
+        return bool((old_position ^ position_tracker) & tick_flag);
     }
 
     void update_move() {
         has_active_move = queue->try_read_isr(&buffered_move);
+        buffered_move.velocity += steps_per_tick;
         // (TODO: lc) We should check the direction (and set respectively)
         // the direction pin for the motor once a move is being pulled off the
         // queue stack. We'll probably want to think about moving the hardware
@@ -73,15 +91,29 @@ class MotorInterruptHandler {
     }
 
     void finish_current_move() {
-        // (TODO: lc) We need to handle overflow cases on the position
-        // tracker.
-        position_tracker += step_count;
         has_active_move = false;
-        buffered_move = Move{};
-        step_count = 0x0;
+        set_buffered_move(Move{});
     }
 
     bool pulse() {
+        /*
+         * Function to determine whether a motor step-line should
+         * be pulsed or not. It should return true if the step-line is to be
+         * pulsed, and false otherwise.
+         *
+         * An active move is true when there is a move that has been
+         * pulled from the queue. False otherwise.
+         *
+         * Logic:
+         * 1. If there is not currently an active move, we should check if there
+         * are any available on the queue.
+         * 2. If there is an active move, and stepping is possible, then we
+         * should increment the step counter and return true.
+         * 3. Finally, if there is an active move, but you can no longer step
+         * then active move should be set to false.
+         *
+         * This function is called from a timer interrupt. See `step_motor.cpp`.
+         */
         if (!has_active_move && has_messages()) {
             update_move();
             return false;
@@ -95,10 +127,25 @@ class MotorInterruptHandler {
     }
 
     void reset() {
+        /*
+         * Reset the position and all queued moves to the motor interrupt
+         * handler.
+         */
         queue->reset();
-        step_count = 0x0;
         position_tracker = 0x0;
         has_active_move = false;
+    }
+
+    bool overflow(sq32_31 current, sq32_31 future) {
+        /*
+         * Check whether the position has overflowed. Return true if this has
+         * happened, and false otherwise.
+         *
+         * (TODO lc): If an overflow has happened, we should probably notify the
+         * server somehow that the position needed to be capped.
+         * Note: could not get the built-ins to work as expected.
+         */
+        return bool((current ^ future) & overflow_flag);
     }
 
     sq32_31 get_current_position() { return position_tracker; }
@@ -109,12 +156,14 @@ class MotorInterruptHandler {
 
     Move* get_buffered_move() { return &buffered_move; }
 
+    void set_buffered_move(Move new_move) { buffered_move = new_move; }
+
   private:
-    sq0_31 steps_per_tick = 0x20000000;  // 0.5 steps per tick
-    sq32_31 tick_flag = 0x80000000;
-    sq32_31 step_count = 0x0;
+    const sq0_31 steps_per_tick = 0x40000000;  // 0.5 steps per tick
+    const sq32_31 tick_flag = 0x80000000;
+    const uint64_t overflow_flag = 0x8000000000000000;
     sq32_31 position_tracker = 0x0;
-    uint32_t steps_per_sec = clk_frequency * steps_per_tick;
+    const uint32_t steps_per_sec = clk_frequency * steps_per_tick;
     GenericQueue* queue = nullptr;
     Move buffered_move = Move{};
 };

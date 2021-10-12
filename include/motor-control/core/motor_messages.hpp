@@ -8,6 +8,9 @@ typedef int64_t
 
 namespace motor_messages {
 
+// This is the message format currently used in CAN for a move message.
+// We should probably put it somewhere else, but I am keeping it here
+// for now.
 struct CanMove {
     int32_t target_position;  // in mm
 };

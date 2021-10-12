@@ -40,21 +40,18 @@ class MotionController {
     MotionController(MotionController&) = delete;
     MotionController(MotionController&&) = delete;
 
+    ~MotionController() { reset_pin(hardware_config.enable); }
+
     void setup() {
         start_motor_handler(&queue);
         timer_interrupt_start();
         // convert steps to mm to fixed point here
         steps_per_mm =
             static_cast<int32_t>(linear_motion_sys_config.get_steps_per_mm());
-        //        speed = clk_frequency / 2 / steps_per_mm;
-        inc_multiplier = 1;
         set_pin(hardware_config.enable);
     }
 
-    void set_speed(uint32_t s) {
-        speed = s;
-        //        inc_multiplier = speed * steps_per_mm / (2 * clk_frequency);
-    }
+    void set_speed(uint32_t s) { speed = s; }
 
     void set_acceleration(uint32_t a) { acc = a; }
 
@@ -69,7 +66,6 @@ class MotionController {
 
     void stop() {
         reset_pin(hardware_config.step);
-        reset_pin(hardware_config.enable);
         timer_interrupt_stop();
     }
 
