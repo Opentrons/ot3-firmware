@@ -77,7 +77,6 @@ class MotionController {
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;  // mm/s
     uint32_t dist = 0x0;
-    uint32_t inc_multiplier = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
