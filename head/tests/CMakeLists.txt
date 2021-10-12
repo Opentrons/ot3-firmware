@@ -10,7 +10,7 @@ add_executable(
         test_linear_motion_config.cpp
 )
 
-target_include_directories(gantry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(head
         PROPERTIES
         CXX_STANDARD 20
