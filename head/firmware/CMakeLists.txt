@@ -1,28 +1,26 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
 find_package(STM32G4xx)
-add_STM32G4_driver("Gantry")
-add_STM32G4_freertos("Gantry")
+add_STM32G4_driver("Head")
+add_STM32G4_freertos("Head")
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
 # Add source files that should be checked by clang-tidy here
-set(GANTRY_FW_LINTABLE_SRCS
+set(HEAD_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/uart_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
-        ${COMMON_EXECUTABLE_DIR}/uart/uart_comms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/step_motor.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/hal_can_message_buffer.cpp
         ${CAN_FW_DIR}/utils.cpp
         )
 
-set(GANTRY_FW_NON_LINTABLE_SRCS
+set(HEAD_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
@@ -33,25 +31,25 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 
-add_executable(gantry
-        ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS})
+add_executable(head
+        ${HEAD_FW_LINTABLE_SRCS}
+        ${HEAD_FW_NON_LINTABLE_SRCS})
 
-target_link_libraries(gantry
+target_link_libraries(head
         PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
+        STM32G4xx_Drivers_Head STM32G4xx_FreeRTOS_Head
         can-core)
 
-set_target_properties(gantry
+set_target_properties(head
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
 
-target_include_directories(gantry
+target_include_directories(head
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-target_compile_options(gantry
+target_compile_options(head
         PUBLIC
         -Wall
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
@@ -61,18 +59,18 @@ target_compile_options(gantry
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
-target_include_directories(STM32G4xx_Drivers_Gantry
+target_include_directories(STM32G4xx_Drivers_Head
         PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Gantry
+target_include_directories(STM32G4xx_FreeRTOS_Head
         PUBLIC .)
 
-target_compile_definitions(STM32G4xx_Drivers_Gantry
+target_compile_definitions(STM32G4xx_Drivers_Head
         PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Gantry
+target_compile_definitions(STM32G4xx_FreeRTOS_Head
         PUBLIC STM32G491xx)
 
 set_target_properties(
-        STM32G4xx_FreeRTOS_Gantry
+        STM32G4xx_FreeRTOS_Head
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 find_program(ARM_GDB
@@ -83,7 +81,7 @@ find_program(ARM_GDB
 message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
 # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
 # this dir
-set_target_properties(gantry
+set_target_properties(head
         PROPERTIES
         CROSSCOMPILING_EMULATOR
         "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
@@ -123,8 +121,8 @@ add_custom_target(gantry-debug
 
 
 # Runs openocd to flash the board (without using a debugger)
-add_custom_target(gantry-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:gantry>;reset;exit"
+add_custom_target(head-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:head>;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS gantry)
+        DEPENDS head)
