@@ -69,8 +69,6 @@
 #define HAL_SPI_MODULE_ENABLED
 #define HAL_SRAM_MODULE_ENABLED
 #define HAL_TIM_MODULE_ENABLED
-#define HAL_UART_MODULE_ENABLED
-#define HAL_USART_MODULE_ENABLED
 #define HAL_WWDG_MODULE_ENABLED
 
 /* ########################## Register Callbacks selection ############################## */
@@ -104,8 +102,6 @@
 #define USE_HAL_SPI_REGISTER_CALLBACKS        0U
 #define USE_HAL_SRAM_REGISTER_CALLBACKS       0U
 #define USE_HAL_TIM_REGISTER_CALLBACKS        0U
-#define USE_HAL_UART_REGISTER_CALLBACKS       0U
-#define USE_HAL_USART_REGISTER_CALLBACKS      0U
 #define USE_HAL_WWDG_REGISTER_CALLBACKS       0U
 
 /* ########################## Oscillator Values adaptation ####################*/
@@ -343,14 +339,6 @@ The real value may vary depending on the variations in voltage and temperature.*
 #ifdef HAL_TIM_MODULE_ENABLED
  #include "stm32g4xx_hal_tim.h"
 #endif /* HAL_TIM_MODULE_ENABLED */
-
-#ifdef HAL_UART_MODULE_ENABLED
- #include "stm32g4xx_hal_uart.h"
-#endif /* HAL_UART_MODULE_ENABLED */
-
-#ifdef HAL_USART_MODULE_ENABLED
- #include "stm32g4xx_hal_usart.h"
-#endif /* HAL_USART_MODULE_ENABLED */
 
 #ifdef HAL_WWDG_MODULE_ENABLED
  #include "stm32g4xx_hal_wwdg.h"
