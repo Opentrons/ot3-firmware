@@ -12,8 +12,6 @@
 
 #include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
-#include "common/firmware/uart_comms.hpp"
-#include "gantry/core/communication.hpp"
 
 auto main() -> int {
     HardwareInit();
