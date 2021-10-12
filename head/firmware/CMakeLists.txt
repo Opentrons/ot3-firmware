@@ -104,7 +104,7 @@ set(CLANG_EXTRA_ARGS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 # This helps with clang accepting what GCC accepts around the implementations of the message queue
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
-add_custom_target(gantry-lint
+add_custom_target(head-lint
         ALL
         COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
 
@@ -114,8 +114,8 @@ add_custom_target(gantry-lint
 # done here because it won't be multi-os compatible, and also it
 # should be running the entire time and that's tough to accomplish
 # in a custom command
-add_custom_target(gantry-debug
-        COMMAND gantry
+add_custom_target(head-debug
+        COMMAND head
         USES_TERMINAL
         )
 
