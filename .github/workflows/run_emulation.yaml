@@ -13,6 +13,7 @@ jobs:
       - name: Checkout firmware repo
         uses: actions/checkout@v2
       - name: Run OT-3 Emulator
-        uses: Opentrons/ot3-emulator@v1.1
+        uses: Opentrons/opentrons-emulation@v1.1
         with:
           ot3-firmware-commit-id: ${{ github.sha }}
+          modules-commit-id: latest
