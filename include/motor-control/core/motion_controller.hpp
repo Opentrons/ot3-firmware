@@ -47,7 +47,7 @@ class MotionController {
         timer_interrupt_start();
         // convert steps to mm to fixed point here
         steps_per_mm =
-            static_cast<int32_t>(linear_motion_sys_config.get_steps_per_mm());
+            static_cast<uint32_t>(linear_motion_sys_config.get_steps_per_mm());
         set_pin(hardware_config.enable);
     }
 
@@ -58,7 +58,7 @@ class MotionController {
     void move(const CanMove& can_msg) {
         // TODO: set direction in
         //        motor interrupt handler instead
-        int64_t converted_steps =
+        uint64_t converted_steps =
             static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
         Move msg{converted_steps};
         queue.try_write(msg);
@@ -79,7 +79,7 @@ class MotionController {
     uint32_t dist = 0x0;
     uint32_t inc_multiplier = 0x0;
     bool direction = true;  // direction true: forward, false: backward
-    int32_t steps_per_mm;
+    uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
     GenericQueue& queue;

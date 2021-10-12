@@ -113,11 +113,11 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
 };
 
 struct MoveRequest : BaseMessage<MessageId::move_request> {
-    int32_t target_position;
+    uint32_t target_position;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
-        int32_t target_position = 0;
+        uint32_t target_position = 0;
         body = bit_utils::bytes_to_int(body, limit, target_position);
         return MoveRequest{{}, target_position};
     }

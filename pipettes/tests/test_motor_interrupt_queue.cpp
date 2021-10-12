@@ -8,6 +8,7 @@ static auto handler =
     MotorInterruptHandler<mock_message_queue::MockMessageQueue>();
 
 SCENARIO("queue multiple move messages") {
+    static constexpr sq0_31 default_velocity = 0x1 << 30;
     GIVEN("a motor interrupt handler") {
         mock_message_queue::MockMessageQueue<Move> queue;
 
@@ -15,10 +16,14 @@ SCENARIO("queue multiple move messages") {
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {
-                constexpr Move msg1 = Move{.target_position = 100};
-                constexpr Move msg2 = Move{.target_position = 400};
-                constexpr Move msg3 = Move{.target_position = 7000};
-                constexpr Move msg4 = Move{.target_position = 800};
+                constexpr Move msg1 =
+                    Move{.target_position = 100, .velocity = default_velocity};
+                constexpr Move msg2 =
+                    Move{.target_position = 400, .velocity = default_velocity};
+                constexpr Move msg3 =
+                    Move{.target_position = 7000, .velocity = default_velocity};
+                constexpr Move msg4 =
+                    Move{.target_position = 800, .velocity = default_velocity};
                 queue.try_write(msg1);
                 queue.try_write(msg2);
                 queue.try_write(msg3);

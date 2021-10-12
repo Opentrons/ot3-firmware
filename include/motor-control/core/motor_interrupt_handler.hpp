@@ -34,6 +34,8 @@ namespace motor_handler {
  * has_active_move -> True if there is an active move to check whether
  * the motor can step or not. Otherwise False.
  * GenericQueue -> A FreeRTOS queue of any shape.
+ *
+ * Note: The position tracker should never be allowed to go below zero.
  */
 
 // (TODO lc): This should probably live in the motor configs.
@@ -70,7 +72,7 @@ class MotorInterruptHandler {
          * The position tracker is the absolute position of a motor which can
          * only ever be positive (inclusive of zero).
          */
-        sq32_31 old_position = position_tracker;
+        q31_31 old_position = position_tracker;
         buffered_move.velocity += buffered_move.acceleration;
         position_tracker += buffered_move.velocity;
         if (overflow(old_position, position_tracker) == true) {
@@ -83,7 +85,6 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = queue->try_read_isr(&buffered_move);
-        buffered_move.velocity += steps_per_tick;
         // (TODO: lc) We should check the direction (and set respectively)
         // the direction pin for the motor once a move is being pulled off the
         // queue stack. We'll probably want to think about moving the hardware
@@ -136,7 +137,7 @@ class MotorInterruptHandler {
         has_active_move = false;
     }
 
-    bool overflow(sq32_31 current, sq32_31 future) {
+    bool overflow(q31_31 current, q31_31 future) {
         /*
          * Check whether the position has overflowed. Return true if this has
          * happened, and false otherwise.
@@ -148,9 +149,9 @@ class MotorInterruptHandler {
         return bool((current ^ future) & overflow_flag);
     }
 
-    sq32_31 get_current_position() { return position_tracker; }
+    q31_31 get_current_position() { return position_tracker; }
 
-    void set_current_position(sq32_31 pos_tracker) {
+    void set_current_position(q31_31 pos_tracker) {
         position_tracker = pos_tracker;
     }
 
@@ -159,11 +160,9 @@ class MotorInterruptHandler {
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
 
   private:
-    const sq0_31 steps_per_tick = 0x40000000;  // 0.5 steps per tick
-    const sq32_31 tick_flag = 0x80000000;
+    const q31_31 tick_flag = 0x80000000;
     const uint64_t overflow_flag = 0x8000000000000000;
-    sq32_31 position_tracker = 0x0;
-    const uint32_t steps_per_sec = clk_frequency * steps_per_tick;
+    q31_31 position_tracker = 0x0;
     GenericQueue* queue = nullptr;
     Move buffered_move = Move{};
 };
