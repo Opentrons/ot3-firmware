@@ -57,7 +57,7 @@ static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 
 /** Handler of device info requests. */
 static auto device_info_handler =
-    can_device_info::DeviceInfoHandler(message_writer_1, NodeId::gantry, 0);
+    can_device_info::DeviceInfoHandler(message_writer_1, NodeId::head, 0);
 static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};

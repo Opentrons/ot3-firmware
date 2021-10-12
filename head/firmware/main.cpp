@@ -13,7 +13,7 @@
 #include "common/firmware/clocking.h"
 #include "common/firmware/uart_comms.hpp"
 #include "common/firmware/uart_task.hpp"
-#include "gantry/core/communication.hpp"
+#include "head/core/communication.hpp"
 
 auto main() -> int {
     HardwareInit();
