@@ -39,9 +39,9 @@ auto MessageReader::read(Reader &communication)
 
     switch (arbitration_id) {
         case static_cast<uint32_t>(head_messages::MessageType::stop):
-            return gantry_messages::Stop{};
+            return head_messages::Stop{};
         case static_cast<uint32_t>(head_messages::MessageType::setup):
-            return gantry_messages::Setup{};
+            return head_messages::Setup{};
         case static_cast<uint32_t>(head_messages::MessageType::move): {
             // Read the steps
             auto steps_span = payload_span.subspan(0, 4);
@@ -53,9 +53,9 @@ auto MessageReader::read(Reader &communication)
             return motor_messages::Move{steps};
         }
         case static_cast<uint32_t>(head_messages::MessageType::status):
-            return gantry_messages::Status{};
+            return head_messages::Status{};
         case static_cast<uint32_t>(head_messages::MessageType::get_speed):
-            return gantry_messages::GetSpeed{};
+            return head_messages::GetSpeed{};
         case static_cast<uint32_t>(head_messages::MessageType::set_speed): {
             // Read the speed
             auto speed_span = payload_span.subspan(0, 4);

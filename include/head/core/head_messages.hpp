@@ -4,7 +4,7 @@
 
 #include "motor-control/core/motor_messages.hpp"
 
-namespace pipette_messages {
+namespace head_messages {
 
 enum class MessageType : uint8_t {
     stop = 0x00,
