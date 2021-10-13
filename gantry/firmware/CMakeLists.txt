@@ -4,6 +4,8 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Gantry")
 add_STM32G4_freertos("Gantry")
 
+SET(GANTRY_AXIS_TYPE "X" CACHE STRING "Defines the gantry axis: X or Y")
+
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
@@ -34,6 +36,8 @@ add_executable(gantry
         ${GANTRY_FW_LINTABLE_SRCS}
         ${GANTRY_FW_NON_LINTABLE_SRCS})
 
+MESSAGE(STATUS "The gantry axis type is ${GANTRY_AXIS_TYPE}")
+
 target_link_libraries(gantry
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
@@ -44,6 +48,9 @@ set_target_properties(gantry
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
+
+target_compile_definitions(gantry
+        PUBLIC GANTRY_AXIS_TYPE)
 
 target_include_directories(gantry
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
