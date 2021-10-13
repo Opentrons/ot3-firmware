@@ -4,7 +4,9 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Gantry")
 add_STM32G4_freertos("Gantry")
 
-SET(GANTRY_AXIS_TYPE "X" CACHE STRING "Defines the gantry axis: X or Y")
+if (NOT GANTRY_AXIS_TYPE)
+    SET(GANTRY_AXIS_TYPE "X" CACHE STRING "Defines the gantry axis: X or Y")
+endif ()
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
@@ -47,7 +49,8 @@ set_target_properties(gantry
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+        C_STANDARD_REQUIRED TRUE
+        OUTPUT_NAME "gantry_${GANTRY_AXIS_TYPE}")
 
 target_compile_definitions(gantry
         PUBLIC GANTRY_AXIS_TYPE)
@@ -132,3 +135,5 @@ add_custom_target(gantry-flash
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS gantry)
+
+unset(GANTRY_AXIS_TYPE CACHE)
