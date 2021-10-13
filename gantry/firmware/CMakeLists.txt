@@ -4,10 +4,6 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Gantry")
 add_STM32G4_freertos("Gantry")
 
-if (NOT GANTRY_AXIS_TYPE)
-    SET(GANTRY_AXIS_TYPE "X" CACHE STRING "Defines the gantry axis: X or Y")
-endif ()
-
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
@@ -32,7 +28,9 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/can/can.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
+        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c
+        )
+
 
 add_executable(gantry
         ${GANTRY_FW_LINTABLE_SRCS}
@@ -50,10 +48,8 @@ set_target_properties(gantry
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE
-        OUTPUT_NAME "gantry_${GANTRY_AXIS_TYPE}")
+        OUTPUT_NAME ${GANTRY_AXIS_TYPE})
 
-target_compile_definitions(gantry
-        PUBLIC GANTRY_AXIS_TYPE)
 
 target_include_directories(gantry
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -115,7 +111,7 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(gantry-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SRCS} --config=)
 
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with

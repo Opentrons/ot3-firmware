@@ -1,5 +1,3 @@
-#include "gantry/axis_type.hpp"
+#include "gantry/core/axis_type.hpp"
 
-static constexpr const char* _AXIS_TYPE = "${GANTRY_AXIS_TYPE}";
-
-const char* axis_type::get_axis() { return _AXIS_TYPE; }
+constexpr auto gantry_type = can_ids::NodeId::${GANTRY_AXIS_TYPE};

@@ -1,4 +1,5 @@
 # this CMakeLists.txt file is only used when host-compiling to build tests
+
 find_package(Catch2 REQUIRED)
 include(CTest)
 include(Catch)
@@ -10,7 +11,7 @@ add_executable(
         test_linear_motion_config.cpp
 )
 
-target_include_directories(gantry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+target_include_directories(gantry PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(gantry
         PROPERTIES
         CXX_STANDARD 20
@@ -26,7 +27,7 @@ target_compile_options(gantry
         -Wextra-semi
         -Wctor-dtor-privacy
         -fno-rtti)
-target_link_libraries(gantry Catch2::Catch2)
+target_link_libraries(gantry Catch2::Catch2 gantry-core)
 
 catch_discover_tests(gantry)
 add_build_and_test_target(gantry)

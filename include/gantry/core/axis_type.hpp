@@ -1,5 +1,6 @@
 #pragma once
+#include "can/core/ids.hpp"
 
 namespace axis_type {
-auto get_axis() -> const char*;
-}
+can_ids::NodeId gantry_type;
+}  // namespace axis_type
