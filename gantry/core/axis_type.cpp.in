@@ -1,0 +1,5 @@
+#include "gantry/axis_type.hpp"
+
+static constexpr const char* _AXIS_TYPE = "${GANTRY_AXIS_TYPE}";
+
+const char* axis_type::get_axis() { return _AXIS_TYPE; }
