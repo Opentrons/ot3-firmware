@@ -4,7 +4,7 @@
 using namespace lms;
 
 TEST_CASE("Linear motion system using a belt") {
-    GIVEN("OT2 X,Y gantry config") {
+    GIVEN("OT2 X,Y head config") {
         struct LinearMotionSystemConfig<BeltConfig> linearConfig {
             .mech_config =
                 BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 20},
