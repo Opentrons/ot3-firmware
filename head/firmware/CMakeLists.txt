@@ -125,4 +125,3 @@ add_custom_target(head-flash
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS head)
-        DEPENDS head)
