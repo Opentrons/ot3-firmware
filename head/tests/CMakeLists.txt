@@ -7,7 +7,6 @@ include(AddBuildAndTestTarget)
 add_executable(
         head
         test_main.cpp
-        test_linear_motion_config.cpp
 )
 
 target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
