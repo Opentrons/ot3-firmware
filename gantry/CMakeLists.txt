@@ -1,12 +1,12 @@
 # gantry source tree
 
-# add_subdirectory(src)
+add_subdirectory(core)
 
 if (${CMAKE_CROSSCOMPILING})
-  add_subdirectory(firmware)
-else()
-   add_subdirectory(tests)
-endif()
+    add_subdirectory(firmware)
+else ()
+    add_subdirectory(tests)
+endif ()
 
 file(GLOB_RECURSE GANTRY_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/gantry/*.hpp)
 
@@ -16,13 +16,13 @@ file(GLOB_RECURSE GANTRY_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/gantry/*.
 
 # Target for use during dev - edits files
 add_custom_target(
-  gantry-format
-  ALL
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${GANTRY_SOURCES_FOR_FORMAT}
-  )
+        gantry-format
+        ALL
+        COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${GANTRY_SOURCES_FOR_FORMAT}
+)
 
 # Target for use in ci - warnings are errors, doesn't edit files
 add_custom_target(
-  gantry-format-ci
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${GANTRY_SOURCES_FOR_FORMAT}
+        gantry-format-ci
+        COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${GANTRY_SOURCES_FOR_FORMAT}
 )
