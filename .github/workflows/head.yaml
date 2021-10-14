@@ -1,15 +1,15 @@
-name: "Gantry build/test"
+name: "Head build/test"
 on:
   pull_request:
     paths:
-      - "gantry/**"
+      - "head/**"
       - "common/**"
       - "include/**"
       - "!include/pipettes/**"
-      - "!include/head/**"
+      - "!include/gantry/**"
       - "cmake/*"
       - "CMakeLists.txt"
-      - "gantry/CMakeLists.txt"
+      - "head/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
@@ -17,24 +17,24 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "gantry/**"
+      - "head/**"
       - "common/**"
       - "include/**"
       - "!include/pipettes/**"
-      - "!include/head/**"
+      - "!include/gantry/**"
       - "cmake/*"
       - "CMakeLists.txt"
-      - "gantry/CMakeLists.txt"
+      - "head/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/gantry.yaml"
+      - ".github/workflows/head.yaml"
     paths_ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
     tags:
-      - "gantry@*"
+      - "head@*"
   workflow_dispatch:
 
 defaults:
@@ -57,11 +57,11 @@ jobs:
       - name: "Configure"
         run: cmake --preset=cross .
       - name: "Format"
-        run: cmake --build ./build-cross --target gantry-format-ci
+        run: cmake --build ./build-cross --target head-format-ci
       - name: "Lint"
-        run: cmake --build ./build-cross --target gantry-lint
+        run: cmake --build ./build-cross --target head-lint
       - name: "Build"
-        run: cmake --build ./build-cross --target gantry
+        run: cmake --build ./build-cross --target head
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -80,4 +80,4 @@ jobs:
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
       - name: 'Build and test'
-        run: cmake --build ./build-host --target gantry-build-and-test
+        run: cmake --build ./build-host --target head-build-and-test
