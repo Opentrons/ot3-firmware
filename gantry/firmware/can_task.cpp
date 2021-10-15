@@ -28,32 +28,6 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-/**
- * Set up the can bus receive filters.
- *
- * @param can_filters CanBusFilters interface.
- */
-static void can_filter_setup(CanBusFilters& can_filters) {
-    // The node id mask.
-    auto node_id_mask = ArbitrationId{
-        .parts = {.function_code = 0, .node_id = 0xFFFF, .message_id = 0}};
-
-    // Set up the broadcast filter
-    auto filter = ArbitrationId{.id = 0};
-    filter.parts.node_id = static_cast<uint32_t>(NodeId::broadcast);
-    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0,
-                           filter.id, node_id_mask.id);
-
-    // Set up the gantry filter
-    filter.id = 0;
-    filter.parts.node_id = static_cast<uint32_t>(axis_type::get_node_id());
-    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
-                           filter.id, node_id_mask.id);
-
-    // Reject everything else
-    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
-}
-
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
 static spi::Spi spi_comms{};
@@ -102,7 +76,7 @@ static auto dispatcher =
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
         Error_Handler();
     }
-    can_filter_setup(can_bus_1);
+    can_bus::setup_node_id_filter(can_bus_1, axis_type::get_node_id());
     can_bus_1.start();
 
     auto poller = FreeRTOSCanBufferPoller(
