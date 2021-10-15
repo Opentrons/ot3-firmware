@@ -2,6 +2,7 @@
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
+#include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_bus.hpp"
@@ -13,7 +14,6 @@
 #include "common/firmware/spi_comms.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "pipettes/core/message_handlers/motor.hpp"
 
 using namespace freertos_task;
 using namespace freertos_can_dispatch;

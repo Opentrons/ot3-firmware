@@ -45,6 +45,9 @@ enum class MessageId : uint16_t {
     get_status_request = 0x01,
     get_status_response = 0x05,
 
+    enable_motor_request = 0x06,
+    disable_motor_request = 0x07,
+
     move_request = 0x10,
 
     setup_request = 0x02,
