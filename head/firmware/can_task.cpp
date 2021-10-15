@@ -75,6 +75,7 @@ static auto dispatcher =
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
         Error_Handler();
     }
+    can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
     can_bus_1.start();
 
     auto poller = FreeRTOSCanBufferPoller(

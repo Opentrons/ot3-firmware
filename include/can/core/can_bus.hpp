@@ -3,6 +3,7 @@
 #include <concepts>
 #include <cstdint>
 
+#include "can/core/arbitration_id.hpp"
 #include "can/core/parse.hpp"
 
 namespace can_bus {
@@ -91,5 +92,14 @@ class CanBusFilters {
 
     virtual ~CanBusFilters() {}
 };
+
+/**
+ * Set up the can bus receive filter to receive only broadcast messages and
+ * messages targeting node_id.
+ *
+ * @param can_filters CanBusFilters interface.
+ * @param node_id The node id to allow.
+ */
+void setup_node_id_filter(CanBusFilters& can_filters, NodeId node_id);
 
 }  // namespace can_bus

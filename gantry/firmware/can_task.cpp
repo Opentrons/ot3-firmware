@@ -58,7 +58,7 @@ static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 
 /** Handler of device info requests. */
 static auto device_info_handler = can_device_info::DeviceInfoHandler(
-    message_writer_1, axis_type::gantry_type, 0);
+    message_writer_1, axis_type::get_node_id(), 0);
 static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};
@@ -76,6 +76,7 @@ static auto dispatcher =
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
         Error_Handler();
     }
+    can_bus::setup_node_id_filter(can_bus_1, axis_type::get_node_id());
     can_bus_1.start();
 
     auto poller = FreeRTOSCanBufferPoller(
