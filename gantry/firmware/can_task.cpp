@@ -28,27 +28,31 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-
 /**
  * Set up the can bus receive filters.
  *
  * @param can_filters CanBusFilters interface.
  */
-static void can_filter_setup(CanBusFilters & can_filters) {
+static void can_filter_setup(CanBusFilters& can_filters) {
     // The node id mask.
-    auto node_id_mask = ArbitrationId {.parts={.function_code=0, .node_id=0xFFFF, .message_id=0}};
+    auto node_id_mask = ArbitrationId{
+        .parts = {.function_code = 0, .node_id = 0xFFFF, .message_id = 0}};
 
     // Set up the broadcast filter
-    auto filter = ArbitrationId{.id=0};
-    filter.parts.node_id=static_cast<unsigned>(NodeId::broadcast);
-    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter.id, node_id_mask.id);
+    auto filter = ArbitrationId{.id = 0};
+    filter.parts.node_id = static_cast<unsigned>(NodeId::broadcast);
+    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0,
+                           filter.id, node_id_mask.id);
 
     // Set up the gantry filter
     filter.id = 0;
     filter.parts.node_id = static_cast<unsigned>(axis_type::gantry_type);
-    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter.id, node_id_mask.id);
-}
+    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
+                           filter.id, node_id_mask.id);
 
+    // Reject everything else
+    can_filters.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
+}
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");

@@ -41,6 +41,7 @@ MESSAGE(STATUS "The gantry axis type is ${GANTRY_AXIS_TYPE}")
 target_link_libraries(gantry
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
+        gantry-core
         can-core)
 
 set_target_properties(gantry
