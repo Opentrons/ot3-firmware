@@ -10,3 +10,4 @@ build-cross/
 stm32-tools/
 build-host/
 cmake-build-debug/
+node_modules

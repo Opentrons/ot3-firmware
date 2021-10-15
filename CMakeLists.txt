@@ -38,6 +38,9 @@ add_subdirectory(common)
 add_subdirectory(can)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
+add_subdirectory(head)
+
+
 
 find_package(Clang)
 
@@ -47,6 +50,7 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./common/*.hpp ./common/*.cpp
         ./gantry/*.hpp ./gantry/*.cpp
         ./pipettes/*.hpp ./pipettes/*.cpp
+        ./head/*.hpp ./head/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
@@ -69,5 +73,5 @@ add_custom_target(
 add_custom_target(
         lint
         ALL
-        DEPENDS gantry-lint pipettes-lint
+        DEPENDS gantry-lint pipettes-lint head-lint
 )

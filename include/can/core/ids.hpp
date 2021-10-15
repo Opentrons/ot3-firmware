@@ -27,6 +27,7 @@ enum class NodeId : uint8_t {
     pipette = 0x20,
     gantry_x = 0x30,
     gantry_y = 0x40,
+    head = 0x50,
 };
 
 /**
