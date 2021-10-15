@@ -40,13 +40,13 @@ static void can_filter_setup(CanBusFilters& can_filters) {
 
     // Set up the broadcast filter
     auto filter = ArbitrationId{.id = 0};
-    filter.parts.node_id = static_cast<unsigned>(NodeId::broadcast);
+    filter.parts.node_id = static_cast<uint32_t>(NodeId::broadcast);
     can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0,
                            filter.id, node_id_mask.id);
 
     // Set up the gantry filter
     filter.id = 0;
-    filter.parts.node_id = static_cast<unsigned>(axis_type::gantry_type);
+    filter.parts.node_id = static_cast<uint32_t>(axis_type::get_node_id());
     can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
                            filter.id, node_id_mask.id);
 
@@ -84,7 +84,7 @@ static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 
 /** Handler of device info requests. */
 static auto device_info_handler = can_device_info::DeviceInfoHandler(
-    message_writer_1, axis_type::gantry_type, 0);
+    message_writer_1, axis_type::get_node_id(), 0);
 static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};

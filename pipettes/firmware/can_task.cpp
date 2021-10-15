@@ -49,13 +49,13 @@ static void can_filter_setup(CanBusFilters& can_filters) {
 
     // Set up the broadcast filter
     auto filter = ArbitrationId{.id = 0};
-    filter.parts.node_id = static_cast<unsigned>(NodeId::broadcast);
+    filter.parts.node_id = static_cast<uint32_t>(NodeId::broadcast);
     can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0,
                            filter.id, node_id_mask.id);
 
     // Set up the pipette filter
     filter.id = 0;
-    filter.parts.node_id = static_cast<unsigned>(NodeId::pipette);
+    filter.parts.node_id = static_cast<uint32_t>(NodeId::pipette);
     can_filters.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
                            filter.id, node_id_mask.id);
 

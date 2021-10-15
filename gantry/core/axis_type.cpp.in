@@ -1,3 +1,10 @@
 #include "gantry/core/axis_type.hpp"
 
-can_ids::NodeId axis_type::gantry_type = can_ids::NodeId::${GANTRY_AXIS_TYPE};
+/**
+ * Get the node id for this gantries axis type
+ *
+ * @return A node id
+ */
+auto axis_type::get_node_id() -> can_ids::NodeId {
+    return can_ids::NodeId::${GANTRY_AXIS_TYPE};
+}
