@@ -27,7 +27,6 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-
 /**
  * Set up the can bus receive filters.
  *
