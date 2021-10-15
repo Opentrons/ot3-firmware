@@ -28,11 +28,15 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/can/can.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
+        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c
+        )
+
 
 add_executable(gantry
         ${GANTRY_FW_LINTABLE_SRCS}
         ${GANTRY_FW_NON_LINTABLE_SRCS})
+
+MESSAGE(STATUS "The gantry axis type is ${GANTRY_AXIS_TYPE}")
 
 target_link_libraries(gantry
         PUBLIC STM32G491RETx
@@ -43,7 +47,9 @@ set_target_properties(gantry
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+        C_STANDARD_REQUIRED TRUE
+        OUTPUT_NAME ${GANTRY_AXIS_TYPE})
+
 
 target_include_directories(gantry
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -105,7 +111,7 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(gantry-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SRCS} --config=)
 
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with
@@ -125,3 +131,5 @@ add_custom_target(gantry-flash
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS gantry)
+
+unset(GANTRY_AXIS_TYPE CACHE)

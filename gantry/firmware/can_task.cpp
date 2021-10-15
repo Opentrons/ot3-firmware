@@ -11,6 +11,7 @@
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
+#include "gantry/core/axis_type.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "pipettes/core/message_handlers/motor.hpp"
@@ -56,8 +57,8 @@ static motor_class::Motor motor{
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 
 /** Handler of device info requests. */
-static auto device_info_handler =
-    can_device_info::DeviceInfoHandler(message_writer_1, NodeId::gantry, 0);
+static auto device_info_handler = can_device_info::DeviceInfoHandler(
+    message_writer_1, axis_type::gantry_type, 0);
 static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};
