@@ -40,7 +40,10 @@ class MotionController {
     MotionController(MotionController&) = delete;
     MotionController(MotionController&&) = delete;
 
-    ~MotionController() { reset_pin(hardware_config.enable); }
+    ~MotionController() {
+        reset_pin(hardware_config.enable);
+        timer_interrupt_stop();
+    }
 
     void setup() {
         start_motor_handler(&queue);
@@ -48,7 +51,6 @@ class MotionController {
         // convert steps to mm to fixed point here
         steps_per_mm =
             static_cast<uint32_t>(linear_motion_sys_config.get_steps_per_mm());
-        set_pin(hardware_config.enable);
     }
 
     void set_speed(uint32_t s) { speed = s; }
@@ -60,9 +62,14 @@ class MotionController {
         //        motor interrupt handler instead
         uint64_t converted_steps =
             static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
-        Move msg{converted_steps};
+        Move msg{.target_position = converted_steps,
+                 .velocity = default_velocity};
         queue.try_write(msg);
     }
+
+    void enable_motor() { set_pin(hardware_config.enable); }
+
+    void disable_motor() { reset_pin(hardware_config.enable); }
 
     void stop() {
         reset_pin(hardware_config.step);
@@ -74,6 +81,7 @@ class MotionController {
     auto get_direction() -> bool { return direction; }
 
   private:
+    const sq0_31 default_velocity = 0x1 << 30;
     uint32_t acc = 0x0;
     uint32_t speed = 0x0;  // mm/s
     uint32_t dist = 0x0;

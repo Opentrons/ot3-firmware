@@ -48,6 +48,14 @@ class MotorHandler {
         motor.motion_controller.move(mv_msg);
     }
 
+    void visit(EnableMotorRequest &m) {
+        motor.motion_controller.enable_motor();
+    }
+
+    void visit(DisableMotorRequest &m) {
+        motor.motion_controller.disable_motor();
+    }
+
     MessageWriter &message_writer;
     Motor &motor;
 };

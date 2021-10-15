@@ -89,6 +89,10 @@ using StopRequest = Empty<MessageId::stop_request>;
 
 using GetStatusRequest = Empty<MessageId::get_status_request>;
 
+using EnableMotorRequest = Empty<MessageId::enable_motor_request>;
+
+using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
+
 struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
     uint8_t status;
     uint32_t data;

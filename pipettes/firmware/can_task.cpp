@@ -5,6 +5,7 @@
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_message_buffer.hpp"
@@ -19,7 +20,6 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "pipettes/core/eeprom.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
-#include "pipettes/core/message_handlers/motor.hpp"
 
 using namespace hal_can_bus;
 using namespace can_messages;
