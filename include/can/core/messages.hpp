@@ -180,12 +180,169 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     static auto parse(Input body, Limit limit) -> ReadFromEEPromResponse {
         uint8_t serial_number = 0;
         body = bit_utils::bytes_to_int(body, limit, serial_number);
-        return ReadFromEEPromResponse{{}, serial_number};
+        return ReadFromEEPromResponse{.serial_number = serial_number};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
+        return iter - body;
+    }
+};
+
+struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint32_t duration;
+    int32_t acceleration;
+    int32_t velocity;
+    uint32_t position;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> AddLinearMoveRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        uint32_t duration = 0;
+        int32_t acceleration = 0;
+        int32_t velocity = 0;
+        uint32_t position = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, position);
+        return AddLinearMoveRequest{.group_id = group_id,
+                                    .seq_id = seq_id,
+                                    .duration = duration,
+                                    .acceleration = acceleration,
+                                    .velocity = velocity,
+                                    .position = position};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
+        iter = bit_utils::int_to_bytes(duration, iter, limit);
+        iter = bit_utils::int_to_bytes(acceleration, iter, limit);
+        iter = bit_utils::int_to_bytes(velocity, iter, limit);
+        iter = bit_utils::int_to_bytes(position, iter, limit);
+        return iter - body;
+    }
+};
+
+struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
+    uint8_t group_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GetMoveGroupRequest {
+        uint8_t group_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        return GetMoveGroupRequest{.group_id = group_id};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        return iter - body;
+    }
+};
+
+struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
+    uint8_t group_id;
+    uint8_t num_moves;
+    uint32_t total_duration;
+    uint8_t node_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GetMoveGroupResponse {
+        uint8_t group_id = 0;
+        uint8_t num_moves = 0;
+        uint32_t total_duration = 0;
+        uint8_t node_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, num_moves);
+        body = bit_utils::bytes_to_int(body, limit, total_duration);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        return GetMoveGroupResponse{.group_id = group_id,
+                                    .num_moves = num_moves,
+                                    .total_duration = total_duration,
+                                    .node_id = node_id};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(num_moves, iter, limit);
+        iter = bit_utils::int_to_bytes(total_duration, iter, limit);
+        iter = bit_utils::int_to_bytes(node_id, iter, limit);
+        return iter - body;
+    }
+};
+
+struct ExecuteMoveGroupRequest
+    : BaseMessage<MessageId::execute_move_group_request> {
+    uint8_t group_id;
+    uint8_t start_trigger;
+    uint8_t cancel_trigger;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ExecuteMoveGroupRequest {
+        uint8_t group_id = 0;
+        uint8_t start_trigger = 0;
+        uint8_t cancel_trigger = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, start_trigger);
+        body = bit_utils::bytes_to_int(body, limit, cancel_trigger);
+        return ExecuteMoveGroupRequest{.group_id = group_id,
+                                       .start_trigger = start_trigger,
+                                       .cancel_trigger = cancel_trigger};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(start_trigger, iter, limit);
+        iter = bit_utils::int_to_bytes(cancel_trigger, iter, limit);
+        return iter - body;
+    }
+};
+
+struct ClearMoveGroupRequest : BaseMessage<MessageId::clear_move_group_request> {
+    uint8_t group_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ClearMoveGroupRequest {
+        uint8_t group_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        return ClearMoveGroupRequest{.group_id = group_id};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        return iter - body;
+    }
+};
+
+struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
+    uint8_t group_id;
+    uint8_t node_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> MoveGroupCompleted {
+        uint8_t group_id = 0;
+        uint8_t node_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        return MoveGroupCompleted{.group_id = group_id, .node_id = node_id};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(node_id, iter, limit);
         return iter - body;
     }
 };
