@@ -1,11 +1,9 @@
 #pragma once
 
-#include "can/core/can_bus.hpp"
 #include "can/core/message_writer.hpp"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
-using namespace can_bus;
 using namespace can_message_writer;
 
 namespace motor_message_handler {

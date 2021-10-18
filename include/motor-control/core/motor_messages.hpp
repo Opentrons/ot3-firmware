@@ -13,11 +13,27 @@ namespace motor_messages {
 // for now.
 struct CanMove {
     uint32_t target_position;  // in mm
+    int32_t velocity;
+    int32_t acceleration;
+    uint32_t motion_group_id;
+    uint32_t sequence;
 };
 
 struct Move {
     q31_31 target_position;  // in steps
     sq0_31 velocity;
     sq0_31 acceleration;
+    //    uint8_t group_id;
+    //    uint8_t seq_id;
+    //    uint32_t duration;  // in ticks
 };
+
+enum class AckMessageId : uint8_t { complete = 0x1, error = 0x04 };
+
+struct Ack {
+    uint8_t group_id;
+    uint8_t seq_id;
+    AckMessageId ack_id;
+};
+
 }  // namespace motor_messages
