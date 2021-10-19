@@ -53,17 +53,16 @@ class MotionController {
             static_cast<uint32_t>(linear_motion_sys_config.get_steps_per_mm());
     }
 
-    void set_speed(uint32_t s) { speed = s; }
+    void set_velocity(sq0_31 v) { velocity = v; }
 
-    void set_acceleration(uint32_t a) { acc = a; }
+    void set_acceleration(sq0_31 a) { acceleration = a; }
 
     void move(const CanMove& can_msg) {
         // TODO: set direction in
         //        motor interrupt handler instead
         uint64_t converted_steps =
             static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
-        Move msg{.target_position = converted_steps,
-                 .velocity = default_velocity};
+        Move msg{.target_position = converted_steps, .velocity = velocity};
         queue.try_write(msg);
     }
 
@@ -82,9 +81,8 @@ class MotionController {
 
   private:
     const sq0_31 default_velocity = 0x1 << 30;
-    uint32_t acc = 0x0;
-    uint32_t speed = 0x0;  // mm/s
-    uint32_t dist = 0x0;
+    sq0_31 acceleration = 0x0;
+    sq0_31 velocity = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
