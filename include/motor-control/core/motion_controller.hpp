@@ -75,9 +75,9 @@ class MotionController {
         timer_interrupt_stop();
     }
 
-    auto get_speed() -> uint32_t { return speed; }
-    auto get_acceleration() -> uint32_t { return acc; }
-    auto get_direction() -> bool { return direction; }
+    auto get_current_velocity() -> sq0_31 { return velocity; }
+    auto get_current_acceleration() -> sq0_31 { return acceleration; }
+    auto get_current_direction() -> bool { return direction; }
 
   private:
     const sq0_31 default_velocity = 0x1 << 30;

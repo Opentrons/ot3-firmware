@@ -65,7 +65,11 @@ static motor_class::Motor motor{
 
 static int random_num = 5;
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler = MotorHandler{
+    message_writer_1,
+    motor,
+    NodeId::pipette,
+};
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, random_num);
 
@@ -75,11 +79,12 @@ static auto device_info_handler =
     DeviceInfoHandler{message_writer_1, NodeId::pipette, 0};
 
 /** The connection between the motor handler and message buffer */
-static auto motor_dispatch_target =
-    DispatchParseTarget<decltype(can_motor_handler), can_messages::SetupRequest,
-                        can_messages::StopRequest,
-                        can_messages::GetStatusRequest,
-                        can_messages::MoveRequest>{can_motor_handler};
+static auto motor_dispatch_target = DispatchParseTarget<
+    decltype(can_motor_handler), can_messages::SetupRequest,
+    can_messages::StopRequest, can_messages::GetStatusRequest,
+    can_messages::MoveRequest, can_messages::SetSpeedRequest,
+    can_messages::GetSpeedRequest, can_messages::SetAccelerationRequest,
+    can_messages::GetAccelerationRequest>{can_motor_handler};
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,

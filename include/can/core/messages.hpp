@@ -135,25 +135,6 @@ struct MoveRequest : BaseMessage<MessageId::move_request> {
 
 using SetupRequest = Empty<MessageId::setup_request>;
 
-using GetSpeedRequest = Empty<MessageId::get_speed_request>;
-
-struct GetSpeedResponse : BaseMessage<MessageId::get_speed_response> {
-    uint32_t mm_sec;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> GetSpeedResponse {
-        uint32_t mm_sec = 0;
-        body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return GetSpeedResponse{{}, mm_sec};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
-        return iter - body;
-    }
-};
-
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint8_t serial_number;
 
@@ -344,6 +325,92 @@ struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         iter = bit_utils::int_to_bytes(node_id, iter, limit);
+        return iter - body;
+    }
+};
+
+struct SetSpeedRequest : BaseMessage<MessageId::set_speed_request> {
+    int32_t speed;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetSpeedRequest {
+        int32_t speed = 0;
+        body = bit_utils::bytes_to_int(body, limit, speed);
+        return SetSpeedRequest{.speed = speed};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(speed, body, limit);
+        return iter - body;
+    }
+};
+
+using GetSpeedRequest = Empty<MessageId::get_speed_request>;
+
+struct GetSpeedResponse : BaseMessage<MessageId::get_speed_response> {
+    int32_t speed;
+    NodeId node_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GetSpeedResponse {
+        int32_t speed = 0;
+        uint8_t node_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, speed);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        return GetSpeedResponse{.speed = speed,
+                                .node_id = static_cast<NodeId>(node_id)};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(speed, body, limit);
+        iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), iter, limit);
+        return iter - body;
+    }
+};
+
+struct SetAccelerationRequest
+    : BaseMessage<MessageId::set_acceleration_request> {
+    int32_t acceleration;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetAccelerationRequest {
+        int32_t acceleration = 0;
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        return SetAccelerationRequest{.acceleration = acceleration};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(acceleration, body, limit);
+        return iter - body;
+    }
+};
+
+using GetAccelerationRequest = Empty<MessageId::get_acceleration_request>;
+
+struct GetAccelerationResponse
+    : BaseMessage<MessageId::get_acceleration_response> {
+    int32_t acceleration;
+    NodeId node_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GetAccelerationResponse {
+        int32_t acceleration = 0;
+        uint8_t node_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        return GetAccelerationResponse{.acceleration = acceleration,
+                                       .node_id = static_cast<NodeId>(node_id)};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(acceleration, body, limit);
+        iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), iter, limit);
         return iter - body;
     }
 };
