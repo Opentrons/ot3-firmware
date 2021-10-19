@@ -70,4 +70,24 @@ SCENARIO("Testing a move group") {
             THEN("the size is 0") { REQUIRE(group.size() == 0); }
         }
     }
+
+    GIVEN("a move group with multiple moves") {
+        auto moves = std::array {
+            can_messages::AddLinearMoveRequest{.group_id = 0,
+                                               .seq_id = 0,
+                                               .duration = 100,
+                                               .acceleration = 3,
+                                               .velocity = 4},
+                can_messages::AddLinearMoveRequest {
+                .group_id = 0, .seq_id = 1, .duration = 200, .acceleration = 3,
+                .velocity = 4
+            }
+        };
+        for (can_messages::AddLinearMoveRequest m: moves) {
+            group.set_move(m);
+        }
+        WHEN("get duration is called") {
+            THEN("it is correct") { REQUIRE(group.get_duration() == 300); }
+        }
+    }
 }
