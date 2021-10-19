@@ -53,7 +53,8 @@ static motor_class::Motor motor{
     PinConfigurations, motor_queue};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler =
+    MotorHandler{message_writer_1, motor, NodeId::head};
 
 /** Handler of device info requests. */
 static auto device_info_handler =
