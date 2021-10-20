@@ -5,13 +5,6 @@
 #include "catch2/catch.hpp"
 #include "motor-control/core/motion_group.hpp"
 
-bool operator==(const can_messages::AddLinearMoveRequest& a,
-                const can_messages::AddLinearMoveRequest& b) {
-    return a.duration == b.duration && a.seq_id == b.seq_id &&
-           a.acceleration == b.acceleration && a.group_id == b.group_id &&
-           a.velocity == b.velocity;
-}
-
 SCENARIO("Testing a move group") {
     auto group = move_group::MoveGroup<5, can_messages::AddLinearMoveRequest>{};
 

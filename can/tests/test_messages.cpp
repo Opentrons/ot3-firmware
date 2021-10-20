@@ -12,6 +12,12 @@ SCENARIO("message deserializing works") {
                 REQUIRE(r.data == 0x02030405);
                 REQUIRE(r.status == 0x01);
             }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.data = 24;
+                REQUIRE(other != r);
+            }
         }
     }
 
@@ -21,6 +27,12 @@ SCENARIO("message deserializing works") {
             auto r = MoveRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
                 REQUIRE(r.target_position == 0x01020304);
+            }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.target_position = 10;
+                REQUIRE(other != r);
             }
         }
     }
@@ -32,6 +44,12 @@ SCENARIO("message deserializing works") {
             THEN("it is converted to a the correct structure") {
                 REQUIRE(r.mm_sec == 0x01020304);
             }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.mm_sec = 1;
+                REQUIRE(other != r);
+            }
         }
     }
 
@@ -42,6 +60,12 @@ SCENARIO("message deserializing works") {
             THEN("it is converted to a the correct structure") {
                 REQUIRE(r.node_id == NodeId::pipette);
                 REQUIRE(r.version == 0x02030405);
+            }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.version = 125;
+                REQUIRE(other != r);
             }
         }
     }

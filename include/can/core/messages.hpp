@@ -21,6 +21,7 @@ template <MessageId MId>
 struct BaseMessage {
     /** Satisfy the HasMessageID concept */
     static const auto id = MId;
+    bool operator==(const BaseMessage& other) const = default;
 };
 
 /**
@@ -39,6 +40,8 @@ struct Empty : BaseMessage<MId> {
     auto serialize(Output body, Limit limit) const -> uint8_t {
         return 0;
     }
+
+    bool operator==(const Empty& other) const = default;
 };
 
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
@@ -83,6 +86,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
         iter = bit_utils::int_to_bytes(version, iter, limit);
         return iter - body;
     }
+    bool operator==(const DeviceInfoResponse& other) const = default;
 };
 
 using StopRequest = Empty<MessageId::stop_request>;
@@ -114,6 +118,7 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
         iter = bit_utils::int_to_bytes(data, iter, limit);
         return iter - body;
     }
+    bool operator==(const GetStatusResponse& other) const = default;
 };
 
 struct MoveRequest : BaseMessage<MessageId::move_request> {
@@ -131,6 +136,7 @@ struct MoveRequest : BaseMessage<MessageId::move_request> {
         auto iter = bit_utils::int_to_bytes(target_position, body, limit);
         return iter - body;
     }
+    bool operator==(const MoveRequest& other) const = default;
 };
 
 using SetupRequest = Empty<MessageId::setup_request>;
@@ -152,6 +158,7 @@ struct GetSpeedResponse : BaseMessage<MessageId::get_speed_response> {
         auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
         return iter - body;
     }
+    bool operator==(const GetSpeedResponse& other) const = default;
 };
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
@@ -169,6 +176,7 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
         auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
         return iter - body;
     }
+    bool operator==(const WriteToEEPromRequest& other) const = default;
 };
 
 using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
@@ -188,6 +196,7 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
         auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
         return iter - body;
     }
+    bool operator==(const ReadFromEEPromResponse& other) const = default;
 };
 
 struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
@@ -230,6 +239,8 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
         //        iter = bit_utils::int_to_bytes(position, iter, limit);
         return iter - body;
     }
+
+    bool operator==(const AddLinearMoveRequest& other) const = default;
 };
 
 struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
@@ -247,6 +258,8 @@ struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
         auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         return iter - body;
     }
+
+    bool operator==(const GetMoveGroupRequest& other) const = default;
 };
 
 struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
@@ -279,6 +292,7 @@ struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
         iter = bit_utils::int_to_bytes(node_id, iter, limit);
         return iter - body;
     }
+    bool operator==(const GetMoveGroupResponse& other) const = default;
 };
 
 struct ExecuteMoveGroupRequest
@@ -307,6 +321,7 @@ struct ExecuteMoveGroupRequest
         iter = bit_utils::int_to_bytes(cancel_trigger, iter, limit);
         return iter - body;
     }
+    bool operator==(const ExecuteMoveGroupRequest& other) const = default;
 };
 
 struct ClearMoveGroupRequest
@@ -325,6 +340,7 @@ struct ClearMoveGroupRequest
         auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         return iter - body;
     }
+    bool operator==(const ClearMoveGroupRequest& other) const = default;
 };
 
 struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
@@ -346,6 +362,8 @@ struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
         iter = bit_utils::int_to_bytes(node_id, iter, limit);
         return iter - body;
     }
+
+    bool operator==(const MoveGroupCompleted& other) const = default;
 };
 
 }  // namespace can_messages
