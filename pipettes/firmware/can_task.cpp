@@ -112,6 +112,6 @@ static auto dispatcher =
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5>("can task", task_entry);
+auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
 
 void can_task::start() {}
