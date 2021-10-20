@@ -63,11 +63,13 @@ static motor_class::Motor motor{
         .microstep = 16},
     PinConfigurations, motor_queue};
 
-static int random_num = 5;
+static auto move_group_manager =
+    move_group::MoveGroupManager<move_group_handler::max_moves_per_group,
+                                 move_group_handler::max_groups>{};
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto can_move_group_handler =
-    MoveGroupHandler(message_writer_1, random_num);
+    MoveGroupHandler(message_writer_1, move_group_manager);
 
 static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
@@ -112,6 +114,6 @@ static auto dispatcher =
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5>("can task", task_entry);
+auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
 
 void can_task::start() {}
