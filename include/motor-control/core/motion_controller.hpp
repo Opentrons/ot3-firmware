@@ -71,6 +71,16 @@ class MotionController {
         queue.try_write(msg);
     }
 
+    void move(const can_messages::AddLinearMoveRequest& can_msg) {
+        // TODO: set direction in
+        //        motor interrupt handler instead
+        uint64_t converted_steps =
+            static_cast<int64_t>(can_msg.velocity * steps_per_mm) << 31;
+        Move msg{.target_position = converted_steps,
+                 .velocity = can_msg.velocity, .acceleration=can_msg.acceleration, .group_id=can_msg.group_id, .seq_id=can_msg.seq_id};
+        queue.try_write(msg);
+    }
+
     void enable_motor() { set_pin(hardware_config.enable); }
 
     void disable_motor() { reset_pin(hardware_config.enable); }

@@ -21,6 +21,7 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "pipettes/core/eeprom.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
+#include "can/core/message_handlers/move_group_executor.hpp"
 
 using namespace hal_can_bus;
 using namespace can_messages;
@@ -33,6 +34,7 @@ using namespace can_device_info;
 using namespace eeprom_message_handler;
 using namespace motor_message_handler;
 using namespace move_group_handler;
+using namespace move_group_executor_handler;
 
 extern FDCAN_HandleTypeDef fdcan1;
 
@@ -71,6 +73,8 @@ static auto move_group_manager = MoveGroupType{};
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
+static auto can_move_group_executor_handler =
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
 
 static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
@@ -89,6 +93,11 @@ static auto motion_group_dispatch_target = DispatchParseTarget<
     can_messages::GetMoveGroupRequest, can_messages::ClearMoveGroupRequest>{
     can_move_group_handler};
 
+static auto motion_group_executor_dispatch_target = DispatchParseTarget<
+    decltype(can_move_group_executor_handler), can_messages::ExecuteMoveGroupRequest>{
+    can_move_group_executor_handler};
+
+
 static auto eeprom_dispatch_target =
     DispatchParseTarget<decltype(eeprom_handler),
                         can_messages::WriteToEEPromRequest,
@@ -101,7 +110,7 @@ static auto device_info_dispatch_target =
 /** Dispatcher to the various handlers */
 static auto dispatcher =
     Dispatcher(motor_dispatch_target, motion_group_dispatch_target,
-               eeprom_dispatch_target, device_info_dispatch_target);
+               eeprom_dispatch_target, device_info_dispatch_target, motion_group_executor_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
