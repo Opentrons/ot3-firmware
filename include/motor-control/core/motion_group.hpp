@@ -18,12 +18,13 @@ class MoveGroup {
     MoveGroup() {}
 
     /**
-     *
-     * @param move
+     * Set a slot in the move group to a liner move.
+     * @param move The CAN message.
+     * @return True on success.
      */
     auto set_move(can_messages::AddLinearMoveRequest& move) -> bool {
         if (move.seq_id >= storage.size()) {
-            // Error
+            // out of range error.
             return false;
         }
         storage[move.seq_id] = move;
@@ -31,11 +32,11 @@ class MoveGroup {
     }
 
     /**
-     *
-     * @return
+     * Get the number of used slots in the move group.
+     * @return int
      */
     auto size() const -> std::size_t {
-        int count = 0;
+        std::size_t count = 0;
         for (const MoveTypes& m : storage) {
             if (!std::holds_alternative<std::monostate>(m)) {
                 ++count;
@@ -45,8 +46,8 @@ class MoveGroup {
     }
 
     /**
-     *
-     * @return
+     * Check if there any moves in the move group.
+     * @return True if empty
      */
     auto empty() const -> bool {
         for (const MoveTypes& m : storage) {
@@ -56,7 +57,7 @@ class MoveGroup {
     }
 
     /**
-     *
+     * Clear all the moves in the group by marking them as std::monostate.
      */
     void clear() {
         for (MoveTypes& m : storage) {
@@ -65,18 +66,28 @@ class MoveGroup {
     }
 
     /**
+     * Get the move at sequence id
      *
-     * @param seq_id
-     * @return
+     * @param seq_id index
+     * @return The move type
      */
-    const MoveTypes& get_move(uint8_t seq_id) const { return storage[seq_id]; }
+    const MoveTypes& get_move(uint8_t seq_id) const {
+        // TODO (al, 2021-10-20): Check bounds
+        return storage[seq_id];
+    }
 
+    /**
+     * Return the total duration of all the moves in the move group.
+     * @return Duration
+     */
     auto get_duration() const -> uint32_t {
-        auto dash_fold = [](uint32_t accum, const MoveTypes& b) -> uint32_t {
+        auto accumulate_duration = [](uint32_t accum,
+                                      const MoveTypes& b) -> uint32_t {
             auto vv = std::visit([](auto x) { return visit_duration(x); }, b);
             return accum + vv;
         };
-        return std::accumulate(storage.cbegin(), storage.cend(), 0, dash_fold);
+        return std::accumulate(storage.cbegin(), storage.cend(), 0,
+                               accumulate_duration);
     }
 
   private:
