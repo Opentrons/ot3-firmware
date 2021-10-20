@@ -5,14 +5,15 @@
 using namespace motor_handler;
 
 static auto handler =
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue>();
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue, mock_message_queue::MockMessageQueue>();
 
 SCENARIO("queue multiple move messages") {
     static constexpr sq0_31 default_velocity = 0x1 << 30;
     GIVEN("a motor interrupt handler") {
         mock_message_queue::MockMessageQueue<Move> queue;
+        mock_message_queue::MockMessageQueue<Ack> completed_queue;
 
-        handler.set_message_queue(&queue);
+        handler.set_message_queue(&queue, &completed_queue);
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {

@@ -41,11 +41,12 @@ namespace motor_handler {
 // (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Move>, Move>
+template <template <class> class QueueImpl, template<class> class CompletedQueueImpl>
+requires MessageQueue<QueueImpl<Move>, Move> && MessageQueue<CompletedQueueImpl<Ack>, Ack>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
+    using CompletedQueue = CompletedQueueImpl<Ack>;
     bool has_active_move = false;
 
     MotorInterruptHandler() {}
@@ -54,7 +55,10 @@ class MotorInterruptHandler {
     MotorInterruptHandler(MotorInterruptHandler&) = delete;
     MotorInterruptHandler(MotorInterruptHandler&&) = delete;
 
-    void set_message_queue(GenericQueue* g_queue) { queue = g_queue; }
+    void set_message_queue(GenericQueue* g_queue, CompletedQueue* completed_queue) {
+        queue = g_queue;
+        completed_queue = completed_queue;
+    }
 
     bool has_messages() { return queue->has_message_isr(); }
 
@@ -164,6 +168,7 @@ class MotorInterruptHandler {
     const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;
     GenericQueue* queue = nullptr;
+    CompletedQueue* completed_queue = nullptr;
     Move buffered_move = Move{};
 };
 }  // namespace motor_handler

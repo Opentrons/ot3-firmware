@@ -4,5 +4,6 @@
 #include "motor-control/core/motor_interrupt_handler.hpp"
 
 void start_motor_handler(
-    freertos_message_queue::FreeRTOSMessageQueue<Move>* queue);
+    freertos_message_queue::FreeRTOSMessageQueue<Move>* queue,
+    freertos_message_queue::FreeRTOSMessageQueue<Ack>* completed_queue);
 void reset_motor_handler();

@@ -6,7 +6,7 @@
 using namespace motor_messages;
 
 static auto handler_class = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue>();
+    freertos_message_queue::FreeRTOSMessageQueue, freertos_message_queue::FreeRTOSMessageQueue>();
 
 void step_motor() {
     if (handler_class.pulse()) {
@@ -16,8 +16,9 @@ void step_motor() {
 }
 
 void start_motor_handler(
-    freertos_message_queue::FreeRTOSMessageQueue<Move>* queue) {
-    handler_class.set_message_queue(queue);
+    freertos_message_queue::FreeRTOSMessageQueue<Move>* queue,
+    freertos_message_queue::FreeRTOSMessageQueue<Ack>* completed_queue) {
+    handler_class.set_message_queue(queue, completed_queue);
 }
 
 void reset_motor_handler() { handler_class.reset(); }

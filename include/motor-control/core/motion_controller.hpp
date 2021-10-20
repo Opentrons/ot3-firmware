@@ -7,6 +7,7 @@
 #include "linear_motion_system.hpp"
 #include "motor_messages.hpp"
 #include "step_motor.hpp"
+#include "can/core/messages.hpp"
 
 namespace motion_controller {
 
@@ -21,16 +22,19 @@ struct HardwareConfig {
  * MotionController is responsible for motor movement and communicate with
  * the motor driver using the HAL driver API and SPI.
  */
-template <template <class> class QueueImpl, lms::MotorMechanicalConfig MEConfig>
-requires MessageQueue<QueueImpl<Move>, Move>
+template <template <class> class QueueImpl, template <class> class CompletedQueueImpl, lms::MotorMechanicalConfig MEConfig>
+requires MessageQueue<QueueImpl<Move>, Move> && MessageQueue<CompletedQueueImpl<Ack>, Ack>
 class MotionController {
   public:
     using GenericQueue = QueueImpl<Move>;
+    using CompletedQueue = CompletedQueueImpl<Ack>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     HardwareConfig& config, GenericQueue& queue)
+                     HardwareConfig& config, GenericQueue& queue, CompletedQueue& completed_queue)
         : linear_motion_sys_config(lms_config),
           hardware_config(config),
-          queue(queue) {
+          queue(queue),
+          completed_queue(completed_queue)
+    {
         timer_init();
         setup();
     }
@@ -46,7 +50,7 @@ class MotionController {
     }
 
     void setup() {
-        start_motor_handler(&queue);
+        start_motor_handler(&queue, &completed_queue);
         timer_interrupt_start();
         // convert steps to mm to fixed point here
         steps_per_mm =
@@ -57,7 +61,7 @@ class MotionController {
 
     void set_acceleration(uint32_t a) { acc = a; }
 
-    void move(const CanMove& can_msg) {
+    void move(const can_messages::MoveRequest& can_msg) {
         // TODO: set direction in
         //        motor interrupt handler instead
         uint64_t converted_steps =
@@ -90,6 +94,7 @@ class MotionController {
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
     GenericQueue& queue;
+    CompletedQueue& completed_queue;
 };
 
 }  // namespace motion_controller
