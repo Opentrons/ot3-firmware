@@ -9,11 +9,19 @@
 
 namespace move_group {
 
-template <std::size_t MaxElements>
+template <typename Candidate>
+concept Groupable = requires(Candidate C){
+    std::is_integral_v<decltype(C.duration)>;
+    std::is_integral_v<decltype(C.group_id)>;
+    std::is_integral_v<decltype(C.seq_id)>;
+};
+
+template <std::size_t GroupSize,
+          Groupable...MoveStructs>
 class MoveGroup {
   public:
     using MoveTypes =
-        std::variant<std::monostate, can_messages::AddLinearMoveRequest>;
+        std::variant<std::monostate, MoveStructs...>;
 
     MoveGroup() {}
 
@@ -22,7 +30,7 @@ class MoveGroup {
      * @param move The CAN message.
      * @return True on success.
      */
-    auto set_move(can_messages::AddLinearMoveRequest& move) -> bool {
+    auto set_move(auto&& move) -> bool {
         if (move.seq_id >= storage.size()) {
             // out of range error.
             return false;
@@ -91,19 +99,20 @@ class MoveGroup {
     }
 
   private:
-    std::array<MoveTypes, MaxElements> storage{};
+    std::array<MoveTypes, GroupSize> storage{};
 
     static auto visit_duration(const std::monostate& m) -> uint32_t {
         return 0;
     }
 
-    static auto visit_duration(const can_messages::AddLinearMoveRequest& m)
+    static auto visit_duration(const auto& m)
         -> uint32_t {
         return m.duration;
     }
 };
 
-template <std::size_t MaxMovesPerGroup, std::size_t MaxGroups>
-using MoveGroupManager = std::array<MoveGroup<MaxMovesPerGroup>, MaxGroups>;
+template <std::size_t GroupCount, std::size_t GroupSize, Groupable...MoveStructs>
+using MoveGroupManager = std::array<MoveGroup<GroupSize, MoveStructs...>, GroupCount>;
+
 
 }  // namespace move_group

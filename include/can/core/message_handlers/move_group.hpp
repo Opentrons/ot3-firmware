@@ -21,7 +21,7 @@ class MoveGroupHandler {
 
     MoveGroupHandler(
         MessageWriter &message_writer,
-        move_group::MoveGroupManager<max_moves_per_group, max_groups>
+        move_group::MoveGroupManager<max_groups, max_moves_per_group, AddLinearMoveRequest>
             &motion_group_manager)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager} {}

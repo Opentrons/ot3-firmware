@@ -13,7 +13,7 @@ bool operator==(const can_messages::AddLinearMoveRequest& a,
 }
 
 SCENARIO("Testing a move group") {
-    auto group = move_group::MoveGroup<5>{};
+    auto group = move_group::MoveGroup<5, can_messages::AddLinearMoveRequest>{};
 
     GIVEN("a move group") {
         WHEN("is created") {
