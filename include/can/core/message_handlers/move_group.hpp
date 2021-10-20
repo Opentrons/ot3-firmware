@@ -13,18 +13,19 @@ using namespace can_messages;
 constexpr std::size_t max_groups = 6;
 constexpr std::size_t max_moves_per_group = 5;
 
+using MoveGroupType =
+    move_group::MoveGroupManager<max_groups, max_moves_per_group,
+                                 AddLinearMoveRequest>;
+
 class MoveGroupHandler {
   public:
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest, GetMoveGroupRequest,
                      ClearMoveGroupRequest>;
-
-    MoveGroupHandler(
-        MessageWriter &message_writer,
-        move_group::MoveGroupManager<max_groups, max_moves_per_group, AddLinearMoveRequest>
-            &motion_group_manager)
+    MoveGroupHandler(MessageWriter &message_writer,
+                     MoveGroupType &motion_group_manager)
         : message_writer{message_writer},
-          motion_group_manager{motion_group_manager} {}
+          motion_group_manager(motion_group_manager) {}
     MoveGroupHandler(const MoveGroupHandler &) = delete;
     MoveGroupHandler(const MoveGroupHandler &&) = delete;
     MoveGroupHandler &operator=(const MoveGroupHandler &) = delete;
@@ -59,8 +60,7 @@ class MoveGroupHandler {
     }
 
     MessageWriter &message_writer;
-    move_group::MoveGroupManager<max_moves_per_group, max_groups>
-        &motion_group_manager;
+    MoveGroupType &motion_group_manager;
 };
 
 }  // namespace move_group_handler

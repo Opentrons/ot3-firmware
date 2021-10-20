@@ -10,18 +10,16 @@
 namespace move_group {
 
 template <typename Candidate>
-concept Groupable = requires(Candidate C){
+concept Groupable = requires(Candidate C) {
     std::is_integral_v<decltype(C.duration)>;
     std::is_integral_v<decltype(C.group_id)>;
     std::is_integral_v<decltype(C.seq_id)>;
 };
 
-template <std::size_t GroupSize,
-          Groupable...MoveStructs>
+template <std::size_t GroupSize, Groupable... MoveStructs>
 class MoveGroup {
   public:
-    using MoveTypes =
-        std::variant<std::monostate, MoveStructs...>;
+    using MoveTypes = std::variant<std::monostate, MoveStructs...>;
 
     MoveGroup() {}
 
@@ -105,14 +103,12 @@ class MoveGroup {
         return 0;
     }
 
-    static auto visit_duration(const auto& m)
-        -> uint32_t {
-        return m.duration;
-    }
+    static auto visit_duration(const auto& m) -> uint32_t { return m.duration; }
 };
 
-template <std::size_t GroupCount, std::size_t GroupSize, Groupable...MoveStructs>
-using MoveGroupManager = std::array<MoveGroup<GroupSize, MoveStructs...>, GroupCount>;
-
+template <std::size_t GroupCount, std::size_t GroupSize,
+          Groupable... MoveStructs>
+using MoveGroupManager =
+    std::array<MoveGroup<GroupSize, MoveStructs...>, GroupCount>;
 
 }  // namespace move_group
