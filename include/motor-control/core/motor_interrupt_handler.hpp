@@ -97,6 +97,8 @@ class MotorInterruptHandler {
 
     void finish_current_move() {
         has_active_move = false;
+        auto ack = Ack{.group_id=buffered_move.group_id, .seq_id=buffered_move.seq_id, .ack_id=AckMessageId::complete};
+        completed_queue->try_write_isr(ack);
         set_buffered_move(Move{});
     }
 

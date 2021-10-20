@@ -12,8 +12,8 @@ struct Move {
     q31_31 target_position;  // in steps
     sq0_31 velocity;
     sq0_31 acceleration;
-    //    uint8_t group_id;
-    //    uint8_t seq_id;
+    uint8_t group_id;
+    uint8_t seq_id;
     //    uint32_t duration;  // in ticks
 };
 
