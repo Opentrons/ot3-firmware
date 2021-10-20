@@ -46,7 +46,7 @@ class MoveGroupHandler {
         // TODO (al, 2021-10-19): Get the real node id here.
         auto response = GetMoveGroupResponse{
             .group_id = m.group_id,
-            .num_moves = group.size(),
+            .num_moves = static_cast<uint8_t>(group.size()),
             .total_duration = group.get_duration(),
             .node_id = static_cast<uint8_t>(can_ids::NodeId::host)};
 
