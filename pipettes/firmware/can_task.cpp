@@ -63,7 +63,9 @@ static motor_class::Motor motor{
         .microstep = 16},
     PinConfigurations, motor_queue};
 
-static auto move_group_manager = move_group::MoveGroupManager<move_group_handler::max_moves_per_group, move_group_handler::max_groups>{};
+static auto move_group_manager =
+    move_group::MoveGroupManager<move_group_handler::max_moves_per_group,
+                                 move_group_handler::max_groups>{};
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto can_move_group_handler =

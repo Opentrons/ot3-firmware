@@ -1,14 +1,13 @@
 #pragma once
 
 #include <array>
+#include <numeric>
 #include <type_traits>
 #include <variant>
-#include <numeric>
 
 #include "can/core/messages.hpp"
 
 namespace move_group {
-
 
 template <std::size_t MaxElements>
 class MoveGroup {
@@ -74,8 +73,7 @@ class MoveGroup {
 
     auto get_duration() const -> uint32_t {
         auto dash_fold = [](uint32_t accum, const MoveTypes& b) -> uint32_t {
-            auto vv = std::visit(
-                [](auto x) { return visit_duration(x); }, b);
+            auto vv = std::visit([](auto x) { return visit_duration(x); }, b);
             return accum + vv;
         };
         return std::accumulate(storage.cbegin(), storage.cend(), 0, dash_fold);
@@ -84,14 +82,14 @@ class MoveGroup {
   private:
     std::array<MoveTypes, MaxElements> storage{};
 
-    static auto visit_duration(const std::monostate & m) -> uint32_t {
+    static auto visit_duration(const std::monostate& m) -> uint32_t {
         return 0;
     }
 
-    static auto visit_duration(const can_messages::AddLinearMoveRequest & m) -> uint32_t {
+    static auto visit_duration(const can_messages::AddLinearMoveRequest& m)
+        -> uint32_t {
         return m.duration;
     }
-
 };
 
 template <std::size_t MaxMovesPerGroup, std::size_t MaxGroups>
