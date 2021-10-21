@@ -5,11 +5,11 @@
 #include "message_writer.hpp"
 #include "messages.hpp"
 
+namespace can_device_info {
+
 using namespace can_ids;
 using namespace can_message_writer;
 using namespace can_messages;
-
-namespace can_device_info {
 
 /**
  * A HandlesMessages implementing class that will respond to DeviceInfoRequest

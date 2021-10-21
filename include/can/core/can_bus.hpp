@@ -4,9 +4,12 @@
 #include <cstdint>
 
 #include "can/core/arbitration_id.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/parse.hpp"
 
 namespace can_bus {
+
+using namespace can_ids;
 
 enum class CanFilterConfig {
     reject,

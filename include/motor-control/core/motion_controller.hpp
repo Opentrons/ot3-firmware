@@ -8,9 +8,9 @@
 #include "motor_messages.hpp"
 #include "step_motor.hpp"
 
-using namespace motor_messages;
-
 namespace motion_controller {
+
+using namespace motor_messages;
 
 struct HardwareConfig {
     struct PinConfig direction;

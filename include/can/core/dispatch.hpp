@@ -7,11 +7,11 @@
 #include "ids.hpp"
 #include "parse.hpp"
 
+namespace can_dispatch {
+
 using namespace can_parse;
 using namespace can_message_buffer;
 using namespace can_arbitration_id;
-
-namespace can_dispatch {
 
 /**
  * A message id lookup.

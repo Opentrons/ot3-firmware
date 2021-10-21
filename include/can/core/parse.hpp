@@ -6,10 +6,10 @@
 #include "ids.hpp"
 #include "message_core.hpp"
 
+namespace can_parse {
+
 using namespace can_ids;
 using namespace message_core;
-
-namespace can_parse {
 
 /**
  * Parser of can message bodies.

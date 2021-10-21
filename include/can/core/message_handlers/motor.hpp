@@ -1,12 +1,14 @@
 #pragma once
 
 #include "can/core/message_writer.hpp"
+#include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
-using namespace can_message_writer;
-
 namespace motor_message_handler {
+
+using namespace can_message_writer;
+using namespace can_messages;
 
 template <class Motor>
 class MotorHandler {

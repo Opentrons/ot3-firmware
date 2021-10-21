@@ -2,14 +2,16 @@
 
 #include "can/core/can_bus.hpp"
 #include "can/core/message_writer.hpp"
+#include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/eeprom.hpp"
+
+namespace eeprom_message_handler {
 
 using namespace can_bus;
 using namespace can_message_writer;
 using namespace eeprom;
-
-namespace eeprom_message_handler {
+using namespace can_messages;
 
 template <EEPromPolicy I2CComm>
 class EEPromHandler {

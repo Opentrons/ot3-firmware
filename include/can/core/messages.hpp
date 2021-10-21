@@ -7,9 +7,9 @@
 #include "ids.hpp"
 #include "parse.hpp"
 
-using namespace can_ids;
-
 namespace can_messages {
+
+using namespace can_ids;
 
 /**
  * These types model the messages being sent and received over the can bus.
