@@ -75,11 +75,11 @@ static auto device_info_handler =
     DeviceInfoHandler{message_writer_1, NodeId::pipette, 0};
 
 /** The connection between the motor handler and message buffer */
-static auto motor_dispatch_target =
-    DispatchParseTarget<decltype(can_motor_handler), can_messages::SetupRequest,
-                        can_messages::StopRequest,
-                        can_messages::GetStatusRequest,
-                        can_messages::MoveRequest>{can_motor_handler};
+static auto motor_dispatch_target = DispatchParseTarget<
+    decltype(can_motor_handler), can_messages::SetupRequest,
+    can_messages::StopRequest, can_messages::GetStatusRequest,
+    can_messages::MoveRequest, can_messages::EnableMotorRequest,
+    can_messages::DisableMotorRequest>{can_motor_handler};
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,

@@ -12,7 +12,8 @@ template <class Motor>
 class MotorHandler {
   public:
     using MessageType = std::variant<std::monostate, SetupRequest, StopRequest,
-                                     GetStatusRequest, MoveRequest>;
+                                     GetStatusRequest, MoveRequest,
+                                     EnableMotorRequest, DisableMotorRequest>;
 
     MotorHandler(MessageWriter &message_writer, Motor &motor)
         : message_writer{message_writer}, motor{motor} {}

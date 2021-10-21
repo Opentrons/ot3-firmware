@@ -62,11 +62,11 @@ static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};
 
-static auto motor_dispatch_target =
-    DispatchParseTarget<decltype(can_motor_handler), can_messages::SetupRequest,
-                        can_messages::StopRequest,
-                        can_messages::GetStatusRequest,
-                        can_messages::MoveRequest>{can_motor_handler};
+static auto motor_dispatch_target = DispatchParseTarget<
+    decltype(can_motor_handler), can_messages::SetupRequest,
+    can_messages::StopRequest, can_messages::GetStatusRequest,
+    can_messages::MoveRequest, can_messages::EnableMotorRequest,
+    can_messages::DisableMotorRequest>{can_motor_handler};
 /** Dispatcher to the various handlers */
 static auto dispatcher =
     Dispatcher(motor_dispatch_target, device_info_dispatch_target);
