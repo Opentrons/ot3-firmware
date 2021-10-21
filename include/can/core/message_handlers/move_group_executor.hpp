@@ -43,10 +43,8 @@ class MoveGroupExecutorHandler {
 
     MoveGroupExecutorHandler(
         MessageWriter &message_writer,
-        move_group::MoveGroupManager<move_group_handler::max_moves_per_group,
-                                     move_group_handler::max_groups>
-            &motion_group_manager,
-        Motor &motor, NodeId node_id)
+        move_group_handler::MoveGroupType &motion_group_manager, Motor &motor,
+        NodeId node_id)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager},
           motor(motor),
@@ -82,9 +80,7 @@ class MoveGroupExecutorHandler {
     }
 
     MessageWriter &message_writer;
-    move_group::MoveGroupManager<move_group_handler::max_moves_per_group,
-                                 move_group_handler::max_groups>
-        &motion_group_manager;
+    move_group_handler::MoveGroupType &motion_group_manager;
     Motor &motor;
     NodeId node_id;
     TaskEntry<Motor> task_entry;

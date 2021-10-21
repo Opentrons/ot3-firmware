@@ -41,8 +41,10 @@ namespace motor_handler {
 // (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl, template<class> class CompletedQueueImpl>
-requires MessageQueue<QueueImpl<Move>, Move> && MessageQueue<CompletedQueueImpl<Ack>, Ack>
+template <template <class> class QueueImpl,
+          template <class> class CompletedQueueImpl>
+requires MessageQueue<QueueImpl<Move>, Move> &&
+    MessageQueue<CompletedQueueImpl<Ack>, Ack>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
@@ -95,8 +97,11 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    void finish_current_move() {has_active_move = false;
-        auto ack = Ack{.group_id=buffered_move.group_id, .seq_id=buffered_move.seq_id, .ack_id=AckMessageId::complete};
+    void finish_current_move() {
+        has_active_move = false;
+        auto ack = Ack{.group_id = buffered_move.group_id,
+                       .seq_id = buffered_move.seq_id,
+                       .ack_id = AckMessageId::complete};
         static_cast<void>(completed_queue->try_write_isr(ack));
         set_buffered_move(Move{});
     }

@@ -44,9 +44,7 @@ class MotorHandler {
         message_writer.write(NodeId::host, response_msg);
     }
 
-    void visit(MoveRequest &m) {
-        motor.motion_controller.move(m);
-    }
+    void visit(MoveRequest &m) { motor.motion_controller.move(m); }
 
     void visit(EnableMotorRequest &m) {
         motor.motion_controller.enable_motor();

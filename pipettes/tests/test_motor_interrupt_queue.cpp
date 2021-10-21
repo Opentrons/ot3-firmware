@@ -5,7 +5,8 @@
 using namespace motor_handler;
 
 static auto handler =
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue, mock_message_queue::MockMessageQueue>();
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>();
 
 SCENARIO("queue multiple move messages") {
     static constexpr sq0_31 default_velocity = 0x1 << 30;

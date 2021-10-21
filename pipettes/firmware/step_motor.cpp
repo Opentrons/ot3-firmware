@@ -6,7 +6,8 @@
 using namespace motor_messages;
 
 static auto handler_class = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, freertos_message_queue::FreeRTOSMessageQueue>();
+    freertos_message_queue::FreeRTOSMessageQueue,
+    freertos_message_queue::FreeRTOSMessageQueue>();
 
 void step_motor() {
     if (handler_class.pulse()) {
