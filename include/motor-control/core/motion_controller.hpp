@@ -2,12 +2,12 @@
 
 #include <type_traits>
 
+#include "can/core/messages.hpp"
 #include "common/firmware/motor.h"
 #include "common/firmware/timer_interrupt.h"
 #include "linear_motion_system.hpp"
 #include "motor_messages.hpp"
 #include "step_motor.hpp"
-#include "can/core/messages.hpp"
 
 namespace motion_controller {
 
@@ -22,19 +22,22 @@ struct HardwareConfig {
  * MotionController is responsible for motor movement and communicate with
  * the motor driver using the HAL driver API and SPI.
  */
-template <template <class> class QueueImpl, template <class> class CompletedQueueImpl, lms::MotorMechanicalConfig MEConfig>
-requires MessageQueue<QueueImpl<Move>, Move> && MessageQueue<CompletedQueueImpl<Ack>, Ack>
+template <template <class> class QueueImpl,
+          template <class> class CompletedQueueImpl,
+          lms::MotorMechanicalConfig MEConfig>
+requires MessageQueue<QueueImpl<Move>, Move> &&
+    MessageQueue<CompletedQueueImpl<Ack>, Ack>
 class MotionController {
   public:
     using GenericQueue = QueueImpl<Move>;
     using CompletedQueue = CompletedQueueImpl<Ack>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     HardwareConfig& config, GenericQueue& queue, CompletedQueue& completed_queue)
+                     HardwareConfig& config, GenericQueue& queue,
+                     CompletedQueue& completed_queue)
         : linear_motion_sys_config(lms_config),
           hardware_config(config),
           queue(queue),
-          completed_queue(completed_queue)
-    {
+          completed_queue(completed_queue) {
         timer_init();
         setup();
     }
@@ -77,7 +80,10 @@ class MotionController {
         uint64_t converted_steps =
             static_cast<int64_t>(can_msg.velocity * steps_per_mm) << 31;
         Move msg{.target_position = converted_steps,
-                 .velocity = can_msg.velocity, .acceleration=can_msg.acceleration, .group_id=can_msg.group_id, .seq_id=can_msg.seq_id};
+                 .velocity = can_msg.velocity,
+                 .acceleration = can_msg.acceleration,
+                 .group_id = can_msg.group_id,
+                 .seq_id = can_msg.seq_id};
         queue.try_write(msg);
     }
 

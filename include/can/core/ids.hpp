@@ -49,6 +49,7 @@ enum class MessageId : uint16_t {
     disable_motor_request = 0x07,
 
     move_request = 0x10,
+    move_completed = 0x13,
 
     add_linear_move_request = 0x15,
     get_move_group_request = 0x16,
