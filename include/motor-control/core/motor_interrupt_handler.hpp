@@ -55,9 +55,9 @@ class MotorInterruptHandler {
     MotorInterruptHandler(MotorInterruptHandler&) = delete;
     MotorInterruptHandler(MotorInterruptHandler&&) = delete;
 
-    void set_message_queue(GenericQueue* g_queue, CompletedQueue* completed_queue) {
+    void set_message_queue(GenericQueue* g_queue, CompletedQueue* c_queue) {
         queue = g_queue;
-        completed_queue = completed_queue;
+        completed_queue = c_queue;
     }
 
     bool has_messages() { return queue->has_message_isr(); }
@@ -95,10 +95,9 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    void finish_current_move() {
-        has_active_move = false;
+    void finish_current_move() {has_active_move = false;
         auto ack = Ack{.group_id=buffered_move.group_id, .seq_id=buffered_move.seq_id, .ack_id=AckMessageId::complete};
-        completed_queue->try_write_isr(ack);
+        static_cast<void>(completed_queue->try_write_isr(ack));
         set_buffered_move(Move{});
     }
 

@@ -21,7 +21,7 @@ struct Motor {
           motion_controller::HardwareConfig& config, GenericQueue& queue, CompletedQueue& completed_queue)
           : pending_move_queue(queue), completed_move_queue(completed_queue),
           driver{spi},
-          motion_controller{lms_config, config, pending_move_queue, completed_queue} {}
+          motion_controller{lms_config, config, pending_move_queue, completed_move_queue} {}
     GenericQueue& pending_move_queue;
     CompletedQueue& completed_move_queue;
     motor_driver::MotorDriver<SpiDriver> driver;
