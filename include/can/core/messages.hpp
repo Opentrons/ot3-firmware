@@ -397,6 +397,8 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
         iter = bit_utils::int_to_bytes(node_id, iter, limit);
         return iter - body;
     }
+
+    bool operator==(const MoveCompleted& other) const = default;
 };
 
 }  // namespace can_messages
