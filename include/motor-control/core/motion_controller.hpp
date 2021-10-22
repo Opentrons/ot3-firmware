@@ -65,8 +65,6 @@ class MotionController {
     void set_acceleration(uint32_t a) { acc = a; }
 
     void move(const can_messages::MoveRequest& can_msg) {
-        // TODO: set direction in
-        //        motor interrupt handler instead
         uint64_t converted_steps =
             static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
         Move msg{.target_position = converted_steps,
@@ -75,8 +73,6 @@ class MotionController {
     }
 
     void move(const can_messages::AddLinearMoveRequest& can_msg) {
-        // TODO: set direction in
-        //        motor interrupt handler instead
         uint64_t converted_steps =
             static_cast<int64_t>(can_msg.velocity * steps_per_mm) << 31;
         Move msg{.target_position = converted_steps,

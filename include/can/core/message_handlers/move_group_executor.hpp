@@ -23,7 +23,7 @@ struct TaskEntry {
     void operator()() {
         while (true) {
             auto try_read = Ack{};
-            if (motor.completed_move_queue.try_read(&try_read, 10000)) {
+            if (motor.completed_move_queue.try_read(&try_read, portMAX_DELAY)) {
                 MoveCompleted msg = {
                     .group_id = try_read.group_id,
                     .seq_id = try_read.seq_id,
