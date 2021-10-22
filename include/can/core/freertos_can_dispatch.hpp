@@ -6,13 +6,13 @@
 #include "dispatch.hpp"
 #include "message_core.hpp"
 
+namespace freertos_can_dispatch {
+
 using namespace message_core;
 using namespace message_buffer;
 using namespace can_message_buffer;
 using namespace can_dispatch;
 using namespace freertos_message_buffer;
-
-namespace freertos_can_dispatch {
 
 /**
  * A FreeRTOS task entry point that polls a MessageBuffer.

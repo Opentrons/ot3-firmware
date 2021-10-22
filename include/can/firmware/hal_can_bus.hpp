@@ -8,10 +8,10 @@
 #include "common/core/freertos_synchronization.hpp"
 #include "stm32g4xx_hal_fdcan.h"
 
+namespace hal_can_bus {
+
 using namespace can_bus;
 using namespace can_ids;
-
-namespace hal_can_bus {
 
 /**
  * HAL FD CAN wrapper.

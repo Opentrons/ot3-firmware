@@ -7,9 +7,9 @@
 #include "can/core/message_core.hpp"
 #include "common/core/message_buffer.hpp"
 
-using namespace can_bus;
-
 namespace sim_canbus {
+
+using namespace can_bus;
 
 template <class T>
 concept BusTransport = requires(T t, uint32_t arb_id, uint32_t& out_arb_id,

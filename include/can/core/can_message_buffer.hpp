@@ -6,9 +6,9 @@
 #include "common/core/message_buffer.hpp"
 #include "message_core.hpp"
 
-using namespace message_buffer;
-
 namespace can_message_buffer {
+
+using namespace message_buffer;
 
 /**
  * Class to write can arbitration ids and data payload into a MessageBuffer.
