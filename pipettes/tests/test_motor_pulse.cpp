@@ -8,7 +8,9 @@ using namespace motor_handler;
 static constexpr sq0_31 default_velocity = 0x1 << (TO_RADIX - 1);
 
 TEST_CASE("position starts at zero") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue> handler{};
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>
+        handler{};
     handler.set_current_position(0x0);
 
     GIVEN("a positive direction") {
@@ -28,7 +30,9 @@ TEST_CASE("position starts at zero") {
 }
 
 TEST_CASE("move less than a full step") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue> handler{};
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>
+        handler{};
     handler.set_current_position(0x0);
 
     // equivalent of 5.5 steps
@@ -89,7 +93,9 @@ TEST_CASE("move less than a full step") {
 }
 
 TEST_CASE("position starts above zero") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue> handler{};
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>
+        handler{};
     q31_31 starting_position = 200LL << TO_RADIX;
     handler.set_current_position(starting_position);
     sq0_31 increment = (1LL << (TO_RADIX - 2));
@@ -114,9 +120,12 @@ TEST_CASE("position starts above zero") {
 }
 
 TEST_CASE("moves that result in out of range positions") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue> handler{};
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>
+        handler{};
     mock_message_queue::MockMessageQueue<Move> queue;
-    handler.set_message_queue(&queue);
+    mock_message_queue::MockMessageQueue<Ack> completed_queue;
+    handler.set_message_queue(&queue, &completed_queue);
 
     GIVEN("Move past the largest possible value for position") {
         // Reaching the max possible position will probably be almost impossible

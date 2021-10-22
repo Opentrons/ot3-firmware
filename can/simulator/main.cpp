@@ -28,14 +28,14 @@ static auto canbus = sim_canbus::SimCANBus(transport, buffer);
 /**
  * The parsed message handler. It will be passed into a DispatchParseTarget
  * templetized with the same message types.
- * @tparam Bus A CanBus type
+ * @tparam Bus A CanBusWriter instance
  */
 struct Loopback {
     /**
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(CanBusWriter &can_bus) : writer{canbus} {}
+    Loopback(can_bus::CanBusWriter &can_bus) : writer{canbus} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
     auto operator=(const Loopback &) -> Loopback & = delete;

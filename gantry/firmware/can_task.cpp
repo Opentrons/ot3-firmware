@@ -30,6 +30,9 @@ static auto message_writer_1 = MessageWriter(can_bus_1);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
+    "Complete Queue");
+
 static spi::Spi spi_comms{};
 
 struct motion_controller::HardwareConfig PinConfigurations {
@@ -51,7 +54,7 @@ static motor_class::Motor motor{
             lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations, motor_queue};
+    PinConfigurations, motor_queue, complete_queue};
 
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};

@@ -367,4 +367,38 @@ struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
     bool operator==(const MoveGroupCompleted& other) const = default;
 };
 
+struct MoveCompleted : BaseMessage<MessageId::move_completed> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint8_t ack_id;
+    uint8_t node_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> MoveCompleted {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        uint8_t ack_id = 0;
+        uint8_t node_id = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, ack_id);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        return MoveCompleted{.group_id = group_id,
+                             .seq_id = seq_id,
+                             .ack_id = ack_id,
+                             .node_id = node_id};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
+        iter = bit_utils::int_to_bytes(ack_id, iter, limit);
+        iter = bit_utils::int_to_bytes(node_id, iter, limit);
+        return iter - body;
+    }
+
+    bool operator==(const MoveCompleted& other) const = default;
+};
+
 }  // namespace can_messages
