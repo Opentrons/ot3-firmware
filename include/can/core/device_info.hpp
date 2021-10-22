@@ -27,7 +27,7 @@ class DeviceInfoHandler {
      * @param version The firmware version on this device
      */
     DeviceInfoHandler(MessageWriter &writer, NodeId node_id, uint32_t version)
-        : writer(writer), response{{}, node_id, version} {}
+        : writer(writer), response{.node_id = node_id, .version = version} {}
     DeviceInfoHandler(const DeviceInfoHandler &) = delete;
     DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
     DeviceInfoHandler &operator=(const DeviceInfoHandler &) = delete;

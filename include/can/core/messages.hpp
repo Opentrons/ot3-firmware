@@ -76,7 +76,8 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
         uint32_t version;
         body = bit_utils::bytes_to_int(body, limit, node_id);
         body = bit_utils::bytes_to_int(body, limit, version);
-        return DeviceInfoResponse{{}, static_cast<NodeId>(node_id), version};
+        return DeviceInfoResponse{.node_id = static_cast<NodeId>(node_id),
+                                  .version = version};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -109,7 +110,7 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
         body = bit_utils::bytes_to_int(body, limit, status);
         body = bit_utils::bytes_to_int(body, limit, data);
 
-        return GetStatusResponse{{}, status, data};
+        return GetStatusResponse{.status = status, .data = data};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -128,7 +129,7 @@ struct MoveRequest : BaseMessage<MessageId::move_request> {
     static auto parse(Input body, Limit limit) -> MoveRequest {
         uint32_t target_position = 0;
         body = bit_utils::bytes_to_int(body, limit, target_position);
-        return MoveRequest{{}, target_position};
+        return MoveRequest{.target_position = target_position};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -150,7 +151,7 @@ struct GetSpeedResponse : BaseMessage<MessageId::get_speed_response> {
     static auto parse(Input body, Limit limit) -> GetSpeedResponse {
         uint32_t mm_sec = 0;
         body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return GetSpeedResponse{{}, mm_sec};
+        return GetSpeedResponse{.mm_sec = mm_sec};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -168,7 +169,7 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
         uint8_t serial_number = 0;
         body = bit_utils::bytes_to_int(body, limit, serial_number);
-        return WriteToEEPromRequest{{}, serial_number};
+        return WriteToEEPromRequest{.serial_number = serial_number};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
