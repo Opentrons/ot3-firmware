@@ -53,13 +53,13 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=cross .
+        run: cmake --preset=cross-pipettes .
       - name: "Format"
-        run: cmake --build ./build-cross --target pipettes-format-ci
+        run: cmake --build ./build-cross-pipettes --target pipettes-format-ci
       - name: "Lint"
-        run: cmake --build ./build-cross --target pipettes-lint
+        run: cmake --build ./build-cross-pipettes --target pipettes-lint
       - name: "Build"
-        run: cmake --build ./build-cross --target pipettes
+        run: cmake --build ./build-cross-pipettes --target pipettes
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

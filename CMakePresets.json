@@ -8,7 +8,7 @@
     "configurePresets": [
       {
         "name": "cross",
-        "displayName": "STM32 OT-3 cross-compilation",
+        "displayName": "STM32 G4 OT-3 cross-compilation",
         "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
         "generator": "Unix Makefiles",
         "binaryDir": "${sourceDir}/build-cross",
@@ -16,7 +16,20 @@
           "CMAKE_EXPORT_COMPILE_COMMANDS": true,
           "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
           "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32GCCCrossToolchain.cmake"
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake"
+        }
+      },
+      {
+        "name": "cross-pipettes",
+        "displayName": "STM32 L5 OT-3 cross-compilation",
+        "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
+        "generator": "Unix Makefiles",
+        "binaryDir": "${sourceDir}/build-cross-pipettes",
+        "cacheVariables": {
+          "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+          "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+          "CMAKE_FIND_APPBUNDLE": "NEVER",
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake"
         }
       },
       {

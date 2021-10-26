@@ -17,10 +17,19 @@ Aside from the common directory, each repository should contain a `firmware`, `i
 
 ## Setup
 
-To setup this directory to run on a nucleo board, you should run:
+To setup this directory to run on an STMG4 nucleo board, you should run:
 
 1. `cmake --preset=cross .`
 2. `cmake --build ./build-cross --target <TARGET>`
+
+To setup this directory to run on an STML5 nucleo board, you should run:
+
+1. `cmake --preset=cross-pipettes .`
+2. `cmake --build ./build-cross-pipettes --target <TARGET>`
+
+### Note
+The `cross-pipettes` preset should _only_ be used for pipette subproject targets
+as that is the only subproject to support the L5 board at this time.
 
 To setup this directory to run tests, you should run:
 
