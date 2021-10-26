@@ -14,9 +14,9 @@ FDCAN_HandleTypeDef fdcan1;
 HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef* handle) {
     handle->Instance = FDCAN1;
     handle->Init.ClockDivider = FDCAN_CLOCK_DIV1;
-    handle->Init.FrameFormat = FDCAN_FRAME_CLASSIC;
+    handle->Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
     handle->Init.Mode = FDCAN_MODE_NORMAL;
-    handle->Init.AutoRetransmission = DISABLE;
+    handle->Init.AutoRetransmission = ENABLE;
     handle->Init.TransmitPause = DISABLE;
     handle->Init.ProtocolException = DISABLE;
     handle->Init.NominalPrescaler = 20;
