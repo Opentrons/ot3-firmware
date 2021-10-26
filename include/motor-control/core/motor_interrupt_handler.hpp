@@ -98,11 +98,13 @@ class MotorInterruptHandler {
 
     void finish_current_move() {
         has_active_move = false;
-        auto ack = Ack{.group_id = buffered_move.group_id,
-                       .seq_id = buffered_move.seq_id,
-                       .ack_id = AckMessageId::complete};
-        if (completed_queue) {
-            static_cast<void>(completed_queue->try_write_isr(ack));
+        if (buffered_move.group_id != 0xFF) {
+            auto ack = Ack{.group_id = buffered_move.group_id,
+                           .seq_id = buffered_move.seq_id,
+                           .ack_id = AckMessageId::complete};
+            if (completed_queue) {
+                static_cast<void>(completed_queue->try_write_isr(ack));
+            }
         }
         set_buffered_move(Move{});
     }
