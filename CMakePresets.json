@@ -1,11 +1,18 @@
 {
-    "version": 1,
+    "version": 2,
     "cmakeMinimumRequired": {
       "major": 3,
-      "minor": 19,
+      "minor": 20,
       "patch": 0
     },
     "configurePresets": [
+      {
+        "name": "configuration-ok",
+        "hidden": true,
+        "environment": {
+          "PRESET_IN_USE": "1"
+        }
+      },
       {
         "name": "cross",
         "displayName": "STM32 G4 OT-3 cross-compilation",
@@ -16,8 +23,10 @@
           "CMAKE_EXPORT_COMPILE_COMMANDS": true,
           "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
           "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake"
-        }
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
+          "ARM_ARCH_TYPE": "cortex-m4"
+        },
+        "inherits": "configuration-ok"
       },
       {
         "name": "cross-pipettes",
@@ -29,8 +38,10 @@
           "CMAKE_EXPORT_COMPILE_COMMANDS": true,
           "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
           "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake"
-        }
+          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
+          "ARM_ARCH_TYPE": "cortex-m33"
+        },
+        "inherits": "configuration-ok"
       },
       {
         "name": "host",
@@ -41,16 +52,47 @@
         "cacheVariables": {
           "CMAKE_FIND_APPBUNDLE": "NEVER",
           "CMAKE_EXPORT_COMPILE_COMMANDS": true
-        }
+        },
+        "inherits": "configuration-ok"
       },
       {
         "name": "host-gcc10",
-        "inherits": "host",
+        "inherits": ["host", "configuration-ok"],
         "displayName": "STM32 module host builds forcing g++",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "gcc-10",
           "CMAKE_CXX_COMPILER": "g++-10"
         }
       }
-    ]
-  }
+    ],
+  "buildPresets": [
+    {
+      "name": "pipettes",
+      "displayName": "pipettes binary",
+      "description": "Build the pipettes cross binary",
+      "configurePreset": "cross-pipettes",
+      "targets": "pipettes"
+    },
+    {
+      "name": "gantry",
+      "displayName": "gantry binary",
+      "description": "build the gantry binary targets",
+      "configurePreset": "cross",
+      "targets": "gantry"
+    },
+    {
+      "name": "head",
+      "displayName": "head binary",
+      "description": "build the head binary targets",
+      "configurePreset": "cross",
+      "targets": "head"
+    },
+    {
+      "name": "tests",
+      "displayName": "tests",
+      "description": "build and run all tests",
+      "configurePreset": "host",
+      "targets": "build-and-test"
+    }
+  ]
+}

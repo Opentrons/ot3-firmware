@@ -3,7 +3,9 @@
 add_subdirectory(core)
 
 if (${CMAKE_CROSSCOMPILING})
-    add_subdirectory(firmware)
+    if(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
+        add_subdirectory(firmware)
+    endif()
 else ()
     add_subdirectory(tests)
 endif ()

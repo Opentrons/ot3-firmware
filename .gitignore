@@ -1,11 +1,6 @@
 .DS_Store
 .idea
 
-CMakeFiles
-CMakeCache.txt
-
-cmake_install.cmake
-
 build-cross/
 build-cross-pipettes/
 stm32-tools/
