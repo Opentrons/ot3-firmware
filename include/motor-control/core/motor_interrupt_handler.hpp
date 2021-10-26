@@ -4,10 +4,9 @@
 #include "common/core/message_queue.hpp"
 #include "motor_messages.hpp"
 
-using namespace motor_messages;
-
 namespace motor_handler {
 
+using namespace motor_messages;
 /*
  *
  * A motor motion handler class.
@@ -69,7 +68,7 @@ class MotorInterruptHandler {
          * A motor should only try to take a step when the current position
          * does not equal the target position.
          */
-        return (position_tracker != buffered_move.target_position);
+        return tick_count < buffered_move.duration;
     }
 
     bool tick() {
@@ -78,11 +77,11 @@ class MotorInterruptHandler {
          * The position tracker is the absolute position of a motor which can
          * only ever be positive (inclusive of zero).
          */
+        tick_count += 1;
         q31_31 old_position = position_tracker;
         buffered_move.velocity += buffered_move.acceleration;
         position_tracker += buffered_move.velocity;
         if (overflow(old_position, position_tracker) == true) {
-            buffered_move.target_position = old_position;
             position_tracker = old_position;
             return false;
         }
@@ -172,6 +171,7 @@ class MotorInterruptHandler {
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
 
   private:
+    uint32_t tick_count = 0x0;
     const q31_31 tick_flag = 0x80000000;
     const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;
