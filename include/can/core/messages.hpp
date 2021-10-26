@@ -123,18 +123,28 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
 };
 
 struct MoveRequest : BaseMessage<MessageId::move_request> {
-    uint32_t target_position;
+    uint32_t duration;
+    int16_t acceleration;
+    int16_t velocity;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
-        uint32_t target_position = 0;
-        body = bit_utils::bytes_to_int(body, limit, target_position);
-        return MoveRequest{.target_position = target_position};
+        uint32_t duration = 0;
+        int16_t acceleration = 0;
+        int16_t velocity = 0;
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        return MoveRequest{.duration = duration,
+                           .acceleration = acceleration,
+                           .velocity = velocity};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(target_position, body, limit);
+        auto iter = bit_utils::int_to_bytes(duration, body, limit);
+        bit_utils::int_to_bytes(acceleration, body, limit);
+        bit_utils::int_to_bytes(velocity, body, limit);
         return iter - body;
     }
     bool operator==(const MoveRequest& other) const = default;
