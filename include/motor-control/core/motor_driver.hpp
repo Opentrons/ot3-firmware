@@ -46,7 +46,7 @@ class MotorDriver {
 
     void setup() {
         constexpr uint32_t gconf_data = 0x04;
-        constexpr uint32_t ihold_irun_data = 0x71703;
+        constexpr uint32_t ihold_irun_data = 0x70202;
         constexpr uint32_t chopconf = 0x101D5;
         constexpr uint32_t thigh = 0xFFFFF;
         constexpr uint32_t coolconf = 0x60000;
