@@ -1,8 +1,10 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
-find_package(STM32G4xx)
-add_STM32G4_driver("Pipettes")
-add_STM32G4_freertos("Pipettes")
+SET(MICROCONTROLLER_TYPE "STM32L5")
+
+find_package(STM32L5xx)
+add_STM32L5_driver("Pipettes")
+add_STM32L5_freertos("Pipettes")
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
@@ -21,13 +23,13 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CAN_FW_DIR}/utils.cpp)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/stm32l5xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/can.c
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
-    ${COMMON_EXECUTABLE_DIR}/can/can.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
     ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 
@@ -36,8 +38,8 @@ add_executable(pipettes
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
 target_link_libraries(pipettes
-        PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes
+        PUBLIC STM32L552ZEx
+        STM32L5xx_Drivers_Pipettes STM32L5xx_FreeRTOS_Pipettes
         can-core
         )
 
@@ -62,18 +64,18 @@ target_compile_options(pipettes
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
-target_include_directories(STM32G4xx_Drivers_Pipettes
+target_include_directories(STM32L5xx_Drivers_Pipettes
         PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Pipettes
+target_include_directories(STM32L5xx_FreeRTOS_Pipettes
         PUBLIC .)
 
-target_compile_definitions(STM32G4xx_Drivers_Pipettes
-        PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
-        PUBLIC STM32G491xx)
+target_compile_definitions(STM32L5xx_Drivers_Pipettes
+        PUBLIC STM32L552xx)
+target_compile_definitions(STM32L5xx_FreeRTOS_Pipettes
+        PUBLIC STM32L552xx)
 
 set_target_properties(
-        STM32G4xx_FreeRTOS_Pipettes
+        STM32L5xx_FreeRTOS_Pipettes
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 
@@ -87,7 +89,7 @@ find_program(ARM_GDB
 set_target_properties(pipettes
         PROPERTIES
         CROSSCOMPILING_EMULATOR
-        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L552ZEx/gdbinit")
 
 
 find_package(Clang)
@@ -124,7 +126,9 @@ add_custom_target(pipettes-debug
 
 # Runs openocd to flash the board (without using a debugger)
 add_custom_target(pipettes-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L552ZEx/stm32l5discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS pipettes)
+
+unset(MICROCONTROLLER_TYPE CACHE)
