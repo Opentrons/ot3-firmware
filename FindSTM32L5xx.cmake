@@ -133,7 +133,7 @@ endmacro()
 set(STM32L5xx_Drivers_FOUND ${bsp_populated} PARENT_SCOPE)
 
 set(freertos_source ${bsp_source}/Middlewares/Third_Party/FreeRTOS/Source)
-set(freertos_port_source ${freertos_source}/portable/GCC/ARM_CM33)
+set(freertos_port_source ${freertos_source}/portable/GCC/ARM_CM33_NTZ/non_secure)
 file(GLOB freertos_common_sources ${freertos_source}/*.c)
 
 macro(add_STM32L5_freertos suffix)
@@ -141,6 +141,7 @@ macro(add_STM32L5_freertos suffix)
             STM32L5xx_FreeRTOS_${suffix} STATIC
             ${freertos_common_sources}
             ${freertos_port_source}/port.c
+            ${freertos_port_source}/portasm.c
             $<IF:$<BOOL:$<TARGET_PROPERTY:FREERTOS_HEAP_IMPLEMENTATION>>,${freertos_source}/portable/MemMang/$<TARGET_PROPERTY:FREERTOS_HEAP_IMPLEMENTATION>.c,"">)
 
     target_include_directories(
