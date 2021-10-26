@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <variant>
 
 #include "can/core/messages.hpp"
 #include "common/firmware/motor.h"
@@ -29,7 +30,7 @@ requires MessageQueue<QueueImpl<Move>, Move> &&
     MessageQueue<CompletedQueueImpl<Ack>, Ack>
 class MotionController {
   public:
-    using GenericQueue = QueueImpl<Move>;
+    using GenericQueue = QqueueImpl<Move>;
     using CompletedQueue = CompletedQueueImpl<Ack>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      HardwareConfig& config, GenericQueue& queue,
@@ -65,21 +66,22 @@ class MotionController {
     void set_acceleration(uint32_t a) { acc = a; }
 
     void move(const can_messages::MoveRequest& can_msg) {
-        uint64_t converted_steps =
-            static_cast<int64_t>(can_msg.target_position * steps_per_mm) << 31;
-        Move msg{.target_position = converted_steps,
-                 .velocity = default_velocity};
+        GenericMove msg{
+            .duration = can_msg.duration,
+            .acceleration = can_msg.acceleration,
+            .velocity = can_msg.velocity,
+        };
         queue.try_write(msg);
     }
 
     void move(const can_messages::AddLinearMoveRequest& can_msg) {
         uint64_t converted_steps =
             static_cast<int64_t>(can_msg.velocity * steps_per_mm) << 31;
-        Move msg{.target_position = converted_steps,
-                 .velocity = can_msg.velocity,
-                 .acceleration = can_msg.acceleration,
-                 .group_id = can_msg.group_id,
-                 .seq_id = can_msg.seq_id};
+        MoveGroupMove msg{.target_position = converted_steps,
+                          .velocity = can_msg.velocity,
+                          .acceleration = can_msg.acceleration,
+                          .group_id = can_msg.group_id,
+                          .seq_id = can_msg.seq_id};
         queue.try_write(msg);
     }
 
