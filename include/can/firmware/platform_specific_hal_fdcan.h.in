@@ -1,5 +1,5 @@
-#if (${CORTEX_M33} == 1)
+#if (${STM32L5} == 1)
     #include "stm32l5xx_hal_fdcan.h"
-#else
+#elif (${STM32G4} == 1)
     #include "stm32g4xx_hal_fdcan.h"
 #endif

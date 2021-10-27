@@ -14,7 +14,6 @@
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-    //    can_task::start();
 
     vTaskStartScheduler();
 }

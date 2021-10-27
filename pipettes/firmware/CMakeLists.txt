@@ -1,6 +1,5 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
-SET(MICROCONTROLLER_TYPE "STM32L5")
 
 find_package(STM32L5xx)
 add_STM32L5_driver("Pipettes")
@@ -130,5 +129,3 @@ add_custom_target(pipettes-flash
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS pipettes)
-
-unset(MICROCONTROLLER_TYPE CACHE)
