@@ -36,7 +36,9 @@ message("Build type is ${CMAKE_BUILD_TYPE}")
 if (${CMAKE_CROSSCOMPILING})
     find_package(CrossGCC)
     find_package(OpenOCD)
-    
+
+    set(STM32L5 0)
+    set(STM32G4 0)
     if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
         set(STM32L5 1)
     elseif(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
