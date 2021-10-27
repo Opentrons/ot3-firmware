@@ -1,10 +1,6 @@
 #include "can/firmware/utils.hpp"
 
-#if __has_include("stm32l5xx_hal_fdcan.h")
-#include "stm32l5xx_hal_fdcan.h"
-#else
-#include "stm32g4xx_hal_fdcan.h"
-#endif
+#include "platform_specific_hal_fdcan.h"
 
 using namespace can_bus;
 

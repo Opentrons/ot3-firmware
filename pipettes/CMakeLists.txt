@@ -1,7 +1,5 @@
 # pipettes source tree
 
-# add_subdirectory(src)
-
 if (${CMAKE_CROSSCOMPILING})
   if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
     add_subdirectory(firmware)

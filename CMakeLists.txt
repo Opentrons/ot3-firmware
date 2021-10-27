@@ -38,6 +38,15 @@ if (${CMAKE_CROSSCOMPILING})
     find_package(OpenOCD)
 endif ()
 
+set(CORTEX_M33 0)
+if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
+    set(CORTEX_M33 1)
+endif ()
+
+configure_file(include/common/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
+configure_file(include/can/firmware/platform_specific_hal_fdcan.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_fdcan.h)
+
+include_directories(${CMAKE_BINARY_DIR}/generated/)
 add_subdirectory(common)
 add_subdirectory(can)
 add_subdirectory(pipettes)
@@ -79,3 +88,5 @@ add_custom_target(
         ALL
         DEPENDS gantry-lint pipettes-lint head-lint
 )
+
+unset(CORTEX_M33 CACHE)
