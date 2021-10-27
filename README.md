@@ -15,21 +15,30 @@ Aside from the common directory, each repository should contain a `firmware`, `i
    system.
 4. `tests` should include tests for the firmware folder.
 
+## Working with CMake
+
+This project uses cmake as a build and configuration system. It uses [cmake presets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) to ease remembering commands. It requires at least CMake 3.20 (to support build presets) to run.
+
+Using a preset is required for configuration to prevent mistakes that can create directories all over the place.
+
+To list available configuration presets, run `cmake --list-presets`. You can then run `cmake --preset=selected-preset .` to configure, which will create an appropriate binary directory.
+
+Building has presets now too. You can run `cmake --build --list-presets` to show available build presets. They're linked to configuration presets, and you can run them with `cmake --build --preset=selected preset` to build their default target in the appropriate binary directory.
+
+When building, even with a preset, you can set any target you want with `--target`. To prevent mistakenly using a target from the wrong cross configuration, executables all have their own presets, which depend on the correct configuration. When building a target, always try and use the preset that matches that target. For instance, if you're trying to debug a gantry board, run `cmake --build --preset=gantry --target gantry-debug`.
+
+
 ## Setup
 
-To setup this directory to run on an STMG4 nucleo board, you should run:
+To setup this directory to run on an STM32G4 system board (gantry and head), you should run:
 
 1. `cmake --preset=cross .`
-2. `cmake --build ./build-cross --target <TARGET>`
+2. `cmake --build --preset=gantry --target <TARGET>` or `cmake --build --preset=head --target <TARGET>`
 
-To setup this directory to run on an STML5 nucleo board, you should run:
+To setup this directory to run on an STML5 nucleo board (pipettes), you should run:
 
 1. `cmake --preset=cross-pipettes .`
-2. `cmake --build ./build-cross-pipettes --target <TARGET>`
-
-### Note
-The `cross-pipettes` preset should _only_ be used for pipette subproject targets
-as that is the only subproject to support the L5 board at this time.
+2. `cmake --build --preset=pipettes --target <TARGET>`
 
 To setup this directory to run tests, you should run:
 
@@ -48,7 +57,7 @@ To setup this directory to run tests, you should run:
 The default axis type for the gantry target is X. You can build the Y gantry by running:
 
 1. `cmake --preset=cross -DGANTRY_AXIS_TYPE=gantry_y .`
-2. `cmake --build ./build-cross --target gantry`
+2. `cmake --build --preset=gantry`
 
 ### Cross-compiling vs Host-compiling
 
@@ -71,7 +80,7 @@ If you run into trouble starting a gcc connection to your nucleo board, you shou
 Start openocd:
 
 1. Navigate to `stm32-tools/openocd/Darwin`
-2. `./bin  scripts/board/st_nucleo_f3.cfg`
+2. `./bin  scripts/board/st_nucleo_f3.cfg` (or `scripts/board/st_nucleo_g4.cfg` for gantry/head)
 
 Start gcc:
 
