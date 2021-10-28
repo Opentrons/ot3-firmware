@@ -6,7 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/parse.hpp"
 #include "common/core/freertos_synchronization.hpp"
-#include "stm32g4xx_hal_fdcan.h"
+#include "platform_specific_hal_fdcan.h"
 
 namespace hal_can_bus {
 

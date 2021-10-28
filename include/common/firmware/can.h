@@ -1,7 +1,7 @@
 #ifndef __CAN_H__
 #define __CAN_H__
 
-#include "stm32g4xx_hal_conf.h"
+#include "platform_specific_hal_conf.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -36,6 +36,22 @@ message("Build type is ${CMAKE_BUILD_TYPE}")
 if (${CMAKE_CROSSCOMPILING})
     find_package(CrossGCC)
     find_package(OpenOCD)
+
+    set(STM32L5 0)
+    set(STM32G4 0)
+    if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
+        set(STM32L5 1)
+    elseif(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
+        set(STM32G4 1)
+    else()
+        message( FATAL_ERROR "Failed to find a suitable architecture." )
+    endif ()
+
+    configure_file(include/common/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
+    configure_file(include/can/firmware/platform_specific_hal_fdcan.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_fdcan.h)
+
+    include_directories(${CMAKE_BINARY_DIR}/generated/)
+
 endif ()
 
 add_subdirectory(common)

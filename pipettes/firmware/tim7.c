@@ -1,6 +1,6 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/timer_interrupt.h"
-#include "stm32g4xx_hal.h"
+#include "stm32l5xx_hal.h"
 
 TIM_HandleTypeDef htim7;
 

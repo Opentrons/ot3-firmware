@@ -1,7 +1,6 @@
 #pragma once
 
-#include "stm32g4xx_hal_conf.h"
-
+#include "platform_specific_hal_conf.h"
 
 #ifdef __cplusplus
 extern "C" {

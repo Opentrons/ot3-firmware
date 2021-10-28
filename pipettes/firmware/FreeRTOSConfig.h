@@ -47,6 +47,32 @@
 extern uint32_t SystemCoreClock;
 #endif
 
+/* L5 Addition */
+#ifndef CMSIS_device_header
+#define CMSIS_device_header "stm32l5xx.h"
+#endif /* CMSIS_device_header */
+/* L5 Addition end */
+
+/*-------------------- STM32L5 specific defines -------------------*/
+
+/* No secure feature is used the configENABLE_TRUSTZONE should be set to 0
+ *
+ */
+#define configENABLE_TRUSTZONE                  0
+#define configENABLE_FPU                        1
+#define configENABLE_MPU                        0
+
+
+#if defined(_VDM)
+#define ADDON_HEAP_SIZE                           1500
+#elif defined(_GUI_INTERFACE)
+#define ADDON_HEAP_SIZE                           1500
+#else
+#define ADDON_HEAP_SIZE                           1000
+#endif /* _VDM */
+
+/*-------------------- STM32L5 specific defines end -------------------*/
+
 /*  CMSIS-RTOSv2 defines 56 levels of priorities. To be able to use them
  *  all and avoid application misbehavior,
  * configUSE_PORT_OPTIMISED_TASK_SELECTION must be set to 0 and

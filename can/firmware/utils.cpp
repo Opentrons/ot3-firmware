@@ -1,6 +1,6 @@
 #include "can/firmware/utils.hpp"
 
-#include "stm32g4xx_hal_fdcan.h"
+#include "platform_specific_hal_fdcan.h"
 
 using namespace can_bus;
 

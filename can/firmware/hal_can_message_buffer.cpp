@@ -8,7 +8,7 @@
 #include "can/firmware/utils.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/synchronization.hpp"
-#include "stm32g4xx_hal_conf.h"
+#include "platform_specific_hal_conf.h"
 
 using namespace hal_can_message_buffer;
 

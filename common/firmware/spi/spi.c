@@ -1,7 +1,7 @@
 #include "common/firmware/spi.h"
 #include "common/firmware/errors.h"
 
-#include "stm32g4xx_hal_conf.h"
+#include "platform_specific_hal_conf.h"
 
 SPI_HandleTypeDef handle;
 

@@ -4,7 +4,7 @@
 
 // clang-format off
 #include "FreeRTOS.h"
-#include "system_stm32g4xx.h"
+#include "system_stm32l5xx.h"
 #include "task.h"
 // clang-format on
 
@@ -14,7 +14,6 @@
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-    can_task::start();
 
     vTaskStartScheduler();
 }
