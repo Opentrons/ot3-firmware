@@ -1,5 +1,9 @@
-add_subdirectory("STM32G491RETx")
-add_subdirectory("STM32L552ZEx")
+if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
+    add_subdirectory("STM32L552ZEx")
+else()
+    add_subdirectory("STM32G491RETx")
+endif()
+
 add_subdirectory("uart")
 add_subdirectory("spi")
 add_subdirectory("motor_driver")

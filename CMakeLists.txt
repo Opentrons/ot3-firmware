@@ -52,8 +52,6 @@ if (${CMAKE_CROSSCOMPILING})
 
     include_directories(${CMAKE_BINARY_DIR}/generated/)
 
-    unset(STM32L5 CACHE)
-    unset(STM32G4 CACHE)
 endif ()
 
 add_subdirectory(common)
