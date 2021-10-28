@@ -61,10 +61,6 @@ class MotionController {
             static_cast<uint32_t>(linear_motion_sys_config.get_steps_per_mm());
     }
 
-    void set_speed(uint32_t s) { speed = s; }
-
-    void set_acceleration(uint32_t a) { acc = a; }
-
     void move(const can_messages::MoveRequest& can_msg) {
         Move msg{
             .duration = can_msg.duration,
@@ -94,15 +90,9 @@ class MotionController {
         timer_interrupt_stop();
     }
 
-    auto get_speed() -> uint32_t { return speed; }
-    auto get_acceleration() -> uint32_t { return acc; }
     auto get_direction() -> bool { return direction; }
 
   private:
-    const sq0_31 default_velocity = 0x1 << 30;
-    uint32_t acc = 0x0;
-    uint32_t speed = 0x0;  // mm/s
-    uint32_t dist = 0x0;
     bool direction = true;  // direction true: forward, false: backward
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
