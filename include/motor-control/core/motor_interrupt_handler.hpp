@@ -77,7 +77,7 @@ class MotorInterruptHandler {
          * The position tracker is the absolute position of a motor which can
          * only ever be positive (inclusive of zero).
          */
-        tick_count += 1;
+        tick_count++;
         q31_31 old_position = position_tracker;
         buffered_move.velocity += buffered_move.acceleration;
         position_tracker += buffered_move.velocity;
@@ -85,6 +85,7 @@ class MotorInterruptHandler {
             position_tracker = old_position;
             return false;
         }
+        // check to see when motor should step using velocity & tick count
         return bool((old_position ^ position_tracker) & tick_flag);
     }
 
@@ -98,6 +99,7 @@ class MotorInterruptHandler {
 
     void finish_current_move() {
         has_active_move = false;
+        tick_count = 0x0;
         if (buffered_move.group_id != 0xFF) {
             auto ack = Ack{.group_id = buffered_move.group_id,
                            .seq_id = buffered_move.seq_id,
@@ -135,6 +137,9 @@ class MotorInterruptHandler {
             return true;
         } else if (has_active_move && !can_step()) {
             finish_current_move();
+            if (has_messages()) {
+                update_move();
+            }
             return false;
         }
         return false;
@@ -147,6 +152,7 @@ class MotorInterruptHandler {
          */
         queue->reset();
         position_tracker = 0x0;
+        tick_count = 0x0;
         has_active_move = false;
     }
 
@@ -168,15 +174,15 @@ class MotorInterruptHandler {
         position_tracker = pos_tracker;
     }
 
-    Move* get_buffered_move() { return &buffered_move; }
+    Move get_buffered_move() { return buffered_move; }
 
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
 
   private:
-    uint32_t tick_count = 0x0;
+    uint64_t tick_count = 0x0;
     const q31_31 tick_flag = 0x80000000;
     const uint64_t overflow_flag = 0x8000000000000000;
-    q31_31 position_tracker = 0x0;
+    q31_31 position_tracker = 0x0;  // in steps
     GenericQueue* queue = nullptr;
     CompletedQueue* completed_queue = nullptr;
     Move buffered_move = Move{};

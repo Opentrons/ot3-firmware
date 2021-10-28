@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 
@@ -26,12 +28,14 @@ SCENARIO("message deserializing works") {
         WHEN("constructed") {
             auto r = MoveRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.target_position == 0x01020304);
+                REQUIRE(r.duration == 0x01020304);
+                REQUIRE(r.velocity == 0x0506);
+                REQUIRE(r.acceleration == 0x0708);
             }
             THEN("it can be compared for equality") {
                 auto other = r;
                 REQUIRE(other == r);
-                other.target_position = 10;
+                other.duration = 10;
                 REQUIRE(other != r);
             }
         }
@@ -90,18 +94,23 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a set steps request message") {
-        auto message = MoveRequest{{}, 0x10023300};
+        auto message = MoveRequest{
+            .duration = 0x12345678, .velocity = 0xaa, .acceleration = 0xbb};
         auto arr = std::array<uint8_t, 8>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer correctly") {
-                REQUIRE(body.data()[0] == 0x10);
-                REQUIRE(body.data()[1] == 0x02);
-                REQUIRE(body.data()[2] == 0x33);
-                REQUIRE(body.data()[3] == 0x00);
+                REQUIRE(body.data()[0] == 0x12);
+                REQUIRE(body.data()[1] == 0x34);
+                REQUIRE(body.data()[2] == 0x56);
+                REQUIRE(body.data()[3] == 0x78);
+                REQUIRE(body.data()[4] == 0x00);
+                REQUIRE(body.data()[5] == 0xaa);
+                REQUIRE(body.data()[6] == 0x00);
+                REQUIRE(body.data()[7] == 0xbb);
             }
-            THEN("size must be returned") { REQUIRE(size == 4); }
+            THEN("size must be returned") { REQUIRE(size == 8); }
         }
     }
 
