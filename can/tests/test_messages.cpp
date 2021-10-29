@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 

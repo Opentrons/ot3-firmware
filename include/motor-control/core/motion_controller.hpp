@@ -66,8 +66,8 @@ class MotionController {
             .duration = can_msg.duration,
             .velocity = can_msg.velocity,
             .acceleration = can_msg.acceleration,
-            .group_id = 0xFF,
-            .seq_id = 0xFF,
+            .group_id = NO_GROUP,
+            .seq_id = NO_GROUP,
         };
         queue.try_write(msg);
     }

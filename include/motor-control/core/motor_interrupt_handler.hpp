@@ -100,7 +100,7 @@ class MotorInterruptHandler {
     void finish_current_move() {
         has_active_move = false;
         tick_count = 0x0;
-        if (buffered_move.group_id != 0xFF) {
+        if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{.group_id = buffered_move.group_id,
                            .seq_id = buffered_move.seq_id,
                            .ack_id = AckMessageId::complete};
@@ -139,6 +139,9 @@ class MotorInterruptHandler {
             finish_current_move();
             if (has_messages()) {
                 update_move();
+                if (can_step() && tick()) {
+                    return true;
+                }
             }
             return false;
         }
