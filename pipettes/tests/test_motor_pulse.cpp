@@ -8,6 +8,21 @@ using namespace motor_handler;
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
 
+sq0_31 convert_velocity(float f) {
+    return sq0_31(f * static_cast<float>(1LL << TO_RADIX));
+}
+
+q31_31 convert_distance(float f) {
+    return q31_31(f * static_cast<float>(1LL << TO_RADIX));
+}
+
+q31_31 get_distance(sq0_31 velocity, sq0_31 acceleration, uint64_t duration) {
+    int64_t s_duration = duration;
+    int64_t dist_1 = velocity * s_duration;
+    int64_t dist_2 = acceleration * s_duration * (s_duration + 1LL) / 2LL;
+    return q31_31(dist_1 + dist_2);
+}
+
 TEST_CASE("Constant velocity") {
     GIVEN("a duration of 1 tick and velocity at half a step per tick") {
         MotorInterruptHandler<mock_message_queue::MockMessageQueue,
@@ -15,12 +30,13 @@ TEST_CASE("Constant velocity") {
             handler{};
         handler.set_current_position(0x0);
         WHEN("moving at half a step per tick") {
-            Move msg1 = Move{.duration = 1, .velocity = default_velocity};
+            Move msg1 = Move{.duration = 1, .velocity = convert_velocity(0.5)};
             handler.set_buffered_move(msg1);
             THEN("motor would not step in the 1st tick") {
                 REQUIRE(!handler.tick());
                 AND_THEN("the position tracker should match half a step") {
-                    REQUIRE(handler.get_current_position() == default_velocity);
+                    REQUIRE(handler.get_current_position() ==
+                            q31_31(convert_velocity(0.5)));
                 }
             }
         }
@@ -31,14 +47,13 @@ TEST_CASE("Constant velocity") {
                               mock_message_queue::MockMessageQueue>
             handler{};
         WHEN("moving at half a step per tick") {
-            Move msg1 = Move{.duration = 2, .velocity = default_velocity};
+            Move msg1 = Move{.duration = 2, .velocity = convert_velocity(0.5)};
             handler.set_buffered_move(msg1);
             THEN("motor would step in the 2nd tick") {
                 REQUIRE(!handler.tick());
                 REQUIRE(handler.tick());
                 AND_THEN("the position tracker should match exactly one step") {
-                    auto distance_traveled =
-                        static_cast<uint64_t>(default_velocity) * 2;
+                    auto distance_traveled = q31_31(1LL << TO_RADIX);
                     REQUIRE(handler.get_current_position() ==
                             distance_traveled);
                 }
@@ -50,8 +65,7 @@ TEST_CASE("Constant velocity") {
         MotorInterruptHandler<mock_message_queue::MockMessageQueue,
                               mock_message_queue::MockMessageQueue>
             handler{};
-        auto velocity =
-            static_cast<sq0_31>(0.3 * static_cast<double>(1LL << (TO_RADIX)));
+        auto velocity = convert_velocity(0.3);
         auto msg1 = Move{.duration = 4, .velocity = velocity};
         handler.set_buffered_move(msg1);
 
@@ -61,20 +75,23 @@ TEST_CASE("Constant velocity") {
             REQUIRE(!handler.tick());
 
             THEN("the fourth tick should step") {
+                auto initial_distance =
+                    get_distance(velocity, 0, msg1.duration);
                 REQUIRE(handler.tick());
-                REQUIRE(handler.get_current_position() ==
-                        static_cast<q31_31>(velocity) * 4);
+                REQUIRE(handler.get_current_position() == initial_distance);
 
                 AND_WHEN("moving in the other direction") {
-                    msg1.velocity = -velocity;
+                    msg1.duration = 2;
+                    msg1.velocity = convert_velocity(-0.3);
                     handler.set_buffered_move(msg1);
 
                     THEN("the first tick should step") {
                         REQUIRE(handler.tick());
                         REQUIRE(!handler.tick());
-                        REQUIRE(!handler.tick());
-                        REQUIRE(!handler.tick());
-                        REQUIRE(handler.get_current_position() == 0x0);
+                        REQUIRE(handler.get_current_position() ==
+                                initial_distance + get_distance(msg1.velocity,
+                                                                0,
+                                                                msg1.duration));
                     }
                 }
             }
@@ -88,24 +105,24 @@ TEST_CASE("Non-zero acceleration") {
                               mock_message_queue::MockMessageQueue>
             handler{};
         WHEN("move starts at 0 velocity with positive acceleration") {
-            auto msg = Move{.duration = 3,
-                            .velocity = 0,
-                            .acceleration = 1 << (TO_RADIX - 2)};
+            auto acceleration = convert_velocity(0.25);
+            auto msg = Move{
+                .duration = 3, .velocity = 0, .acceleration = acceleration};
+
             handler.set_buffered_move(msg);
             THEN("the third tick should step") {
                 REQUIRE(!handler.tick());
                 REQUIRE(!handler.tick());
                 REQUIRE(handler.tick());
                 REQUIRE(handler.get_current_position() ==
-                        ((1LL << (TO_RADIX)) + (1LL << (TO_RADIX - 1))));
+                        convert_distance(0.25 + 0.5 + 0.75));
             }
         }
         WHEN("move starts at 0 velocity with negative acceleration") {
-            handler.set_current_position((1LL << (TO_RADIX)) +
-                                         (1LL << (TO_RADIX - 1)));
-            auto msg = Move{.duration = 3,
-                            .velocity = 0,
-                            .acceleration = -(1 << (TO_RADIX - 2))};
+            handler.set_current_position(convert_distance(0.25 + 0.5 + 0.75));
+            auto acceleration = convert_velocity(-0.25);
+            auto msg = Move{
+                .duration = 3, .velocity = 0, .acceleration = acceleration};
             handler.set_buffered_move(msg);
             THEN("only the second tick should step") {
                 REQUIRE(!handler.tick());
@@ -116,33 +133,38 @@ TEST_CASE("Non-zero acceleration") {
         }
 
         WHEN("move starts at positive velocity with negative acceleration") {
-            auto msg = Move{.duration = 3,
-                            .velocity = 1 << (TO_RADIX - 1),
-                            .acceleration = -(1 << (TO_RADIX - 3))};
+            sq0_31 velocity = convert_velocity(0.5);
+            sq0_31 acceleration = convert_velocity(-0.025);
+            q31_31 duration = 3;
+            auto msg = Move{.duration = duration,
+                            .velocity = velocity,
+                            .acceleration = acceleration};
             handler.set_buffered_move(msg);
-            handler.set_current_position(0x70000000);
             THEN("the third and fifth ticks should step") {
+                REQUIRE(!handler.tick());
+                REQUIRE(!handler.tick());
                 REQUIRE(handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(!handler.tick());
                 REQUIRE(handler.get_current_position() ==
-                        (static_cast<q31_31>(0x70000000) + 0x60000000));
+                        get_distance(velocity, acceleration, duration));
             }
         }
         WHEN("move starts at negative velocity with positive acceleration") {
-            auto msg = Move{.duration = 4,
-                            .velocity = -1 << (TO_RADIX - 1),
-                            .acceleration = 1 << (TO_RADIX - 2)};
+            sq0_31 velocity = convert_velocity(-0.5);
+            sq0_31 acceleration = convert_velocity(0.05);
+            q31_31 duration = 4;
+            handler.set_current_position(convert_distance(10.0));
+            auto msg = Move{.duration = duration,
+                            .velocity = velocity,
+                            .acceleration = acceleration};
             handler.set_buffered_move(msg);
             THEN("the third and forth ticks should step") {
-                REQUIRE(!handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(!handler.tick());
+                REQUIRE(handler.tick());
                 REQUIRE(!handler.tick());
                 REQUIRE(handler.tick());
+                REQUIRE(!handler.tick());
                 REQUIRE(handler.get_current_position() ==
-                        (-1LL << (TO_RADIX)) + (5LL << (TO_RADIX - 1)));
+                        convert_distance(10.0) +
+                            get_distance(velocity, acceleration, duration));
             }
         }
     }

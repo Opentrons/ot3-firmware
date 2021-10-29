@@ -9,7 +9,7 @@ typedef uint64_t
 namespace motor_messages {
 
 struct Move {
-    uint32_t duration;  // in ticks
+    uint64_t duration;  // in ticks
     sq0_31 velocity;
     sq0_31 acceleration;
     uint8_t group_id;
