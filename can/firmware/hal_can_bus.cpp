@@ -9,7 +9,7 @@ HalCanBus::HalCanBus(FDCAN_HandleTypeDef* handle)
     : handle(handle),
       tx_header{.IdType = arbitration_id_type,
                 .TxFrameType = FDCAN_DATA_FRAME,
-                .ErrorStateIndicator = FDCAN_ESI_PASSIVE,
+                .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
                 .BitRateSwitch = FDCAN_BRS_OFF,
                 .FDFormat = FDCAN_FD_CAN,
                 .TxEventFifoControl = FDCAN_NO_TX_EVENTS} {}
