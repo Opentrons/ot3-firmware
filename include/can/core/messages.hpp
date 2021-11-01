@@ -12,7 +12,7 @@ namespace can_messages {
 
 using namespace can_ids;
 
-using ticks = uint64_t;
+using ticks = uint32_t;
 using um_per_tick = int16_t;
 using um_per_tick_sq = int16_t;
 
