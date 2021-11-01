@@ -19,13 +19,13 @@ SCENARIO("queue multiple move messages") {
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {
                 constexpr Move msg1 =
-                    Move{.target_position = 100, .velocity = default_velocity};
+                    Move{.duration = 100, .velocity = default_velocity};
                 constexpr Move msg2 =
-                    Move{.target_position = 400, .velocity = default_velocity};
+                    Move{.duration = 400, .velocity = default_velocity};
                 constexpr Move msg3 =
-                    Move{.target_position = 7000, .velocity = default_velocity};
+                    Move{.duration = 7000, .velocity = default_velocity};
                 constexpr Move msg4 =
-                    Move{.target_position = 800, .velocity = default_velocity};
+                    Move{.duration = 800, .velocity = default_velocity};
                 queue.try_write(msg1);
                 queue.try_write(msg2);
                 queue.try_write(msg3);

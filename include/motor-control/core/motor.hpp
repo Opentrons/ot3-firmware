@@ -11,6 +11,8 @@
 
 namespace motor_class {
 
+using namespace motor_messages;
+
 template <spi::TMC2130Spi SpiDriver, template <class> class PendingQueueImpl,
           template <class> class CompletedQueueImpl,
           lms::MotorMechanicalConfig MEConfig>

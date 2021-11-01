@@ -35,6 +35,7 @@ using namespace eeprom_message_handler;
 using namespace motor_message_handler;
 using namespace move_group_handler;
 using namespace move_group_executor_handler;
+using namespace motor_messages;
 
 extern FDCAN_HandleTypeDef fdcan1;
 

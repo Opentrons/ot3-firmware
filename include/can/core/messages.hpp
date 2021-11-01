@@ -5,11 +5,16 @@
 
 #include "common/core/bit_utils.hpp"
 #include "ids.hpp"
+#include "motor-control/core/motor_messages.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
 
 using namespace can_ids;
+
+using ticks = uint32_t;
+using um_per_tick = int16_t;
+using um_per_tick_sq = int16_t;
 
 /**
  * These types model the messages being sent and received over the can bus.
@@ -123,18 +128,28 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
 };
 
 struct MoveRequest : BaseMessage<MessageId::move_request> {
-    uint32_t target_position;
+    ticks duration;
+    um_per_tick velocity;
+    um_per_tick_sq acceleration;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
-        uint32_t target_position = 0;
-        body = bit_utils::bytes_to_int(body, limit, target_position);
-        return MoveRequest{.target_position = target_position};
+        ticks duration = 0;
+        um_per_tick velocity = 0;
+        um_per_tick_sq acceleration = 0;
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
+        return MoveRequest{.duration = duration,
+                           .velocity = velocity,
+                           .acceleration = acceleration};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(target_position, body, limit);
+        auto iter = bit_utils::int_to_bytes(duration, body, limit);
+        iter = bit_utils::int_to_bytes(velocity, iter, limit);
+        iter = bit_utils::int_to_bytes(acceleration, iter, limit);
         return iter - body;
     }
     bool operator==(const MoveRequest& other) const = default;
@@ -206,7 +221,6 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
     uint16_t duration;
     int16_t acceleration;
     int16_t velocity;
-    //    uint32_t position;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> AddLinearMoveRequest {

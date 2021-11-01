@@ -23,6 +23,7 @@ using namespace can_message_writer;
 using namespace can_ids;
 using namespace can_dispatch;
 using namespace motor_message_handler;
+using namespace motor_messages;
 
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);

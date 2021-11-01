@@ -14,6 +14,7 @@ namespace move_group_executor_handler {
 
 using namespace can_message_writer;
 using namespace can_messages;
+using namespace motor_messages;
 
 template <typename Motor>
 struct TaskEntry {
