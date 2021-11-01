@@ -76,3 +76,5 @@ void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); }
 void turn_off_step_pin() {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 }
+
+void toggle_direction_pin() { HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1); }

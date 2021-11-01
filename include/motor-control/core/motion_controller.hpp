@@ -90,10 +90,7 @@ class MotionController {
         timer_interrupt_stop();
     }
 
-    auto get_direction() -> bool { return direction; }
-
   private:
-    bool direction = true;  // direction true: forward, false: backward
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
