@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "common/firmware/errors.h"
 #include "common/firmware/timer_interrupt.h"
 #include "stm32g4xx_hal.h"
@@ -47,7 +49,7 @@ void MX_TIM7_Init(void) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7) {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_8);
+        step_motor();
     }
 }
 
@@ -76,8 +78,6 @@ void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); }
 void turn_off_step_pin() {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 }
-
-void toggle_direction_pin() { HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1); }
 
 void turn_on_direction_pin() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
