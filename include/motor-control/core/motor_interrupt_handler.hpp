@@ -96,11 +96,9 @@ class MotorInterruptHandler {
         // queue stack. We'll probably want to think about moving the hardware
         // pin configurations out of motion controller.
     }
-    
-    bool should_change_direction() {
-        bool prev_direction_bit = direction_bit;
-        direction_bit = (buffered_move.velocity < 0) ? 0 : 1;
-        return (prev_direction_bit == direction_bit);
+
+    bool set_direction_pin(bool direction_bit) {
+        return (buffered_move.velocity & direction_bit);
     }
 
     void finish_current_move() {
@@ -195,6 +193,5 @@ class MotorInterruptHandler {
     GenericQueue* queue = nullptr;
     CompletedQueue* completed_queue = nullptr;
     Move buffered_move = Move{};
-    bool direction_bit = 1;  // 1: move forward, 0: move backward
 };
 }  // namespace motor_handler

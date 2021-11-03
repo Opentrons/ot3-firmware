@@ -78,3 +78,13 @@ void turn_off_step_pin() {
 }
 
 void toggle_direction_pin() { HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1); }
+
+void turn_on_direction_pin() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+}
+
+void turn_off_direction_pin() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+}
+
+bool get_direction_bit() { return (bool)HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1); }
