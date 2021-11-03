@@ -71,28 +71,28 @@
       "displayName": "pipettes binary",
       "description": "Build the pipettes cross binary",
       "configurePreset": "cross-pipettes",
-      "targets": "pipettes"
+      "targets": ["pipettes"]
     },
     {
       "name": "gantry",
       "displayName": "gantry binary",
       "description": "build the gantry binary targets",
       "configurePreset": "cross",
-      "targets": "gantry"
+      "targets": ["gantry"]
     },
     {
       "name": "head",
       "displayName": "head binary",
       "description": "build the head binary targets",
       "configurePreset": "cross",
-      "targets": "head"
+      "targets": ["head"]
     },
     {
       "name": "tests",
       "displayName": "tests",
       "description": "build and run all tests",
       "configurePreset": "host",
-      "targets": "build-and-test"
+      "targets": ["build-and-test"]
     }
   ]
 }
