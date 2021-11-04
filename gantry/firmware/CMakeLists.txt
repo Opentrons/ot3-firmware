@@ -11,10 +11,10 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 # Add source files that should be checked by clang-tidy here
 set(GANTRY_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/step_motor.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
+        ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/hal_can_message_buffer.cpp
         ${CAN_FW_DIR}/utils.cpp

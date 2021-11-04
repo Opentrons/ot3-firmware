@@ -1,5 +1,4 @@
 #pragma once
-#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -22,7 +21,6 @@ void turn_on_step_pin();
 void turn_off_step_pin();
 void turn_on_direction_pin();
 void turn_off_direction_pin();
-bool get_direction_bit();
 
 #ifdef __cplusplus
 }  // extern "C"

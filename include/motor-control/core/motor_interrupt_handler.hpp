@@ -80,7 +80,7 @@ class MotorInterruptHandler {
         tick_count++;
         q31_31 old_position = position_tracker;
         buffered_move.velocity += buffered_move.acceleration;
-        position_tracker += buffered_move.velocity;
+        position_tracker += buffered_move.velocity << 31;
         if (overflow(old_position, position_tracker) == true) {
             position_tracker = old_position;
             return false;
@@ -97,9 +97,7 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    bool set_direction_pin(bool direction_bit) {
-        return (buffered_move.velocity & direction_bit);
-    }
+    bool set_direction_pin() { return (buffered_move.velocity > 0); }
 
     void finish_current_move() {
         has_active_move = false;

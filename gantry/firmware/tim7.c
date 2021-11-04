@@ -1,5 +1,3 @@
-#include <stdbool.h>
-
 #include "common/firmware/errors.h"
 #include "common/firmware/timer_interrupt.h"
 #include "stm32g4xx_hal.h"
@@ -86,5 +84,3 @@ void turn_on_direction_pin() {
 void turn_off_direction_pin() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
 }
-
-bool get_direction_bit() { return (bool)HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1); }

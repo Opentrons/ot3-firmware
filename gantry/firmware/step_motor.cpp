@@ -11,8 +11,8 @@ static auto handler_class = motor_handler::MotorInterruptHandler<
 
 void step_motor() {
     if (handler_class.pulse()) {
-        if (handler_class.set_direction_pin(get_direction_bit())) {
-            turn_on_direction_pin();  // TODO (AA, 11/1/2021): make sure the DIR
+        if (handler_class.set_direction_pin()) {
+            turn_on_direction_pin();
         } else {
             turn_off_direction_pin();
         }
