@@ -80,7 +80,7 @@ class MotorInterruptHandler {
         tick_count++;
         q31_31 old_position = position_tracker;
         buffered_move.velocity += buffered_move.acceleration;
-        position_tracker += buffered_move.velocity << 31;
+        position_tracker += buffered_move.velocity;
         if (overflow(old_position, position_tracker) == true) {
             position_tracker = old_position;
             return false;
