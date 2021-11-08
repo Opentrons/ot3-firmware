@@ -22,13 +22,14 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a move request body") {
-        auto arr = std::array<uint8_t, 8>{1, 2, 3, 4, 5, 6, 7, 8};
+        auto arr =
+            std::array<uint8_t, 12>{1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc};
         WHEN("constructed") {
             auto r = MoveRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
                 REQUIRE(r.duration == 0x01020304);
-                REQUIRE(r.velocity == 0x0506);
-                REQUIRE(r.acceleration == 0x0708);
+                REQUIRE(r.velocity == 0x05060708);
+                REQUIRE(r.acceleration == 0x090a0b0c);
             }
             THEN("it can be compared for equality") {
                 auto other = r;
@@ -92,9 +93,11 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a set steps request message") {
-        auto message = MoveRequest{
-            .duration = 0x12345678, .velocity = 0xaa, .acceleration = 0xbb};
-        auto arr = std::array<uint8_t, 8>{};
+        auto message =
+            MoveRequest{.duration = 0x12345678,
+                        .velocity = static_cast<int32_t>(0xaabbccdd),
+                        .acceleration = static_cast<int32_t>(0xeeff1100)};
+        auto arr = std::array<uint8_t, 12>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
@@ -103,12 +106,16 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[1] == 0x34);
                 REQUIRE(body.data()[2] == 0x56);
                 REQUIRE(body.data()[3] == 0x78);
-                REQUIRE(body.data()[4] == 0x00);
-                REQUIRE(body.data()[5] == 0xaa);
-                REQUIRE(body.data()[6] == 0x00);
-                REQUIRE(body.data()[7] == 0xbb);
+                REQUIRE(body.data()[4] == 0xaa);
+                REQUIRE(body.data()[5] == 0xbb);
+                REQUIRE(body.data()[6] == 0xcc);
+                REQUIRE(body.data()[7] == 0xdd);
+                REQUIRE(body.data()[8] == 0xee);
+                REQUIRE(body.data()[9] == 0xff);
+                REQUIRE(body.data()[10] == 0x11);
+                REQUIRE(body.data()[11] == 0x00);
             }
-            THEN("size must be returned") { REQUIRE(size == 8); }
+            THEN("size must be returned") { REQUIRE(size == 12); }
         }
     }
 
