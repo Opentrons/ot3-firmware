@@ -13,8 +13,8 @@ namespace can_messages {
 using namespace can_ids;
 
 using ticks = uint32_t;
-using um_per_tick = int16_t;
-using um_per_tick_sq = int16_t;
+using um_per_tick = int32_t;
+using um_per_tick_sq = int32_t;
 
 /**
  * These types model the messages being sent and received over the can bus.
@@ -218,30 +218,27 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
 struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
     uint8_t group_id;
     uint8_t seq_id;
-    uint16_t duration;
-    int16_t acceleration;
-    int16_t velocity;
+    ticks duration;
+    um_per_tick_sq acceleration;
+    um_per_tick velocity;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> AddLinearMoveRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        uint16_t duration = 0;
-        int16_t acceleration = 0;
-        int16_t velocity = 0;
-        //        uint32_t position = 0;
+        ticks duration = 0;
+        um_per_tick_sq acceleration = 0;
+        um_per_tick velocity = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, acceleration);
         body = bit_utils::bytes_to_int(body, limit, velocity);
-        //        body = bit_utils::bytes_to_int(body, limit, position);
         return AddLinearMoveRequest{.group_id = group_id,
                                     .seq_id = seq_id,
                                     .duration = duration,
                                     .acceleration = acceleration,
                                     .velocity = velocity};
-        //                                    .position = position};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -251,7 +248,6 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
         iter = bit_utils::int_to_bytes(duration, iter, limit);
         iter = bit_utils::int_to_bytes(acceleration, iter, limit);
         iter = bit_utils::int_to_bytes(velocity, iter, limit);
-        //        iter = bit_utils::int_to_bytes(position, iter, limit);
         return iter - body;
     }
 
