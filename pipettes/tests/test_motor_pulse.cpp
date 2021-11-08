@@ -256,3 +256,37 @@ TEST_CASE("moves that result in out of range positions") {
         }
     }
 }
+
+TEST_CASE("Changing motor direction") {
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>
+        handler{};
+    mock_message_queue::MockMessageQueue<Move> queue;
+    mock_message_queue::MockMessageQueue<Ack> completed_queue;
+    handler.set_message_queue(&queue, &completed_queue);
+
+    handler.set_current_position(0x0);
+
+    GIVEN("Positive move velocity") {
+        auto msg1 = Move{.duration = 2, .velocity = default_velocity};
+        queue.try_write_isr(msg1);
+        handler.update_move();
+
+        for (int i = 0; i < 2 ; i++) {
+            handler.tick();
+            REQUIRE(handler.set_direction_pin());
+        }
+
+        THEN("Negative move velocity") {
+            auto msg1 = Move{.duration = 2, .velocity = -default_velocity};
+            queue.try_write_isr(msg1);
+            handler.update_move();
+            for (int i = 0; i < 2 ; i++) {
+                handler.tick();
+                REQUIRE(!handler.set_direction_pin());
+            }
+        }
+
+    }
+
+}
