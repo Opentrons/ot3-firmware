@@ -272,7 +272,7 @@ TEST_CASE("Changing motor direction") {
         queue.try_write_isr(msg1);
         handler.update_move();
 
-        for (int i = 0; i < 2 ; i++) {
+        for (int i = 0; i < 2; i++) {
             handler.tick();
             REQUIRE(handler.set_direction_pin());
         }
@@ -281,12 +281,10 @@ TEST_CASE("Changing motor direction") {
             auto msg1 = Move{.duration = 2, .velocity = -default_velocity};
             queue.try_write_isr(msg1);
             handler.update_move();
-            for (int i = 0; i < 2 ; i++) {
+            for (int i = 0; i < 2; i++) {
                 handler.tick();
                 REQUIRE(!handler.set_direction_pin());
             }
         }
-
     }
-
 }
