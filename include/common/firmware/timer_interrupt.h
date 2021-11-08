@@ -19,6 +19,8 @@ void timer_interrupt_stop();
 void step_motor();
 void turn_on_step_pin();
 void turn_off_step_pin();
+void turn_on_direction_pin();
+void turn_off_direction_pin();
 
 #ifdef __cplusplus
 }  // extern "C"

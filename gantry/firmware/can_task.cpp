@@ -1,8 +1,12 @@
+#include "common/firmware/can_task.hpp"
+
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_handlers/motor.hpp"
+#include "can/core/message_handlers/move_group.hpp"
+#include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_bus.hpp"
@@ -13,16 +17,21 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
 #include "gantry/core/axis_type.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
 using namespace freertos_task;
 using namespace freertos_can_dispatch;
 using namespace hal_can_bus;
+using namespace can_device_info;
+using namespace can_messages;
 using namespace can_message_writer;
 using namespace can_ids;
 using namespace can_dispatch;
 using namespace motor_message_handler;
+using namespace move_group_handler;
+using namespace move_group_executor_handler;
 using namespace motor_messages;
 
 extern FDCAN_HandleTypeDef fdcan1;
@@ -57,8 +66,13 @@ static motor_class::Motor motor{
         .microstep = 16},
     PinConfigurations, motor_queue, complete_queue};
 
+static auto move_group_manager = MoveGroupType{};
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_move_group_handler =
+    MoveGroupHandler(message_writer_1, move_group_manager);
+static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
+    message_writer_1, move_group_manager, motor, axis_type::get_node_id());
 
 /** Handler of device info requests. */
 static auto device_info_handler = can_device_info::DeviceInfoHandler(
@@ -72,9 +86,21 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest>{can_motor_handler};
+
+static auto motion_group_dispatch_target = DispatchParseTarget<
+    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
+    can_messages::GetMoveGroupRequest, can_messages::ClearMoveGroupRequest>{
+    can_move_group_handler};
+
+static auto motion_group_executor_dispatch_target =
+    DispatchParseTarget<decltype(can_move_group_executor_handler),
+                        can_messages::ExecuteMoveGroupRequest>{
+        can_move_group_executor_handler};
+
 /** Dispatcher to the various handlers */
-static auto dispatcher =
-    Dispatcher(motor_dispatch_target, device_info_dispatch_target);
+static auto dispatcher = Dispatcher(
+    motor_dispatch_target, motion_group_dispatch_target,
+    motion_group_executor_dispatch_target, device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
@@ -88,4 +114,4 @@ static auto dispatcher =
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5>("can task", task_entry);
+auto static task = FreeRTOSTask<512, 5>("can task", task_entry);

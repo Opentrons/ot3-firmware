@@ -2,6 +2,7 @@
 
 #include "common/firmware/timer_interrupt.h"
 #include "motor-control/core/motor_messages.hpp"
+#include "stm32l5xx_hal.h"
 
 using namespace motor_messages;
 
@@ -11,6 +12,11 @@ static auto handler_class = motor_handler::MotorInterruptHandler<
 
 void step_motor() {
     if (handler_class.pulse()) {
+        if (handler_class.set_direction_pin()) {
+            turn_on_direction_pin();
+        } else {
+            turn_off_direction_pin();
+        }
         turn_on_step_pin();
     }
     turn_off_step_pin();

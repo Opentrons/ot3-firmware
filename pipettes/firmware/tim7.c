@@ -29,7 +29,7 @@ void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
-    htim7.Init.Prescaler = 5000;
+    htim7.Init.Prescaler = 500;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
     htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -75,4 +75,12 @@ void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); }
 
 void turn_off_step_pin() {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+}
+
+void turn_on_direction_pin() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+}
+
+void turn_off_direction_pin() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
 }

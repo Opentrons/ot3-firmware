@@ -97,6 +97,8 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
+    bool set_direction_pin() { return (buffered_move.velocity > 0); }
+
     void finish_current_move() {
         has_active_move = false;
         tick_count = 0x0;
