@@ -60,12 +60,12 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     // PA04 -> CS
     // PC10 -> CLK
     // PC12 -> MOSI
-    GPIO_InitStruct = {0};
-    if (hspi->Instance == SPI3) {
+    
+    else if (hspi->Instance == SPI3) {
         /* Peripheral clock enable */
-        __HAL_RCC_SPI2_CLK_ENABLE();
+        __HAL_RCC_SPI3_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
-        __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
         /**SPI3 GPIO Configuration
         PA04     ------> SPI3_NSS
         PC10     ------> SPI3_SCK
@@ -80,7 +80,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF5_SPI3;
+        GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
         // Chip select
@@ -100,6 +100,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
     }
+
+    else return void;
 }
 
 
@@ -125,7 +127,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
                         GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8 | GPIO_PIN_9);
     }
-    if (hspi->Instance == SPI3) {
+    else if (hspi->Instance == SPI3) {
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
 
@@ -139,6 +141,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
                         GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_4 | GPIO_PIN_6 | GPIO_PIN_7);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
     }
+    else return void;
 }
 
 
@@ -181,7 +184,7 @@ SPI_HandleTypeDef MX_SPI2_Init() {
  */
 SPI_HandleTypeDef MX_SPI3_Init() {
     /* SPI2 parameter configuration*/
-    __HAL_RCC_SPI2_CLK_ENABLE();
+    __HAL_RCC_SPI3_CLK_ENABLE();
     SPI_HandleTypeDef hspi3 = {
         .Instance = SPI3,
         .Init = {.Mode = SPI_MODE_MASTER,
