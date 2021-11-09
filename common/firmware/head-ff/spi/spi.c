@@ -7,7 +7,7 @@ SPI_HandleTypeDef handle;
 
 /**
  * @brief SPI MSP Initialization
- * This function configures the hardware resources used in this example
+ * This function configures SPI for the Z/A axis motors
  * @param hspi: SPI handle pointer
  * @retval None
  */
@@ -104,7 +104,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
 
 /**
  * @brief SPI MSP De-Initialization
- * This function freeze the hardware resources used in this example
+ * This function denits SPI for Z/A motors
  * @param hspi: SPI2 handle pointer
  * @retval None
  */
