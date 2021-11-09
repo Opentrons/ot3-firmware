@@ -100,8 +100,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
     }
-
-    else return void;
 }
 
 
@@ -141,7 +139,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
                         GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_4 | GPIO_PIN_6 | GPIO_PIN_7);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
     }
-    else return void;
 }
 
 
