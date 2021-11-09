@@ -5,6 +5,7 @@ add_STM32G4_driver("Head")
 add_STM32G4_freertos("Head")
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
+set(FF_BOARD_HEAD_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware/head-ff")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
@@ -25,10 +26,11 @@ set(HEAD_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
-        ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/can/can.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
+        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c
+        ${FF_BOARD_HEAD_EXECUTABLE_DIR}/spi/spi.c
+        )
 
 add_executable(head
         ${HEAD_FW_LINTABLE_SRCS}
