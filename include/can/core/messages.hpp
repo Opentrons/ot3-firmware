@@ -5,14 +5,13 @@
 
 #include "common/core/bit_utils.hpp"
 #include "ids.hpp"
-#include "motor-control/core/motor_messages.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
 
 using namespace can_ids;
 
-using ticks = uint32_t;
+using can_ticks = uint32_t;
 using um_per_tick = int32_t;
 using um_per_tick_sq = int32_t;
 
@@ -128,13 +127,13 @@ struct GetStatusResponse : BaseMessage<MessageId::get_status_response> {
 };
 
 struct MoveRequest : BaseMessage<MessageId::move_request> {
-    ticks duration;
+    can_ticks duration;
     um_per_tick velocity;
     um_per_tick_sq acceleration;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> MoveRequest {
-        ticks duration = 0;
+        can_ticks duration = 0;
         um_per_tick velocity = 0;
         um_per_tick_sq acceleration = 0;
         body = bit_utils::bytes_to_int(body, limit, duration);
@@ -215,10 +214,58 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     bool operator==(const ReadFromEEPromResponse& other) const = default;
 };
 
+using GetMoveStatusRequest = Empty<MessageId::get_move_status_request>;
+
+struct GetMoveStatusResponse
+    : BaseMessage<MessageId::get_move_status_response> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint64_t remaining_duration;
+    uint64_t current_position;
+    uint8_t node_id;
+    uint8_t padding;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GetMoveStatusResponse {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        uint64_t remaining_duration = 0;
+        uint64_t current_position = 0;
+        uint8_t node_id = 0;
+        uint8_t padding =
+            0;  // TODO (AA 2021-11-09): replace padding with other info
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, remaining_duration);
+        body = bit_utils::bytes_to_int(body, limit, current_position);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
+        body = bit_utils::bytes_to_int(body, limit, padding);
+        return GetMoveStatusResponse{.group_id = group_id,
+                                     .seq_id = seq_id,
+                                     .remaining_duration = remaining_duration,
+                                     .current_position = current_position,
+                                     .node_id = node_id,
+                                     .padding = padding};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
+        iter = bit_utils::int_to_bytes(remaining_duration, iter, limit);
+        iter = bit_utils::int_to_bytes(current_position, iter, limit);
+        iter = bit_utils::int_to_bytes(node_id, iter, limit);
+        iter = bit_utils::int_to_bytes(padding, iter, limit);
+        return iter - body;
+    }
+
+    bool operator==(const GetMoveStatusResponse& other) const = default;
+};
+
 struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
     uint8_t group_id;
     uint8_t seq_id;
-    ticks duration;
+    can_ticks duration;
     um_per_tick_sq acceleration;
     um_per_tick velocity;
 
@@ -226,7 +273,7 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
     static auto parse(Input body, Limit limit) -> AddLinearMoveRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        ticks duration = 0;
+        can_ticks duration = 0;
         um_per_tick_sq acceleration = 0;
         um_per_tick velocity = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);

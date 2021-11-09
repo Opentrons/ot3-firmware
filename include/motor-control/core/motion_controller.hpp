@@ -90,6 +90,10 @@ class MotionController {
         timer_interrupt_stop();
     }
 
+    MoveStatus read_move_status() {
+        return get_move_status();
+    }
+
   private:
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;

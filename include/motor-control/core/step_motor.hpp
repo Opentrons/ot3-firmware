@@ -9,3 +9,4 @@ void start_motor_handler(
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack>*
         completed_queue);
 void reset_motor_handler();
+motor_messages::MoveStatus get_move_status();

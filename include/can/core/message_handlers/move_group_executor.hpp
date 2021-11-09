@@ -40,7 +40,8 @@ struct TaskEntry {
 template <typename Motor>
 class MoveGroupExecutorHandler {
   public:
-    using MessageType = std::variant<std::monostate, ExecuteMoveGroupRequest>;
+    using MessageType = std::variant<std::monostate, ExecuteMoveGroupRequest,
+                                     GetMoveStatusRequest>;
 
     MoveGroupExecutorHandler(
         MessageWriter &message_writer,
@@ -78,6 +79,12 @@ class MoveGroupExecutorHandler {
 
     void visit_move(const AddLinearMoveRequest &m) {
         motor.motion_controller.move(m);
+    }
+
+    void visit(GetMoveStatusRequest &m) {
+        auto msg = motor.motion_controller.read_move_status();
+        msg.node_id = static_cast<uint8_t>(node_id);
+        message_writer.write(NodeId::host, msg);
     }
 
     MessageWriter &message_writer;

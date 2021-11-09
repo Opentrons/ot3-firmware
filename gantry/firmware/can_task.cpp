@@ -94,7 +94,8 @@ static auto motion_group_dispatch_target = DispatchParseTarget<
 
 static auto motion_group_executor_dispatch_target =
     DispatchParseTarget<decltype(can_move_group_executor_handler),
-                        can_messages::ExecuteMoveGroupRequest>{
+                        can_messages::ExecuteMoveGroupRequest,
+                        can_messages::GetMoveStatusRequest>{
         can_move_group_executor_handler};
 
 /** Dispatcher to the various handlers */

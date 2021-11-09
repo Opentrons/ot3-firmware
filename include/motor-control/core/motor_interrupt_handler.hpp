@@ -173,6 +173,10 @@ class MotorInterruptHandler {
         return bool((current ^ future) & overflow_flag);
     }
 
+    uint64_t get_remaining_ticks() {
+        return buffered_move.duration - tick_count;
+    }
+
     q31_31 get_current_position() { return position_tracker; }
 
     void set_current_position(q31_31 pos_tracker) {
