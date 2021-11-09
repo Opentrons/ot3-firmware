@@ -50,9 +50,9 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
 static spi::Spi spi_comms{};
 
 struct motion_controller::HardwareConfig PinConfigurations {
-    .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
-    .step = {.port = GPIOA, .pin = GPIO_PIN_8},
-    .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
+    .direction = {.port = GPIOC, .pin = GPIO_PIN_3},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_7},
+    .enable = {.port = GPIOC, .pin = GPIO_PIN_8},
 };
 
 /**
