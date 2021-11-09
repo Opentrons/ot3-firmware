@@ -16,9 +16,9 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    /*Configure GPIO pin : LD2_Pin */
+    /*Configure GPIO pin : PA0 which can be used as a timer */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Pin = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -67,14 +67,15 @@ void timer_init() {
     MX_TIM7_Init();
 }
 
+
 void timer_interrupt_start() { HAL_TIM_Base_Start_IT(&htim7); }
 
 void timer_interrupt_stop() { HAL_TIM_Base_Stop_IT(&htim7); }
 
-void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); }
+void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET); }
 
 void turn_off_step_pin() {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 }
 
 void turn_on_direction_pin() {

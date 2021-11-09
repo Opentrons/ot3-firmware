@@ -28,7 +28,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-    ${COMMON_EXECUTABLE_DIR}/spi/spi.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/spi.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
     ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 

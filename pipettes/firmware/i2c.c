@@ -5,19 +5,19 @@ static I2C_HandleTypeDef hi2c;
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
 
-    // PIN PB7 is SCL
-    // PIN PB8-BOOT0 is SDA
+    // PIN PC0 is SCL
+    // PIN PC1 is SDA
     if(hi2c->Instance==I2C1) {
         __HAL_RCC_I2C1_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
         GPIO_InitTypeDef GPIO_InitStruct = {0};
-        GPIO_InitStruct.Pin = GPIO_PIN_7 | GPIO_PIN_8;
+        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
         HAL_GPIO_Init(
-            GPIOB,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+            GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
     }
 }
