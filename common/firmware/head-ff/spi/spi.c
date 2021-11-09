@@ -60,7 +60,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     // PA04 -> CS
     // PC10 -> CLK
     // PC12 -> MOSI
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct = {0};
     if (hspi->Instance == SPI3) {
         /* Peripheral clock enable */
         __HAL_RCC_SPI2_CLK_ENABLE();
