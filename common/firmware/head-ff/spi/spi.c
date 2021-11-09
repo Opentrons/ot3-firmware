@@ -102,37 +102,16 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     }
 }
 
+
+
 /**
  * @brief SPI MSP De-Initialization
  * This function freeze the hardware resources used in this example
- * @param hspi: SPI handle pointer
+ * @param hspi: SPI2 handle pointer
  * @retval None
  */
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     if (hspi->Instance == SPI2) {
-        /* Peripheral clock disable */
-        __HAL_RCC_SPI2_CLK_DISABLE();
-
-        /**SPI3 GPIO Configuration
-        PA04     ------> SPI3_NSS
-        PC10     ------> SPI3_SCK
-        PC11     ------> SPI3_MISO
-        PC12     ------> SPI3_MOSI
-        */
-        HAL_GPIO_DeInit(GPIOC,
-                        GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_6 | GPIO_PIN_7);
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8 | GPIO_PIN_9);
-    }
-}
-
-/**
- * @brief SPI3 MSP De-Initialization
- * This function freeze the hardware resources used in this example
- * @param hspi: SPI3 handle pointer
- * @retval None
- */
-void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
-    if (hspi->Instance == SPI3) {
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
 
@@ -145,6 +124,20 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_DeInit(GPIOB,
                         GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8 | GPIO_PIN_9);
+    }
+    if (hspi->Instance == SPI3) {
+        /* Peripheral clock disable */
+        __HAL_RCC_SPI2_CLK_DISABLE();
+
+        /**SPI3 GPIO Configuration
+        PA04     ------> SPI3_NSS
+        PC10     ------> SPI3_SCK
+        PC11     ------> SPI3_MISO
+        PC12     ------> SPI3_MOSI
+        */
+        HAL_GPIO_DeInit(GPIOC,
+                        GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_4 | GPIO_PIN_6 | GPIO_PIN_7);
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
     }
 }
 
@@ -181,11 +174,50 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     return hspi2;
 }
 
+/**
+ * @brief SPI3 Initialization Function
+ * @param None
+ * @retval None
+ */
+SPI_HandleTypeDef MX_SPI3_Init() {
+    /* SPI2 parameter configuration*/
+    __HAL_RCC_SPI2_CLK_ENABLE();
+    SPI_HandleTypeDef hspi3 = {
+        .Instance = SPI3,
+        .Init = {.Mode = SPI_MODE_MASTER,
+                 .Direction = SPI_DIRECTION_2LINES,
+                 .DataSize = SPI_DATASIZE_8BIT,
+                 .CLKPolarity = SPI_POLARITY_HIGH,
+                 .CLKPhase = SPI_PHASE_2EDGE,
+                 .NSS = SPI_NSS_SOFT,
+                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+                 .FirstBit = SPI_FIRSTBIT_MSB,
+                 .TIMode = SPI_TIMODE_DISABLE,
+                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+                 .CRCPolynomial = 7,
+                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
+
+    };
+
+    if (HAL_SPI_Init(&hspi3) != HAL_OK) {
+        Error_Handler();
+    }
+    return hspi3;
+}
+
 void SPI2_init() {
     handle = MX_SPI2_Init();
 }
 
-void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
+void SPI3_init() {
+    handle = MX_SPI3_Init();
+}
+
+void Set_CS_Pin() { 
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+
+}
 
 void Reset_CS_Pin() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
