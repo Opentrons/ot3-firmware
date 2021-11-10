@@ -20,7 +20,7 @@ class MoveGroupHandler {
   public:
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest, GetMoveGroupRequest,
-                     ClearMoveGroupRequest>;
+                     ClearMoveGroupRequest, ClearAllMoveGroupsRequest>;
     MoveGroupHandler(MessageWriter &message_writer,
                      MoveGroupType &motion_group_manager)
         : message_writer{message_writer},
@@ -56,6 +56,12 @@ class MoveGroupHandler {
     void visit(ClearMoveGroupRequest &m) {
         auto group = motion_group_manager[m.group_id];
         group.clear();
+    }
+
+    void visit(ClearAllMoveGroupsRequest &m) {
+        for (auto group : motion_group_manager) {
+            group.clear();
+        }
     }
 
     MessageWriter &message_writer;

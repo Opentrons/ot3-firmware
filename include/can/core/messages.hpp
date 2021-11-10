@@ -354,6 +354,9 @@ struct ClearMoveGroupRequest
     bool operator==(const ClearMoveGroupRequest& other) const = default;
 };
 
+using ClearAllMoveGroupsRequest =
+    Empty<MessageId::clear_all_move_groups_request>;
+
 struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
     uint8_t group_id;
     uint8_t node_id;
