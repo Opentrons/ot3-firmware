@@ -27,6 +27,7 @@ enum class AckMessageId : uint8_t { complete = 0x1, error = 0x04 };
 struct Ack {
     uint8_t group_id;
     uint8_t seq_id;
+    ticks current_position;
     AckMessageId ack_id;
 };
 
