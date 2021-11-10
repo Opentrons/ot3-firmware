@@ -7,8 +7,9 @@
 static constexpr auto ticks_per_sec = 170000;
 
 auto sec_to_ticks(float seconds) -> ticks { return seconds * ticks_per_sec; }
-auto mm_per_sec_to_mm_per_tick(float mm) -> steps_per_tick { return static_cast<steps_per_tick>(mm * ticks_per_sec); }
-
+auto mm_per_sec_to_mm_per_tick(float mm) -> steps_per_tick {
+    return static_cast<steps_per_tick>(mm * ticks_per_sec);
+}
 
 int main() {
     auto q_new_moves =
