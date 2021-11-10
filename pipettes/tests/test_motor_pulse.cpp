@@ -300,7 +300,7 @@ TEST_CASE("Finishing a move") {
     GIVEN("a move") {
         auto move = Move{.group_id = 1, .seq_id = 2};
         handler.set_buffered_move(move);
-        handler.set_current_position(100LL << RADIX);
+        handler.set_current_position(100);
         handler.finish_current_move();
 
         THEN(
