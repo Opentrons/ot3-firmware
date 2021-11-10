@@ -25,10 +25,7 @@ using namespace spi;
  * Public Functions
  */
 
-Spi::Spi() {
-    SPI2_init();
-    SPI3_init();
-}
+Spi::Spi() { SPI2_init(); }
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     Reset_CS_Pin();
