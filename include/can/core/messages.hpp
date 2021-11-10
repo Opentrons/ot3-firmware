@@ -380,7 +380,7 @@ struct MoveGroupCompleted : BaseMessage<MessageId::move_group_completed> {
 struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
-    uint64_t current_position;
+    uint32_t current_position;
     uint8_t ack_id;
     uint8_t node_id;
 
@@ -388,7 +388,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     static auto parse(Input body, Limit limit) -> MoveCompleted {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        uint64_t current_position = 0;
+        uint32_t current_position = 0;
         uint8_t ack_id = 0;
         uint8_t node_id = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);

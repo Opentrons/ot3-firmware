@@ -288,3 +288,30 @@ TEST_CASE("Changing motor direction") {
         }
     }
 }
+
+TEST_CASE("Finishing a move") {
+    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
+                          mock_message_queue::MockMessageQueue>
+        handler{};
+    mock_message_queue::MockMessageQueue<Move> queue;
+    mock_message_queue::MockMessageQueue<Ack> completed_queue;
+    handler.set_message_queue(&queue, &completed_queue);
+
+    GIVEN("a move") {
+        auto move = Move{.group_id = 1, .seq_id = 2};
+        handler.set_buffered_move(move);
+        handler.set_current_position(100LL << RADIX);
+        handler.finish_current_move();
+
+        THEN(
+            "the ack message should contain the correct information when the "
+            "move finishes") {
+            REQUIRE(completed_queue.get_size() == 1);
+            auto msg = Ack{};
+            completed_queue.try_read(&msg);
+            REQUIRE(msg.group_id == move.group_id);
+            REQUIRE(msg.seq_id == move.seq_id);
+            REQUIRE(msg.current_position == 100);
+        }
+    }
+}

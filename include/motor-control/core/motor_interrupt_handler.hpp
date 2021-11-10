@@ -105,7 +105,7 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{.group_id = buffered_move.group_id,
                            .seq_id = buffered_move.seq_id,
-                           .current_position = position_tracker,
+                           .current_position = (position_tracker >> RADIX),
                            .ack_id = AckMessageId::complete};
             if (completed_queue) {
                 static_cast<void>(completed_queue->try_write_isr(ack));

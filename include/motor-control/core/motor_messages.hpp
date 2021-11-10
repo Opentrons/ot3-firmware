@@ -31,4 +31,6 @@ struct Ack {
     AckMessageId ack_id;
 };
 
+constexpr const int RADIX = 31;
+
 }  // namespace motor_messages
