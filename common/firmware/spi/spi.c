@@ -27,6 +27,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_MISO
         PB15     ------> SPI2_MOSI
+
          Step/Dir
          PB1  ---> Dir Pin Motor 1
          PA8  ---> Step Pin Motor 1
@@ -80,38 +81,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     }
 }
 
-
-/**
- * @brief SPI3 Initialization Function
- * @param None
- * @retval None
- */
-SPI_HandleTypeDef MX_SPI3_Init() {
-    /* SPI2 parameter configuration*/
-    __HAL_RCC_SPI3_CLK_ENABLE();
-    SPI_HandleTypeDef hspi3 = {
-        .Instance = SPI3,
-        .Init = {.Mode = SPI_MODE_MASTER,
-                 .Direction = SPI_DIRECTION_2LINES,
-                 .DataSize = SPI_DATASIZE_8BIT,
-                 .CLKPolarity = SPI_POLARITY_HIGH,
-                 .CLKPhase = SPI_PHASE_2EDGE,
-                 .NSS = SPI_NSS_SOFT,
-                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                 .FirstBit = SPI_FIRSTBIT_MSB,
-                 .TIMode = SPI_TIMODE_DISABLE,
-                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                 .CRCPolynomial = 7,
-                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
-
-    };
-
-    if (HAL_SPI_Init(&hspi3) != HAL_OK) {
-        Error_Handler();
-    }
-    return hspi3;
-}
 /**
  * @brief SPI2 Initialization Function
  * @param None
@@ -146,10 +115,6 @@ SPI_HandleTypeDef MX_SPI2_Init() {
 
 void SPI2_init() {
     handle = MX_SPI2_Init();
-}
-
-void SPI3_init() {
-    handle = MX_SPI3_Init();
 }
 
 void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
