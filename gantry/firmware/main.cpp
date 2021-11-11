@@ -16,6 +16,6 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
-    
+
     vTaskStartScheduler();
 }
