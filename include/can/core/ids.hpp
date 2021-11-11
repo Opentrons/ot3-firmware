@@ -55,8 +55,7 @@ enum class MessageId : uint16_t {
     get_move_group_request = 0x16,
     get_move_group_response = 0x17,
     execute_move_group_request = 0x18,
-    clear_move_group_request = 0x19,
-    clear_all_move_groups_request = 0x1B,
+    clear_all_move_groups_request = 0x19,
     move_group_completed = 0x1A,
 
     setup_request = 0x02,

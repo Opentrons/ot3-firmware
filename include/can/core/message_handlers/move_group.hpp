@@ -20,7 +20,7 @@ class MoveGroupHandler {
   public:
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest, GetMoveGroupRequest,
-                     ClearMoveGroupRequest, ClearAllMoveGroupsRequest>;
+                     ClearAllMoveGroupsRequest>;
     MoveGroupHandler(MessageWriter &message_writer,
                      MoveGroupType &motion_group_manager)
         : message_writer{message_writer},
@@ -43,7 +43,7 @@ class MoveGroupHandler {
 
     void visit(GetMoveGroupRequest &m) {
         auto group = motion_group_manager[m.group_id];
-        // TODO (al, 2021-10-19): Get the real node id here.
+        // TODO (al, 2021-10-19): Get the real node id of this FW.
         auto response = GetMoveGroupResponse{
             .group_id = m.group_id,
             .num_moves = static_cast<uint8_t>(group.size()),
@@ -53,13 +53,8 @@ class MoveGroupHandler {
         message_writer.write(NodeId::host, response);
     }
 
-    void visit(ClearMoveGroupRequest &m) {
-        auto& group = motion_group_manager[m.group_id];
-        group.clear();
-    }
-
     void visit(ClearAllMoveGroupsRequest &m) {
-        for (auto& group : motion_group_manager) {
+        for (auto &group : motion_group_manager) {
             group.clear();
         }
     }

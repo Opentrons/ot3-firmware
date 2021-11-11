@@ -91,8 +91,8 @@ static auto motor_dispatch_target = DispatchParseTarget<
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearMoveGroupRequest,
-    can_messages::ClearAllMoveGroupsRequest>{can_move_group_handler};
+    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
+    can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =
     DispatchParseTarget<decltype(can_move_group_executor_handler),

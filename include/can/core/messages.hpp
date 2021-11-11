@@ -335,25 +335,6 @@ struct ExecuteMoveGroupRequest
     bool operator==(const ExecuteMoveGroupRequest& other) const = default;
 };
 
-struct ClearMoveGroupRequest
-    : BaseMessage<MessageId::clear_move_group_request> {
-    uint8_t group_id;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> ClearMoveGroupRequest {
-        uint8_t group_id = 0;
-        body = bit_utils::bytes_to_int(body, limit, group_id);
-        return ClearMoveGroupRequest{.group_id = group_id};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
-        return iter - body;
-    }
-    bool operator==(const ClearMoveGroupRequest& other) const = default;
-};
-
 using ClearAllMoveGroupsRequest =
     Empty<MessageId::clear_all_move_groups_request>;
 
