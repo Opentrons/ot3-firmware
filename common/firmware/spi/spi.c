@@ -56,9 +56,9 @@ struct SPI_config* commonConfig(void) {
     uint32_t common_pins_sck_miso_mosi[3] = {GPIO_PIN_13, GPIO_PIN_14,
                                               GPIO_PIN_15};
     uint32_t common_pins_cs[1] = {GPIO_PIN_12};
-    uint32_t z_stage_pins_ctrl[1] = {GPIO_PIN_10};
-    uint32_t z_stage_pins_dir[1] = {GPIO_PIN_1};
-    uint32_t z_stage_pins_step[1] = {GPIO_PIN_8};
+    uint32_t common_pins_ctrl[1] = {GPIO_PIN_10};
+    uint32_t common_pins_dir[1] = {GPIO_PIN_1};
+    uint32_t common_pins_step[1] = {GPIO_PIN_8};
 
 
     struct pin_group common_pins_sck_miso_mosi_group = {
@@ -92,7 +92,7 @@ struct SPI_config* commonConfig(void) {
     struct pin_group common_pins_dir_group = {
 
         .no_of_pins =
-            sizeof(common_pins_dir / sizeof(common_pins_dir[0]),
+            sizeof(common_pins_dir) / sizeof(common_pins_dir[0]),
         .port = GPIOB,
         .pins = common_pins_dir,
         .Mode = GPIO_MODE_OUTPUT_PP,
@@ -102,7 +102,7 @@ struct SPI_config* commonConfig(void) {
     struct pin_group common_pins_step_group = {
 
         .no_of_pins =
-            sizeof(common_pins_dir / sizeof(common_pins_step[0]),
+            sizeof(common_pins_dir) / sizeof(common_pins_step[0]),
         .port = GPIOA,
         .pins = common_pins_dir,
         .Mode = GPIO_MODE_OUTPUT_PP,
