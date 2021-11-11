@@ -10,10 +10,12 @@
 
 #include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
+#include "common/firmware/utility_config.h"
 
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+    utility_init();
 
     vTaskStartScheduler();
 }
