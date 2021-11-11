@@ -10,10 +10,12 @@
 
 #include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
+#include "common/firmware/utility_gpio.h"
 
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+    utility_gpio_init();
 
     vTaskStartScheduler();
 }
