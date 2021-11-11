@@ -10,7 +10,7 @@
 
 #include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
-#include "common/firmware/utility_config.h"
+#include "common/firmware/utility_gpio.h"
 
 auto main() -> int {
     HardwareInit();
