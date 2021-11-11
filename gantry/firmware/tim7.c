@@ -71,10 +71,10 @@ void timer_interrupt_start() { HAL_TIM_Base_Start_IT(&htim7); }
 
 void timer_interrupt_stop() { HAL_TIM_Base_Stop_IT(&htim7); }
 
-void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET); }
+void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); }
 
 void turn_off_step_pin() {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 }
 
 void turn_on_direction_pin() {
