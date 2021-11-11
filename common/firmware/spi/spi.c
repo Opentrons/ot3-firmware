@@ -261,9 +261,7 @@ void SPI_init() {
         }
     }
 }
-void SPI_init() {
-    SPI2_init();
-}
+
 void SPI2_init() {
     handle = MX_SPI2_Init();
 }
