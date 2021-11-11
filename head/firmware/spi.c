@@ -105,7 +105,7 @@ struct SPI_config* zmotorConfig(void) {
     return &z_config;
 }
 
-struct SPI_config_group* SPIConfigInit(size_t no_of_groups) {
+void* SPIConfigInit(size_t no_of_groups) {
     struct SPI_config_group scg;
     scg.no_of_groups = no_of_groups;
     struct SPI_config arr[no_of_groups];
@@ -332,7 +332,7 @@ SPI_HandleTypeDef MX_SPI3_Init() {
     return hspi3;
 }
 void SPI_init() {
-    struct SPI_config_group * scg_ptr= SPIConfigInit(1);
+    struct SPI_config_group * scg_ptr= (struct SPI_config_group *)SPIConfigInit(1);
     for (int i = 0; i < scg_ptr->no_of_groups; i++) {
         switch(scg_ptr->sc[i].SPI_int) {
             case _SPI0:
