@@ -1,4 +1,4 @@
-#include "common/firmware/utility_config.h"
+#include "common/firmware/utility_gpio.h"
 
 /**
  * @brief Limit Switch GPIO Initialization Function
