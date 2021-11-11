@@ -112,7 +112,9 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     }
     return hspi2;
 }
-
+void SPI_init() {
+    SPI2_init();
+}
 void SPI2_init() {
     handle = MX_SPI2_Init();
 }

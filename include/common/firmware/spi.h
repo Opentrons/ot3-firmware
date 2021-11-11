@@ -13,6 +13,7 @@ typedef enum { _SPI0, _SPI1, _SPI2, _SPI3 } SPI_interface;
 
 void SPI2_init();
 void* SPIConfigInit(size_t no_of_groups);
+void SPI3_configs(void);
 void SPI_init();
 void Set_CS_Pin();
 void Reset_CS_Pin();

@@ -126,6 +126,43 @@ void* SPIConfigInit(size_t no_of_groups) {
     scg.sc = arr;
     return &scg;
 }
+
+void SPI3_configs(void) {
+    struct SPI_config* SPI_config_tmp = zmotorConfig();
+        /* Peripheral clock enable */
+        __HAL_RCC_SPI3_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        /**SPI3 GPIO Configuration
+        PA4     ------> SPI3_NSS
+        PC10     ------> SPI3_SCK
+        PC11     ------> SPI3_MISO
+        PC12     ------> SPI3_MOSI
+         Step/Dir
+         PC1  ---> Dir Pin Motor on SPI3 (Z-axis)
+         PC0  ---> Step Pin Motor on SPI3 (Z-axis)
+        */
+
+        for (int i = 0; i < SPI_config_tmp->no_of_groups; i++) {
+            int total_pins_in_group = SPI_config_tmp->pg[i].no_of_pins;
+            uint32_t pin_tmp = SPI_config_tmp->pg[i].pins[0];
+            for (int j = 0; j < total_pins_in_group; j++) {
+                pin_tmp = pin_tmp | SPI_config_tmp->pg[i].pins[j];
+            }
+            // GPIO_InitStruct
+            SPI_config_tmp->pg[i].GPIO_InitStruct.Pin = pin_tmp;
+            SPI_config_tmp->pg[i].GPIO_InitStruct.Mode =
+                SPI_config_tmp->pg[i].Mode;
+            SPI_config_tmp->pg[i].GPIO_InitStruct.Pull =
+                SPI_config_tmp->pg[i].Pull;
+            SPI_config_tmp->pg[i].GPIO_InitStruct.Speed =
+                SPI_config_tmp->pg[i].Speed;
+            SPI_config_tmp->pg[i].GPIO_InitStruct.Alternate =
+                SPI_config_tmp->pg[i].Alternate;
+            HAL_GPIO_Init(SPI_config_tmp->pg[i].port, &SPI_config_tmp->pg[i].GPIO_InitStruct);
+        }
+
+}
 /////
 
 SPI_HandleTypeDef handle, handle_SPI2, handle_SPI3;
@@ -173,40 +210,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
                       &GPIO_InitStruct);
     }
     else if (hspi->Instance == SPI3) {
-        struct SPI_config* SPI_config_tmp = zmotorConfig();
-        /* Peripheral clock enable */
-        __HAL_RCC_SPI3_CLK_ENABLE();
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-        /**SPI3 GPIO Configuration
-        PA4     ------> SPI3_NSS
-        PC10     ------> SPI3_SCK
-        PC11     ------> SPI3_MISO
-        PC12     ------> SPI3_MOSI
-         Step/Dir
-         PC1  ---> Dir Pin Motor on SPI3 (Z-axis)
-         PC0  ---> Step Pin Motor on SPI3 (Z-axis)
-        */
-
-        for (int i = 0; i < SPI_config_tmp->no_of_groups; i++) {
-            int total_pins_in_group = SPI_config_tmp->pg[i].no_of_pins;
-            uint32_t pin_tmp = SPI_config_tmp->pg[i].pins[0];
-            for (int j = 0; j < total_pins_in_group; j++) {
-                pin_tmp = pin_tmp | SPI_config_tmp->pg[i].pins[j];
-            }
-            // GPIO_InitStruct
-            SPI_config_tmp->pg[i].GPIO_InitStruct.Pin = pin_tmp;
-            SPI_config_tmp->pg[i].GPIO_InitStruct.Mode =
-                SPI_config_tmp->pg[i].Mode;
-            SPI_config_tmp->pg[i].GPIO_InitStruct.Pull =
-                SPI_config_tmp->pg[i].Pull;
-            SPI_config_tmp->pg[i].GPIO_InitStruct.Speed =
-                SPI_config_tmp->pg[i].Speed;
-            SPI_config_tmp->pg[i].GPIO_InitStruct.Alternate =
-                SPI_config_tmp->pg[i].Alternate;
-            HAL_GPIO_Init(SPI_config_tmp->pg[i].port, &GPIO_InitStruct);
-        }
-        
+        SPI3_configs();
     }
 }
 
