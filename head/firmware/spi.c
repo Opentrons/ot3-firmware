@@ -70,26 +70,39 @@ struct SPI_config* zmotorConfig(void) {
         .no_of_pins = sizeof(z_stage_pins_sck_miso_mosi) /
                       sizeof(z_stage_pins_sck_miso_mosi[0]),
         .port = GPIOC,
-        .pins = z_stage_pins_sck_miso_mosi};
+        .pins = z_stage_pins_sck_miso_mosi,
+        .Mode = GPIO_MODE_AF_PP,
+        .Pull = GPIO_NOPULL,
+        .Speed = GPIO_SPEED_FREQ_LOW,
+        .Alternate = GPIO_AF6_SPI3
+        };
 
     struct pin_group z_stage_pins_cs_group = {
 
         .no_of_pins = sizeof(z_stage_pins_cs) / sizeof(z_stage_pins_cs[0]),
         .port = GPIOA,
-        .pins = z_stage_pins_cs};
+        .pins = z_stage_pins_cs,
+        .Mode = GPIO_MODE_OUTPUT_PP};
 
     struct pin_group z_stage_pins_ctrl_group = {
 
         .no_of_pins = sizeof(z_stage_pins_ctrl) / sizeof(z_stage_pins_ctrl[0]),
         .port = GPIOC,
-        .pins = z_stage_pins_ctrl};
+        .pins = z_stage_pins_ctrl,
+        .Mode = GPIO_MODE_OUTPUT_PP,
+        .Pull = GPIO_NOPULL,
+        .Speed = GPIO_SPEED_FREQ_LOW};
 
     struct pin_group z_stage_pins_dir_step_group = {
 
         .no_of_pins =
             sizeof(z_stage_pins_dir_step) / sizeof(z_stage_pins_dir_step[0]),
         .port = GPIOC,
-        .pins = z_stage_pins_dir_step};
+        .pins = z_stage_pins_dir_step,
+        .Mode = GPIO_MODE_OUTPUT_PP,
+        .Pull = GPIO_NOPULL,
+        .Speed = GPIO_SPEED_FREQ_LOW};
+
     struct pin_group _pg[4] = {z_stage_pins_sck_miso_mosi_group,
                                z_stage_pins_cs_group, z_stage_pins_ctrl_group,
                                z_stage_pins_dir_step_group};
@@ -139,12 +152,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
          PC7  ---> Dir Pin Motor A
          PC6  ---> Step Pin Motor A
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        
 
         // Chip select
         GPIO_InitStruct.Pin = GPIO_PIN_12;
@@ -198,29 +206,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
                 SPI_config_tmp->pg[i].Alternate;
             HAL_GPIO_Init(SPI_config_tmp->pg[i].port, &GPIO_InitStruct);
         }
-        GPIO_InitStruct.Pin = GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-        // Chip select
-        GPIO_InitStruct.Pin = GPIO_PIN_4;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-        // Ctrl/Dir/Step pin for motor on SPI3 (Z-axis)
-        GPIO_InitStruct.Pin = GPIO_PIN_4;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-                      &GPIO_InitStruct);
+        
     }
 }
 
