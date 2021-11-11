@@ -72,9 +72,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     if (hspi->Instance == SPI2) {
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOB,
-                        GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15,
-                        GPIO_PIN_1);
+        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 |
+                                   GPIO_PIN_15 | GPIO_PIN_1);
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9);
         HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8);
     }
