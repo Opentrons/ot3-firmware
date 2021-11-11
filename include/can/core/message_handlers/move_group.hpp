@@ -54,12 +54,12 @@ class MoveGroupHandler {
     }
 
     void visit(ClearMoveGroupRequest &m) {
-        auto group = motion_group_manager[m.group_id];
+        auto& group = motion_group_manager[m.group_id];
         group.clear();
     }
 
     void visit(ClearAllMoveGroupsRequest &m) {
-        for (auto group : motion_group_manager) {
+        for (auto& group : motion_group_manager) {
             group.clear();
         }
     }
