@@ -8,8 +8,8 @@
 #include "can/simlib//sim_canbus.hpp"
 #include "can/simlib/socket_can.hpp"
 #include "common/core/freertos_message_buffer.hpp"
-#include "common/core/freertos_task.hpp"
 #include "common/core/freertos_synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 
 using namespace freertos_message_buffer;
 using namespace can_dispatch;
@@ -24,7 +24,8 @@ static auto constexpr DefaultChannel = "vcan0";
 
 static auto constexpr ReceiveBufferSize = 1024;
 static auto buffer = FreeRTOSMessageBuffer<ReceiveBufferSize>{};
-static auto transport = socket_can::SocketCanTransport<freertos_synchronization::FreeRTOSCriticalSection>{};
+static auto transport = socket_can::SocketCanTransport<
+    freertos_synchronization::FreeRTOSCriticalSection>{};
 static auto canbus = sim_canbus::SimCANBus(transport, buffer);
 
 /**

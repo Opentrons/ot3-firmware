@@ -61,20 +61,19 @@ class FreeRTOSMutexFromISR {
     StaticSemaphore_t static_data{};
 };
 
-
-
 class FreeRTOSCriticalSection {
   public:
     FreeRTOSCriticalSection() {}
     FreeRTOSCriticalSection(const FreeRTOSCriticalSection &) = delete;
     FreeRTOSCriticalSection(const FreeRTOSCriticalSection &&) = delete;
-    FreeRTOSCriticalSection &operator=(const FreeRTOSCriticalSection &) = delete;
-    FreeRTOSCriticalSection &&operator=(const FreeRTOSCriticalSection &&) = delete;
+    FreeRTOSCriticalSection &operator=(const FreeRTOSCriticalSection &) =
+        delete;
+    FreeRTOSCriticalSection &&operator=(const FreeRTOSCriticalSection &&) =
+        delete;
 
     void acquire() { taskENTER_CRITICAL(); }
 
     void release() { taskEXIT_CRITICAL(); }
 };
-
 
 }  // namespace freertos_synchronization
