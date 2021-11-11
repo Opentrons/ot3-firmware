@@ -3,21 +3,20 @@
 namespace synchronization {
 
 template <typename S>
-concept SemaphoreProtocol = requires(S& s) {
+concept LockableProtocol = requires(S& s) {
     {s.acquire()};
     {s.release()};
-    { s.get_count() } -> std::convertible_to<int>;
 };
 
-template <SemaphoreProtocol Semaphore>
-requires(!std::movable<Semaphore> && !std::copyable<Semaphore>) class Lock {
+template <LockableProtocol Lockable>
+requires(!std::movable<Lockable> && !std::copyable<Lockable>) class Lock {
   public:
-    Lock(Semaphore& s) : semaphore(s) { semaphore.acquire(); }
+    Lock(Lockable& s) : lockable(s) { lockable.acquire(); }
 
-    ~Lock() { semaphore.release(); }
+    ~Lock() { lockable.release(); }
 
   private:
-    Semaphore& semaphore;
+    Lockable& lockable;
 };
 
 }  // namespace synchronization

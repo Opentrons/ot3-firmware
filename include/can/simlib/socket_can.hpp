@@ -1,5 +1,6 @@
-#include "can/simulator/socket_can.hpp"
+#pragma once
 
+#include <stdint.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <net/if.h>
@@ -11,16 +12,36 @@
 #include <cstring>
 #include <iostream>
 
-#include "FreeRTOS.h"
-#include "task.h"
+#include "common/core/synchronization.hpp"
 
-using namespace socket_can;
 
-SocketCanTransport::SocketCanTransport() : handle{0} {}
+namespace socket_can {
 
-SocketCanTransport::~SocketCanTransport() { close(); }
+template <synchronization::LockableProtocol CriticalSection>
+class SocketCanTransport {
+  public:
+    SocketCanTransport() {};
+    ~SocketCanTransport() { close(); };
+    SocketCanTransport(const SocketCanTransport &) = delete;
+    SocketCanTransport(const SocketCanTransport &&) = delete;
+    SocketCanTransport &operator=(const SocketCanTransport &) = delete;
+    SocketCanTransport &&operator=(const SocketCanTransport &&) = delete;
 
-auto SocketCanTransport::open(const char *address) -> bool {
+    auto open(const char *address) -> bool;
+    void close();
+
+    auto write(uint32_t arb_id, const uint8_t *cbuff, uint32_t buff_len)
+        -> bool;
+    auto read(uint32_t &arb_id, uint8_t *buff, uint32_t &buff_len) -> bool;
+
+  private:
+    int handle{0};
+    CriticalSection critical_section{};
+};
+
+
+template<synchronization::LockableProtocol CriticalSection>
+auto SocketCanTransport<CriticalSection>::open(const char *address) -> bool {
     struct sockaddr_can addr;
     struct ifreq ifr;
     int s = 0;
@@ -50,9 +71,11 @@ auto SocketCanTransport::open(const char *address) -> bool {
     return true;
 }
 
-void SocketCanTransport::close() { ::close(handle); }
+template<synchronization::LockableProtocol CriticalSection>
+void SocketCanTransport<CriticalSection>::close() { ::close(handle); }
 
-auto SocketCanTransport::write(uint32_t arb_id, const uint8_t *cbuff,
+template<synchronization::LockableProtocol CriticalSection>
+auto SocketCanTransport<CriticalSection>::write(uint32_t arb_id, const uint8_t *cbuff,
                                uint32_t buff_len) -> bool {
     struct canfd_frame frame;
     // Set MSB for extended id
@@ -62,13 +85,17 @@ auto SocketCanTransport::write(uint32_t arb_id, const uint8_t *cbuff,
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
 
-auto SocketCanTransport::read(uint32_t &arb_id, uint8_t *buff,
+template<synchronization::LockableProtocol CriticalSection>
+auto SocketCanTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
                               uint32_t &buff_len) -> bool {
     struct canfd_frame frame;
+    auto read_len = 0;
 
-    taskENTER_CRITICAL();
-    auto read_len = ::read(handle, &frame, sizeof(struct can_frame));
-    taskEXIT_CRITICAL();
+    {
+        // Critical section block
+        auto lock = synchronization::Lock(critical_section);
+        read_len = ::read(handle, &frame, sizeof(struct can_frame));
+    }
 
     if (read_len > 0) {
         arb_id = frame.can_id;
@@ -76,7 +103,7 @@ auto SocketCanTransport::read(uint32_t &arb_id, uint8_t *buff,
         ::memcpy(buff, frame.data, buff_len);
 
         std::cout << "arb_id: " << std::hex << arb_id << " "
-                  << "length: " << buff_len << ":";
+        << "length: " << buff_len << ":";
         for (int i = 0; i < buff_len; i++) {
             std::cout << " " << std::hex << (int)buff[i];
         }
@@ -88,3 +115,6 @@ auto SocketCanTransport::read(uint32_t &arb_id, uint8_t *buff,
     }
     return false;
 }
+
+
+}  // namespace socket_can

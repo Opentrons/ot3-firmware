@@ -5,10 +5,11 @@
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
-#include "can/simulator/sim_canbus.hpp"
-#include "can/simulator/socket_can.hpp"
+#include "can/simlib//sim_canbus.hpp"
+#include "can/simlib/socket_can.hpp"
 #include "common/core/freertos_message_buffer.hpp"
 #include "common/core/freertos_task.hpp"
+#include "common/core/freertos_synchronization.hpp"
 
 using namespace freertos_message_buffer;
 using namespace can_dispatch;
@@ -16,13 +17,14 @@ using namespace can_message_buffer;
 using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace freertos_task;
+using namespace freertos_synchronization;
 
 static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
 static auto constexpr DefaultChannel = "vcan0";
 
 static auto constexpr ReceiveBufferSize = 1024;
 static auto buffer = FreeRTOSMessageBuffer<ReceiveBufferSize>{};
-static auto transport = socket_can::SocketCanTransport{};
+static auto transport = socket_can::SocketCanTransport<freertos_synchronization::FreeRTOSCriticalSection>{};
 static auto canbus = sim_canbus::SimCANBus(transport, buffer);
 
 /**
