@@ -5,6 +5,7 @@ if (${CMAKE_CROSSCOMPILING})
     add_subdirectory(firmware)
   endif()
 else()
+   add_subdirectory(simulator)
    add_subdirectory(tests)
 endif()
 
