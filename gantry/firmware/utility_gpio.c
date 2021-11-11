@@ -43,7 +43,7 @@ void turn_off_LED_pin(void) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 }
 
-void utility_init(void) {
+void utility_gpio_init(void) {
     limit_switch_gpio_init();
     LED_drive_gpio_init();
 }

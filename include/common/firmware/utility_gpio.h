@@ -11,7 +11,7 @@ void LED_drive_gpio_init(void);
 void turn_on_LED_pin(void);
 void turn_off_LED_pin(void);
 
-void utility_init(void);
+void utility_gpio_init(void);
 
 #ifdef __cplusplus
 }  // extern "C"
