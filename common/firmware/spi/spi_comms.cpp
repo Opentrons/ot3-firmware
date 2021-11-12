@@ -1,7 +1,6 @@
 #include "common/firmware/spi_comms.hpp"
 
 #include "common/firmware/spi.h"
-
 #include "platform_specific_hal_conf.h"
 
 using namespace spi;
@@ -28,17 +27,17 @@ using namespace spi;
  */
 
 Spi::Spi() {
-     //get SPI handle from spi.c
-     void* tmp;
-     void* tmp_ = get_SPI_handle(tmp);
-     SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*) (tmp_));
-     //set SPI handle to class member 
+    // get SPI handle from spi.c
+    void* tmp;
+    void* tmp_ = get_SPI_handle(tmp);
+    SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*)(tmp_));
+    // set SPI handle to class member
     this->SPI_intf.SPI_handle = &handle_;
 
     /*getting rid of to to make Spi class generic
     for all projects to use!
-    */        
-    //SPI2_init(); 
+    */
+    // SPI2_init();
 }
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
