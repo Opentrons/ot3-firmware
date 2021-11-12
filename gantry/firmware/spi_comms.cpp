@@ -29,7 +29,7 @@ using namespace spi;
 
 Spi::Spi() {
     SPI2_init();
-    Gantry_Driver_CLK_init(get_axis_type());
+    gantry_driver_CLK_init(get_axis_type());
 }
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
