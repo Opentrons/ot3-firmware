@@ -11,8 +11,8 @@ struct module {
     component comp;
     sub_component sub_comp;
     SPI_interface intf;
-    //SPI_HandleTypeDef 
-    void* ptr; 
+    // SPI_HandleTypeDef
+    void* ptr;
 };
 
 class Spi {
