@@ -89,7 +89,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
 SPI_HandleTypeDef MX_SPI2_Init() {
     /* SPI2 parameter configuration*/
     __HAL_RCC_SPI2_CLK_ENABLE();
-    SPI_HandleTypeDef hspi2 = {
+    static SPI_HandleTypeDef hspi2 = {
         .Instance = SPI2,
         .Init = {.Mode = SPI_MODE_MASTER,
                  .Direction = SPI_DIRECTION_2LINES,
@@ -117,12 +117,19 @@ void SPI2_init() {
     handle = MX_SPI2_Init();
 }
 
+void* get_SPI_handle(){
+    SPI_HandleTypeDef handle = MX_SPI2_Init();
+    
+    return &handle;
+}
+
 void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
 
 void Reset_CS_Pin() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
 }
 
-void hal_transmit_receive(uint8_t* transmit, uint8_t* receive, uint16_t buff_size, uint32_t timeout) {
+void hal_transmit_receive(uint8_t* transmit, uint8_t* receive,
+                          uint16_t buff_size, uint32_t timeout, void* handle){
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }

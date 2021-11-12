@@ -2,6 +2,8 @@
 
 #include "common/firmware/spi.h"
 
+#include "platform_specific_hal_conf.h"
+
 using namespace spi;
 
 /*
@@ -25,12 +27,23 @@ using namespace spi;
  * Public Functions
  */
 
-Spi::Spi() { SPI2_init(); }
+Spi::Spi() {
+     //get SPI handle from spi.c
+     void* tmp_ = get_SPI_handle();
+     SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*) (tmp_));
+     //set SPI handle to class member 
+    this->SPI_intf.SPI_handle = &handle_;
+
+    /*getting rid of to to make Spi class generic
+    for all projects to use!
+    */        
+    //SPI2_init(); 
+}
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     Reset_CS_Pin();
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     hal_transmit_receive(const_cast<uint8_t*>(transmit.data()), receive.data(),
-                         BUFFER_SIZE, TIMEOUT);
+                         BUFFER_SIZE, TIMEOUT, this->SPI_intf.SPI_handle);
     Set_CS_Pin();
 }
