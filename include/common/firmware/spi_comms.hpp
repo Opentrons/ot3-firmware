@@ -1,3 +1,5 @@
+// clang-format off
+
 #pragma once
 #include <cstdint>
 #include <span>
@@ -16,7 +18,7 @@ struct module {
 };
 
 class Spi {
-public:
+ public:
   static constexpr auto BUFFER_SIZE = 5;
   using BufferType = std::array<uint8_t, BUFFER_SIZE>;
   Spi();
@@ -25,8 +27,9 @@ public:
   void *get_SPI_config();
   void set_SPI_config(component, sub_component, SPI_interface, void *);
 
-private:
+ private:
   static constexpr uint32_t TIMEOUT = 0xFFFF;
   struct module *SPI_config;
 };
-} // namespace spi
+}  // namespace spi
+// clang-format on
