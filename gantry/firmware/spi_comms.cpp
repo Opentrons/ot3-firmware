@@ -1,7 +1,7 @@
 #include "common/firmware/spi_comms.hpp"
 
 #include "common/firmware/spi.h"
-#include "gantry/core/axis_type.hpp"
+#include "gantry/core/axis_type.h"
 #include "gantry/firmware/spi.h"
 
 using namespace spi;
@@ -29,7 +29,7 @@ using namespace spi;
 
 Spi::Spi() {
     SPI2_init();
-    Gantry_Driver_CLK_init(static_cast<uint8_t>(axis_type::get_node_id()));
+    Gantry_Driver_CLK_init(get_axis_type());
 }
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {

@@ -1,5 +1,7 @@
 #include "common/firmware/can_task.hpp"
 
+#include <map>
+
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
@@ -16,7 +18,7 @@
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
-#include "gantry/core/axis_type.hpp"
+#include "gantry/core/axis_type.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
@@ -37,6 +39,13 @@ using namespace motor_messages;
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
+
+static std::map<GantryAxisType, NodeId> AxisToNodeIdMap{
+    {gantry_x, NodeId::gantry_x},
+    {gantry_y, NodeId::gantry_y},
+};
+static auto my_axis_type = get_axis_type();
+static auto my_node_id = AxisToNodeIdMap[my_axis_type];
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
@@ -72,11 +81,11 @@ static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
 static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
-    message_writer_1, move_group_manager, motor, axis_type::get_node_id());
+    message_writer_1, move_group_manager, motor, my_node_id);
 
 /** Handler of device info requests. */
-static auto device_info_handler = can_device_info::DeviceInfoHandler(
-    message_writer_1, axis_type::get_node_id(), 0);
+static auto device_info_handler =
+    can_device_info::DeviceInfoHandler(message_writer_1, my_node_id, 0);
 static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
                         can_messages::DeviceInfoRequest>{device_info_handler};
@@ -106,7 +115,7 @@ static auto dispatcher = Dispatcher(
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
         Error_Handler();
     }
-    can_bus::setup_node_id_filter(can_bus_1, axis_type::get_node_id());
+    can_bus::setup_node_id_filter(can_bus_1, my_node_id);
     can_bus_1.start();
 
     auto poller = FreeRTOSCanBufferPoller(

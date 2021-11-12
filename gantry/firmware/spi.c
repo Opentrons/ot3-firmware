@@ -1,6 +1,7 @@
 #include "common/firmware/spi.h"
 
 #include "common/firmware/errors.h"
+#include "gantry/core/axis_type.h"
 #include "gantry/firmware/spi.h"
 #include "platform_specific_hal_conf.h"
 
@@ -124,9 +125,9 @@ void hal_transmit_receive(uint8_t* transmit, uint8_t* receive,
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }
 
-void Gantry_Driver_CLK_init(uint8_t gantry_axis) {
+void Gantry_Driver_CLK_init(enum GantryAxisType gantry_axis) {
     switch (gantry_axis) {
-        case 0x30:
+        case gantry_x:
             __HAL_RCC_GPIOB_CLK_ENABLE();
             // Driver Clock Pin
             GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -136,7 +137,7 @@ void Gantry_Driver_CLK_init(uint8_t gantry_axis) {
 
             HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
             break;
-        case 0x40:
+        case gantry_y:
             break;
         default:
             Error_Handler();
