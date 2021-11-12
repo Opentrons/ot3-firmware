@@ -122,6 +122,7 @@ void Reset_CS_Pin() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
 }
 
-void hal_transmit_receive(uint8_t* transmit, uint8_t* receive, uint16_t buff_size, uint32_t timeout) {
+void hal_transmit_receive(uint8_t* transmit, uint8_t* receive,
+                          uint16_t buff_size, uint32_t timeout, void* handle){
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }
