@@ -39,80 +39,77 @@ SPI_HandleTypeDef MX_SPI_Init(spi::SPI_interface intf, SPI_HandleTypeDef* tmp) {
         case spi::_SPI1:
             /* SPI parameter configuration*/
             __HAL_RCC_SPI1_CLK_ENABLE();
-            hspi =
-            {.Instance = SPI1,
-             .Init = {.Mode = SPI_MODE_MASTER,
-                      .Direction = SPI_DIRECTION_2LINES,
-                      .DataSize = SPI_DATASIZE_8BIT,
-                      .CLKPolarity = SPI_POLARITY_HIGH,
-                      .CLKPhase = SPI_PHASE_2EDGE,
-                      .NSS = SPI_NSS_SOFT,
-                      .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                      .FirstBit = SPI_FIRSTBIT_MSB,
-                      .TIMode = SPI_TIMODE_DISABLE,
-                      .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                      .CRCPolynomial = 7,
-                      .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                      .NSSPMode = SPI_NSS_PULSE_DISABLE}
+            hspi = {.Instance = SPI1,
+                    .Init = {.Mode = SPI_MODE_MASTER,
+                             .Direction = SPI_DIRECTION_2LINES,
+                             .DataSize = SPI_DATASIZE_8BIT,
+                             .CLKPolarity = SPI_POLARITY_HIGH,
+                             .CLKPhase = SPI_PHASE_2EDGE,
+                             .NSS = SPI_NSS_SOFT,
+                             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+                             .FirstBit = SPI_FIRSTBIT_MSB,
+                             .TIMode = SPI_TIMODE_DISABLE,
+                             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+                             .CRCPolynomial = 7,
+                             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+                             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
             };
 
             if (HAL_SPI_Init(&hspi) != HAL_OK) {
-               // Error_Handler();
+                // Error_Handler();
             }
             break;
         case spi::_SPI2:
             /* SPI parameter configuration*/
             __HAL_RCC_SPI2_CLK_ENABLE();
-            hspi =
-            {.Instance = SPI2,
-             .Init = {.Mode = SPI_MODE_MASTER,
-                      .Direction = SPI_DIRECTION_2LINES,
-                      .DataSize = SPI_DATASIZE_8BIT,
-                      .CLKPolarity = SPI_POLARITY_HIGH,
-                      .CLKPhase = SPI_PHASE_2EDGE,
-                      .NSS = SPI_NSS_SOFT,
-                      .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                      .FirstBit = SPI_FIRSTBIT_MSB,
-                      .TIMode = SPI_TIMODE_DISABLE,
-                      .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                      .CRCPolynomial = 7,
-                      .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                      .NSSPMode = SPI_NSS_PULSE_DISABLE}
+            hspi = {.Instance = SPI2,
+                    .Init = {.Mode = SPI_MODE_MASTER,
+                             .Direction = SPI_DIRECTION_2LINES,
+                             .DataSize = SPI_DATASIZE_8BIT,
+                             .CLKPolarity = SPI_POLARITY_HIGH,
+                             .CLKPhase = SPI_PHASE_2EDGE,
+                             .NSS = SPI_NSS_SOFT,
+                             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+                             .FirstBit = SPI_FIRSTBIT_MSB,
+                             .TIMode = SPI_TIMODE_DISABLE,
+                             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+                             .CRCPolynomial = 7,
+                             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+                             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
             };
 
             if (HAL_SPI_Init(&hspi) != HAL_OK) {
-               // Error_Handler();
+                // Error_Handler();
             }
             break;
         case spi::_SPI3:
             /* SPI parameter configuration*/
             __HAL_RCC_SPI3_CLK_ENABLE();
-            hspi =
-            {.Instance = SPI3,
-             .Init = {.Mode = SPI_MODE_MASTER,
-                      .Direction = SPI_DIRECTION_2LINES,
-                      .DataSize = SPI_DATASIZE_8BIT,
-                      .CLKPolarity = SPI_POLARITY_HIGH,
-                      .CLKPhase = SPI_PHASE_2EDGE,
-                      .NSS = SPI_NSS_SOFT,
-                      .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                      .FirstBit = SPI_FIRSTBIT_MSB,
-                      .TIMode = SPI_TIMODE_DISABLE,
-                      .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                      .CRCPolynomial = 7,
-                      .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                      .NSSPMode = SPI_NSS_PULSE_DISABLE}
+            hspi = {.Instance = SPI3,
+                    .Init = {.Mode = SPI_MODE_MASTER,
+                             .Direction = SPI_DIRECTION_2LINES,
+                             .DataSize = SPI_DATASIZE_8BIT,
+                             .CLKPolarity = SPI_POLARITY_HIGH,
+                             .CLKPhase = SPI_PHASE_2EDGE,
+                             .NSS = SPI_NSS_SOFT,
+                             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+                             .FirstBit = SPI_FIRSTBIT_MSB,
+                             .TIMode = SPI_TIMODE_DISABLE,
+                             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+                             .CRCPolynomial = 7,
+                             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+                             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
             };
 
             if (HAL_SPI_Init(&hspi) != HAL_OK) {
-               // Error_Handler();
+                // Error_Handler();
             }
             break;
     }
-    //tmp=&hspi;
+    // tmp=&hspi;
     return hspi;
 }
 void Spi::set_SPI_config(component comp, sub_component sub_comp,
