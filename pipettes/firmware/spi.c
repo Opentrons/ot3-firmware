@@ -116,6 +116,12 @@ void SPI2_init() {
     handle = MX_SPI2_Init();
 }
 
+void* get_SPI_handle(){
+    SPI_HandleTypeDef handle = MX_SPI2_Init();
+    
+    return &handle;
+}
+
 void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
 
 void Reset_CS_Pin() {
