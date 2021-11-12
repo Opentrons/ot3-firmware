@@ -1,6 +1,6 @@
 #include "common/firmware/spi.h"
-#include "common/firmware/errors.h"
 
+#include "common/firmware/errors.h"
 #include "platform_specific_hal_conf.h"
 
 SPI_HandleTypeDef handle;
@@ -12,7 +12,6 @@ SPI_HandleTypeDef handle;
  * @retval None
  */
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
-
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
         /* Peripheral clock enable */
@@ -91,18 +90,18 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     SPI_HandleTypeDef hspi2 = {
         .Instance = SPI2,
         .Init = {.Mode = SPI_MODE_MASTER,
-            .Direction = SPI_DIRECTION_2LINES,
-            .DataSize = SPI_DATASIZE_8BIT,
-            .CLKPolarity = SPI_POLARITY_HIGH,
-            .CLKPhase = SPI_PHASE_2EDGE,
-            .NSS = SPI_NSS_SOFT,
-            .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-            .FirstBit = SPI_FIRSTBIT_MSB,
-            .TIMode = SPI_TIMODE_DISABLE,
-            .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-            .CRCPolynomial = 7,
-            .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-            .NSSPMode = SPI_NSS_PULSE_DISABLE}
+                 .Direction = SPI_DIRECTION_2LINES,
+                 .DataSize = SPI_DATASIZE_8BIT,
+                 .CLKPolarity = SPI_POLARITY_HIGH,
+                 .CLKPhase = SPI_PHASE_2EDGE,
+                 .NSS = SPI_NSS_SOFT,
+                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+                 .FirstBit = SPI_FIRSTBIT_MSB,
+                 .TIMode = SPI_TIMODE_DISABLE,
+                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+                 .CRCPolynomial = 7,
+                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
     };
 
@@ -112,16 +111,13 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     return hspi2;
 }
 
-void SPI2_init() {
-    handle = MX_SPI2_Init();
-}
+void SPI2_init() { handle = MX_SPI2_Init(); }
 
 void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
 
-void Reset_CS_Pin() {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-}
+void Reset_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); }
 
-void hal_transmit_receive(uint8_t* transmit, uint8_t* receive, uint16_t buff_size, uint32_t timeout) {
+void hal_transmit_receive(uint8_t* transmit, uint8_t* receive,
+                          uint16_t buff_size, uint32_t timeout) {
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }

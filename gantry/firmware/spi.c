@@ -1,6 +1,7 @@
 #include "common/firmware/spi.h"
 
 #include "common/firmware/errors.h"
+#include "gantry/firmware/spi.h"
 #include "platform_specific_hal_conf.h"
 
 SPI_HandleTypeDef handle;
@@ -18,6 +19,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         __HAL_RCC_SPI2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
         /**SPI2 GPIO Configuration
         PB12  ------> SPI2_CS
         PB13  ------> SPI2_SCK
@@ -120,4 +122,23 @@ void Reset_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); }
 void hal_transmit_receive(uint8_t* transmit, uint8_t* receive,
                           uint16_t buff_size, uint32_t timeout) {
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
+}
+
+void Gantry_Driver_CLK_init(uint8_t gantry_axis) {
+    switch (gantry_axis) {
+        case 0x30:
+            __HAL_RCC_GPIOB_CLK_ENABLE();
+            // Driver Clock Pin
+            GPIO_InitTypeDef GPIO_InitStruct = {0};
+            GPIO_InitStruct.Pin = GPIO_PIN_5;
+            GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+            break;
+        case 0x40:
+            break;
+        default:
+            Error_Handler();
+    }
 }
