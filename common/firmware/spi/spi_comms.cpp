@@ -29,7 +29,8 @@ using namespace spi;
 
 Spi::Spi() {
      //get SPI handle from spi.c
-     void* tmp_ = get_SPI_handle();
+     void* tmp;
+     void* tmp_ = get_SPI_handle(tmp);
      SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*) (tmp_));
      //set SPI handle to class member 
     this->SPI_intf.SPI_handle = &handle_;

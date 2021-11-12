@@ -110,10 +110,13 @@ SPI_HandleTypeDef MX_SPI2_Init() {
     }
     return hspi2;
 }
-void* get_SPI_handle(){
+
+void* get_SPI_handle(void* tmp){
     SPI_HandleTypeDef handle = MX_SPI2_Init();
-    
-    return &handle;
+    static SPI_HandleTypeDef h;
+    tmp=&h;
+    *((SPI_HandleTypeDef*)tmp)=handle;
+    return tmp;
 }
 
 void SPI2_init() { handle = MX_SPI2_Init(); }
