@@ -27,7 +27,10 @@ enum class AckMessageId : uint8_t { complete = 0x1, error = 0x04 };
 struct Ack {
     uint8_t group_id;
     uint8_t seq_id;
+    uint32_t current_position;
     AckMessageId ack_id;
 };
+
+constexpr const int RADIX = 31;
 
 }  // namespace motor_messages

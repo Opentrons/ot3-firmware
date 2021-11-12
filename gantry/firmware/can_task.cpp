@@ -47,8 +47,8 @@ static spi::Spi spi_comms{};
 
 struct motion_controller::HardwareConfig PinConfigurations {
     .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
-    .step = {.port = GPIOA, .pin = GPIO_PIN_8},
-    .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_8},
+    .enable = {.port = GPIOA, .pin = GPIO_PIN_9},
 };
 
 /**
@@ -89,7 +89,7 @@ static auto motor_dispatch_target = DispatchParseTarget<
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearMoveGroupRequest>{
+    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
     can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =

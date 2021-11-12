@@ -1,8 +1,8 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 namespace mock_message_queue {
 

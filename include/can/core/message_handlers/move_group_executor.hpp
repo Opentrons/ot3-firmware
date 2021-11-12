@@ -28,6 +28,7 @@ struct TaskEntry {
                 MoveCompleted msg = {
                     .group_id = try_read.group_id,
                     .seq_id = try_read.seq_id,
+                    .current_position = try_read.current_position,
                     .ack_id = static_cast<uint8_t>(
                         motor_messages::AckMessageId::complete),
                     .node_id = static_cast<uint8_t>(node_id),
