@@ -1,3 +1,8 @@
 #include "gantry/core/axis_type.h"
 
+/**
+ * Get this gantry's axis type
+ *
+ * @return an axis type
+ */
 GantryAxisType get_axis_type() { return ${GANTRY_AXIS_TYPE}; }
