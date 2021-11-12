@@ -112,7 +112,25 @@ SPI_HandleTypeDef MX_SPI2_Init() {
 }
 
 void SPI2_init() { handle = MX_SPI2_Init(); }
-
+void SPI_init() {
+    struct SPI_config_group * scg_ptr= (struct SPI_config_group *)SPIConfigInit(1);
+    for (int i = 0; i < scg_ptr->no_of_groups; i++) {
+        switch(scg_ptr->sc[i].SPI_int) {
+            case _SPI0:
+                break;
+            case _SPI1:
+                break;
+            case _SPI2:
+                handle_SPI2 = MX_SPI2_Init();
+                break;
+            case _SPI3:
+                handle_SPI3 = MX_SPI3_Init(); 
+                break;
+            default:
+                printf("Invalid SPI interface\n");
+        }
+    }
+}
 void Set_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); }
 
 void Reset_CS_Pin() { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); }
