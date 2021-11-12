@@ -24,10 +24,22 @@ using namespace spi;
 /*
  * Public Functions
  */
-struct Spi::module z_motor;
+struct module z_motor;
 Spi::Spi() { SPI_init(); }
 Spi::Spi(struct module mod) {
- SPI_init();
+    static struct module tmp;
+    this->SPI_config = &tmp;
+    Spi::set_SPI_config(mod.comp, mod.sub_comp, mod.intf, mod.ptr);
+    SPI_init();
+}
+void Spi::set_SPI_config(component comp, sub_component sub_comp, SPI_interface intf,void* SPI_HandleTypeDef_instance){
+    if (comp == head && sub_comp == motor_z){
+        
+        //this->SPI_config->SPI_HandleTypeDef_instance=&MX_SPI3_Init();
+        this->SPI_config->comp=comp;
+        this->SPI_config->sub_comp=sub_comp;
+        this->SPI_config->intf=intf;
+    }
 }
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     Reset_CS_Pin();

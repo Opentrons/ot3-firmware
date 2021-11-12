@@ -11,6 +11,8 @@ struct module {
     component comp;
     sub_component sub_comp;
     SPI_interface intf;
+    //SPI_HandleTypeDef 
+    void* ptr; 
 };
 
 class Spi {
@@ -21,11 +23,11 @@ class Spi {
     Spi(struct module);
     void transmit_receive(const BufferType& transmit, BufferType& receive);
     void* get_SPI_config();
-    void set_SPI_config();
+    void set_SPI_config(component, sub_component, SPI_interface, void*);
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;
-    void* SPI_config;
+    struct module* SPI_config;
 };
 }  // namespace spi
 
