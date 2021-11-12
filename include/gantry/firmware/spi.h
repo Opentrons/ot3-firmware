@@ -7,7 +7,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-void Gantry_Driver_CLK_init(enum GantryAxisType gantry_axis);
+void gantry_driver_CLK_init(enum GantryAxisType gantry_axis);
 
 #ifdef __cplusplus
 }  // extern "C"

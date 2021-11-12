@@ -125,7 +125,7 @@ void hal_transmit_receive(uint8_t* transmit, uint8_t* receive,
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }
 
-void Gantry_Driver_CLK_init(enum GantryAxisType gantry_axis) {
+void gantry_driver_CLK_init(enum GantryAxisType gantry_axis) {
     switch (gantry_axis) {
         case gantry_x:
             __HAL_RCC_GPIOB_CLK_ENABLE();

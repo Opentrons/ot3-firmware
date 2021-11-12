@@ -1,7 +1,5 @@
 #include "common/firmware/can_task.hpp"
 
-#include <map>
-
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
@@ -40,12 +38,16 @@ extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
 static auto message_writer_1 = MessageWriter(can_bus_1);
 
-static std::map<GantryAxisType, NodeId> AxisToNodeIdMap{
-    {gantry_x, NodeId::gantry_x},
-    {gantry_y, NodeId::gantry_y},
-};
+static constexpr NodeId node_from_axis(GantryAxisType which) {
+    switch (which) {
+        case GantryAxisType::gantry_x:
+            return NodeId::gantry_x;
+        case GantryAxisType::gantry_y:
+            return NodeId::gantry_y;
+    }
+}
 static auto my_axis_type = get_axis_type();
-static auto my_node_id = AxisToNodeIdMap[my_axis_type];
+static auto my_node_id = node_from_axis(my_axis_type);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
