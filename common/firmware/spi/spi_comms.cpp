@@ -24,9 +24,11 @@ using namespace spi;
 /*
  * Public Functions
  */
-
+struct Spi::module z_motor;
 Spi::Spi() { SPI_init(); }
-
+Spi::Spi(struct module mod) {
+ SPI_init();
+}
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     Reset_CS_Pin();
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
