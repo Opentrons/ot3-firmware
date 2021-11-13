@@ -25,7 +25,7 @@ using namespace spi;
  * Public Functions
  */
 
-Spi::Spi() { SPI2_init(); }
+Spi::Spi() { SPI2_init(); motor_driver_CLK_gpio_init();}
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     Reset_CS_Pin();

@@ -125,3 +125,14 @@ void Reset_CS_Pin() {
 void hal_transmit_receive(uint8_t* transmit, uint8_t* receive, uint16_t buff_size, uint32_t timeout) {
     HAL_SPI_TransmitReceive(&handle, transmit, receive, buff_size, timeout);
 }
+
+void motor_driver_CLK_gpio_init() {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    // Driver Clock Pin
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+}

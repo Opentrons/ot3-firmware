@@ -9,6 +9,7 @@ void SPI2_init();
 void Set_CS_Pin();
 void Reset_CS_Pin();
 void hal_transmit_receive(uint8_t* transmit, uint8_t *receive, uint16_t buff_size, uint32_t timeout);
+void motor_driver_CLK_gpio_init();
 
 #ifdef __cplusplus
 }  // extern "C"
