@@ -431,11 +431,39 @@ void SystemClock_Config(void) {
 //
 //}
 
+/**
+  * @brief ICACHE Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ICACHE_Init(void)
+{
+
+    /* USER CODE BEGIN ICACHE_Init 0 */
+
+    /* USER CODE END ICACHE_Init 0 */
+
+    /* USER CODE BEGIN ICACHE_Init 1 */
+
+    /* USER CODE END ICACHE_Init 1 */
+    /** Enable instruction cache (default 2-ways set associative cache)
+    */
+    if (HAL_ICACHE_Enable() != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /* USER CODE BEGIN ICACHE_Init 2 */
+
+    /* USER CODE END ICACHE_Init 2 */
+
+}
+
 
 void HardwareInit(void) {
     HAL_Init();
     SystemClock_Config();
     SystemCoreClockUpdate();
+    MX_ICACHE_Init();
 }
 
 /**
