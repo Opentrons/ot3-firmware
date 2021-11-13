@@ -29,12 +29,12 @@ using namespace spi;
 Spi::Spi() {
     // get SPI handle from spi.c
     void* tmp;
-    void* tmp_ = get_SPI_handle(tmp);
-    SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*)(tmp_));
+    get_SPI_handle(tmp);
+    SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*)(tmp));
     // set SPI handle to class member
     this->SPI_intf.SPI_handle = &handle_;
 
-    /*getting rid of to to make Spi class generic
+    /*getting rid of this to make Spi class generic
     for all projects to use!
     */
     // SPI2_init();
