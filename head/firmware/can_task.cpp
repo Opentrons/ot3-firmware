@@ -14,6 +14,7 @@
 #include "common/firmware/spi_comms.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "platform_specific_hal_conf.h"
 
 using namespace freertos_task;
 using namespace freertos_can_dispatch;
@@ -23,6 +24,7 @@ using namespace can_ids;
 using namespace can_dispatch;
 using namespace motor_message_handler;
 using namespace motor_messages;
+using namespace spi;
 
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
@@ -32,8 +34,30 @@ static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
 static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
+SPI_HandleTypeDef hspi2 = {
+    .Instance = SPI2,
+    .Init = {.Mode = SPI_MODE_MASTER,
+             .Direction = SPI_DIRECTION_2LINES,
+             .DataSize = SPI_DATASIZE_8BIT,
+             .CLKPolarity = SPI_POLARITY_HIGH,
+             .CLKPhase = SPI_PHASE_2EDGE,
+             .NSS = SPI_NSS_SOFT,
+             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+             .FirstBit = SPI_FIRSTBIT_MSB,
+             .TIMode = SPI_TIMODE_DISABLE,
+             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+             .CRCPolynomial = 7,
+             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
-static spi::Spi spi_comms{};
+};
+spi::SPI_interface SPI_intf = {
+    .SPI_handle = (void*) &hspi2,
+    .GPIO_handle = (void *) GPIOB,
+    .pin = GPIO_PIN_12
+};
+
+static spi::Spi spi_comms(SPI_intf);
 
 struct motion_controller::HardwareConfig PinConfigurations {
     .direction = {.port = GPIOB, .pin = GPIO_PIN_1},

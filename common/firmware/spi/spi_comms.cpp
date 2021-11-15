@@ -1,6 +1,6 @@
 #include "common/firmware/spi_comms.hpp"
 
-#include "common/firmware/spi.h"
+#include "spi.h"
 #include "platform_specific_hal_conf.h"
 
 using namespace spi;
@@ -26,24 +26,17 @@ using namespace spi;
  * Public Functions
  */
 
-Spi::Spi() {
-    // get SPI handle from spi.c
-    void* tmp;
-    get_SPI_handle(tmp);
-    SPI_HandleTypeDef handle_ = *((SPI_HandleTypeDef*)(tmp));
-    // set SPI handle to class member
-    this->SPI_intf.SPI_handle = &handle_;
-
-    /*getting rid of this to make Spi class generic
-    for all projects to use!
-    */
-    // SPI2_init();
+Spi::Spi(SPI_interface SPI_intf_instance): SPI_intf(SPI_intf_instance) {
 }
 
 void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
-    Reset_CS_Pin();
+    Reset_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     hal_transmit_receive(const_cast<uint8_t*>(transmit.data()), receive.data(),
                          BUFFER_SIZE, TIMEOUT, this->SPI_intf.SPI_handle);
-    Set_CS_Pin();
+    /*
+        pass GPIO_instance and pin
+    */
+    Set_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
+    
 }

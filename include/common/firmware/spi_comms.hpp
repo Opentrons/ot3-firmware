@@ -14,16 +14,19 @@ struct SPI_interface {
 
     */
     void* SPI_handle;
+    void* GPIO_handle;
+    uint32_t pin;
 };
 class Spi {
   public:
     static constexpr auto BUFFER_SIZE = 5;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
-    Spi();
+    explicit Spi(SPI_interface SPI_int);
+    
     void transmit_receive(const BufferType& transmit, BufferType& receive);
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;
-    struct SPI_interface SPI_intf;
+    SPI_interface SPI_intf;
 };
 }  // namespace spi
