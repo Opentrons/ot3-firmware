@@ -67,7 +67,13 @@ static motor_class::Motor motor{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations, motor_queue, complete_queue};
+    PinConfigurations,
+    MotionConstraints{.min_velocity = 1,
+                      .max_velocity = 2,
+                      .min_acceleration = 1,
+                      .max_acceleration = 2},
+    motor_queue,
+    complete_queue};
 
 static auto move_group_manager = MoveGroupType{};
 /** The parsed message handler */
@@ -87,7 +93,9 @@ static auto motor_dispatch_target = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest>{can_motor_handler};
+    can_messages::DisableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints>{can_motor_handler};
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,

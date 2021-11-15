@@ -54,7 +54,13 @@ static motor_class::Motor motor{
             lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations, motor_queue, complete_queue};
+    PinConfigurations,
+    MotionConstraints{.min_velocity = 1,
+                      .max_velocity = 2,
+                      .min_acceleration = 1,
+                      .max_acceleration = 2},
+    motor_queue,
+    complete_queue};
 
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
@@ -70,7 +76,9 @@ static auto motor_dispatch_target = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest>{can_motor_handler};
+    can_messages::DisableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints>{can_motor_handler};
 /** Dispatcher to the various handlers */
 static auto dispatcher =
     Dispatcher(motor_dispatch_target, device_info_dispatch_target);
