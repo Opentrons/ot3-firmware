@@ -48,7 +48,7 @@ struct Loopback {
      * The message handling function.
      * @param m A variant of the various message types.
      */
-    void handle(std::variant<std::monostate, MoveRequest, GetSpeedRequest> &m) {
+    void handle(std::variant<std::monostate, MoveRequest> &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
@@ -73,8 +73,7 @@ static auto handler = Loopback{canbus};
 // Create a DispatchParseTarget to parse messages in message buffer and pass
 // them to the handler.
 static auto dispatcher =
-    can_dispatch::DispatchParseTarget<Loopback, MoveRequest, GetSpeedRequest>{
-        handler};
+    can_dispatch::DispatchParseTarget<Loopback, MoveRequest>{handler};
 
 // A Message Buffer poller that reads from buffer and send to dispatcher
 static auto poller =
