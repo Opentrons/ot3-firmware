@@ -422,6 +422,7 @@ struct GetMotionConstraintsResponse
     um_per_tick max_velocity;
     um_per_tick_sq min_acceleration;
     um_per_tick_sq max_acceleration;
+    uint8_t node_id;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GetMotionConstraintsResponse {
@@ -429,15 +430,18 @@ struct GetMotionConstraintsResponse
         um_per_tick max_velocity = 0;
         um_per_tick_sq min_acceleration = 0;
         um_per_tick_sq max_acceleration = 0;
+        uint8_t node_id = 0;
         body = bit_utils::bytes_to_int(body, limit, min_velocity);
         body = bit_utils::bytes_to_int(body, limit, max_velocity);
         body = bit_utils::bytes_to_int(body, limit, min_acceleration);
         body = bit_utils::bytes_to_int(body, limit, max_acceleration);
+        body = bit_utils::bytes_to_int(body, limit, node_id);
         return GetMotionConstraintsResponse{
             .min_velocity = min_velocity,
             .max_velocity = max_velocity,
             .min_acceleration = min_acceleration,
-            .max_acceleration = max_acceleration};
+            .max_acceleration = max_acceleration,
+            .node_id = node_id};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -446,6 +450,7 @@ struct GetMotionConstraintsResponse
         iter = bit_utils::int_to_bytes(max_velocity, iter, limit);
         iter = bit_utils::int_to_bytes(min_acceleration, iter, limit);
         iter = bit_utils::int_to_bytes(max_acceleration, iter, limit);
+        iter = bit_utils::int_to_bytes(node_id, iter, limit);
         return iter - body;
     }
 

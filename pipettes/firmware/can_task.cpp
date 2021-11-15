@@ -77,7 +77,8 @@ static motor_class::Motor motor{
 
 static auto move_group_manager = MoveGroupType{};
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler =
+    MotorHandler{message_writer_1, motor, NodeId::pipette};
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
 static auto can_move_group_executor_handler = MoveGroupExecutorHandler(

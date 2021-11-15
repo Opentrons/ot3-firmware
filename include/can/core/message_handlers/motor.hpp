@@ -20,8 +20,8 @@ class MotorHandler {
                      DisableMotorRequest, GetMotionConstraintsRequest,
                      SetMotionConstraints>;
 
-    MotorHandler(MessageWriter &message_writer, Motor &motor)
-        : message_writer{message_writer}, motor{motor} {}
+    MotorHandler(MessageWriter &message_writer, Motor &motor, NodeId node_id)
+        : message_writer{message_writer}, motor{motor}, node_id(node_id) {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
     MotorHandler &operator=(const MotorHandler &) = delete;
@@ -64,6 +64,7 @@ class MotorHandler {
             .max_velocity = constraints.max_velocity,
             .min_acceleration = constraints.min_acceleration,
             .max_acceleration = constraints.max_acceleration,
+            .node_id = static_cast<uint8_t>(node_id),
         };
         message_writer.write(NodeId::host, response_msg);
     }
@@ -74,6 +75,7 @@ class MotorHandler {
 
     MessageWriter &message_writer;
     Motor &motor;
+    NodeId node_id;
 };
 
 }  // namespace motor_message_handler
