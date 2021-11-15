@@ -106,9 +106,9 @@ class MotionController {
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
+    MotionConstraints motion_constraints;
     GenericQueue& queue;
     CompletedQueue& completed_queue;
-    MotionConstraints motion_constraints;
 };
 
 }  // namespace motion_controller
