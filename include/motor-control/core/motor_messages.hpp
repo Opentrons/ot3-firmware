@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "can/core/messages.hpp"
+
 typedef int32_t sq0_31;  // 0: signed bit,  1-31: fractional bits
 typedef uint64_t
     q31_31;  // 0: overflow bit, 1-32: integer bits, 33-64: fractional bits
@@ -11,6 +13,16 @@ using steps_per_tick = sq0_31;
 using steps_per_tick_sq = sq0_31;
 
 namespace motor_messages {
+
+using um_per_tick = can_messages::um_per_tick;
+using um_per_tick_sq = can_messages::um_per_tick_sq;
+
+struct MotionConstraints {
+    um_per_tick min_velocity;
+    um_per_tick max_velocity;
+    um_per_tick_sq min_acceleration;
+    um_per_tick_sq max_acceleration;
+};
 
 struct Move {
     ticks duration;  // in ticks

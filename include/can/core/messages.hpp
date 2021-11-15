@@ -5,7 +5,6 @@
 
 #include "common/core/bit_utils.hpp"
 #include "ids.hpp"
-#include "motor-control/core/motor_messages.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
@@ -156,26 +155,6 @@ struct MoveRequest : BaseMessage<MessageId::move_request> {
 };
 
 using SetupRequest = Empty<MessageId::setup_request>;
-
-using GetSpeedRequest = Empty<MessageId::get_speed_request>;
-
-struct GetSpeedResponse : BaseMessage<MessageId::get_speed_response> {
-    uint32_t mm_sec;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> GetSpeedResponse {
-        uint32_t mm_sec = 0;
-        body = bit_utils::bytes_to_int(body, limit, mm_sec);
-        return GetSpeedResponse{.mm_sec = mm_sec};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(mm_sec, body, limit);
-        return iter - body;
-    }
-    bool operator==(const GetSpeedResponse& other) const = default;
-};
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint8_t serial_number;
@@ -398,6 +377,79 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     }
 
     bool operator==(const MoveCompleted& other) const = default;
+};
+
+struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
+    um_per_tick min_velocity;
+    um_per_tick max_velocity;
+    um_per_tick_sq min_acceleration;
+    um_per_tick_sq max_acceleration;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetMotionConstraints {
+        um_per_tick min_velocity = 0;
+        um_per_tick max_velocity = 0;
+        um_per_tick_sq min_acceleration = 0;
+        um_per_tick_sq max_acceleration = 0;
+        body = bit_utils::bytes_to_int(body, limit, min_velocity);
+        body = bit_utils::bytes_to_int(body, limit, max_velocity);
+        body = bit_utils::bytes_to_int(body, limit, min_acceleration);
+        body = bit_utils::bytes_to_int(body, limit, max_acceleration);
+        return SetMotionConstraints{.min_velocity = min_velocity,
+                                    .max_velocity = max_velocity,
+                                    .min_acceleration = min_acceleration,
+                                    .max_acceleration = max_acceleration};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(min_velocity, body, limit);
+        iter = bit_utils::int_to_bytes(max_velocity, iter, limit);
+        iter = bit_utils::int_to_bytes(min_acceleration, iter, limit);
+        iter = bit_utils::int_to_bytes(max_acceleration, iter, limit);
+        return iter - body;
+    }
+
+    bool operator==(const SetMotionConstraints& other) const = default;
+};
+
+using GetMotionConstraintsRequest =
+    Empty<MessageId::get_motion_constraints_request>;
+
+struct GetMotionConstraintsResponse
+    : BaseMessage<MessageId::set_motion_constraints> {
+    um_per_tick min_velocity;
+    um_per_tick max_velocity;
+    um_per_tick_sq min_acceleration;
+    um_per_tick_sq max_acceleration;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GetMotionConstraintsResponse {
+        um_per_tick min_velocity = 0;
+        um_per_tick max_velocity = 0;
+        um_per_tick_sq min_acceleration = 0;
+        um_per_tick_sq max_acceleration = 0;
+        body = bit_utils::bytes_to_int(body, limit, min_velocity);
+        body = bit_utils::bytes_to_int(body, limit, max_velocity);
+        body = bit_utils::bytes_to_int(body, limit, min_acceleration);
+        body = bit_utils::bytes_to_int(body, limit, max_acceleration);
+        return GetMotionConstraintsResponse{
+            .min_velocity = min_velocity,
+            .max_velocity = max_velocity,
+            .min_acceleration = min_acceleration,
+            .max_acceleration = max_acceleration};
+    }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(min_velocity, body, limit);
+        iter = bit_utils::int_to_bytes(max_velocity, iter, limit);
+        iter = bit_utils::int_to_bytes(min_acceleration, iter, limit);
+        iter = bit_utils::int_to_bytes(max_acceleration, iter, limit);
+        return iter - body;
+    }
+
+    bool operator==(const GetMotionConstraintsResponse& other) const = default;
 };
 
 }  // namespace can_messages
