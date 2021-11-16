@@ -6,7 +6,7 @@
 
 namespace spi {
 struct SPI_interface {
-    void* SPI_handle;
+    SPI_HandleTypeDef* SPI_handle;
     GPIO_TypeDef* GPIO_handle;
     uint32_t pin;
 };
