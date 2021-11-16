@@ -143,8 +143,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
 spi::SPI_interface SPI_intf = {
 
     .SPI_handle = &handle,
-    .GPIO_handle = GPIOB,
-    .pin = GPIO_PIN_12,
+    .GPIO_handle = GPIOA,
+    .pin = GPIO_PIN_9,
 };
 static spi::Spi spi_comms(SPI_intf);
 

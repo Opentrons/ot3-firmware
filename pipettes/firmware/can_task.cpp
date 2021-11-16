@@ -141,8 +141,8 @@ SPI_HandleTypeDef handle = MX_SPI2_Init();
 spi::SPI_interface SPI_intf = {
 
     .SPI_handle = &handle,
-    .GPIO_handle = GPIOB,
-    .pin = GPIO_PIN_12,
+    .GPIO_handle = GPIOC,
+    .pin = GPIO_PIN_8,
 };
 static spi::Spi spi_comms(SPI_intf);
 

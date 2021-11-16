@@ -42,10 +42,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
  * @retval None
  */
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
-    // PB14 -> MISO
-    // PB12 -> CS
-    // PB13 -> CLK
-    // PB15 -> MOSI
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
         /* Peripheral clock enable */
@@ -86,10 +82,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
     }
-    // PC11 -> MISO
-    // PA04 -> CS
-    // PC10 -> CLK
-    // PC12 -> MOSI
 
     else if (hspi->Instance == SPI3) {
         /* Peripheral clock enable */
@@ -245,7 +237,7 @@ spi::SPI_interface SPI_intf2 = {
 
     .SPI_handle = &handle2,
     .GPIO_handle = GPIOB,
-    .pin = GPIO_PIN_12,
+    .pin = GPIO_PIN_11,
 };
 static spi::Spi spi_comms2(SPI_intf2);
 
@@ -258,9 +250,9 @@ spi::SPI_interface SPI_intf3 = {
 static spi::Spi spi_comms3(SPI_intf3);
 
 struct motion_controller::HardwareConfig PinConfigurations {
-    .direction = {.port = GPIOB, .pin = GPIO_PIN_1},
-    .step = {.port = GPIOA, .pin = GPIO_PIN_8},
-    .enable = {.port = GPIOA, .pin = GPIO_PIN_10},
+    .direction = {.port = GPIOC, .pin = GPIO_PIN_7},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_6},
+    .enable = {.port = GPIOB, .pin = GPIO_PIN_11},
 };
 
 /**
@@ -269,6 +261,7 @@ struct motion_controller::HardwareConfig PinConfigurations {
  * should be made to avoid a pretty gross template signature.
  */
 
+/*z motor would need a motor and PinConfigurations instance on its own*/
 static motor_class::Motor motor{
     spi_comms2,
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
