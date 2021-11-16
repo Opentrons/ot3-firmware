@@ -5,7 +5,7 @@
 **  File        : LinkerScript.ld
 **
 **  Abstract    : Linker script for STM32L562QEIx Device with
-**                511KByte FLASH, 256KByte RAM
+**                512KByte FLASH, 256KByte RAM
 **
 **                Set heap size, stack size and stack location according
 **                to application requirements.
