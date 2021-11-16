@@ -6,19 +6,11 @@
 
 namespace spi {
 struct SPI_interface {
-    /*
-      Incase there are multiple handles
-      involed(like how the head was different SPI
-      interfaces for it's A and Z motor) SPI_handle
-      can point to an array of handles. SPI_handle
-      to be instantiated in respective project's
-      spi.c under void* get_SPI_handle(void*)
-
-    */
     void* SPI_handle;
     GPIO_TypeDef* GPIO_handle;
     uint32_t pin;
 };
+
 class Spi {
   public:
     static constexpr auto BUFFER_SIZE = 5;

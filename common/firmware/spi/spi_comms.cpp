@@ -34,8 +34,6 @@ void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
     hal_transmit_receive(const_cast<uint8_t*>(transmit.data()), receive.data(),
                          BUFFER_SIZE, TIMEOUT,
                          (SPI_HandleTypeDef*)this->SPI_intf.SPI_handle);
-    /*
-        pass GPIO_instance and pin
-    */
+
     Set_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
 }
