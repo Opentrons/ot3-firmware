@@ -94,35 +94,32 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
                       &GPIO_InitStruct);
     }
 }
+SPI_HandleTypeDef hspi2 = {
+    .Instance = SPI2,
+    .Init = {.Mode = SPI_MODE_MASTER,
+             .Direction = SPI_DIRECTION_2LINES,
+             .DataSize = SPI_DATASIZE_8BIT,
+             .CLKPolarity = SPI_POLARITY_HIGH,
+             .CLKPhase = SPI_PHASE_2EDGE,
+             .NSS = SPI_NSS_SOFT,
+             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+             .FirstBit = SPI_FIRSTBIT_MSB,
+             .TIMode = SPI_TIMODE_DISABLE,
+             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+             .CRCPolynomial = 7,
+             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
+};
 SPI_HandleTypeDef MX_SPI2_Init() {
     /* SPI2 parameter configuration*/
     __HAL_RCC_SPI2_CLK_ENABLE();
-    SPI_HandleTypeDef hspi2 = {
-        .Instance = SPI2,
-        .Init = {.Mode = SPI_MODE_MASTER,
-                 .Direction = SPI_DIRECTION_2LINES,
-                 .DataSize = SPI_DATASIZE_8BIT,
-                 .CLKPolarity = SPI_POLARITY_HIGH,
-                 .CLKPhase = SPI_PHASE_2EDGE,
-                 .NSS = SPI_NSS_SOFT,
-                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                 .FirstBit = SPI_FIRSTBIT_MSB,
-                 .TIMode = SPI_TIMODE_DISABLE,
-                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                 .CRCPolynomial = 7,
-                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
-
-    };
 
     if (HAL_SPI_Init(&hspi2) != HAL_OK) {
         Error_Handler();
     }
     return hspi2;
 }
-
-SPI_HandleTypeDef handle = MX_SPI2_Init();
 
 /**
  * @brief SPI MSP De-Initialization
@@ -142,7 +139,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
 }
 spi::SPI_interface SPI_intf = {
 
-    .SPI_handle = &handle,
+    .SPI_handle = &hspi2,
     .GPIO_handle = GPIOA,
     .pin = GPIO_PIN_9,
 };
@@ -207,6 +204,10 @@ static auto dispatcher = Dispatcher(
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
+        Error_Handler();
+    }
+    __HAL_RCC_SPI2_CLK_ENABLE();
+    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
         Error_Handler();
     }
     can_bus::setup_node_id_filter(can_bus_1, axis_type::get_node_id());
