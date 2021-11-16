@@ -4,7 +4,6 @@
 
 #include "platform_specific_hal_conf.h"
 
-
 namespace spi {
 struct SPI_interface {
     /*
@@ -17,7 +16,7 @@ struct SPI_interface {
 
     */
     void* SPI_handle;
-    GPIO_TypeDef * GPIO_handle;
+    GPIO_TypeDef* GPIO_handle;
     uint32_t pin;
 };
 class Spi {
@@ -25,7 +24,7 @@ class Spi {
     static constexpr auto BUFFER_SIZE = 5;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
     explicit Spi(SPI_interface SPI_int);
-    
+
     void transmit_receive(const BufferType& transmit, BufferType& receive);
 
   private:
