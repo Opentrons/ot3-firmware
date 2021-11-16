@@ -16,7 +16,6 @@ class Spi {
     static constexpr auto BUFFER_SIZE = 5;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
     explicit Spi(SPI_interface SPI_int);
-
     void transmit_receive(const BufferType& transmit, BufferType& receive);
 
   private:

@@ -165,77 +165,45 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
     }
 }
+SPI_HandleTypeDef hspi2 = {
+    .Instance = SPI2,
+    .Init = {.Mode = SPI_MODE_MASTER,
+             .Direction = SPI_DIRECTION_2LINES,
+             .DataSize = SPI_DATASIZE_8BIT,
+             .CLKPolarity = SPI_POLARITY_HIGH,
+             .CLKPhase = SPI_PHASE_2EDGE,
+             .NSS = SPI_NSS_SOFT,
+             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+             .FirstBit = SPI_FIRSTBIT_MSB,
+             .TIMode = SPI_TIMODE_DISABLE,
+             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+             .CRCPolynomial = 7,
+             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
-/**
- * @brief SPI2 Initialization Function
- * @param None
- * @retval None
- */
-SPI_HandleTypeDef MX_SPI2_Init() {
-    /* SPI2 parameter configuration*/
-    __HAL_RCC_SPI2_CLK_ENABLE();
-    SPI_HandleTypeDef hspi2 = {
-        .Instance = SPI2,
-        .Init = {.Mode = SPI_MODE_MASTER,
-                 .Direction = SPI_DIRECTION_2LINES,
-                 .DataSize = SPI_DATASIZE_8BIT,
-                 .CLKPolarity = SPI_POLARITY_HIGH,
-                 .CLKPhase = SPI_PHASE_2EDGE,
-                 .NSS = SPI_NSS_SOFT,
-                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                 .FirstBit = SPI_FIRSTBIT_MSB,
-                 .TIMode = SPI_TIMODE_DISABLE,
-                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                 .CRCPolynomial = 7,
-                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
+};
 
-    };
+SPI_HandleTypeDef hspi3 = {
+    .Instance = SPI3,
+    .Init = {.Mode = SPI_MODE_MASTER,
+             .Direction = SPI_DIRECTION_2LINES,
+             .DataSize = SPI_DATASIZE_8BIT,
+             .CLKPolarity = SPI_POLARITY_HIGH,
+             .CLKPhase = SPI_PHASE_2EDGE,
+             .NSS = SPI_NSS_SOFT,
+             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+             .FirstBit = SPI_FIRSTBIT_MSB,
+             .TIMode = SPI_TIMODE_DISABLE,
+             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+             .CRCPolynomial = 7,
+             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
-    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
-        Error_Handler();
-    }
-    return hspi2;
-}
-
-/**
- * @brief SPI3 Initialization Function
- * @param None
- * @retval None
- */
-SPI_HandleTypeDef MX_SPI3_Init() {
-    /* SPI2 parameter configuration*/
-    __HAL_RCC_SPI3_CLK_ENABLE();
-    SPI_HandleTypeDef hspi3 = {
-        .Instance = SPI3,
-        .Init = {.Mode = SPI_MODE_MASTER,
-                 .Direction = SPI_DIRECTION_2LINES,
-                 .DataSize = SPI_DATASIZE_8BIT,
-                 .CLKPolarity = SPI_POLARITY_HIGH,
-                 .CLKPhase = SPI_PHASE_2EDGE,
-                 .NSS = SPI_NSS_SOFT,
-                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                 .FirstBit = SPI_FIRSTBIT_MSB,
-                 .TIMode = SPI_TIMODE_DISABLE,
-                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                 .CRCPolynomial = 7,
-                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
-
-    };
-
-    if (HAL_SPI_Init(&hspi3) != HAL_OK) {
-        Error_Handler();
-    }
-    return hspi3;
-}
-
-SPI_HandleTypeDef handle2 = MX_SPI2_Init();
-SPI_HandleTypeDef handle3 = MX_SPI3_Init();
+};
 
 spi::SPI_interface SPI_intf2 = {
 
-    .SPI_handle = &handle2,
+    .SPI_handle = &hspi2,
     .GPIO_handle = GPIOB,
     .pin = GPIO_PIN_11,
 };
@@ -243,7 +211,7 @@ static spi::Spi spi_comms2(SPI_intf2);
 
 spi::SPI_interface SPI_intf3 = {
 
-    .SPI_handle = &handle3,
+    .SPI_handle = &hspi3,
     .GPIO_handle = GPIOA,
     .pin = GPIO_PIN_4,
 };
@@ -292,6 +260,14 @@ static auto dispatcher =
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
+        Error_Handler();
+    }
+    __HAL_RCC_SPI2_CLK_ENABLE();
+    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
+        Error_Handler();
+    }
+    __HAL_RCC_SPI3_CLK_ENABLE();
+    if (HAL_SPI_Init(&hspi3) != HAL_OK) {
         Error_Handler();
     }
     can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
