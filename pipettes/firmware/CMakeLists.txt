@@ -29,6 +29,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
     ${CMAKE_CURRENT_SOURCE_DIR}/spi.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
     ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
 
