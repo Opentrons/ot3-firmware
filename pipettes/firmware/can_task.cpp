@@ -109,15 +109,7 @@ SPI_HandleTypeDef hspi2 = {
              .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
 };
-SPI_HandleTypeDef MX_SPI2_Init() {
-    /* SPI2 parameter configuration*/
-    __HAL_RCC_SPI2_CLK_ENABLE();
 
-    if (HAL_SPI_Init(&hspi2) != HAL_OK) {
-        Error_Handler();
-    }
-    return hspi2;
-}
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     if (hspi->Instance == SPI2) {
         /* Peripheral clock disable */
