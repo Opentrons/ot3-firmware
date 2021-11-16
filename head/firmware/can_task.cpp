@@ -34,23 +34,23 @@ static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
 static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
-    SPI_HandleTypeDef hspi2 = {
-        .Instance = SPI2,
-        .Init = {.Mode = SPI_MODE_MASTER,
-                 .Direction = SPI_DIRECTION_2LINES,
-                 .DataSize = SPI_DATASIZE_8BIT,
-                 .CLKPolarity = SPI_POLARITY_HIGH,
-                 .CLKPhase = SPI_PHASE_2EDGE,
-                 .NSS = SPI_NSS_SOFT,
-                 .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
-                 .FirstBit = SPI_FIRSTBIT_MSB,
-                 .TIMode = SPI_TIMODE_DISABLE,
-                 .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
-                 .CRCPolynomial = 7,
-                 .CRCLength = SPI_CRC_LENGTH_DATASIZE,
-                 .NSSPMode = SPI_NSS_PULSE_DISABLE}
+SPI_HandleTypeDef hspi2 = {
+    .Instance = SPI2,
+    .Init = {.Mode = SPI_MODE_MASTER,
+             .Direction = SPI_DIRECTION_2LINES,
+             .DataSize = SPI_DATASIZE_8BIT,
+             .CLKPolarity = SPI_POLARITY_HIGH,
+             .CLKPhase = SPI_PHASE_2EDGE,
+             .NSS = SPI_NSS_SOFT,
+             .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32,
+             .FirstBit = SPI_FIRSTBIT_MSB,
+             .TIMode = SPI_TIMODE_DISABLE,
+             .CRCCalculation = SPI_CRCCALCULATION_DISABLE,
+             .CRCPolynomial = 7,
+             .CRCLength = SPI_CRC_LENGTH_DATASIZE,
+             .NSSPMode = SPI_NSS_PULSE_DISABLE}
 
-    };
+};
 spi::SPI_interface SPI_intf = {
 
     .SPI_handle = &hspi2,
