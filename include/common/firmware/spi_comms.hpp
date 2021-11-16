@@ -2,6 +2,9 @@
 #include <cstdint>
 #include <span>
 
+#include "platform_specific_hal_conf.h"
+
+
 namespace spi {
 struct SPI_interface {
     /*
@@ -14,7 +17,7 @@ struct SPI_interface {
 
     */
     void* SPI_handle;
-    void* GPIO_handle;
+    GPIO_TypeDef * GPIO_handle;
     uint32_t pin;
 };
 class Spi {
