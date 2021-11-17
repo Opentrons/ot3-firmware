@@ -59,7 +59,7 @@ struct Loopback {
     void visit(MoveRequest &m) {
         auto response = MoveCompleted{
             .group_id = 0, .seq_id = 1, .current_position = 2, .ack_id = 3};
-        message.writer(NodeId::host, response);
+        writer.write(NodeId::host, response);
     }
 
     can_message_writer::MessageWriter writer;
