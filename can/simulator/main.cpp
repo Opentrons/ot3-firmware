@@ -3,6 +3,7 @@
 
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/simlib/sim_canbus.hpp"
@@ -38,7 +39,7 @@ struct Loopback {
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(can_bus::CanBusWriter &can_bus) : writer{canbus} {}
+    Loopback(can_bus::CanBusWriter &can_bus) : writer{canbus, node_id} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
     auto operator=(const Loopback &) -> Loopback & = delete;
@@ -58,8 +59,8 @@ struct Loopback {
      * Handler for all message types.
      * @param m Serializable.
      */
-    template <message_core::Serializable Serializable>
-    void visit(const Serializable &m) {
+    template <message_core::ResponseMessage ResponseMessage>
+    void visit(ResponseMessage &m) {
         // Loop it back
         writer.write(NodeId::host, m);
     }
@@ -68,7 +69,7 @@ struct Loopback {
 };
 
 // Create global handler
-static auto handler = Loopback{canbus};
+static auto handler = Loopback{canbus, can_ids::NodeId::host};
 
 // Create a DispatchParseTarget to parse messages in message buffer and pass
 // them to the handler.
