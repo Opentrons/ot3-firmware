@@ -65,10 +65,13 @@ SCENARIO("message serializing works") {
         }
     }
 
-    GIVEN("a MoveGroupCompleted message") {
-        auto message = MoveGroupCompleted{.group_id = 1};
+    GIVEN("a MoveCompleted message") {
+        auto message = MoveCompleted{.group_id = 1,
+                                     .seq_id = 2,
+                                     .current_position = 0x3456789a,
+                                     .ack_id = 1};
         message.set_node_id(can_ids::NodeId::pipette);
-        auto arr = std::array<uint8_t, 2>{};
+        auto arr = std::array<uint8_t, 8>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
@@ -76,8 +79,14 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[0] ==
                         static_cast<uint8_t>(can_ids::NodeId::pipette));
                 REQUIRE(body.data()[1] == 1);
+                REQUIRE(body.data()[2] == 2);
+                REQUIRE(body.data()[3] == 0x34);
+                REQUIRE(body.data()[4] == 0x56);
+                REQUIRE(body.data()[5] == 0x78);
+                REQUIRE(body.data()[6] == 0x9a);
+                REQUIRE(body.data()[7] == 1);
             }
-            THEN("size must be returned") { REQUIRE(size == 2); }
+            THEN("size must be returned") { REQUIRE(size == 8); }
         }
     }
 

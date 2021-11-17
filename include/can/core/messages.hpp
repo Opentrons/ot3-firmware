@@ -256,19 +256,6 @@ struct ExecuteMoveGroupRequest
 using ClearAllMoveGroupsRequest =
     Empty<MessageId::clear_all_move_groups_request>;
 
-struct MoveGroupCompleted : Response<MessageId::move_group_completed> {
-    uint8_t group_id;
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(group_id, iter, limit);
-        return iter - body;
-    }
-
-    bool operator==(const MoveGroupCompleted& other) const = default;
-};
-
 struct MoveCompleted : Response<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
