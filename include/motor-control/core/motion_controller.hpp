@@ -91,7 +91,7 @@ class MotionController {
     }
 
   private:
-    uint32_t steps_per_mm;
+    uint32_t steps_per_mm{0};
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
     GenericQueue& queue;

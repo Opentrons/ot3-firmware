@@ -99,7 +99,7 @@ class MotorDriver {
         auto iter = txBuffer.begin();
         iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
-        bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
+        iter = bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
         return txBuffer;
     }
 
@@ -112,7 +112,7 @@ class MotorDriver {
         auto iter = rxBuffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), status);
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
-        bit_utils::bytes_to_int(iter, rxBuffer.cend(), data);
+        iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), data);
     }
 
     SpiDriver spi_comms;
