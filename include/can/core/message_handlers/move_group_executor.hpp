@@ -31,7 +31,6 @@ struct TaskEntry {
                     .current_position = try_read.current_position,
                     .ack_id = static_cast<uint8_t>(
                         motor_messages::AckMessageId::complete),
-                    .node_id = static_cast<uint8_t>(node_id),
                 };
                 message_writer.write(NodeId::host, msg);
             }

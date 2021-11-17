@@ -47,8 +47,7 @@ class MoveGroupHandler {
         auto response = GetMoveGroupResponse{
             .group_id = m.group_id,
             .num_moves = static_cast<uint8_t>(group.size()),
-            .total_duration = group.get_duration(),
-            .node_id = static_cast<uint8_t>(can_ids::NodeId::host)};
+            .total_duration = group.get_duration()};
 
         message_writer.write(NodeId::host, response);
     }
