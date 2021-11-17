@@ -39,7 +39,8 @@ struct Loopback {
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(can_bus::CanBusWriter &can_bus) : writer{canbus, node_id} {}
+    Loopback(can_bus::CanBusWriter &can_bus, can_ids::NodeId node_id)
+        : writer{canbus, node_id} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
     auto operator=(const Loopback &) -> Loopback & = delete;
