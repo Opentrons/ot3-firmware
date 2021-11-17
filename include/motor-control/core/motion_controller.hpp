@@ -33,10 +33,11 @@ class MotionController {
     using GenericQueue = QueueImpl<Move>;
     using CompletedQueue = CompletedQueueImpl<Ack>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     HardwareConfig& config, GenericQueue& queue,
-                     CompletedQueue& completed_queue)
+                     HardwareConfig& config, MotionConstraints constraints,
+                     GenericQueue& queue, CompletedQueue& completed_queue)
         : linear_motion_sys_config(lms_config),
           hardware_config(config),
+          motion_constraints(constraints),
           queue(queue),
           completed_queue(completed_queue) {
         timer_init();
@@ -90,10 +91,22 @@ class MotionController {
         timer_interrupt_stop();
     }
 
+    void set_motion_constraints(
+        const can_messages::SetMotionConstraints& can_msg) {
+        motion_constraints =
+            MotionConstraints{.min_velocity = can_msg.min_velocity,
+                              .max_velocity = can_msg.max_velocity,
+                              .min_acceleration = can_msg.min_acceleration,
+                              .max_acceleration = can_msg.max_acceleration};
+    }
+
+    MotionConstraints get_motion_constraints() { return motion_constraints; }
+
   private:
     uint32_t steps_per_mm;
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
+    MotionConstraints motion_constraints;
     GenericQueue& queue;
     CompletedQueue& completed_queue;
 };

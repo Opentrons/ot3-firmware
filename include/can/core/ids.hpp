@@ -51,6 +51,10 @@ enum class MessageId : uint16_t {
     move_request = 0x10,
     move_completed = 0x13,
 
+    set_motion_constraints = 0x1001,
+    get_motion_constraints_request = 0x1002,
+    get_motion_constraints_response = 0x1003,
+
     add_linear_move_request = 0x15,
     get_move_group_request = 0x16,
     get_move_group_response = 0x17,
@@ -59,9 +63,6 @@ enum class MessageId : uint16_t {
     move_group_completed = 0x1A,
 
     setup_request = 0x02,
-
-    get_speed_request = 0x04,
-    get_speed_response = 0x11,
 
     write_eeprom = 0x2001,
     read_eeprom_request = 0x2002,

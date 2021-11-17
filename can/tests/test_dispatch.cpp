@@ -118,10 +118,10 @@ SCENARIO("DispatchBufferTarget") {
         auto subject = DispatchBufferTarget<decltype(l), HeartbeatRequest,
                                             HeartbeatResponse>(l);
 
-        WHEN("Given a GetSpeedResponse") {
+        WHEN("Given a GetMoveGroupResponse") {
             auto arbitration_id = ArbitrationId{.id = 0};
             arbitration_id.parts.message_id =
-                static_cast<uint16_t>(GetSpeedResponse::id);
+                static_cast<uint16_t>(GetMoveGroupResponse::id);
             subject.handle(arbitration_id.id, buff.begin(), buff.end());
             THEN("listeners are not called") { REQUIRE(l.length == 0); }
         }
