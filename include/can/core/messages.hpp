@@ -59,6 +59,12 @@ struct Response : BaseMessage<MId> {
         return bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), body,
                                        limit);
     }
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = serialize_node_id(body, limit);
+        return iter - body;
+    }
 };
 
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
@@ -135,13 +141,6 @@ struct MoveRequest : BaseMessage<MessageId::move_request> {
                            .acceleration = acceleration};
     }
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(duration, body, limit);
-        iter = bit_utils::int_to_bytes(velocity, iter, limit);
-        iter = bit_utils::int_to_bytes(acceleration, iter, limit);
-        return iter - body;
-    }
     bool operator==(const MoveRequest& other) const = default;
 };
 
@@ -157,11 +156,6 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
         return WriteToEEPromRequest{.serial_number = serial_number};
     }
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
-        return iter - body;
-    }
     bool operator==(const WriteToEEPromRequest& other) const = default;
 };
 
@@ -205,16 +199,6 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
                                     .velocity = velocity};
     }
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
-        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
-        iter = bit_utils::int_to_bytes(duration, iter, limit);
-        iter = bit_utils::int_to_bytes(acceleration, iter, limit);
-        iter = bit_utils::int_to_bytes(velocity, iter, limit);
-        return iter - body;
-    }
-
     bool operator==(const AddLinearMoveRequest& other) const = default;
 };
 
@@ -226,12 +210,6 @@ struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
         uint8_t group_id = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         return GetMoveGroupRequest{.group_id = group_id};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
-        return iter - body;
     }
 
     bool operator==(const GetMoveGroupRequest& other) const = default;
@@ -272,13 +250,6 @@ struct ExecuteMoveGroupRequest
                                        .cancel_trigger = cancel_trigger};
     }
 
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
-        iter = bit_utils::int_to_bytes(start_trigger, iter, limit);
-        iter = bit_utils::int_to_bytes(cancel_trigger, iter, limit);
-        return iter - body;
-    }
     bool operator==(const ExecuteMoveGroupRequest& other) const = default;
 };
 
@@ -337,15 +308,6 @@ struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
                                     .max_velocity = max_velocity,
                                     .min_acceleration = min_acceleration,
                                     .max_acceleration = max_acceleration};
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(min_velocity, body, limit);
-        iter = bit_utils::int_to_bytes(max_velocity, iter, limit);
-        iter = bit_utils::int_to_bytes(min_acceleration, iter, limit);
-        iter = bit_utils::int_to_bytes(max_acceleration, iter, limit);
-        return iter - body;
     }
 
     bool operator==(const SetMotionConstraints& other) const = default;
