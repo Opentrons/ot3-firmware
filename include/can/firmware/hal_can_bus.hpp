@@ -1,16 +1,8 @@
 #pragma once
 
-#include <array>
 
+#include "can/firmware/hal_can.h"
 #include "can/core/can_bus.hpp"
-#include "can/core/ids.hpp"
-#include "can/core/parse.hpp"
-#include "common/core/freertos_synchronization.hpp"
-#pragma GCC diagnostic push
-// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#pragma GCC diagnostic ignored "-Wvolatile"
-#include "platform_specific_hal_fdcan.h"
-#pragma GCC diagnostic pop
 
 namespace hal_can_bus {
 
@@ -20,13 +12,13 @@ using namespace can_ids;
 /**
  * HAL FD CAN wrapper.
  */
-class HalCanBus : public CanBusWriter, public CanBusFilters {
+class HalCanBus : public CanBusWriter, public CanBusFilters, public CanBus{
   public:
     /**
      * Construct
      * @param handle A pointer to an initialized FDCAN_HandleTypeDef
      */
-    explicit HalCanBus(FDCAN_HandleTypeDef* handle);
+    explicit HalCanBus(HAL_CAN_HANDLE handle): handle{handle} {}
 
     HalCanBus(const HalCanBus&) = delete;
     HalCanBus& operator=(const HalCanBus&) = delete;
@@ -34,10 +26,10 @@ class HalCanBus : public CanBusWriter, public CanBusFilters {
     HalCanBus&& operator=(const HalCanBus&&) = delete;
 
     /**
-     * Start the can bus.
-     * @return HAL_OK if all went well
+     * Set the incoming message callback.
+     * @param callback
      */
-    auto start() -> HAL_StatusTypeDef;
+    void set_incoming_message_callback(IncomingMessageCallback callback);
 
     /**
      * Add an arbitration id filter.
@@ -62,12 +54,8 @@ class HalCanBus : public CanBusWriter, public CanBusFilters {
               CanFDMessageLength buffer_length);
 
   private:
-    FDCAN_HandleTypeDef* handle;
+    HAL_CAN_HANDLE handle;
     uint32_t filter_index = 0;
-    FDCAN_TxHeaderTypeDef tx_header;
-    freertos_synchronization::FreeRTOSMutex mutex{};
-
-    static constexpr auto arbitration_id_type = FDCAN_EXTENDED_ID;
 };
 
 }  // namespace hal_can_bus

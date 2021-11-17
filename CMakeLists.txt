@@ -47,8 +47,7 @@ if (${CMAKE_CROSSCOMPILING})
         message( FATAL_ERROR "Failed to find a suitable architecture." )
     endif ()
 
-    configure_file(include/common/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
-    configure_file(include/can/firmware/platform_specific_hal_fdcan.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_fdcan.h)
+    configure_file(can/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
 
     include_directories(${CMAKE_BINARY_DIR}/generated/)
 

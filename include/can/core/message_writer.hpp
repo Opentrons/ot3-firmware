@@ -8,6 +8,7 @@
 #include "common/core/synchronization.hpp"
 #include "ids.hpp"
 #include "message_core.hpp"
+#include "types.h"
 
 namespace can_message_writer {
 
@@ -35,7 +36,7 @@ class MessageWriter {
         message.set_node_id(node_id);
         auto length = message.serialize(buffer.begin(), buffer.end());
         writer.send(arbitration_id.id, buffer.data(),
-                    can_bus::to_canfd_length(length));
+                    to_canfd_length(length));
     }
 
   private:

@@ -24,6 +24,8 @@
 
 #include "stm32g4xx_hal.h"
 
+#include "can/firmware/hal_can.h"
+
 /** @addtogroup STM32G4xx_HAL_Examples
  * @{
  */
@@ -43,7 +45,6 @@
 /* External variables --------------------------------------------------------*/
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
-extern FDCAN_HandleTypeDef fdcan1;
 extern TIM_HandleTypeDef htim7;
 
 
@@ -137,7 +138,7 @@ void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
-void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(&fdcan1); }
+void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(can_get_device_handle()); }
 
 
 /**
