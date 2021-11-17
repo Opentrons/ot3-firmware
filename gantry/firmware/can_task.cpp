@@ -51,6 +51,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         __HAL_RCC_SPI2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
         /**SPI2 GPIO Configuration
         PB12  ------> SPI2_CS
         PB13  ------> SPI2_SCK
@@ -131,8 +132,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
 spi::SPI_interface SPI_intf = {
 
     .SPI_handle = &hspi2,
-    .GPIO_handle = GPIOA,
-    .pin = GPIO_PIN_9,
+    .GPIO_handle = GPIOB,
+    .pin = GPIO_PIN_12,
 };
 static spi::Spi spi_comms(SPI_intf);
 
