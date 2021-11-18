@@ -35,6 +35,11 @@ static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
 static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
 
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue2(
+    "Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue2(
+    "Complete Queue");
+
 /**
  * @brief SPI MSP Initialization
  * This function configures SPI for the Z/A axis motors
@@ -223,13 +228,18 @@ struct motion_controller::HardwareConfig PinConfigurations {
     .enable = {.port = GPIOB, .pin = GPIO_PIN_11},
 };
 
+struct motion_controller::HardwareConfig PinConfigurations2 {
+    .direction = {.port = GPIOC, .pin = GPIO_PIN_1},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_0},
+    .enable = {.port = GPIOC, .pin = GPIO_PIN_4},
+};
+
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
  * should be made to avoid a pretty gross template signature.
  */
 
-/*z motor would need a motor and PinConfigurations instance on its own*/
 static motor_class::Motor motor{
     spi_comms2,
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
@@ -239,8 +249,19 @@ static motor_class::Motor motor{
         .microstep = 16},
     PinConfigurations, motor_queue, complete_queue};
 
+static motor_class::Motor motor{
+    spi_comms3,
+    lms::LinearMotionSystemConfig<lms::BeltConfig>{
+        .mech_config =
+            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    PinConfigurations2, motor_queue2, complete_queue2};
+
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+
+static auto can_motor_handler2 = MotorHandler{message_writer_2, motor2};
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -254,9 +275,15 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest>{can_motor_handler};
+
+static auto motor_dispatch_target2 = DispatchParseTarget<
+    decltype(can_motor_handler2), can_messages::SetupRequest,
+    can_messages::StopRequest, can_messages::GetStatusRequest,
+    can_messages::MoveRequest, can_messages::EnableMotorRequest,
+    can_messages::DisableMotorRequest>{can_motor_handler2};
 /** Dispatcher to the various handlers */
-static auto dispatcher =
-    Dispatcher(motor_dispatch_target, device_info_dispatch_target);
+static auto dispatcher = Dispatcher(
+    motor_dispatch_target, device_info_dispatch_target, motor_dispatch_target2);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
