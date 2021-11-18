@@ -1,5 +1,8 @@
 #include "motor_hardware.h"
 
+#include "common/firmware/errors.h"
+#include "gantry/core/axis_type.h"
+
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
@@ -86,7 +89,27 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     }
 }
 
-HAL_StatusTypeDef initialize_spi() {
+void gantry_driver_CLK_init(enum GantryAxisType gantry_axis) {
+    switch (gantry_axis) {
+        case gantry_x:
+            __HAL_RCC_GPIOB_CLK_ENABLE();
+            // Driver Clock Pin
+            GPIO_InitTypeDef GPIO_InitStruct = {0};
+            GPIO_InitStruct.Pin = GPIO_PIN_5;
+            GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+            break;
+        case gantry_y:
+            break;
+        default:
+            Error_Handler();
+    }
+}
+
+HAL_StatusTypeDef initialize_spi(enum GantryAxisType gantry_type) {
     __HAL_RCC_SPI2_CLK_ENABLE();
+    gantry_driver_CLK_init(gantry_type);
     return HAL_SPI_Init(&hspi2);
 }

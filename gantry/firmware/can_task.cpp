@@ -13,7 +13,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
-#include "gantry/core/axis_type.hpp"
+#include "gantry/core/axis_type.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
@@ -40,10 +40,20 @@ using namespace move_group_handler;
 using namespace move_group_executor_handler;
 using namespace motor_messages;
 
+static constexpr NodeId node_from_axis(GantryAxisType which) {
+    switch (which) {
+        case GantryAxisType::gantry_x:
+            return NodeId::gantry_x;
+        case GantryAxisType::gantry_y:
+            return NodeId::gantry_y;
+    }
+}
+static auto my_axis_type = get_axis_type();
+static auto my_node_id = node_from_axis(my_axis_type);
+
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
-static auto message_writer_1 =
-    MessageWriter(can_bus_1, axis_type::get_node_id());
+static auto message_writer_1 = MessageWriter(can_bus_1, my_node_id);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
@@ -131,10 +141,10 @@ static auto dispatcher = Dispatcher(
         Error_Handler();
     }
 
-    if (initialize_spi() != HAL_OK) {
+    if (initialize_spi(my_axis_type) != HAL_OK) {
         Error_Handler();
     }
-    can_bus::setup_node_id_filter(can_bus_1, axis_type::get_node_id());
+    can_bus::setup_node_id_filter(can_bus_1, my_node_id);
     can_bus_1.start();
 
     auto poller = FreeRTOSCanBufferPoller(
