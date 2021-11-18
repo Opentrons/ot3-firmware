@@ -1,8 +1,12 @@
+#include "common/firmware/can_task.hpp"
+
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_handlers/motor.hpp"
+#include "can/core/message_handlers/move_group.hpp"
+#include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_bus.hpp"
@@ -12,6 +16,7 @@
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "platform_specific_hal_conf.h"
@@ -23,6 +28,8 @@ using namespace can_message_writer;
 using namespace can_ids;
 using namespace can_dispatch;
 using namespace motor_message_handler;
+using namespace move_group_handler;
+using namespace move_group_executor_handler;
 using namespace motor_messages;
 using namespace spi;
 
@@ -64,10 +71,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        // Chip select
-        GPIO_InitStruct.Pin = GPIO_PIN_12;
+        // Chip select and tmc2130 clock
+        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_0;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
 
         // PB11 A motor control
         // ctrl /Dir/Step pin
@@ -100,7 +108,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Pin = GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
@@ -231,16 +239,24 @@ struct motion_controller::HardwareConfig PinConfigurations {
 
 /*z motor would need a motor and PinConfigurations instance on its own*/
 static motor_class::Motor motor{
-    spi_comms2,
-    lms::LinearMotionSystemConfig<lms::BeltConfig>{
+    spi_comms3,
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config =
-            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+            lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
     PinConfigurations, motor_queue, complete_queue};
 
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto move_group_manager = MoveGroupType{};
+
+static auto can_move_group_handler =
+    MoveGroupHandler(message_writer_1, move_group_manager);
+
+static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
+    message_writer_1, move_group_manager, motor, NodeId::head);
+
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -254,9 +270,23 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest>{can_motor_handler};
+
+static auto motion_group_dispatch_target = DispatchParseTarget<
+    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
+    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
+    can_move_group_handler};
+
+static auto motion_group_executor_dispatch_target =
+    DispatchParseTarget<decltype(can_move_group_executor_handler),
+                        can_messages::ExecuteMoveGroupRequest>{
+        can_move_group_executor_handler};
+
+
 /** Dispatcher to the various handlers */
 static auto dispatcher =
-    Dispatcher(motor_dispatch_target, device_info_dispatch_target);
+    Dispatcher(motor_dispatch_target,motion_group_dispatch_target,
+               motion_group_executor_dispatch_target,
+               device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
@@ -278,4 +308,4 @@ static auto dispatcher =
     poller();
 }
 
-auto static task = FreeRTOSTask<256, 5>("can task", task_entry);
+auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
