@@ -4,13 +4,18 @@
 
 // clang-format off
 #include "FreeRTOS.h"
-#include "system_stm32g4xx.h"
 #include "task.h"
+#include "system_stm32g4xx.h"
 // clang-format on
 
-#include "common/firmware/can_task.hpp"
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
 #include "common/firmware/clocking.h"
 #include "common/firmware/utility_gpio.h"
+#pragma GCC diagnostic pop
+
+#include "common/firmware/can_task.hpp"
 
 auto main() -> int {
     HardwareInit();

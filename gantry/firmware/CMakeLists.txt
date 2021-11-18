@@ -26,6 +26,7 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/can/can.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
