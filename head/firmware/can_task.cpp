@@ -248,7 +248,8 @@ static motor_class::Motor motor{
     complete_queue};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor, NodeId::head};
+static auto can_motor_handler =
+    MotorHandler{message_writer_1, motor, NodeId::head};
 static auto move_group_manager = MoveGroupType{};
 
 static auto can_move_group_handler =
@@ -256,7 +257,6 @@ static auto can_move_group_handler =
 
 static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
     message_writer_1, move_group_manager, motor, NodeId::head);
-
 
 /** Handler of device info requests. */
 static auto device_info_handler =
