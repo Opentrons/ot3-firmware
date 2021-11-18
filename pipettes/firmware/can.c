@@ -19,13 +19,13 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef* handle) {
     handle->Init.AutoRetransmission = DISABLE;
     handle->Init.TransmitPause = DISABLE;
     handle->Init.ProtocolException = DISABLE;
-    handle->Init.NominalPrescaler = 20;
+    handle->Init.NominalPrescaler = 25;
     handle->Init.NominalSyncJumpWidth = 2;
-    handle->Init.NominalTimeSeg1 = 9;
+    handle->Init.NominalTimeSeg1 = 6;
     handle->Init.NominalTimeSeg2 = 2;
     handle->Init.DataPrescaler = 20;
     handle->Init.DataSyncJumpWidth = 1;
-    handle->Init.DataTimeSeg1 = 9;
+    handle->Init.DataTimeSeg1 = 6;
     handle->Init.DataTimeSeg2 = 1;
     handle->Init.StdFiltersNbr = 20;
     handle->Init.ExtFiltersNbr = 20;
