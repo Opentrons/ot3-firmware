@@ -1,6 +1,10 @@
 #include "common/firmware/i2c_comms.hpp"
 
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
 #include "common/firmware/i2c.h"
+#pragma GCC diagnostic pop
 
 using namespace i2c;
 
