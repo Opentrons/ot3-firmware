@@ -29,6 +29,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
     ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
@@ -57,6 +58,7 @@ target_include_directories(
 target_compile_options(pipettes
         PUBLIC
         -Wall
+        -Werror
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -112,7 +114,8 @@ list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(pipettes-lint
         ALL
         COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
-
+list(APPEND LINT_TARGETS pipettes-lint)
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with
 # remote-target. You should make sure st-util is running; that's not

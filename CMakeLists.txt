@@ -54,13 +54,13 @@ if (${CMAKE_CROSSCOMPILING})
 
 endif ()
 
+set(LINT_TARGETS "")
 add_subdirectory(common)
 add_subdirectory(can)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
 add_subdirectory(head)
-
-
+list(REMOVE_DUPLICATES LINT_TARGETS)
 
 find_package(Clang)
 
@@ -93,5 +93,5 @@ add_custom_target(
 add_custom_target(
         lint
         ALL
-        DEPENDS gantry-lint pipettes-lint head-lint
+        DEPENDS ${LINT_TARGETS}
 )

@@ -1,6 +1,10 @@
 #include "can/firmware/utils.hpp"
 
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
 #include "platform_specific_hal_fdcan.h"
+#pragma GCC diagnostic pop
 
 using namespace can_bus;
 
