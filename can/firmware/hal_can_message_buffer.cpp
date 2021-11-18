@@ -8,7 +8,11 @@
 #include "can/firmware/utils.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/synchronization.hpp"
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
 #include "platform_specific_hal_conf.h"
+#pragma GCC diagnostic pop
 
 using namespace hal_can_message_buffer;
 
