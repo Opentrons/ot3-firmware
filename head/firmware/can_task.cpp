@@ -226,9 +226,12 @@ spi::SPI_interface SPI_intf3 = {
 static spi::Spi spi_comms3(SPI_intf3);
 
 struct motion_controller::HardwareConfig PinConfigurations {
-    .direction = {.port = GPIOC, .pin = GPIO_PIN_1, .active_setting = GPIO_PIN_SET},
+    .direction = {.port = GPIOC,
+                  .pin = GPIO_PIN_1,
+                  .active_setting = GPIO_PIN_SET},
     .step = {.port = GPIOC, .pin = GPIO_PIN_0, .active_setting = GPIO_PIN_SET},
-    .enable = {.port = GPIOC, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_SET},
+    .enable = {
+        .port = GPIOC, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_SET},
 };
 
 /**
@@ -241,8 +244,7 @@ struct motion_controller::HardwareConfig PinConfigurations {
 static motor_class::Motor motor{
     spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config =
-            lms::LeadScrewConfig{.lead_screw_pitch = 20},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
     PinConfigurations, motor_queue, complete_queue};
@@ -256,7 +258,6 @@ static auto can_move_group_handler =
 
 static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
     message_writer_1, move_group_manager, motor, NodeId::head);
-
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -281,12 +282,10 @@ static auto motion_group_executor_dispatch_target =
                         can_messages::ExecuteMoveGroupRequest>{
         can_move_group_executor_handler};
 
-
 /** Dispatcher to the various handlers */
-static auto dispatcher =
-    Dispatcher(motor_dispatch_target,motion_group_dispatch_target,
-               motion_group_executor_dispatch_target,
-               device_info_dispatch_target);
+static auto dispatcher = Dispatcher(
+    motor_dispatch_target, motion_group_dispatch_target,
+    motion_group_executor_dispatch_target, device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
