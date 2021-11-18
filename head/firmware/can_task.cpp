@@ -253,7 +253,7 @@ static auto can_motor_handler =
 static auto move_group_manager = MoveGroupType{};
 
 static auto can_move_group_handler =
-    MoveGroupHandler(message_writer_1, move_group_manager, NodeId::head);
+    MoveGroupHandler(message_writer_1, move_group_manager);
 
 static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
     message_writer_1, move_group_manager, motor, NodeId::head);
