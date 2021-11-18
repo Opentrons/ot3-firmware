@@ -136,9 +136,9 @@ spi::SPI_interface SPI_intf = {
 static spi::Spi spi_comms(SPI_intf);
 
 struct motion_controller::HardwareConfig PinConfigurations {
-    .direction = {.port = GPIOC, .pin = GPIO_PIN_3},
-    .step = {.port = GPIOC, .pin = GPIO_PIN_7},
-    .enable = {.port = GPIOC, .pin = GPIO_PIN_8},
+    .direction = {.port = GPIOC, .pin = GPIO_PIN_3, .active_setting = GPIO_PIN_SET},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_7, .active_setting = GPIO_PIN_SET},
+    .enable = {.port = GPIOC, .pin = GPIO_PIN_8, .active_setting = GPIO_PIN_SET},
 };
 
 /**
