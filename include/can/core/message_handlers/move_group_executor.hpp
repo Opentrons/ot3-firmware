@@ -20,7 +20,6 @@ template <typename Motor>
 struct TaskEntry {
     MessageWriter &message_writer;
     Motor &motor;
-    NodeId node_id;
     void operator()() {
         while (true) {
             auto try_read = Ack{};
@@ -44,13 +43,11 @@ class MoveGroupExecutorHandler {
 
     MoveGroupExecutorHandler(
         MessageWriter &message_writer,
-        move_group_handler::MoveGroupType &motion_group_manager, Motor &motor,
-        NodeId node_id)
+        move_group_handler::MoveGroupType &motion_group_manager, Motor &motor)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager},
           motor(motor),
-          node_id(node_id),
-          task_entry{message_writer, motor, node_id},
+          task_entry{message_writer, motor},
           ack_task("ack task", task_entry) {}
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &) = delete;
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &&) = delete;
@@ -84,7 +81,6 @@ class MoveGroupExecutorHandler {
     MessageWriter &message_writer;
     move_group_handler::MoveGroupType &motion_group_manager;
     Motor &motor;
-    NodeId node_id;
     TaskEntry<Motor> task_entry;
     freertos_task::FreeRTOSTask<512, 5> ack_task;
 };

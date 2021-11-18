@@ -20,8 +20,8 @@ class MotorHandler {
                      DisableMotorRequest, GetMotionConstraintsRequest,
                      SetMotionConstraints>;
 
-    MotorHandler(MessageWriter &message_writer, Motor &motor, NodeId node_id)
-        : message_writer{message_writer}, motor{motor}, node_id(node_id) {}
+    MotorHandler(MessageWriter &message_writer, Motor &motor)
+        : message_writer{message_writer}, motor{motor} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
     MotorHandler &operator=(const MotorHandler &) = delete;
@@ -74,7 +74,6 @@ class MotorHandler {
 
     MessageWriter &message_writer;
     Motor &motor;
-    NodeId node_id;
 };
 
 }  // namespace motor_message_handler

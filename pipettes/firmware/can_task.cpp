@@ -166,17 +166,15 @@ static motor_class::Motor motor{
 
 static auto move_group_manager = MoveGroupType{};
 /** The parsed message handler */
-static auto can_motor_handler =
-    MotorHandler{message_writer_1, motor, NodeId::pipette};
+static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
-static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
-    message_writer_1, move_group_manager, motor, NodeId::pipette);
+static auto can_move_group_executor_handler =
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
 
 static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
-static auto device_info_handler =
-    DeviceInfoHandler{message_writer_1, NodeId::pipette, 0};
+static auto device_info_handler = DeviceInfoHandler{message_writer_1, 0};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = DispatchParseTarget<
