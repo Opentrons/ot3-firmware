@@ -103,7 +103,7 @@ class MotionController {
     MotionConstraints get_motion_constraints() { return motion_constraints; }
 
   private:
-    uint32_t steps_per_mm;
+    uint32_t steps_per_mm{0};
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     HardwareConfig& hardware_config;
     MotionConstraints motion_constraints;
