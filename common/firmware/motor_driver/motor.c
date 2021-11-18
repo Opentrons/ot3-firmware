@@ -10,11 +10,13 @@
 #include "platform_specific_hal_conf.h"
 
 void set_pin(struct PinConfig config) {
-    HAL_GPIO_WritePin(config.port, config.pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(config.port, config.pin, config.active_setting);
 }
 
 void reset_pin(struct PinConfig config) {
-    HAL_GPIO_WritePin(config.port, config.pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(
+        config.port, config.pin,
+        (config.active_setting == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_RESET);
 }
 
 void delay(const int seconds) { vTaskDelay(seconds); }

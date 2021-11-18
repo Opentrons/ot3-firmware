@@ -7,6 +7,7 @@ extern "C" {
 struct PinConfig {
     void* port;
     uint16_t pin;
+    uint8_t active_setting;
 };
 
 void set_pin(struct PinConfig config);
