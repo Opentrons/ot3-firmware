@@ -67,23 +67,15 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        // Chip select and tmc2130 clock
-        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_0;
+        // Chip select and tmc2130 clock and enable
+        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_0 | GPIO_PIN_11;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-
-        // PB11 A motor control
-        // ctrl /Dir/Step pin
-        GPIO_InitStruct.Pin = GPIO_PIN_11;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -213,7 +205,7 @@ spi::SPI_interface SPI_intf2 = {
 
     .SPI_handle = &hspi2,
     .GPIO_handle = GPIOB,
-    .pin = GPIO_PIN_11,
+    .pin = GPIO_PIN_12,
 };
 static spi::Spi spi_comms2(SPI_intf2);
 
