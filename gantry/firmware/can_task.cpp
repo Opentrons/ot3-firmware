@@ -16,7 +16,7 @@
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
-#include "gantry/core/axis_type.hpp"
+#include "gantry/core/axis_type.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
@@ -35,10 +35,20 @@ using namespace move_group_handler;
 using namespace move_group_executor_handler;
 using namespace motor_messages;
 
+static constexpr NodeId node_from_axis(GantryAxisType which) {
+    switch (which) {
+        case GantryAxisType::gantry_x:
+            return NodeId::gantry_x;
+        case GantryAxisType::gantry_y:
+            return NodeId::gantry_y;
+    }
+}
+static auto my_axis_type = get_axis_type();
+static auto my_node_id = node_from_axis(my_axis_type);
+
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
-static auto message_writer_1 =
-    MessageWriter(can_bus_1, axis_type::get_node_id());
+static auto message_writer_1 = MessageWriter(can_bus_1, my_node_id);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
@@ -94,6 +104,22 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOA,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
+
+        switch (my_axis_type) {
+            case GantryAxisType::gantry_x:
+                __HAL_RCC_GPIOB_CLK_ENABLE();
+                // Driver Clock Pin
+                GPIO_InitStruct.Pin = GPIO_PIN_5;
+                GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+                HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+                HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+                break;
+            case GantryAxisType::gantry_y:
+                break;
+            default:
+                Error_Handler();
+        }
     }
 }
 SPI_HandleTypeDef hspi2 = {
@@ -214,7 +240,7 @@ static auto dispatcher = Dispatcher(
     if (HAL_SPI_Init(&hspi2) != HAL_OK) {
         Error_Handler();
     }
-    can_bus::setup_node_id_filter(can_bus_1, axis_type::get_node_id());
+    can_bus::setup_node_id_filter(can_bus_1, my_node_id);
     can_bus_1.start();
 
     auto poller = FreeRTOSCanBufferPoller(
