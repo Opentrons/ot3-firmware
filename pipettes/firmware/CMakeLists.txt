@@ -114,7 +114,8 @@ list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(pipettes-lint
         ALL
         COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
-
+list(APPEND LINT_TARGETS pipettes-lint)
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
 # arguable misuse of the concept) to the appropriate cross-gdb with
 # remote-target. You should make sure st-util is running; that's not

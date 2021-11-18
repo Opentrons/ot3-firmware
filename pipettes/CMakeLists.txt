@@ -27,3 +27,5 @@ add_custom_target(
   pipettes-format-ci
   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${PIPETTES_SOURCES_FOR_FORMAT}
 )
+
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
