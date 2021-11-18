@@ -22,12 +22,13 @@ struct Motor {
     using GenericQueue = PendingQueueImpl<Move>;
     using CompletedQueue = CompletedQueueImpl<Ack>;
     Motor(SpiDriver& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
-          motion_controller::HardwareConfig& config, GenericQueue& queue,
+          motion_controller::HardwareConfig& config,
+          MotionConstraints constraints, GenericQueue& queue,
           CompletedQueue& completed_queue)
         : pending_move_queue(queue),
           completed_move_queue(completed_queue),
           driver{spi},
-          motion_controller{lms_config, config, pending_move_queue,
+          motion_controller{lms_config, config, constraints, pending_move_queue,
                             completed_move_queue} {}
     GenericQueue& pending_move_queue;
     CompletedQueue& completed_move_queue;

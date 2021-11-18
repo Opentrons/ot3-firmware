@@ -3,6 +3,7 @@
 
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/simlib/sim_canbus.hpp"
@@ -38,7 +39,8 @@ struct Loopback {
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(can_bus::CanBusWriter &can_bus) : writer{canbus} {}
+    Loopback(can_bus::CanBusWriter &can_bus, can_ids::NodeId node_id)
+        : writer{canbus, node_id} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
     auto operator=(const Loopback &) -> Loopback & = delete;
@@ -48,33 +50,28 @@ struct Loopback {
      * The message handling function.
      * @param m A variant of the various message types.
      */
-    void handle(std::variant<std::monostate, MoveRequest, GetSpeedRequest> &m) {
+    void handle(std::variant<std::monostate, MoveRequest> &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
     void visit(std::monostate &m) {}
 
-    /**
-     * Handler for all message types.
-     * @param m Serializable.
-     */
-    template <message_core::Serializable Serializable>
-    void visit(const Serializable &m) {
-        // Loop it back
-        writer.write(NodeId::host, m);
+    void visit(MoveRequest &m) {
+        auto response = MoveCompleted{
+            .group_id = 0, .seq_id = 1, .current_position = 2, .ack_id = 3};
+        writer.write(NodeId::host, response);
     }
 
     can_message_writer::MessageWriter writer;
 };
 
 // Create global handler
-static auto handler = Loopback{canbus};
+static auto handler = Loopback{canbus, can_ids::NodeId::host};
 
 // Create a DispatchParseTarget to parse messages in message buffer and pass
 // them to the handler.
 static auto dispatcher =
-    can_dispatch::DispatchParseTarget<Loopback, MoveRequest, GetSpeedRequest>{
-        handler};
+    can_dispatch::DispatchParseTarget<Loopback, MoveRequest>{handler};
 
 // A Message Buffer poller that reads from buffer and send to dispatcher
 static auto poller =

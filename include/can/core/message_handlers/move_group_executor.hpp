@@ -31,7 +31,6 @@ struct TaskEntry {
                     .current_position = try_read.current_position,
                     .ack_id = static_cast<uint8_t>(
                         motor_messages::AckMessageId::complete),
-                    .node_id = static_cast<uint8_t>(node_id),
                 };
                 message_writer.write(NodeId::host, msg);
             }
@@ -69,7 +68,8 @@ class MoveGroupExecutorHandler {
 
     void visit(ExecuteMoveGroupRequest &m) {
         auto group = motion_group_manager[m.group_id];
-        for (int i = 0; i < move_group_handler::max_moves_per_group; i++) {
+        for (std::size_t i = 0; i < move_group_handler::max_moves_per_group;
+             i++) {
             auto move = group.get_move(i);
             std::visit([this](auto &m) { this->visit_move(m); }, move);
         }

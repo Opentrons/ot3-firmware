@@ -35,7 +35,7 @@ using namespace spi;
 
 extern FDCAN_HandleTypeDef fdcan1;
 static auto can_bus_1 = HalCanBus(&fdcan1);
-static auto message_writer_1 = MessageWriter(can_bus_1);
+static auto message_writer_1 = MessageWriter(can_bus_1, NodeId::head);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
@@ -239,17 +239,24 @@ static motor_class::Motor motor{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations, motor_queue, complete_queue};
+    PinConfigurations,
+    MotionConstraints{.min_velocity = 1,
+                      .max_velocity = 2,
+                      .min_acceleration = 1,
+                      .max_acceleration = 2},
+    motor_queue,
+    complete_queue};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler = MotorHandler{message_writer_1, motor, NodeId::head};
 static auto move_group_manager = MoveGroupType{};
 
 static auto can_move_group_handler =
-    MoveGroupHandler(message_writer_1, move_group_manager);
+    MoveGroupHandler(message_writer_1, move_group_manager, NodeId::head);
 
 static auto can_move_group_executor_handler = MoveGroupExecutorHandler(
     message_writer_1, move_group_manager, motor, NodeId::head);
+
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -262,7 +269,9 @@ static auto motor_dispatch_target = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest>{can_motor_handler};
+    can_messages::DisableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints>{can_motor_handler};
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,

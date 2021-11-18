@@ -27,6 +27,19 @@ concept HasMessageID = requires {
 };
 
 /**
+ * Concept describing an item that has a node id
+ * @tparam T
+ */
+template <typename T>
+concept HasNodeID = requires {
+    /**
+     * Has a node id member. This is the NodeID that the Serializable
+     * knows how to serialize.
+     */
+    { T::node_id } -> std::convertible_to<NodeId>;
+};
+
+/**
  * The concept describing the interface of a parsable can message
  * @tparam T
  */
@@ -59,6 +72,17 @@ template <typename T>
 concept CanMessage = requires(T& t) {
     {HasMessageID<T>};
     {Parsable<T>};
+    {Serializable<T>};
+};
+
+/**
+ * The concept describing a can response message.
+ * @tparam T
+ */
+template <typename T>
+concept CanResponseMessage = requires(T& t) {
+    {HasMessageID<T>};
+    {HasNodeID<T>};
     {Serializable<T>};
 };
 
