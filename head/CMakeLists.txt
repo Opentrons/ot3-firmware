@@ -27,3 +27,5 @@ add_custom_target(
   head-format-ci
   COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${HEAD_SOURCES_FOR_FORMAT}
 )
+
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

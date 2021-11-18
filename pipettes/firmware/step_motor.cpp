@@ -1,8 +1,12 @@
 #include "motor-control/core/step_motor.hpp"
 
-#include "common/firmware/timer_interrupt.h"
 #include "motor-control/core/motor_messages.hpp"
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include "common/firmware/timer_interrupt.h"
 #include "stm32l5xx_hal.h"
+#pragma GCC diagnostic pop
 
 using namespace motor_messages;
 
