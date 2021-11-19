@@ -18,7 +18,8 @@ class MotorHandler {
         std::variant<std::monostate, SetupRequest, StopRequest,
                      GetStatusRequest, MoveRequest, EnableMotorRequest,
                      DisableMotorRequest, GetMotionConstraintsRequest,
-                     SetMotionConstraints>;
+                     SetMotionConstraints, WriteMotorDriverRegister,
+                     ReadMotorDriverRegister>;
 
     MotorHandler(MessageWriter &message_writer, Motor &motor)
         : message_writer{message_writer}, motor{motor} {}
@@ -70,6 +71,20 @@ class MotorHandler {
 
     void visit(SetMotionConstraints &m) {
         motor.motion_controller.set_motion_constraints(m);
+    }
+
+    void visit(WriteMotorDriverRegister &m) {
+        motor.driver.write(m.reg_address, m.data);
+    }
+
+    void visit(ReadMotorDriverRegister &m) {
+        uint32_t data;
+        motor.driver.read(m.reg_address, data);
+        ReadMotorDriverRegisterResponse response_msg{
+            .reg_address = m.reg_address,
+            .data = data,
+        };
+        message_writer.write(NodeId::host, response_msg);
     }
 
     MessageWriter &message_writer;

@@ -41,4 +41,9 @@ struct RegisterConfig {
     uint32_t encm_ctrl = 0;
 };
 
+template <typename RA>
+concept RegisterAddress = requires {
+    std::is_same_v<RA, DriverRegisters> || std::is_same_v<RA, uint8_t>;
+};
+
 }  // namespace motor_driver_config

@@ -10,7 +10,8 @@ using namespace motor_driver_config;
 
 enum class Mode : uint8_t { WRITE = 0x80, READ = 0x0 };
 
-constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
+template <RegisterAddress RA>
+constexpr auto command_byte(Mode mode, RA motor_reg) -> uint8_t {
     return static_cast<uint8_t>(mode) | static_cast<uint8_t>(motor_reg);
 }
 
@@ -21,6 +22,10 @@ constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
 template <spi::TMC2130Spi SpiDriver>
 class MotorDriver {
   public:
+    static constexpr auto BUFFER_SIZE = 5;
+    using BufferType = std::array<uint8_t, BUFFER_SIZE>;
+    BufferType rxBuffer{0};
+
     explicit MotorDriver(SpiDriver& spi, RegisterConfig conf)
         : spi_comms(spi), register_config(conf) {}
 
@@ -32,6 +37,22 @@ class MotorDriver {
         write(DriverRegisters::COOLCONF, register_config.coolconf);
 
         process_buffer(rxBuffer, status, data);
+    }
+
+    template <RegisterAddress RA>
+    auto read(RA motor_reg, uint32_t& command_data) -> BufferType {
+        auto txBuffer =
+            build_command(command_byte(Mode::READ, motor_reg), command_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        return txBuffer;
+    }
+
+    template <RegisterAddress RA>
+    auto write(RA motor_reg, const uint32_t& command_data) -> BufferType {
+        auto txBuffer =
+            build_command(command_byte(Mode::WRITE, motor_reg), command_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        return txBuffer;
     }
 
     void get_status() {
@@ -50,10 +71,6 @@ class MotorDriver {
     uint8_t status = 0x0;
     uint32_t data = 0x0;
 
-    static constexpr auto BUFFER_SIZE = 5;
-    using BufferType = std::array<uint8_t, BUFFER_SIZE>;
-    BufferType rxBuffer{0};
-
     auto build_command(uint8_t command, const uint32_t& command_data)
         -> BufferType {
         // need to pass in data parameter and use int_to_bytes here
@@ -62,21 +79,6 @@ class MotorDriver {
         iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
         iter = bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
-        return txBuffer;
-    }
-
-    auto read(DriverRegisters motor_reg, uint32_t& command_data) -> BufferType {
-        auto txBuffer =
-            build_command(command_byte(Mode::READ, motor_reg), command_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        return txBuffer;
-    }
-
-    auto write(DriverRegisters motor_reg, const uint32_t& command_data)
-        -> BufferType {
-        auto txBuffer =
-            build_command(command_byte(Mode::WRITE, motor_reg), command_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
         return txBuffer;
     }
 
