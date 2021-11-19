@@ -8,6 +8,7 @@
 #include "can/firmware/utils.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 #include "platform_specific_hal_conf.h"
 
 using namespace hal_can_message_buffer;
@@ -46,6 +47,8 @@ static void try_read_from_fifo(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo) {
     }
 }
 
+#ifndef CAN_USE_POLLING
+
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo0ITs) {
     if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0) {
@@ -59,6 +62,22 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
         try_read_from_fifo(hfdcan, FDCAN_RX_FIFO1);
     }
 }
+
+#else
+
+extern FDCAN_HandleTypeDef fdcan1;
+
+[[noreturn]] void polling_task() {
+    while(1) {
+        try_read_from_fifo(&fdcan1, FDCAN_RX_FIFO0);
+        try_read_from_fifo(&fdcan1, FDCAN_RX_FIFO1);
+        vTaskDelay(100);
+    }
+}
+
+auto static task = freertos_task::FreeRTOSTask<512, 5>("can polling task", polling_task);
+
+#endif
 
 auto hal_can_message_buffer::get_message_buffer() -> ReadMessageBuffer & {
     return read_can_message_buffer;
