@@ -89,6 +89,7 @@ extern void SystemCoreClockUpdate (void);
  */
 extern uint32_t SECURE_SystemCoreClockUpdate(void);
 void HardwareInit(void);
+void MX_ICACHE_Init();
 
 /**
   * @}

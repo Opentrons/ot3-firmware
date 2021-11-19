@@ -366,7 +366,7 @@ void SystemClock_Config(void) {
     * in the RCC_OscInitTypeDef structure.
     */
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLM = 2;
@@ -391,7 +391,9 @@ void SystemClock_Config(void) {
     {
         Error_Handler();
     }
-
+    /** MCO configuration
+    */
+    HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_SYSCLK, RCC_MCODIV_1);
 }
 
 void HAL_MspInit(void)
@@ -420,7 +422,7 @@ void HAL_MspInit(void)
   * @param None
   * @retval None
   */
-static void MX_ICACHE_Init(void)
+void MX_ICACHE_Init(void)
 {
 
     /* USER CODE BEGIN ICACHE_Init 0 */
@@ -447,7 +449,6 @@ void HardwareInit(void) {
     HAL_Init();
     SystemClock_Config();
     SystemCoreClockUpdate();
-    MX_ICACHE_Init();
 
 }
 
