@@ -6,12 +6,14 @@
 #include "linear_motion_system.hpp"
 #include "motion_controller.hpp"
 #include "motor_driver.hpp"
+#include "motor_driver_config.hpp"
 #include "motor_messages.hpp"
 #include "spi.hpp"
 
 namespace motor_class {
 
 using namespace motor_messages;
+using namespace motor_driver_config;
 
 template <spi::TMC2130Spi SpiDriver, template <class> class PendingQueueImpl,
           template <class> class CompletedQueueImpl,
@@ -23,11 +25,11 @@ struct Motor {
     using CompletedQueue = CompletedQueueImpl<Ack>;
     Motor(SpiDriver& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
           motion_controller::HardwareConfig& config,
-          MotionConstraints constraints, GenericQueue& queue,
-          CompletedQueue& completed_queue)
+          MotionConstraints constraints, RegisterConfig driver_config,
+          GenericQueue& queue, CompletedQueue& completed_queue)
         : pending_move_queue(queue),
           completed_move_queue(completed_queue),
-          driver{spi},
+          driver{spi, driver_config},
           motion_controller{lms_config, config, constraints, pending_move_queue,
                             completed_move_queue} {}
     GenericQueue& pending_move_queue;

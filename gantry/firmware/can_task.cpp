@@ -16,6 +16,7 @@
 #include "gantry/core/axis_type.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
+#include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -39,6 +40,7 @@ using namespace motor_message_handler;
 using namespace move_group_handler;
 using namespace move_group_executor_handler;
 using namespace motor_messages;
+using namespace motor_driver_config;
 
 static constexpr NodeId node_from_axis(GantryAxisType which) {
     switch (which) {
@@ -61,7 +63,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
 
 spi::SPI_interface SPI_intf = {
-
     .SPI_handle = &hspi2,
     .GPIO_handle = GPIOB,
     .pin = GPIO_PIN_12,
@@ -76,6 +77,24 @@ struct motion_controller::HardwareConfig PinConfigurations {
     .enable = {
         .port = GPIOA, .pin = GPIO_PIN_9, .active_setting = GPIO_PIN_SET},
 };
+
+static RegisterConfig register_config_by_axis(GantryAxisType which) {
+    switch (which) {
+        case GantryAxisType::gantry_x:
+            return RegisterConfig{.gconf = 0x04,
+                                  .ihold_irun = 0x71002,
+                                  .chopconf = 0x101D5,
+                                  .thigh = 0xFFFFF,
+                                  .coolconf = 0x60000};
+
+        case GantryAxisType::gantry_y:
+            return RegisterConfig{.gconf = 0x04,
+                                  .ihold_irun = 0x71002,
+                                  .chopconf = 0x101D5,
+                                  .thigh = 0xFFFFF,
+                                  .coolconf = 0x60000};
+    }
+}
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -95,6 +114,7 @@ static motor_class::Motor motor{
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
+    register_config_by_axis(my_axis_type),
     motor_queue,
     complete_queue};
 
@@ -144,6 +164,9 @@ static auto dispatcher = Dispatcher(
     if (initialize_spi(my_axis_type) != HAL_OK) {
         Error_Handler();
     }
+
+    motor.driver.setup();
+
     can_bus::setup_node_id_filter(can_bus_1, my_node_id);
     can_bus_1.start();
 

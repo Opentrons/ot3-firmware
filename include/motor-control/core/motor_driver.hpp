@@ -1,33 +1,12 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
+#include "motor_driver_config.hpp"
 #include "spi.hpp"
 
 namespace motor_driver {
 
-/**
- * Implementation of the Motor concept.
- *
- */
-
-enum class DriverRegisters : uint8_t {
-    GCONF = 0x00,
-    GSTAT = 0x01,
-    IOIN = 0x04,
-    IHOLD_IRUN = 0x10,
-    TPOWERDOWN = 0x11,
-    TPWMTHRS = 0x13,
-    TCOOLTHRS = 0x14,
-    THIGH = 0x15,
-    XDIRECT = 0x2D,
-    VDCMIN = 0x33,
-    CHOPCONF = 0x6C,
-    COOLCONF = 0x6D,
-    DCCTRL = 0x6E,
-    DRVSTATUS = 0x6F,
-    PWMCONF = 0x70,
-    ENCM_CTRL = 0x72
-};
+using namespace motor_driver_config;
 
 enum class Mode : uint8_t { WRITE = 0x80, READ = 0x0 };
 
@@ -42,41 +21,24 @@ constexpr auto command_byte(Mode mode, DriverRegisters motor_reg) -> uint8_t {
 template <spi::TMC2130Spi SpiDriver>
 class MotorDriver {
   public:
-    explicit MotorDriver(SpiDriver& spi) : spi_comms(spi) {}
+    explicit MotorDriver(SpiDriver& spi, RegisterConfig conf)
+        : spi_comms(spi), register_config(conf) {}
 
     void setup() {
-        constexpr uint32_t gconf_data = 0x04;
-        constexpr uint32_t ihold_irun_data = 0x70202;
-        constexpr uint32_t chopconf = 0x101D5;
-        constexpr uint32_t thigh = 0xFFFFF;
-        constexpr uint32_t coolconf = 0x60000;
+        write(DriverRegisters::GCONF, register_config.gconf);
+        write(DriverRegisters::IHOLD_IRUN, register_config.ihold_irun);
+        write(DriverRegisters::CHOPCONF, register_config.chopconf);
+        write(DriverRegisters::THIGH, register_config.thigh);
+        write(DriverRegisters::COOLCONF, register_config.coolconf);
 
-        auto txBuffer = build_command(
-            command_byte(Mode::WRITE, DriverRegisters::GCONF), gconf_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        txBuffer = build_command(
-            command_byte(Mode::WRITE, DriverRegisters::IHOLD_IRUN),
-            ihold_irun_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        txBuffer = build_command(
-            command_byte(Mode::WRITE, DriverRegisters::CHOPCONF), chopconf);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        txBuffer = build_command(
-            command_byte(Mode::WRITE, DriverRegisters::THIGH), thigh);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-
-        txBuffer = build_command(
-            command_byte(Mode::WRITE, DriverRegisters::COOLCONF), coolconf);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
         process_buffer(rxBuffer, status, data);
     }
 
     void get_status() {
         reset_data();
         reset_status();
-        auto txBuffer = build_command(
-            command_byte(Mode::READ, DriverRegisters::DRVSTATUS), data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        read(DriverRegisters::DRVSTATUS, data);
+
         process_buffer(rxBuffer, status, data);
     }
 
@@ -103,6 +65,21 @@ class MotorDriver {
         return txBuffer;
     }
 
+    auto read(DriverRegisters motor_reg, uint32_t& command_data) -> BufferType {
+        auto txBuffer =
+            build_command(command_byte(Mode::READ, motor_reg), command_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        return txBuffer;
+    }
+
+    auto write(DriverRegisters motor_reg, const uint32_t& command_data)
+        -> BufferType {
+        auto txBuffer =
+            build_command(command_byte(Mode::WRITE, motor_reg), command_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        return txBuffer;
+    }
+
     void reset_data() { data = 0x0; }
 
     void reset_status() { status = 0x0; }
@@ -116,6 +93,7 @@ class MotorDriver {
     }
 
     SpiDriver spi_comms;
+    RegisterConfig register_config;
 };
 
 }  // namespace motor_driver
