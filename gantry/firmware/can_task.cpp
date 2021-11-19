@@ -63,7 +63,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
 
 spi::SPI_interface SPI_intf = {
-
     .SPI_handle = &hspi2,
     .GPIO_handle = GPIOB,
     .pin = GPIO_PIN_12,
@@ -82,17 +81,18 @@ struct motion_controller::HardwareConfig PinConfigurations {
 static RegisterConfig register_config_by_axis(GantryAxisType which) {
     switch (which) {
         case GantryAxisType::gantry_x:
-            return RegisterConfig{{DriverRegisters::GCONF, 0x04},
-                                  {DriverRegisters::IHOLD_IRUN, 0x71002},
-                                  {DriverRegisters::CHOPCONF, 0x101D5},
-                                  {DriverRegisters::THIGH, 0xFFFFF},
-                                  {DriverRegisters::COOLCONF, 0x60000}};
+            return RegisterConfig{.gconf = 0x04,
+                                  .ihold_irun = 0x71002,
+                                  .chopconf = 0x101D5,
+                                  .thigh = 0xFFFFF,
+                                  .coolconf = 0x60000};
+
         case GantryAxisType::gantry_y:
-            return RegisterConfig{{DriverRegisters::GCONF, 0x04},
-                                  {DriverRegisters::IHOLD_IRUN, 0x71002},
-                                  {DriverRegisters::CHOPCONF, 0x101D5},
-                                  {DriverRegisters::THIGH, 0xFFFFF},
-                                  {DriverRegisters::COOLCONF, 0x60000}};
+            return RegisterConfig{.gconf = 0x04,
+                                  .ihold_irun = 0x71002,
+                                  .chopconf = 0x101D5,
+                                  .thigh = 0xFFFFF,
+                                  .coolconf = 0x60000};
     }
 }
 
@@ -164,6 +164,9 @@ static auto dispatcher = Dispatcher(
     if (initialize_spi(my_axis_type) != HAL_OK) {
         Error_Handler();
     }
+
+    motor.driver.setup();
+
     can_bus::setup_node_id_filter(can_bus_1, my_node_id);
     can_bus_1.start();
 

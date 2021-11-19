@@ -72,12 +72,11 @@ struct motion_controller::HardwareConfig PinConfigurations {
         .port = GPIOC, .pin = GPIO_PIN_8, .active_setting = GPIO_PIN_SET},
 };
 
-RegisterConfig MotorDriverConfigurations{{DriverRegisters::GCONF, 0x04},
-                                         {DriverRegisters::IHOLD_IRUN, 0x70202},
-                                         {DriverRegisters::CHOPCONF, 0x101D5},
-                                         {DriverRegisters::THIGH, 0xFFFFF},
-                                         {DriverRegisters::COOLCONF, 0x60000}};
-
+RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
+                                         .ihold_irun = 0x70202,
+                                         .chopconf = 0x101D5,
+                                         .thigh = 0xFFFFF,
+                                         .coolconf = 0x60000};
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -152,6 +151,9 @@ static auto dispatcher = Dispatcher(
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
+
+    motor.driver.setup();
+
     can_bus::setup_node_id_filter(can_bus_1, NodeId::pipette);
     can_bus_1.start();
 

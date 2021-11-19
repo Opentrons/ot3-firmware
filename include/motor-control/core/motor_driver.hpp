@@ -25,9 +25,12 @@ class MotorDriver {
         : spi_comms(spi), register_config(conf) {}
 
     void setup() {
-        for (const auto& [key, value] : register_config) {
-            write(key, value);
-        }
+        write(DriverRegisters::GCONF, register_config.gconf);
+        write(DriverRegisters::IHOLD_IRUN, register_config.ihold_irun);
+        write(DriverRegisters::CHOPCONF, register_config.chopconf);
+        write(DriverRegisters::THIGH, register_config.thigh);
+        write(DriverRegisters::COOLCONF, register_config.coolconf);
+
         process_buffer(rxBuffer, status, data);
     }
 
