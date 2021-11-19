@@ -16,6 +16,7 @@
 #include "gantry/core/axis_type.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
+#include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -39,6 +40,7 @@ using namespace motor_message_handler;
 using namespace move_group_handler;
 using namespace move_group_executor_handler;
 using namespace motor_messages;
+using namespace motor_driver_config;
 
 static constexpr NodeId node_from_axis(GantryAxisType which) {
     switch (which) {
@@ -77,6 +79,23 @@ struct motion_controller::HardwareConfig PinConfigurations {
         .port = GPIOA, .pin = GPIO_PIN_9, .active_setting = GPIO_PIN_SET},
 };
 
+static RegisterConfig register_config_by_axis(GantryAxisType which) {
+    switch (which) {
+        case GantryAxisType::gantry_x:
+            return RegisterConfig{{DriverRegisters::GCONF, 0x04},
+                                  {DriverRegisters::IHOLD_IRUN, 0x71002},
+                                  {DriverRegisters::CHOPCONF, 0x101D5},
+                                  {DriverRegisters::THIGH, 0xFFFFF},
+                                  {DriverRegisters::COOLCONF, 0x60000}};
+        case GantryAxisType::gantry_y:
+            return RegisterConfig{{DriverRegisters::GCONF, 0x04},
+                                  {DriverRegisters::IHOLD_IRUN, 0x71002},
+                                  {DriverRegisters::CHOPCONF, 0x101D5},
+                                  {DriverRegisters::THIGH, 0xFFFFF},
+                                  {DriverRegisters::COOLCONF, 0x60000}};
+    }
+}
+
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -95,6 +114,7 @@ static motor_class::Motor motor{
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
+    register_config_by_axis(my_axis_type),
     motor_queue,
     complete_queue};
 
