@@ -75,10 +75,24 @@
     },
     {
       "name": "gantry",
-      "displayName": "gantry binary",
+      "displayName": "gantry binaries",
       "description": "build the gantry binary targets",
       "configurePreset": "cross",
-      "targets": ["gantry"]
+      "targets": ["gantry_x", "gantry_y"]
+    },
+    {
+      "name": "gantry-x",
+      "displayName": "x axis binary",
+      "description": "build the x axis binary target",
+      "configurePreset": "cross",
+      "targets": ["gantry_x"]
+    },
+    {
+      "name": "gantry-y",
+      "displayName": "y axis binary",
+      "description": "build the y axis binary target",
+      "configurePreset": "cross",
+      "targets": ["gantry_y"]
     },
     {
       "name": "head",
