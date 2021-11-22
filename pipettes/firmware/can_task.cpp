@@ -5,6 +5,8 @@
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/firmware/hal_can.h"
+#include "can/firmware/hal_can_bus.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
@@ -24,10 +26,10 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "can/firmware/hal_can_message_buffer.hpp"
-#include "common/firmware/can.h"
+//#include "can/firmware/hal_can_message_buffer.hpp"
+//#include "common/firmware/can.h"
 #include "motor_hardware.h"
-#include "platform_specific_hal_conf.h"
+//#include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic pop
 
 using namespace hal_can_bus;
@@ -45,9 +47,7 @@ using namespace move_group_executor_handler;
 using namespace motor_messages;
 using namespace motor_driver_config;
 
-extern FDCAN_HandleTypeDef fdcan1;
-
-static auto can_bus_1 = HalCanBus(&fdcan1);
+static auto can_bus_1 = HalCanBus(can_get_device_handle());
 static auto message_writer_1 = MessageWriter(can_bus_1, NodeId::pipette);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
@@ -144,10 +144,33 @@ static auto dispatcher = Dispatcher(
     motor_dispatch_target, motion_group_dispatch_target, eeprom_dispatch_target,
     device_info_dispatch_target, motion_group_executor_dispatch_target);
 
+
+/**
+ * The type of the message buffer populated by HAL ISR.
+ */
+static auto read_can_message_buffer =
+    freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
+static auto read_can_message_buffer_writer =
+    can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
+
+/**
+ * New CAN message callback.
+ *
+ * @param identifier Arbitration id
+ * @param data Message data
+ * @param length Message data length
+ */
+void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
+    read_can_message_buffer_writer.send_from_isr(identifier, data,
+                                                 data + length);
+}
+
+
 [[noreturn]] void task_entry() {
-    if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
-        Error_Handler();
-    }
+
+    can_bus_1.set_incoming_message_callback(callback);
+    can_bus_1.setup_node_id_filter(NodeId::pipette);
+    can_start();
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -155,11 +178,7 @@ static auto dispatcher = Dispatcher(
 
     motor.driver.setup();
 
-    can_bus::setup_node_id_filter(can_bus_1, NodeId::pipette);
-    can_bus_1.start();
-
-    auto poller = FreeRTOSCanBufferPoller(
-        hal_can_message_buffer::get_message_buffer(), dispatcher);
+    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
     poller();
 }
 
