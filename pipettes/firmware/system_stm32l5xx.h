@@ -65,6 +65,8 @@ extern const uint32_t MSIRangeTable[16];    /*!< MSI ranges table values     */
   * @{
   */
 
+#define USER_VECT_TAB_ADDRESS 1
+
 /**
   \brief Setup the microcontroller system.
 
