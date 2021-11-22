@@ -23,6 +23,9 @@
 #include "stm32l5xx_hal.h"
 #include "stm32l5xx_it.h"
 
+#include "can/firmware/hal_can.h"
+
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -33,7 +36,6 @@
 /* External variables --------------------------------------------------------*/
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
-extern FDCAN_HandleTypeDef fdcan1;
 extern TIM_HandleTypeDef htim7;
 /******************************************************************************/
 /*            Cortex-M33 Processor Exceptions Handlers                         */
@@ -136,7 +138,7 @@ void DMA1_Channel4_IRQHandler(void)
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
-void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(&fdcan1); }
+void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(can_get_device_handle()); }
 
 /**
  * @brief This function handles TIM7 global interrupt.

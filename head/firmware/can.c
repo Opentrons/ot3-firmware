@@ -1,6 +1,5 @@
 #include "common/firmware/can.h"
 
-
 /**
  * Initialize a connection to FDCAN1
  *
@@ -15,19 +14,20 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef* handle) {
     handle->Init.AutoRetransmission = ENABLE;
     handle->Init.TransmitPause = DISABLE;
     handle->Init.ProtocolException = DISABLE;
-    handle->Init.NominalPrescaler = 50;
+    handle->Init.NominalPrescaler = 20;
     handle->Init.NominalSyncJumpWidth = 2;
-    handle->Init.NominalTimeSeg1 = 6;
-    handle->Init.NominalTimeSeg2 = 1;
-    handle->Init.DataPrescaler = 50;
+    handle->Init.NominalTimeSeg1 = 14;
+    handle->Init.NominalTimeSeg2 = 2;
+    handle->Init.DataPrescaler = 20;
     handle->Init.DataSyncJumpWidth = 1;
-    handle->Init.DataTimeSeg1 = 6;
+    handle->Init.DataTimeSeg1 = 14;
     handle->Init.DataTimeSeg2 = 1;
     handle->Init.StdFiltersNbr = 20;
     handle->Init.ExtFiltersNbr = 20;
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
     return HAL_FDCAN_Init(handle);
 }
+
 
 /**
  * @brief FDCAN MSP Initialization
@@ -39,7 +39,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hfdcan->Instance == FDCAN1) {
         /* Peripheral clock enable */
-        __HAL_RCC_FDCAN1_CLK_ENABLE();
+        __HAL_RCC_FDCAN_CLK_ENABLE();
 
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /**FDCAN1 GPIO Configuration
@@ -55,7 +55,6 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan) {
 
         // Priority is 0-15 (highest to lowest). Use lowest priority until we
         // believe it is too low.
-
         HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 15, 15);
         HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
     }
@@ -70,7 +69,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan) {
 void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* hfdcan) {
     if (hfdcan->Instance == FDCAN1) {
         /* Peripheral clock disable */
-        __HAL_RCC_FDCAN1_CLK_DISABLE();
+        __HAL_RCC_FDCAN_CLK_DISABLE();
 
         /**FDCAN1 GPIO Configuration
         PA11     ------> FDCAN1_RX

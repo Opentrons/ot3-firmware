@@ -9,7 +9,6 @@
 
 // clang-format on
 
-#include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
 
 auto main() -> int {

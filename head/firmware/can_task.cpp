@@ -1,5 +1,3 @@
-#include "common/firmware/can_task.hpp"
-
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"

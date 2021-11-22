@@ -1,17 +1,15 @@
-#include "common/firmware/can_task.hpp"
-
 #include <variant>
 
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
-#include "can/firmware/hal_can.h"
-#include "can/firmware/hal_can_bus.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
+#include "can/firmware/hal_can.h"
+#include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/errors.h"
@@ -144,7 +142,6 @@ static auto dispatcher = Dispatcher(
     motor_dispatch_target, motion_group_dispatch_target, eeprom_dispatch_target,
     device_info_dispatch_target, motion_group_executor_dispatch_target);
 
-
 /**
  * The type of the message buffer populated by HAL ISR.
  */
@@ -165,9 +162,7 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
                                                  data + length);
 }
 
-
 [[noreturn]] void task_entry() {
-
     can_bus_1.set_incoming_message_callback(callback);
     can_bus_1.setup_node_id_filter(NodeId::pipette);
     can_start();
@@ -183,5 +178,3 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
 }
 
 auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
-
-void can_task::start() {}
