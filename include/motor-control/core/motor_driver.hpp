@@ -10,8 +10,8 @@ using namespace motor_driver_config;
 
 enum class Mode : uint8_t { WRITE = 0x80, READ = 0x0 };
 
-template <RegisterAddress RA>
-constexpr auto command_byte(Mode mode, RA motor_reg) -> uint8_t {
+constexpr auto command_byte(Mode mode, DriverRegisters::Addresses motor_reg)
+    -> uint8_t {
     return static_cast<uint8_t>(mode) | static_cast<uint8_t>(motor_reg);
 }
 
@@ -30,25 +30,26 @@ class MotorDriver {
         : spi_comms(spi), register_config(conf) {}
 
     void setup() {
-        write(DriverRegisters::GCONF, register_config.gconf);
-        write(DriverRegisters::IHOLD_IRUN, register_config.ihold_irun);
-        write(DriverRegisters::CHOPCONF, register_config.chopconf);
-        write(DriverRegisters::THIGH, register_config.thigh);
-        write(DriverRegisters::COOLCONF, register_config.coolconf);
-        
+        write(DriverRegisters::Addresses::GCONF, register_config.gconf);
+        write(DriverRegisters::Addresses::IHOLD_IRUN,
+              register_config.ihold_irun);
+        write(DriverRegisters::Addresses::CHOPCONF, register_config.chopconf);
+        write(DriverRegisters::Addresses::THIGH, register_config.thigh);
+        write(DriverRegisters::Addresses::COOLCONF, register_config.coolconf);
+
         process_buffer(rxBuffer, status, data);
     }
 
-    template <RegisterAddress RA>
-    auto read(RA motor_reg, uint32_t& command_data) -> BufferType {
+    auto read(DriverRegisters::Addresses motor_reg, uint32_t& command_data)
+        -> BufferType {
         auto txBuffer =
             build_command(command_byte(Mode::READ, motor_reg), command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
         return txBuffer;
     }
 
-    template <RegisterAddress RA>
-    auto write(RA motor_reg, const uint32_t& command_data) -> BufferType {
+    auto write(DriverRegisters::Addresses motor_reg,
+               const uint32_t& command_data) -> BufferType {
         auto txBuffer =
             build_command(command_byte(Mode::WRITE, motor_reg), command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
@@ -58,7 +59,7 @@ class MotorDriver {
     void get_status() {
         reset_data();
         reset_status();
-        read(DriverRegisters::DRVSTATUS, data);
+        read(DriverRegisters::Addresses::DRVSTATUS, data);
 
         process_buffer(rxBuffer, status, data);
     }
@@ -79,21 +80,6 @@ class MotorDriver {
         iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
         iter = bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
-        return txBuffer;
-    }
-
-    auto read(DriverRegisters motor_reg, uint32_t& command_data) -> BufferType {
-        auto txBuffer =
-            build_command(command_byte(Mode::READ, motor_reg), command_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        return txBuffer;
-    }
-
-    auto write(DriverRegisters motor_reg, const uint32_t& command_data)
-        -> BufferType {
-        auto txBuffer =
-            build_command(command_byte(Mode::WRITE, motor_reg), command_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
         return txBuffer;
     }
 

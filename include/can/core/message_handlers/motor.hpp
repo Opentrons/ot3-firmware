@@ -4,12 +4,14 @@
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
+#include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
 namespace motor_message_handler {
 
 using namespace can_message_writer;
 using namespace can_messages;
+using namespace motor_driver_config;
 
 template <class Motor>
 class MotorHandler {
@@ -74,12 +76,17 @@ class MotorHandler {
     }
 
     void visit(WriteMotorDriverRegister &m) {
-        motor.driver.write(m.reg_address, m.data);
+        if (DriverRegisters::is_valid_address(m.reg_address)) {
+            motor.driver.write(DriverRegisters::Addresses(m.reg_address),
+                               m.data);
+        }
     }
 
     void visit(ReadMotorDriverRegister &m) {
         uint32_t data;
-        motor.driver.read(m.reg_address, data);
+        if (DriverRegisters::is_valid_address(m.reg_address)) {
+            motor.driver.read(DriverRegisters::Addresses(m.reg_address), data);
+        }
         ReadMotorDriverRegisterResponse response_msg{
             .reg_address = m.reg_address,
             .data = data,
