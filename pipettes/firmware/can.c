@@ -14,18 +14,18 @@ FDCAN_HandleTypeDef fdcan1;
 HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef* handle) {
     handle->Instance = FDCAN1;
     handle->Init.ClockDivider = FDCAN_CLOCK_DIV1;
-    handle->Init.FrameFormat = FDCAN_FRAME_CLASSIC;
+    handle->Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
     handle->Init.Mode = FDCAN_MODE_NORMAL;
-    handle->Init.AutoRetransmission = DISABLE;
+    handle->Init.AutoRetransmission = ENABLE;
     handle->Init.TransmitPause = DISABLE;
     handle->Init.ProtocolException = DISABLE;
-    handle->Init.NominalPrescaler = 20;
+    handle->Init.NominalPrescaler = 50;
     handle->Init.NominalSyncJumpWidth = 2;
-    handle->Init.NominalTimeSeg1 = 14;
-    handle->Init.NominalTimeSeg2 = 2;
-    handle->Init.DataPrescaler = 20;
+    handle->Init.NominalTimeSeg1 = 6;
+    handle->Init.NominalTimeSeg2 = 1;
+    handle->Init.DataPrescaler = 50;
     handle->Init.DataSyncJumpWidth = 1;
-    handle->Init.DataTimeSeg1 = 14;
+    handle->Init.DataTimeSeg1 = 6;
     handle->Init.DataTimeSeg2 = 1;
     handle->Init.StdFiltersNbr = 20;
     handle->Init.ExtFiltersNbr = 20;
@@ -59,6 +59,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan) {
 
         // Priority is 0-15 (highest to lowest). Use lowest priority until we
         // believe it is too low.
+
         HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 15, 15);
         HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
     }

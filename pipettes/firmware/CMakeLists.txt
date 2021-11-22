@@ -9,6 +9,7 @@ set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
+
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp

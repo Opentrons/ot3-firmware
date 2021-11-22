@@ -65,6 +65,8 @@ extern const uint32_t MSIRangeTable[16];    /*!< MSI ranges table values     */
   * @{
   */
 
+#define USER_VECT_TAB_ADDRESS 1
+
 /**
   \brief Setup the microcontroller system.
 
@@ -89,6 +91,7 @@ extern void SystemCoreClockUpdate (void);
  */
 extern uint32_t SECURE_SystemCoreClockUpdate(void);
 void HardwareInit(void);
+void MX_ICACHE_Init();
 
 /**
   * @}

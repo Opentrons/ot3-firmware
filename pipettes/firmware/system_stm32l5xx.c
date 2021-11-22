@@ -353,90 +353,76 @@ void SystemCoreClockUpdate(void)
   * @retval None
   */
 void SystemClock_Config(void) {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-    /* Enable voltage range 0 for frequency above 80 Mhz */
-    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE0);
-
-    /* MSI Oscillator enabled at reset (4Mhz), activate PLL with MSI as source */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_NONE;
+    /** Configure the main internal regulator output voltage
+    */
+    if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE0) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Initializes the RCC Oscillators according to the specified parameters
+    * in the RCC_OscInitTypeDef structure.
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-    RCC_OscInitStruct.PLL.PLLM = 1;
-    RCC_OscInitStruct.PLL.PLLN = 55;
-    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 2;
+    RCC_OscInitStruct.PLL.PLLN = 25;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
+    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     {
-        /* Initialization Error */
         Error_Handler();
     }
-
-    /* To avoid undershoot due to maximum frequency, select PLL as system clock source */
-    /* with AHB prescaler divider 2 as first step */
-    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    /** Initializes the CPU, AHB and APB buses clocks
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                                  |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-    if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-    {
-        /* Initialization Error */
-        Error_Handler();
-    }
 
-    /* AHB prescaler divider at 1 as second step */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
     {
-        /* Initialization Error */
         Error_Handler();
     }
-    /**
-     *  TODO (AL, 2021-15-07): Solidify clock configuration.
-     *   Above is copied directly from stm32_test project to
-     *   get CAN working.
-     *   Below is the original setup.
-     */
-    //
-    //  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    //  RCC_OscInitTypeDef RCC_OscInitStruct;
-    //
-    //  /* Enable HSE Oscillator and activate PLL with HSE as source */
-    //  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    //  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    //  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    //  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    //  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    //  HAL_RCC_OscConfig(&RCC_OscInitStruct);
-    //
-    //  /* Select PLL as system clock source and configure the HCLK, PCLK1 and
-    //  PCLK2 clocks dividers */ RCC_ClkInitStruct.ClockType =
-    //  (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 |
-    //  RCC_CLOCKTYPE_PCLK2); RCC_ClkInitStruct.SYSCLKSource =
-    //  RCC_SYSCLKSOURCE_PLLCLK; RCC_ClkInitStruct.AHBCLKDivider =
-    //  RCC_SYSCLK_DIV1; RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-    //  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-    //  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+    /** MCO configuration
+    */
+    HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_SYSCLK, RCC_MCODIV_1);
 }
 
-//void HAL_MspInit(void)
-//{
-//
-//    __HAL_RCC_SYSCFG_CLK_ENABLE();
-//    __HAL_RCC_PWR_CLK_ENABLE();
-//
-//}
+void HAL_MspInit(void)
+{
+    /* USER CODE BEGIN MspInit 0 */
+
+    /* USER CODE END MspInit 0 */
+
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    __HAL_RCC_PWR_CLK_ENABLE();
+
+    /* System interrupt init*/
+
+    /** Disable the internal Pull-Up in Dead Battery pins of UCPD peripheral
+    */
+    HAL_PWREx_DisableUCPDDeadBattery();
+    HAL_PWREx_SMPS_EnableBypassMode();
+
+    /* USER CODE BEGIN MspInit 1 */
+
+    /* USER CODE END MspInit 1 */
+}
 
 /**
   * @brief ICACHE Initialization Function
   * @param None
   * @retval None
   */
-static void MX_ICACHE_Init(void)
+void MX_ICACHE_Init(void)
 {
 
     /* USER CODE BEGIN ICACHE_Init 0 */
@@ -463,7 +449,7 @@ void HardwareInit(void) {
     HAL_Init();
     SystemClock_Config();
     SystemCoreClockUpdate();
-    MX_ICACHE_Init();
+
 }
 
 /**
