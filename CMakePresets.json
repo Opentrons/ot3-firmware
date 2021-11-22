@@ -71,27 +71,47 @@
       "displayName": "pipettes binary",
       "description": "Build the pipettes cross binary",
       "configurePreset": "cross-pipettes",
+      "jobs": 4,
       "targets": ["pipettes"]
     },
     {
       "name": "gantry",
-      "displayName": "gantry binary",
+      "displayName": "gantry binaries",
       "description": "build the gantry binary targets",
       "configurePreset": "cross",
-      "targets": ["gantry"]
+      "jobs": 4,
+      "targets": ["gantry_x", "gantry_y"]
+    },
+    {
+      "name": "gantry-x",
+      "displayName": "x axis binary",
+      "description": "build the x axis binary target",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": ["gantry_x"]
+    },
+    {
+      "name": "gantry-y",
+      "displayName": "y axis binary",
+      "description": "build the y axis binary target",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": ["gantry_y"]
     },
     {
       "name": "head",
       "displayName": "head binary",
       "description": "build the head binary targets",
       "configurePreset": "cross",
+      "jobs": 4,
       "targets": ["head"]
     },
     {
       "name": "tests",
       "displayName": "tests",
       "description": "build and run all tests",
-      "configurePreset": "host",
+      "configurePreset": "host-gcc10",
+      "jobs": 4,
       "targets": ["build-and-test"]
     }
   ]

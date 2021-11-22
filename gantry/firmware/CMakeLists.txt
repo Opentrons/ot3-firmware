@@ -34,30 +34,51 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         )
 
 
-add_executable(gantry
+add_executable(gantry_x
         ${GANTRY_FW_LINTABLE_SRCS}
         ${GANTRY_FW_NON_LINTABLE_SRCS})
 
-MESSAGE(STATUS "The gantry axis type is ${GANTRY_AXIS_TYPE}")
+add_executable(gantry_y
+        ${GANTRY_FW_LINTABLE_SRCS}
+        ${GANTRY_FW_NON_LINTABLE_SRCS})
 
-target_link_libraries(gantry
+
+target_link_libraries(gantry_x
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
-        gantry-core
+        gantry-core-x
         can-core)
 
-set_target_properties(gantry
-        PROPERTIES CXX_STANDARD 20
+target_link_libraries(gantry_y
+        PUBLIC STM32G491RETx
+        STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
+        gantry-core-y
+        can-core)
+
+
+set_target_properties(gantry_x
+        PROPERTIES
+        CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE
-        OUTPUT_NAME ${GANTRY_AXIS_TYPE})
+        C_STANDARD_REQUIRED TRUE)
+
+set_target_properties(gantry_y
+        PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED TRUE
+        C_STANDARD 11
+        C_STANDARD_REQUIRED TRUE)
 
 
-target_include_directories(gantry
+target_include_directories(gantry_x
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-target_compile_options(gantry
+target_include_directories(gantry_y
+        PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+
+target_compile_options(gantry_x
         PUBLIC
         -Wall
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
@@ -66,6 +87,17 @@ target_compile_options(gantry
         $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+
+target_compile_options(gantry_y
+        PUBLIC
+        -Wall
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+
 
 target_include_directories(STM32G4xx_Drivers_Gantry
         PUBLIC .)
@@ -89,10 +121,16 @@ find_program(ARM_GDB
 message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
 # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
 # this dir
-set_target_properties(gantry
+set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+set_target_properties(gantry_x
         PROPERTIES
         CROSSCOMPILING_EMULATOR
-        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+        "${ARM_GDB};--command=${GDBINIT_FILE}")
+
+set_target_properties(gantry_y
+        PROPERTIES
+        CROSSCOMPILING_EMULATOR
+        "${ARM_GDB};--command=${GDBINIT_FILE}")
 
 
 find_package(Clang)
@@ -125,17 +163,28 @@ set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 # done here because it won't be multi-os compatible, and also it
 # should be running the entire time and that's tough to accomplish
 # in a custom command
-add_custom_target(gantry-debug
-        COMMAND gantry
+add_custom_target(gantry-debug-x
+        COMMAND gantry_x
+        USES_TERMINAL
+        )
+
+add_custom_target(gantry-debug-y
+        COMMAND gantry_y
         USES_TERMINAL
         )
 
 
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
 # Runs openocd to flash the board (without using a debugger)
-add_custom_target(gantry-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:gantry>;reset;exit"
+add_custom_target(gantry-flash-x
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE}  "-c" "program $<TARGET_FILE:gantry_x>;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS gantry)
+        DEPENDS gantry_x)
 
-unset(GANTRY_AXIS_TYPE CACHE)
+add_custom_target(gantry-flash-y
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE} "-c" "program $<TARGET_FILE:gantry_y>;reset;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS gantry_y)

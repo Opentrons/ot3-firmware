@@ -34,6 +34,7 @@ To setup this directory to run on an STM32G4 system board (gantry and head), you
 
 1. `cmake --preset=cross .`
 2. `cmake --build --preset=gantry --target <TARGET>` or `cmake --build --preset=head --target <TARGET>`
+3. To build a specific gantry you can also use the `gantry_x` and `gantry_y` targets
 
 To setup this directory to run on an STML5 nucleo board (pipettes), you should run:
 
@@ -54,10 +55,11 @@ To setup this directory to run tests, you should run:
 
 #### Gantry Subsystem
 
-The default axis type for the gantry target is X. You can build the Y gantry by running:
+While the `gantry` target builds both, there are separate firmwares (and separate cmake targets) for x and y:
 
-1. `cmake --preset=cross -DGANTRY_AXIS_TYPE=gantry_y .`
-2. `cmake --build --preset=gantry`
+1. `cmake --preset=cross .`
+2. `cmake --build --preset=gantry-x` or `cmake --build --preset=gantry-x --target=gantry-debug-x`
+3. `cmake --build --preset=gantry-y` or `cmake --build --preset=gantry-y --target gantry-debug-y`
 
 ### Cross-compiling vs Host-compiling
 
