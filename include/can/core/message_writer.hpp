@@ -14,7 +14,7 @@ namespace can_message_writer {
 
 class MessageWriter {
   public:
-    explicit MessageWriter(can_bus::CanBusWriter& writer,
+    explicit MessageWriter(can_bus::CanBus& writer,
                            can_ids::NodeId node_id)
         : writer{writer}, node_id(node_id) {}
 
@@ -40,7 +40,7 @@ class MessageWriter {
     }
 
   private:
-    can_bus::CanBusWriter& writer;
+    can_bus::CanBus& writer;
     freertos_synchronization::FreeRTOSMutex mutex{};
     can_arbitration_id::ArbitrationId arbitration_id{};
     std::array<uint8_t, message_core::MaxMessageSize> buffer{};

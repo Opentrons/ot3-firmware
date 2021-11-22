@@ -217,7 +217,7 @@ void callback(uint32_t identifier, const uint8_t* data, uint8_t length) {
 
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);
-    can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
+    can_bus_1.setup_node_id_filter(NodeId::head);
     can_start();
 
     if (initialize_spi(&hspi2) != HAL_OK) {

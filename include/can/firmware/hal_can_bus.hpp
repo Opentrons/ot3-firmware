@@ -12,7 +12,7 @@ using namespace can_ids;
 /**
  * HAL FD CAN wrapper.
  */
-class HalCanBus : public CanBusWriter, public CanBusFilters, public CanBus{
+class HalCanBus : public CanBus{
   public:
     /**
      * Construct

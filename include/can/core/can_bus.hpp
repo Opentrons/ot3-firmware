@@ -13,7 +13,9 @@ namespace can_bus {
 
 using namespace can_ids;
 
-
+/**
+ * Abstract base class of a CAN bus.
+ */
 class CanBus {
   public:
     using IncomingMessageCallback = std::function<void(uint32_t arbitration_id, uint8_t* data, uint8_t length)>;
@@ -25,15 +27,6 @@ class CanBus {
      */
     virtual void set_incoming_message_callback(IncomingMessageCallback callback) = 0;
 
-    virtual ~CanBus() {}
-};
-
-
-/**
- * Can bus writer abstract base class.
- */
-class CanBusWriter {
-  public:
     /**
      * Write method.
      *
@@ -44,14 +37,6 @@ class CanBusWriter {
     virtual void send(uint32_t arbitration_id, uint8_t* buffer,
                       CanFDMessageLength buffer_length) = 0;
 
-    virtual ~CanBusWriter() {}
-};
-
-/**
- * Can incoming message filter setup.
- */
-class CanBusFilters {
-  public:
     /**
      * Create a filter for incoming messages.
      *
@@ -65,17 +50,16 @@ class CanBusFilters {
     virtual void add_filter(CanFilterType type, CanFilterConfig config,
                             uint32_t val1, uint32_t val2) = 0;
 
+    /**
+     * Set up the can bus receive filter to receive only broadcast messages and
+     * messages targeting node_id.
+     *
+     * @param node_id The node id to allow.
+     */
+    void setup_node_id_filter(NodeId node_id);
 
-    virtual ~CanBusFilters() {}
+
+    virtual ~CanBus() {}
 };
-
-/**
- * Set up the can bus receive filter to receive only broadcast messages and
- * messages targeting node_id.
- *
- * @param can_filters CanBusFilters interface.
- * @param node_id The node id to allow.
- */
-void setup_node_id_filter(CanBusFilters& can_filters, NodeId node_id);
 
 }  // namespace can_bus
