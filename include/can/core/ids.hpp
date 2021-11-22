@@ -65,7 +65,11 @@ enum class MessageId : uint16_t {
 
     write_eeprom = 0x2001,
     read_eeprom_request = 0x2002,
-    read_eeprom_response = 0x2003
+    read_eeprom_response = 0x2003,
+
+    write_motor_driver_register_request = 0x30,
+    read_motor_driver_register_request = 0x31,
+    read_motor_driver_register_response = 0x32
 };
 
 }  // namespace can_ids

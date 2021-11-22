@@ -323,4 +323,53 @@ struct GetMotionConstraintsResponse
     bool operator==(const GetMotionConstraintsResponse& other) const = default;
 };
 
+struct WriteMotorDriverRegister
+    : BaseMessage<MessageId::write_motor_driver_register_request> {
+    uint8_t reg_address;
+    uint32_t data;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> WriteMotorDriverRegister {
+        uint8_t reg_address = 0;
+        uint32_t data = 0;
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        body = bit_utils::bytes_to_int(body, limit, data);
+        return WriteMotorDriverRegister{.reg_address = reg_address,
+                                        .data = data};
+    }
+
+    bool operator==(const WriteMotorDriverRegister& other) const = default;
+};
+
+struct ReadMotorDriverRegister
+    : BaseMessage<MessageId::read_motor_driver_register_request> {
+    uint8_t reg_address;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadMotorDriverRegister {
+        uint8_t reg_address = 0;
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        return ReadMotorDriverRegister{.reg_address = reg_address};
+    }
+
+    bool operator==(const ReadMotorDriverRegister& other) const = default;
+};
+
+struct ReadMotorDriverRegisterResponse
+    : Response<MessageId::read_motor_driver_register_response> {
+    uint8_t reg_address;
+    uint32_t data;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = serialize_node_id(body, limit);
+        iter = bit_utils::int_to_bytes(reg_address, iter, limit);
+        iter = bit_utils::int_to_bytes(data, iter, limit);
+        return iter - body;
+    }
+
+    bool operator==(const ReadMotorDriverRegisterResponse& other) const =
+        default;
+};
+
 }  // namespace can_messages

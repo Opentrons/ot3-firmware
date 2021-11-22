@@ -4,12 +4,14 @@
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
+#include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
 namespace motor_message_handler {
 
 using namespace can_message_writer;
 using namespace can_messages;
+using namespace motor_driver_config;
 
 template <class Motor>
 class MotorHandler {
@@ -18,7 +20,8 @@ class MotorHandler {
         std::variant<std::monostate, SetupRequest, StopRequest,
                      GetStatusRequest, MoveRequest, EnableMotorRequest,
                      DisableMotorRequest, GetMotionConstraintsRequest,
-                     SetMotionConstraints>;
+                     SetMotionConstraints, WriteMotorDriverRegister,
+                     ReadMotorDriverRegister>;
 
     MotorHandler(MessageWriter &message_writer, Motor &motor)
         : message_writer{message_writer}, motor{motor} {}
@@ -70,6 +73,25 @@ class MotorHandler {
 
     void visit(SetMotionConstraints &m) {
         motor.motion_controller.set_motion_constraints(m);
+    }
+
+    void visit(WriteMotorDriverRegister &m) {
+        if (DriverRegisters::is_valid_address(m.reg_address)) {
+            motor.driver.write(DriverRegisters::Addresses(m.reg_address),
+                               m.data);
+        }
+    }
+
+    void visit(ReadMotorDriverRegister &m) {
+        uint32_t data;
+        if (DriverRegisters::is_valid_address(m.reg_address)) {
+            motor.driver.read(DriverRegisters::Addresses(m.reg_address), data);
+        }
+        ReadMotorDriverRegisterResponse response_msg{
+            .reg_address = m.reg_address,
+            .data = data,
+        };
+        message_writer.write(NodeId::host, response_msg);
     }
 
     MessageWriter &message_writer;
