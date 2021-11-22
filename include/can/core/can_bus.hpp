@@ -2,7 +2,6 @@
 
 #include <concepts>
 #include <cstdint>
-#include <functional>
 
 #include "arbitration_id.hpp"
 #include "ids.hpp"
@@ -18,14 +17,19 @@ using namespace can_ids;
  */
 class CanBus {
   public:
-    using IncomingMessageCallback = std::function<void(uint32_t arbitration_id, uint8_t* data, uint8_t length)>;
+    /**
+     * Incoming message callback method
+     */
+    using IncomingMessageCallback = void (*)(uint32_t identifier, uint8_t* data,
+                                             uint8_t length);
 
     /**
      * Set callback for incoming messages.
      *
      * @param callback
      */
-    virtual void set_incoming_message_callback(IncomingMessageCallback callback) = 0;
+    virtual void set_incoming_message_callback(
+        IncomingMessageCallback callback) = 0;
 
     /**
      * Write method.
@@ -57,7 +61,6 @@ class CanBus {
      * @param node_id The node id to allow.
      */
     void setup_node_id_filter(NodeId node_id);
-
 
     virtual ~CanBus() {}
 };

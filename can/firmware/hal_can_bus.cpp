@@ -2,9 +2,9 @@
 
 using namespace hal_can_bus;
 
-
-void HalCanBus::set_incoming_message_callback(IncomingMessageCallback callback){
-
+void HalCanBus::set_incoming_message_callback(
+    IncomingMessageCallback callback) {
+    can_register_message_callback(callback);
 }
 
 void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,

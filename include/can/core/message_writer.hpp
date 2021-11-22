@@ -14,8 +14,7 @@ namespace can_message_writer {
 
 class MessageWriter {
   public:
-    explicit MessageWriter(can_bus::CanBus& writer,
-                           can_ids::NodeId node_id)
+    explicit MessageWriter(can_bus::CanBus& writer, can_ids::NodeId node_id)
         : writer{writer}, node_id(node_id) {}
 
     /**
@@ -35,8 +34,7 @@ class MessageWriter {
         arbitration_id.parts.node_id = static_cast<unsigned int>(node);
         message.set_node_id(node_id);
         auto length = message.serialize(buffer.begin(), buffer.end());
-        writer.send(arbitration_id.id, buffer.data(),
-                    to_canfd_length(length));
+        writer.send(arbitration_id.id, buffer.data(), to_canfd_length(length));
     }
 
   private:

@@ -4,12 +4,12 @@
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
-#include "can/firmware/hal_can_bus.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
+#include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/errors.h"
@@ -195,11 +195,11 @@ static auto dispatcher = Dispatcher(
     motion_group_executor_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
-
 /**
  * The type of the message buffer populated by HAL ISR.
  */
-static auto read_can_message_buffer = freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
+static auto read_can_message_buffer =
+    freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
 static auto read_can_message_buffer_writer =
     can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
 
@@ -210,10 +210,10 @@ static auto read_can_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(uint32_t identifier, const uint8_t* data, uint8_t length) {
-    read_can_message_buffer_writer.send_from_isr(identifier, data, data + length);
+void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
+    read_can_message_buffer_writer.send_from_isr(identifier, data,
+                                                 data + length);
 }
-
 
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);

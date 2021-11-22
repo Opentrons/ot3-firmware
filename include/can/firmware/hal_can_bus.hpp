@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include "can/firmware/hal_can.h"
 #include "can/core/can_bus.hpp"
+#include "can/firmware/hal_can.h"
 
 namespace hal_can_bus {
 
@@ -12,13 +11,13 @@ using namespace can_ids;
 /**
  * HAL FD CAN wrapper.
  */
-class HalCanBus : public CanBus{
+class HalCanBus : public CanBus {
   public:
     /**
      * Construct
      * @param handle A pointer to an initialized FDCAN_HandleTypeDef
      */
-    explicit HalCanBus(HAL_CAN_HANDLE handle): handle{handle} {}
+    explicit HalCanBus(HAL_CAN_HANDLE handle) : handle{handle} {}
 
     HalCanBus(const HalCanBus&) = delete;
     HalCanBus& operator=(const HalCanBus&) = delete;

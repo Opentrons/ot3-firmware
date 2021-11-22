@@ -6,7 +6,7 @@
  * @param length a message payload length
  * @return a CanFDMessageLength
  */
-enum CanFDMessageLength to_canfd_length(uint32_t length)  {
+enum CanFDMessageLength to_canfd_length(uint32_t length) {
     switch (length) {
         case 0:
             return CanFDMessageLength::l0;
