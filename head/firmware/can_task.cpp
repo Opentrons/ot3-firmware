@@ -81,6 +81,15 @@ struct motion_controller::HardwareConfig PinConfigurations {
         .port = GPIOC, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_SET},
 };
 
+struct motion_controller::HardwareConfig PinConfigurations2 {
+    .direction = {.port = GPIOC,
+                  .pin = GPIO_PIN_7,
+                  .active_setting = GPIO_PIN_SET},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_6, .active_setting = GPIO_PIN_SET},
+    .enable = {
+        .port = GPIOB, .pin = GPIO_PIN_11, .active_setting = GPIO_PIN_SET},
+};
+
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
                                          .ihold_irun = 0x70202,
                                          .chopconf = 0x101D5,
@@ -109,8 +118,25 @@ static motor_class::Motor motor{
     motor_queue,
     complete_queue};
 
+/*z motor*/
+static motor_class::Motor motor2{
+    spi_comms2,
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    PinConfigurations2,
+    MotionConstraints{.min_velocity = 1,
+                      .max_velocity = 2,
+                      .min_acceleration = 1,
+                      .max_acceleration = 2},
+    MotorDriverConfigurations,
+    motor_queue,
+    complete_queue};
+
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler2 = MotorHandler{message_writer_1, motor2};
 static auto move_group_manager = MoveGroupType{};
 
 static auto can_move_group_handler =
@@ -118,6 +144,9 @@ static auto can_move_group_handler =
 
 static auto can_move_group_executor_handler =
     MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
+
+static auto can_move_group_executor_handler2 =
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor2);
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -139,6 +168,11 @@ static auto motion_group_dispatch_target = DispatchParseTarget<
     can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
     can_move_group_handler};
 
+static auto motion_group_dispatch_target2 = DispatchParseTarget<
+    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
+    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
+    can_move_group_handler2};
+
 static auto motion_group_executor_dispatch_target =
     DispatchParseTarget<decltype(can_move_group_executor_handler),
                         can_messages::ExecuteMoveGroupRequest>{
@@ -147,7 +181,8 @@ static auto motion_group_executor_dispatch_target =
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
     motor_dispatch_target, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target, device_info_dispatch_target);
+    motion_group_executor_dispatch_target,
+    motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
@@ -161,6 +196,7 @@ static auto dispatcher = Dispatcher(
     }
 
     motor.driver.setup();
+    motor2.driver.setup();
 
     can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
     can_bus_1.start();
