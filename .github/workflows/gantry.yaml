@@ -61,7 +61,7 @@ jobs:
       - name: "Lint"
         run: cmake --build ./build-cross --target gantry-lint
       - name: "Build"
-        run: cmake --build ./build-cross --target gantry
+        run: cmake --build --preset=gantry
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

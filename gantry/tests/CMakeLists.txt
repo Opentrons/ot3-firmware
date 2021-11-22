@@ -27,7 +27,7 @@ target_compile_options(gantry
         -Wextra-semi
         -Wctor-dtor-privacy
         -fno-rtti)
-target_link_libraries(gantry Catch2::Catch2 gantry-core)
+target_link_libraries(gantry Catch2::Catch2 gantry-core-x)
 
 catch_discover_tests(gantry)
 add_build_and_test_target(gantry)
