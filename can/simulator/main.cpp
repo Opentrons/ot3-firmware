@@ -38,7 +38,7 @@ struct Loopback {
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(can_bus::CanBus& can_bus, can_ids::NodeId node_id)
+    Loopback(can_bus::CanBus &can_bus, can_ids::NodeId node_id)
         : writer{canbus, node_id} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
@@ -72,12 +72,10 @@ static auto handler = Loopback{canbus, can_ids::NodeId::host};
 static auto dispatcher =
     can_dispatch::DispatchParseTarget<Loopback, MoveRequest>{handler};
 
-
 // Message buffer for read messages.
 static auto read_can_message_buffer = FreeRTOSMessageBuffer<1024>{};
 static auto read_can_message_buffer_writer =
     can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
-
 
 /**
  * New CAN message callback.
@@ -86,7 +84,7 @@ static auto read_can_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
+void callback(uint32_t identifier, uint8_t *data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
                                                  data + length);
 }
@@ -101,7 +99,8 @@ void can_bus_poll_task_entry() {
     transport.open(channel);
 
     // A Message Buffer poller that reads from buffer and send to dispatcher
-    static auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    static auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
+        read_can_message_buffer, dispatcher);
     poller();
 }
 
@@ -110,7 +109,6 @@ void can_bus_poll_task_entry() {
  */
 static auto can_bus_poll_task =
     FreeRTOSTask<2048, 5>("can_poll", can_bus_poll_task_entry);
-
 
 int main() {
     vTaskStartScheduler();

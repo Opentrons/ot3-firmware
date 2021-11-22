@@ -27,7 +27,7 @@ requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
     : public CanBus {
   public:
     explicit SimCANBus(Transport& transport)
-    : transport{transport}, reader{transport}, reader_task{"", reader} {}
+        : transport{transport}, reader{transport}, reader_task{"", reader} {}
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
     SimCANBus& operator=(const SimCANBus&) = delete;
@@ -70,8 +70,7 @@ requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
 
   private:
     struct Reader {
-        Reader(Transport& transport)
-            : transport{transport} {}
+        Reader(Transport& transport) : transport{transport} {}
 
         void operator()() {
             while (true) {
@@ -83,7 +82,8 @@ requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
                 }
 
                 if (new_message_callback) {
-                    new_message_callback(arb_id, read_buffer.begin(), read_length);
+                    new_message_callback(arb_id, read_buffer.begin(),
+                                         read_length);
                 }
             }
         }
