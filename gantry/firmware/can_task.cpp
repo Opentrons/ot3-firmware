@@ -166,10 +166,11 @@ static auto read_can_message_buffer_writer =
     can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
 
 /**
+ * New CAN message callback.
  *
- * @param identifier
- * @param data
- * @param length
+ * @param identifier Arbitration id
+ * @param data Message data
+ * @param length Message data length
  */
 void callback(uint32_t identifier, const uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data, data + length);
