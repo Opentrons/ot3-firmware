@@ -35,7 +35,7 @@ class MotorDriver {
         write(DriverRegisters::CHOPCONF, register_config.chopconf);
         write(DriverRegisters::THIGH, register_config.thigh);
         write(DriverRegisters::COOLCONF, register_config.coolconf);
-
+        
         process_buffer(rxBuffer, status, data);
     }
 
@@ -79,6 +79,21 @@ class MotorDriver {
         iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
         iter = bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
+        return txBuffer;
+    }
+
+    auto read(DriverRegisters motor_reg, uint32_t& command_data) -> BufferType {
+        auto txBuffer =
+            build_command(command_byte(Mode::READ, motor_reg), command_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+        return txBuffer;
+    }
+
+    auto write(DriverRegisters motor_reg, const uint32_t& command_data)
+        -> BufferType {
+        auto txBuffer =
+            build_command(command_byte(Mode::WRITE, motor_reg), command_data);
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
         return txBuffer;
     }
 
