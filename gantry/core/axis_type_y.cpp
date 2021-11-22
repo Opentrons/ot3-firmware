@@ -5,7 +5,4 @@
  *
  * @return A node id
  */
-extern "C"
-GantryAxisType get_axis_type() {
-    return gantry_y;
-}
+extern "C" GantryAxisType get_axis_type() { return gantry_y; }

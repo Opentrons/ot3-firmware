@@ -5,7 +5,4 @@
  *
  * @return an axis type
  */
-extern "C"
-GantryAxisType get_axis_type() {
-    return gantry_x;
-}
+extern "C" GantryAxisType get_axis_type() { return gantry_x; }
