@@ -87,7 +87,7 @@ struct motion_controller::HardwareConfig PinConfigurations2 {
                   .active_setting = GPIO_PIN_SET},
     .step = {.port = GPIOC, .pin = GPIO_PIN_6, .active_setting = GPIO_PIN_SET},
     .enable = {
-        .port = GPIOB, .pin = GPIO_PIN_11, .active_setting = GPIO_PIN_SET},
+        .port = GPIOB, .pin = GPIO_PIN_11, .active_setting = GPIO_PIN_RESET},
 };
 
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
@@ -137,6 +137,7 @@ static motor_class::Motor motor2{
 /** The parsed message handler */
 static auto can_motor_handler = MotorHandler{message_writer_1, motor};
 static auto can_motor_handler2 = MotorHandler{message_writer_1, motor2};
+
 static auto move_group_manager = MoveGroupType{};
 
 static auto can_move_group_handler =
@@ -163,12 +164,15 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints>{can_motor_handler};
 
-static auto motion_group_dispatch_target = DispatchParseTarget<
-    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler};
+static auto motor_dispatch_target2 = DispatchParseTarget<
+    decltype(can_motor_handler), can_messages::SetupRequest,
+    can_messages::StopRequest, can_messages::GetStatusRequest,
+    can_messages::MoveRequest, can_messages::EnableMotorRequest,
+    can_messages::DisableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints>{can_motor_handler2};
 
-static auto motion_group_dispatch_target2 = DispatchParseTarget<
+static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
     can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
     can_move_group_handler};
@@ -185,8 +189,8 @@ static auto motion_group_executor_dispatch_target2 =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target,
-    motion_group_dispatch_target2, motion_group_executor_dispatch_target,
+    motor_dispatch_target, motor_dispatch_target2, motion_group_dispatch_target,
+    motion_group_executor_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
@@ -201,7 +205,6 @@ static auto dispatcher = Dispatcher(
     }
 
     motor.driver.setup();
-    motor2.driver.setup();
 
     can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
     can_bus_1.start();

@@ -72,16 +72,22 @@ void timer_interrupt_start() { HAL_TIM_Base_Start_IT(&htim7); }
 void timer_interrupt_stop() { HAL_TIM_Base_Stop_IT(&htim7); }
 
 // todo: parametrize
-void turn_on_step_pin() { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET); }
+void turn_on_step_pin() {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+}
 
 void turn_off_step_pin() {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
 }
 
 void turn_on_direction_pin() {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
 }
 
 void turn_off_direction_pin() {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
 }
