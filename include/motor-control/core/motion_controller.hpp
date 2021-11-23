@@ -62,17 +62,6 @@ class MotionController {
             static_cast<uint32_t>(linear_motion_sys_config.get_steps_per_mm());
     }
 
-    void move(const can_messages::MoveRequest& can_msg) {
-        Move msg{
-            .duration = can_msg.duration,
-            .velocity = can_msg.velocity,
-            .acceleration = can_msg.acceleration,
-            .group_id = NO_GROUP,
-            .seq_id = NO_GROUP,
-        };
-        queue.try_write(msg);
-    }
-
     void move(const can_messages::AddLinearMoveRequest& can_msg) {
         Move msg{.duration = can_msg.duration,
                  .velocity = can_msg.velocity,

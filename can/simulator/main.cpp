@@ -50,13 +50,13 @@ struct Loopback {
      * The message handling function.
      * @param m A variant of the various message types.
      */
-    void handle(std::variant<std::monostate, MoveRequest> &m) {
+    void handle(std::variant<std::monostate, AddLinearMoveRequest> &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
     void visit(std::monostate &m) {}
 
-    void visit(MoveRequest &m) {
+    void visit(AddLinearMoveRequest &m) {
         auto response = MoveCompleted{
             .group_id = 0, .seq_id = 1, .current_position = 2, .ack_id = 3};
         writer.write(NodeId::host, response);

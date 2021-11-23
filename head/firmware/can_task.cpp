@@ -158,8 +158,7 @@ static auto device_info_dispatch_target =
 
 static auto motor_dispatch_target = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
-    can_messages::StopRequest, can_messages::GetStatusRequest,
-    can_messages::MoveRequest, can_messages::EnableMotorRequest,
+    can_messages::StopRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
