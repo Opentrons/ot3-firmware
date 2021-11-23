@@ -14,7 +14,6 @@
 #include "stm32g4xx_hal_conf.h"
 #pragma GCC diagnostic pop
 
-#include "common/firmware/can_task.hpp"
 #include "common/firmware/clocking.h"
 
 auto main() -> int {

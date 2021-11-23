@@ -1,35 +1,43 @@
 #pragma once
 
-#include "can/core/can_bus.hpp"
+#include "can/core/types.h"
 
-namespace hal_can_utils {
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 
 /**
  * Convert a CanFilterConfig to a hal value
  * @param config can filter config enum class
  * @return hal defined constant
  */
-auto filter_config_to_hal(can_bus::CanFilterConfig config) -> uint32_t;
+uint32_t filter_config_to_hal(enum CanFilterConfig config);
 
 /**
  * Convert a CanFilterType to a hal value
  * @param type can filter type enum class
  * @return hal defined constant
  */
-auto filter_type_to_hal(can_bus::CanFilterType type) -> uint32_t;
+uint32_t filter_type_to_hal(enum CanFilterType type);
 
 /**
  * Convert a length to the hal encoded length.
  * @param length length
  * @return hal encoded length
  */
-auto length_to_hal(can_bus::CanFDMessageLength length) -> uint32_t;
+uint32_t length_to_hal(enum CanFDMessageLength length);
 
 /**
  * Convert a hal encoded length to a CanFDMessageLength
  * @param length hal encoded length
  * @return CanFDMessageLength
  */
-auto length_from_hal(uint32_t length) -> can_bus::CanFDMessageLength;
+enum CanFDMessageLength length_from_hal(uint32_t length);
 
-}  // namespace hal_can_utils
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+

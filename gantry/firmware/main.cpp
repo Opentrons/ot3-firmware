@@ -15,8 +15,6 @@
 #include "common/firmware/utility_gpio.h"
 #pragma GCC diagnostic pop
 
-#include "common/firmware/can_task.hpp"
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();

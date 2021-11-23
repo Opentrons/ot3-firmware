@@ -3,13 +3,13 @@
 #include <array>
 
 #include "can/core/can_bus.hpp"
-#include "can/core/can_message_buffer.hpp"
 #include "can/core/message_core.hpp"
-#include "common/core/message_buffer.hpp"
+#include "common/core/freertos_task.hpp"
 
 namespace sim_canbus {
 
 using namespace can_bus;
+using namespace freertos_task;
 
 template <class T>
 concept BusTransport = requires(T t, uint32_t arb_id, uint32_t& out_arb_id,
@@ -22,13 +22,12 @@ concept BusTransport = requires(T t, uint32_t arb_id, uint32_t& out_arb_id,
 /**
  * CAN bus for simulators. Matches the CanBus concept.
  */
-template <BusTransport Transport, message_buffer::MessageBuffer Buffer>
-requires(!std::movable<Buffer> && !std::copyable<Buffer> &&
-         !std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
-    : public CanBusWriter {
+template <BusTransport Transport>
+requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
+    : public CanBus {
   public:
-    explicit SimCANBus(Transport& transport, Buffer& buffer)
-        : transport{transport}, reader{transport, buffer} {}
+    explicit SimCANBus(Transport& transport)
+        : transport{transport}, reader{transport}, reader_task{"", reader} {}
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
     SimCANBus& operator=(const SimCANBus&) = delete;
@@ -60,34 +59,43 @@ requires(!std::movable<Buffer> && !std::copyable<Buffer> &&
     }
 
     /**
-     * Read a single message.
+     * Set incoming message callback.
+     *
+     * @param callback
      */
-    auto read_message() -> bool { return reader(); }
+    virtual void set_incoming_message_callback(
+        IncomingMessageCallback callback) {
+        reader.new_message_callback = callback;
+    }
 
   private:
     struct Reader {
-        Reader(Transport& transport, Buffer& buffer)
-            : transport{transport}, writer{buffer} {}
+        Reader(Transport& transport) : transport{transport} {}
 
-        bool operator()() {
-            uint32_t read_length = message_core::MaxMessageSize;
-            uint32_t arb_id;
+        void operator()() {
+            while (true) {
+                uint32_t read_length = message_core::MaxMessageSize;
+                uint32_t arb_id;
 
-            if (!transport.read(arb_id, read_buffer.data(), read_length)) {
-                return false;
+                if (!transport.read(arb_id, read_buffer.data(), read_length)) {
+                    continue;
+                }
+
+                if (new_message_callback) {
+                    new_message_callback(arb_id, read_buffer.begin(),
+                                         read_length);
+                }
             }
-            writer.send(arb_id, read_buffer.begin(),
-                        read_buffer.begin() + read_length, 0);
-            return true;
         }
 
         Transport& transport;
-        can_message_buffer::CanMessageBufferWriter<Buffer> writer;
         std::array<uint8_t, message_core::MaxMessageSize> read_buffer{};
+        IncomingMessageCallback new_message_callback{nullptr};
     };
 
     Transport& transport;
     Reader reader;
+    FreeRTOSTask<256, 5> reader_task;
 };
 
 }  // namespace sim_canbus

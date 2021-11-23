@@ -3,65 +3,34 @@
 #include <concepts>
 #include <cstdint>
 
-#include "can/core/arbitration_id.hpp"
-#include "can/core/ids.hpp"
-#include "can/core/parse.hpp"
+#include "arbitration_id.hpp"
+#include "ids.hpp"
+#include "parse.hpp"
+#include "types.h"
 
 namespace can_bus {
 
 using namespace can_ids;
 
-enum class CanFilterConfig {
-    reject,
-    to_fifo0,
-    to_fifo1,
-    to_fifo0_high_priority,
-    to_fifo1_high_priority,
-};
-
-enum class CanFilterType {
-    /* if the arbitration id matches either of the two values. */
-    exact,
-    /* if arbitration id is within the range of first and second arguments. */
-    range,
-    /* if first argument equals the arbitration id masked by second argument. */
-    mask,
-};
-
 /**
- * Can FD message length.
+ * Abstract base class of a CAN bus.
  */
-enum class CanFDMessageLength {
-    l0 = 0,
-    l1 = 1,
-    l2 = 2,
-    l3 = 3,
-    l4 = 4,
-    l5 = 5,
-    l6 = 6,
-    l7 = 7,
-    l8 = 8,
-    l12 = 12,
-    l16 = 16,
-    l20 = 20,
-    l24 = 24,
-    l32 = 32,
-    l48 = 48,
-    l64 = 64,
-};
-
-/**
- * Round length to the nearest CanFDMessageLength
- * @param length a value between 0-64.
- * @return rounded length
- */
-auto to_canfd_length(uint32_t length) -> CanFDMessageLength;
-
-/**
- * Can bus writer abstract base class.
- */
-class CanBusWriter {
+class CanBus {
   public:
+    /**
+     * Incoming message callback method
+     */
+    using IncomingMessageCallback = void (*)(uint32_t identifier, uint8_t* data,
+                                             uint8_t length);
+
+    /**
+     * Set callback for incoming messages.
+     *
+     * @param callback
+     */
+    virtual void set_incoming_message_callback(
+        IncomingMessageCallback callback) = 0;
+
     /**
      * Write method.
      *
@@ -72,14 +41,6 @@ class CanBusWriter {
     virtual void send(uint32_t arbitration_id, uint8_t* buffer,
                       CanFDMessageLength buffer_length) = 0;
 
-    virtual ~CanBusWriter() {}
-};
-
-/**
- * Can incoming message filter setup.
- */
-class CanBusFilters {
-  public:
     /**
      * Create a filter for incoming messages.
      *
@@ -93,16 +54,15 @@ class CanBusFilters {
     virtual void add_filter(CanFilterType type, CanFilterConfig config,
                             uint32_t val1, uint32_t val2) = 0;
 
-    virtual ~CanBusFilters() {}
-};
+    /**
+     * Set up the can bus receive filter to receive only broadcast messages and
+     * messages targeting node_id.
+     *
+     * @param node_id The node id to allow.
+     */
+    void setup_node_id_filter(NodeId node_id);
 
-/**
- * Set up the can bus receive filter to receive only broadcast messages and
- * messages targeting node_id.
- *
- * @param can_filters CanBusFilters interface.
- * @param node_id The node id to allow.
- */
-void setup_node_id_filter(CanBusFilters& can_filters, NodeId node_id);
+    virtual ~CanBus() {}
+};
 
 }  // namespace can_bus

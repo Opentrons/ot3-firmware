@@ -4,6 +4,7 @@
 
 add_library(can-core STATIC
         can_bus.cpp
+        types.cpp
         )
 
 set_target_properties(can-core

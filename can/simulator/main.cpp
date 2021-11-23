@@ -23,11 +23,10 @@ using namespace freertos_synchronization;
 static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
 static auto constexpr DefaultChannel = "vcan0";
 
-static auto constexpr ReceiveBufferSize = 1024;
-static auto buffer = FreeRTOSMessageBuffer<ReceiveBufferSize>{};
 static auto transport = socket_can::SocketCanTransport<
     freertos_synchronization::FreeRTOSCriticalSection>{};
-static auto canbus = sim_canbus::SimCANBus(transport, buffer);
+
+static auto canbus = sim_canbus::SimCANBus(transport);
 
 /**
  * The parsed message handler. It will be passed into a DispatchParseTarget
@@ -39,7 +38,7 @@ struct Loopback {
      * Constructor
      * @param can_bus A CanBus instance.
      */
-    Loopback(can_bus::CanBusWriter &can_bus, can_ids::NodeId node_id)
+    Loopback(can_bus::CanBus &can_bus, can_ids::NodeId node_id)
         : writer{canbus, node_id} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
@@ -73,11 +72,22 @@ static auto handler = Loopback{canbus, can_ids::NodeId::host};
 static auto dispatcher =
     can_dispatch::DispatchParseTarget<Loopback, MoveRequest>{handler};
 
-// A Message Buffer poller that reads from buffer and send to dispatcher
-static auto poller =
-    freertos_can_dispatch::FreeRTOSCanBufferPoller(buffer, dispatcher);
-// The message buffer freertos task
-static auto dispatcher_task = FreeRTOSTask<256, 5>("dispatcher", poller);
+// Message buffer for read messages.
+static auto read_can_message_buffer = FreeRTOSMessageBuffer<1024>{};
+static auto read_can_message_buffer_writer =
+    can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
+
+/**
+ * New CAN message callback.
+ *
+ * @param identifier Arbitration id
+ * @param data Message data
+ * @param length Message data length
+ */
+void callback(uint32_t identifier, uint8_t *data, uint8_t length) {
+    read_can_message_buffer_writer.send_from_isr(identifier, data,
+                                                 data + length);
+}
 
 /**
  * The socket can reader. Reads from socket and writes to message buffer.
@@ -87,8 +97,11 @@ void can_bus_poll_task_entry() {
     auto channel = env_channel_val ? env_channel_val : DefaultChannel;
 
     transport.open(channel);
-    while (canbus.read_message()) {
-    }
+
+    // A Message Buffer poller that reads from buffer and send to dispatcher
+    static auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
+        read_can_message_buffer, dispatcher);
+    poller();
 }
 
 /**
