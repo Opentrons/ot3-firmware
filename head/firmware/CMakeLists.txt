@@ -52,6 +52,7 @@ target_include_directories(head
 target_compile_options(head
         PUBLIC
         -Wall
+        -Werror
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -106,7 +107,7 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(head-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${HEAD_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES} --config=)
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${HEAD_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
 list(APPEND LINT_TARGETS head-lint)
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
