@@ -1,5 +1,5 @@
 ---
-Checks:          '-*,clang-analyzer-*,bugprone-*,cppcoreguidelines-*,misc-*,modernize-*,readability-*,-readability-magic-numbers,performance-*'
+Checks:          '-*,clang-analyzer-*,bugprone-*,-bugprone-branch-clone,cppcoreguidelines-*,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,misc-*,-misc-non-private-member-variables-in-classes,-misc-unused-parameters,modernize-*,readability-*,-readability-magic-numbers,performance-*,-performance-no-int-to-ptr'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*/.*hpp'
 AnalyzeTemporaryDtors: false
