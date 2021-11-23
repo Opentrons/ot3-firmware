@@ -31,6 +31,7 @@ add_executable(
         head-simulator
         main.cpp
         ../firmware/freertos_idle_timer_task.cpp
+        ${HEAD-CORE-SRC}
 )
 
 target_link_libraries(head-simulator PRIVATE can-core freertos pthread)
