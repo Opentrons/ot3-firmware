@@ -72,13 +72,22 @@ spi::SPI_interface SPI_intf3 = {
 };
 static spi::Spi spi_comms3(SPI_intf3);
 
-struct motion_controller::HardwareConfig PinConfigurations {
+struct motion_controller::HardwareConfig pin_configurations_left {
     .direction = {.port = GPIOC,
                   .pin = GPIO_PIN_1,
                   .active_setting = GPIO_PIN_SET},
     .step = {.port = GPIOC, .pin = GPIO_PIN_0, .active_setting = GPIO_PIN_SET},
     .enable = {
         .port = GPIOC, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_SET},
+};
+
+struct motion_controller::HardwareConfig pin_configurations_right {
+    .direction = {.port = GPIOC,
+                  .pin = GPIO_PIN_7,
+                  .active_setting = GPIO_PIN_SET},
+    .step = {.port = GPIOC, .pin = GPIO_PIN_6, .active_setting = GPIO_PIN_SET},
+    .enable = {
+        .port = GPIOB, .pin = GPIO_PIN_11, .active_setting = GPIO_PIN_RESET},
 };
 
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
@@ -94,13 +103,29 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
  */
 
 /*z motor would need a motor and PinConfigurations instance on its own*/
-static motor_class::Motor motor{
+static motor_class::Motor motor_right{
     spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations,
+    pin_configurations_right,
+    MotionConstraints{.min_velocity = 1,
+                      .max_velocity = 2,
+                      .min_acceleration = 1,
+                      .max_acceleration = 2},
+    MotorDriverConfigurations,
+    motor_queue,
+    complete_queue};
+
+/*z motor*/
+static motor_class::Motor motor_left{
+    spi_comms2,
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    pin_configurations_left,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -110,14 +135,19 @@ static motor_class::Motor motor{
     complete_queue};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler = MotorHandler{message_writer_1, motor_right};
+static auto can_motor_handler2 = MotorHandler{message_writer_1, motor_left};
+
 static auto move_group_manager = MoveGroupType{};
 
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
 
 static auto can_move_group_executor_handler =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_right);
+
+static auto can_move_group_executor_handler2 =
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_left);
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -135,6 +165,15 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
     can_messages::ReadMotorDriverRegister>{can_motor_handler};
 
+static auto motor_dispatch_target2 = DispatchParseTarget<
+    decltype(can_motor_handler2), can_messages::SetupRequest,
+    can_messages::StopRequest, can_messages::GetStatusRequest,
+    can_messages::MoveRequest, can_messages::EnableMotorRequest,
+    can_messages::DisableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
+    can_messages::ReadMotorDriverRegister>{can_motor_handler2};
+
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
     can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
@@ -145,10 +184,16 @@ static auto motion_group_executor_dispatch_target =
                         can_messages::ExecuteMoveGroupRequest>{
         can_move_group_executor_handler};
 
+static auto motion_group_executor_dispatch_target2 =
+    DispatchParseTarget<decltype(can_move_group_executor_handler2),
+                        can_messages::ExecuteMoveGroupRequest>{
+        can_move_group_executor_handler2};
+
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target, device_info_dispatch_target);
+    motor_dispatch_target, motor_dispatch_target2, motion_group_dispatch_target,
+    motion_group_executor_dispatch_target,
+    motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 [[noreturn]] void task_entry() {
     if (MX_FDCAN1_Init(&fdcan1) != HAL_OK) {
@@ -161,7 +206,8 @@ static auto dispatcher = Dispatcher(
         Error_Handler();
     }
 
-    motor.driver.setup();
+    motor_left.driver.setup();
+    motor_right.driver.setup();
 
     can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
     can_bus_1.start();
