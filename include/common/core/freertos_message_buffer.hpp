@@ -17,8 +17,8 @@ template <std::size_t BufferSize>
 class FreeRTOSMessageBuffer {
   public:
     explicit FreeRTOSMessageBuffer();
-    FreeRTOSMessageBuffer& operator=(FreeRTOSMessageBuffer&) = delete;
-    FreeRTOSMessageBuffer&& operator=(FreeRTOSMessageBuffer&&) = delete;
+    auto operator=(FreeRTOSMessageBuffer&) -> FreeRTOSMessageBuffer& = delete;
+    auto operator=(FreeRTOSMessageBuffer&&) -> FreeRTOSMessageBuffer&& = delete;
     FreeRTOSMessageBuffer(FreeRTOSMessageBuffer&) = delete;
     FreeRTOSMessageBuffer(FreeRTOSMessageBuffer&&) = delete;
 
@@ -45,6 +45,7 @@ class FreeRTOSMessageBuffer {
         if (written_bytes == buffer_length) {
             // see https://www.freertos.org/xMessageBufferSendFromISR.html for
             // explanation
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
         return written_bytes;

@@ -21,19 +21,17 @@ class MoveGroup {
   public:
     using MoveTypes = std::variant<std::monostate, MoveStructs...>;
 
-    MoveGroup() {}
-
     /**
      * Set a slot in the move group to a liner move.
      * @param move The CAN message.
      * @return True on success.
      */
-    auto set_move(auto&& move) -> bool {
+    [[nodiscard]] auto set_move(auto&& move) -> bool {
         if (move.seq_id >= storage.size()) {
             // out of range error.
             return false;
         }
-        storage[move.seq_id] = move;
+        storage.at(move.seq_id) = move;
         return true;
     }
 
@@ -41,7 +39,7 @@ class MoveGroup {
      * Get the number of used slots in the move group.
      * @return int
      */
-    auto size() const -> std::size_t {
+    [[nodiscard]] auto size() const -> std::size_t {
         std::size_t count = 0;
         for (const MoveTypes& m : storage) {
             if (!std::holds_alternative<std::monostate>(m)) {
@@ -55,9 +53,11 @@ class MoveGroup {
      * Check if there any moves in the move group.
      * @return True if empty
      */
-    auto empty() const -> bool {
+    [[nodiscard]] auto empty() const -> bool {
         for (const MoveTypes& m : storage) {
-            if (!std::holds_alternative<std::monostate>(m)) return false;
+            if (!std::holds_alternative<std::monostate>(m)) {
+                return false;
+            }
         }
         return true;
     }
@@ -77,16 +77,16 @@ class MoveGroup {
      * @param seq_id index
      * @return The move type
      */
-    const MoveTypes& get_move(uint8_t seq_id) const {
+    [[nodiscard]] auto get_move(uint8_t seq_id) const -> const MoveTypes& {
         // TODO (al, 2021-10-20): Check bounds
-        return storage[seq_id];
+        return storage.at(seq_id);
     }
 
     /**
      * Return the total duration of all the moves in the move group.
      * @return Duration
      */
-    auto get_duration() const -> uint32_t {
+    [[nodiscard]] auto get_duration() const -> uint32_t {
         auto accumulate_duration = [](uint32_t accum,
                                       const MoveTypes& b) -> uint32_t {
             auto vv = std::visit([](auto x) { return visit_duration(x); }, b);

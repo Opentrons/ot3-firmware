@@ -27,8 +27,9 @@ class MoveGroupHandler {
           motion_group_manager(motion_group_manager) {}
     MoveGroupHandler(const MoveGroupHandler &) = delete;
     MoveGroupHandler(const MoveGroupHandler &&) = delete;
-    MoveGroupHandler &operator=(const MoveGroupHandler &) = delete;
-    MoveGroupHandler &&operator=(const MoveGroupHandler &&) = delete;
+    auto operator=(const MoveGroupHandler &) -> MoveGroupHandler & = delete;
+    auto operator=(const MoveGroupHandler &&) -> MoveGroupHandler && = delete;
+    ~MoveGroupHandler() = default;
 
     void handle(MessageType &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
@@ -38,7 +39,7 @@ class MoveGroupHandler {
     void visit(std::monostate &m) {}
 
     void visit(AddLinearMoveRequest &m) {
-        motion_group_manager[m.group_id].set_move(m);
+        static_cast<void>(motion_group_manager[m.group_id].set_move(m));
     }
 
     void visit(GetMoveGroupRequest &m) {

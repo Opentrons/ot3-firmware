@@ -59,7 +59,7 @@ class MotorDriver {
         -> BufferType {
         // need to pass in data parameter and use int_to_bytes here
         auto txBuffer = BufferType{0};
-        auto iter = txBuffer.begin();
+        auto* iter = txBuffer.begin();
         iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
         iter = bit_utils::int_to_bytes(command_data, iter, txBuffer.end());

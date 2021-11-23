@@ -26,8 +26,9 @@ class MotorHandler {
         : message_writer{message_writer}, motor{motor} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
-    MotorHandler &operator=(const MotorHandler &) = delete;
-    MotorHandler &&operator=(const MotorHandler &&) = delete;
+    auto operator=(const MotorHandler &) -> MotorHandler & = delete;
+    auto operator=(const MotorHandler &&) -> MotorHandler && = delete;
+    ~MotorHandler() = default;
 
     void handle(MessageType &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
@@ -71,7 +72,7 @@ class MotorHandler {
     }
 
     void visit(ReadMotorDriverRegister &m) {
-        uint32_t data;
+        uint32_t data = 0;
         if (DriverRegisters::is_valid_address(m.reg_address)) {
             motor.driver.read(DriverRegisters::Addresses(m.reg_address), data);
         }

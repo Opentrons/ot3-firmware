@@ -10,6 +10,7 @@ namespace freertos_message_queue {
 template <typename Message, size_t queue_size = 10>
 class FreeRTOSMessageQueue {
   public:
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     explicit FreeRTOSMessageQueue(const char* name) : FreeRTOSMessageQueue() {
         vQueueAddToRegistry(queue, name);
     }
@@ -19,8 +20,8 @@ class FreeRTOSMessageQueue {
           queue(xQueueCreateStatic(queue_size, sizeof(Message),
                                    queue_data_structure.data(),
                                    &queue_control_structure)) {}
-    FreeRTOSMessageQueue& operator=(FreeRTOSMessageQueue&) = delete;
-    FreeRTOSMessageQueue&& operator=(FreeRTOSMessageQueue&&) = delete;
+    auto operator=(FreeRTOSMessageQueue&) -> FreeRTOSMessageQueue& = delete;
+    auto operator=(FreeRTOSMessageQueue&&) -> FreeRTOSMessageQueue&& = delete;
     FreeRTOSMessageQueue(FreeRTOSMessageQueue&) = delete;
     FreeRTOSMessageQueue(FreeRTOSMessageQueue&&) = delete;
 
@@ -41,16 +42,16 @@ class FreeRTOSMessageQueue {
     [[nodiscard]] auto try_write_isr(const Message& message) -> bool {
         BaseType_t higher_woken = pdFALSE;
         auto sent = xQueueSendFromISR(queue, &message, &higher_woken);
-        portYIELD_FROM_ISR(  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-            higher_woken);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        portYIELD_FROM_ISR(higher_woken);
         return sent;
     }
 
     auto try_read_isr(Message* message) const -> bool {
         BaseType_t higher_woken = pdFALSE;
         auto recv = xQueueReceiveFromISR(queue, message, &higher_woken);
-        portYIELD_FROM_ISR(  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-            higher_woken);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        portYIELD_FROM_ISR(higher_woken);
         return recv;
     }
 

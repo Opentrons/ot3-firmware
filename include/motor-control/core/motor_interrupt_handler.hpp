@@ -50,9 +50,10 @@ class MotorInterruptHandler {
     using CompletedQueue = CompletedQueueImpl<Ack>;
     bool has_active_move = false;
 
-    MotorInterruptHandler() {}
-    MotorInterruptHandler& operator=(MotorInterruptHandler&) = delete;
-    MotorInterruptHandler&& operator=(MotorInterruptHandler&&) = delete;
+    MotorInterruptHandler() = default;
+    ~MotorInterruptHandler() = default;
+    auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
+    auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
     MotorInterruptHandler(MotorInterruptHandler&) = delete;
     MotorInterruptHandler(MotorInterruptHandler&&) = delete;
 
@@ -61,9 +62,11 @@ class MotorInterruptHandler {
         completed_queue = c_queue;
     }
 
-    bool has_messages() { return queue->has_message_isr(); }
+    [[nodiscard]] auto has_messages() const -> bool {
+        return queue->has_message_isr();
+    }
 
-    bool can_step() {
+    [[nodiscard]] auto can_step() const -> bool {
         /*
          * A motor should only try to take a step when the current position
          * does not equal the target position.
@@ -71,7 +74,7 @@ class MotorInterruptHandler {
         return tick_count < buffered_move.duration;
     }
 
-    bool tick() {
+    [[nodiscard]] auto tick() -> bool {
         /*
          * A function that increments the position tracker of a given motor.
          * The position tracker is the absolute position of a motor which can
@@ -81,7 +84,7 @@ class MotorInterruptHandler {
         q31_31 old_position = position_tracker;
         buffered_move.velocity += buffered_move.acceleration;
         position_tracker += buffered_move.velocity;
-        if (overflow(old_position, position_tracker) == true) {
+        if (overflow(old_position, position_tracker)) {
             position_tracker = old_position;
             return false;
         }
@@ -97,7 +100,9 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    bool set_direction_pin() { return (buffered_move.velocity > 0); }
+    [[nodiscard]] auto set_direction_pin() const -> bool {
+        return (buffered_move.velocity > 0);
+    }
 
     void finish_current_move() {
         has_active_move = false;
@@ -117,7 +122,7 @@ class MotorInterruptHandler {
         set_buffered_move(Move{});
     }
 
-    bool pulse() {
+    [[nodiscard]] auto pulse() -> bool {
         /*
          * Function to determine whether a motor step-line should
          * be pulsed or not. It should return true if the step-line is to be
@@ -139,9 +144,11 @@ class MotorInterruptHandler {
         if (!has_active_move && has_messages()) {
             update_move();
             return false;
-        } else if (has_active_move && can_step() && tick()) {
+        }
+        if (has_active_move && can_step() && tick()) {
             return true;
-        } else if (has_active_move && !can_step()) {
+        }
+        if (has_active_move && !can_step()) {
             finish_current_move();
             if (has_messages()) {
                 update_move();
@@ -165,7 +172,7 @@ class MotorInterruptHandler {
         has_active_move = false;
     }
 
-    bool overflow(q31_31 current, q31_31 future) {
+    [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
         /*
          * Check whether the position has overflowed. Return true if this has
          * happened, and false otherwise.
@@ -177,20 +184,24 @@ class MotorInterruptHandler {
         return bool((current ^ future) & overflow_flag);
     }
 
-    q31_31 get_current_position() { return position_tracker; }
+    [[nodiscard]] auto get_current_position() const -> q31_31 {
+        return position_tracker;
+    }
 
     void set_current_position(q31_31 pos_tracker) {
         position_tracker = pos_tracker;
     }
 
-    Move get_buffered_move() { return buffered_move; }
+    [[nodiscard]] auto get_buffered_move() const -> Move {
+        return buffered_move;
+    }
 
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
 
   private:
     uint64_t tick_count = 0x0;
-    const q31_31 tick_flag = 0x80000000;
-    const uint64_t overflow_flag = 0x8000000000000000;
+    static constexpr const q31_31 tick_flag = 0x80000000;
+    static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;  // in steps
     GenericQueue* queue = nullptr;
     CompletedQueue* completed_queue = nullptr;

@@ -12,12 +12,13 @@ template <uint32_t StackDepth, UBaseType_t Priority>
 class FreeRTOSTask {
   public:
     using EntryPoint = std::function<void()>;
-    FreeRTOSTask(const char* task_name, const EntryPoint entry) : entry{entry} {
+    FreeRTOSTask(const char* task_name, EntryPoint entry)
+        : entry{std::move(entry)} {
         handle = xTaskCreateStatic(f, task_name, StackDepth, this, Priority,
                                    backing.data(), &static_task);
     }
-    FreeRTOSTask& operator=(FreeRTOSTask&) = delete;
-    FreeRTOSTask&& operator=(FreeRTOSTask&&) = delete;
+    auto operator=(FreeRTOSTask&) -> FreeRTOSTask& = delete;
+    auto operator=(FreeRTOSTask&&) -> FreeRTOSTask&& = delete;
     FreeRTOSTask(FreeRTOSTask&) = delete;
     FreeRTOSTask(FreeRTOSTask&&) = delete;
 

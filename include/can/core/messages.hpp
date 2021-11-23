@@ -25,7 +25,7 @@ template <MessageId MId>
 struct BaseMessage {
     /** Satisfy the HasMessageID concept */
     static const auto id = MId;
-    bool operator==(const BaseMessage& other) const = default;
+    auto operator==(const BaseMessage& other) const -> bool = default;
 };
 
 /**
@@ -45,7 +45,7 @@ struct Empty : BaseMessage<MId> {
         return 0;
     }
 
-    bool operator==(const Empty& other) const = default;
+    auto operator==(const Empty& other) const -> bool = default;
 };
 
 template <MessageId MId>
@@ -98,7 +98,7 @@ struct DeviceInfoResponse : Response<MessageId::device_info_response> {
         iter = bit_utils::int_to_bytes(version, iter, limit);
         return iter - body;
     }
-    bool operator==(const DeviceInfoResponse& other) const = default;
+    auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
 using StopRequest = Empty<MessageId::stop_request>;
@@ -119,7 +119,7 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
         return WriteToEEPromRequest{.serial_number = serial_number};
     }
 
-    bool operator==(const WriteToEEPromRequest& other) const = default;
+    auto operator==(const WriteToEEPromRequest& other) const -> bool = default;
 };
 
 using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
@@ -133,7 +133,8 @@ struct ReadFromEEPromResponse : Response<MessageId::read_eeprom_response> {
         iter = bit_utils::int_to_bytes(serial_number, iter, limit);
         return iter - body;
     }
-    bool operator==(const ReadFromEEPromResponse& other) const = default;
+    auto operator==(const ReadFromEEPromResponse& other) const
+        -> bool = default;
 };
 
 struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
@@ -162,7 +163,7 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
                                     .velocity = velocity};
     }
 
-    bool operator==(const AddLinearMoveRequest& other) const = default;
+    auto operator==(const AddLinearMoveRequest& other) const -> bool = default;
 };
 
 struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
@@ -175,7 +176,7 @@ struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
         return GetMoveGroupRequest{.group_id = group_id};
     }
 
-    bool operator==(const GetMoveGroupRequest& other) const = default;
+    auto operator==(const GetMoveGroupRequest& other) const -> bool = default;
 };
 
 struct GetMoveGroupResponse : Response<MessageId::get_move_group_response> {
@@ -191,7 +192,7 @@ struct GetMoveGroupResponse : Response<MessageId::get_move_group_response> {
         iter = bit_utils::int_to_bytes(total_duration, iter, limit);
         return iter - body;
     }
-    bool operator==(const GetMoveGroupResponse& other) const = default;
+    auto operator==(const GetMoveGroupResponse& other) const -> bool = default;
 };
 
 struct ExecuteMoveGroupRequest
@@ -213,7 +214,8 @@ struct ExecuteMoveGroupRequest
                                        .cancel_trigger = cancel_trigger};
     }
 
-    bool operator==(const ExecuteMoveGroupRequest& other) const = default;
+    auto operator==(const ExecuteMoveGroupRequest& other) const
+        -> bool = default;
 };
 
 using ClearAllMoveGroupsRequest =
@@ -235,7 +237,7 @@ struct MoveCompleted : Response<MessageId::move_completed> {
         return iter - body;
     }
 
-    bool operator==(const MoveCompleted& other) const = default;
+    auto operator==(const MoveCompleted& other) const -> bool = default;
 };
 
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
@@ -260,7 +262,7 @@ struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
                                     .max_acceleration = max_acceleration};
     }
 
-    bool operator==(const SetMotionConstraints& other) const = default;
+    auto operator==(const SetMotionConstraints& other) const -> bool = default;
 };
 
 using GetMotionConstraintsRequest =
@@ -283,7 +285,8 @@ struct GetMotionConstraintsResponse
         return iter - body;
     }
 
-    bool operator==(const GetMotionConstraintsResponse& other) const = default;
+    auto operator==(const GetMotionConstraintsResponse& other) const
+        -> bool = default;
 };
 
 struct WriteMotorDriverRegister
@@ -301,7 +304,8 @@ struct WriteMotorDriverRegister
                                         .data = data};
     }
 
-    bool operator==(const WriteMotorDriverRegister& other) const = default;
+    auto operator==(const WriteMotorDriverRegister& other) const
+        -> bool = default;
 };
 
 struct ReadMotorDriverRegister
@@ -315,7 +319,8 @@ struct ReadMotorDriverRegister
         return ReadMotorDriverRegister{.reg_address = reg_address};
     }
 
-    bool operator==(const ReadMotorDriverRegister& other) const = default;
+    auto operator==(const ReadMotorDriverRegister& other) const
+        -> bool = default;
 };
 
 struct ReadMotorDriverRegisterResponse
@@ -331,8 +336,8 @@ struct ReadMotorDriverRegisterResponse
         return iter - body;
     }
 
-    bool operator==(const ReadMotorDriverRegisterResponse& other) const =
-        default;
+    auto operator==(const ReadMotorDriverRegisterResponse& other) const
+        -> bool = default;
 };
 
 }  // namespace can_messages

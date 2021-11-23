@@ -81,6 +81,7 @@ target_include_directories(gantry_y
 target_compile_options(gantry_x
         PUBLIC
         -Wall
+        -Werror
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -91,6 +92,7 @@ target_compile_options(gantry_x
 target_compile_options(gantry_y
         PUBLIC
         -Wall
+        -Werror
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -152,7 +154,7 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(gantry-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SRCS} --config=)
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SRCS})
 list(APPEND LINT_TARGETS "gantry-lint")
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 

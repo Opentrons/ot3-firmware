@@ -12,7 +12,10 @@ template <LockableProtocol Lockable>
 requires(!std::movable<Lockable> && !std::copyable<Lockable>) class Lock {
   public:
     Lock(Lockable& s) : lockable(s) { lockable.acquire(); }
-
+    Lock(const Lock&) = delete;
+    Lock(Lock&&) = delete;
+    auto operator=(const Lock&) -> Lock& = delete;
+    auto operator=(Lock&&) -> Lock&& = delete;
     ~Lock() { lockable.release(); }
 
   private:

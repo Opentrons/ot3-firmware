@@ -39,7 +39,7 @@ struct DriverRegisters {
         LOST_STEPS = 0x73,
     };
 
-    static bool is_valid_address(const uint8_t add) {
+    static auto is_valid_address(const uint8_t add) -> bool {
         switch (static_cast<Addresses>(add)) {
             case GCONF:
             case GSTAT:

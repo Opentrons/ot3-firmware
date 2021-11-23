@@ -51,10 +51,11 @@ class MoveGroupExecutorHandler {
           ack_task("ack task", task_entry) {}
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &) = delete;
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &&) = delete;
-    MoveGroupExecutorHandler &operator=(const MoveGroupExecutorHandler &) =
-        delete;
-    MoveGroupExecutorHandler &&operator=(const MoveGroupExecutorHandler &&) =
-        delete;
+    ~MoveGroupExecutorHandler() = default;
+    auto operator=(const MoveGroupExecutorHandler &)
+        -> MoveGroupExecutorHandler & = delete;
+    auto operator=(const MoveGroupExecutorHandler &&)
+        -> MoveGroupExecutorHandler && = delete;
 
     void handle(MessageType &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
