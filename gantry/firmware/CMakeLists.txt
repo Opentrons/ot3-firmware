@@ -13,6 +13,7 @@ set(GANTRY_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/utils.c
@@ -32,11 +33,13 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
 
 add_executable(gantry_x
         ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS})
+        ${GANTRY_FW_NON_LINTABLE_SRCS}
+        ${GANTRY_X_CORE_SRC})
 
 add_executable(gantry_y
         ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS})
+        ${GANTRY_FW_NON_LINTABLE_SRCS}
+        ${GANTRY_Y_CORE_SRC})
 
 target_ot_motor_control(gantry_x)
 target_ot_motor_control(gantry_y)
@@ -44,13 +47,11 @@ target_ot_motor_control(gantry_y)
 target_link_libraries(gantry_x
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
-        gantry-core-x
         can-core)
 
 target_link_libraries(gantry_y
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
-        gantry-core-y
         can-core)
 
 
@@ -152,7 +153,7 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(gantry-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SRCS})
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${GANTRY_X_CORE_SRC} ${GANTRY_Y_CORE_SRC})
 list(APPEND LINT_TARGETS "gantry-lint")
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 
