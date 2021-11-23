@@ -5,39 +5,37 @@
 using namespace can_messages;
 
 SCENARIO("message deserializing works") {
-    GIVEN("a move request body") {
-        auto arr =
-            std::array<uint8_t, 12>{1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc};
+    GIVEN("a set motion constraints request body") {
+        auto arr = std::array<uint8_t, 16>{
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x11};
         WHEN("constructed") {
-            auto r = MoveRequest::parse(arr.begin(), arr.end());
+            auto r = SetMotionConstraints::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.duration == 0x01020304);
-                REQUIRE(r.velocity == 0x05060708);
-                REQUIRE(r.acceleration == 0x090a0b0c);
+                REQUIRE(r.min_velocity == 0x01020304);
+                REQUIRE(r.max_velocity == 0x05060708);
+                REQUIRE(r.min_acceleration == 0x090a0b0c);
+                REQUIRE(r.max_acceleration == 0x0d0e0f11);
             }
             THEN("it can be compared for equality") {
                 auto other = r;
                 REQUIRE(other == r);
-                other.duration = 10;
+                other.min_velocity = 10;
                 REQUIRE(other != r);
             }
         }
     }
 
-    GIVEN("a set steps request message") {
-        auto arr = std::array<uint8_t, 12>{0x12, 0x34, 0x56, 0x78, 0xaa, 0xbb,
-                                           0xcc, 0xdd, 0xee, 0xff, 0x11, 0x00};
+    GIVEN("a read motor driver register message") {
+        auto arr = std::array<uint8_t, 1>{0x12};
         WHEN("constructed") {
-            auto r = MoveRequest::parse(arr.begin(), arr.end());
+            auto r = ReadMotorDriverRegister::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.duration == 0x12345678);
-                REQUIRE(r.velocity == static_cast<int32_t>(0xaabbccdd));
-                REQUIRE(r.acceleration == static_cast<int32_t>(0xeeff1100));
+                REQUIRE(r.reg_address == 0x12);
             }
             THEN("it can be compared for equality") {
                 auto other = r;
                 REQUIRE(other == r);
-                other.duration = 125;
+                other.reg_address = 125;
                 REQUIRE(other != r);
             }
         }
@@ -45,26 +43,6 @@ SCENARIO("message deserializing works") {
 }
 
 SCENARIO("message serializing works") {
-    GIVEN("a get status response message") {
-        auto message = GetStatusResponse{.status = 1, .data = 2};
-        message.set_node_id(can_ids::NodeId::pipette);
-        auto arr = std::array<uint8_t, 6>{0, 0, 0, 0, 0, 0};
-        auto body = std::span{arr};
-        WHEN("serialized") {
-            auto size = message.serialize(arr.begin(), arr.end());
-            THEN("it is written into the buffer correctly") {
-                REQUIRE(body.data()[0] ==
-                        static_cast<uint8_t>(can_ids::NodeId::pipette));
-                REQUIRE(body.data()[1] == 1);
-                REQUIRE(body.data()[2] == 0);
-                REQUIRE(body.data()[3] == 0);
-                REQUIRE(body.data()[4] == 0);
-                REQUIRE(body.data()[5] == 2);
-            }
-            THEN("size must be returned") { REQUIRE(size == 6); }
-        }
-    }
-
     GIVEN("a MoveCompleted message") {
         auto message = MoveCompleted{.group_id = 1,
                                      .seq_id = 2,

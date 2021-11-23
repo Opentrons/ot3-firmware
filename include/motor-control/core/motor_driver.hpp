@@ -36,8 +36,6 @@ class MotorDriver {
         write(DriverRegisters::Addresses::CHOPCONF, register_config.chopconf);
         write(DriverRegisters::Addresses::THIGH, register_config.thigh);
         write(DriverRegisters::Addresses::COOLCONF, register_config.coolconf);
-
-        process_buffer(rxBuffer, status, data);
     }
 
     auto read(DriverRegisters::Addresses motor_reg, uint32_t& command_data)
@@ -56,22 +54,7 @@ class MotorDriver {
         return txBuffer;
     }
 
-    void get_status() {
-        reset_data();
-        reset_status();
-        read(DriverRegisters::Addresses::DRVSTATUS, data);
-
-        process_buffer(rxBuffer, status, data);
-    }
-
-    [[nodiscard]] auto get_current_status() const -> uint8_t { return status; }
-
-    [[nodiscard]] auto get_current_data() const -> uint32_t { return data; }
-
   private:
-    uint8_t status = 0x0;
-    uint32_t data = 0x0;
-
     auto build_command(uint8_t command, const uint32_t& command_data)
         -> BufferType {
         // need to pass in data parameter and use int_to_bytes here
@@ -81,18 +64,6 @@ class MotorDriver {
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
         iter = bit_utils::int_to_bytes(command_data, iter, txBuffer.end());
         return txBuffer;
-    }
-
-    void reset_data() { data = 0x0; }
-
-    void reset_status() { status = 0x0; }
-
-    static void process_buffer(const BufferType& rxBuffer, uint8_t& status,
-                               uint32_t& data) {
-        auto iter = rxBuffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), status);
-        // NOLINTNEXTLINE(clang-diagnostic-unused-result)
-        iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), data);
     }
 
     SpiDriver spi_comms;

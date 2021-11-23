@@ -18,10 +18,9 @@ class MotorHandler {
   public:
     using MessageType =
         std::variant<std::monostate, SetupRequest, StopRequest,
-                     GetStatusRequest, MoveRequest, EnableMotorRequest,
-                     DisableMotorRequest, GetMotionConstraintsRequest,
-                     SetMotionConstraints, WriteMotorDriverRegister,
-                     ReadMotorDriverRegister>;
+                     EnableMotorRequest, DisableMotorRequest,
+                     GetMotionConstraintsRequest, SetMotionConstraints,
+                     WriteMotorDriverRegister, ReadMotorDriverRegister>;
 
     MotorHandler(MessageWriter &message_writer, Motor &motor)
         : message_writer{message_writer}, motor{motor} {}
@@ -40,17 +39,6 @@ class MotorHandler {
     void visit(StopRequest &m) { motor.motion_controller.stop(); }
 
     void visit(SetupRequest &m) { motor.driver.setup(); }
-
-    void visit(GetStatusRequest &m) {
-        motor.driver.get_status();
-        // TODO Format request
-        GetStatusResponse response_msg{
-            .status = motor.driver.get_current_status(),
-            .data = motor.driver.get_current_data()};
-        message_writer.write(NodeId::host, response_msg);
-    }
-
-    void visit(MoveRequest &m) { motor.motion_controller.move(m); }
 
     void visit(EnableMotorRequest &m) {
         motor.motion_controller.enable_motor();

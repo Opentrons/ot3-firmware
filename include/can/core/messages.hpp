@@ -103,46 +103,9 @@ struct DeviceInfoResponse : Response<MessageId::device_info_response> {
 
 using StopRequest = Empty<MessageId::stop_request>;
 
-using GetStatusRequest = Empty<MessageId::get_status_request>;
-
 using EnableMotorRequest = Empty<MessageId::enable_motor_request>;
 
 using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
-
-struct GetStatusResponse : Response<MessageId::get_status_response> {
-    uint8_t status;
-    uint32_t data;
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(status, iter, limit);
-        iter = bit_utils::int_to_bytes(data, iter, limit);
-        return iter - body;
-    }
-    bool operator==(const GetStatusResponse& other) const = default;
-};
-
-struct MoveRequest : BaseMessage<MessageId::move_request> {
-    ticks duration;
-    um_per_tick velocity;
-    um_per_tick_sq acceleration;
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> MoveRequest {
-        ticks duration = 0;
-        um_per_tick velocity = 0;
-        um_per_tick_sq acceleration = 0;
-        body = bit_utils::bytes_to_int(body, limit, duration);
-        body = bit_utils::bytes_to_int(body, limit, velocity);
-        body = bit_utils::bytes_to_int(body, limit, acceleration);
-        return MoveRequest{.duration = duration,
-                           .velocity = velocity,
-                           .acceleration = acceleration};
-    }
-
-    bool operator==(const MoveRequest& other) const = default;
-};
 
 using SetupRequest = Empty<MessageId::setup_request>;
 
