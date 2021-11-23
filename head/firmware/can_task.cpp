@@ -166,7 +166,7 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::ReadMotorDriverRegister>{can_motor_handler};
 
 static auto motor_dispatch_target2 = DispatchParseTarget<
-    decltype(can_motor_handler), can_messages::SetupRequest,
+    decltype(can_motor_handler2), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::GetStatusRequest,
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
