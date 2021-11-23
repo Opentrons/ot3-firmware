@@ -56,7 +56,7 @@ SCENARIO("Testing a move group") {
                                                    .duration = 2,
                                                    .acceleration = 3,
                                                    .velocity = 4};
-            group.set_move(linear_move);
+            CHECK(group.set_move(linear_move));
             group.clear();
 
             THEN("it is empty") { REQUIRE(group.empty()); }
@@ -77,7 +77,7 @@ SCENARIO("Testing a move group") {
                                                           .acceleration = 3,
                                                           .velocity = 4}};
         for (can_messages::AddLinearMoveRequest m : moves) {
-            group.set_move(m);
+            CHECK(group.set_move(m));
         }
         WHEN("get duration is called") {
             THEN("it is correct") { REQUIRE(group.get_duration() == 300); }

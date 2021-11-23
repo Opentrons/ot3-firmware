@@ -186,11 +186,11 @@ TEST_CASE("Compute move sequence") {
 
         WHEN("a move duration is up, and the queue is empty") {
             for (int i = 0; i < 2; i++) {
-                handler.pulse();
+                static_cast<void>(handler.pulse());
             }
 
             THEN("we do not move") {
-                handler.pulse();
+                static_cast<void>(handler.pulse());
                 REQUIRE(!handler.can_step());
                 REQUIRE(!handler.has_active_move);
             }
@@ -200,11 +200,11 @@ TEST_CASE("Compute move sequence") {
             queue.try_write_isr(msg2);
 
             for (int i = 0; i < 2; i++) {
-                handler.pulse();
+                static_cast<void>(handler.pulse());
             }
 
             THEN("we immediately switch to the new move") {
-                handler.pulse();
+                static_cast<void>(handler.pulse());
                 REQUIRE(handler.can_step());
                 REQUIRE(handler.has_active_move);
                 REQUIRE(handler.get_buffered_move().velocity == msg2.velocity);
@@ -250,7 +250,7 @@ TEST_CASE("moves that result in out of range positions") {
             REQUIRE(!handler.tick());
             REQUIRE(handler.get_current_position() == current_position);
             AND_THEN("the move should be finished") {
-                handler.pulse();
+                static_cast<void>(handler.pulse());
                 REQUIRE(handler.has_active_move == false);
             }
         }
@@ -273,7 +273,7 @@ TEST_CASE("Changing motor direction") {
         handler.update_move();
 
         for (int i = 0; i < 2; i++) {
-            handler.tick();
+            static_cast<void>(handler.tick());
             REQUIRE(handler.set_direction_pin());
         }
 
@@ -282,7 +282,7 @@ TEST_CASE("Changing motor direction") {
             queue.try_write_isr(msg1);
             handler.update_move();
             for (int i = 0; i < 2; i++) {
-                handler.tick();
+                static_cast<void>(handler.tick());
                 REQUIRE(!handler.set_direction_pin());
             }
         }
