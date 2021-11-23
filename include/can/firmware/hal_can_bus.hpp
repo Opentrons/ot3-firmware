@@ -20,15 +20,16 @@ class HalCanBus : public CanBus {
     explicit HalCanBus(HAL_CAN_HANDLE handle) : handle{handle} {}
 
     HalCanBus(const HalCanBus&) = delete;
-    HalCanBus& operator=(const HalCanBus&) = delete;
+    auto operator=(const HalCanBus&) -> HalCanBus& = delete;
     HalCanBus(const HalCanBus&&) = delete;
-    HalCanBus&& operator=(const HalCanBus&&) = delete;
+    auto operator=(const HalCanBus&&) -> HalCanBus&& = delete;
+    ~HalCanBus() final = default;
 
     /**
      * Set the incoming message callback.
      * @param callback
      */
-    void set_incoming_message_callback(IncomingMessageCallback callback);
+    void set_incoming_message_callback(IncomingMessageCallback callback) final;
 
     /**
      * Add an arbitration id filter.
@@ -41,7 +42,7 @@ class HalCanBus : public CanBus {
      * or maximum arbitration id
      */
     void add_filter(CanFilterType type, CanFilterConfig config, uint32_t val1,
-                    uint32_t val2);
+                    uint32_t val2) final;
 
     /**
      * Send a buffer on can bus
@@ -50,7 +51,7 @@ class HalCanBus : public CanBus {
      * @param buffer_length length of buffer
      */
     void send(uint32_t arbitration_id, uint8_t* buffer,
-              CanFDMessageLength buffer_length);
+              CanFDMessageLength buffer_length) final;
 
   private:
     HAL_CAN_HANDLE handle;

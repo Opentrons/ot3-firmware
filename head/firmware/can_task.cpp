@@ -53,6 +53,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
 spi::SPI_interface SPI_intf2 = {
 
     .SPI_handle = &hspi2,
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
     .pin = GPIO_PIN_12,
 };
@@ -61,27 +62,50 @@ static spi::Spi spi_comms2(SPI_intf2);
 spi::SPI_interface SPI_intf3 = {
 
     .SPI_handle = &hspi3,
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOA,
     .pin = GPIO_PIN_4,
 };
 static spi::Spi spi_comms3(SPI_intf3);
 
 struct motion_controller::HardwareConfig pin_configurations_left {
-    .direction = {.port = GPIOC,
-                  .pin = GPIO_PIN_1,
-                  .active_setting = GPIO_PIN_SET},
-    .step = {.port = GPIOC, .pin = GPIO_PIN_0, .active_setting = GPIO_PIN_SET},
+    .direction =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_1,
+            .active_setting = GPIO_PIN_SET},
+    .step =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_0,
+            .active_setting = GPIO_PIN_SET},
     .enable = {
-        .port = GPIOC, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_SET},
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_4,
+        .active_setting = GPIO_PIN_SET},
 };
 
 struct motion_controller::HardwareConfig pin_configurations_right {
-    .direction = {.port = GPIOC,
-                  .pin = GPIO_PIN_7,
-                  .active_setting = GPIO_PIN_SET},
-    .step = {.port = GPIOC, .pin = GPIO_PIN_6, .active_setting = GPIO_PIN_SET},
+    .direction =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_7,
+            .active_setting = GPIO_PIN_SET},
+    .step =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_6,
+            .active_setting = GPIO_PIN_SET},
     .enable = {
-        .port = GPIOB, .pin = GPIO_PIN_11, .active_setting = GPIO_PIN_RESET},
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOB,
+        .pin = GPIO_PIN_11,
+        .active_setting = GPIO_PIN_RESET},
 };
 
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
@@ -204,7 +228,7 @@ static auto read_can_message_buffer_writer =
  */
 void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
-                                                 data + length);
+                                                 data + length);  // NOLINT
 }
 
 [[noreturn]] void task_entry() {

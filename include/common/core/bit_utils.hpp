@@ -34,8 +34,8 @@ concept ByteIterator = requires {
 template <typename Input, typename Limit, typename OutputIntType>
 requires std::is_integral_v<OutputIntType> && ByteIterator<Input> &&
     std::sentinel_for<Limit, Input>
-[[nodiscard]] auto bytes_to_int(Input input, const Limit limit,
-                                OutputIntType& output) -> Input {
+[[nodiscard]] auto bytes_to_int(Input input, Limit limit, OutputIntType& output)
+    -> Input {
     output = 0;
     for (ssize_t byte_index = sizeof(output) - 1;
          input != limit && byte_index >= 0; input++, byte_index--) {

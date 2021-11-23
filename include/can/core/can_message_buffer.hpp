@@ -64,8 +64,9 @@ class CanMessageBufferWriter {
     requires std::sized_sentinel_for<Limit, Input>
     auto write_to_backing(uint32_t arbitration_id, Input buffer, Limit limit)
         -> uint32_t {
-        auto iter = bit_utils::int_to_bytes(arbitration_id, backing.begin(),
-                                            backing.end());
+        auto* iter = bit_utils::int_to_bytes(arbitration_id, backing.begin(),
+                                             backing.end());
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         for (; iter != backing.end() && buffer != limit; iter++, buffer++) {
             *iter = *buffer;
         }
@@ -116,8 +117,8 @@ class CanMessageBufferReader {
             message_buffer.receive(backing.begin(), backing.end(), timeout);
         if (read_amount > 0) {
             uint32_t arbitration_id = 0;
-            auto end = backing.begin() + read_amount;
-            auto start_of_message = bit_utils::bytes_to_int(
+            auto* end = backing.begin() + read_amount;
+            auto* start_of_message = bit_utils::bytes_to_int(
                 backing.begin(), backing.end(), arbitration_id);
             listener.handle(arbitration_id, start_of_message, end);
         }

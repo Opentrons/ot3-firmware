@@ -30,8 +30,9 @@ class DeviceInfoHandler {
         : writer(writer), response{.version = version} {}
     DeviceInfoHandler(const DeviceInfoHandler &) = delete;
     DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
-    DeviceInfoHandler &operator=(const DeviceInfoHandler &) = delete;
-    DeviceInfoHandler &&operator=(const DeviceInfoHandler &&) = delete;
+    auto operator=(const DeviceInfoHandler &) -> DeviceInfoHandler & = delete;
+    auto operator=(const DeviceInfoHandler &&) -> DeviceInfoHandler && = delete;
+    ~DeviceInfoHandler() = default;
 
     using MessageType = std::variant<std::monostate, DeviceInfoRequest>;
 

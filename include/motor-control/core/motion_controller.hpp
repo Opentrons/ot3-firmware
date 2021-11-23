@@ -44,8 +44,8 @@ class MotionController {
         setup();
     }
 
-    MotionController& operator=(MotionController&) = delete;
-    MotionController&& operator=(MotionController&&) = delete;
+    auto operator=(const MotionController&) -> MotionController& = delete;
+    auto operator=(MotionController&&) -> MotionController&& = delete;
     MotionController(MotionController&) = delete;
     MotionController(MotionController&&) = delete;
 
@@ -89,7 +89,9 @@ class MotionController {
                               .max_acceleration = can_msg.max_acceleration};
     }
 
-    MotionConstraints get_motion_constraints() { return motion_constraints; }
+    [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {
+        return motion_constraints;
+    }
 
   private:
     uint32_t steps_per_mm{0};

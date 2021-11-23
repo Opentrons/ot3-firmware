@@ -15,6 +15,7 @@ using namespace can_ids;
 /**
  * Abstract base class of a CAN bus.
  */
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 class CanBus {
   public:
     /**
@@ -62,7 +63,7 @@ class CanBus {
      */
     void setup_node_id_filter(NodeId node_id);
 
-    virtual ~CanBus() {}
+    virtual ~CanBus() = default;
 };
 
 }  // namespace can_bus

@@ -39,6 +39,10 @@ struct Motor {
                                         MEConfig>
         motion_controller;
     Motor(const Motor&) = delete;
+    auto operator=(const Motor&) -> Motor& = delete;
+    Motor(Motor&&) = delete;
+    auto operator=(Motor&&) -> Motor&& = delete;
+    ~Motor() = default;
 };
 
 }  // namespace motor_class

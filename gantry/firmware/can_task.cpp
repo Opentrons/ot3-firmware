@@ -38,13 +38,14 @@ using namespace move_group_executor_handler;
 using namespace motor_messages;
 using namespace motor_driver_config;
 
-static constexpr NodeId node_from_axis(GantryAxisType which) {
+static constexpr auto node_from_axis(GantryAxisType which) -> NodeId {
     switch (which) {
         case GantryAxisType::gantry_x:
             return NodeId::gantry_x;
         case GantryAxisType::gantry_y:
             return NodeId::gantry_y;
     }
+    std::abort();
 }
 static auto my_axis_type = get_axis_type();
 static auto my_node_id = node_from_axis(my_axis_type);
@@ -59,21 +60,34 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
 
 spi::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
     .pin = GPIO_PIN_12,
 };
 static spi::Spi spi_comms(SPI_intf);
 
 struct motion_controller::HardwareConfig PinConfigurations {
-    .direction = {.port = GPIOB,
-                  .pin = GPIO_PIN_1,
-                  .active_setting = GPIO_PIN_SET},
-    .step = {.port = GPIOC, .pin = GPIO_PIN_8, .active_setting = GPIO_PIN_SET},
+    .direction =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_1,
+            .active_setting = GPIO_PIN_SET},
+    .step =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_SET},
     .enable = {
-        .port = GPIOA, .pin = GPIO_PIN_9, .active_setting = GPIO_PIN_SET},
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOA,
+        .pin = GPIO_PIN_9,
+        .active_setting = GPIO_PIN_SET},
 };
 
-static RegisterConfig register_config_by_axis(GantryAxisType which) {
+static constexpr auto register_config_by_axis(GantryAxisType which)
+    -> RegisterConfig {
     switch (which) {
         case GantryAxisType::gantry_x:
             return RegisterConfig{.gconf = 0x04,
@@ -81,7 +95,6 @@ static RegisterConfig register_config_by_axis(GantryAxisType which) {
                                   .chopconf = 0x101D5,
                                   .thigh = 0xFFFFF,
                                   .coolconf = 0x60000};
-
         case GantryAxisType::gantry_y:
             return RegisterConfig{.gconf = 0x04,
                                   .ihold_irun = 0x71002,
@@ -89,6 +102,7 @@ static RegisterConfig register_config_by_axis(GantryAxisType which) {
                                   .thigh = 0xFFFFF,
                                   .coolconf = 0x60000};
     }
+    std::abort();
 }
 
 /**
@@ -168,7 +182,7 @@ static auto read_can_message_buffer_writer =
  */
 void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
-                                                 data + length);
+                                                 data + length);  // NOLINT
 }
 
 [[noreturn]] void task_entry() {

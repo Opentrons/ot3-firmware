@@ -4,9 +4,9 @@
 
 #include "can/core/messages.hpp"
 
-typedef int32_t sq0_31;  // 0: signed bit,  1-31: fractional bits
-typedef uint64_t
-    q31_31;  // 0: overflow bit, 1-32: integer bits, 33-64: fractional bits
+using sq0_31 = int32_t;  // 0: signed bit,  1-31: fractional bits
+using q31_31 =
+    uint64_t;  // 0: overflow bit, 1-32: integer bits, 33-64: fractional bits
 
 using ticks = uint64_t;
 using steps_per_tick = sq0_31;
