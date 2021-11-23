@@ -71,7 +71,7 @@ static auto handler = Loopback{canbus, can_ids::NodeId::host};
 // Create a DispatchParseTarget to parse messages in message buffer and pass
 // them to the handler.
 static auto dispatcher =
-    can_dispatch::DispatchParseTarget<Loopback, MoveRequest>{handler};
+    can_dispatch::DispatchParseTarget<Loopback, AddLinearMoveRequest>{handler};
 
 // A Message Buffer poller that reads from buffer and send to dispatcher
 static auto poller =
