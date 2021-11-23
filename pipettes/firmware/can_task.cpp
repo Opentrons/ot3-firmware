@@ -24,10 +24,7 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-//#include "can/firmware/hal_can_message_buffer.hpp"
-//#include "common/firmware/can.h"
 #include "motor_hardware.h"
-//#include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic pop
 
 using namespace hal_can_bus;
