@@ -23,8 +23,9 @@ class EEPromHandler {
         : message_writer(message_writer), i2c(i2c) {}
     EEPromHandler(const EEPromHandler &) = delete;
     EEPromHandler(const EEPromHandler &&) = delete;
-    EEPromHandler &operator=(const EEPromHandler &) = delete;
-    EEPromHandler &&operator=(const EEPromHandler &&) = delete;
+    auto operator=(const EEPromHandler &) -> EEPromHandler & = delete;
+    auto operator=(const EEPromHandler &&) -> EEPromHandler && = delete;
+    ~EEPromHandler() = default;
 
     void handle(MessageType &m) {
         std::visit([this](auto o) { this->visit(o); }, m);

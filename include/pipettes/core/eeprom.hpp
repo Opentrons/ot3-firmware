@@ -27,7 +27,7 @@ void write(EEPromWriter& writer, const uint8_t serial_number) {
 }
 
 template <eeprom::EEPromPolicy EEPromWriter>
-uint8_t read(EEPromWriter& writer) {
+auto read(EEPromWriter& writer) -> uint8_t {
     using BufferType = std::array<uint8_t, EEPromWriter::BUFFER_SIZE>;
     BufferType rxBuffer{0};
     uint8_t data = 0x0;

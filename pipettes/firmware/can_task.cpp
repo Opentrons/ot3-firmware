@@ -51,20 +51,31 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
 
 spi::SPI_interface SPI_intf = {
-
     .SPI_handle = &hspi2,
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOC,
     .pin = GPIO_PIN_8,
 };
 static spi::Spi spi_comms(SPI_intf);
 
 struct motion_controller::HardwareConfig PinConfigurations {
-    .direction = {.port = GPIOC,
-                  .pin = GPIO_PIN_3,
-                  .active_setting = GPIO_PIN_SET},
-    .step = {.port = GPIOC, .pin = GPIO_PIN_7, .active_setting = GPIO_PIN_SET},
+    .direction =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_3,
+            .active_setting = GPIO_PIN_SET},
+    .step =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_7,
+            .active_setting = GPIO_PIN_SET},
     .enable = {
-        .port = GPIOC, .pin = GPIO_PIN_8, .active_setting = GPIO_PIN_SET},
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_8,
+        .active_setting = GPIO_PIN_SET},
 };
 
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
@@ -155,7 +166,7 @@ static auto read_can_message_buffer_writer =
  */
 void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
-                                                 data + length);
+                                                 data + length);  // NOLINT
 }
 
 [[noreturn]] void task_entry() {
