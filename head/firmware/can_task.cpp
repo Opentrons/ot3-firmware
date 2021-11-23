@@ -72,7 +72,7 @@ spi::SPI_interface SPI_intf3 = {
 };
 static spi::Spi spi_comms3(SPI_intf3);
 
-struct motion_controller::HardwareConfig PinConfigurations {
+struct motion_controller::HardwareConfig pin_configurations_left {
     .direction = {.port = GPIOC,
                   .pin = GPIO_PIN_1,
                   .active_setting = GPIO_PIN_SET},
@@ -81,7 +81,7 @@ struct motion_controller::HardwareConfig PinConfigurations {
         .port = GPIOC, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_SET},
 };
 
-struct motion_controller::HardwareConfig PinConfigurations2 {
+struct motion_controller::HardwareConfig pin_configurations_right {
     .direction = {.port = GPIOC,
                   .pin = GPIO_PIN_7,
                   .active_setting = GPIO_PIN_SET},
@@ -103,13 +103,13 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
  */
 
 /*z motor would need a motor and PinConfigurations instance on its own*/
-static motor_class::Motor motor{
+static motor_class::Motor motor_right{
     spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations,
+    pin_configurations_right,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -119,13 +119,13 @@ static motor_class::Motor motor{
     complete_queue};
 
 /*z motor*/
-static motor_class::Motor motor2{
+static motor_class::Motor motor_left{
     spi_comms2,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations2,
+    pin_configurations_left,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -135,8 +135,8 @@ static motor_class::Motor motor2{
     complete_queue};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
-static auto can_motor_handler2 = MotorHandler{message_writer_1, motor2};
+static auto can_motor_handler = MotorHandler{message_writer_1, motor_right};
+static auto can_motor_handler2 = MotorHandler{message_writer_1, motor_left};
 
 static auto move_group_manager = MoveGroupType{};
 
@@ -144,10 +144,10 @@ static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
 
 static auto can_move_group_executor_handler =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_right);
 
 static auto can_move_group_executor_handler2 =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor2);
+    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_left);
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -206,7 +206,8 @@ static auto dispatcher = Dispatcher(
         Error_Handler();
     }
 
-    motor.driver.setup();
+    motor_left.driver.setup();
+    motor_right.driver.setup();
 
     can_bus::setup_node_id_filter(can_bus_1, NodeId::head);
     can_bus_1.start();
