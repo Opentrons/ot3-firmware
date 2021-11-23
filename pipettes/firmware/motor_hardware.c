@@ -81,7 +81,19 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     }
 }
 
+void motor_driver_CLK_gpio_init() {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    // Driver Clock Pin
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+}
+
 HAL_StatusTypeDef initialize_spi(void) {
     __HAL_RCC_SPI2_CLK_ENABLE();
+    motor_driver_CLK_gpio_init();
     return HAL_SPI_Init(&hspi2);
 }

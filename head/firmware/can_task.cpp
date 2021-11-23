@@ -162,7 +162,8 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::MoveRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints>{can_motor_handler};
+    can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
+    can_messages::ReadMotorDriverRegister>{can_motor_handler};
 
 static auto motor_dispatch_target2 = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
