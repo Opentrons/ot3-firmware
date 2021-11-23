@@ -7,6 +7,7 @@
 #include "can/core/message_core.hpp"
 #include "can/firmware/utils.hpp"
 #include "common/core/freertos_synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 #include "common/core/synchronization.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)

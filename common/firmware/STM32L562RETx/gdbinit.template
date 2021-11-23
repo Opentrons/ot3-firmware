@@ -5,7 +5,7 @@ end
 
 
 source ${GDBSVDTools_gdbsvd_EXECUTABLE}
-svd ${GDBSVDTools_cmsissvd_DIRECTORY}/data/STMicro/STM32L552.svd
+svd ${GDBSVDTools_cmsissvd_DIRECTORY}/data/STMicro/STM32L562.svd
 target extended-remote | ${OpenOCD_EXECUTABLE} -c "gdb_port pipe" -f ${L5_BOARD_FILE_PATH} 2>/dev/null
 set remote hardware-breakpoint-limit 6
 set remote hardware-watchpoint-limit 4

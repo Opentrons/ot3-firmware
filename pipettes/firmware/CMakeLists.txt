@@ -9,6 +9,7 @@ set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
+
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -39,7 +40,7 @@ add_executable(pipettes
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
 target_link_libraries(pipettes
-        PUBLIC STM32L552ZEx
+        PUBLIC STM32L562RETx
         STM32L5xx_Drivers_Pipettes STM32L5xx_FreeRTOS_Pipettes
         can-core
         )
@@ -72,9 +73,9 @@ target_include_directories(STM32L5xx_FreeRTOS_Pipettes
         PUBLIC .)
 
 target_compile_definitions(STM32L5xx_Drivers_Pipettes
-        PUBLIC STM32L552xx)
+        PUBLIC STM32L562xx)
 target_compile_definitions(STM32L5xx_FreeRTOS_Pipettes
-        PUBLIC STM32L552xx)
+        PUBLIC STM32L562xx)
 
 set_target_properties(
         STM32L5xx_FreeRTOS_Pipettes
@@ -91,7 +92,7 @@ find_program(ARM_GDB
 set_target_properties(pipettes
         PROPERTIES
         CROSSCOMPILING_EMULATOR
-        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L552ZEx/gdbinit")
+        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L562RETx/gdbinit")
 
 
 find_package(Clang)
@@ -129,7 +130,7 @@ add_custom_target(pipettes-debug
 
 # Runs openocd to flash the board (without using a debugger)
 add_custom_target(pipettes-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L552ZEx/stm32l5discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS pipettes)

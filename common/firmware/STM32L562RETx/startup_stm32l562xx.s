@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32l552xx.s
+  * @file      startup_stm32l562xx.s
   * @author    MCD Application Team
-  * @brief     STM32L552xx devices vector table GCC toolchain.
+  * @brief     STM32L562xx devices vector table GCC toolchain.
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
@@ -46,8 +46,7 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word	_ebss
 
-.equ  BootRAM,         0xF1E0F85F
-.equ  __initial_spTop, 0x20000400        /* stack used for SystemInit & SystemInit_ExtMemCtl */
+.equ  BootRAM,        0xF1E0F85F
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -61,8 +60,7 @@ defined in linker script */
 	.weak	Reset_Handler
 	.type	Reset_Handler, %function
 Reset_Handler:
-  ldr   r0, = __initial_spTop
-  mov   sp, r0          /* set stack pointer */
+  ldr   sp, =_estack    /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */
   movs	r1, #0
@@ -130,7 +128,7 @@ Infinite_Loop:
 
 
 g_pfnVectors:
-	.word	__initial_spTop
+	.word	_estack
 	.word	Reset_Handler
 	.word	NMI_Handler
 	.word	HardFault_Handler
@@ -239,11 +237,11 @@ g_pfnVectors:
 	.word	SAI1_IRQHandler
 	.word	SAI2_IRQHandler
 	.word	TSC_IRQHandler
-	.word	0
+	.word	AES_IRQHandler
 	.word	RNG_IRQHandler
 	.word	FPU_IRQHandler
 	.word	HASH_IRQHandler
-	.word	0
+	.word	PKA_IRQHandler
 	.word	LPTIM3_IRQHandler
 	.word	SPI3_IRQHandler
 	.word	I2C4_ER_IRQHandler
@@ -254,7 +252,7 @@ g_pfnVectors:
 	.word	DFSDM1_FLT3_IRQHandler
 	.word	UCPD1_IRQHandler
 	.word	ICACHE_IRQHandler
-	.word	0
+	.word	OTFDEC1_IRQHandler
 
 
 /*******************************************************************************
@@ -568,6 +566,9 @@ g_pfnVectors:
 	.weak	TSC_IRQHandler
 	.thumb_set TSC_IRQHandler,Default_Handler
 
+	.weak	AES_IRQHandler
+	.thumb_set AES_IRQHandler,Default_Handler
+
 	.weak	RNG_IRQHandler
 	.thumb_set RNG_IRQHandler,Default_Handler
 
@@ -576,6 +577,9 @@ g_pfnVectors:
 
 	.weak	HASH_IRQHandler
 	.thumb_set HASH_IRQHandler,Default_Handler
+
+	.weak	PKA_IRQHandler
+	.thumb_set PKA_IRQHandler,Default_Handler
 
 	.weak	LPTIM3_IRQHandler
 	.thumb_set LPTIM3_IRQHandler,Default_Handler
@@ -606,5 +610,8 @@ g_pfnVectors:
 
 	.weak	ICACHE_IRQHandler
 	.thumb_set ICACHE_IRQHandler,Default_Handler
+
+	.weak	OTFDEC1_IRQHandler
+	.thumb_set OTFDEC1_IRQHandler,Default_Handler
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
