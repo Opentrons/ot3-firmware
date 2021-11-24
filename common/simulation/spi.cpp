@@ -3,8 +3,9 @@
 #include "common/core/bit_utils.hpp"
 #include "motor-control/core/motor_driver.hpp"
 
-void sim_spi::SimTMC2130Spi::transmit_receive(const spi::TMC2130Spi::BufferType& transmit,
-                                              spi::TMC2130Spi::BufferType& receive) {
+void sim_spi::SimTMC2130Spi::transmit_receive(
+    const spi::TMC2130Spi::BufferType& transmit,
+    spi::TMC2130Spi::BufferType& receive) {
     uint8_t control = 0;
     uint32_t data = 0;
 
@@ -24,5 +25,6 @@ void sim_spi::SimTMC2130Spi::transmit_receive(const spi::TMC2130Spi::BufferType&
 
     auto out_iter = receive.begin();
     out_iter = bit_utils::int_to_bytes(reg, out_iter, receive.end());
-    out_iter = bit_utils::int_to_bytes(register_map[reg], out_iter, receive.end());
+    out_iter =
+        bit_utils::int_to_bytes(register_map[reg], out_iter, receive.end());
 }

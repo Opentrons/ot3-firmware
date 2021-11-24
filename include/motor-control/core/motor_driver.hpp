@@ -31,15 +31,17 @@ class MotorDriver {
     auto read(DriverRegisters::Addresses motor_reg, uint32_t command_data)
         -> spi::TMC2130Spi::BufferType {
         auto txBuffer = spi::TMC2130Spi::BufferType{};
-        spi_comms.build_command(txBuffer, spi::TMC2130Spi::Mode::READ, motor_reg, command_data);
+        spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::READ,
+                                       motor_reg, command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
         return txBuffer;
     }
 
-    auto write(DriverRegisters::Addresses motor_reg,
-               uint32_t command_data) -> spi::TMC2130Spi::BufferType {
+    auto write(DriverRegisters::Addresses motor_reg, uint32_t command_data)
+        -> spi::TMC2130Spi::BufferType {
         auto txBuffer = spi::TMC2130Spi::BufferType{};
-        spi_comms.build_command(txBuffer, spi::TMC2130Spi::Mode::WRITE, motor_reg, command_data);
+        spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::WRITE,
+                                       motor_reg, command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
         return txBuffer;
     }

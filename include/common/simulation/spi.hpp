@@ -9,7 +9,7 @@ namespace sim_spi {
 /**
  * Implementation of TMC2130Spi protocol for simulation purposes.
  */
-class SimTMC2130Spi: public spi::TMC2130Spi {
+class SimTMC2130Spi : public spi::TMC2130Spi {
   public:
     using RegisterMap = std::map<uint8_t, uint32_t>;
 
@@ -25,7 +25,8 @@ class SimTMC2130Spi: public spi::TMC2130Spi {
     SimTMC2130Spi(const RegisterMap& register_map)
         : register_map{register_map} {}
 
-    void transmit_receive(const spi::TMC2130Spi::BufferType& transmit, spi::TMC2130Spi::BufferType& receive);
+    void transmit_receive(const spi::TMC2130Spi::BufferType& transmit,
+                          spi::TMC2130Spi::BufferType& receive);
 
   private:
     RegisterMap register_map;

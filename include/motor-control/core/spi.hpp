@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+
 #include "common/core/bit_utils.hpp"
 
 namespace spi {
@@ -28,7 +29,6 @@ class TMC2130Spi {
     virtual void transmit_receive(const TMC2130Spi::BufferType& transmit,
                                   TMC2130Spi::BufferType& receive) = 0;
 
-
     /**
      * Fill a buffer with a command.
      *
@@ -37,16 +37,17 @@ class TMC2130Spi {
      * @param address The register's address
      * @param data The 32-bit data wor
      */
-    static void build_command(TMC2130Spi::BufferType& buffer, TMC2130Spi::Mode mode, uint8_t address, uint32_t data) {
+    static void build_command(TMC2130Spi::BufferType& buffer,
+                              TMC2130Spi::Mode mode, uint8_t address,
+                              uint32_t data) {
         auto* iter = buffer.begin();
         // Address is ored with the mode.
         address |= static_cast<uint8_t>(mode);
         // Write address into buffer
         iter = bit_utils::int_to_bytes(address, iter, buffer.end());
         // Write data into the buffer
-        iter = bit_utils::int_to_bytes(data, iter, buffer.end());
+        bit_utils::int_to_bytes(data, iter, buffer.end());
     }
-
 };
 
 }  // namespace spi
