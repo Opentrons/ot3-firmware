@@ -33,7 +33,7 @@ class MotionController {
     using GenericQueue = QueueImpl<Move>;
     using CompletedQueue = CompletedQueueImpl<Ack>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     HardwareConfig& config, MotionConstraints constraints,
+                     HardwareConfig config, MotionConstraints constraints,
                      GenericQueue& queue, CompletedQueue& completed_queue)
         : linear_motion_sys_config(lms_config),
           hardware_config(config),
@@ -96,7 +96,7 @@ class MotionController {
   private:
     uint32_t steps_per_mm{0};
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
-    HardwareConfig& hardware_config;
+    HardwareConfig hardware_config;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     CompletedQueue& completed_queue;

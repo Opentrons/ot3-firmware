@@ -6,13 +6,24 @@
 
 namespace spi {
 
-constexpr const size_t BufferSize = 5;
+/**
+ * Abstract SPI driver base class.
+ */
+class TMC2130Spi {
+  public:
+    static constexpr size_t BufferSize = 5;
+    using BufferType = std::array<uint8_t, BufferSize>;
 
-template <class Spi>
-concept TMC2130Spi = requires(Spi spi_comms,
-                              const std::array<uint8_t, BufferSize>& transmit,
-                              std::array<uint8_t, BufferSize>& receive) {
-    {spi_comms.transmit_receive(transmit, receive)};
+    /**
+     * Transmit and receive.
+     *
+     * @param transmit The transmit buffer.
+     * @param receive The receive buffer.
+     */
+    virtual void transmit_receive(const TMC2130Spi::BufferType& transmit,
+                                  TMC2130Spi::BufferType& receive) = 0;
+
+    virtual ~TMC2130Spi() {}
 };
 
 }  // namespace spi

@@ -19,14 +19,11 @@ constexpr auto command_byte(Mode mode, DriverRegisters::Addresses motor_reg)
  * MotorDriver uses SPI communication to initialize, send and receive status and
  * data to and from the TMC2130 motor driver.
  */
-template <spi::TMC2130Spi SpiDriver>
 class MotorDriver {
   public:
-    static constexpr auto BUFFER_SIZE = 5;
-    using BufferType = std::array<uint8_t, BUFFER_SIZE>;
-    BufferType rxBuffer{0};
+    spi::TMC2130Spi::BufferType rxBuffer{0};
 
-    explicit MotorDriver(SpiDriver& spi, RegisterConfig conf)
+    explicit MotorDriver(spi::TMC2130Spi& spi, RegisterConfig conf)
         : spi_comms(spi), register_config(conf) {}
 
     void setup() {
@@ -39,7 +36,7 @@ class MotorDriver {
     }
 
     auto read(DriverRegisters::Addresses motor_reg, uint32_t& command_data)
-        -> BufferType {
+        -> spi::TMC2130Spi::BufferType {
         auto txBuffer =
             build_command(command_byte(Mode::READ, motor_reg), command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
@@ -47,7 +44,7 @@ class MotorDriver {
     }
 
     auto write(DriverRegisters::Addresses motor_reg,
-               const uint32_t& command_data) -> BufferType {
+               const uint32_t& command_data) -> spi::TMC2130Spi::BufferType {
         auto txBuffer =
             build_command(command_byte(Mode::WRITE, motor_reg), command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
@@ -56,9 +53,9 @@ class MotorDriver {
 
   private:
     auto build_command(uint8_t command, const uint32_t& command_data)
-        -> BufferType {
+        -> spi::TMC2130Spi::BufferType {
         // need to pass in data parameter and use int_to_bytes here
-        auto txBuffer = BufferType{0};
+        auto txBuffer = spi::TMC2130Spi::BufferType{0};
         auto* iter = txBuffer.begin();
         iter = bit_utils::int_to_bytes(command, iter, txBuffer.end());
         // NOLINTNEXTLINE(clang-diagnostic-unused-result)
@@ -66,7 +63,7 @@ class MotorDriver {
         return txBuffer;
     }
 
-    SpiDriver spi_comms;
+    spi::TMC2130Spi& spi_comms;
     RegisterConfig register_config;
 };
 

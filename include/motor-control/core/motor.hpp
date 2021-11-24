@@ -15,7 +15,7 @@ namespace motor_class {
 using namespace motor_messages;
 using namespace motor_driver_config;
 
-template <spi::TMC2130Spi SpiDriver, template <class> class PendingQueueImpl,
+template <template <class> class PendingQueueImpl,
           template <class> class CompletedQueueImpl,
           lms::MotorMechanicalConfig MEConfig>
 requires MessageQueue<PendingQueueImpl<Move>, Move> &&
@@ -23,8 +23,22 @@ requires MessageQueue<PendingQueueImpl<Move>, Move> &&
 struct Motor {
     using GenericQueue = PendingQueueImpl<Move>;
     using CompletedQueue = CompletedQueueImpl<Ack>;
-    Motor(SpiDriver& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
-          motion_controller::HardwareConfig& config,
+
+    /**
+     * Construct a motor
+     *
+     * @param spi SPI driver
+     * @param lms_config Linear motion system configuration
+     * @param config Pin configuration
+     * @param constraints Motion constraints
+     * @param driver_config Driver configuration
+     * @param queue Input message queue containing motion commands.
+     * @param completed_queue Output message queue with completed motion
+     * commands.
+     */
+    Motor(spi::TMC2130Spi& spi,
+          lms::LinearMotionSystemConfig<MEConfig> lms_config,
+          motion_controller::HardwareConfig config,
           MotionConstraints constraints, RegisterConfig driver_config,
           GenericQueue& queue, CompletedQueue& completed_queue)
         : pending_move_queue(queue),
@@ -34,7 +48,7 @@ struct Motor {
                             completed_move_queue} {}
     GenericQueue& pending_move_queue;
     CompletedQueue& completed_move_queue;
-    motor_driver::MotorDriver<SpiDriver> driver;
+    motor_driver::MotorDriver driver;
     motion_controller::MotionController<PendingQueueImpl, CompletedQueueImpl,
                                         MEConfig>
         motion_controller;
