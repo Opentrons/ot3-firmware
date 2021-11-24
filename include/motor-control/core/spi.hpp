@@ -46,7 +46,7 @@ class TMC2130Spi {
         // Write address into buffer
         iter = bit_utils::int_to_bytes(address, iter, buffer.end());
         // Write data into the buffer
-        iter = bit_utils::int_to_bytes(data, iter, buffer.end());
+        iter = bit_utils::int_to_bytes(data, iter, buffer.end());  // NOLINT
     }
 };
 
