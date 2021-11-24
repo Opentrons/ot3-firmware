@@ -112,26 +112,6 @@ requires(!std::movable<BufferType> &&
     MessageIdCollection<MessageTypes...> coll;
 };
 
-template <CanMessageBufferListener... Listener>
-class DispatchNodIdTarget {
-  public:
-    explicit DispatchNodIdTarget(Listener& listener, NodeId nodeId)
-        : writer{listener}, nodeId{nodeId} {}
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    requires std::sentinel_for<Limit, Input>
-    void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        auto arb = ArbitrationId{.id = arbitration_id};
-            if (arb.parts.node_id == nodeId1 {
-            writer.handle(arbitration_id, input, limit);
-            }
-    }
-
-  private:
-    Listener& writer;
-    NodeId nodeId1;
-};
-
 /**
  * A CanMessageBufferListener that will dispatch messages to other
  * CanMessageBufferListeners
