@@ -18,9 +18,12 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
+#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/firmware/motor_hardware.hpp"
 #include "pipettes/core/eeprom.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
+
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -58,7 +61,7 @@ spi::SPI_interface SPI_intf = {
 };
 static spi::Spi spi_comms(SPI_intf);
 
-struct motion_controller::HardwareConfig PinConfigurations {
+struct motion_controller::HardwareConfig plunger_pins {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -78,6 +81,11 @@ struct motion_controller::HardwareConfig PinConfigurations {
         .active_setting = GPIO_PIN_SET},
 };
 
+static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
+static motor_handler::MotorInterruptHandler plunger_interrupt(motor_queue,
+                                                              complete_queue,
+                                                              plunger_hw);
+
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
                                          .ihold_irun = 0x70202,
                                          .chopconf = 0x101D5,
@@ -95,7 +103,7 @@ static motor_class::Motor motor{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations,
+    plunger_hw,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -169,11 +177,13 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
                                                  data + length);  // NOLINT
 }
 
+void plunger_callback() { plunger_interrupt.run_interrupt(); }
+
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);
     can_start();
     can_bus_1.setup_node_id_filter(NodeId::pipette);
-
+    initialize_timer(plunger_callback);
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }

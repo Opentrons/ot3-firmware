@@ -15,7 +15,9 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
+#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -68,7 +70,7 @@ spi::SPI_interface SPI_intf3 = {
 };
 static spi::Spi spi_comms3(SPI_intf3);
 
-struct motion_controller::HardwareConfig pin_configurations_left {
+struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -88,7 +90,7 @@ struct motion_controller::HardwareConfig pin_configurations_left {
         .active_setting = GPIO_PIN_SET},
 };
 
-struct motion_controller::HardwareConfig pin_configurations_right {
+struct motor_hardware::HardwareConfig pin_configurations_right {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -120,6 +122,11 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
  * should be made to avoid a pretty gross template signature.
  */
 
+static motor_hardware::MotorHardware motor_hardware_right(
+    pin_configurations_right, &htim7);
+static motor_handler::MotorInterruptHandler motor_interrupt_right(
+    motor_queue, complete_queue, motor_hardware_right);
+
 /*z motor would need a motor and PinConfigurations instance on its own*/
 static motor_class::Motor motor_right{
     spi_comms3,
@@ -127,7 +134,7 @@ static motor_class::Motor motor_right{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    pin_configurations_right,
+    motor_hardware_right,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -136,6 +143,11 @@ static motor_class::Motor motor_right{
     motor_queue,
     complete_queue};
 
+static motor_hardware::MotorHardware motor_hardware_left(
+    pin_configurations_left, &htim7);
+static motor_handler::MotorInterruptHandler motor_interrupt_left(
+    motor_queue, complete_queue, motor_hardware_left);
+
 /*z motor*/
 static motor_class::Motor motor_left{
     spi_comms2,
@@ -143,7 +155,7 @@ static motor_class::Motor motor_left{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    pin_configurations_left,
+    motor_hardware_left,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -231,10 +243,17 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
                                                  data + length);  // NOLINT
 }
 
+extern "C" void motor_callback_glue() {
+    motor_interrupt_left.run_interrupt();
+    motor_interrupt_right.run_interrupt();
+}
+
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);
     can_start();
     can_bus_1.setup_node_id_filter(NodeId::head);
+
+    initialize_timer(motor_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();
