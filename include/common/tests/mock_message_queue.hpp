@@ -55,4 +55,4 @@ class MockMessageQueue {
   private:
     std::vector<Message> queue_data_structure;
 };
-}  // namespace mock_message_queue
+}  // namespace test_mocks
