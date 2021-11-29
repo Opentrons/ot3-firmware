@@ -2,7 +2,8 @@
 
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "pipettes/tests/mock_message_queue.hpp"
+#include "motor-control/tests/mock_motor_hardware.hpp"
+#include "common/tests/mock_message_queue.hpp"
 
 static constexpr auto ticks_per_sec = 170000;
 
@@ -13,13 +14,11 @@ auto mm_per_sec_to_mm_per_tick(float mm) -> steps_per_tick {
 
 int main() {
     auto q_new_moves =
-        mock_message_queue::MockMessageQueue<motor_messages::Move>{};
-    auto q_ack = mock_message_queue::MockMessageQueue<motor_messages::Ack>{};
+        test_mocks::MockMessageQueue<motor_messages::Move>{};
+    auto q_ack = test_mocks::MockMessageQueue<motor_messages::Ack>{};
+    auto hardware = test_mocks::MockMotorHardware();
 
-    auto handler = motor_handler::MotorInterruptHandler<
-        mock_message_queue::MockMessageQueue,
-        mock_message_queue::MockMessageQueue>{};
-    handler.set_message_queue(&q_new_moves, &q_ack);
+    auto handler = motor_handler::MotorInterruptHandler{q_new_moves, q_ack, hardware};
 
     auto m1 = motor_messages::Move{.duration = sec_to_ticks(.1),
                                    .velocity = 1 << 20,
