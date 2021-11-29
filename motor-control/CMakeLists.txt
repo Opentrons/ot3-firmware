@@ -1,12 +1,10 @@
-add_subdirectory(core)
 if (${CMAKE_CROSSCOMPILING})
     add_subdirectory(firmware)
     function(target_ot_motor_control TARGET)
       target_ot_motor_control_firmware(${TARGET})
-      target_ot_motor_control_core(${TARGET})
     endfunction()
 else()
-    # add_subdirectory(tests)
+    add_subdirectory(tests)
     if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
         # Simulator requires linux only kernel interfaces
         # add_subdirectory(simulator)
