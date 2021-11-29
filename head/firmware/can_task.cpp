@@ -180,7 +180,7 @@ static auto motor_dispatch_target = DispatchParseTarget<
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler};
+    can_messages::ReadMotorDriverRegister>{can_motor_handler, 0x50};
 
 static auto motor_dispatch_target2 = DispatchParseTarget<
     decltype(can_motor_handler2), can_messages::SetupRequest,
@@ -188,27 +188,32 @@ static auto motor_dispatch_target2 = DispatchParseTarget<
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler2};
+    can_messages::ReadMotorDriverRegister>{can_motor_handler2, 0x60};
 
 static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
     can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler};
+    can_move_group_handler, 0x50};
+
+static auto motion_group_dispatch_target2 = DispatchParseTarget<
+    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
+    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
+    can_move_group_handler, 0x60};
 
 static auto motion_group_executor_dispatch_target =
     DispatchParseTarget<decltype(can_move_group_executor_handler),
                         can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler};
+        can_move_group_executor_handler, 0x50};
 
 static auto motion_group_executor_dispatch_target2 =
     DispatchParseTarget<decltype(can_move_group_executor_handler2),
                         can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler2};
+        can_move_group_executor_handler2, 0x60};
 
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(
+static auto dispatcher = Dispatcher2(
     motor_dispatch_target, motor_dispatch_target2, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target,
+    motion_group_dispatch_target2, motion_group_executor_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 /**

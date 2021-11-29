@@ -113,6 +113,44 @@ requires(!std::movable<BufferType> &&
 };
 
 /**
+ * A CanMessageBufferListener that checks node ID
+ *
+ * @tparam BufferType a MessageBuffer
+ * @tparam MessageTypes The message types
+ */
+template <message_buffer::MessageBuffer BufferType,
+          HasMessageID... MessageTypes>
+requires(!std::movable<BufferType> &&
+         !std::copyable<BufferType>) class DispatchBufferTargetNode {
+  public:
+    explicit DispatchBufferTargetNode(BufferType& buffer, uint16_t node_id)
+        : writer{buffer}, coll{}, node(node_id) {}
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    requires std::sentinel_for<Limit, Input>
+
+    void handle(uint32_t arbitration_id, Input input, Limit limit,
+                uint16_t node) {
+        if (check_motor(arbitration_id)) {
+            writer.send(arbitration_id, input, limit, 100);
+        }
+    }
+
+  private:
+    CanMessageBufferWriter<BufferType> writer;
+    MessageIdCollection<MessageTypes...> coll;
+    uint16_t node;
+    bool check_motor(uint32_t arbitration_id) {
+        auto arb = ArbitrationId{.id = arbitration_id};
+        uint16_t _node_id = static_cast<uint16_t>(arb.parts.node_id);
+        if (_node_id == this->node)
+            return true;
+        else
+            return false;
+    }
+};
+
+/**
  * A CanMessageBufferListener that will dispatch messages to other
  * CanMessageBufferListeners
  * @tparam Listener CanMessageBufferListener objects
@@ -134,6 +172,34 @@ class Dispatcher {
 
   private:
     std::tuple<Listener&...> registered;
+};
+
+/**
+ * A CanMessageBufferListener that will dispatch messages to other
+ * CanMessageBufferListeners
+ * @tparam Listener CanMessageBufferListener objects
+ */
+template <CanMessageBufferListener... Listener>
+class NodeDispatcher {
+  public:
+    explicit NodeDispatcher(Listener&... listener, uint16_t node)
+        : registered{listener...}, node(node) {}
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    requires std::sentinel_for<Limit, Input>
+    void handle(uint32_t arbitration_id, Input input, Limit limit) {
+        std::apply(
+            [arbitration_id, input, limit, this](auto&... x) {
+                auto arb = ArbitrationId{.id = arbitration_id};
+                uint16_t _node_id = static_cast<uint16_t>(arb.parts.node_id);
+                (x.handle(arbitration_id, input, limit, _node_id), ...);
+            },
+            registered);
+    }
+
+  private:
+    std::tuple<Listener&...> registered;
+    uint16_t node;
 };
 
 }  // namespace can_dispatch

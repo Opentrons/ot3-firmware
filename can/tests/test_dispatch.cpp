@@ -51,6 +51,43 @@ SCENARIO("Dispatcher") {
     }
 }
 
+
+
+SCENARIO("DispatchBufferTargetNode") {
+    using BufferType = std::array<uint8_t, 1>;
+
+    GIVEN(
+        "A DispatchBufferTargetNode that accepts left motor") {
+        auto l = MockMessageBuffer<1>{};
+        auto buff = BufferType{0xaa};
+        auto subject = DispatchBufferTargetNode<decltype(l), HeartbeatRequest,
+                                            HeartbeatResponse>(l, 0x60);
+
+        WHEN("Given left motor") {
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.node_id =
+                static_cast<uint16_t>(0x60);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end(), 0x60);
+            THEN("send is called.") {
+                auto arbitration_id_buffer = std::array<uint8_t, 4>{};
+                auto iter = arbitration_id_buffer.begin();
+                iter = bit_utils::int_to_bytes(arbitration_id.id, iter,
+                                               arbitration_id_buffer.end());
+                REQUIRE(l.length == 5);
+                REQUIRE(l.buff[0] == arbitration_id_buffer[0]);
+                REQUIRE(l.buff[1] == arbitration_id_buffer[1]);
+                REQUIRE(l.buff[2] == arbitration_id_buffer[2]);
+                REQUIRE(l.buff[3] == arbitration_id_buffer[3]);
+                REQUIRE(l.buff[4] == 0xaa);
+            }
+        }
+    }
+}
+
+
+
+
+
 SCENARIO("DispatchBufferTarget") {
     using BufferType = std::array<uint8_t, 1>;
 
