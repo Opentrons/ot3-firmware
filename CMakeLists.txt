@@ -71,6 +71,7 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./gantry/*.hpp ./gantry/*.cpp
         ./pipettes/*.hpp ./pipettes/*.cpp
         ./head/*.hpp ./head/*.cpp
+        ./motor-control/*.hpp ./motor-control/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.

@@ -1,12 +1,22 @@
 #include "catch2/catch.hpp"
+#include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
-#include "pipettes/tests/mock_message_queue.hpp"
+#include "motor-control/tests/mock_motor_hardware.hpp"
 
 using namespace motor_handler;
 
 #define TO_RADIX 31
+
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
+
+#define BUILD_INTERRUPT_HANDLER_Q(name, queuename, cqueuename) \
+    auto hw = test_mocks::MockMotorHardware();                 \
+    auto queuename = test_mocks::MockMessageQueue<Move>();     \
+    auto cqueuename = test_mocks::MockMessageQueue<Ack>();     \
+    auto name = MotorInterruptHandler(queuename, cqueuename, hw)
+
+#define BUILD_INTERRUPT_HANDLER(name) BUILD_INTERRUPT_HANDLER_Q(name, mq, cq)
 
 sq0_31 convert_velocity(float f) {
     return sq0_31(f * static_cast<float>(1LL << TO_RADIX));
@@ -25,9 +35,7 @@ q31_31 get_distance(sq0_31 velocity, sq0_31 acceleration, uint64_t duration) {
 
 TEST_CASE("Constant velocity") {
     GIVEN("a duration of 1 tick and velocity at half a step per tick") {
-        MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                              mock_message_queue::MockMessageQueue>
-            handler{};
+        BUILD_INTERRUPT_HANDLER(handler);
         handler.set_current_position(0x0);
         WHEN("moving at half a step per tick") {
             Move msg1 = Move{.duration = 1, .velocity = convert_velocity(0.5)};
@@ -43,9 +51,7 @@ TEST_CASE("Constant velocity") {
     }
 
     GIVEN("a duration of 2 ticks and velocity at half a step per tick") {
-        MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                              mock_message_queue::MockMessageQueue>
-            handler{};
+        BUILD_INTERRUPT_HANDLER(handler);
         WHEN("moving at half a step per tick") {
             Move msg1 = Move{.duration = 2, .velocity = convert_velocity(0.5)};
             handler.set_buffered_move(msg1);
@@ -62,9 +68,7 @@ TEST_CASE("Constant velocity") {
     }
 
     GIVEN("a motor handler") {
-        MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                              mock_message_queue::MockMessageQueue>
-            handler{};
+        BUILD_INTERRUPT_HANDLER(handler);
         auto velocity = convert_velocity(0.3);
         auto msg1 = Move{.duration = 4, .velocity = velocity};
         handler.set_buffered_move(msg1);
@@ -101,9 +105,7 @@ TEST_CASE("Constant velocity") {
 
 TEST_CASE("Non-zero acceleration") {
     GIVEN("a motor handler") {
-        MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                              mock_message_queue::MockMessageQueue>
-            handler{};
+        BUILD_INTERRUPT_HANDLER(handler);
         WHEN("move starts at 0 velocity with positive acceleration") {
             auto acceleration = convert_velocity(0.25);
             auto msg = Move{
@@ -172,12 +174,7 @@ TEST_CASE("Non-zero acceleration") {
 
 TEST_CASE("Compute move sequence") {
     GIVEN("a motor handler") {
-        MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                              mock_message_queue::MockMessageQueue>
-            handler{};
-        mock_message_queue::MockMessageQueue<Move> queue;
-        mock_message_queue::MockMessageQueue<Ack> completed_queue;
-        handler.set_message_queue(&queue, &completed_queue);
+        BUILD_INTERRUPT_HANDLER_Q(handler, queue, completed_queue);
 
         handler.set_current_position(0x0);
         auto msg1 = Move{.duration = 2, .velocity = default_velocity};
@@ -215,12 +212,7 @@ TEST_CASE("Compute move sequence") {
 }
 
 TEST_CASE("moves that result in out of range positions") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                          mock_message_queue::MockMessageQueue>
-        handler{};
-    mock_message_queue::MockMessageQueue<Move> queue;
-    mock_message_queue::MockMessageQueue<Ack> completed_queue;
-    handler.set_message_queue(&queue, &completed_queue);
+    BUILD_INTERRUPT_HANDLER(handler);
 
     GIVEN("Move past the largest possible value for position") {
         // Reaching the max possible position will probably be almost
@@ -258,12 +250,7 @@ TEST_CASE("moves that result in out of range positions") {
 }
 
 TEST_CASE("Changing motor direction") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                          mock_message_queue::MockMessageQueue>
-        handler{};
-    mock_message_queue::MockMessageQueue<Move> queue;
-    mock_message_queue::MockMessageQueue<Ack> completed_queue;
-    handler.set_message_queue(&queue, &completed_queue);
+    BUILD_INTERRUPT_HANDLER_Q(handler, queue, completed_queue);
 
     handler.set_current_position(0x0);
 
@@ -290,12 +277,7 @@ TEST_CASE("Changing motor direction") {
 }
 
 TEST_CASE("Finishing a move") {
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                          mock_message_queue::MockMessageQueue>
-        handler{};
-    mock_message_queue::MockMessageQueue<Move> queue;
-    mock_message_queue::MockMessageQueue<Ack> completed_queue;
-    handler.set_message_queue(&queue, &completed_queue);
+    BUILD_INTERRUPT_HANDLER_Q(handler, queue, completed_queue);
 
     GIVEN("a move") {
         auto move = Move{.group_id = 1, .seq_id = 2};
