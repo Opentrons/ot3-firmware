@@ -212,8 +212,6 @@ static auto check_motor(uint32_t arbitration_id, uint16_t node_id) {
     auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
     return (_node_id == node_id);
 }
-// replace with lamda!
-static auto noop(uint32_t arbitration_id, uint16_t node_id) { return true; }
 
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = NodeDispatcher(
