@@ -215,12 +215,14 @@ static auto check_motor(uint32_t arbitration_id, uint16_t node_id) {
 
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = NodeDispatcher(
-    check_motor, 0x50, motor_dispatch_target, motion_group_dispatch_target,
+    check_motor, static_cast<uint16_t>(NodeId::head_right),
+    motor_dispatch_target, motion_group_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 /** Dispatcher to the various left motor handlers */
 static auto dispatcher_left_motor = NodeDispatcher(
-    check_motor, 0x60, motor_dispatch_target2, motion_group_dispatch_target,
+    check_motor, static_cast<uint16_t>(NodeId::head_left),
+    motor_dispatch_target2, motion_group_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 /** main dispatcher */
