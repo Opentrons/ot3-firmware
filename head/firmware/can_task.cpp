@@ -264,8 +264,7 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     motor_left.driver.setup();
     motor_right.driver.setup();
 
-    auto poller =
-        FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher_left_motor);
+    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
     poller();
 }
 
