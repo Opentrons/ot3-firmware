@@ -97,7 +97,7 @@ class MotorInterruptHandler {
          * 3. Finally, if there is an active move, but you can no longer step
          * then active move should be set to false.
          *
-         * This function is called from a timer interrupt. See `step_motor.cpp`.
+         * This function is called from a timer interrupt. See `motor_hardware.cpp`.
          */
         if (!has_active_move && has_messages()) {
             update_move();
