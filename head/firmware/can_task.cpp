@@ -214,19 +214,20 @@ static auto check_motor(uint32_t arbitration_id, uint16_t node_id) {
 }
 // replace with lamda!
 static auto noop(uint32_t arbitration_id, uint16_t node_id) { return true; }
+
 /** Dispatcher to the various right motor handlers */
-static auto dispatcher_right_motor = Dispatcher(
+static auto dispatcher_right_motor = NodeDispatcher(
     check_motor, 0x50, motor_dispatch_target, motion_group_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 /** Dispatcher to the various left motor handlers */
-static auto dispatcher_left_motor = Dispatcher(
+static auto dispatcher_left_motor = NodeDispatcher(
     check_motor, 0x60, motor_dispatch_target2, motion_group_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
 
 /** main dispatcher */
 static auto dispatcher =
-    Dispatcher(noop, 0x00, dispatcher_right_motor, dispatcher_left_motor);
+    Dispatcher(dispatcher_right_motor, dispatcher_left_motor);
 
 /**
  * The type of the message buffer populated by HAL ISR.
