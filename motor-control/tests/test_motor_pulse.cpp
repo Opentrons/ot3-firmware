@@ -10,13 +10,13 @@ using namespace motor_handler;
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
 
-#define BUILD_INTERRUPT_HANDLER_Q(name, queuename, cqueuename) \
-    auto hw = test_mocks::MockMotorHardware();                 \
-    auto queuename = test_mocks::MockMessageQueue<Move>();     \
-    auto cqueuename = test_mocks::MockMessageQueue<Ack>();     \
-    auto name = MotorInterruptHandler(queuename, cqueuename, hw)
-
-#define BUILD_INTERRUPT_HANDLER(name) BUILD_INTERRUPT_HANDLER_Q(name, mq, cq)
+struct HandlerContainer {
+    test_mocks::MockMotorHardware hw{};
+    test_mocks::MockMessageQueue<Move> queue{};
+    test_mocks::MockMessageQueue<Ack> completed_queue{};
+    MotorInterruptHandler<test_mocks::MockMessageQueue> handler{
+        queue, completed_queue, hw};
+};
 
 sq0_31 convert_velocity(float f) {
     return sq0_31(f * static_cast<float>(1LL << TO_RADIX));
@@ -35,15 +35,15 @@ q31_31 get_distance(sq0_31 velocity, sq0_31 acceleration, uint64_t duration) {
 
 TEST_CASE("Constant velocity") {
     GIVEN("a duration of 1 tick and velocity at half a step per tick") {
-        BUILD_INTERRUPT_HANDLER(handler);
-        handler.set_current_position(0x0);
+        HandlerContainer test_objs{};
+        test_objs.handler.set_current_position(0x0);
         WHEN("moving at half a step per tick") {
             Move msg1 = Move{.duration = 1, .velocity = convert_velocity(0.5)};
-            handler.set_buffered_move(msg1);
+            test_objs.handler.set_buffered_move(msg1);
             THEN("motor would not step in the 1st tick") {
-                REQUIRE(!handler.tick());
+                REQUIRE(!test_objs.handler.tick());
                 AND_THEN("the position tracker should match half a step") {
-                    REQUIRE(handler.get_current_position() ==
+                    REQUIRE(test_objs.handler.get_current_position() ==
                             q31_31(convert_velocity(0.5)));
                 }
             }
@@ -51,16 +51,16 @@ TEST_CASE("Constant velocity") {
     }
 
     GIVEN("a duration of 2 ticks and velocity at half a step per tick") {
-        BUILD_INTERRUPT_HANDLER(handler);
+        HandlerContainer test_objs{};
         WHEN("moving at half a step per tick") {
             Move msg1 = Move{.duration = 2, .velocity = convert_velocity(0.5)};
-            handler.set_buffered_move(msg1);
+            test_objs.handler.set_buffered_move(msg1);
             THEN("motor would step in the 2nd tick") {
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.tick());
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.tick());
                 AND_THEN("the position tracker should match exactly one step") {
                     auto distance_traveled = q31_31(1LL << TO_RADIX);
-                    REQUIRE(handler.get_current_position() ==
+                    REQUIRE(test_objs.handler.get_current_position() ==
                             distance_traveled);
                 }
             }
@@ -68,31 +68,32 @@ TEST_CASE("Constant velocity") {
     }
 
     GIVEN("a motor handler") {
-        BUILD_INTERRUPT_HANDLER(handler);
+        HandlerContainer test_objs{};
         auto velocity = convert_velocity(0.3);
         auto msg1 = Move{.duration = 4, .velocity = velocity};
-        handler.set_buffered_move(msg1);
+        test_objs.handler.set_buffered_move(msg1);
 
         WHEN("you move at +0.3 velocity") {
-            REQUIRE(!handler.tick());
-            REQUIRE(!handler.tick());
-            REQUIRE(!handler.tick());
+            REQUIRE(!test_objs.handler.tick());
+            REQUIRE(!test_objs.handler.tick());
+            REQUIRE(!test_objs.handler.tick());
 
             THEN("the fourth tick should step") {
                 auto initial_distance =
                     get_distance(velocity, 0, msg1.duration);
-                REQUIRE(handler.tick());
-                REQUIRE(handler.get_current_position() == initial_distance);
+                REQUIRE(test_objs.handler.tick());
+                REQUIRE(test_objs.handler.get_current_position() ==
+                        initial_distance);
 
                 AND_WHEN("moving in the other direction") {
                     msg1.duration = 2;
                     msg1.velocity = convert_velocity(-0.3);
-                    handler.set_buffered_move(msg1);
+                    test_objs.handler.set_buffered_move(msg1);
 
                     THEN("the first tick should step") {
-                        REQUIRE(handler.tick());
-                        REQUIRE(!handler.tick());
-                        REQUIRE(handler.get_current_position() ==
+                        REQUIRE(test_objs.handler.tick());
+                        REQUIRE(!test_objs.handler.tick());
+                        REQUIRE(test_objs.handler.get_current_position() ==
                                 initial_distance + get_distance(msg1.velocity,
                                                                 0,
                                                                 msg1.duration));
@@ -105,32 +106,33 @@ TEST_CASE("Constant velocity") {
 
 TEST_CASE("Non-zero acceleration") {
     GIVEN("a motor handler") {
-        BUILD_INTERRUPT_HANDLER(handler);
+        HandlerContainer test_objs{};
         WHEN("move starts at 0 velocity with positive acceleration") {
             auto acceleration = convert_velocity(0.25);
             auto msg = Move{
                 .duration = 3, .velocity = 0, .acceleration = acceleration};
 
-            handler.set_buffered_move(msg);
+            test_objs.handler.set_buffered_move(msg);
             THEN("the third tick should step") {
-                REQUIRE(!handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.tick());
-                REQUIRE(handler.get_current_position() ==
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.tick());
+                REQUIRE(test_objs.handler.get_current_position() ==
                         convert_distance(0.25 + 0.5 + 0.75));
             }
         }
         WHEN("move starts at 0 velocity with negative acceleration") {
-            handler.set_current_position(convert_distance(0.25 + 0.5 + 0.75));
+            test_objs.handler.set_current_position(
+                convert_distance(0.25 + 0.5 + 0.75));
             auto acceleration = convert_velocity(-0.25);
             auto msg = Move{
                 .duration = 3, .velocity = 0, .acceleration = acceleration};
-            handler.set_buffered_move(msg);
+            test_objs.handler.set_buffered_move(msg);
             THEN("only the second tick should step") {
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.get_current_position() == 0x0);
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.tick());
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.get_current_position() == 0x0);
             }
         }
 
@@ -141,12 +143,12 @@ TEST_CASE("Non-zero acceleration") {
             auto msg = Move{.duration = duration,
                             .velocity = velocity,
                             .acceleration = acceleration};
-            handler.set_buffered_move(msg);
+            test_objs.handler.set_buffered_move(msg);
             THEN("the third and fifth ticks should step") {
-                REQUIRE(!handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.tick());
-                REQUIRE(handler.get_current_position() ==
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.tick());
+                REQUIRE(test_objs.handler.get_current_position() ==
                         get_distance(velocity, acceleration, duration));
             }
         }
@@ -154,17 +156,17 @@ TEST_CASE("Non-zero acceleration") {
             sq0_31 velocity = convert_velocity(-0.5);
             sq0_31 acceleration = convert_velocity(0.05);
             q31_31 duration = 4;
-            handler.set_current_position(convert_distance(10.0));
+            test_objs.handler.set_current_position(convert_distance(10.0));
             auto msg = Move{.duration = duration,
                             .velocity = velocity,
                             .acceleration = acceleration};
-            handler.set_buffered_move(msg);
+            test_objs.handler.set_buffered_move(msg);
             THEN("the third and forth ticks should step") {
-                REQUIRE(handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.tick());
-                REQUIRE(!handler.tick());
-                REQUIRE(handler.get_current_position() ==
+                REQUIRE(test_objs.handler.tick());
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.tick());
+                REQUIRE(!test_objs.handler.tick());
+                REQUIRE(test_objs.handler.get_current_position() ==
                         convert_distance(10.0) +
                             get_distance(velocity, acceleration, duration));
             }
@@ -174,45 +176,47 @@ TEST_CASE("Non-zero acceleration") {
 
 TEST_CASE("Compute move sequence") {
     GIVEN("a motor handler") {
-        BUILD_INTERRUPT_HANDLER_Q(handler, queue, completed_queue);
+        HandlerContainer test_objs{};
 
-        handler.set_current_position(0x0);
+        test_objs.handler.set_current_position(0x0);
         auto msg1 = Move{.duration = 2, .velocity = default_velocity};
-        queue.try_write_isr(msg1);
-        handler.update_move();
+        test_objs.queue.try_write_isr(msg1);
+        test_objs.handler.update_move();
 
         WHEN("a move duration is up, and the queue is empty") {
             for (int i = 0; i < 2; i++) {
-                static_cast<void>(handler.pulse());
+                static_cast<void>(test_objs.handler.pulse());
             }
 
             THEN("we do not move") {
-                static_cast<void>(handler.pulse());
-                REQUIRE(!handler.can_step());
-                REQUIRE(!handler.has_active_move);
+                static_cast<void>(test_objs.handler.pulse());
+                REQUIRE(!test_objs.handler.can_step());
+                REQUIRE(!test_objs.handler.has_active_move);
             }
         }
         WHEN("a move duration is up, and there is a move in the queue") {
             auto msg2 = Move{.duration = 5, .velocity = -default_velocity};
-            queue.try_write_isr(msg2);
+            test_objs.queue.try_write_isr(msg2);
 
             for (int i = 0; i < 2; i++) {
-                static_cast<void>(handler.pulse());
+                static_cast<void>(test_objs.handler.pulse());
             }
 
             THEN("we immediately switch to the new move") {
-                static_cast<void>(handler.pulse());
-                REQUIRE(handler.can_step());
-                REQUIRE(handler.has_active_move);
-                REQUIRE(handler.get_buffered_move().velocity == msg2.velocity);
-                REQUIRE(handler.get_buffered_move().duration == msg2.duration);
+                static_cast<void>(test_objs.handler.pulse());
+                REQUIRE(test_objs.handler.can_step());
+                REQUIRE(test_objs.handler.has_active_move);
+                REQUIRE(test_objs.handler.get_buffered_move().velocity ==
+                        msg2.velocity);
+                REQUIRE(test_objs.handler.get_buffered_move().duration ==
+                        msg2.duration);
             }
         }
     }
 }
 
 TEST_CASE("moves that result in out of range positions") {
-    BUILD_INTERRUPT_HANDLER(handler);
+    HandlerContainer test_objs{};
 
     GIVEN("Move past the largest possible value for position") {
         // Reaching the max possible position will probably be almost
@@ -222,16 +226,16 @@ TEST_CASE("moves that result in out of range positions") {
 
         q31_31 position_1 = 0x4000000000000000;
         q31_31 position_2 = position_1 + position_1;
-        REQUIRE(handler.overflow(position_1, position_2));
+        REQUIRE(test_objs.handler.overflow(position_1, position_2));
     }
 
     GIVEN("Move past the lowest possible value for position (zero)") {
         // Here we should give a negative number
         q31_31 current_position = 0x0;
         const sq0_31 neg_velocity = -default_velocity;
-        handler.set_current_position(current_position);
+        test_objs.handler.set_current_position(current_position);
         Move msg1 = Move{.duration = 2, .velocity = neg_velocity};
-        handler.set_buffered_move(msg1);
+        test_objs.handler.set_buffered_move(msg1);
 
         THEN(
             "the motor should not pulse, and position should be "
@@ -239,58 +243,59 @@ TEST_CASE("moves that result in out of range positions") {
             // (TODO lc): we don't have true error handling yet
             // this should probably return some type of error in
             // the instance of an overflow.
-            REQUIRE(!handler.tick());
-            REQUIRE(handler.get_current_position() == current_position);
+            REQUIRE(!test_objs.handler.tick());
+            REQUIRE(test_objs.handler.get_current_position() ==
+                    current_position);
             AND_THEN("the move should be finished") {
-                static_cast<void>(handler.pulse());
-                REQUIRE(handler.has_active_move == false);
+                static_cast<void>(test_objs.handler.pulse());
+                REQUIRE(test_objs.handler.has_active_move == false);
             }
         }
     }
 }
 
 TEST_CASE("Changing motor direction") {
-    BUILD_INTERRUPT_HANDLER_Q(handler, queue, completed_queue);
+    HandlerContainer test_objs{};
 
-    handler.set_current_position(0x0);
+    test_objs.handler.set_current_position(0x0);
 
     GIVEN("Positive move velocity") {
         auto msg1 = Move{.duration = 2, .velocity = default_velocity};
-        queue.try_write_isr(msg1);
-        handler.update_move();
+        test_objs.queue.try_write_isr(msg1);
+        test_objs.handler.update_move();
 
         for (int i = 0; i < 2; i++) {
-            static_cast<void>(handler.tick());
-            REQUIRE(handler.set_direction_pin());
+            static_cast<void>(test_objs.handler.tick());
+            REQUIRE(test_objs.handler.set_direction_pin());
         }
 
         THEN("Negative move velocity") {
             auto msg1 = Move{.duration = 2, .velocity = -default_velocity};
-            queue.try_write_isr(msg1);
-            handler.update_move();
+            test_objs.queue.try_write_isr(msg1);
+            test_objs.handler.update_move();
             for (int i = 0; i < 2; i++) {
-                static_cast<void>(handler.tick());
-                REQUIRE(!handler.set_direction_pin());
+                static_cast<void>(test_objs.handler.tick());
+                REQUIRE(!test_objs.handler.set_direction_pin());
             }
         }
     }
 }
 
 TEST_CASE("Finishing a move") {
-    BUILD_INTERRUPT_HANDLER_Q(handler, queue, completed_queue);
+    HandlerContainer test_objs{};
 
     GIVEN("a move") {
         auto move = Move{.group_id = 1, .seq_id = 2};
-        handler.set_buffered_move(move);
-        handler.set_current_position(100);
-        handler.finish_current_move();
+        test_objs.handler.set_buffered_move(move);
+        test_objs.handler.set_current_position(100);
+        test_objs.handler.finish_current_move();
 
         THEN(
             "the ack message should contain the correct information when the "
             "move finishes") {
-            REQUIRE(completed_queue.get_size() == 1);
+            REQUIRE(test_objs.completed_queue.get_size() == 1);
             auto msg = Ack{};
-            completed_queue.try_read(&msg);
+            test_objs.completed_queue.try_read(&msg);
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position == 100);
