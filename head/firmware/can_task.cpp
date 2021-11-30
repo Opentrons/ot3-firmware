@@ -162,10 +162,10 @@ static auto move_group_manager = MoveGroupType{};
 static auto can_move_group_handler =
     MoveGroupHandler(message_writer_1, move_group_manager);
 
-static auto can_move_group_executor_handler =
+static auto can_move_group_executor_handler_right =
     MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_right);
 
-static auto can_move_group_executor_handler2 =
+static auto can_move_group_executor_handler_left =
     MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_left);
 
 /** Handler of device info requests. */
@@ -197,14 +197,14 @@ static auto motion_group_dispatch_target = DispatchParseTarget<
     can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target_right =
-    DispatchParseTarget<decltype(can_move_group_executor_handler),
+    DispatchParseTarget<decltype(can_move_group_executor_handler_right),
                         can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler};
+        can_move_group_executor_handler_right};
 
 static auto motion_group_executor_dispatch_target_left =
-    DispatchParseTarget<decltype(can_move_group_executor_handler2),
+    DispatchParseTarget<decltype(can_move_group_executor_handler_left),
                         can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler2};
+        can_move_group_executor_handler_left};
 
 static auto check_motor(uint32_t arbitration_id, uint16_t node_id) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
