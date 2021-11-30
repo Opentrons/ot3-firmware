@@ -29,7 +29,7 @@ void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
-    htim7.Init.Prescaler = 0;
+    htim7.Init.Prescaler = 499;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
     htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -68,7 +68,9 @@ void timer_init() {
 }
 
 
-void timer_interrupt_start() { HAL_TIM_Base_Start_IT(&htim7); }
+void timer_interrupt_start() {
+    HAL_TIM_Base_Start_IT(&htim7);
+}
 
 void timer_interrupt_stop() { HAL_TIM_Base_Stop_IT(&htim7); }
 
