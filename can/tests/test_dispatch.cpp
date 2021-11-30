@@ -188,9 +188,8 @@ SCENARIO("DispatchParseTargetNode") {
         auto l = Handler{};
         auto buff = BufferType{};
         auto node = 0x60;
-        auto subject =
-            DispatchParseTargetNode<Handler, HeartbeatRequest, HeartbeatResponse>(
-                l, node);
+        auto subject = DispatchParseTargetNode<Handler, HeartbeatRequest,
+                                               HeartbeatResponse>(l, node);
 
         WHEN("Given a HeartbeatRequest") {
             auto arbitration_id = ArbitrationId{.id = 0};
