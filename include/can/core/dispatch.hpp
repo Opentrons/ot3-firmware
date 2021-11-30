@@ -82,46 +82,6 @@ requires HandlesMessages<HandlerType, MessageTypes...> &&
 };
 
 /**
- * A CanMessageBufferListener for specific nodes that parses messages and
- * notifies a Handler
- * @tparam HandlerType A HandlesMessages type
- * @tparam MessageTypes The Message types this handles
- */
-template <typename HandlerType, CanMessage... MessageTypes>
-requires HandlesMessages<HandlerType, MessageTypes...> &&
-    (!std::movable<HandlerType> &&
-     !std::copyable<HandlerType>)class DispatchParseTargetNode {
-  public:
-    DispatchParseTargetNode(HandlerType& handler, uint16_t node_id)
-        : handler{handler}, parser{}, node(node_id) {}
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    requires std::sentinel_for<Limit, Input>
-    void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        if (check_motor(arbitration_id)) {
-            auto arb = ArbitrationId{.id = arbitration_id};
-            auto result = parser.parse(
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-                MessageId{static_cast<uint16_t>(arb.parts.message_id)}, input,
-                limit);
-            handler.handle(result);
-        }
-    }
-
-  private:
-    HandlerType& handler;
-    Parser<MessageTypes...> parser;
-    uint16_t node;
-    auto check_motor(uint32_t arbitration_id) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        auto arb = ArbitrationId{.id = arbitration_id};
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
-        return (_node_id == this->node);
-    }
-};
-
-/**
  * A CanMessageBufferListener that will write messages to a MessageBuffer only
  * if arbitration id matches message ids in MessageTypes
  *
@@ -160,20 +120,27 @@ requires(!std::movable<BufferType> &&
 template <CanMessageBufferListener... Listener>
 class Dispatcher {
   public:
-    explicit Dispatcher(Listener&... listener) : registered{listener...} {}
+    using ArbitrationIdTest = bool (*)(uint32_t identifier, uint16_t node_id);
+    explicit Dispatcher(ArbitrationIdTest test, uint16_t node_id,
+                        Listener&... listener)
+        : registered{listener...}, test{test}, node_id{node_id} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        std::apply(
-            [arbitration_id, input, limit](auto&... x) {
-                (x.handle(arbitration_id, input, limit), ...);
-            },
-            registered);
+        if (test(arbitration_id, node_id)) {
+            std::apply(
+                [arbitration_id, input, limit](auto&... x) {
+                    (x.handle(arbitration_id, input, limit), ...);
+                },
+                registered);
+        }
     }
 
   private:
     std::tuple<Listener&...> registered;
+    ArbitrationIdTest test;
+    uint16_t node_id;
 };
 
 }  // namespace can_dispatch

@@ -171,46 +171,62 @@ static auto can_move_group_executor_handler2 =
 static auto device_info_handler =
     can_device_info::DeviceInfoHandler(message_writer_1, 0);
 static auto device_info_dispatch_target =
-    DispatchParseTargetNode<decltype(device_info_handler),
-                            can_messages::DeviceInfoRequest>{
-        device_info_handler, 0x50};
+    DispatchParseTarget<decltype(device_info_handler),
+                        can_messages::DeviceInfoRequest>{device_info_handler};
 
-static auto motor_dispatch_target = DispatchParseTargetNode<
+static auto motor_dispatch_target = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler, 0x50};
+    can_messages::ReadMotorDriverRegister>{can_motor_handler};
 
-static auto motor_dispatch_target2 = DispatchParseTargetNode<
+static auto motor_dispatch_target2 = DispatchParseTarget<
     decltype(can_motor_handler2), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler2, 0x60};
+    can_messages::ReadMotorDriverRegister>{can_motor_handler2};
 
-static auto motion_group_dispatch_target = DispatchParseTargetNode<
+static auto motion_group_dispatch_target = DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
     can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler, 0x50};
+    can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =
-    DispatchParseTargetNode<decltype(can_move_group_executor_handler),
-                            can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler, 0x50};
+    DispatchParseTarget<decltype(can_move_group_executor_handler),
+                        can_messages::ExecuteMoveGroupRequest>{
+        can_move_group_executor_handler};
 
 static auto motion_group_executor_dispatch_target2 =
-    DispatchParseTargetNode<decltype(can_move_group_executor_handler2),
-                            can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler2, 0x60};
+    DispatchParseTarget<decltype(can_move_group_executor_handler2),
+                        can_messages::ExecuteMoveGroupRequest>{
+        can_move_group_executor_handler2};
 
-/** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motor_dispatch_target2, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target,
+static auto check_motor(uint32_t arbitration_id, uint16_t node_id) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+    auto arb = ArbitrationId{.id = arbitration_id};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+    auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+    return (_node_id == node_id);
+}
+// replace with lamda!
+static auto noop(uint32_t arbitration_id, uint16_t node_id) { return true; }
+/** Dispatcher to the various right motor handlers */
+static auto dispatcher_right_motor = Dispatcher(
+    check_motor, 0x50, motor_dispatch_target, motion_group_dispatch_target,
     motion_group_executor_dispatch_target2, device_info_dispatch_target);
+
+/** Dispatcher to the various left motor handlers */
+static auto dispatcher_left_motor = Dispatcher(
+    check_motor, 0x60, motor_dispatch_target2, motion_group_dispatch_target,
+    motion_group_executor_dispatch_target2, device_info_dispatch_target);
+
+/** main dispatcher */
+static auto dispatcher =
+    Dispatcher(noop, 0x00, dispatcher_right_motor, dispatcher_left_motor);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -247,7 +263,8 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     motor_left.driver.setup();
     motor_right.driver.setup();
 
-    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    auto poller =
+        FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher_left_motor);
     poller();
 }
 
