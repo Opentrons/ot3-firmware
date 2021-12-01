@@ -224,6 +224,9 @@ static auto motion_group_executor_dispatch_target_left =
     DispatchParseTarget<decltype(can_move_group_executor_handler_left),
                         can_messages::ExecuteMoveGroupRequest>{
         can_move_group_executor_handler_left};
+/**
+ * messages to head act like messages to both, head-right and head-left
+ */
 
 struct CheckForNodeId {
     NodeId node_id;
