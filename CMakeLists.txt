@@ -95,6 +95,7 @@ add_custom_target(
         DEPENDS opentrons_ot3_firmware-format-ci
 )
 
+# add python linting
 add_custom_target(
         lint
         ALL
