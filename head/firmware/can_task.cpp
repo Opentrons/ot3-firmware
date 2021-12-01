@@ -42,10 +42,14 @@ static auto can_bus_1 = HalCanBus(can_get_device_handle());
 static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_right);
 static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_left);
 
-static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
-    "Motor Queue");
-static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
-    "Complete Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_left(
+    "Motor Queue Left");
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_left(
+    "Complete Queue Left");
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_right(
+    "Motor Queue Right");
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_right(
+    "Complete Queue Right");
 
 /**
  * @brief SPI MSP Initialization
@@ -127,7 +131,7 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
 static motor_hardware::MotorHardware motor_hardware_right(
     pin_configurations_right, &htim7);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
-    motor_queue, complete_queue, motor_hardware_right);
+    motor_queue_right, complete_queue_right, motor_hardware_right);
 
 static motor_class::Motor motor_right{
     spi_comms3,
@@ -141,13 +145,13 @@ static motor_class::Motor motor_right{
                       .min_acceleration = 1,
                       .max_acceleration = 2},
     MotorDriverConfigurations,
-    motor_queue,
-    complete_queue};
+    motor_queue_right,
+    complete_queue_right};
 
 static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
-    motor_queue, complete_queue, motor_hardware_left);
+    motor_queue_left, complete_queue_left, motor_hardware_left);
 
 static motor_class::Motor motor_left{
     spi_comms2,
@@ -161,8 +165,8 @@ static motor_class::Motor motor_left{
                       .min_acceleration = 1,
                       .max_acceleration = 2},
     MotorDriverConfigurations,
-    motor_queue,
-    complete_queue};
+    motor_queue_left,
+    complete_queue_left};
 
 /** The parsed message handler */
 static auto can_motor_handler_right =
