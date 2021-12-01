@@ -135,12 +135,14 @@ static motor_class::Motor motor_right{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    motor_interrupt_right,
+    motor_hardware_right,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
-    MotorDriverConfigurations};
+    MotorDriverConfigurations,
+    motor_queue,
+    complete_queue};
 
 static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7);
@@ -153,12 +155,14 @@ static motor_class::Motor motor_left{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    motor_interrupt_left,
+    motor_hardware_left,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
-    MotorDriverConfigurations;
+    MotorDriverConfigurations,
+    motor_queue,
+    complete_queue};
 
 /** The parsed message handler */
 static auto can_motor_handler_right =
