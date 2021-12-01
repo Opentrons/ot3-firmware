@@ -222,8 +222,6 @@ CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
 
 CheckForNodeId CheckForNodeId_right{.node_id = NodeId::head_right};
 
-static auto test(uint32_t arbitration_id) { return true; }
-
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = NodeDispatcher(
     CheckForNodeId_right, motor_dispatch_target_right,
