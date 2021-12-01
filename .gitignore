@@ -1,6 +1,7 @@
 .DS_Store
 .idea
-
+CMakeUserPresets.json
+*.pyc
 build-cross/
 build-cross-pipettes/
 stm32-tools/

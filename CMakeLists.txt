@@ -53,6 +53,8 @@ if (${CMAKE_CROSSCOMPILING})
 
 endif ()
 
+add_subdirectory(python)
+
 set(LINT_TARGETS "")
 add_subdirectory(common)
 add_subdirectory(can)
@@ -83,16 +85,18 @@ add_custom_target(
         format
         ALL
         COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${SOURCES_FOR_FORMAT}
+        DEPENDS opentrons_ot3_firmware-format
 )
 
 # Target for use in ci - warnings are errors, doesn't edit files
 add_custom_target(
         format-ci
         COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${SOURCES_FOR_FORMAT}
+        DEPENDS opentrons_ot3_firmware-format-ci
 )
 
 add_custom_target(
         lint
         ALL
-        DEPENDS ${LINT_TARGETS}
+        DEPENDS ${LINT_TARGETS} opentrons_ot3_firmware-lint
 )
