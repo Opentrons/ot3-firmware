@@ -222,21 +222,23 @@ CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
 
 CheckForNodeId CheckForNodeId_right{.node_id = NodeId::head_right};
 
+static auto test(uint32_t arbitration_id) { return true; }
+
 /** Dispatcher to the various right motor handlers */
-static auto dispatcher_right_motor = NodeDispatcher(
+static auto dispatcher_right_motor = Dispatcher(
     CheckForNodeId_right, motor_dispatch_target_right,
     motion_group_dispatch_target, motion_group_executor_dispatch_target_right,
     device_info_dispatch_target);
 
 /** Dispatcher to the various left motor handlers */
-static auto dispatcher_left_motor = NodeDispatcher(
+static auto dispatcher_left_motor = Dispatcher(
     CheckForNodeId_left, motor_dispatch_target_left,
     motion_group_dispatch_target, motion_group_executor_dispatch_target_left,
     device_info_dispatch_target);
 
 /** main dispatcher */
 static auto dispatcher =
-    Dispatcher(dispatcher_right_motor, dispatcher_left_motor);
+    Dispatcher(test, dispatcher_right_motor, dispatcher_left_motor);
 
 /**
  * The type of the message buffer populated by HAL ISR.
