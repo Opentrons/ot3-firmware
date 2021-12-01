@@ -139,11 +139,9 @@ class Dispatcher {
 };
 
 /**
- * Note:
- * Just making this class for now to keep stuff from breaking.
- * eventually there'll just be the one Dispatcher class.
- * /
-/**
+ * Note: this class is just here to keep stuff from breaking.
+ * Eventually all other subsystems will be refactored, and there
+ * will just be the one Dispatcher class.
  * A CanMessageBufferListener that will dispatch messages to other
  * CanMessageBufferListeners
  * @tparam Listener CanMessageBufferListener objects
