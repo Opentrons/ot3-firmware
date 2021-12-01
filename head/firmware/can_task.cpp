@@ -214,15 +214,16 @@ struct CheckForNodeId {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
         auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        return (_node_id == static_cast<uint16_t>(node_id));
+        auto tmp = static_cast<uint16_t>(node_id);
+        return ((_node_id == tmp) ||
+                (_node_id == static_cast<uint16_t>(NodeId::broadcast)) ||
+                (_node_id == static_cast<uint16_t>(NodeId::head)));
     }
 };
 
 CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
 
 CheckForNodeId CheckForNodeId_right{.node_id = NodeId::head_right};
-
-static auto test(uint32_t arbitration_id) { return true; }
 
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = Dispatcher(
@@ -236,9 +237,9 @@ static auto dispatcher_left_motor = Dispatcher(
     motion_group_dispatch_target, motion_group_executor_dispatch_target_left,
     device_info_dispatch_target);
 
-/** main dispatcher */
-static auto dispatcher =
-    Dispatcher(test, dispatcher_right_motor, dispatcher_left_motor);
+static auto main_dispatcher =
+    Dispatcher([](auto _) -> bool { return true; }, dispatcher_right_motor,
+               dispatcher_left_motor);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -275,7 +276,8 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     motor_left.driver.setup();
     motor_right.driver.setup();
 
-    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    auto poller =
+        FreeRTOSCanBufferPoller(read_can_message_buffer, main_dispatcher);
     poller();
 }
 
