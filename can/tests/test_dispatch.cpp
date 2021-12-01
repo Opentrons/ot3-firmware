@@ -56,6 +56,78 @@ SCENARIO("Dispatcher") {
             }
         }
     }
+
+    GIVEN("a dispatcher with two listeners for head_left") {
+        auto l1 = Listener{};
+        auto l2 = Listener{};
+        auto buff = BufferType{1};
+        struct CheckForNodeId {
+            NodeId node_id;
+            auto operator()(uint32_t arbitration_id) const {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto arb = ArbitrationId{.id = arbitration_id};
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto tmp = static_cast<uint16_t>(node_id);
+                return (_node_id == tmp);
+            }
+        };
+
+        CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
+        auto subject = Dispatcher(CheckForNodeId_left, l1, l2);
+
+        WHEN("dispatching a message") {
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.node_id =
+                static_cast<uint16_t>(NodeId::head_left);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            THEN("listeners are called") {
+                REQUIRE(l1.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l1.iter == buff.begin());
+                REQUIRE(l1.limit == buff.end());
+                REQUIRE(l2.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l2.iter == buff.begin());
+                REQUIRE(l2.limit == buff.end());
+            }
+        }
+    }
+
+    GIVEN("a dispatcher with two listeners for head_right ") {
+        auto l1 = Listener{};
+        auto l2 = Listener{};
+        auto buff = BufferType{1};
+        struct CheckForNodeId {
+            NodeId node_id;
+            auto operator()(uint32_t arbitration_id) const {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto arb = ArbitrationId{.id = arbitration_id};
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto tmp = static_cast<uint16_t>(node_id);
+                return (_node_id == tmp);
+            }
+        };
+
+        CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_right};
+        auto subject = Dispatcher(CheckForNodeId_left, l1, l2);
+
+        WHEN("dispatching a message") {
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.node_id =
+                static_cast<uint16_t>(NodeId::head_right);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            THEN("listeners are called") {
+                REQUIRE(l1.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l1.iter == buff.begin());
+                REQUIRE(l1.limit == buff.end());
+                REQUIRE(l2.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l2.iter == buff.begin());
+                REQUIRE(l2.limit == buff.end());
+            }
+        }
+    }
 }
 
 SCENARIO("DispatchBufferTarget") {

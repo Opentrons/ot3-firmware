@@ -157,7 +157,8 @@ static motor_class::Motor motor_left{
 /** The parsed message handler */
 static auto can_motor_handler_right =
     MotorHandler{message_writer_right, motor_right};
-static auto can_motor_handler_left = MotorHandler{message_writer_left, motor_left};
+static auto can_motor_handler_left =
+    MotorHandler{message_writer_left, motor_left};
 
 static auto move_group_manager_right = MoveGroupType{};
 static auto move_group_manager_left = MoveGroupType{};
@@ -167,25 +168,26 @@ static auto can_move_group_handler_right =
 static auto can_move_group_handler_left =
     MoveGroupHandler(message_writer_left, move_group_manager_left);
 
-static auto can_move_group_executor_handler_right =
-    MoveGroupExecutorHandler(message_writer_right, move_group_manager_right, motor_right);
+static auto can_move_group_executor_handler_right = MoveGroupExecutorHandler(
+    message_writer_right, move_group_manager_right, motor_right);
 
-static auto can_move_group_executor_handler_left =
-    MoveGroupExecutorHandler(message_writer_left, move_group_manager_left, motor_left);
+static auto can_move_group_executor_handler_left = MoveGroupExecutorHandler(
+    message_writer_left, move_group_manager_left, motor_left);
 
 /** Handler of device info requests. */
 static auto device_info_handler_right =
     can_device_info::DeviceInfoHandler(message_writer_right, 0);
 static auto device_info_dispatch_target_right =
     DispatchParseTarget<decltype(device_info_handler_right),
-                        can_messages::DeviceInfoRequest>{device_info_handler_right};
+                        can_messages::DeviceInfoRequest>{
+        device_info_handler_right};
 
 static auto device_info_handler_left =
     can_device_info::DeviceInfoHandler(message_writer_left, 0);
 static auto device_info_dispatch_target_left =
     DispatchParseTarget<decltype(device_info_handler_left),
-                        can_messages::DeviceInfoRequest>{device_info_handler_left};
-
+                        can_messages::DeviceInfoRequest>{
+        device_info_handler_left};
 
 static auto motor_dispatch_target_right = DispatchParseTarget<
     decltype(can_motor_handler_right), can_messages::SetupRequest,
@@ -243,16 +245,18 @@ CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
 CheckForNodeId CheckForNodeId_right{.node_id = NodeId::head_right};
 
 /** Dispatcher to the various right motor handlers */
-static auto dispatcher_right_motor = Dispatcher(
-    CheckForNodeId_right, motor_dispatch_target_right,
-    motion_group_dispatch_target_right, motion_group_executor_dispatch_target_right,
-    device_info_dispatch_target_right);
+static auto dispatcher_right_motor =
+    Dispatcher(CheckForNodeId_right, motor_dispatch_target_right,
+               motion_group_dispatch_target_right,
+               motion_group_executor_dispatch_target_right,
+               device_info_dispatch_target_right);
 
 /** Dispatcher to the various left motor handlers */
-static auto dispatcher_left_motor = Dispatcher(
-    CheckForNodeId_left, motor_dispatch_target_left,
-    motion_group_dispatch_target_left, motion_group_executor_dispatch_target_left,
-    device_info_dispatch_target_left);
+static auto dispatcher_left_motor =
+    Dispatcher(CheckForNodeId_left, motor_dispatch_target_left,
+               motion_group_dispatch_target_left,
+               motion_group_executor_dispatch_target_left,
+               device_info_dispatch_target_left);
 
 static auto main_dispatcher =
     Dispatcher([](auto _) -> bool { return true; }, dispatcher_right_motor,
