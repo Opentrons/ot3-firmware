@@ -264,7 +264,31 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);
     can_start();
-    can_bus_1.setup_node_id_filter(NodeId::head);
+
+    auto filter = ArbitrationId{.id = 0};
+
+    // Accept broadcast
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::broadcast);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0,
+                         filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Accept any head
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
+                         filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Accept head right
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_right);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
+                         filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Accept head left
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_left);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1,
+                         filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Reject everything else.
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();
