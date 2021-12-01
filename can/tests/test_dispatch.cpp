@@ -36,13 +36,8 @@ SCENARIO("Dispatcher") {
         auto l2 = Listener{};
         auto buff = BufferType{1};
         uint32_t arb_id = 1234;
-        struct CheckForNodeId {
-            NodeId node_id;
-            auto operator()(uint32_t arbitration_id) const { return true; }
-        };
 
-        CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head};
-        auto subject = Dispatcher(CheckForNodeId_left, l1, l2);
+        auto subject = Dispatcher([](auto _) -> bool { return true; }, l1, l2);
 
         WHEN("dispatching a message") {
             subject.handle(arb_id, buff.begin(), buff.end());
@@ -74,8 +69,8 @@ SCENARIO("Dispatcher") {
             }
         };
 
-        CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
-        auto subject = Dispatcher(CheckForNodeId_left, l1, l2);
+        CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_left};
+        auto subject = Dispatcher(check_for_node_id_left, l1, l2);
 
         WHEN("dispatching a message") {
             auto arbitration_id = ArbitrationId{.id = 0};
@@ -110,21 +105,23 @@ SCENARIO("Dispatcher") {
             }
         };
 
-        CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_right};
-        auto subject = Dispatcher(CheckForNodeId_left, l1, l2);
+        CheckForNodeId check_node_id_right{.node_id = NodeId::head_right};
+        auto subject = Dispatcher(check_node_id_right, l1, l2);
 
-        WHEN("dispatching a message") {
+        WHEN(
+            "dispatching a head_left message to a dispatcher expecting "
+            "head_right") {
             auto arbitration_id = ArbitrationId{.id = 0};
             arbitration_id.parts.node_id =
-                static_cast<uint16_t>(NodeId::head_right);
+                static_cast<uint16_t>(NodeId::head_left);
             subject.handle(arbitration_id.id, buff.begin(), buff.end());
-            THEN("listeners are called") {
-                REQUIRE(l1.id == static_cast<uint32_t>(arbitration_id.id));
-                REQUIRE(l1.iter == buff.begin());
-                REQUIRE(l1.limit == buff.end());
-                REQUIRE(l2.id == static_cast<uint32_t>(arbitration_id.id));
-                REQUIRE(l2.iter == buff.begin());
-                REQUIRE(l2.limit == buff.end());
+            THEN("listeners are are not called") {
+                REQUIRE(l1.id != static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l1.iter != buff.begin());
+                REQUIRE(l1.limit != buff.end());
+                REQUIRE(l2.id != static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l2.iter != buff.begin());
+                REQUIRE(l2.limit != buff.end());
             }
         }
     }

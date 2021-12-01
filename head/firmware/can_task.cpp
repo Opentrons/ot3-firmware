@@ -122,7 +122,6 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
  * should be made to avoid a pretty gross template signature.
  */
 
-/*z motor would need a motor and PinConfigurations instance on its own*/
 static motor_class::Motor motor_right{
     spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
@@ -138,7 +137,6 @@ static motor_class::Motor motor_right{
     motor_queue,
     complete_queue};
 
-/*z motor*/
 static motor_class::Motor motor_left{
     spi_comms2,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
@@ -243,20 +241,20 @@ struct CheckForNodeId {
     }
 };
 
-CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
+CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_left};
 
-CheckForNodeId CheckForNodeId_right{.node_id = NodeId::head_right};
+CheckForNodeId check_for_node_id_right{.node_id = NodeId::head_right};
 
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor =
-    Dispatcher(CheckForNodeId_right, motor_dispatch_target_right,
+    Dispatcher(check_for_node_id_right, motor_dispatch_target_right,
                motion_group_dispatch_target_right,
                motion_group_executor_dispatch_target_right,
                device_info_dispatch_target_right);
 
 /** Dispatcher to the various left motor handlers */
 static auto dispatcher_left_motor =
-    Dispatcher(CheckForNodeId_left, motor_dispatch_target_left,
+    Dispatcher(check_for_node_id_left, motor_dispatch_target_left,
                motion_group_dispatch_target_left,
                motion_group_executor_dispatch_target_left,
                device_info_dispatch_target_left);
