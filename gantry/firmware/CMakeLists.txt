@@ -12,7 +12,6 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(GANTRY_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/step_motor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
@@ -25,14 +24,11 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c
         )
-
 
 add_executable(gantry_x
         ${GANTRY_FW_LINTABLE_SRCS}
@@ -42,6 +38,8 @@ add_executable(gantry_y
         ${GANTRY_FW_LINTABLE_SRCS}
         ${GANTRY_FW_NON_LINTABLE_SRCS})
 
+target_ot_motor_control(gantry_x)
+target_ot_motor_control(gantry_y)
 
 target_link_libraries(gantry_x
         PUBLIC STM32G491RETx
