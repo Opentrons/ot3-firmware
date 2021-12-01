@@ -1,5 +1,6 @@
 #include "can/core/arbitration_id.hpp"
 #include "can/core/dispatch.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "can/tests/mock_message_buffer.hpp"
 #include "catch2/catch.hpp"
@@ -9,6 +10,53 @@ using namespace can_dispatch;
 using namespace can_messages;
 using namespace can_arbitration_id;
 using namespace mock_message_buffer;
+
+SCENARIO("Dispatcher") {
+    using BufferType = std::array<uint8_t, 1>;
+    using BufferIterator = BufferType::iterator;
+
+    struct Listener {
+        Listener() : id{0}, iter{nullptr}, limit{nullptr} {}
+        Listener(const Listener&) = delete;
+        Listener(const Listener&&) = delete;
+        Listener& operator=(const Listener&) = delete;
+        Listener&& operator=(const Listener&&) = delete;
+
+        void handle(uint32_t id, BufferIterator i, BufferIterator limit) {
+            this->id = id;
+            this->iter = i;
+            this->limit = limit;
+        }
+        uint32_t id;
+        BufferIterator iter;
+        BufferIterator limit;
+    };
+    GIVEN("a dispatcher with two listeners") {
+        auto l1 = Listener{};
+        auto l2 = Listener{};
+        auto buff = BufferType{1};
+        uint32_t arb_id = 1234;
+        struct CheckForNodeId {
+            NodeId node_id;
+            auto operator()(uint32_t arbitration_id) const { return true; }
+        };
+
+        CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head};
+        auto subject = Dispatcher(CheckForNodeId_left, l1, l2);
+
+        WHEN("dispatching a message") {
+            subject.handle(arb_id, buff.begin(), buff.end());
+            THEN("listeners are called") {
+                REQUIRE(l1.id == arb_id);
+                REQUIRE(l1.iter == buff.begin());
+                REQUIRE(l1.limit == buff.end());
+                REQUIRE(l2.id == arb_id);
+                REQUIRE(l2.iter == buff.begin());
+                REQUIRE(l2.limit == buff.end());
+            }
+        }
+    }
+}
 
 SCENARIO("DispatchBufferTarget") {
     using BufferType = std::array<uint8_t, 1>;
