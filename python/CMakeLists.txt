@@ -1,3 +1,4 @@
+message(STATUS "What shell are we using? $ENV{SHELL}")
 execute_process(
   COMMAND $ENV{SHELL} -c "python -m pip install pipenv==2021.5.29"
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
