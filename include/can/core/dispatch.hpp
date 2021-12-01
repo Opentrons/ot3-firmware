@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "arbitration_id.hpp"
 #include "can_message_buffer.hpp"
 #include "common/core/bit_utils.hpp"
@@ -137,6 +139,11 @@ class Dispatcher {
 };
 
 /**
+ * Note:
+ * Just making this class for now to keep stuff from breaking.
+ * eventually there'll just be the one Dispatcher class.
+ * /
+/**
  * A CanMessageBufferListener that will dispatch messages to other
  * CanMessageBufferListeners
  * @tparam Listener CanMessageBufferListener objects
@@ -144,15 +151,14 @@ class Dispatcher {
 template <CanMessageBufferListener... Listener>
 class NodeDispatcher {
   public:
-    using ArbitrationIdTest = bool (*)(uint32_t identifier, uint16_t node_id);
-    explicit NodeDispatcher(ArbitrationIdTest test, uint16_t node_id,
-                            Listener&... listener)
-        : registered{listener...}, test{test}, node_id{node_id} {}
+    using ArbitrationIdTest = std::function<bool(uint32_t identifier)>;
+    explicit NodeDispatcher(ArbitrationIdTest test, Listener&... listener)
+        : registered{listener...}, test{std::move(test)} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        if (test(arbitration_id, node_id)) {
+        if (test(arbitration_id)) {
             std::apply(
                 [arbitration_id, input, limit](auto&... x) {
                     (x.handle(arbitration_id, input, limit), ...);
@@ -164,7 +170,6 @@ class NodeDispatcher {
   private:
     std::tuple<Listener&...> registered;
     ArbitrationIdTest test;
-    uint16_t node_id;
 };
 
 }  // namespace can_dispatch

@@ -206,25 +206,35 @@ static auto motion_group_executor_dispatch_target_left =
                         can_messages::ExecuteMoveGroupRequest>{
         can_move_group_executor_handler_left};
 
-static auto check_motor(uint32_t arbitration_id, uint16_t node_id) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    auto arb = ArbitrationId{.id = arbitration_id};
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
-    return (_node_id == node_id);
-}
+struct CheckForNodeId {
+    NodeId node_id;
+    auto operator()(uint32_t arbitration_id) const {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        auto arb = ArbitrationId{.id = arbitration_id};
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        return (_node_id == static_cast<uint16_t>(node_id));
+    }
+};
+
+CheckForNodeId CheckForNodeId_left{.node_id = NodeId::head_left};
+
+CheckForNodeId CheckForNodeId_right{.node_id = NodeId::head_right};
+
+static auto test(uint32_t arbitration_id) { return true; }
 
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = NodeDispatcher(
-    check_motor, static_cast<uint16_t>(NodeId::head_right),
-    motor_dispatch_target_right, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target_right, device_info_dispatch_target);
+    CheckForNodeId_right, motor_dispatch_target_right,
+    motion_group_dispatch_target, motion_group_executor_dispatch_target_right,
+    device_info_dispatch_target);
 
 /** Dispatcher to the various left motor handlers */
 static auto dispatcher_left_motor = NodeDispatcher(
-    check_motor, static_cast<uint16_t>(NodeId::head_left),
-    motor_dispatch_target_left, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target_left, device_info_dispatch_target);
+    CheckForNodeId_left, motor_dispatch_target_left,
+    motion_group_dispatch_target, motion_group_executor_dispatch_target_left,
+    device_info_dispatch_target);
 
 /** main dispatcher */
 static auto dispatcher =
