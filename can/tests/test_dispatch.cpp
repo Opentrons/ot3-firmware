@@ -116,12 +116,12 @@ SCENARIO("Dispatcher") {
                 static_cast<uint16_t>(NodeId::head_left);
             subject.handle(arbitration_id.id, buff.begin(), buff.end());
             THEN("listeners are are not called") {
-                REQUIRE(l1.id != static_cast<uint32_t>(arbitration_id.id));
-                REQUIRE(l1.iter != buff.begin());
-                REQUIRE(l1.limit != buff.end());
-                REQUIRE(l2.id != static_cast<uint32_t>(arbitration_id.id));
-                REQUIRE(l2.iter != buff.begin());
-                REQUIRE(l2.limit != buff.end());
+                REQUIRE(l1.id == 0);
+                REQUIRE(l1.iter == nullptr);
+                REQUIRE(l1.limit == nullptr);
+                REQUIRE(l2.id == 0);
+                REQUIRE(l2.iter == nullptr);
+                REQUIRE(l2.limit == nullptr);
             }
         }
     }
