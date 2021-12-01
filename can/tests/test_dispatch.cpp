@@ -1,5 +1,6 @@
 #include "can/core/arbitration_id.hpp"
 #include "can/core/dispatch.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "can/tests/mock_message_buffer.hpp"
 #include "catch2/catch.hpp"
@@ -35,7 +36,8 @@ SCENARIO("Dispatcher") {
         auto l2 = Listener{};
         auto buff = BufferType{1};
         uint32_t arb_id = 1234;
-        auto subject = Dispatcher(l1, l2);
+
+        auto subject = Dispatcher([](auto _) -> bool { return true; }, l1, l2);
 
         WHEN("dispatching a message") {
             subject.handle(arb_id, buff.begin(), buff.end());
@@ -46,6 +48,80 @@ SCENARIO("Dispatcher") {
                 REQUIRE(l2.id == arb_id);
                 REQUIRE(l2.iter == buff.begin());
                 REQUIRE(l2.limit == buff.end());
+            }
+        }
+    }
+
+    GIVEN("a dispatcher with two listeners for head_left") {
+        auto l1 = Listener{};
+        auto l2 = Listener{};
+        auto buff = BufferType{1};
+        struct CheckForNodeId {
+            NodeId node_id;
+            auto operator()(uint32_t arbitration_id) const {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto arb = ArbitrationId{.id = arbitration_id};
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto tmp = static_cast<uint16_t>(node_id);
+                return (_node_id == tmp);
+            }
+        };
+
+        CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_left};
+        auto subject = Dispatcher(check_for_node_id_left, l1, l2);
+
+        WHEN("dispatching a message") {
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.node_id =
+                static_cast<uint16_t>(NodeId::head_left);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            THEN("listeners are called") {
+                REQUIRE(l1.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l1.iter == buff.begin());
+                REQUIRE(l1.limit == buff.end());
+                REQUIRE(l2.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l2.iter == buff.begin());
+                REQUIRE(l2.limit == buff.end());
+            }
+        }
+    }
+
+    GIVEN("a dispatcher with two listeners for head_right ") {
+        auto l1 = Listener{};
+        auto l2 = Listener{};
+        auto buff = BufferType{1};
+        struct CheckForNodeId {
+            NodeId node_id;
+            auto operator()(uint32_t arbitration_id) const {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto arb = ArbitrationId{.id = arbitration_id};
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto tmp = static_cast<uint16_t>(node_id);
+                return (_node_id == tmp);
+            }
+        };
+
+        CheckForNodeId check_node_id_right{.node_id = NodeId::head_right};
+        auto subject = Dispatcher(check_node_id_right, l1, l2);
+
+        WHEN(
+            "dispatching a head_left message to a dispatcher expecting "
+            "head_right") {
+            auto arbitration_id = ArbitrationId{.id = 0};
+            arbitration_id.parts.node_id =
+                static_cast<uint16_t>(NodeId::head_left);
+            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            THEN("listeners are are not called") {
+                REQUIRE(l1.id == 0);
+                REQUIRE(l1.iter == nullptr);
+                REQUIRE(l1.limit == nullptr);
+                REQUIRE(l2.id == 0);
+                REQUIRE(l2.iter == nullptr);
+                REQUIRE(l2.limit == nullptr);
             }
         }
     }

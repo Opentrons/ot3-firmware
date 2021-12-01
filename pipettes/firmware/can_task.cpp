@@ -146,7 +146,8 @@ static auto device_info_dispatch_target =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target, eeprom_dispatch_target,
+    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    motion_group_dispatch_target, eeprom_dispatch_target,
     device_info_dispatch_target, motion_group_executor_dispatch_target);
 
 /**
