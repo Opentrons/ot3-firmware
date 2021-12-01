@@ -171,8 +171,9 @@ static auto motion_group_executor_dispatch_target =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target, device_info_dispatch_target);
+    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    motion_group_dispatch_target, motion_group_executor_dispatch_target,
+    device_info_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
