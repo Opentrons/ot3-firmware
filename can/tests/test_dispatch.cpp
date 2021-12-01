@@ -59,13 +59,9 @@ SCENARIO("Dispatcher") {
         struct CheckForNodeId {
             NodeId node_id;
             auto operator()(uint32_t arbitration_id) const {
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-                auto arb = ArbitrationId{.id = arbitration_id};
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-                auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto arb = ArbitrationId(arbitration_id);
                 auto tmp = static_cast<uint16_t>(node_id);
-                return (_node_id == tmp);
+                return (arb.node_id() == tmp);
             }
         };
 
@@ -73,15 +69,14 @@ SCENARIO("Dispatcher") {
         auto subject = Dispatcher(check_for_node_id_left, l1, l2);
 
         WHEN("dispatching a message") {
-            auto arbitration_id = ArbitrationId{.id = 0};
-            arbitration_id.parts.node_id =
-                static_cast<uint16_t>(NodeId::head_left);
-            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.node_id(static_cast<uint16_t>(NodeId::head_left));
+            subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("listeners are called") {
-                REQUIRE(l1.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l1.id == arbitration_id);
                 REQUIRE(l1.iter == buff.begin());
                 REQUIRE(l1.limit == buff.end());
-                REQUIRE(l2.id == static_cast<uint32_t>(arbitration_id.id));
+                REQUIRE(l2.id == arbitration_id);
                 REQUIRE(l2.iter == buff.begin());
                 REQUIRE(l2.limit == buff.end());
             }
@@ -95,13 +90,9 @@ SCENARIO("Dispatcher") {
         struct CheckForNodeId {
             NodeId node_id;
             auto operator()(uint32_t arbitration_id) const {
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-                auto arb = ArbitrationId{.id = arbitration_id};
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-                auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                auto arb = ArbitrationId(arbitration_id);
                 auto tmp = static_cast<uint16_t>(node_id);
-                return (_node_id == tmp);
+                return (arb.node_id() == tmp);
             }
         };
 
@@ -111,10 +102,9 @@ SCENARIO("Dispatcher") {
         WHEN(
             "dispatching a head_left message to a dispatcher expecting "
             "head_right") {
-            auto arbitration_id = ArbitrationId{.id = 0};
-            arbitration_id.parts.node_id =
-                static_cast<uint16_t>(NodeId::head_left);
-            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.node_id(static_cast<uint16_t>(NodeId::head_left));
+            subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("listeners are are not called") {
                 REQUIRE(l1.id == 0);
                 REQUIRE(l1.iter == nullptr);
@@ -139,14 +129,14 @@ SCENARIO("DispatchBufferTarget") {
                                             HeartbeatResponse>(l);
 
         WHEN("Given a HeartbeatRequest") {
-            auto arbitration_id = ArbitrationId{.id = 0};
-            arbitration_id.parts.message_id =
-                static_cast<uint16_t>(HeartbeatRequest::id);
-            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.message_id(
+                static_cast<uint16_t>(HeartbeatRequest::id));
+            subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("send is called.") {
                 auto arbitration_id_buffer = std::array<uint8_t, 4>{};
                 auto iter = arbitration_id_buffer.begin();
-                iter = bit_utils::int_to_bytes(arbitration_id.id, iter,
+                iter = bit_utils::int_to_bytes(arbitration_id.get_id(), iter,
                                                arbitration_id_buffer.end());
                 REQUIRE(l.length == 5);
                 REQUIRE(l.buff[0] == arbitration_id_buffer[0]);
@@ -167,14 +157,14 @@ SCENARIO("DispatchBufferTarget") {
                                             HeartbeatResponse>(l);
 
         WHEN("Given a HeartbeatResponse") {
-            auto arbitration_id = ArbitrationId{.id = 0};
-            arbitration_id.parts.message_id =
-                static_cast<uint16_t>(HeartbeatResponse::id);
-            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.message_id(
+                static_cast<uint16_t>(HeartbeatResponse::id));
+            subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("send is called") {
                 auto arbitration_id_buffer = std::array<uint8_t, 4>{};
                 auto iter = arbitration_id_buffer.begin();
-                iter = bit_utils::int_to_bytes(arbitration_id.id, iter,
+                iter = bit_utils::int_to_bytes(arbitration_id.get_id(), iter,
                                                arbitration_id_buffer.end());
                 REQUIRE(l.length == 5);
                 REQUIRE(l.buff[0] == arbitration_id_buffer[0]);
@@ -195,10 +185,10 @@ SCENARIO("DispatchBufferTarget") {
                                             HeartbeatResponse>(l);
 
         WHEN("Given a GetMoveGroupResponse") {
-            auto arbitration_id = ArbitrationId{.id = 0};
-            arbitration_id.parts.message_id =
-                static_cast<uint16_t>(GetMoveGroupResponse::id);
-            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.message_id(
+                static_cast<uint16_t>(GetMoveGroupResponse::id));
+            subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("listeners are not called") { REQUIRE(l.length == 0); }
         }
     }
@@ -230,10 +220,10 @@ SCENARIO("DispatchParseTarget") {
                 l);
 
         WHEN("Given a HeartbeatRequest") {
-            auto arbitration_id = ArbitrationId{.id = 0};
-            arbitration_id.parts.message_id =
-                static_cast<uint16_t>(HeartbeatRequest::id);
-            subject.handle(arbitration_id.id, buff.begin(), buff.end());
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.message_id(
+                static_cast<uint16_t>(HeartbeatRequest::id));
+            subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("handler is called with a parsed HeartbeatRequest object.") {
                 REQUIRE(
                     std::holds_alternative<HeartbeatRequest>(l.parsed_message));

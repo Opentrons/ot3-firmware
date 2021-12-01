@@ -12,6 +12,7 @@ add_executable(
         test_can_bus.cpp
         test_can_message_buffer.cpp
         test_dispatch.cpp
+        test_arbitratration_id.cpp
 )
 
 target_include_directories(can PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
