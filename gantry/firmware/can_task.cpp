@@ -160,9 +160,11 @@ static auto motion_group_executor_dispatch_target =
                         can_messages::ExecuteMoveGroupRequest>{
         can_move_group_executor_handler};
 
+static auto test(uint32_t arbitration_id) { return true; }
+
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target,
+    test, motor_dispatch_target, motion_group_dispatch_target,
     motion_group_executor_dispatch_target, device_info_dispatch_target);
 
 /**

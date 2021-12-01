@@ -122,35 +122,8 @@ requires(!std::movable<BufferType> &&
 template <CanMessageBufferListener... Listener>
 class Dispatcher {
   public:
-    explicit Dispatcher(Listener&... listener) : registered{listener...} {}
-
-    template <bit_utils::ByteIterator Input, typename Limit>
-    requires std::sentinel_for<Limit, Input>
-    void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        std::apply(
-            [arbitration_id, input, limit](auto&... x) {
-                (x.handle(arbitration_id, input, limit), ...);
-            },
-            registered);
-    }
-
-  private:
-    std::tuple<Listener&...> registered;
-};
-
-/**
- * Note: this class is just here to keep stuff from breaking.
- * Eventually all other subsystems will be refactored, and there
- * will just be the one Dispatcher class.
- * A CanMessageBufferListener that will dispatch messages to other
- * CanMessageBufferListeners
- * @tparam Listener CanMessageBufferListener objects
- */
-template <CanMessageBufferListener... Listener>
-class NodeDispatcher {
-  public:
     using ArbitrationIdTest = std::function<bool(uint32_t identifier)>;
-    explicit NodeDispatcher(ArbitrationIdTest test, Listener&... listener)
+    explicit Dispatcher(ArbitrationIdTest test, Listener&... listener)
         : registered{listener...}, test{std::move(test)} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>

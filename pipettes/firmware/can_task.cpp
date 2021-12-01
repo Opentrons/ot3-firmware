@@ -144,10 +144,13 @@ static auto device_info_dispatch_target =
     DispatchParseTarget<DeviceInfoHandler, can_messages::DeviceInfoRequest>{
         device_info_handler};
 
+static auto test(uint32_t arbitration_id) { return true; }
+
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target, eeprom_dispatch_target,
-    device_info_dispatch_target, motion_group_executor_dispatch_target);
+static auto dispatcher =
+    Dispatcher(test, motor_dispatch_target, motion_group_dispatch_target,
+               eeprom_dispatch_target, device_info_dispatch_target,
+               motion_group_executor_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
