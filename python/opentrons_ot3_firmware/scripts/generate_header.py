@@ -3,8 +3,8 @@ from __future__ import annotations
 import argparse
 import io
 from enum import Enum
-from pathlib import Path
 from typing import Type, Any
+import sys
 
 from opentrons_ot3_firmware.constants import (
     MessageId,
@@ -36,17 +36,6 @@ class block:
     def __exit__(self, *exc: Any) -> None:
         """Exit the context manager."""
         self._output.write(self._terminate)
-
-
-def run(file: Path) -> None:
-    """Entry point for script."""
-    with io.StringIO() as output:
-        generate(output)
-
-        output_string = output.getvalue()
-        file.write_text(output_string)
-
-        print(output_string)
 
 
 def generate(output: io.StringIO) -> None:
@@ -81,15 +70,17 @@ def main() -> None:
         description="Generate a C++ header file defining CANBUS constants."
     )
     parser.add_argument(
-        "--target",
-        type=str,
-        required=True,
-        help="path of header file to generate",
+        "target",
+        metavar="TARGET",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        nargs="?",
+        help="path of header file to generate; use - or do not specify for stdout",
     )
 
     args = parser.parse_args()
 
-    run(Path(args.target))
+    generate(args.target)
 
 
 if __name__ == "__main__":

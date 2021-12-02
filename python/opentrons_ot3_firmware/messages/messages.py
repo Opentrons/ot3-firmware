@@ -5,7 +5,7 @@ from typing import Union, Optional, Type
 from typing_extensions import get_args
 
 from . import message_definitions as defs
-from opentrons_ot3_firmware.constants import MessageId
+from ..constants import MessageId
 
 MessageDefinition = Union[
     defs.HeartbeatRequest,
@@ -19,8 +19,6 @@ MessageDefinition = Union[
     defs.DisableMotorRequest,
     defs.MoveRequest,
     defs.SetupRequest,
-    defs.GetSpeedRequest,
-    defs.GetSpeedResponse,
     defs.WriteToEEPromRequest,
     defs.ReadFromEEPromRequest,
     defs.ReadFromEEPromResponse,
@@ -30,6 +28,12 @@ MessageDefinition = Union[
     defs.ExecuteMoveGroupRequest,
     defs.ClearAllMoveGroupsRequest,
     defs.MoveCompleted,
+    defs.SetMotionConstraints,
+    defs.GetMotionConstraintsRequest,
+    defs.GetMotionConstraintsResponse,
+    defs.WriteMotorDriverRegister,
+    defs.ReadMotorDriverRequest,
+    defs.ReadMotorDriverResponse,
 ]
 
 

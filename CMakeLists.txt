@@ -12,12 +12,12 @@ project("OT3Firmware"
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(ROOT_BOARD_FILE_PATH "${PROJECT_SOURCE_DIR}/include/firmware/" ${ROOT_BOARD_FILE_PATH})
-set(USE_PYTHON OFF CACHE BOOL "handle python stack. keep true unless in CI")
-mark_as_advanced(USE_PYTHON)
 if (NOT ${CMAKE_CROSSCOMPILING})
     enable_testing()
     add_custom_target(build-and-test)
 endif ()
+add_subdirectory(python)
+
 
 # Set a default build type if none was specified
 # From https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -54,8 +54,6 @@ if (${CMAKE_CROSSCOMPILING})
     include_directories(${CMAKE_BINARY_DIR}/generated/)
 
 endif ()
-
-add_subdirectory(python)
 
 set(LINT_TARGETS "")
 add_subdirectory(common)
@@ -101,8 +99,6 @@ add_custom_target(
       ALL
       DEPENDS ${LINT_TARGETS})
 
-if (${USE_PYTHON})
-   add_dependencies(lint opentrons_ot3_firmware-lint)
-   add_dependencies(format opentrons_ot3_firmware-format)
-   add_dependencies(format-ci opentrons_ot3_firmware-format-ci)
-endif()
+add_dependencies(lint opentrons_ot3_firmware-lint)
+add_dependencies(format opentrons_ot3_firmware-format)
+add_dependencies(format-ci opentrons_ot3_firmware-format-ci)

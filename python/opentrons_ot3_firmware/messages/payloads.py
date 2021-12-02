@@ -1,7 +1,7 @@
 """Payloads of can bus messages."""
 from dataclasses import dataclass
 
-from opentrons_ot3_firmware import utils
+from .. import utils
 
 
 @dataclass
@@ -114,3 +114,43 @@ class MoveCompletedPayload(MoveGroupResponsePayload):
     seq_id: utils.UInt8Field
     current_position: utils.UInt32Field
     ack_id: utils.UInt8Field
+    node_id: utils.UInt8Field
+
+
+@dataclass
+class MotionConstraintsPayload(utils.BinarySerializable):
+    """The min and max velocity and acceleration of a motion system."""
+
+    min_velocity: utils.Int32Field
+    max_velocity: utils.Int32Field
+    min_acceleration: utils.Int32Field
+    max_acceleration: utils.Int32Field
+
+
+@dataclass
+class MotionConstraintsResponsePayload(MotionConstraintsPayload):
+    """The min and max velocity and acceleration of a motion system."""
+
+    node_id: utils.UInt8Field
+
+
+@dataclass
+class MotorDriverRegisterPayload(utils.BinarySerializable):
+    """Read motor driver register request payload."""
+
+    reg_addr: utils.UInt8Field
+
+
+@dataclass
+class MotorDriverRegisterDataPayload(MotorDriverRegisterPayload):
+    """Write motor driver register request payload."""
+
+    data: utils.UInt32Field
+
+
+@dataclass
+class ReadMotorDriverRegisterResponsePayload(ResponsePayload):
+    """Read motor driver register response payload."""
+
+    reg_addr: utils.UInt8Field
+    data: utils.UInt32Field

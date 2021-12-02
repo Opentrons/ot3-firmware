@@ -39,8 +39,8 @@ using namespace spi;
 
 static auto can_bus_1 = HalCanBus(can_get_device_handle());
 
-static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_right);
-static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_left);
+static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_r);
+static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_l);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_left(
     "Motor Queue Left");
@@ -257,9 +257,9 @@ struct CheckForNodeId {
     }
 };
 
-CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_left};
+CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_l};
 
-CheckForNodeId check_for_node_id_right{.node_id = NodeId::head_right};
+CheckForNodeId check_for_node_id_right{.node_id = NodeId::head_r};
 
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor =
@@ -328,7 +328,7 @@ extern "C" void motor_callback_glue() {
 
     // Accept head right
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_right);
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_r);
     can_bus_1.add_filter(
         CanFilterType::mask, CanFilterConfig::to_fifo1,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
@@ -336,7 +336,7 @@ extern "C" void motor_callback_glue() {
 
     // Accept head left
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_left);
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_l);
     can_bus_1.add_filter(
         CanFilterType::mask, CanFilterConfig::to_fifo1,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)

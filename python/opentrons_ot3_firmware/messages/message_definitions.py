@@ -4,7 +4,7 @@ from typing import Type
 
 from typing_extensions import Literal
 
-from opentrons_ot3_firmware.utils import BinarySerializable
+from ..utils import BinarySerializable
 from ..constants import MessageId
 from . import payloads
 
@@ -89,20 +89,6 @@ class SetupRequest:  # noqa: D101
 
 
 @dataclass
-class GetSpeedRequest:  # noqa: D101
-    payload: payloads.EmptyPayload
-    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
-    message_id: Literal[MessageId.get_speed_request] = MessageId.get_speed_request
-
-
-@dataclass
-class GetSpeedResponse:  # noqa: D101
-    payload: payloads.GetSpeedResponsePayload
-    payload_type: Type[BinarySerializable] = payloads.GetSpeedResponsePayload
-    message_id: Literal[MessageId.get_speed_response] = MessageId.get_speed_response
-
-
-@dataclass
 class WriteToEEPromRequest:  # noqa: D101
     payload: payloads.WriteToEEPromRequestPayload
     payload_type: Type[BinarySerializable] = payloads.WriteToEEPromRequestPayload
@@ -150,8 +136,8 @@ class GetMoveGroupResponse:  # noqa: D101
 
 @dataclass
 class ExecuteMoveGroupRequest:  # noqa: D101
-    payload: payloads.MoveGroupRequestPayload
-    payload_type: Type[BinarySerializable] = payloads.MoveGroupRequestPayload
+    payload: payloads.ExecuteMoveGroupRequestPayload
+    payload_type: Type[BinarySerializable] = payloads.ExecuteMoveGroupRequestPayload
     message_id: Literal[
         MessageId.execute_move_group_request
     ] = MessageId.execute_move_group_request
@@ -171,3 +157,59 @@ class MoveCompleted:  # noqa: D101
     payload: payloads.MoveCompletedPayload
     payload_type: Type[BinarySerializable] = payloads.MoveCompletedPayload
     message_id: Literal[MessageId.move_completed] = MessageId.move_completed
+
+
+@dataclass
+class SetMotionConstraints:  # noqa: D101
+    payload: payloads.MotionConstraintsPayload
+    payload_type: Type[BinarySerializable] = payloads.MotionConstraintsPayload
+    message_id: Literal[
+        MessageId.set_motion_constraints
+    ] = MessageId.set_motion_constraints
+
+
+@dataclass
+class GetMotionConstraintsRequest:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[
+        MessageId.get_motion_constraints_request
+    ] = MessageId.get_motion_constraints_request
+
+
+@dataclass
+class GetMotionConstraintsResponse:  # noqa: D101
+    payload: payloads.MotionConstraintsResponsePayload
+    payload_type: Type[BinarySerializable] = payloads.MotionConstraintsResponsePayload
+    message_id: Literal[
+        MessageId.get_motion_constraints_response
+    ] = MessageId.get_motion_constraints_response
+
+
+@dataclass
+class WriteMotorDriverRegister:  # noqa: D101
+    payload: payloads.MotorDriverRegisterDataPayload
+    payload_type: Type[BinarySerializable] = payloads.MotorDriverRegisterDataPayload
+    message_id: Literal[
+        MessageId.write_motor_driver_register_request
+    ] = MessageId.write_motor_driver_register_request
+
+
+@dataclass
+class ReadMotorDriverRequest:  # noqa: D101
+    payload: payloads.MotorDriverRegisterPayload
+    payload_type: Type[BinarySerializable] = payloads.MotorDriverRegisterPayload
+    message_id: Literal[
+        MessageId.read_motor_driver_register_request
+    ] = MessageId.read_motor_driver_register_request
+
+
+@dataclass
+class ReadMotorDriverResponse:  # noqa: D101
+    payload: payloads.ReadMotorDriverRegisterResponsePayload
+    payload_type: Type[
+        BinarySerializable
+    ] = payloads.ReadMotorDriverRegisterResponsePayload
+    message_id: Literal[
+        MessageId.read_motor_driver_register_response
+    ] = MessageId.read_motor_driver_register_response

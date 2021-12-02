@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-#include "ids.hpp"
+#include "can/core/ids.hpp"
 
 namespace message_core {
 

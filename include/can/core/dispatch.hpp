@@ -3,10 +3,10 @@
 #include <functional>
 
 #include "arbitration_id.hpp"
+#include "can/core/ids.hpp"
 #include "can_message_buffer.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/message_buffer.hpp"
-#include "ids.hpp"
 #include "parse.hpp"
 
 namespace can_dispatch {
