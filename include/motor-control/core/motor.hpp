@@ -37,7 +37,8 @@ struct Motor {
      * @param completed_queue Output message queue with completed motion
      * commands.
      */
-    Motor(spi::TMC2130Spi& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
+    Motor(spi::TMC2130Spi& spi,
+          lms::LinearMotionSystemConfig<MEConfig> lms_config,
           motor_hardware::MotorHardwareIface& hardware_iface,
           MotionConstraints constraints, RegisterConfig driver_config,
           GenericQueue& queue, CompletedQueue& completed_queue)
