@@ -12,7 +12,8 @@ project("OT3Firmware"
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(ROOT_BOARD_FILE_PATH "${PROJECT_SOURCE_DIR}/include/firmware/" ${ROOT_BOARD_FILE_PATH})
-set(USE_PYTHON ON CACHE BOOL "handle python stack. keep true unless in CI")
+set(USE_PYTHON OFF CACHE BOOL "handle python stack. keep true unless in CI")
+mark_as_advanced(USE_PYTHON)
 if (NOT ${CMAKE_CROSSCOMPILING})
     enable_testing()
     add_custom_target(build-and-test)
