@@ -24,8 +24,7 @@
           "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
           "CMAKE_FIND_APPBUNDLE": "NEVER",
           "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
-          "ARM_ARCH_TYPE": "cortex-m4",
-          "USE_PYTHON": true
+          "ARM_ARCH_TYPE": "cortex-m4"
         },
         "inherits": "configuration-ok"
       },
@@ -40,8 +39,7 @@
           "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
           "CMAKE_FIND_APPBUNDLE": "NEVER",
           "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
-          "ARM_ARCH_TYPE": "cortex-m33",
-          "USE_PYTHON": true
+          "ARM_ARCH_TYPE": "cortex-m33"
         },
         "inherits": "configuration-ok"
       },
@@ -53,8 +51,7 @@
         "binaryDir": "${sourceDir}/build-host",
         "cacheVariables": {
           "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-          "USE_PYTHON": true
+          "CMAKE_EXPORT_COMPILE_COMMANDS": true
         },
         "inherits": "configuration-ok"
       },
@@ -64,17 +61,13 @@
         "displayName": "STM32 module host builds forcing g++",
         "cacheVariables": {
           "CMAKE_C_COMPILER": "gcc-10",
-          "CMAKE_CXX_COMPILER": "g++-10",
-          "USE_PYTHON": false
+          "CMAKE_CXX_COMPILER": "g++-10"
         }
       },
       {
         "name": "host-gcc10-python",
         "inherits": ["host-gcc10", "configuration-ok"],
-        "displayName": "STM32 firmware host builds with gcc10 and python",
-        "cacheVariables": {
-          "USE_PYTHON": true
-        }
+        "displayName": "STM32 firmware host builds with gcc10 and python"
       }
     ],
   "buildPresets": [
