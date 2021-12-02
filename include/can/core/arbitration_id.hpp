@@ -25,13 +25,13 @@ class ArbitrationId {
     [[nodiscard]] auto get_id() const -> uint32_t { return id; }
 
     [[nodiscard]] auto function_code() const -> uint8_t {
-        return get(function_code_mask, function_code_shift);
+        return get(function_code_bit_mask, function_code_shift);
     }
     [[nodiscard]] auto node_id() const -> uint8_t {
-        return get(node_id_mask, node_id_shift);
+        return get(node_id_bit_mask, node_id_shift);
     }
     [[nodiscard]] auto message_id() const -> uint16_t {
-        return get(message_id_mask, message_id_shift);
+        return get(message_id_bit_mask, message_id_shift);
     }
 
     void function_code(uint8_t v) {
@@ -69,12 +69,12 @@ class ArbitrationId {
 
     /**
      * Get bits from the id.
-     * @param mask the mask to apply after shifting.
+     * @param mask the mask to apply.
      * @param shift amount to shift right.
      * @return the value
      */
     [[nodiscard]] auto get(int mask, int shift) const -> uint32_t {
-        return (id >> shift) & mask;
+        return (id & mask) >> shift;
     }
 
     uint32_t id{0};
