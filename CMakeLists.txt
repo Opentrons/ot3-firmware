@@ -66,6 +66,7 @@ list(REMOVE_DUPLICATES LINT_TARGETS)
 
 find_package(Clang)
 
+# c++ linting is here but python linting is in the subdir
 file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./include/*.hpp
         ./can/*.hpp ./can/*.cpp

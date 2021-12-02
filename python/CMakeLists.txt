@@ -11,10 +11,12 @@ execute_process(
   COMMAND_ERROR_IS_FATAL ANY
   )
 
-add_custom_target(opentrons_ot3_firmware-build-and-test
-  COMMAND ${SHELL_FOR_PYTHON} -c "pipenv run py.test"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-add_dependencies(build-and-test opentrons_ot3_firmware-build-and-test)
+if (NOT ${CMAKE_CROSSCOMPILING})
+  add_custom_target(opentrons_ot3_firmware-build-and-test
+    COMMAND ${SHELL_FOR_PYTHON} -c "pipenv run py.test"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+  add_dependencies(build-and-test opentrons_ot3_firmware-build-and-test)
+endif()
 
 add_custom_target(opentrons_ot3_firmware-format
   COMMAND ${SHELL_FOR_PYTHON} -c "pipenv run python -m black opentrons_ot3_firmware tests setup.py"

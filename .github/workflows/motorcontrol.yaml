@@ -39,6 +39,9 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
       - run: |
           sudo apt update
           sudo apt install gcc-10 g++-10
