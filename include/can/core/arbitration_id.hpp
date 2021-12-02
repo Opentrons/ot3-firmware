@@ -9,10 +9,19 @@ namespace can_arbitration_id {
  */
 class ArbitrationId {
   public:
-    ArbitrationId() {}
+    ArbitrationId() = default;
     ArbitrationId(uint32_t arbitration_id) : id{arbitration_id} {}
 
+    /**
+     * Implicit conversion to uint32_t
+     * @return the id
+     */
     operator uint32_t() const { return get_id(); }
+
+    /**
+     * Get the encoded arbitration id as an integer
+     * @return the id
+     */
     [[nodiscard]] auto get_id() const -> uint32_t { return id; }
 
     [[nodiscard]] auto function_code() const -> uint8_t {
@@ -48,10 +57,22 @@ class ArbitrationId {
                                                 << message_id_shift;
 
   private:
+    /**
+     * Set bits in the id.
+     * @param val The value.
+     * @param mask The mask to apply.
+     * @param shift The amount to left shift masked value
+     */
     void set(uint32_t val, int mask, int shift) {
         id |= ((val & mask) << shift);
     }
 
+    /**
+     * Get bits from the id.
+     * @param mask the mask to apply after shifting.
+     * @param shift amount to shift right.
+     * @return the value
+     */
     [[nodiscard]] auto get(int mask, int shift) const -> uint32_t {
         return (id >> shift) & mask;
     }
