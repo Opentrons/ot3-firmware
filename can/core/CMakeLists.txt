@@ -38,3 +38,6 @@ target_compile_options(can-core
         -Wctor-dtor-privacy
         -fno-rtti
         )
+
+list(APPEND LINT_TARGETS ${IDS_HPP})
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

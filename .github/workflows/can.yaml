@@ -56,6 +56,8 @@ jobs:
         run: cmake --build ./build-cross --target can-format-ci
       - name: "Build"
         run: cmake --build ./build-cross --target can
+      - name: "Lint"
+        run: cmake --build ./build-cross --target lint
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

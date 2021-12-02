@@ -56,7 +56,7 @@ jobs:
         run: cmake --preset=host-gcc10 .
       - name: "Format check"
         run: cmake --build ./build-host --target motor-control-format-ci
+      - name: "Build and test"
+        run cmake --build ./build-host --target motor-control-build-and-test
       - name: "Lint"
         run: cmake --build ./build-host --target lint
-      - name: 'Build and test'
-        run: cmake --build ./build-host --target motor-control-build-and-test
