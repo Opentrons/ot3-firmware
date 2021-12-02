@@ -88,7 +88,6 @@ add_custom_target(
         format
         ALL
         COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${SOURCES_FOR_FORMAT}
-        DEPENDS opentrons_ot3_firmware-format
 )
 
 # Target for use in ci - warnings are errors, doesn't edit files
