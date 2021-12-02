@@ -22,4 +22,16 @@ union ArbitrationId {
     uint32_t id;
 };
 
+/**
+ * Message id mask.
+ */
+constexpr auto message_id_mask = ArbitrationId{.parts{
+    .function_code = 0, .node_id = 0, .message_id = 0x3FFF, .padding = 0}};
+
+/**
+ * Node id mask.
+ */
+constexpr auto node_id_mask = ArbitrationId{
+    .parts{.function_code = 0, .node_id = 0xFF, .message_id = 0, .padding = 0}};
+
 }  // namespace can_arbitration_id

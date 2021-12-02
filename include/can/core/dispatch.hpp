@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "arbitration_id.hpp"
 #include "can_message_buffer.hpp"
 #include "common/core/bit_utils.hpp"
@@ -120,20 +122,25 @@ requires(!std::movable<BufferType> &&
 template <CanMessageBufferListener... Listener>
 class Dispatcher {
   public:
-    explicit Dispatcher(Listener&... listener) : registered{listener...} {}
+    using ArbitrationIdTest = std::function<bool(uint32_t identifier)>;
+    explicit Dispatcher(ArbitrationIdTest test, Listener&... listener)
+        : registered{listener...}, test{std::move(test)} {}
 
     template <bit_utils::ByteIterator Input, typename Limit>
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
-        std::apply(
-            [arbitration_id, input, limit](auto&... x) {
-                (x.handle(arbitration_id, input, limit), ...);
-            },
-            registered);
+        if (test(arbitration_id)) {
+            std::apply(
+                [arbitration_id, input, limit](auto&... x) {
+                    (x.handle(arbitration_id, input, limit), ...);
+                },
+                registered);
+        }
     }
 
   private:
     std::tuple<Listener&...> registered;
+    ArbitrationIdTest test;
 };
 
 }  // namespace can_dispatch

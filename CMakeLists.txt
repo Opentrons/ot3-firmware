@@ -56,6 +56,7 @@ endif ()
 set(LINT_TARGETS "")
 add_subdirectory(common)
 add_subdirectory(can)
+add_subdirectory(motor-control)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
 add_subdirectory(head)
@@ -70,6 +71,7 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./gantry/*.hpp ./gantry/*.cpp
         ./pipettes/*.hpp ./pipettes/*.cpp
         ./head/*.hpp ./head/*.cpp
+        ./motor-control/*.hpp ./motor-control/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.

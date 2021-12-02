@@ -1,20 +1,17 @@
 #include "catch2/catch.hpp"
+#include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
-#include "pipettes/tests/mock_message_queue.hpp"
+#include "motor-control/tests/mock_motor_hardware.hpp"
 
 using namespace motor_handler;
-
-static auto handler =
-    MotorInterruptHandler<mock_message_queue::MockMessageQueue,
-                          mock_message_queue::MockMessageQueue>();
 
 SCENARIO("queue multiple move messages") {
     static constexpr sq0_31 default_velocity = 0x1 << 30;
     GIVEN("a motor interrupt handler") {
-        mock_message_queue::MockMessageQueue<Move> queue;
-        mock_message_queue::MockMessageQueue<Ack> completed_queue;
-
-        handler.set_message_queue(&queue, &completed_queue);
+        test_mocks::MockMessageQueue<Move> queue;
+        test_mocks::MockMessageQueue<Ack> completed_queue;
+        test_mocks::MockMotorHardware hardware;
+        auto handler = MotorInterruptHandler(queue, completed_queue, hardware);
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {

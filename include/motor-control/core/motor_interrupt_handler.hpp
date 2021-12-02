@@ -2,6 +2,7 @@
 #include <variant>
 
 #include "common/core/message_queue.hpp"
+#include "motor_hardware_interface.hpp"
 #include "motor_messages.hpp"
 
 namespace motor_handler {
@@ -11,8 +12,6 @@ using namespace motor_messages;
  *
  * A motor motion handler class.
  *
- * Generic Queue: A FreeRTOS queue which must match the interface defined
- * in `message_queue.hpp`.
  *
  * Public:
  * set_message_queue -> set the queue to be used by the global motor handler in
@@ -40,40 +39,86 @@ using namespace motor_messages;
 // (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl,
-          template <class> class CompletedQueueImpl>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<Move>, Move> &&
-    MessageQueue<CompletedQueueImpl<Ack>, Ack>
+    MessageQueue<QueueImpl<Ack>, Ack>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
-    using CompletedQueue = CompletedQueueImpl<Ack>;
-    bool has_active_move = false;
+    using CompletedQueue = QueueImpl<Ack>;
 
-    MotorInterruptHandler() = default;
+    MotorInterruptHandler() = delete;
+    MotorInterruptHandler(GenericQueue& incoming_queue,
+                          CompletedQueue& outgoing_queue,
+                          motor_hardware::MotorHardwareIface& hardware_iface)
+        : queue(incoming_queue),
+          completed_queue(outgoing_queue),
+          hardware(hardware_iface) {}
     ~MotorInterruptHandler() = default;
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
     auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
     MotorInterruptHandler(MotorInterruptHandler&) = delete;
     MotorInterruptHandler(MotorInterruptHandler&&) = delete;
 
-    void set_message_queue(GenericQueue* g_queue, CompletedQueue* c_queue) {
-        queue = g_queue;
-        completed_queue = c_queue;
+    // This is the function that should be called by the interrupt callback glue
+    // It will run motion math, handle the immediate move buffer, and set or
+    // clear step, direction, and sometimes enable pins
+    void run_interrupt() {
+        if (set_direction_pin()) {
+            hardware.positive_direction();
+        } else {
+            hardware.negative_direction();
+        }
+        if (pulse()) {
+            hardware.step();
+        }
+        hardware.unstep();
     }
 
-    [[nodiscard]] auto has_messages() const -> bool {
-        return queue->has_message_isr();
-    }
+    // Start or stop the handler; this will also start or stop the timer
+    void start() { hardware.start_timer_interrupt(); }
+    void stop() { hardware.stop_timer_interrupt(); }
 
-    [[nodiscard]] auto can_step() const -> bool {
+    // condense these
+    [[nodiscard]] auto pulse() -> bool {
         /*
-         * A motor should only try to take a step when the current position
-         * does not equal the target position.
+         * Function to determine whether a motor step-line should
+         * be pulsed or not. It should return true if the step-line is to be
+         * pulsed, and false otherwise.
+         *
+         * An active move is true when there is a move that has been
+         * pulled from the queue. False otherwise.
+         *
+         * Logic:
+         * 1. If there is not currently an active move, we should check if there
+         * are any available on the queue.
+         * 2. If there is an active move, and stepping is possible, then we
+         * should increment the step counter and return true.
+         * 3. Finally, if there is an active move, but you can no longer step
+         * then active move should be set to false.
+         *
+         * This function is called from a timer interrupt. See
+         * `motor_hardware.cpp`.
          */
-        return tick_count < buffered_move.duration;
+        if (!has_active_move && has_messages()) {
+            update_move();
+            return false;
+        }
+        if (has_active_move && can_step() && tick()) {
+            return true;
+        }
+        if (has_active_move && !can_step()) {
+            finish_current_move();
+            if (has_messages()) {
+                update_move();
+                if (can_step() && tick()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
     }
-
     [[nodiscard]] auto tick() -> bool {
         /*
          * A function that increments the position tracker of a given motor.
@@ -92,8 +137,19 @@ class MotorInterruptHandler {
         return bool((old_position ^ position_tracker) & tick_flag);
     }
 
+    [[nodiscard]] auto has_messages() const -> bool {
+        return queue.has_message_isr();
+    }
+    [[nodiscard]] auto can_step() const -> bool {
+        /*
+         * A motor should only try to take a step when the current position
+         * does not equal the target position.
+         */
+        return tick_count < buffered_move.duration;
+    }
+
     void update_move() {
-        has_active_move = queue->try_read_isr(&buffered_move);
+        has_active_move = queue.try_read_isr(&buffered_move);
         // (TODO: lc) We should check the direction (and set respectively)
         // the direction pin for the motor once a move is being pulled off the
         // queue stack. We'll probably want to think about moving the hardware
@@ -115,50 +171,9 @@ class MotorInterruptHandler {
                         position_tracker),  // TODO (AA 2021-11-10): convert
                                             // this value to mm instead of steps
                     .ack_id = AckMessageId::complete};
-            if (completed_queue) {
-                static_cast<void>(completed_queue->try_write_isr(ack));
-            }
+            static_cast<void>(completed_queue.try_write_isr(ack));
         }
         set_buffered_move(Move{});
-    }
-
-    [[nodiscard]] auto pulse() -> bool {
-        /*
-         * Function to determine whether a motor step-line should
-         * be pulsed or not. It should return true if the step-line is to be
-         * pulsed, and false otherwise.
-         *
-         * An active move is true when there is a move that has been
-         * pulled from the queue. False otherwise.
-         *
-         * Logic:
-         * 1. If there is not currently an active move, we should check if there
-         * are any available on the queue.
-         * 2. If there is an active move, and stepping is possible, then we
-         * should increment the step counter and return true.
-         * 3. Finally, if there is an active move, but you can no longer step
-         * then active move should be set to false.
-         *
-         * This function is called from a timer interrupt. See `step_motor.cpp`.
-         */
-        if (!has_active_move && has_messages()) {
-            update_move();
-            return false;
-        }
-        if (has_active_move && can_step() && tick()) {
-            return true;
-        }
-        if (has_active_move && !can_step()) {
-            finish_current_move();
-            if (has_messages()) {
-                update_move();
-                if (can_step() && tick()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
     }
 
     void reset() {
@@ -166,7 +181,7 @@ class MotorInterruptHandler {
          * Reset the position and all queued moves to the motor interrupt
          * handler.
          */
-        queue->reset();
+        queue.reset();
         position_tracker = 0x0;
         tick_count = 0x0;
         has_active_move = false;
@@ -184,18 +199,17 @@ class MotorInterruptHandler {
         return bool((current ^ future) & overflow_flag);
     }
 
+    // test interface
     [[nodiscard]] auto get_current_position() const -> q31_31 {
         return position_tracker;
     }
-
     void set_current_position(q31_31 pos_tracker) {
         position_tracker = pos_tracker;
     }
-
+    bool has_active_move = false;
     [[nodiscard]] auto get_buffered_move() const -> Move {
         return buffered_move;
     }
-
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
 
   private:
@@ -203,8 +217,9 @@ class MotorInterruptHandler {
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;  // in steps
-    GenericQueue* queue = nullptr;
-    CompletedQueue* completed_queue = nullptr;
+    GenericQueue& queue;
+    CompletedQueue& completed_queue;
+    motor_hardware::MotorHardwareIface& hardware;
     Move buffered_move = Move{};
 };
 }  // namespace motor_handler

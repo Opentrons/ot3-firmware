@@ -1,0 +1,37 @@
+if (${CMAKE_CROSSCOMPILING})
+    add_subdirectory(firmware)
+    function(target_ot_motor_control TARGET)
+      target_ot_motor_control_firmware(${TARGET})
+    endfunction()
+else()
+    add_subdirectory(tests)
+    if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+        # Simulator requires linux only kernel interfaces
+        # add_subdirectory(simulator)
+    endif()
+endif()
+
+
+
+find_package(Clang)
+
+file(GLOB_RECURSE MOTORCONTROL_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/motor-control/*.hpp)
+
+# Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
+# the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
+# can therefore operate on file globs, unlike lint/static analysis
+
+# Target for use during dev - edits files
+add_custom_target(
+        motor-control-format
+        ALL
+        COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${MOTORCONTROL_SOURCES_FOR_FORMAT}
+)
+
+# Target for use in ci - warnings are errors, doesn't edit files
+add_custom_target(
+        motor-control-format-ci
+        COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${MOTORCONTROL_SOURCES_FOR_FORMAT}
+)
+
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

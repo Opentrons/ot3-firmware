@@ -15,7 +15,9 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
+#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -36,12 +38,18 @@ using namespace motor_driver_config;
 using namespace spi;
 
 static auto can_bus_1 = HalCanBus(can_get_device_handle());
-static auto message_writer_1 = MessageWriter(can_bus_1, NodeId::head);
 
-static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
-    "Motor Queue");
-static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
-    "Complete Queue");
+static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_right);
+static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_left);
+
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_left(
+    "Motor Queue Left");
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_left(
+    "Complete Queue Left");
+static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_right(
+    "Motor Queue Right");
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_right(
+    "Complete Queue Right");
 
 /**
  * @brief SPI MSP Initialization
@@ -68,7 +76,7 @@ spi::SPI_interface SPI_intf3 = {
 };
 static spi::Spi spi_comms3(SPI_intf3);
 
-struct motion_controller::HardwareConfig pin_configurations_left {
+struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -88,7 +96,7 @@ struct motion_controller::HardwareConfig pin_configurations_left {
         .active_setting = GPIO_PIN_SET},
 };
 
-struct motion_controller::HardwareConfig pin_configurations_right {
+struct motor_hardware::HardwareConfig pin_configurations_right {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -120,96 +128,156 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
  * should be made to avoid a pretty gross template signature.
  */
 
-/*z motor would need a motor and PinConfigurations instance on its own*/
+static motor_hardware::MotorHardware motor_hardware_right(
+    pin_configurations_right, &htim7);
+static motor_handler::MotorInterruptHandler motor_interrupt_right(
+    motor_queue_right, complete_queue_right, motor_hardware_right);
+
 static motor_class::Motor motor_right{
     spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    pin_configurations_right,
+    motor_hardware_right,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
     MotorDriverConfigurations,
-    motor_queue,
-    complete_queue};
+    motor_queue_right,
+    complete_queue_right};
 
-/*z motor*/
+static motor_hardware::MotorHardware motor_hardware_left(
+    pin_configurations_left, &htim7);
+static motor_handler::MotorInterruptHandler motor_interrupt_left(
+    motor_queue_left, complete_queue_left, motor_hardware_left);
+
 static motor_class::Motor motor_left{
     spi_comms2,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 20},
         .steps_per_rev = 200,
         .microstep = 16},
-    pin_configurations_left,
+    motor_hardware_left,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
     MotorDriverConfigurations,
-    motor_queue,
-    complete_queue};
+    motor_queue_left,
+    complete_queue_left};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor_right};
-static auto can_motor_handler2 = MotorHandler{message_writer_1, motor_left};
+static auto can_motor_handler_right =
+    MotorHandler{message_writer_right, motor_right};
+static auto can_motor_handler_left =
+    MotorHandler{message_writer_left, motor_left};
 
-static auto move_group_manager = MoveGroupType{};
+static auto move_group_manager_right = MoveGroupType{};
+static auto move_group_manager_left = MoveGroupType{};
 
-static auto can_move_group_handler =
-    MoveGroupHandler(message_writer_1, move_group_manager);
+static auto can_move_group_handler_right =
+    MoveGroupHandler(message_writer_right, move_group_manager_right);
+static auto can_move_group_handler_left =
+    MoveGroupHandler(message_writer_left, move_group_manager_left);
 
-static auto can_move_group_executor_handler =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_right);
+static auto can_move_group_executor_handler_right = MoveGroupExecutorHandler(
+    message_writer_right, move_group_manager_right, motor_right);
 
-static auto can_move_group_executor_handler2 =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor_left);
+static auto can_move_group_executor_handler_left = MoveGroupExecutorHandler(
+    message_writer_left, move_group_manager_left, motor_left);
 
 /** Handler of device info requests. */
-static auto device_info_handler =
-    can_device_info::DeviceInfoHandler(message_writer_1, 0);
-static auto device_info_dispatch_target =
-    DispatchParseTarget<decltype(device_info_handler),
-                        can_messages::DeviceInfoRequest>{device_info_handler};
+static auto device_info_handler_right =
+    can_device_info::DeviceInfoHandler(message_writer_right, 0);
+static auto device_info_dispatch_target_right =
+    DispatchParseTarget<decltype(device_info_handler_right),
+                        can_messages::DeviceInfoRequest>{
+        device_info_handler_right};
 
-static auto motor_dispatch_target = DispatchParseTarget<
-    decltype(can_motor_handler), can_messages::SetupRequest,
+static auto device_info_handler_left =
+    can_device_info::DeviceInfoHandler(message_writer_left, 0);
+static auto device_info_dispatch_target_left =
+    DispatchParseTarget<decltype(device_info_handler_left),
+                        can_messages::DeviceInfoRequest>{
+        device_info_handler_left};
+
+static auto motor_dispatch_target_right = DispatchParseTarget<
+    decltype(can_motor_handler_right), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler};
+    can_messages::ReadMotorDriverRegister>{can_motor_handler_right};
 
-static auto motor_dispatch_target2 = DispatchParseTarget<
-    decltype(can_motor_handler2), can_messages::SetupRequest,
+static auto motor_dispatch_target_left = DispatchParseTarget<
+    decltype(can_motor_handler_left), can_messages::SetupRequest,
     can_messages::StopRequest, can_messages::EnableMotorRequest,
     can_messages::DisableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler2};
+    can_messages::ReadMotorDriverRegister>{can_motor_handler_left};
 
-static auto motion_group_dispatch_target = DispatchParseTarget<
-    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
+static auto motion_group_dispatch_target_right = DispatchParseTarget<
+    decltype(can_move_group_handler_right), can_messages::AddLinearMoveRequest,
     can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler};
+    can_move_group_handler_right};
 
-static auto motion_group_executor_dispatch_target =
-    DispatchParseTarget<decltype(can_move_group_executor_handler),
+static auto motion_group_dispatch_target_left = DispatchParseTarget<
+    decltype(can_move_group_handler_left), can_messages::AddLinearMoveRequest,
+    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
+    can_move_group_handler_left};
+
+static auto motion_group_executor_dispatch_target_right =
+    DispatchParseTarget<decltype(can_move_group_executor_handler_right),
                         can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler};
+        can_move_group_executor_handler_right};
 
-static auto motion_group_executor_dispatch_target2 =
-    DispatchParseTarget<decltype(can_move_group_executor_handler2),
+static auto motion_group_executor_dispatch_target_left =
+    DispatchParseTarget<decltype(can_move_group_executor_handler_left),
                         can_messages::ExecuteMoveGroupRequest>{
-        can_move_group_executor_handler2};
+        can_move_group_executor_handler_left};
+/**
+ * messages to head act like messages to both, head-right and head-left
+ */
 
-/** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motor_dispatch_target2, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target,
-    motion_group_executor_dispatch_target2, device_info_dispatch_target);
+struct CheckForNodeId {
+    NodeId node_id;
+    auto operator()(uint32_t arbitration_id) const {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        auto arb = ArbitrationId{.id = arbitration_id};
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        auto tmp = static_cast<uint16_t>(node_id);
+        return ((_node_id == tmp) ||
+                (_node_id == static_cast<uint16_t>(NodeId::broadcast)) ||
+                (_node_id == static_cast<uint16_t>(NodeId::head)));
+    }
+};
+
+CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_left};
+
+CheckForNodeId check_for_node_id_right{.node_id = NodeId::head_right};
+
+/** Dispatcher to the various right motor handlers */
+static auto dispatcher_right_motor =
+    Dispatcher(check_for_node_id_right, motor_dispatch_target_right,
+               motion_group_dispatch_target_right,
+               motion_group_executor_dispatch_target_right,
+               device_info_dispatch_target_right);
+
+/** Dispatcher to the various left motor handlers */
+static auto dispatcher_left_motor =
+    Dispatcher(check_for_node_id_left, motor_dispatch_target_left,
+               motion_group_dispatch_target_left,
+               motion_group_executor_dispatch_target_left,
+               device_info_dispatch_target_left);
+
+static auto main_dispatcher =
+    Dispatcher([](auto _) -> bool { return true; }, dispatcher_right_motor,
+               dispatcher_left_motor);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -231,10 +299,53 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
                                                  data + length);  // NOLINT
 }
 
+extern "C" void motor_callback_glue() {
+    motor_interrupt_left.run_interrupt();
+    motor_interrupt_right.run_interrupt();
+}
+
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);
     can_start();
-    can_bus_1.setup_node_id_filter(NodeId::head);
+
+    auto filter = ArbitrationId{.id = 0};
+
+    // Accept broadcast
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::broadcast);
+    can_bus_1.add_filter(
+        CanFilterType::mask, CanFilterConfig::to_fifo0,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Accept any head
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head);
+    can_bus_1.add_filter(
+        CanFilterType::mask, CanFilterConfig::to_fifo1,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Accept head right
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_right);
+    can_bus_1.add_filter(
+        CanFilterType::mask, CanFilterConfig::to_fifo1,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Accept head left
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_left);
+    can_bus_1.add_filter(
+        CanFilterType::mask, CanFilterConfig::to_fifo1,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+        filter.id, can_arbitration_id::node_id_mask.id);
+
+    // Reject everything else.
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
+
+    initialize_timer(motor_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();
@@ -246,7 +357,8 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     motor_left.driver.setup();
     motor_right.driver.setup();
 
-    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    auto poller =
+        FreeRTOSCanBufferPoller(read_can_message_buffer, main_dispatcher);
     poller();
 }
 

@@ -5,18 +5,20 @@ include(Catch)
 include(AddBuildAndTestTarget)
 
 add_executable(
-        pipettes
+        motor-control
         test_main.cpp
-        test_eeprom.cpp
+        test_motor_interrupt_queue.cpp
+        test_motor_pulse.cpp
+        test_linear_motion_config.cpp
 )
 
-target_include_directories(pipettes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-set_target_properties(pipettes
+target_include_directories(motor-control PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+set_target_properties(motor-control
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(pipettes
+target_compile_options(motor-control
         PUBLIC
         -Wall
         -Werror
@@ -25,7 +27,7 @@ target_compile_options(pipettes
         -Wsign-promo
         -Wextra-semi
         -Wctor-dtor-privacy)
-target_link_libraries(pipettes Catch2::Catch2)
+target_link_libraries(motor-control Catch2::Catch2)
 
-catch_discover_tests(pipettes)
-add_build_and_test_target(pipettes)
+catch_discover_tests(motor-control)
+add_build_and_test_target(motor-control)

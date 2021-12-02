@@ -14,7 +14,6 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/step_motor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
@@ -26,18 +25,18 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32l5xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
     ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-    ${COMMON_EXECUTABLE_DIR}/spi/spi.c
-    ${COMMON_EXECUTABLE_DIR}/motor_driver/motor.c)
+    ${COMMON_EXECUTABLE_DIR}/spi/spi.c)
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
+
+target_ot_motor_control(pipettes)
 
 target_link_libraries(pipettes
         PUBLIC STM32L562RETx

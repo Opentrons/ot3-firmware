@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace mock_message_queue {
+namespace test_mocks {
 
 template <typename Message, std::size_t queue_size = 10>
 class MockMessageQueue {
@@ -55,4 +55,4 @@ class MockMessageQueue {
   private:
     std::vector<Message> queue_data_structure;
 };
-}  // namespace mock_message_queue
+}  // namespace test_mocks

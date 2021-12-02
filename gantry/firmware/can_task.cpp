@@ -17,7 +17,9 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
+#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -66,7 +68,7 @@ spi::SPI_interface SPI_intf = {
 };
 static spi::Spi spi_comms(SPI_intf);
 
-struct motion_controller::HardwareConfig PinConfigurations {
+struct motion_controller::HardwareConfig motor_pins {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -85,6 +87,13 @@ struct motion_controller::HardwareConfig PinConfigurations {
         .pin = GPIO_PIN_9,
         .active_setting = GPIO_PIN_SET},
 };
+
+static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
+
+static motor_handler::MotorInterruptHandler motor_interrupt(
+    motor_queue, complete_queue, motor_hardware_iface);
+
+extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
 static constexpr auto register_config_by_axis(GantryAxisType which)
     -> RegisterConfig {
@@ -118,7 +127,7 @@ static motor_class::Motor motor{
             lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations,
+    motor_hardware_iface,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -162,8 +171,9 @@ static auto motion_group_executor_dispatch_target =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
-    motor_dispatch_target, motion_group_dispatch_target,
-    motion_group_executor_dispatch_target, device_info_dispatch_target);
+    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    motion_group_dispatch_target, motion_group_executor_dispatch_target,
+    device_info_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -189,7 +199,7 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     can_bus_1.set_incoming_message_callback(callback);
     can_start();
     can_bus_1.setup_node_id_filter(my_node_id);
-
+    initialize_timer(call_motor_handler);
     if (initialize_spi(my_axis_type) != HAL_OK) {
         Error_Handler();
     }
