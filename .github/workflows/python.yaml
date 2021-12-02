@@ -39,7 +39,7 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=host-gcc10 .
+        run: cmake --preset=host-gcc10-python .
       - name: "Format"
         run: cmake --build --preset=tests --target opentrons_ot3_firmware-format
       - name: "Lint"
