@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
-#include <span>
+
+#include "motor-control/core/spi.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -15,12 +16,11 @@ struct SPI_interface {
     uint32_t pin;
 };
 
-class Spi {
+class Spi : public TMC2130Spi {
   public:
-    static constexpr auto BUFFER_SIZE = 5;
-    using BufferType = std::array<uint8_t, BUFFER_SIZE>;
     explicit Spi(SPI_interface SPI_int);
-    void transmit_receive(const BufferType& transmit, BufferType& receive);
+    void transmit_receive(const TMC2130Spi::BufferType& transmit,
+                          TMC2130Spi::BufferType& receive) final;
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;
