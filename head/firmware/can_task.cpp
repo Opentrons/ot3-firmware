@@ -243,8 +243,7 @@ struct CheckForNodeId {
     auto operator()(uint32_t arbitration_id) const {
         auto arb = ArbitrationId(arbitration_id);
         auto _node_id = arb.node_id();
-        return ((_node_id == node_id) ||
-                (_node_id == NodeId::broadcast) ||
+        return ((_node_id == node_id) || (_node_id == NodeId::broadcast) ||
                 (_node_id == NodeId::head));
     }
 };
