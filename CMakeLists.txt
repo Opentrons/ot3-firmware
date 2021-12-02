@@ -12,6 +12,7 @@ project("OT3Firmware"
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(ROOT_BOARD_FILE_PATH "${PROJECT_SOURCE_DIR}/include/firmware/" ${ROOT_BOARD_FILE_PATH})
+set(USE_PYTHON ON CACHE BOOL "handle python stack. keep true unless in CI")
 if (NOT ${CMAKE_CROSSCOMPILING})
     enable_testing()
     add_custom_target(build-and-test)
@@ -93,12 +94,15 @@ add_custom_target(
 add_custom_target(
         format-ci
         COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${SOURCES_FOR_FORMAT}
-        DEPENDS opentrons_ot3_firmware-format-ci
 )
 
-# add python linting
 add_custom_target(
-        lint
-        ALL
-        DEPENDS ${LINT_TARGETS} opentrons_ot3_firmware-lint
-)
+      lint
+      ALL
+      DEPENDS ${LINT_TARGETS})
+
+if (${USE_PYTHON})
+   add_dependencies(lint opentrons_ot3_firmware-lint)
+   add_dependencies(format opentrons_ot3_firmware-format)
+   add_dependencies(format-ci opentrons_ot3_firmware-format-ci)
+endif()
