@@ -58,5 +58,3 @@ jobs:
         run: cmake --build ./build-host --target motor-control-format-ci
       - name: "Build and test"
         run cmake --build ./build-host --target motor-control-build-and-test
-      - name: "Lint"
-        run: cmake --build ./build-host --target lint

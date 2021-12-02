@@ -4,6 +4,10 @@ on:
     paths:
       - "gantry/**"
       - "common/**"
+      - "python/opentrons_ot3_firmware/constants.py"
+      - "python/opentrons_ot3_firmware/generate_header_wrapper.in"
+      - "python/CMakeLists.txt"
+      - "python/opentrons_ot3_firmware/scripts/generate_header.py"
       - "include/**"
       - "!include/pipettes/**"
       - "!include/head/**"
@@ -19,6 +23,10 @@ on:
     paths:
       - "gantry/**"
       - "common/**"
+      - "python/opentrons_ot3_firmware/constants.py"
+      - "python/opentrons_ot3_firmware/generate_header_wrapper.in"
+      - "python/CMakeLists.txt"
+      - "python/opentrons_ot3_firmware/scripts/generate_header.py"
       - "include/**"
       - "!include/pipettes/**"
       - "!include/head/**"
@@ -70,9 +78,6 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
-      - uses: "actions/setup-python@v2"
-        with:
-          python-version: '3.7'
       - run: |
           sudo apt update
           sudo apt install gcc-10 g++-10

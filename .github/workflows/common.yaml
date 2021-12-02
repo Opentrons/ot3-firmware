@@ -56,8 +56,6 @@ jobs:
         # TODO (AL 2021-07-09) - uncomment when adding common-lint is added
       - name: "Build"
         run: cmake --build ./build-cross --target common
-      - name: "Lint"
-        run: cmake --build ./build-cross --target lint
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
