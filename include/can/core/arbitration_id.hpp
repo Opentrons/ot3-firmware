@@ -2,7 +2,11 @@
 
 #include <cstdint>
 
+#include "ids.hpp"
+
 namespace can_arbitration_id {
+
+using namespace can_ids;
 
 /**
  * A class that represents our 29-bit arbitration id.
@@ -24,21 +28,27 @@ class ArbitrationId {
      */
     [[nodiscard]] auto get_id() const -> uint32_t { return id; }
 
-    [[nodiscard]] auto function_code() const -> uint8_t {
-        return get(function_code_bit_mask, function_code_shift);
+    [[nodiscard]] auto function_code() const -> FunctionCode {
+        return static_cast<FunctionCode>(
+            get(function_code_bit_mask, function_code_shift));
     }
-    [[nodiscard]] auto node_id() const -> uint8_t {
-        return get(node_id_bit_mask, node_id_shift);
+    [[nodiscard]] auto node_id() const -> NodeId {
+        return static_cast<NodeId>(get(node_id_bit_mask, node_id_shift));
     }
-    [[nodiscard]] auto message_id() const -> uint16_t {
-        return get(message_id_bit_mask, message_id_shift);
+    [[nodiscard]] auto message_id() const -> MessageId {
+        return static_cast<MessageId>(
+            get(message_id_bit_mask, message_id_shift));
     }
 
-    void function_code(uint8_t v) {
-        set(v, function_code_mask, function_code_shift);
+    void function_code(FunctionCode v) {
+        set(static_cast<uint32_t>(v), function_code_mask, function_code_shift);
     }
-    void node_id(uint8_t v) { set(v, node_id_mask, node_id_shift); }
-    void message_id(uint16_t v) { set(v, message_id_mask, message_id_shift); }
+    void node_id(NodeId v) {
+        set(static_cast<uint32_t>(v), node_id_mask, node_id_shift);
+    }
+    void message_id(MessageId v) {
+        set(static_cast<uint32_t>(v), message_id_mask, message_id_shift);
+    }
 
     // Bits 0-6
     static constexpr auto function_code_mask = 0x7F;
@@ -63,7 +73,7 @@ class ArbitrationId {
      * @param mask The mask to apply.
      * @param shift The amount to left shift masked value
      */
-    void set(uint32_t val, int mask, int shift) {
+    void set(uint32_t val, uint32_t mask, uint32_t shift) {
         id |= ((val & mask) << shift);
     }
 
@@ -73,7 +83,7 @@ class ArbitrationId {
      * @param shift amount to shift right.
      * @return the value
      */
-    [[nodiscard]] auto get(int mask, int shift) const -> uint32_t {
+    [[nodiscard]] auto get(uint32_t mask, uint32_t shift) const -> uint32_t {
         return (id & mask) >> shift;
     }
 

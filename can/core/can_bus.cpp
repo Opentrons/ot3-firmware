@@ -13,12 +13,12 @@ using namespace can_bus;
 void can_bus::CanBus::setup_node_id_filter(NodeId node_id) {
     // Set up the broadcast filter
     auto filter = can_arbitration_id::ArbitrationId();
-    filter.node_id(static_cast<uint32_t>(NodeId::broadcast));
+    filter.node_id(NodeId::broadcast);
     add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
                can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Set up the specific node_id filter
-    filter.node_id(static_cast<uint32_t>(node_id));
+    filter.node_id(node_id);
     add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                can_arbitration_id::ArbitrationId::node_id_bit_mask);
 

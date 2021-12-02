@@ -32,10 +32,10 @@ class MessageWriter {
     template <message_core::CanResponseMessage ResponseMessage>
     void write(can_ids::NodeId node, ResponseMessage& message) {
         auto lock = synchronization::Lock{mutex};
-        arbitration_id.message_id(static_cast<uint16_t>(message.id));
+        arbitration_id.message_id(message.id);
         // TODO (al 2021-08-03): populate this from Message?
-        arbitration_id.function_code(0);
-        arbitration_id.node_id(static_cast<unsigned int>(node));
+        arbitration_id.function_code(can_ids::FunctionCode::network_management);
+        arbitration_id.node_id(node);
         message.set_node_id(node_id);
         auto length = message.serialize(buffer.begin(), buffer.end());
         writer.send(arbitration_id, buffer.data(), to_canfd_length(length));

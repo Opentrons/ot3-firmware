@@ -243,10 +243,9 @@ struct CheckForNodeId {
     auto operator()(uint32_t arbitration_id) const {
         auto arb = ArbitrationId(arbitration_id);
         auto _node_id = arb.node_id();
-        auto tmp = static_cast<uint16_t>(node_id);
-        return ((_node_id == tmp) ||
-                (_node_id == static_cast<uint16_t>(NodeId::broadcast)) ||
-                (_node_id == static_cast<uint16_t>(NodeId::head)));
+        return ((_node_id == node_id) ||
+                (_node_id == NodeId::broadcast) ||
+                (_node_id == NodeId::head));
     }
 };
 
@@ -304,22 +303,22 @@ extern "C" void motor_callback_glue() {
     auto filter = ArbitrationId();
 
     // Accept broadcast
-    filter.node_id(static_cast<uint8_t>(NodeId::broadcast));
+    filter.node_id(NodeId::broadcast);
     can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
                          can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept any head
-    filter.node_id(static_cast<uint8_t>(NodeId::head));
+    filter.node_id(NodeId::head);
     can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                          can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head right
-    filter.node_id(static_cast<uint8_t>(NodeId::head_right));
+    filter.node_id(NodeId::head_right);
     can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                          can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head left
-    filter.node_id(static_cast<uint8_t>(NodeId::head_left));
+    filter.node_id(NodeId::head_left);
     can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                          can_arbitration_id::ArbitrationId::node_id_bit_mask);
 

@@ -99,8 +99,7 @@ requires(!std::movable<BufferType> &&
     requires std::sentinel_for<Limit, Input>
     void handle(uint32_t arbitration_id, Input input, Limit limit) {
         auto arb = ArbitrationId(arbitration_id);
-        if (coll.in(
-                can_ids::MessageId{static_cast<uint16_t>(arb.message_id())})) {
+        if (coll.in(arb.message_id())) {
             writer.send(arbitration_id, input, limit, 100);
         }
     }
