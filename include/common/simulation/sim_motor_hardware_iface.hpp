@@ -3,8 +3,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 
 namespace sim_motor_hardware_iface {
-class SimMotorHardwareIface: public motor_hardware::MotorHardwareIface {
-
+class SimMotorHardwareIface : public motor_hardware::MotorHardwareIface {
   public:
     void step() final {}
     void unstep() final {}
@@ -16,4 +15,4 @@ class SimMotorHardwareIface: public motor_hardware::MotorHardwareIface {
     void stop_timer_interrupt() final {}
 };
 
-}
+}  // namespace sim_motor_hardware_iface
