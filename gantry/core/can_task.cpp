@@ -39,9 +39,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
 static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
 
-struct motion_controller::HardwareConfig PinConfigurations =
-    interfaces::get_hardware_config();
-
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -55,7 +52,7 @@ static motor_class::Motor motor{
             lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
         .steps_per_rev = 200,
         .microstep = 16},
-    PinConfigurations,
+    interfaces::get_motor_hardware_iface(),
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
@@ -98,7 +95,7 @@ static auto motion_group_executor_dispatch_target =
         can_move_group_executor_handler};
 
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(
+static auto dispatcher = Dispatcher([](auto _) {return true;},
     motor_dispatch_target, motion_group_dispatch_target,
     motion_group_executor_dispatch_target, device_info_dispatch_target);
 
