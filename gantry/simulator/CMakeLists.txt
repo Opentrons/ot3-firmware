@@ -31,9 +31,6 @@ add_library(freertos-gantry STATIC ${FREERTOS_SOURCES})
 set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/step_motor.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/tim7.c
         ../firmware/freertos_idle_timer_task.cpp
         )
 

@@ -5,28 +5,20 @@
 #include "can/core/can_bus.hpp"
 #include "can/core/message_core.hpp"
 #include "common/core/freertos_task.hpp"
+#include "can/simlib/transport.hpp"
 
 namespace sim_canbus {
 
 using namespace can_bus;
 using namespace freertos_task;
 
-template <class T>
-concept BusTransport = requires(T t, uint32_t arb_id, uint32_t& out_arb_id,
-                                uint8_t* buff, const uint8_t* cbuff,
-                                uint32_t buff_len, uint32_t& in_out_buff_len) {
-    { t.write(arb_id, cbuff, buff_len) } -> std::convertible_to<bool>;
-    { t.read(out_arb_id, buff, in_out_buff_len) } -> std::convertible_to<bool>;
-};
 
 /**
  * CAN bus for simulators. Matches the CanBus concept.
  */
-template <BusTransport Transport>
-requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
-    : public CanBus {
+class SimCANBus : public CanBus {
   public:
-    explicit SimCANBus(Transport& transport)
+    explicit SimCANBus(can_transport::BusTransportBase & transport)
         : transport{transport}, reader{transport}, reader_task{"", reader} {}
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
@@ -70,7 +62,7 @@ requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
 
   private:
     struct Reader {
-        Reader(Transport& transport) : transport{transport} {}
+        Reader(can_transport::BusTransportBase& transport) : transport{transport} {}
 
         void operator()() {
             while (true) {
@@ -88,12 +80,12 @@ requires(!std::movable<Transport> && !std::copyable<Transport>) class SimCANBus
             }
         }
 
-        Transport& transport;
+        can_transport::BusTransportBase& transport;
         std::array<uint8_t, message_core::MaxMessageSize> read_buffer{};
         IncomingMessageCallback new_message_callback{nullptr};
     };
 
-    Transport& transport;
+    can_transport::BusTransportBase& transport;
     Reader reader;
     FreeRTOSTask<256, 5> reader_task;
 };

@@ -13,11 +13,12 @@
 #include <iostream>
 
 #include "common/core/synchronization.hpp"
+#include "transport.hpp"
 
 namespace socket_can {
 
 template <synchronization::LockableProtocol CriticalSection>
-class SocketCanTransport {
+class SocketCanTransport : public can_transport::BusTransportBase {
   public:
     SocketCanTransport(){};
     ~SocketCanTransport() { close(); };
