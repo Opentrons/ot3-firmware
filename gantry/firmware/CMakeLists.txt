@@ -33,13 +33,15 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
 
 add_executable(gantry_x
         ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS}
-        ${GANTRY_X_CORE_SRC})
+        ${GANTRY_FW_NON_LINTABLE_SRCS})
+
 
 add_executable(gantry_y
         ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS}
-        ${GANTRY_Y_CORE_SRC})
+        ${GANTRY_FW_NON_LINTABLE_SRCS})
+
+target_gantry_core_x(gantry_x)
+target_gantry_core_y(gantry_y)
 
 target_ot_motor_control(gantry_x)
 target_ot_motor_control(gantry_y)

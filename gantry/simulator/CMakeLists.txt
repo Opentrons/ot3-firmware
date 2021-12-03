@@ -37,14 +37,15 @@ set(GANTRY_SIMULATOR_SRC
 add_executable(
         gantry-x-simulator
         ${GANTRY_SIMULATOR_SRC}
-        ${GANTRY_X_CORE_SRC}
 )
 
 add_executable(
         gantry-y-simulator
         ${GANTRY_SIMULATOR_SRC}
-        ${GANTRY_Y_CORE_SRC}
 )
+
+target_gantry_core_x(gantry-x-simulator)
+target_gantry_core_y(gantry-y-simulator)
 
 target_link_libraries(gantry-x-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
 target_link_libraries(gantry-y-simulator PRIVATE can-core common-simulation freertos-gantry pthread)

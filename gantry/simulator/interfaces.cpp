@@ -27,5 +27,4 @@ static auto spibus = sim_spi::SimTMC2130Spi();
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 
-
 auto interfaces::get_spi() -> spi::TMC2130Spi& { return spibus; }
