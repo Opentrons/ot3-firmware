@@ -1,5 +1,7 @@
 add_library(common-simulation STATIC spi.cpp)
 
+target_link_libraries(common-simulation PUBLIC can-core)
+
 set_target_properties(common-simulation
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
