@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+
 #include "motor-control/core/spi.hpp"
 
 namespace sim_spi {

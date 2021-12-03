@@ -1,6 +1,6 @@
 #include "common/simulation/spi.hpp"
-#include "common/core/bit_utils.hpp"
 
+#include "common/core/bit_utils.hpp"
 
 void sim_spi::SimTMC2130Spi::transmit_receive(
     const spi::TMC2130Spi::BufferType& transmit,

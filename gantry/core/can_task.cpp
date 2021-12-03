@@ -10,11 +10,11 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "gantry/core/axis_type.h"
+#include "gantry/core/interfaces.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "gantry/core/interfaces.hpp"
 
 using namespace freertos_task;
 using namespace freertos_can_dispatch;
@@ -39,7 +39,8 @@ static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
 static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
     "Complete Queue");
 
-struct motion_controller::HardwareConfig PinConfigurations = interfaces::get_hardware_config();
+struct motion_controller::HardwareConfig PinConfigurations =
+    interfaces::get_hardware_config();
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -52,8 +53,8 @@ static motor_class::Motor motor{
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
         .mech_config =
             lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
-            .steps_per_rev = 200,
-            .microstep = 16},
+        .steps_per_rev = 200,
+        .microstep = 16},
     PinConfigurations,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
@@ -76,7 +77,7 @@ static auto device_info_handler =
     can_device_info::DeviceInfoHandler(message_writer_1, 0);
 static auto device_info_dispatch_target =
     DispatchParseTarget<decltype(device_info_handler),
-    can_messages::DeviceInfoRequest>{device_info_handler};
+                        can_messages::DeviceInfoRequest>{device_info_handler};
 
 static auto motor_dispatch_target = DispatchParseTarget<
     decltype(can_motor_handler), can_messages::SetupRequest,
@@ -93,8 +94,8 @@ static auto motion_group_dispatch_target = DispatchParseTarget<
 
 static auto motion_group_executor_dispatch_target =
     DispatchParseTarget<decltype(can_move_group_executor_handler),
-    can_messages::ExecuteMoveGroupRequest>{
-    can_move_group_executor_handler};
+                        can_messages::ExecuteMoveGroupRequest>{
+        can_move_group_executor_handler};
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
@@ -123,12 +124,12 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
 
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(callback);
-//    can_start();
+    //    can_start();
     can_bus_1.setup_node_id_filter(my_node_id);
 
-//    if (initialize_spi(my_axis_type) != HAL_OK) {
-//        Error_Handler();
-//    }
+    //    if (initialize_spi(my_axis_type) != HAL_OK) {
+    //        Error_Handler();
+    //    }
 
     motor.driver.setup();
 

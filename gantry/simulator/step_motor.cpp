@@ -1,4 +1,5 @@
 #include "motor-control/core/step_motor.hpp"
+
 #include "motor-control/core/motor_messages.hpp"
 
 using namespace motor_messages;
