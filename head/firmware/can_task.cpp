@@ -245,15 +245,10 @@ static auto motion_group_executor_dispatch_target_left =
 struct CheckForNodeId {
     NodeId node_id;
     auto operator()(uint32_t arbitration_id) const {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        auto arb = ArbitrationId{.id = arbitration_id};
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        auto _node_id = static_cast<uint16_t>(arb.parts.node_id);
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        auto tmp = static_cast<uint16_t>(node_id);
-        return ((_node_id == tmp) ||
-                (_node_id == static_cast<uint16_t>(NodeId::broadcast)) ||
-                (_node_id == static_cast<uint16_t>(NodeId::head)));
+        auto arb = ArbitrationId(arbitration_id);
+        auto _node_id = arb.node_id();
+        return ((_node_id == node_id) || (_node_id == NodeId::broadcast) ||
+                (_node_id == NodeId::head));
     }
 };
 
@@ -308,39 +303,27 @@ extern "C" void motor_callback_glue() {
     can_bus_1.set_incoming_message_callback(callback);
     can_start();
 
-    auto filter = ArbitrationId{.id = 0};
+    auto filter = ArbitrationId();
 
     // Accept broadcast
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    filter.parts.node_id = static_cast<uint8_t>(NodeId::broadcast);
-    can_bus_1.add_filter(
-        CanFilterType::mask, CanFilterConfig::to_fifo0,
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        filter.id, can_arbitration_id::node_id_mask.id);
+    filter.node_id(NodeId::broadcast);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
+                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept any head
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    filter.parts.node_id = static_cast<uint8_t>(NodeId::head);
-    can_bus_1.add_filter(
-        CanFilterType::mask, CanFilterConfig::to_fifo1,
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        filter.id, can_arbitration_id::node_id_mask.id);
+    filter.node_id(NodeId::head);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head right
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_right);
-    can_bus_1.add_filter(
-        CanFilterType::mask, CanFilterConfig::to_fifo1,
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        filter.id, can_arbitration_id::node_id_mask.id);
+    filter.node_id(NodeId::head_right);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head left
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-    filter.parts.node_id = static_cast<uint8_t>(NodeId::head_left);
-    can_bus_1.add_filter(
-        CanFilterType::mask, CanFilterConfig::to_fifo1,
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-        filter.id, can_arbitration_id::node_id_mask.id);
+    filter.node_id(NodeId::head_left);
+    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Reject everything else.
     can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
