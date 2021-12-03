@@ -28,9 +28,7 @@ static auto spibus = sim_spi::SimTMC2130Spi();
 
 static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
 
-auto interfaces::get_can_bus() -> can_bus::CanBus& {
-    return canbus;
-}
+auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 
 auto interfaces::get_spi() -> spi::TMC2130Spi& { return spibus; }
 

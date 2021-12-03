@@ -61,19 +61,20 @@ class SimCANBus : public CanBus {
 
   private:
     struct Reader {
-        Reader(SimCANBus& bus)
-            : bus{bus} {}
+        Reader(SimCANBus& bus) : bus{bus} {}
 
         void operator()() {
             while (true) {
                 uint32_t read_length = message_core::MaxMessageSize;
                 uint32_t arb_id;
 
-                if (!bus.transport.read(arb_id, read_buffer.data(), read_length)) {
+                if (!bus.transport.read(arb_id, read_buffer.data(),
+                                        read_length)) {
                     continue;
                 }
                 if (bus.new_message_callback) {
-                    bus.new_message_callback(arb_id, read_buffer.begin(), read_length);
+                    bus.new_message_callback(arb_id, read_buffer.begin(),
+                                             read_length);
                 }
             }
         }

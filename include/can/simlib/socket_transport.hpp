@@ -1,14 +1,15 @@
 #pragma once
 
-#include <sys/socket.h>
-#include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
 #include <iostream>
 
+#include "can/core/message_core.hpp"
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
-#include "can/core/message_core.hpp"
 
 namespace stdio_can {
 
@@ -25,8 +26,7 @@ class SocketTransport : public can_transport::BusTransportBase {
     auto open(const char *ip, uint32_t port) -> bool;
     void close();
 
-    auto write(uint32_t arb_id, const uint8_t *buff, uint32_t buff_len)
-        -> bool;
+    auto write(uint32_t arb_id, const uint8_t *buff, uint32_t buff_len) -> bool;
     auto read(uint32_t &arb_id, uint8_t *buff, uint32_t &buff_len) -> bool;
 
   private:
@@ -35,7 +35,8 @@ class SocketTransport : public can_transport::BusTransportBase {
 };
 
 template <synchronization::LockableProtocol CriticalSection>
-auto SocketTransport<CriticalSection>::open(const char* ip, uint32_t port) -> bool {
+auto SocketTransport<CriticalSection>::open(const char *ip, uint32_t port)
+    -> bool {
     struct sockaddr_in addr;
     int s = 0;
 
@@ -57,11 +58,11 @@ auto SocketTransport<CriticalSection>::open(const char* ip, uint32_t port) -> bo
 
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
-                                            const uint8_t *buff,
-                                            uint32_t buff_len) -> bool {
+                                             const uint8_t *buff,
+                                             uint32_t buff_len) -> bool {
     ::write(handle, &arb_id, sizeof(arb_id));
     ::write(handle, &buff_len, sizeof(buff_len));
-    if (buff_len>0) {
+    if (buff_len > 0) {
         ::write(handle, buff, buff_len);
     }
 
@@ -70,7 +71,7 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
 
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
-                                           uint32_t &buff_len) -> bool {
+                                            uint32_t &buff_len) -> bool {
     ::read(handle, &arb_id, sizeof(arb_id));
     ::read(handle, &buff_len, sizeof(buff_len));
     if (buff_len > 0) {

@@ -1,6 +1,4 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-int main() {
-    vTaskStartScheduler();
-}
+int main() { vTaskStartScheduler(); }
