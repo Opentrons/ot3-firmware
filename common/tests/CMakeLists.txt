@@ -9,6 +9,8 @@ add_executable(
         test_main.cpp
         test_bit_utils.cpp
         test_synchronization.cpp
+        test_allocator.cpp
+        test_listedlist.cpp
         test_tool_detection.cpp
         test_voltage_conversion.cpp
 )
