@@ -24,3 +24,5 @@ target_compile_options(head-core
   -Wctor-dtor-privacy
   -fno-rtti
   )
+
+target_link_libraries(head-core PUBLIC can-core)

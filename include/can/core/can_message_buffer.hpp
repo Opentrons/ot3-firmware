@@ -2,9 +2,9 @@
 
 #include <array>
 
+#include "can/core/message_core.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/message_buffer.hpp"
-#include "message_core.hpp"
 
 namespace can_message_buffer {
 

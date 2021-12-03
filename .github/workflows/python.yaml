@@ -1,0 +1,48 @@
+name: "python bindings test"
+on:
+  pull_request:
+    paths:
+      - "python/**"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+    paths_ignore:
+      - "cmake/Arduino*"
+  push:
+    paths:
+      - "python/**"
+      - "CMakeLists.txt"
+      - "CMakePresets.json"
+    paths_ignore:
+      - "cmake/Arduino*"
+    tags:
+      - "common@*"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: "Test"
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 10
+    steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - uses: "actions/cache@v2"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
+      - name: "Configure"
+        run: cmake --preset=host-gcc10-python .
+      - name: "Format"
+        run: cmake --build --preset=tests --target opentrons_ot3_firmware-format
+      - name: "Lint"
+        run: cmake --build --preset=tests --target opentrons_ot3_firmware-lint
+      - name: "Test"
+        run: cmake --build --preset=tests --target opentrons_ot3_firmware-build-and-test

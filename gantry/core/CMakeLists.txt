@@ -36,3 +36,6 @@ target_include_directories(gantry-core-y
 target_compile_options(gantry-core-x PRIVATE ${COMPILE_OPTS})
 
 target_compile_options(gantry-core-y PRIVATE ${COMPILE_OPTS})
+
+target_link_libraries(gantry-core-x PUBLIC can-core)
+target_link_libraries(gantry-core-y PUBLIC can-core)

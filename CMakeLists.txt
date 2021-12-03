@@ -16,6 +16,8 @@ if (NOT ${CMAKE_CROSSCOMPILING})
     enable_testing()
     add_custom_target(build-and-test)
 endif ()
+add_subdirectory(python)
+
 
 # Set a default build type if none was specified
 # From https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -64,6 +66,7 @@ list(REMOVE_DUPLICATES LINT_TARGETS)
 
 find_package(Clang)
 
+# c++ linting is here but python linting is in the subdir
 file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./include/*.hpp
         ./can/*.hpp ./can/*.cpp
@@ -92,7 +95,10 @@ add_custom_target(
 )
 
 add_custom_target(
-        lint
-        ALL
-        DEPENDS ${LINT_TARGETS}
-)
+      lint
+      ALL
+      DEPENDS ${LINT_TARGETS})
+
+add_dependencies(lint opentrons_ot3_firmware-lint)
+add_dependencies(format opentrons_ot3_firmware-format)
+add_dependencies(format-ci opentrons_ot3_firmware-format-ci)

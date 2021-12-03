@@ -24,3 +24,5 @@ target_compile_options(pipettes-core
   -Wctor-dtor-privacy
   -fno-rtti
   )
+
+target_link_libraries(pipettes-core PUBLIC can-core)

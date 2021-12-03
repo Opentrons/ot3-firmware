@@ -64,12 +64,12 @@ SCENARIO("Dispatcher") {
             }
         };
 
-        CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_left};
+        CheckForNodeId check_for_node_id_left{.node_id = NodeId::head_l};
         auto subject = Dispatcher(check_for_node_id_left, l1, l2);
 
         WHEN("dispatching a message") {
             auto arbitration_id = ArbitrationId();
-            arbitration_id.node_id(NodeId::head_left);
+            arbitration_id.node_id(NodeId::head_l);
             subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("listeners are called") {
                 REQUIRE(l1.id == arbitration_id);
@@ -94,14 +94,14 @@ SCENARIO("Dispatcher") {
             }
         };
 
-        CheckForNodeId check_node_id_right{.node_id = NodeId::head_right};
+        CheckForNodeId check_node_id_right{.node_id = NodeId::head_r};
         auto subject = Dispatcher(check_node_id_right, l1, l2);
 
         WHEN(
             "dispatching a head_left message to a dispatcher expecting "
             "head_right") {
             auto arbitration_id = ArbitrationId();
-            arbitration_id.node_id(NodeId::head_left);
+            arbitration_id.node_id(NodeId::head_l);
             subject.handle(arbitration_id, buff.begin(), buff.end());
             THEN("listeners are are not called") {
                 REQUIRE(l1.id == 0);

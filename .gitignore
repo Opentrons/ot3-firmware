@@ -1,9 +1,11 @@
 .DS_Store
 .idea
-
+CMakeUserPresets.json
+*.pyc
 build-cross/
 build-cross-pipettes/
 stm32-tools/
 build-host/
 cmake-build-debug/
 node_modules
+__pycache__

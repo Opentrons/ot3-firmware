@@ -1,8 +1,9 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 
-#include "ids.hpp"
+#include "can/core/ids.hpp"
 
 namespace message_core {
 

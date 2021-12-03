@@ -9,7 +9,6 @@ add_executable(
         test_main.cpp
         test_bit_utils.cpp
         test_synchronization.cpp
-        test_move_group.cpp
         test_spi.cpp
 )
 

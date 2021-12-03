@@ -7,7 +7,7 @@ using namespace can_ids;
 SCENARIO("Arbitration ID") {
     GIVEN("an arbitration id object") {
         auto subject = ArbitrationId();
-        subject.node_id(NodeId::head_left);
+        subject.node_id(NodeId::head_l);
         subject.function_code(FunctionCode::bootloader);
         subject.message_id(MessageId::heartbeat_request);
 

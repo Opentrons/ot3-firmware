@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <span>
 
+#include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
-#include "ids.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
@@ -137,7 +137,7 @@ struct ReadFromEEPromResponse : Response<MessageId::read_eeprom_response> {
         -> bool = default;
 };
 
-struct AddLinearMoveRequest : BaseMessage<MessageId::add_linear_move_request> {
+struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     uint8_t group_id;
     uint8_t seq_id;
     ticks duration;
