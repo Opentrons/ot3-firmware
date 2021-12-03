@@ -1,6 +1,7 @@
 #include "gantry/core/interfaces.hpp"
 
 #include "can/simlib/sim_canbus.hpp"
+#include "common/simulation/sim_motor_hardware_iface.hpp"
 #ifdef __linux__
 #include "can/simlib/socketcan_transport.hpp"
 #else
@@ -25,6 +26,10 @@ static auto canbus = sim_canbus::SimCANBus(transport);
 
 static auto spibus = sim_spi::SimTMC2130Spi();
 
+static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
+
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 
 auto interfaces::get_spi() -> spi::TMC2130Spi& { return spibus; }
+
+auto interfaces::get_motor_hardware_iface() -> motor_hardware::MotorHardwareIface& {return motor_interface;}
