@@ -7,14 +7,9 @@
 extern "C" {
 #endif  // __cplusplus
 
-/**
- * Initialize ADC
- *
- * @param handle Pointer to a ADC_HandleTypeDef
- * @return HAL_OK on success
- */
-HAL_StatusTypeDef MX_ADC_Init(ADC_HandleTypeDef* handle);
-void adc_setup(ADC_HandleTypeDef* handle);
+void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
+void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
+
 
 #ifdef __cplusplus
 }  // extern "C"
