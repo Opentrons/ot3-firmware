@@ -46,7 +46,7 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1)
   }
   /** Configure Injected Channel
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_2;
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_12;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
   sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
   sConfigInjected.InjectedNbrOfConversion = 2;
@@ -62,17 +62,6 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1)
   {
     Error_Handler();
   }
-  /** Configure Injected Channel
-  */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_14;
-  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
-  if (HAL_ADCEx_InjectedConfigChannel(adc1, &sConfigInjected) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC1_Init 2 */
-
-  /* USER CODE END ADC1_Init 2 */
 
 }
 
@@ -116,7 +105,7 @@ void MX_ADC2_Init(ADC_HandleTypeDef* adc2)
   }
   /** Configure Injected Channel
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_14;
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_11;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
   sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
   sConfigInjected.InjectedNbrOfConversion = 2;
@@ -134,41 +123,12 @@ void MX_ADC2_Init(ADC_HandleTypeDef* adc2)
   }
   /** Configure Injected Channel
   */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_4;
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_12;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
   if (HAL_ADCEx_InjectedConfigChannel(adc2, &sConfigInjected) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_11;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SingleDiff = ADC_SINGLE_ENDED;
-  sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
-  sConfig.OffsetNumber = ADC_OFFSET_NONE;
-  sConfig.Offset = 0;
-  if (HAL_ADC_ConfigChannel(adc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Regular Channel
-  */
-  sConfig.Channel = ADC_CHANNEL_5;
-  sConfig.Rank = ADC_REGULAR_RANK_2;
-  if (HAL_ADC_ConfigChannel(adc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC2_Init 2 */
-
-  /* USER CODE END ADC2_Init 2 */
-
+  
 }
 
-void adc_setup(ADC_HandleTypeDef* handle){
-    if (HAL_OK != HAL_ADC_Init(handle)) {
-        Error_Handler();
-    }
-    HAL_ADCEx_Calibration_Start(handle, ADC_SINGLE_ENDED);
-}
