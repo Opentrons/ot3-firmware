@@ -167,13 +167,15 @@ void adc_setup() {
 }
 
 void adc_read_voltages() {
+    uint32_t adc1_value = 555;
+    uint32_t adc2_value = 666;
     HAL_ADC_Start(&adc1);
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
-    uint32_t adc1_value = HAL_ADC_GetValue(&adc1);
+    adc1_value = HAL_ADC_GetValue(&adc1);
 
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
-    uint32_t adc2_value = HAL_ADC_GetValue(&adc2);
+    adc2_value = HAL_ADC_GetValue(&adc2);
 
     struct voltage_read voltage_read = {
         .z_motor = adc1_value, .a_motor = adc2_value, .gripper = adc2_value};
