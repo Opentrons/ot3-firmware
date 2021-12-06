@@ -162,12 +162,16 @@ void adc_setup() {
     MX_ADC2_Init(&adc2);
 }
 
-void adc_read_voltages() {
-    uint32_t adc1_value, adc2_value;
+struct detection_voltages adc_read_voltages() {
     adc_setup();
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     // look up table etc for values read
-    adc1_value = HAL_ADC_GetValue(&adc1);
-    adc2_value = HAL_ADC_GetValue(&adc2);
+    uint32_t adc1_value = HAL_ADC_GetValue(&adc1);
+    uint32_t adc2_value = HAL_ADC_GetValue(&adc2);
+
+    struct detection_voltages detection_voltages = {
+        .z_motor = adc1_value, .a_motor = adc2_value, .gripper = adc2_value};
+
+    return detection_voltages;
 }

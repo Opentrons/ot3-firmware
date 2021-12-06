@@ -7,7 +7,7 @@
 // call adc read method from free RTOS task
 
 [[noreturn]] void task_entry() {
-    adc_setup();
+    adc_read_voltages();
     // call function that reads voltage here!
 }
 
