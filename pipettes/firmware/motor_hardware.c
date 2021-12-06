@@ -13,6 +13,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         __HAL_RCC_SPI2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
         /**SPI2 GPIO Configuration
         PC6     ------> SPI2_CS
         PB13     ------> SPI2_SCK
@@ -44,10 +45,13 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_7 | GPIO_PIN_8;
+        GPIO_InitStruct.Pin = GPIO_PIN_7 | GPIO_PIN_8
+            // limit switch for debug
+            | GPIO_PIN_2;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
     }
 }
 SPI_HandleTypeDef hspi2 = {
@@ -144,9 +148,11 @@ void MX_TIM7_Init(void) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
     if ((htim == &htim7) && plunger_callback) {
         plunger_callback();
     }
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
