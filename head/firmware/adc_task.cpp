@@ -11,7 +11,7 @@
 
 void task_entry_() {
     adc_setup();
-    while (1) {
+    while (true) {
         adc_read_voltages();
     }
     // call function that reads voltage here!
