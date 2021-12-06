@@ -43,10 +43,12 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Step
-        GPIO_InitStruct.Pin = GPIO_PIN_8;
+        // lim sw debug
+        GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_2;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
 
         // Enable
         GPIO_InitStruct.Pin = GPIO_PIN_9;
@@ -162,9 +164,11 @@ void MX_TIM7_Init(void) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
     if (htim == &htim7 && timer_callback) {
         timer_callback();
     }
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
