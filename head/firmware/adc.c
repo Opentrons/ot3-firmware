@@ -2,6 +2,9 @@
 
 #include "common/firmware/errors.h"
 
+ADC_HandleTypeDef adc1;
+ADC_HandleTypeDef adc2;
+
 /**
  * @brief ADC1 Initialization Function
  * @param None
