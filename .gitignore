@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.python-version
 CMakeUserPresets.json
 *.pyc
 build-cross/
