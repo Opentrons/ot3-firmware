@@ -295,8 +295,12 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
 }
 
 extern "C" void motor_callback_glue() {
+    debug_left_start();
     motor_interrupt_left.run_interrupt();
+    debug_left_stop();
+    debug_right_start();
     motor_interrupt_right.run_interrupt();
+    debug_right_stop();
 }
 
 [[noreturn]] void task_entry() {

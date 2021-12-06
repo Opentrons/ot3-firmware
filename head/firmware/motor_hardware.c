@@ -28,11 +28,17 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Chip select and tmc2130 clock and enable
-        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_0 | GPIO_PIN_11;
+        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_0 | GPIO_PIN_11
+            // TODO lim switch output for debug
+            | GPIO_PIN_7 | GPIO_PIN_9;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+
+        // TODO debug delete
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);
 
         GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -231,4 +237,20 @@ void initialize_timer(motor_interrupt_callback callback) {
     motor_callback = callback;
     MX_GPIO_Init();
     MX_TIM7_Init();
+}
+
+void debug_left_start() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+}
+
+void debug_left_stop() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+}
+
+void debug_right_start() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);
+}
+
+void debug_right_stop() {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);
 }
