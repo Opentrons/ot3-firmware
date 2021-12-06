@@ -9,16 +9,9 @@
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1)
 {
 
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
   ADC_MultiModeTypeDef multimode = {0};
   ADC_InjectionConfTypeDef sConfigInjected = {0};
 
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
   /** Common config
   */
   adc1->Instance = ADC1;
@@ -73,16 +66,12 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1)
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2)
 {
 
-  /* USER CODE BEGIN ADC2_Init 0 */
 
-  /* USER CODE END ADC2_Init 0 */
 
   ADC_InjectionConfTypeDef sConfigInjected = {0};
-  ADC_ChannelConfTypeDef sConfig = {0};
+  //ADC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE BEGIN ADC2_Init 1 */
 
-  /* USER CODE END ADC2_Init 1 */
   /** Common config
   */
   adc2->Instance = ADC2;
@@ -130,5 +119,66 @@ void MX_ADC2_Init(ADC_HandleTypeDef* adc2)
     Error_Handler();
   }
   
+}
+
+static uint32_t HAL_RCC_ADC12_CLK_ENABLED=0;
+
+/**
+* @brief ADC MSP Initialization
+* This function configures the hardware resources used in this example
+* @param hadc: ADC handle pointer
+* @retval None
+*/
+void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if(hadc->Instance==ADC1)
+  {
+    /* Peripheral clock enable */
+    HAL_RCC_ADC12_CLK_ENABLED++;
+    if(HAL_RCC_ADC12_CLK_ENABLED==1){
+      __HAL_RCC_ADC12_CLK_ENABLE();
+    }
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    
+    GPIO_InitStruct.Pin = GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+ 
+  }
+  else if(hadc->Instance==ADC2)
+  {
+
+    /* Peripheral clock enable */
+    HAL_RCC_ADC12_CLK_ENABLED++;
+    if(HAL_RCC_ADC12_CLK_ENABLED==1){
+      __HAL_RCC_ADC12_CLK_ENABLE();
+    }
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  }
+
+}
+
+
+void adc_setup() {
+  MX_ADC1_Init(&adc1);
+  MX_ADC2_Init(&adc2);
 }
 
