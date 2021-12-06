@@ -173,7 +173,7 @@ void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle) {
      */
     sConfig.Channel = chan;
     sConfig.Rank = rank;
-    sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES;
+    sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
     if (HAL_ADC_ConfigChannel(handle, &sConfig) != HAL_OK) {
         Error_Handler();
     }
@@ -188,19 +188,19 @@ void adc_read_voltages() {
     HAL_ADC_Start(&adc1);
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
     adc1_value = HAL_ADC_GetValue(&adc1);
-    HAL_ADC_Stop(&hadc1);
+    HAL_ADC_Stop(&adc1);
 
     ADC_set_chan(ADC_CHANNEL_12, ADC_INJECTED_RANK_1, &adc2);
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     adc2_value = HAL_ADC_GetValue(&adc2);
-    HAL_ADC_Stop(&hadc2);
+    HAL_ADC_Stop(&adc2);
 
     ADC_set_chan(ADC_CHANNEL_11, ADC_INJECTED_RANK_1, &adc2);
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     adc3_value = HAL_ADC_GetValue(&adc2);
-    HAL_ADC_Stop(&hadc2);
+    HAL_ADC_Stop(&adc2);
 
     struct voltage_read voltage_read = {
         .z_motor = adc3_value, .a_motor = adc2_value, .gripper = adc1_value};
