@@ -86,9 +86,10 @@ static motor_handler::MotorInterruptHandler plunger_interrupt(motor_queue,
                                                               complete_queue,
                                                               plunger_hw);
 
+// microstepping is currently set to 32 μsteps.
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
                                          .ihold_irun = 0x70202,
-                                         .chopconf = 0x101D5,
+                                         .chopconf = 0x50101D5,
                                          .thigh = 0xFFFFF,
                                          .coolconf = 0x60000};
 /**
@@ -100,9 +101,9 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
 static motor_class::Motor motor{
     spi_comms,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 3.03},
         .steps_per_rev = 200,
-        .microstep = 16},
+        .microstep = 32},
     plunger_hw,
     MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
