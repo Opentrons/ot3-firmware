@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <array>
 
 namespace motor_driver_config {

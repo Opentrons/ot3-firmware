@@ -117,7 +117,7 @@ static auto read_can_message_buffer_writer =
  */
 void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
-                                                 data + length);
+                                                 data + length);  // NOLINT
 }
 
 [[noreturn]] void task_entry() {
