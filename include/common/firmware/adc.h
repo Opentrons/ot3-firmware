@@ -11,6 +11,7 @@ extern ADC_HandleTypeDef adc1;
 extern ADC_HandleTypeDef adc2;
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
+void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle);
 void adc_setup();
 void adc_read_voltages();
 struct voltage_read {

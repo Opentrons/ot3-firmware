@@ -166,19 +166,44 @@ void adc_setup() {
     MX_ADC2_Init(&adc2);
 }
 
+void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle) {
+    ADC_ChannelConfTypeDef sConfig = {0};
+    /** Configure for the selected ADC regular channel its corresponding rank in
+     * the sequencer and its sample time.
+     */
+    sConfig.Channel = chan;
+    sConfig.Rank = rank;
+    sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES;
+    if (HAL_ADC_ConfigChannel(handle, &sConfig) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
 void adc_read_voltages() {
     uint32_t adc1_value = 555;
     uint32_t adc2_value = 666;
+    uint32_t adc3_value = 777;
+
+    ADC_set_chan(ADC_CHANNEL_12, ADC_INJECTED_RANK_1, &adc1);
     HAL_ADC_Start(&adc1);
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
     adc1_value = HAL_ADC_GetValue(&adc1);
+    HAL_ADC_Stop(&hadc1);
 
+    ADC_set_chan(ADC_CHANNEL_12, ADC_INJECTED_RANK_1, &adc2);
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     adc2_value = HAL_ADC_GetValue(&adc2);
+    HAL_ADC_Stop(&hadc2);
+
+    ADC_set_chan(ADC_CHANNEL_11, ADC_INJECTED_RANK_1, &adc2);
+    HAL_ADC_Start(&adc2);
+    HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
+    adc3_value = HAL_ADC_GetValue(&adc2);
+    HAL_ADC_Stop(&hadc2);
 
     struct voltage_read voltage_read = {
-        .z_motor = adc1_value, .a_motor = adc2_value, .gripper = adc2_value};
+        .z_motor = adc3_value, .a_motor = adc2_value, .gripper = adc1_value};
 
     // bool test_val;
     if ((voltage_read.a_motor == voltage_read.z_motor) ==
