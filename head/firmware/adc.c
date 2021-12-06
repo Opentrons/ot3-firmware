@@ -131,8 +131,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
             __HAL_RCC_ADC12_CLK_ENABLE();
         }
 
-        __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
 
         GPIO_InitStruct.Pin = GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
@@ -146,7 +146,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
             __HAL_RCC_ADC12_CLK_ENABLE();
         }
 
-        __HAL_RCC_GPIOA_CLK_ENABLE();
         __HAL_RCC_GPIOC_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -168,11 +167,12 @@ void adc_setup() {
 }
 
 void adc_read_voltages() {
-    adc_setup();
+    HAL_ADC_Start(&adc1);
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
-    HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
-    // look up table etc for values read
     uint32_t adc1_value = HAL_ADC_GetValue(&adc1);
+
+    HAL_ADC_Start(&adc2);
+    HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     uint32_t adc2_value = HAL_ADC_GetValue(&adc2);
 
     struct voltage_read voltage_read = {

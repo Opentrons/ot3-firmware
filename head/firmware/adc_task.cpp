@@ -10,8 +10,11 @@
 // call adc read method from free RTOS task
 
 void task_entry_() {
-    adc_read_voltages();
+    adc_setup();
+    while (1) {
+        adc_read_voltages();
+    }
     // call function that reads voltage here!
 }
 
-auto static task = freertos_task::FreeRTOSTask<512, 5>("can task", task_entry_);
+auto static task = freertos_task::FreeRTOSTask<512, 5>("adc task", task_entry_);
