@@ -3,6 +3,7 @@
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/spi_comms.hpp"
+#include "gantry/core/axis_type.h"
 #include "motor-control/core//motion_controller.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
@@ -43,6 +44,16 @@ struct motion_controller::HardwareConfig motor_pins {
 static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
 
 static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
+
+void interfaces::initialize() {
+    // Initialize SPI
+    if (initialize_spi(get_axis_type()) != HAL_OK) {
+        Error_Handler();
+    }
+
+    // Start the can bus
+    can_start();
+}
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 

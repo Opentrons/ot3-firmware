@@ -7,6 +7,11 @@
 namespace interfaces {
 
 /**
+ * Initialize the hardware portability layer.
+ */
+void initialize();
+
+/**
  * Get the CAN bus interface.
  * @return the can bus
  */

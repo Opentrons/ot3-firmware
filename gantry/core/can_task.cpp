@@ -121,13 +121,10 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
 }
 
 [[noreturn]] void task_entry() {
-    can_bus_1.set_incoming_message_callback(callback);
-    //    can_start();
-    can_bus_1.setup_node_id_filter(my_node_id);
+    interfaces::initialize();
 
-    //    if (initialize_spi(my_axis_type) != HAL_OK) {
-    //        Error_Handler();
-    //    }
+    can_bus_1.set_incoming_message_callback(callback);
+    can_bus_1.setup_node_id_filter(my_node_id);
 
     motor.driver.setup();
 

@@ -27,6 +27,9 @@ list(APPEND FREERTOS_SOURCES "${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/Th
 # Create the freertos lib
 add_library(freertos-gantry STATIC ${FREERTOS_SOURCES})
 
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    add_compile_definitions(USE_SOCKETCAN)
+endif()
 
 set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
@@ -35,28 +38,28 @@ set(GANTRY_SIMULATOR_SRC
         )
 
 add_executable(
-        gantry-x-simulator
+        gantry_x_simulator
         ${GANTRY_SIMULATOR_SRC}
 )
 
 add_executable(
-        gantry-y-simulator
+        gantry_y_simulator
         ${GANTRY_SIMULATOR_SRC}
 )
 
-target_gantry_core_x(gantry-x-simulator)
-target_gantry_core_y(gantry-y-simulator)
+target_gantry_core_x(gantry_x_simulator)
+target_gantry_core_y(gantry_y_simulator)
 
-target_link_libraries(gantry-x-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
-target_link_libraries(gantry-y-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
+target_link_libraries(gantry_x_simulator PRIVATE can-core common-simulation freertos-gantry pthread)
+target_link_libraries(gantry_y_simulator PRIVATE can-core common-simulation freertos-gantry pthread)
 
-set_target_properties(gantry-x-simulator
+set_target_properties(gantry_x_simulator
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
 
-set_target_properties(gantry-y-simulator
+set_target_properties(gantry_y_simulator
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
