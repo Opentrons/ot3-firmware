@@ -181,11 +181,8 @@ void adc_read_voltages() {
     // bool test_val;
     if ((voltage_read.a_motor == voltage_read.z_motor) ==
         voltage_read.gripper) {
-        // test_val = true;
-
     }
 
     else {
-        // test_val = false;
     }
 }
