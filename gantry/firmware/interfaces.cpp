@@ -1,4 +1,11 @@
-
+#include "common/firmware/spi_comms.hpp"
+#include "motor-control/core//motion_controller.hpp"
+#include "motor-control/firmware/motor_hardware.hpp"
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include "motor_hardware.h"
+#pragma GCC diagnostic pop
 
 spi::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
