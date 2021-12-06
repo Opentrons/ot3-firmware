@@ -1,14 +1,17 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/firmware/adc.hpp"
-#include "common/firmware/errors.h"
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include "common/firmware/adc.h"
+#pragma GCC diagnostic pop
 
 // call adc config methos
 // call adc read method from free RTOS task
 
-[[noreturn]] void task_entry() {
+void task_entry_() {
     adc_read_voltages();
     // call function that reads voltage here!
 }
 
-auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
+auto static task = freertos_task::FreeRTOSTask<512, 5>("can task", task_entry_);

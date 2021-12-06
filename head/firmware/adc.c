@@ -1,5 +1,7 @@
 #include "common/firmware/adc.h"
 
+#include <stdbool.h>
+
 #include "common/firmware/errors.h"
 
 ADC_HandleTypeDef adc1;
@@ -165,7 +167,7 @@ void adc_setup() {
     MX_ADC2_Init(&adc2);
 }
 
-struct voltage_read adc_read_voltages() {
+void adc_read_voltages() {
     adc_setup();
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
@@ -176,5 +178,14 @@ struct voltage_read adc_read_voltages() {
     struct voltage_read voltage_read = {
         .z_motor = adc1_value, .a_motor = adc2_value, .gripper = adc2_value};
 
-    return voltage_read;
+    // bool test_val;
+    if ((voltage_read.a_motor == voltage_read.z_motor) ==
+        voltage_read.gripper) {
+        // test_val = true;
+
+    }
+
+    else {
+        // test_val = false;
+    }
 }
