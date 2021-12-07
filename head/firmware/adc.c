@@ -6,8 +6,20 @@
 
 ADC_HandleTypeDef adc1;
 ADC_HandleTypeDef adc2;
-struct voltage_read voltage_read;
-struct states states;
+
+typedef enum { connected, disconnected } state;
+
+struct states {
+    state z_pipette_state;
+    state a_pipette_state;
+    state gripper_state;
+};
+
+struct voltage_read {
+    uint32_t z_motor;
+    uint32_t a_motor;
+    uint32_t gripper;
+};
 
 /**
  * @brief ADC1 Initialization Function
@@ -15,9 +27,6 @@ struct states states;
  * @retval None
  */
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1) {
-    ADC_MultiModeTypeDef multimode = {0};
-    ADC_InjectionConfTypeDef sConfigInjected = {0};
-
     /** Common config
      */
     adc1->Instance = ADC1;
@@ -26,37 +35,13 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1) {
     adc1->Init.ScanConvMode = ADC_SCAN_ENABLE;
     adc1->Init.ContinuousConvMode = DISABLE;
     adc1->Init.DiscontinuousConvMode = DISABLE;
-    adc1->Init.DataAlign = ADC_DATAALIGN_LEFT;
+    adc1->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adc1->Init.NbrOfConversion = 1;
     adc1->Init.DMAContinuousRequests = DISABLE;
     adc1->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
     adc1->Init.LowPowerAutoWait = DISABLE;
     adc1->Init.Overrun = ADC_OVR_DATA_PRESERVED;
     if (HAL_ADC_Init(adc1) != HAL_OK) {
-        Error_Handler();
-    }
-    /** Configure the ADC multi-mode
-     */
-    multimode.Mode = ADC_MODE_INDEPENDENT;
-    if (HAL_ADCEx_MultiModeConfigChannel(adc1, &multimode) != HAL_OK) {
-        Error_Handler();
-    }
-    /** Configure Injected Channel
-     */
-    sConfigInjected.InjectedChannel = ADC_CHANNEL_12;
-    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-    sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
-    sConfigInjected.InjectedNbrOfConversion = 2;
-    sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_12CYCLES_5;
-    sConfigInjected.ExternalTrigInjecConvEdge =
-        ADC_EXTERNALTRIGINJECCONV_EDGE_RISING;
-    sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJEC_T1_TRGO;
-    sConfigInjected.AutoInjectedConv = DISABLE;
-    sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
-    sConfigInjected.QueueInjectedContext = ENABLE;
-    sConfigInjected.InjectedOffset = 0;
-    sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
-    if (HAL_ADCEx_InjectedConfigChannel(adc1, &sConfigInjected) != HAL_OK) {
         Error_Handler();
     }
 }
@@ -67,9 +52,6 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1) {
  * @retval None
  */
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2) {
-    ADC_InjectionConfTypeDef sConfigInjected = {0};
-    // ADC_ChannelConfTypeDef sConfig = {0};
-
     /** Common config
      */
     adc2->Instance = ADC2;
@@ -80,38 +62,13 @@ void MX_ADC2_Init(ADC_HandleTypeDef* adc2) {
     adc2->Init.DiscontinuousConvMode = DISABLE;
     adc2->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
     adc2->Init.ExternalTrigConv = ADC_SOFTWARE_START;
-    adc2->Init.DataAlign = ADC_DATAALIGN_LEFT;
+    adc2->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adc2->Init.NbrOfConversion = 2;
     adc2->Init.DMAContinuousRequests = DISABLE;
     adc2->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
     adc2->Init.LowPowerAutoWait = DISABLE;
     adc2->Init.Overrun = ADC_OVR_DATA_PRESERVED;
     if (HAL_ADC_Init(adc2) != HAL_OK) {
-        Error_Handler();
-    }
-    /** Configure Injected Channel
-     */
-    sConfigInjected.InjectedChannel = ADC_CHANNEL_11;
-    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-    sConfigInjected.InjectedSingleDiff = ADC_SINGLE_ENDED;
-    sConfigInjected.InjectedNbrOfConversion = 2;
-    sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_12CYCLES_5;
-    sConfigInjected.ExternalTrigInjecConvEdge =
-        ADC_EXTERNALTRIGINJECCONV_EDGE_RISING;
-    sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJEC_T1_TRGO;
-    sConfigInjected.AutoInjectedConv = DISABLE;
-    sConfigInjected.InjectedDiscontinuousConvMode = DISABLE;
-    sConfigInjected.QueueInjectedContext = ENABLE;
-    sConfigInjected.InjectedOffset = 0;
-    sConfigInjected.InjectedOffsetNumber = ADC_OFFSET_NONE;
-    if (HAL_ADCEx_InjectedConfigChannel(adc2, &sConfigInjected) != HAL_OK) {
-        Error_Handler();
-    }
-    /** Configure Injected Channel
-     */
-    sConfigInjected.InjectedChannel = ADC_CHANNEL_12;
-    sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
-    if (HAL_ADCEx_InjectedConfigChannel(adc2, &sConfigInjected) != HAL_OK) {
         Error_Handler();
     }
 }
@@ -133,7 +90,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
             __HAL_RCC_ADC12_CLK_ENABLE();
         }
 
-        __HAL_RCC_GPIOB_CLK_ENABLE();
         __HAL_RCC_GPIOC_CLK_ENABLE();
 
         GPIO_InitStruct.Pin = GPIO_PIN_1;
@@ -168,13 +124,12 @@ void adc_setup() {
     MX_ADC2_Init(&adc2);
 }
 
-void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle) {
+void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     ADC_ChannelConfTypeDef sConfig = {0};
     /** Configure for the selected ADC regular channel its corresponding rank in
      * the sequencer and its sample time.
      */
     sConfig.Channel = chan;
-    sConfig.Rank = rank;
     sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
     if (HAL_ADC_ConfigChannel(handle, &sConfig) != HAL_OK) {
         Error_Handler();
@@ -186,32 +141,32 @@ void adc_read_voltages() {
     uint32_t adc2_value = 4294967295;
     uint32_t adc3_value = 4294967295;
 
-    ADC_set_chan(ADC_CHANNEL_12, ADC_INJECTED_RANK_1, &adc1);
+    ADC_set_chan(ADC_CHANNEL_12, &adc1);
     HAL_ADC_Start(&adc1);
     HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
     adc1_value = HAL_ADC_GetValue(&adc1);
-    HAL_ADC_Stop(&adc1);
 
-    ADC_set_chan(ADC_CHANNEL_12, ADC_INJECTED_RANK_1, &adc2);
+    ADC_set_chan(ADC_CHANNEL_12, &adc2);
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     adc2_value = HAL_ADC_GetValue(&adc2);
-    HAL_ADC_Stop(&adc2);
 
-    ADC_set_chan(ADC_CHANNEL_11, ADC_INJECTED_RANK_1, &adc2);
+    ADC_set_chan(ADC_CHANNEL_11, &adc2);
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
     adc3_value = HAL_ADC_GetValue(&adc2);
-    HAL_ADC_Stop(&adc2);
 
-    voltage_read = {
+    struct voltage_read voltage_read = {
         .z_motor = adc3_value, .a_motor = adc2_value, .gripper = adc1_value};
 
     if ((voltage_read.a_motor == voltage_read.z_motor) ==
-        voltage_read.gripper == 0) {
-        states = {.s_pipette_state = disconnected,
-                  .a_pipette_state = disconnected,
-                  gripper_state = disconnected};
+        (voltage_read.gripper == 0)) {
+        struct states states = {.z_pipette_state = disconnected,
+                                .a_pipette_state = disconnected,
+                                .gripper_state = disconnected};
+        if ((states.a_pipette_state == states.z_pipette_state) ==
+            states.gripper_state) {
+        }
     }
 
     else {

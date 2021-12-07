@@ -9,25 +9,12 @@ extern "C" {
 
 extern ADC_HandleTypeDef adc1;
 extern ADC_HandleTypeDef adc2;
-typedef enum { connected, disconnected } state;
-struct states {
-    state z_pipette_state;
-    state a_pipette_state;
-    state gripper_state;
-};
 
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
-void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle);
+void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle);
 void adc_setup();
 void adc_read_voltages();
-struct voltage_read {
-    uint32_t z_motor;
-    uint32_t a_motor;
-    uint32_t gripper;
-};
-extern struct voltage_read voltage_read;
-extern struct states states;
 
 #ifdef __cplusplus
 }  // extern "C"
