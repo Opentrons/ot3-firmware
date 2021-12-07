@@ -64,10 +64,10 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
 
     LOG("Sending: arbitration %X dlc %d\n", arb_id, buff_len);
 
-    arb_id = htonl(arb_id);
-    buff_len = htonl(buff_len);
-    ::write(handle, &arb_id, sizeof(arb_id));
-    ::write(handle, &buff_len, sizeof(buff_len));
+    auto out_arb_id = htonl(arb_id);
+    auto out_buff_len = htonl(buff_len);
+    ::write(handle, &out_arb_id, sizeof(arb_id));
+    ::write(handle, &out_buff_len, sizeof(buff_len));
     if (buff_len > 0) {
         ::write(handle, buff, buff_len);
     }
@@ -78,6 +78,11 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
                                             uint32_t &buff_len) -> bool {
+
+    // TODO (2021-12-08, Amit): This is required for FreeRTOS to have time to
+    //  process message. Need to find a better solution.
+    vTaskDelay(1);
+
     // Critical section block
     auto lock = synchronization::Lock(critical_section);
 
