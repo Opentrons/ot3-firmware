@@ -31,6 +31,8 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
     add_compile_definitions(USE_SOCKETCAN)
 endif()
 
+add_compile_definitions(ENABLE_LOGGING)
+
 set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp

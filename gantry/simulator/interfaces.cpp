@@ -16,7 +16,7 @@
 static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
 static auto constexpr DefaultChannel = "vcan0";
 
-static auto transport = socketcan::SocketCanTransport<
+static auto transport = socketcan_transport::SocketCanTransport<
     freertos_synchronization::FreeRTOSCriticalSection>{};
 #else
 static auto constexpr ServerIpEnvironmentVariableName = "CAN_SERVER_IP";
@@ -24,7 +24,7 @@ static auto constexpr DefaultServerIp = "127.0.0.1";
 static auto constexpr PortEnvironmentVariableName = "CAN_PORT";
 static auto constexpr DefaultPort = 9898;
 
-static auto transport = stdio_can::SocketTransport<
+static auto transport = socket_transport::SocketTransport<
     freertos_synchronization::FreeRTOSCriticalSection>{};
 #endif
 

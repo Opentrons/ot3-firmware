@@ -5,13 +5,12 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <iostream>
-
 #include "can/core/message_core.hpp"
+#include "common/core/logging.hpp"
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
 
-namespace stdio_can {
+namespace socket_transport {
 
 template <synchronization::LockableProtocol CriticalSection>
 class SocketTransport : public can_transport::BusTransportBase {
@@ -51,7 +50,7 @@ auto SocketTransport<CriticalSection>::open(const char *ip, uint32_t port)
     if (connect(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
-    std::cout << "Connected to " << ip << ":" << port << std::endl;
+    LOG("Connected to %s:%d\n", ip, port);
     handle = s;
     return true;
 }
@@ -63,7 +62,8 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
     // Critical section block
     auto lock = synchronization::Lock(critical_section);
 
-    std::cout << "Sending: arbitration " << std::hex << arb_id << " dlc " << buff_len << std::endl;
+    LOG("Sending: arbitration %X dlc %d\n", arb_id, buff_len);
+
     arb_id = htonl(arb_id);
     buff_len = htonl(buff_len);
     ::write(handle, &arb_id, sizeof(arb_id));
@@ -85,11 +85,12 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     ::read(handle, &buff_len, sizeof(buff_len));
     arb_id = ntohl(arb_id);
     buff_len = ntohl(buff_len);
-    std::cout << "Read: arbitration " << std::hex << arb_id << " dlc " << buff_len << std::endl;
+
+    LOG("Read: arbitration %X dlc %d\n", arb_id, buff_len);
     if (buff_len > 0) {
         ::read(handle, buff, buff_len);
     }
     return true;
 }
 
-}  // namespace stdio_can
+}  // namespace socket_transport
