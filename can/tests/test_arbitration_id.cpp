@@ -32,4 +32,21 @@ SCENARIO("Arbitration ID") {
             }
         }
     }
+
+    GIVEN("an empty arbitration id object") {
+        auto subject = ArbitrationId();
+        WHEN("repeatedly setting values") {
+            subject.message_id(MessageId::device_info_request);
+            subject.message_id(MessageId::get_move_group_request);
+            subject.node_id(NodeId::pipette);
+            subject.node_id(NodeId::gantry_x);
+            subject.node_id(NodeId::broadcast);
+
+            THEN("the final values are written") {
+                REQUIRE(subject.message_id() ==
+                        MessageId::get_move_group_request);
+                REQUIRE(subject.node_id() == NodeId::broadcast);
+            }
+        }
+    }
 }
