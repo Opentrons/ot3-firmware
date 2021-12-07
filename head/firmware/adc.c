@@ -73,8 +73,6 @@ void MX_ADC2_Init(ADC_HandleTypeDef* adc2) {
     }
 }
 
-static uint32_t HAL_RCC_ADC12_CLK_ENABLED = 0;
-
 /**
  * @brief ADC MSP Initialization
  * This function configures the hardware resources used in this example
@@ -85,10 +83,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hadc->Instance == ADC1) {
         /* Peripheral clock enable */
-        HAL_RCC_ADC12_CLK_ENABLED++;
-        if (HAL_RCC_ADC12_CLK_ENABLED == 1) {
-            __HAL_RCC_ADC12_CLK_ENABLE();
-        }
+        __HAL_RCC_ADC12_CLK_ENABLE();
 
         __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -96,13 +91,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
     } else if (hadc->Instance == ADC2) {
         /* Peripheral clock enable */
-        HAL_RCC_ADC12_CLK_ENABLED++;
-        if (HAL_RCC_ADC12_CLK_ENABLED == 1) {
-            __HAL_RCC_ADC12_CLK_ENABLE();
-        }
+        __HAL_RCC_ADC12_CLK_ENABLE();
 
         __HAL_RCC_GPIOC_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -122,6 +113,14 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
 void adc_setup() {
     MX_ADC1_Init(&adc1);
     MX_ADC2_Init(&adc2);
+    if (HAL_ADCEx_Calibration_Start(&adc1, ADC_SINGLE_ENDED) != HAL_OK) {
+        /* Calibration Error */
+        Error_Handler();
+    }
+    if (HAL_ADCEx_Calibration_Start(&adc2, ADC_SINGLE_ENDED) != HAL_OK) {
+        /* Calibration Error */
+        Error_Handler();
+    }
 }
 
 void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
