@@ -3,7 +3,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "common/simulation/sim_motor_hardware_iface.hpp"
 
-#ifdef USE_SOCKET_CAN
+#ifdef USE_SOCKETCAN
 #include "can/simlib/socketcan_transport.hpp"
 #else
 #include "can/simlib/socket_transport.hpp"
@@ -12,7 +12,7 @@
 #include "common/core/freertos_synchronization.hpp"
 #include "common/simulation/spi.hpp"
 
-#ifdef USE_SOCKET_CAN
+#ifdef USE_SOCKETCAN
 static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
 static auto constexpr DefaultChannel = "vcan0";
 
@@ -35,7 +35,7 @@ static auto spibus = sim_spi::SimTMC2130Spi();
 static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
 
 void interfaces::initialize() {
-#ifdef USE_SOCKET_CAN
+#ifdef USE_SOCKETCAN
     const char* env_channel_val = std::getenv(ChannelEnvironmentVariableName);
     auto channel = env_channel_val ? env_channel_val : DefaultChannel;
     transport.open(channel);
