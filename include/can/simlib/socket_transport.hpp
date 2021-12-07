@@ -60,6 +60,12 @@ template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
                                              const uint8_t *buff,
                                              uint32_t buff_len) -> bool {
+    // Critical section block
+    auto lock = synchronization::Lock(critical_section);
+
+    std::cout << "Sending: arbitration " << std::hex << arb_id << " dlc " << buff_len << std::endl;
+    arb_id = htonl(arb_id);
+    buff_len = htonl(buff_len);
     ::write(handle, &arb_id, sizeof(arb_id));
     ::write(handle, &buff_len, sizeof(buff_len));
     if (buff_len > 0) {
@@ -72,8 +78,14 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
                                             uint32_t &buff_len) -> bool {
+    // Critical section block
+    auto lock = synchronization::Lock(critical_section);
+
     ::read(handle, &arb_id, sizeof(arb_id));
     ::read(handle, &buff_len, sizeof(buff_len));
+    arb_id = ntohl(arb_id);
+    buff_len = ntohl(buff_len);
+    std::cout << "Read: arbitration " << std::hex << arb_id << " dlc " << buff_len << std::endl;
     if (buff_len > 0) {
         ::read(handle, buff, buff_len);
     }
