@@ -78,7 +78,6 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
                                             uint32_t &buff_len) -> bool {
-
     // TODO (2021-12-08, Amit): This is required for FreeRTOS to have time to
     //  process message. Need to find a better solution.
     vTaskDelay(1);
