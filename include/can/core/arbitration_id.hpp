@@ -74,6 +74,9 @@ class ArbitrationId {
      * @param shift The amount to left shift masked value
      */
     void set(uint32_t val, uint32_t mask, uint32_t shift) {
+        // Clear bits
+        id &= ~(mask << shift);
+        // Write bits
         id |= ((val & mask) << shift);
     }
 
