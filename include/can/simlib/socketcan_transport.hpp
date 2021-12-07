@@ -84,6 +84,7 @@ auto SocketCanTransport<CriticalSection>::write(uint32_t arb_id,
     frame.can_id = arb_id | (1 << 31);
     frame.len = buff_len;
     ::memcpy(frame.data, cbuff, buff_len);
+    LOG("Writing: arb_id %X dlc %d\n", arb_id, buff_len);
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
 
