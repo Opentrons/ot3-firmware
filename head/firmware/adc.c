@@ -180,9 +180,9 @@ void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle) {
 }
 
 void adc_read_voltages() {
-    uint32_t adc1_value = 555;
-    uint32_t adc2_value = 666;
-    uint32_t adc3_value = 777;
+    uint32_t adc1_value = 4294967295;
+    uint32_t adc2_value = 4294967295;
+    uint32_t adc3_value = 4294967295;
 
     ADC_set_chan(ADC_CHANNEL_12, ADC_INJECTED_RANK_1, &adc1);
     HAL_ADC_Start(&adc1);

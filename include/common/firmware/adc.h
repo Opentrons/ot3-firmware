@@ -9,6 +9,7 @@ extern "C" {
 
 extern ADC_HandleTypeDef adc1;
 extern ADC_HandleTypeDef adc2;
+
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
 void ADC_set_chan(uint32_t chan, uint32_t rank, ADC_HandleTypeDef* handle);
@@ -19,6 +20,7 @@ struct voltage_read {
     uint32_t a_motor;
     uint32_t gripper;
 };
+extern struct voltage_read voltage_read;
 
 #ifdef __cplusplus
 }  // extern "C"
