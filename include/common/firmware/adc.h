@@ -9,6 +9,12 @@ extern "C" {
 
 extern ADC_HandleTypeDef adc1;
 extern ADC_HandleTypeDef adc2;
+typedef enum { connected, disconnected } state;
+struct states {
+    state z_pipette_state;
+    state a_pipette_state;
+    state gripper_state;
+};
 
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
@@ -21,6 +27,7 @@ struct voltage_read {
     uint32_t gripper;
 };
 extern struct voltage_read voltage_read;
+extern struct states states;
 
 #ifdef __cplusplus
 }  // extern "C"

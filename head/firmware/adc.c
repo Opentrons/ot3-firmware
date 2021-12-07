@@ -6,6 +6,8 @@
 
 ADC_HandleTypeDef adc1;
 ADC_HandleTypeDef adc2;
+struct voltage_read voltage_read;
+struct states states;
 
 /**
  * @brief ADC1 Initialization Function
@@ -202,12 +204,14 @@ void adc_read_voltages() {
     adc3_value = HAL_ADC_GetValue(&adc2);
     HAL_ADC_Stop(&adc2);
 
-    struct voltage_read voltage_read = {
+    voltage_read = {
         .z_motor = adc3_value, .a_motor = adc2_value, .gripper = adc1_value};
 
-    // bool test_val;
     if ((voltage_read.a_motor == voltage_read.z_motor) ==
-        voltage_read.gripper) {
+        voltage_read.gripper == 0) {
+        states = {.s_pipette_state = disconnected,
+                  .a_pipette_state = disconnected,
+                  gripper_state = disconnected};
     }
 
     else {
