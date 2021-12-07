@@ -90,7 +90,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
             __HAL_RCC_ADC12_CLK_ENABLE();
         }
 
-        __HAL_RCC_GPIOC_CLK_ENABLE();
+        __HAL_RCC_GPIOB_CLK_ENABLE();
 
         GPIO_InitStruct.Pin = GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
@@ -130,7 +130,7 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
      * the sequencer and its sample time.
      */
     sConfig.Channel = chan;
-    sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
     if (HAL_ADC_ConfigChannel(handle, &sConfig) != HAL_OK) {
         Error_Handler();
     }
