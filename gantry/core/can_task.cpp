@@ -6,13 +6,10 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
-#include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "gantry/core/gantry_motor.hpp"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/utils.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
-#include "motor-control/core/motor_messages.hpp"
 
 using namespace can_dispatch;
 
