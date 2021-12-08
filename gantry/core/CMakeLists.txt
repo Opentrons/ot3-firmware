@@ -1,8 +1,9 @@
 function(target_gantry_core_common TARGET)
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task.cpp
-            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/utils.cpp)
-    target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/utils.cpp
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/gantry_motor.cpp)
+target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
 endfunction()
 
 function(target_gantry_core_x TARGET)
