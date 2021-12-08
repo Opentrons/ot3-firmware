@@ -23,12 +23,12 @@ static auto message_writer_1 =
 static auto move_group_manager = move_group_handler::MoveGroupType{};
 /** The parsed message handler */
 static auto can_motor_handler = motor_message_handler::MotorHandler{
-    message_writer_1, gantry_motor::get_motor()};
+    message_writer_1, interfaces::get_motor()};
 static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(message_writer_1, move_group_manager);
 static auto can_move_group_executor_handler =
     move_group_executor_handler::MoveGroupExecutorHandler(
-        message_writer_1, move_group_manager, gantry_motor::get_motor());
+        message_writer_1, move_group_manager, interfaces::get_motor());
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -87,7 +87,7 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     can_bus_1.set_incoming_message_callback(callback);
     can_bus_1.setup_node_id_filter(my_node_id);
 
-    gantry_motor::get_motor().driver.setup();
+    interfaces::get_motor().driver.setup();
 
     auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, dispatcher);

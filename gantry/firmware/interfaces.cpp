@@ -1,5 +1,4 @@
 #include "gantry/core/interfaces.hpp"
-
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/spi_comms.hpp"
@@ -8,7 +7,9 @@
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
-
+#include "common/core/freertos_message_queue.hpp"
+#include "gantry/core/interfaces.hpp"
+#include "gantry/core/utils.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -63,13 +64,45 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
  */
 static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
 
+
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
+    motor_queue("Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack>
+    complete_queue("Complete Queue");
+
+static motor_class::Motor motor{
+    spi_comms,
+    lms::LinearMotionSystemConfig<lms::BeltConfig>{
+        .mech_config =
+            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+        .steps_per_rev = 200,
+        .microstep = 16},
+    motor_hardware_iface,
+    motor_messages::MotionConstraints{.min_velocity = 1,
+                                      .max_velocity = 2,
+                                      .min_acceleration = 1,
+                                      .max_acceleration = 2},
+    utils::register_config(),
+    motor_queue,
+    complete_queue};
+
+/**
+ * Access to the global motor.
+ *
+ * @return The motor.
+ */
+auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
+    return motor;
+}
+
+
 /**
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    gantry_motor::get_motor().pending_move_queue,
-    gantry_motor::get_motor().completed_move_queue,
-    interfaces::get_motor_hardware_iface());
+    motor_queue,
+    complete_queue,
+    motor_hardware_iface);
 
 /**
  * Timer callback.
