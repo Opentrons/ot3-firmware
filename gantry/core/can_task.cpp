@@ -1,43 +1,36 @@
 #include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
-#include "can/core/ids.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
-#include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/utils.hpp"
-#include "motor-control/core/linear_motion_system.hpp"
+#include "can/core/can_bus.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/motor_interrupt_handler.hpp"
 
-using namespace freertos_task;
-using namespace freertos_can_dispatch;
-using namespace can_device_info;
-using namespace can_messages;
-using namespace can_message_writer;
-using namespace can_ids;
 using namespace can_dispatch;
-using namespace motor_message_handler;
-using namespace move_group_handler;
-using namespace move_group_executor_handler;
-using namespace motor_messages;
 
 static auto my_axis_type = get_axis_type();
 static auto my_node_id = utils::get_node_id();
 
 static can_bus::CanBus& can_bus_1 = interfaces::get_can_bus();
-static auto message_writer_1 = MessageWriter(can_bus_1, my_node_id);
+static auto message_writer_1 = can_message_writer::MessageWriter(can_bus_1, my_node_id);
 
-static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move> motor_queue(
     "Motor Queue");
-static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack> complete_queue(
     "Complete Queue");
+
+static motor_handler::MotorInterruptHandler motor_interrupt(
+    motor_queue, complete_queue, interfaces::get_motor_hardware_iface());
+
+extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -53,7 +46,7 @@ static motor_class::Motor motor{
         .steps_per_rev = 200,
         .microstep = 16},
     interfaces::get_motor_hardware_iface(),
-    MotionConstraints{.min_velocity = 1,
+    motor_messages::MotionConstraints{.min_velocity = 1,
                       .max_velocity = 2,
                       .min_acceleration = 1,
                       .max_acceleration = 2},
@@ -61,13 +54,13 @@ static motor_class::Motor motor{
     motor_queue,
     complete_queue};
 
-static auto move_group_manager = MoveGroupType{};
+static auto move_group_manager = move_group_handler::MoveGroupType{};
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler = motor_message_handler::MotorHandler{message_writer_1, motor};
 static auto can_move_group_handler =
-    MoveGroupHandler(message_writer_1, move_group_manager);
+    move_group_handler::MoveGroupHandler(message_writer_1, move_group_manager);
 static auto can_move_group_executor_handler =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
+    move_group_executor_handler::MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
 
 /** Handler of device info requests. */
 static auto device_info_handler =
@@ -126,10 +119,12 @@ void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
     can_bus_1.set_incoming_message_callback(callback);
     can_bus_1.setup_node_id_filter(my_node_id);
 
+    initialize_timer(call_motor_handler);
+
     motor.driver.setup();
 
-    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
     poller();
 }
 
-auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
+auto static task = freertos_task::FreeRTOSTask<512, 5>("can task", task_entry);
