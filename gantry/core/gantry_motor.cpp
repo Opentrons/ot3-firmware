@@ -4,11 +4,10 @@
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/utils.hpp"
 
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move> motor_queue(
-    "Motor Queue");
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack> complete_queue(
-    "Complete Queue");
-
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
+    motor_queue("Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack>
+    complete_queue("Complete Queue");
 
 static motor_class::Motor motor{
     interfaces::get_spi(),
@@ -26,13 +25,11 @@ static motor_class::Motor motor{
     motor_queue,
     complete_queue};
 
-
-
 /**
  * Access to the global motor.
  *
  * @return The motor.
  */
-auto gantry_motor::get_motor() -> motor_class::Motor<lms::BeltConfig> & {
+auto gantry_motor::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
     return motor;
 }

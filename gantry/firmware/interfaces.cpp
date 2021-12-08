@@ -67,13 +67,14 @@ static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    gantry_motor::get_motor().pending_move_queue, gantry_motor::get_motor().completed_move_queue, interfaces::get_motor_hardware_iface());
+    gantry_motor::get_motor().pending_move_queue,
+    gantry_motor::get_motor().completed_move_queue,
+    interfaces::get_motor_hardware_iface());
 
 /**
  * Timer callback.
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
-
 
 void interfaces::initialize() {
     // Initialize SPI
