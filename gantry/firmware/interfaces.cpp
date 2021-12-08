@@ -1,15 +1,15 @@
 #include "gantry/core/interfaces.hpp"
+
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "gantry/core/axis_type.h"
-#include "gantry/core/gantry_motor.hpp"
+#include "gantry/core/interfaces.hpp"
+#include "gantry/core/utils.hpp"
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
-#include "common/core/freertos_message_queue.hpp"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/utils.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -64,12 +64,20 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
  */
 static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
 
-
+/**
+ * The pending move queue
+ */
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
+/**
+ * The completed move queue.
+ */
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack>
     complete_queue("Complete Queue");
 
+/**
+ * The motor struct.
+ */
 static motor_class::Motor motor{
     spi_comms,
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
@@ -87,22 +95,10 @@ static motor_class::Motor motor{
     complete_queue};
 
 /**
- * Access to the global motor.
- *
- * @return The motor.
- */
-auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
-    return motor;
-}
-
-
-/**
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue,
-    complete_queue,
-    motor_hardware_iface);
+    motor_queue, complete_queue, motor_hardware_iface);
 
 /**
  * Timer callback.
@@ -128,4 +124,8 @@ auto interfaces::get_spi() -> spi::TMC2130Spi& { return spi_comms; }
 auto interfaces::get_motor_hardware_iface()
     -> motor_hardware::MotorHardwareIface& {
     return motor_hardware_iface;
+}
+
+auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
+    return motor;
 }

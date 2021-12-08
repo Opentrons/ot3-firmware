@@ -1,9 +1,9 @@
 #pragma once
 
 #include "can/core/can_bus.hpp"
+#include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/spi.hpp"
-#include "motor-control/core/motor.hpp"
 
 namespace interfaces {
 
@@ -30,8 +30,11 @@ auto get_spi() -> spi::TMC2130Spi &;
  */
 auto get_motor_hardware_iface() -> motor_hardware::MotorHardwareIface &;
 
-
+/**
+ * Access to the global motor.
+ *
+ * @return The motor.
+ */
 auto get_motor() -> motor_class::Motor<lms::BeltConfig> &;
-
 
 }  // namespace interfaces
