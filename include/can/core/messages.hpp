@@ -269,7 +269,7 @@ using GetMotionConstraintsRequest =
     Empty<MessageId::get_motion_constraints_request>;
 
 struct GetMotionConstraintsResponse
-    : Response<MessageId::set_motion_constraints> {
+    : Response<MessageId::get_motion_constraints_response> {
     um_per_tick min_velocity;
     um_per_tick max_velocity;
     um_per_tick_sq min_acceleration;

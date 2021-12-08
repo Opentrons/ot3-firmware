@@ -128,10 +128,9 @@ class MotionConstraintsPayload(utils.BinarySerializable):
 
 
 @dataclass
-class MotionConstraintsResponsePayload(MotionConstraintsPayload):
+class MotionConstraintsResponsePayload(MotionConstraintsPayload, ResponsePayload):
     """The min and max velocity and acceleration of a motion system."""
-
-    node_id: utils.UInt8Field
+    ...
 
 
 @dataclass
