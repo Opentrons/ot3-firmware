@@ -27,12 +27,6 @@ list(APPEND FREERTOS_SOURCES "${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/Th
 # Create the freertos lib
 add_library(freertos-gantry STATIC ${FREERTOS_SOURCES})
 
-if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-    add_compile_definitions(USE_SOCKETCAN)
-endif()
-
-add_compile_definitions(ENABLE_LOGGING)
-
 set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
@@ -48,6 +42,14 @@ add_executable(
         gantry_y_simulator
         ${GANTRY_SIMULATOR_SRC}
 )
+
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    target_compile_definitions(gantry_x_simulator PUBLIC USE_SOCKETCAN)
+    target_compile_definitions(gantry_y_simulator PUBLIC USE_SOCKETCAN)
+endif()
+
+target_compile_definitions(gantry_x_simulator PUBLIC ENABLE_LOGGING)
+target_compile_definitions(gantry_y_simulator PUBLIC ENABLE_LOGGING)
 
 target_gantry_core_x(gantry_x_simulator)
 target_gantry_core_y(gantry_y_simulator)
