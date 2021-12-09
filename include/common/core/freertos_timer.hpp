@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "FreeRTOS.h"
 #include "timers.h"
 
@@ -15,10 +17,10 @@ class FreeRTOSTimer {
      * currently set to 6. Any tasks utilizing this timer should have either the
      * same priority or higher priority than 6 for execution.
      */
-    FreeRTOSTimer(const char* name, TimerCallbackFunction_t callback)
-        : block_time(timer_period) {
+    FreeRTOSTimer(const char* name, std::function<void()> callback)
+        : block_time(timer_period), callback(callback) {
         timer = xTimerCreateStatic(name, block_time, auto_reload, this,
-                                   callback, &timer_buffer);
+                                   timer_callback, &timer_buffer);
     }
     auto operator=(FreeRTOSTimer&) -> FreeRTOSTimer& = delete;
     auto operator=(FreeRTOSTimer&&) -> FreeRTOSTimer&& = delete;
@@ -32,8 +34,13 @@ class FreeRTOSTimer {
   private:
     TimerHandle_t timer;
     TickType_t block_time;
+    std::function<void()> callback;
     StaticTimer_t timer_buffer{};
     UBaseType_t auto_reload = pdTRUE;
+
+    static void timer_callback(FreeRTOSTimer<timer_period>* instance) {
+        instance->callback();
+    }
 };
 
 }  // namespace freertos_timer
