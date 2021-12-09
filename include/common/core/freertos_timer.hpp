@@ -19,7 +19,7 @@ class FreeRTOSTimer {
     FreeRTOSTimer(const char * name, TimerCallbackFunction_t callback) :
         block_time(timer_period) {
         timer = xTimerCreateStatic(
-            name, block_time, AutoReload, this, callback, &timer_buffer);
+            name, block_time, auto_reload, this, callback, &timer_buffer);
     }
     auto operator=(FreeRTOSTimer&) -> FreeRTOSTimer& = delete;
     auto operator=(FreeRTOSTimer&&) -> FreeRTOSTimer&& = delete;
@@ -38,7 +38,7 @@ class FreeRTOSTimer {
     TimerHandle_t timer;
     TickType_t block_time;
     StaticTimer_t timer_buffer{};
-    UBaseType_t AutoReload = pdTRUE;
+    UBaseType_t auto_reload = pdTRUE;
 };
 
 } // namespace freertos_timer
