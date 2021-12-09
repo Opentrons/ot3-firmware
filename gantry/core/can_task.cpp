@@ -20,6 +20,7 @@ static auto message_writer_1 =
     can_message_writer::MessageWriter(can_bus_1, my_node_id);
 
 static auto move_group_manager = move_group_handler::MoveGroupType{};
+
 /** The parsed message handler */
 static auto can_motor_handler = motor_message_handler::MotorHandler{
     message_writer_1, interfaces::get_motor()};
