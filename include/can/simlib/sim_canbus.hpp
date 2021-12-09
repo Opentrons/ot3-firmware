@@ -52,10 +52,12 @@ class SimCANBus : public CanBus {
     /**
      * Set incoming message callback.
      *
-     * @param callback
+     * @param cb_data data that will be passed back to the callback.
+     * @param callback callback function reporting new CAN message.
      */
     virtual void set_incoming_message_callback(
-        IncomingMessageCallback callback) {
+        void* cb_data, IncomingMessageCallback callback) {
+        new_message_callback_data = cb_data;
         new_message_callback = callback;
     }
 
@@ -73,7 +75,8 @@ class SimCANBus : public CanBus {
                     continue;
                 }
                 if (bus.new_message_callback) {
-                    bus.new_message_callback(arb_id, read_buffer.begin(),
+                    bus.new_message_callback(bus.new_message_callback_data,
+                                             arb_id, read_buffer.begin(),
                                              read_length);
                 }
             }
@@ -85,6 +88,7 @@ class SimCANBus : public CanBus {
 
     can_transport::BusTransportBase& transport;
     Reader reader;
+    void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
     FreeRTOSTask<256, 5> reader_task;
 };

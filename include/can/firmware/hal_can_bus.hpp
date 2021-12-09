@@ -27,9 +27,10 @@ class HalCanBus : public CanBus {
 
     /**
      * Set the incoming message callback.
-     * @param callback
+     * @param cb_data data passed back to caller in callback.
+     * @param callback message to be called with new CAN message.
      */
-    void set_incoming_message_callback(IncomingMessageCallback callback) final;
+    void set_incoming_message_callback(void * cb_data, IncomingMessageCallback callback) final;
 
     /**
      * Add an arbitration id filter.

@@ -32,6 +32,11 @@ static FDCAN_HandleTypeDef fdcan1;
  */
 static can_message_callback message_callback = NULL;
 
+/**
+ * User parameter passed back to can message callback..
+ */
+static void * message_callback_data = NULL;
+
 
 /**
  * Start CAN
@@ -64,9 +69,11 @@ HAL_CAN_HANDLE can_get_device_handle() {
  *
  * This is called from an ISR
  *
+ * @param cb_data a value that will be passed to the callback function.
  * @param callback a callback function.
  */
-void can_register_message_callback(can_message_callback callback) {
+void can_register_message_callback(void * cb_data, can_message_callback callback) {
+    message_callback_data = cb_data;
     message_callback = callback;
 }
 
@@ -140,7 +147,7 @@ static void try_read_from_fifo(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo) {
             uint32_t data_length = length_from_hal(RxHeader.DataLength);
 
             if (message_callback) {
-                message_callback(RxHeader.Identifier, buff, data_length);
+                message_callback(message_callback_data, RxHeader.Identifier, buff, data_length);
             }
         }
         

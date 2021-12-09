@@ -61,36 +61,17 @@ static auto dispatcher = Dispatcher(
     motion_group_dispatch_target, motion_group_executor_dispatch_target,
     device_info_dispatch_target);
 
-/**
- * The type of the message buffer populated by HAL ISR.
- */
-static auto read_can_message_buffer =
-    freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
-static auto read_can_message_buffer_writer =
-    can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
-
-/**
- * New CAN message callback.
- *
- * @param identifier Arbitration id
- * @param data Message data
- * @param length Message data length
- */
-void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
-    read_can_message_buffer_writer.send_from_isr(identifier, data,
-                                                 data + length);  // NOLINT
-}
+auto poller =
+    freertos_can_dispatch::FreeRTOSCanReader<1024, decltype(dispatcher)>(
+        can_bus_1, dispatcher);
 
 [[noreturn]] void task_entry() {
     interfaces::initialize();
 
-    can_bus_1.set_incoming_message_callback(callback);
     can_bus_1.setup_node_id_filter(my_node_id);
 
     interfaces::get_motor().driver.setup();
 
-    auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
-        read_can_message_buffer, dispatcher);
     poller();
 }
 
