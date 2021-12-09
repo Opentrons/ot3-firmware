@@ -4,7 +4,6 @@ find_package(FreeRTOS)
 # Set up the include directories
 include_directories(
         .
-        ../firmware
         ${CMAKE_CURRENT_SOURCE_DIR}/../../include
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/include
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix
@@ -30,7 +29,7 @@ add_library(freertos-gantry STATIC ${FREERTOS_SOURCES})
 set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
-        ../firmware/freertos_idle_timer_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         )
 
 add_executable(
