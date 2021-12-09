@@ -27,18 +27,21 @@ class FreeRTOSTimer {
     FreeRTOSTimer(FreeRTOSTimer&) = delete;
     FreeRTOSTimer(FreeRTOSTimer&&) = delete;
 
-    void start() { xTimerStart(timer, block_time); }
+    void start() { xTimerStart(timer, 0); }
 
-    void stop() { xTimerStop(timer, block_time); }
+    void stop() { xTimerStop(timer, 0); }
 
   private:
-    TimerHandle_t timer;
+    TimerHandle_t timer{};
     TickType_t block_time;
     std::function<void()> callback;
     StaticTimer_t timer_buffer{};
     UBaseType_t auto_reload = pdTRUE;
 
-    static void timer_callback(FreeRTOSTimer<timer_period>* instance) {
+    static void timer_callback(TimerHandle_t xTimer) {
+        auto timer_id = pvTimerGetTimerID(xTimer);
+        auto instance =
+            reinterpret_cast<FreeRTOSTimer<timer_period>*>(timer_id);
         instance->callback();
     }
 };
