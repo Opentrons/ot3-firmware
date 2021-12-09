@@ -1,8 +1,7 @@
 #include "gantry/core/interfaces.hpp"
-
-#include "can/simlib/sim_canbus.hpp"
-#include "common/simulation/sim_motor_hardware_iface.hpp"
 #include "gantry/core/utils.hpp"
+#include "can/simlib/sim_canbus.hpp"
+#include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 
