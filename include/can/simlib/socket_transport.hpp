@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include <algorithm>
 
 #include "can/core/message_core.hpp"
@@ -89,7 +90,8 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     ::read(handle, &arb_id, sizeof(arb_id));
     ::read(handle, &buff_len, sizeof(buff_len));
     arb_id = ntohl(arb_id);
-    buff_len = std::min(static_cast<uint32_t>(message_core::MaxMessageSize), ntohl(buff_len));
+    buff_len = std::min(static_cast<uint32_t>(message_core::MaxMessageSize),
+                        ntohl(buff_len));
 
     LOG("Read: arbitration %X dlc %d\n", arb_id, buff_len);
     if (buff_len > 0) {
