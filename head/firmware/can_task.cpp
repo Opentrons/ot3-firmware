@@ -1,7 +1,7 @@
-#include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
+#include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
@@ -59,7 +59,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_right(
  */
 
 spi::SPI_interface SPI_intf2 = {
-
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
@@ -68,7 +67,6 @@ spi::SPI_interface SPI_intf2 = {
 static spi::Spi spi_comms2(SPI_intf2);
 
 spi::SPI_interface SPI_intf3 = {
-
     .SPI_handle = &hspi3,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOA,
@@ -190,53 +188,35 @@ static auto can_move_group_executor_handler_left = MoveGroupExecutorHandler(
 
 /** Handler of device info requests. */
 static auto device_info_handler_right =
-    can_device_info::DeviceInfoHandler(message_writer_right, 0);
+    device_info_handler::DeviceInfoHandler(message_writer_right, 0);
 static auto device_info_dispatch_target_right =
-    DispatchParseTarget<decltype(device_info_handler_right),
-                        can_messages::DeviceInfoRequest>{
-        device_info_handler_right};
+    device_info_handler::DispatchTarget{device_info_handler_right};
 
 static auto device_info_handler_left =
-    can_device_info::DeviceInfoHandler(message_writer_left, 0);
+    device_info_handler::DeviceInfoHandler(message_writer_left, 0);
 static auto device_info_dispatch_target_left =
-    DispatchParseTarget<decltype(device_info_handler_left),
-                        can_messages::DeviceInfoRequest>{
-        device_info_handler_left};
+    device_info_handler::DispatchTarget{device_info_handler_left};
 
-static auto motor_dispatch_target_right = DispatchParseTarget<
-    decltype(can_motor_handler_right), can_messages::SetupRequest,
-    can_messages::StopRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler_right};
+static auto motor_dispatch_target_right =
+    motor_message_handler::DispatchTarget<decltype(motor_right)>{
+        can_motor_handler_right};
 
-static auto motor_dispatch_target_left = DispatchParseTarget<
-    decltype(can_motor_handler_left), can_messages::SetupRequest,
-    can_messages::StopRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler_left};
+static auto motor_dispatch_target_left =
+    motor_message_handler::DispatchTarget<decltype(motor_left)>{
+        can_motor_handler_left};
 
-static auto motion_group_dispatch_target_right = DispatchParseTarget<
-    decltype(can_move_group_handler_right), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler_right};
+static auto motion_group_dispatch_target_right =
+    move_group_handler::DispatchTarget{can_move_group_handler_right};
 
-static auto motion_group_dispatch_target_left = DispatchParseTarget<
-    decltype(can_move_group_handler_left), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler_left};
+static auto motion_group_dispatch_target_left =
+    move_group_handler::DispatchTarget{can_move_group_handler_left};
 
 static auto motion_group_executor_dispatch_target_right =
-    DispatchParseTarget<decltype(can_move_group_executor_handler_right),
-                        can_messages::ExecuteMoveGroupRequest>{
+    move_group_executor_handler::DispatchTarget<decltype(motor_right)>{
         can_move_group_executor_handler_right};
 
 static auto motion_group_executor_dispatch_target_left =
-    DispatchParseTarget<decltype(can_move_group_executor_handler_left),
-                        can_messages::ExecuteMoveGroupRequest>{
+    move_group_executor_handler::DispatchTarget<decltype(motor_left)>{
         can_move_group_executor_handler_left};
 /**
  * messages to head act like messages to both, head-right and head-left
