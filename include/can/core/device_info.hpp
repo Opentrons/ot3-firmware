@@ -1,5 +1,6 @@
 #pragma once
 
+#include "can/core/dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can_bus.hpp"
 #include "message_writer.hpp"
@@ -52,5 +53,11 @@ class DeviceInfoHandler {
     MessageWriter &writer;
     DeviceInfoResponse response;
 };
+
+/**
+ * Type short cut for creating dispatch parse target for the handler.
+ */
+using DispatchTarget =
+    can_dispatch::DispatchParseTarget<DeviceInfoHandler, DeviceInfoRequest>;
 
 }  // namespace can_device_info

@@ -86,4 +86,12 @@ class MoveGroupExecutorHandler {
     freertos_task::FreeRTOSTask<512, 5> ack_task;
 };
 
+/**
+ * Type short cut for creating dispatch parse target for the handler.
+ */
+template <class Motor>
+using DispatchTarget =
+    can_dispatch::DispatchParseTarget<MoveGroupExecutorHandler<Motor>,
+                                      ExecuteMoveGroupRequest>;
+
 }  // namespace move_group_executor_handler

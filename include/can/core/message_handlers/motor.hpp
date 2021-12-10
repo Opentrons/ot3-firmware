@@ -1,5 +1,6 @@
 #pragma once
 
+#include "can/core/dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
@@ -86,5 +87,14 @@ class MotorHandler {
     MessageWriter &message_writer;
     Motor &motor;
 };
+
+/**
+ * Type short cut for creating dispatch parse target for the handler.
+ */
+template <class Motor>
+using DispatchTarget = can_dispatch::DispatchParseTarget<
+    MotorHandler<Motor>, SetupRequest, StopRequest, EnableMotorRequest,
+    DisableMotorRequest, GetMotionConstraintsRequest, SetMotionConstraints,
+    WriteMotorDriverRegister, ReadMotorDriverRegister>;
 
 }  // namespace motor_message_handler

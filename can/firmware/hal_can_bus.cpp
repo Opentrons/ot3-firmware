@@ -3,8 +3,7 @@
 using namespace hal_can_bus;
 
 void HalCanBus::set_incoming_message_callback(
-    void * cb_data,
-    IncomingMessageCallback callback) {
+    void* cb_data, IncomingMessageCallback callback) {
     can_register_message_callback(cb_data, callback);
 }
 

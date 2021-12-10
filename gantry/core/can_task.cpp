@@ -34,25 +34,16 @@ static auto can_move_group_executor_handler =
 static auto device_info_handler =
     can_device_info::DeviceInfoHandler(message_writer_1, 0);
 static auto device_info_dispatch_target =
-    DispatchParseTarget<decltype(device_info_handler),
-                        can_messages::DeviceInfoRequest>{device_info_handler};
+    can_device_info::DispatchTarget{device_info_handler};
 
-static auto motor_dispatch_target = DispatchParseTarget<
-    decltype(can_motor_handler), can_messages::SetupRequest,
-    can_messages::StopRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler};
+static auto motor_dispatch_target =
+    motor_message_handler::DispatchTarget{can_motor_handler};
 
-static auto motion_group_dispatch_target = DispatchParseTarget<
-    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler};
+static auto motion_group_dispatch_target =
+    move_group_handler::DispatchTarget{can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =
-    DispatchParseTarget<decltype(can_move_group_executor_handler),
-                        can_messages::ExecuteMoveGroupRequest>{
+    move_group_executor_handler::DispatchTarget{
         can_move_group_executor_handler};
 
 /** Dispatcher to the various handlers */
