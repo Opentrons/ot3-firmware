@@ -7,6 +7,10 @@ auto convert_to_integer(float f, int conversion) {
     return static_cast<int32_t>(f * static_cast<float>(1LL << conversion));
 }
 
+auto convert_to_integer_64(float f, int conversion) {
+    return static_cast<int64_t>(f * static_cast<float>(1LL << conversion));
+}
+
 SCENARIO("Fixed point multiplication") {
     GIVEN("Two integers") {
         WHEN("both are positive") {
@@ -35,6 +39,28 @@ SCENARIO("Fixed point multiplication") {
             auto result = fixed_point_multiply(a, b);
             THEN("the result should be 0.4") {
                 int32_t expected = convert_to_integer(0.0625, 31);
+                REQUIRE(result == expected);
+            }
+        }
+
+        WHEN("the sizes are different") {
+            int64_t a = convert_to_integer_64(2, 31);
+            int32_t b = convert_to_integer(0.25, 31);
+
+            auto result = fixed_point_multiply(a, b);
+            THEN("the result should be 0.4") {
+                int32_t expected = convert_to_integer(0.5, 31);
+                REQUIRE(result == expected);
+            }
+        }
+
+        WHEN("we check a velocity") {
+            int64_t a = convert_to_integer_64(160, 31);
+            int32_t b = 2147483;
+
+            auto result = fixed_point_multiply(a, b);
+            THEN("the result should be 0.4") {
+                int32_t expected = convert_to_integer(0.5, 31);
                 REQUIRE(result == expected);
             }
         }

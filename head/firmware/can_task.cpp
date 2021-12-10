@@ -116,7 +116,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
                                          .ihold_irun = 0x70202,
-                                         .chopconf = 0x101D5,
+                                         .chopconf = 0x40101D5,
                                          .thigh = 0xFFFFF,
                                          .coolconf = 0x60000};
 

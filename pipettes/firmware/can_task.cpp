@@ -92,6 +92,7 @@ RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
                                          .chopconf = 0x50101D5,
                                          .thigh = 0xFFFFF,
                                          .coolconf = 0x60000};
+
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors

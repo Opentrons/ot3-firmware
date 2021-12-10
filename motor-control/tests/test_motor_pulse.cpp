@@ -287,7 +287,7 @@ TEST_CASE("Finishing a move") {
     GIVEN("a move") {
         auto move = Move{.group_id = 1, .seq_id = 2};
         test_objs.handler.set_buffered_move(move);
-        test_objs.handler.set_current_position(100);
+        test_objs.handler.set_current_position(100 << 31);
         test_objs.handler.finish_current_move();
 
         THEN(
