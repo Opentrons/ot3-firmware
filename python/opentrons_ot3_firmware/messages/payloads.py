@@ -130,6 +130,7 @@ class MotionConstraintsPayload(utils.BinarySerializable):
 @dataclass
 class MotionConstraintsResponsePayload(MotionConstraintsPayload, ResponsePayload):
     """The min and max velocity and acceleration of a motion system."""
+
     ...
 
 

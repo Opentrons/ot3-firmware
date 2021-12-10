@@ -4,13 +4,13 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
-add_executable(
-        motor-control
+add_executable(motor-control
         test_main.cpp
         test_motor_interrupt_queue.cpp
         test_motor_pulse.cpp
         test_linear_motion_config.cpp
         test_move_group.cpp
+        test_fixed_point_utils.cpp
 )
 
 target_ot_motor_control(motor-control)
