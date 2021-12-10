@@ -1,8 +1,8 @@
 #pragma once
 
+#include "can/core/can_bus.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/ids.hpp"
-#include "can/core/can_bus.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 
