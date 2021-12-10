@@ -60,4 +60,4 @@ class DeviceInfoHandler {
 using DispatchTarget =
     can_dispatch::DispatchParseTarget<DeviceInfoHandler, DeviceInfoRequest>;
 
-}  // namespace can_device_info
+}  // namespace device_info_handler
