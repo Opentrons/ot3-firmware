@@ -139,7 +139,8 @@ class FreeRTOSCanReader {
                          uint8_t* data, uint8_t length) {
         auto instance = static_cast<FreeRTOSCanReader<BufferSize, Dispatcher>*>(
             instance_data);
-        instance->buffer_writer.send_from_isr(identifier, data, data + length);   // NOLINT
+        instance->buffer_writer.send_from_isr(identifier, data,
+                                              data + length);  // NOLINT
     }
 
     using BufferType = FreeRTOSMessageBuffer<BufferSize>;
