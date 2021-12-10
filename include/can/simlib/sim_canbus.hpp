@@ -1,11 +1,14 @@
 #pragma once
 
 #include <array>
+#include <vector>
 
 #include "can/core/can_bus.hpp"
 #include "can/core/message_core.hpp"
+#include "can/simlib/filter.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_task.hpp"
+#include "common/core/logging.hpp"
 
 namespace sim_canbus {
 
@@ -35,7 +38,9 @@ class SimCANBus : public CanBus {
      * or maximum arbitration id
      */
     void add_filter(CanFilterType type, CanFilterConfig config, uint32_t val1,
-                    uint32_t val2) {}
+                    uint32_t val2) {
+        filters.push_back(sim_filter::Filter(type, config, val1, val2));
+    }
 
     /**
      * Send a buffer on can bus
@@ -74,10 +79,21 @@ class SimCANBus : public CanBus {
                                         read_length)) {
                     continue;
                 }
-                if (bus.new_message_callback) {
-                    bus.new_message_callback(bus.new_message_callback_data,
-                                             arb_id, read_buffer.begin(),
-                                             read_length);
+
+                // If there are filters and any of them return true we can
+                // accept the message.
+                if (bus.filters.empty() ||
+                    std::any_of(
+                        bus.filters.cbegin(), bus.filters.cend(),
+                        [arb_id](const auto& f) { return f(arb_id); })) {
+                    if (bus.new_message_callback) {
+                        bus.new_message_callback(bus.new_message_callback_data,
+                                                 arb_id, read_buffer.begin(),
+                                                 read_length);
+                    }
+                } else {
+                    LOG("Message with arb_id %X and length %d is rejected\n",
+                        arb_id, read_length);
                 }
             }
         }
@@ -91,6 +107,7 @@ class SimCANBus : public CanBus {
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
     FreeRTOSTask<256, 5> reader_task;
+    std::vector<sim_filter::Filter> filters{};
 };
 
 }  // namespace sim_canbus
