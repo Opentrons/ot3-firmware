@@ -80,6 +80,8 @@ class SimCANBus : public CanBus {
                     continue;
                 }
 
+                // If there are filters and any of them return true we can
+                // accept the message.
                 if (bus.filters.empty() ||
                     std::any_of(
                         bus.filters.cbegin(), bus.filters.cend(),
