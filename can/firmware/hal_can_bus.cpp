@@ -3,8 +3,8 @@
 using namespace hal_can_bus;
 
 void HalCanBus::set_incoming_message_callback(
-    IncomingMessageCallback callback) {
-    can_register_message_callback(callback);
+    void* cb_data, IncomingMessageCallback callback) {
+    can_register_message_callback(cb_data, callback);
 }
 
 void HalCanBus::add_filter(CanFilterType type, CanFilterConfig config,

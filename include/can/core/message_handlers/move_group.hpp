@@ -1,5 +1,6 @@
 #pragma once
 
+#include "can/core/dispatch.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/motion_group.hpp"
@@ -62,5 +63,13 @@ class MoveGroupHandler {
     MessageWriter &message_writer;
     MoveGroupType &motion_group_manager;
 };
+
+/**
+ * Type short cut for creating dispatch parse target for the handler.
+ */
+using DispatchTarget =
+    can_dispatch::DispatchParseTarget<MoveGroupHandler, AddLinearMoveRequest,
+                                      GetMoveGroupRequest,
+                                      ClearAllMoveGroupsRequest>;
 
 }  // namespace move_group_handler

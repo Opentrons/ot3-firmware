@@ -289,7 +289,8 @@ static auto read_can_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(uint32_t identifier, uint8_t* data, uint8_t length) {
+void callback(void* cb_data, uint32_t identifier, uint8_t* data,
+              uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
                                                  data + length);  // NOLINT
 }
@@ -300,7 +301,7 @@ extern "C" void motor_callback_glue() {
 }
 
 [[noreturn]] void task_entry() {
-    can_bus_1.set_incoming_message_callback(callback);
+    can_bus_1.set_incoming_message_callback(nullptr, callback);
     can_start();
 
     auto filter = ArbitrationId();

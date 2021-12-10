@@ -1,7 +1,6 @@
 #include "common/simulation/spi.hpp"
 
 #include "common/core/bit_utils.hpp"
-#include "motor-control/core/motor_driver.hpp"
 
 void sim_spi::SimTMC2130Spi::transmit_receive(
     const spi::TMC2130Spi::BufferType& transmit,

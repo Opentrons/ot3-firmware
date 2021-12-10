@@ -42,6 +42,7 @@ struct Motor {
           motor_hardware::MotorHardwareIface& hardware_iface,
           MotionConstraints constraints, RegisterConfig driver_config,
           GenericQueue& queue, CompletedQueue& completed_queue)
+
         : pending_move_queue(queue),
           completed_move_queue(completed_queue),
           driver{spi, driver_config},

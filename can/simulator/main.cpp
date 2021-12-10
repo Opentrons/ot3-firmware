@@ -7,7 +7,7 @@
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/simlib/sim_canbus.hpp"
-#include "can/simlib/socket_can.hpp"
+#include "can/simlib/socketcan_transport.hpp"
 #include "common/core/freertos_message_buffer.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/freertos_task.hpp"
