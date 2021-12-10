@@ -1,7 +1,7 @@
 #include "can/core/can_bus.hpp"
-#include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
@@ -31,10 +31,10 @@ static auto can_move_group_executor_handler =
         message_writer_1, move_group_manager, interfaces::get_motor());
 
 /** Handler of device info requests. */
-static auto device_info_handler =
-    can_device_info::DeviceInfoHandler(message_writer_1, 0);
+static auto device_info_message_handler =
+    device_info_handler::DeviceInfoHandler(message_writer_1, 0);
 static auto device_info_dispatch_target =
-    can_device_info::DispatchTarget{device_info_handler};
+    device_info_handler::DispatchTarget{device_info_message_handler};
 
 static auto motor_dispatch_target =
     motor_message_handler::DispatchTarget{can_motor_handler};

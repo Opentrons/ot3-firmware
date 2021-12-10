@@ -1,8 +1,8 @@
 #include <variant>
 
-#include "can/core/device_info.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/move_group_executor.hpp"
@@ -37,7 +37,7 @@ using namespace can_dispatch;
 using namespace freertos_task;
 using namespace can_message_writer;
 using namespace i2c;
-using namespace can_device_info;
+using namespace device_info_handler;
 using namespace eeprom_message_handler;
 using namespace motor_message_handler;
 using namespace move_group_handler;
@@ -123,25 +123,18 @@ static auto can_move_group_executor_handler =
 
 static auto i2c_comms = I2C{};
 static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
-static auto device_info_handler = DeviceInfoHandler{message_writer_1, 0};
+static auto device_info_message_handler =
+    DeviceInfoHandler{message_writer_1, 0};
 
 /** The connection between the motor handler and message buffer */
-static auto motor_dispatch_target = DispatchParseTarget<
-    decltype(can_motor_handler), can_messages::SetupRequest,
-    can_messages::StopRequest, can_messages::EnableMotorRequest,
-    can_messages::DisableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::WriteMotorDriverRegister,
-    can_messages::ReadMotorDriverRegister>{can_motor_handler};
+static auto motor_dispatch_target =
+    motor_message_handler::DispatchTarget{can_motor_handler};
 
-static auto motion_group_dispatch_target = DispatchParseTarget<
-    decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
-    can_messages::GetMoveGroupRequest, can_messages::ClearAllMoveGroupsRequest>{
-    can_move_group_handler};
+static auto motion_group_dispatch_target =
+    move_group_handler::DispatchTarget{can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =
-    DispatchParseTarget<decltype(can_move_group_executor_handler),
-                        can_messages::ExecuteMoveGroupRequest>{
+    move_group_executor_handler::DispatchTarget{
         can_move_group_executor_handler};
 
 static auto eeprom_dispatch_target =
@@ -150,8 +143,7 @@ static auto eeprom_dispatch_target =
                         can_messages::ReadFromEEPromRequest>{eeprom_handler};
 
 static auto device_info_dispatch_target =
-    DispatchParseTarget<DeviceInfoHandler, can_messages::DeviceInfoRequest>{
-        device_info_handler};
+    device_info_handler::DispatchTarget{device_info_message_handler};
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = Dispatcher(
