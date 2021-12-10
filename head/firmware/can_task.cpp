@@ -198,10 +198,10 @@ static auto device_info_dispatch_target_left =
     device_info_handler::DispatchTarget{device_info_handler_left};
 
 static auto motor_dispatch_target_right =
-    motor_message_handler::DispatchTarget{can_motor_handler_right};
+    motor_message_handler::DispatchTarget<decltype(motor_right)>{can_motor_handler_right};
 
 static auto motor_dispatch_target_left =
-    motor_message_handler::DispatchTarget{can_motor_handler_left};
+    motor_message_handler::DispatchTarget<decltype(motor_left)>{can_motor_handler_left};
 
 static auto motion_group_dispatch_target_right =
     move_group_handler::DispatchTarget{can_move_group_handler_right};
@@ -210,11 +210,11 @@ static auto motion_group_dispatch_target_left =
     move_group_handler::DispatchTarget{can_move_group_handler_left};
 
 static auto motion_group_executor_dispatch_target_right =
-    move_group_executor_handler::DispatchTarget{
+    move_group_executor_handler::DispatchTarget<decltype(motor_right)>{
         can_move_group_executor_handler_right};
 
 static auto motion_group_executor_dispatch_target_left =
-    move_group_executor_handler::DispatchTarget{
+    move_group_executor_handler::DispatchTarget<decltype(motor_left)>{
         can_move_group_executor_handler_left};
 /**
  * messages to head act like messages to both, head-right and head-left

@@ -128,13 +128,13 @@ static auto device_info_message_handler =
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target =
-    motor_message_handler::DispatchTarget{can_motor_handler};
+    motor_message_handler::DispatchTarget<decltype(motor)>{can_motor_handler};
 
 static auto motion_group_dispatch_target =
     move_group_handler::DispatchTarget{can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =
-    move_group_executor_handler::DispatchTarget{
+    move_group_executor_handler::DispatchTarget<decltype(motor)>{
         can_move_group_executor_handler};
 
 static auto eeprom_dispatch_target =
