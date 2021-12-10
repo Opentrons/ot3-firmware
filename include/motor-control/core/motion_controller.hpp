@@ -9,6 +9,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/types.hpp"
+#include "motor-control/core/utils.hpp"
 
 namespace motion_controller {
 
@@ -44,7 +45,7 @@ class MotionController {
     ~MotionController() = default;
 
     void move(const can_messages::AddLinearMoveRequest& can_msg) {
-        convert_move_to_steps(can_msg) queue.try_write(msg);
+        queue.try_write(convert_move_to_steps(can_msg));
     }
 
     void stop() { hardware.stop_timer_interrupt(); }
