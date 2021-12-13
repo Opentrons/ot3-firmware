@@ -3,16 +3,11 @@
 #include "stm32l5xx_hal.h"
 
 TIM_HandleTypeDef htim7;
-HAL_StatusTypeDef initialize_spi(void);
-motor_interrupt_callback plunger_callback = NULL;
+static motor_interrupt_callback plunger_callback = NULL;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
-        /* Peripheral clock enable */
-        __HAL_RCC_SPI2_CLK_ENABLE();
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        __HAL_RCC_GPIOB_CLK_ENABLE();
         /**SPI2 GPIO Configuration
         PC6     ------> SPI2_CS
         PB13     ------> SPI2_SCK
@@ -32,24 +27,16 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        // Chip select
-        GPIO_InitStruct.Pin = GPIO_PIN_6;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-        // Enable/Dir/Step pin
-        GPIO_InitStruct.Pin = GPIO_PIN_3 | GPIO_PIN_7 | GPIO_PIN_8;
+        // Enable/Chip Select/Dir/Step pin
+        GPIO_InitStruct.Pin = GPIO_PIN_3 | GPIO_PIN_6 |GPIO_PIN_7 | GPIO_PIN_8;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_7 | GPIO_PIN_8;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-                      &GPIO_InitStruct);
     }
 }
+
 SPI_HandleTypeDef hspi2 = {
     .Instance = SPI2,
     .Init = {.Mode = SPI_MODE_MASTER,
@@ -74,19 +61,24 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         __HAL_RCC_SPI2_CLK_DISABLE();
 
         /**SPI2 GPIO Configuration
-        PB12     ------> SPI2_NSS
+        PC6     ------> SPI2_CS
         PB13     ------> SPI2_SCK
-        PB14     ------> SPI2_MISO
-        PB15     ------> SPI2_MOSI
+        PB14     ------> SPI2_CIPO
+        PB15     ------> SPI2_COPI
+
+         Step/Dir
+         PC3  ---> Dir Pin
+         PC7  ---> Step Pin
+         Enable
+         PC8  ---> Enable Pin
         */
         HAL_GPIO_DeInit(GPIOB,
-                        GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8 | GPIO_PIN_9);
+                        GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8);
     }
 }
 
 void motor_driver_CLK_gpio_init() {
-    __HAL_RCC_GPIOB_CLK_ENABLE();
     // Driver Clock Pin
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_2;
@@ -98,6 +90,8 @@ void motor_driver_CLK_gpio_init() {
 
 HAL_StatusTypeDef initialize_spi(void) {
     __HAL_RCC_SPI2_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     motor_driver_CLK_gpio_init();
     return HAL_SPI_Init(&hspi2);
 }
@@ -109,10 +103,7 @@ HAL_StatusTypeDef initialize_spi(void) {
  */
 void MX_GPIO_Init(void) {
     /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOF_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
 
     /*Configure GPIO pin : PA0 which can be used as a timer */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
