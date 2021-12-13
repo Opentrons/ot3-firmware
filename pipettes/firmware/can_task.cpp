@@ -57,7 +57,7 @@ spi::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOC,
-    .pin = GPIO_PIN_8,
+    .pin = GPIO_PIN_6,
 };
 static spi::Spi spi_comms(SPI_intf);
 
@@ -172,7 +172,7 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
                                                  data + length);  // NOLINT
 }
 
-void plunger_callback() { plunger_interrupt.run_interrupt(); }
+extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
 [[noreturn]] void task_entry() {
     can_bus_1.set_incoming_message_callback(nullptr, callback);
