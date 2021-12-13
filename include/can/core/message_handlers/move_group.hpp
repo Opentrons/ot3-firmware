@@ -3,7 +3,7 @@
 #include "can/core/dispatch.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
-#include "motor-control/core/motion_group.hpp"
+#include "motor-control/core/move_group.hpp"
 
 namespace move_group_handler {
 
@@ -22,7 +22,7 @@ class MoveGroupHandler {
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest, GetMoveGroupRequest,
                      ClearAllMoveGroupsRequest>;
-    MoveGroupHandler(MessageWriter &message_writer,
+    MoveGroupHandler(MessageWriter2 &message_writer,
                      MoveGroupType &motion_group_manager)
         : message_writer{message_writer},
           motion_group_manager(motion_group_manager) {}
@@ -60,7 +60,7 @@ class MoveGroupHandler {
         }
     }
 
-    MessageWriter &message_writer;
+    MessageWriter2 &message_writer;
     MoveGroupType &motion_group_manager;
 };
 

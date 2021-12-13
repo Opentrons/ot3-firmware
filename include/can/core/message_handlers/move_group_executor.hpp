@@ -6,8 +6,8 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motion_controller.hpp"
-#include "motor-control/core/motion_group.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/move_group.hpp"
 #include "move_group.hpp"
 
 namespace move_group_executor_handler {
@@ -18,7 +18,7 @@ using namespace motor_messages;
 
 template <typename Motor>
 struct TaskEntry {
-    MessageWriter &message_writer;
+    MessageWriter2 &message_writer;
     Motor &motor;
     void operator()() {
         while (true) {
@@ -36,19 +36,20 @@ struct TaskEntry {
         }
     }
 };
+
 template <typename Motor>
 class MoveGroupExecutorHandler {
   public:
     using MessageType = std::variant<std::monostate, ExecuteMoveGroupRequest>;
 
     MoveGroupExecutorHandler(
-        MessageWriter &message_writer,
+        MessageWriter2 &message_writer,
         move_group_handler::MoveGroupType &motion_group_manager, Motor &motor)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager},
           motor(motor),
           task_entry{message_writer, motor},
-          ack_task("ack task", task_entry) {}
+          ack_task(task_entry, ack_task_block, 5, "ack task") {}
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &) = delete;
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &&) = delete;
     ~MoveGroupExecutorHandler() = default;
@@ -79,11 +80,12 @@ class MoveGroupExecutorHandler {
         motor.motion_controller.move(m);
     }
 
-    MessageWriter &message_writer;
+    MessageWriter2 &message_writer;
     move_group_handler::MoveGroupType &motion_group_manager;
     Motor &motor;
     TaskEntry<Motor> task_entry;
-    freertos_task::FreeRTOSTask<512, 5> ack_task;
+    freertos_task::FreeRTOSTaskControl<512> ack_task_block{};
+    freertos_task::FreeRTOSTask<512, TaskEntry<Motor>> ack_task;
 };
 
 /**

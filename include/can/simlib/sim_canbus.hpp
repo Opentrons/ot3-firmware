@@ -24,7 +24,9 @@ class SimCANBus : public CanBus {
     using TransportType = std::shared_ptr<can_transport::BusTransportBase>;
 
     explicit SimCANBus(TransportType transport)
-        : transport{transport}, reader{*this}, reader_task{"", reader} {}
+        : transport{transport},
+          reader{*this},
+          reader_task{reader, reader_task_control, 5, ""} {}
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
     SimCANBus& operator=(const SimCANBus&) = delete;
@@ -109,7 +111,8 @@ class SimCANBus : public CanBus {
     Reader reader;
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
-    FreeRTOSTask<256, 5> reader_task;
+    FreeRTOSTaskControl<256> reader_task_control{};
+    FreeRTOSTask<256, Reader> reader_task;
     std::vector<sim_filter::Filter> filters{};
 };
 

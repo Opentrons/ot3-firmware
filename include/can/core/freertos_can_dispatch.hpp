@@ -77,7 +77,8 @@ struct FreeRTOSCanDispatcherTarget {
           buffer_target{message_buffer},
           parse_target{handler},
           poller{message_buffer, parse_target},
-          task{poller} {}
+          task_control{},
+          task{poller, task_control, 5, ""} {}
 
     using BufferType = FreeRTOSMessageBuffer<BufferSize>;
 
@@ -93,7 +94,30 @@ struct FreeRTOSCanDispatcherTarget {
     FreeRTOSCanBufferPoller<BufferType,
                             DispatchParseTarget<HandlerType, MessageTypes...>>
         poller;
-    FreeRTOSTask<StackDepth, Priority> task;
+    FreeRTOSTaskControl<StackDepth> task_control;
+    FreeRTOSTask<
+        StackDepth,
+        FreeRTOSCanBufferPoller<
+            BufferType, DispatchParseTarget<HandlerType, MessageTypes...>>>
+        task;
+};
+
+/**
+ * A FreeRTOS message buffer for CAN messages along with a reader and writer.
+ * @tparam BufferSize Size of the buffer in bytes.
+ * @tparam Dispatcher Dispatcher that will receive messages.
+ */
+template <std::size_t BufferSize, CanMessageBufferListener Dispatcher>
+struct FreeRTOSCanBufferControl {
+    FreeRTOSCanBufferControl(Dispatcher& dispatcher)
+        : message_buffer{},
+          writer{message_buffer},
+          reader{message_buffer, dispatcher} {}
+
+    using BufferType = FreeRTOSMessageBuffer<BufferSize>;
+    BufferType message_buffer;
+    CanMessageBufferWriter<BufferType> writer;
+    CanMessageBufferReader<BufferType, Dispatcher> reader;
 };
 
 /**
@@ -106,15 +130,12 @@ struct FreeRTOSCanDispatcherTarget {
 template <std::size_t BufferSize, CanMessageBufferListener Dispatcher>
 class FreeRTOSCanReader {
   public:
+    using Control = FreeRTOSCanBufferControl<BufferSize, Dispatcher>;
     /**
      * Constructor
      */
-    FreeRTOSCanReader(CanBus& can_bus, Dispatcher& dispatcher)
-        : can_bus{can_bus},
-          dispatcher{dispatcher},
-          message_buffer{},
-          buffer_writer{message_buffer},
-          buffer_reader{message_buffer, dispatcher} {}
+    FreeRTOSCanReader(CanBus& can_bus, Control& message_buffer)
+        : can_bus(can_bus), message_buffer{message_buffer} {}
 
     /**
      * The task entry
@@ -123,7 +144,7 @@ class FreeRTOSCanReader {
         can_bus.set_incoming_message_callback(
             this, FreeRTOSCanReader<BufferSize, Dispatcher>::callback);
         for (;;) {
-            buffer_reader.read(portMAX_DELAY);
+            message_buffer.reader.read(portMAX_DELAY);
         }
     }
 
@@ -139,16 +160,12 @@ class FreeRTOSCanReader {
                          uint8_t* data, uint8_t length) {
         auto instance = static_cast<FreeRTOSCanReader<BufferSize, Dispatcher>*>(
             instance_data);
-        instance->buffer_writer.send_from_isr(identifier, data,
-                                              data + length);  // NOLINT
+        instance->message_buffer.writer.send_from_isr(identifier, data,
+                                                      data + length);  // NOLINT
     }
 
-    using BufferType = FreeRTOSMessageBuffer<BufferSize>;
     CanBus& can_bus;
-    Dispatcher& dispatcher;
-    BufferType message_buffer;
-    CanMessageBufferWriter<BufferType> buffer_writer;
-    CanMessageBufferReader<BufferType, Dispatcher> buffer_reader;
+    Control& message_buffer;
 };
 
 }  // namespace freertos_can_dispatch
