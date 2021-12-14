@@ -17,7 +17,7 @@ class FreeRTOSTimer {
      * currently set to 6. Any tasks utilizing this timer should have either the
      * same priority or higher priority than 6 for execution.
      */
-    FreeRTOSTimer(const char* name, std::function<void()> callback)
+    FreeRTOSTimer(const char* name, std::function<void()> &callback)
         : block_time(timer_period), callback(callback) {
         timer = xTimerCreateStatic(name, block_time, auto_reload, this,
                                    timer_callback, &timer_buffer);
@@ -39,9 +39,9 @@ class FreeRTOSTimer {
     UBaseType_t auto_reload = pdTRUE;
 
     static void timer_callback(TimerHandle_t xTimer) {
-        auto timer_id = pvTimerGetTimerID(xTimer);
+        auto *timer_id = pvTimerGetTimerID(xTimer);
         auto instance =
-            reinterpret_cast<FreeRTOSTimer<timer_period>*>(timer_id);
+            static_cast<FreeRTOSTimer<timer_period>*>(timer_id);
         instance->callback();
     }
 };
