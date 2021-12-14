@@ -23,7 +23,7 @@ class MotorHandler {
                      GetMotionConstraintsRequest, SetMotionConstraints,
                      WriteMotorDriverRegister, ReadMotorDriverRegister>;
 
-    MotorHandler(MessageWriter2 &message_writer, Motor &motor)
+    MotorHandler(MessageWriter &message_writer, Motor &motor)
         : message_writer{message_writer}, motor{motor} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
@@ -84,7 +84,7 @@ class MotorHandler {
         message_writer.write(NodeId::host, response_msg);
     }
 
-    MessageWriter2 &message_writer;
+    MessageWriter &message_writer;
     Motor &motor;
 };
 

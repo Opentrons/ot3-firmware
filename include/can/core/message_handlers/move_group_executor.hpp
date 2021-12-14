@@ -18,7 +18,7 @@ using namespace motor_messages;
 
 template <typename Motor>
 struct TaskEntry {
-    MessageWriter2 &message_writer;
+    MessageWriter &message_writer;
     Motor &motor;
     void operator()() {
         while (true) {
@@ -43,7 +43,7 @@ class MoveGroupExecutorHandler {
     using MessageType = std::variant<std::monostate, ExecuteMoveGroupRequest>;
 
     MoveGroupExecutorHandler(
-        MessageWriter2 &message_writer,
+        MessageWriter &message_writer,
         move_group_handler::MoveGroupType &motion_group_manager, Motor &motor)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager},
@@ -80,7 +80,7 @@ class MoveGroupExecutorHandler {
         motor.motion_controller.move(m);
     }
 
-    MessageWriter2 &message_writer;
+    MessageWriter &message_writer;
     move_group_handler::MoveGroupType &motion_group_manager;
     Motor &motor;
     TaskEntry<Motor> task_entry;

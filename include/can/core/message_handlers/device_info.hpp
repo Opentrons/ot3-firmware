@@ -27,7 +27,7 @@ class DeviceInfoHandler {
      * @param node_id The node id of this device
      * @param version The firmware version on this device
      */
-    DeviceInfoHandler(MessageWriter2 &writer, uint32_t version)
+    DeviceInfoHandler(MessageWriter &writer, uint32_t version)
         : writer(writer), response{.version = version} {}
     DeviceInfoHandler(const DeviceInfoHandler &) = delete;
     DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
@@ -50,7 +50,7 @@ class DeviceInfoHandler {
 
     void visit(DeviceInfoRequest &m) { writer.write(NodeId::host, response); }
 
-    MessageWriter2 &writer;
+    MessageWriter &writer;
     DeviceInfoResponse response;
 };
 

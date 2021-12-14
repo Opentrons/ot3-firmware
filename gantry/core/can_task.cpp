@@ -22,7 +22,7 @@ auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     freertos_sender_task::TaskMessage>{};
 
 static auto message_writer_1 =
-    can_message_writer::MessageWriter2(can_sender_queue, my_node_id);
+    can_message_writer::MessageWriter(can_sender_queue, my_node_id);
 
 static auto move_group_manager = move_group_handler::MoveGroupType{};
 

@@ -22,7 +22,7 @@ class MoveGroupHandler {
     using MessageType =
         std::variant<std::monostate, AddLinearMoveRequest, GetMoveGroupRequest,
                      ClearAllMoveGroupsRequest>;
-    MoveGroupHandler(MessageWriter2 &message_writer,
+    MoveGroupHandler(MessageWriter &message_writer,
                      MoveGroupType &motion_group_manager)
         : message_writer{message_writer},
           motion_group_manager(motion_group_manager) {}
@@ -60,7 +60,7 @@ class MoveGroupHandler {
         }
     }
 
-    MessageWriter2 &message_writer;
+    MessageWriter &message_writer;
     MoveGroupType &motion_group_manager;
 };
 
