@@ -14,6 +14,8 @@ set(HEAD_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/pipette_detection_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/presence_sensor.cpp
+        ${COMMON_EXECUTABLE_DIR}/adc/adc_comms.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CAN_FW_DIR}/hal_can.c
         ${CAN_FW_DIR}/hal_can_bus.cpp
@@ -21,12 +23,12 @@ set(HEAD_FW_LINTABLE_SRCS
         )
 
 set(HEAD_FW_NON_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/adc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
+        ${COMMON_EXECUTABLE_DIR}/adc/adc.c
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c)
 

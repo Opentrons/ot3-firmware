@@ -7,11 +7,13 @@
 #include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
+#include "can/core/message_handlers/presence_sensing.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
+#include "common/firmware/tasks.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
@@ -37,19 +39,24 @@ using namespace motor_messages;
 using namespace motor_driver_config;
 using namespace spi;
 
-static auto can_bus_1 = HalCanBus(can_get_device_handle());
+//hal_can_bus::HalCanBus can_bus_1 = HalCanBus(can_get_device_handle());
+//extern hal_can_bus::HalCanBus can_bus_1;
+hal_can_bus::HalCanBus can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 
 static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_right);
 static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_left);
-
+//extern can_message_writer::MessageWriter message_writer_presence_sensor;
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_left(
     "Motor Queue Left");
-static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_left(
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack> complete_queue_left(
     "Complete Queue Left");
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_right(
     "Motor Queue Right");
-static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_right(
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack> complete_queue_right(
     "Complete Queue Right");
+//extern freertos_message_queue::FreeRTOSMessageQueue<Move> presence_sensor_queue;
+//extern freertos_message_queue::FreeRTOSMessageQueue<Ack>
+//    complete_queue_presence_sensing;
 
 /**
  * @brief SPI MSP Initialization

@@ -1,4 +1,4 @@
-#include "common/firmware/adc.h"
+#include "adc.h"
 
 #include <stdbool.h>
 
@@ -6,20 +6,6 @@
 
 ADC_HandleTypeDef adc1 = {0};
 ADC_HandleTypeDef adc2 = {0};
-
-typedef enum { connected, disconnected } state;
-
-struct states {
-    state z_pipette_state;
-    state a_pipette_state;
-    state gripper_state;
-};
-
-struct voltage_read {
-    uint32_t z_motor;
-    uint32_t a_motor;
-    uint32_t gripper;
-};
 
 /**
  * @brief ADC1 Initialization Function
@@ -137,7 +123,7 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
      */
     sConfig.Channel = chan;
     sConfig.Rank = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset = 0;
@@ -146,10 +132,10 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     }
 }
 
-void adc_read_voltages() {
+void adc_read_voltages(ADC_HandleTypeDef* handle) {
     uint32_t adc1_value = 4294967295;
     uint32_t adc2_value = 4294967295;
-    uint32_t adc3_value = 4294967295;
+    uint32_t z_detect_reading = 4294967295;
 
     ADC_set_chan(ADC_CHANNEL_12, &adc1);
     HAL_ADC_Start(&adc1);
@@ -164,12 +150,12 @@ void adc_read_voltages() {
     ADC_set_chan(ADC_CHANNEL_11, &adc2);
     HAL_ADC_Start(&adc2);
     HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
-    adc3_value = HAL_ADC_GetValue(&adc2);
+    z_detect_reading = HAL_ADC_GetValue(&adc2);
 
     // HAL_ADC_Stop(&adc2);
 
     struct voltage_read voltage_read = {
-        .z_motor = adc3_value, .a_motor = adc2_value, .gripper = adc1_value};
+        .z_motor = z_detect_reading, .a_motor = adc2_value, .gripper = adc1_value};
 
     if ((voltage_read.a_motor == voltage_read.z_motor) ==
         (voltage_read.gripper == 0)) {

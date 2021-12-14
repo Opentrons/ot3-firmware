@@ -30,6 +30,7 @@ enum class NodeId : uint8_t {
     head = 0x50,
     head_left = 0x51,
     head_right = 0x52,
+    presence_sensor = 0x60,
 };
 
 /**
@@ -67,7 +68,15 @@ enum class MessageId : uint16_t {
 
     write_motor_driver_register_request = 0x30,
     read_motor_driver_register_request = 0x31,
-    read_motor_driver_register_response = 0x32
+    read_motor_driver_register_response = 0x32,
+
+    connected_motors_request = 0x40,
+    connected_motors_response = 0x41,
+    left_motor_sense_pin_voltage_request = 0x42,
+    right_motor_sense_pin_voltage_request = 0x43,
+    motor_sensing_alert = 0x44,
+    presence_sensing_request = 0x45,
+    presence_sensing_response = 0x46
 };
 
 }  // namespace can_ids
