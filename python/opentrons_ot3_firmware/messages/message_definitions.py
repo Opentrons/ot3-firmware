@@ -179,8 +179,8 @@ class GetMotionConstraintsRequest:  # noqa: D101
 
 @dataclass
 class GetMotionConstraintsResponse:  # noqa: D101
-    payload: payloads.MotionConstraintsResponsePayload
-    payload_type: Type[BinarySerializable] = payloads.MotionConstraintsResponsePayload
+    payload: payloads.MotionConstraintsPayload
+    payload_type: Type[BinarySerializable] = payloads.MotionConstraintsPayload
     message_id: Literal[
         MessageId.get_motion_constraints_response
     ] = MessageId.get_motion_constraints_response
