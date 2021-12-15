@@ -3,7 +3,7 @@
 
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
-#include "motor-control/core/motion_group.hpp"
+#include "motor-control/core/move_group.hpp"
 
 SCENARIO("Testing a move group") {
     auto group = move_group::MoveGroup<5, can_messages::AddLinearMoveRequest>{};
