@@ -8,6 +8,8 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/types.hpp"
+#include "motor-control/core/utils.hpp"
 
 namespace motion_controller {
 
@@ -32,8 +34,8 @@ class MotionController {
           motion_constraints(constraints),
           queue(queue),
           completed_queue(completed_queue),
-          steps_per_mm(static_cast<uint32_t>(
-              linear_motion_sys_config.get_steps_per_mm())) {}
+          steps_per_mm(convert_to_fixed_point_64_bit(
+              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
 
     auto operator=(const MotionController&) -> MotionController& = delete;
     auto operator=(MotionController&&) -> MotionController&& = delete;
@@ -43,11 +45,16 @@ class MotionController {
     ~MotionController() = default;
 
     void move(const can_messages::AddLinearMoveRequest& can_msg) {
+        steps_per_tick velocity_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        steps_per_tick_sq acceleration_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.acceleration);
         Move msg{.duration = can_msg.duration,
-                 .velocity = can_msg.velocity,
-                 .acceleration = can_msg.acceleration,
+                 .velocity = velocity_steps,
+                 .acceleration = acceleration_steps,
                  .group_id = can_msg.group_id,
                  .seq_id = can_msg.seq_id};
+
         queue.try_write(msg);
     }
 
@@ -79,7 +86,7 @@ class MotionController {
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     CompletedQueue& completed_queue;
-    uint32_t steps_per_mm{0};
+    sq31_31 steps_per_mm{0};
 };
 
 }  // namespace motion_controller
