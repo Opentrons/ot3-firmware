@@ -7,7 +7,7 @@
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/simlib/sim_canbus.hpp"
-#include "can/simlib/socketcan_transport.hpp"
+#include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_buffer.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/freertos_task.hpp"
@@ -20,13 +20,7 @@ using namespace freertos_can_dispatch;
 using namespace freertos_task;
 using namespace freertos_synchronization;
 
-static auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
-static auto constexpr DefaultChannel = "vcan0";
-
-static auto transport = socket_can::SocketCanTransport<
-    freertos_synchronization::FreeRTOSCriticalSection>{};
-
-static auto canbus = sim_canbus::SimCANBus(transport);
+static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 
 /**
  * The parsed message handler. It will be passed into a DispatchParseTarget
@@ -93,11 +87,6 @@ void callback(uint32_t identifier, uint8_t *data, uint8_t length) {
  * The socket can reader. Reads from socket and writes to message buffer.
  */
 void can_bus_poll_task_entry() {
-    const char *env_channel_val = std::getenv(ChannelEnvironmentVariableName);
-    auto channel = env_channel_val ? env_channel_val : DefaultChannel;
-
-    transport.open(channel);
-
     // A Message Buffer poller that reads from buffer and send to dispatcher
     static auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, dispatcher);

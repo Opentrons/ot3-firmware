@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 namespace can_transport {
 
 /**
@@ -28,5 +30,13 @@ class BusTransportBase {
     virtual auto read(uint32_t& arb_id, uint8_t* buff, uint32_t& buff_len)
         -> bool = 0;
 };
+
+/**
+ * Create an appropriate BusTransportBase.
+ *
+ * @return pointer to BusTransportBase.
+ */
+auto create() -> std::shared_ptr<BusTransportBase>;
+
 
 }  // namespace can_transport

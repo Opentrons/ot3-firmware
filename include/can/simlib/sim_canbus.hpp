@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <array>
 #include <vector>
 
@@ -20,7 +21,9 @@ using namespace freertos_task;
  */
 class SimCANBus : public CanBus {
   public:
-    explicit SimCANBus(can_transport::BusTransportBase& transport)
+    using TranportType = std::shared_ptr<can_transport::BusTransportBase>;
+
+    explicit SimCANBus(TranportType transport)
         : transport{transport}, reader{*this}, reader_task{"", reader} {}
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
@@ -50,7 +53,7 @@ class SimCANBus : public CanBus {
      */
     void send(uint32_t arbitration_id, uint8_t* buffer,
               CanFDMessageLength buffer_length) {
-        transport.write(arbitration_id, buffer,
+        transport->write(arbitration_id, buffer,
                         static_cast<uint32_t>(buffer_length));
     }
 
@@ -75,8 +78,8 @@ class SimCANBus : public CanBus {
                 uint32_t read_length = message_core::MaxMessageSize;
                 uint32_t arb_id;
 
-                if (!bus.transport.read(arb_id, read_buffer.data(),
-                                        read_length)) {
+                if (!bus.transport->read(arb_id, read_buffer.data(),
+                                         read_length)) {
                     continue;
                 }
 
@@ -102,7 +105,7 @@ class SimCANBus : public CanBus {
         std::array<uint8_t, message_core::MaxMessageSize> read_buffer{};
     };
 
-    can_transport::BusTransportBase& transport;
+    TranportType transport;
     Reader reader;
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
