@@ -1,4 +1,4 @@
-#include <variant>
+#include "pipettes/firmware/can_task.hpp"
 
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
@@ -30,7 +30,6 @@
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
 
-using namespace hal_can_bus;
 using namespace can_messages;
 using namespace freertos_can_dispatch;
 using namespace can_dispatch;
@@ -45,8 +44,10 @@ using namespace move_group_executor_handler;
 using namespace motor_messages;
 using namespace motor_driver_config;
 
-static auto can_bus_1 = HalCanBus(can_get_device_handle());
-static auto message_writer_1 = MessageWriter(can_bus_1, NodeId::pipette);
+auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
+    freertos_sender_task::TaskMessage>{};
+
+static auto message_writer_1 = MessageWriter(can_sender_queue, NodeId::pipette);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
     "Motor Queue");
@@ -175,10 +176,13 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-[[noreturn]] void task_entry() {
-    can_bus_1.set_incoming_message_callback(nullptr, callback);
+can_task::CanReaderTaskEntry::CanReaderTaskEntry(can_bus::CanBus& bus)
+    : can_bus{bus} {}
+
+[[noreturn]] void can_task::CanReaderTaskEntry::operator()() {
+    can_bus.set_incoming_message_callback(nullptr, callback);
     can_start();
-    can_bus_1.setup_node_id_filter(NodeId::pipette);
+    can_bus.setup_node_id_filter(NodeId::pipette);
     initialize_timer(plunger_callback);
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -190,4 +194,20 @@ extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
     poller();
 }
 
-auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
+auto static reader_task_control =
+    FreeRTOSTaskControl<can_task::reader_task_stack_depth>{};
+auto static writer_task_control =
+    FreeRTOSTaskControl<can_task::writer_task_stack_depth>{};
+
+auto can_task::start_reader(can_bus::CanBus& canbus)
+    -> can_task::CanMessageReaderTask {
+    return can_task::CanMessageReaderTask{can_task::CanReaderTaskEntry(canbus),
+                                          reader_task_control, 5,
+                                          "can reader task"};
+}
+
+auto can_task::start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask {
+    return can_task::CanMessageWriterTask(
+        freertos_sender_task::MessageSenderTask{canbus, can_sender_queue},
+        writer_task_control, 5, "can writer task");
+}
