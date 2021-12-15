@@ -1,3 +1,5 @@
+#include "head/firmware/can_task.hpp"
+
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
@@ -37,10 +39,13 @@ using namespace motor_messages;
 using namespace motor_driver_config;
 using namespace spi;
 
-static auto can_bus_1 = HalCanBus(can_get_device_handle());
+auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
+    freertos_sender_task::TaskMessage>{};
 
-static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_r);
-static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_l);
+static auto message_writer_right =
+    MessageWriter(can_sender_queue, NodeId::head_r);
+static auto message_writer_left =
+    MessageWriter(can_sender_queue, NodeId::head_l);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_left(
     "Motor Queue Left");
@@ -280,34 +285,42 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_right.run_interrupt();
 }
 
-[[noreturn]] void task_entry() {
-    can_bus_1.set_incoming_message_callback(nullptr, callback);
+can_task::CanReaderTaskEntry::CanReaderTaskEntry(can_bus::CanBus& bus)
+    : can_bus{bus} {}
+
+/**
+ * Entry point for the reader task.
+ * TODO (2021-12-15, AL): Most of what happens in this task should be moved out
+ *  when we move to separate motor tasks.
+ */
+[[noreturn]] void can_task::CanReaderTaskEntry::operator()() {
+    can_bus.set_incoming_message_callback(nullptr, callback);
     can_start();
 
     auto filter = ArbitrationId();
 
     // Accept broadcast
     filter.node_id(NodeId::broadcast);
-    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
-                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
+                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept any head
     filter.node_id(NodeId::head);
-    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head right
     filter.node_id(NodeId::head_r);
-    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head left
     filter.node_id(NodeId::head_l);
-    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                         can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Reject everything else.
-    can_bus_1.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
+    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
 
     initialize_timer(motor_callback_glue);
 
@@ -326,4 +339,20 @@ extern "C" void motor_callback_glue() {
     poller();
 }
 
-auto static task = FreeRTOSTask<512, 5>("can task", task_entry);
+auto static reader_task_control =
+    FreeRTOSTaskControl<can_task::reader_task_stack_depth>{};
+auto static writer_task_control =
+    FreeRTOSTaskControl<can_task::writer_task_stack_depth>{};
+
+auto can_task::start_reader(can_bus::CanBus& canbus)
+    -> can_task::CanMessageReaderTask {
+    return FreeRTOSTask(can_task::CanReaderTaskEntry(canbus),
+                        reader_task_control, 5, "can reader task");
+}
+
+auto can_task::start_writer(can_bus::CanBus& canbus)
+    -> can_task::CanMessageWriterTask {
+    return FreeRTOSTask(
+        freertos_sender_task::MessageSenderTask{canbus, can_sender_queue},
+        writer_task_control, 5, "can writer task");
+}

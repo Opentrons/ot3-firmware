@@ -8,8 +8,8 @@
 #include "system_stm32g4xx.h"
 // clang-format on
 
-#include "gantry/core/interfaces.hpp"
 #include "gantry/core/can_task.hpp"
+#include "gantry/core/interfaces.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
