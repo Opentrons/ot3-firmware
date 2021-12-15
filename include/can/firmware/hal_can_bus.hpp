@@ -21,8 +21,8 @@ class HalCanBus : public CanBus {
 
     HalCanBus(const HalCanBus&) = default;
     auto operator=(const HalCanBus&) -> HalCanBus& = default;
-    HalCanBus(const HalCanBus&&) = default;
-    auto operator=(const HalCanBus&&) -> HalCanBus&& = default;
+    HalCanBus(HalCanBus&&) = default;
+    auto operator=(HalCanBus&&) -> HalCanBus& = default;
     ~HalCanBus() final = default;
 
     /**
