@@ -6,12 +6,12 @@ from opentrons_ot3_firmware import ArbitrationId, ArbitrationIdParts
 @pytest.mark.parametrize(
     argnames=["arbitration_id", "expected"],
     argvalues=[
-        [0x0, ArbitrationIdParts(function_code=0x0, node_id=0x0, message_id=0)],
+        [0x0, ArbitrationIdParts(function_code=0x0, node_id=0x0, originating_node_id=0, message_id=0)],
         [
             0xFFFFFFFF,
-            ArbitrationIdParts(function_code=0x7F, node_id=0xFF, message_id=0x3FFF),
+            ArbitrationIdParts(function_code=0x7F, node_id=0xFF, originating_node_id=0xFF, message_id=0x3FFF),
         ],
-        [0x20181, ArbitrationIdParts(function_code=0x1, node_id=0x3, message_id=0x4)],
+        [0x101821, ArbitrationIdParts(function_code=0x1, node_id=0x2, originating_node_id=0x3, message_id=0x4)],
     ],
 )
 def test_arbitration_id_parts(
@@ -25,12 +25,12 @@ def test_arbitration_id_parts(
 @pytest.mark.parametrize(
     argnames=["expected", "parts"],
     argvalues=[
-        [0x0, ArbitrationIdParts(function_code=0x0, node_id=0x0, message_id=0)],
+        [0x0, ArbitrationIdParts(function_code=0x0, node_id=0x0, originating_node_id=0, message_id=0)],
         [
             0x1FFFFFFF,
-            ArbitrationIdParts(function_code=0x7F, node_id=0xFF, message_id=0x3FFF),
+            ArbitrationIdParts(function_code=0x7F, node_id=0xFF, originating_node_id=0xFF, message_id=0x3FFF),
         ],
-        [0x20181, ArbitrationIdParts(function_code=0x1, node_id=0x3, message_id=0x4)],
+        [0x101821, ArbitrationIdParts(function_code=0x1, node_id=0x2, originating_node_id=0x3, message_id=0x4)],
     ],
 )
 def test_arbitration_id_integer(expected: int, parts: ArbitrationIdParts) -> None:
