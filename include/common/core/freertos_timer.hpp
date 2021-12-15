@@ -40,9 +40,8 @@ class FreeRTOSTimer {
     UBaseType_t auto_reload = pdTRUE;
 
     static void timer_callback(TimerHandle_t xTimer) {
-        auto *timer_id = pvTimerGetTimerID(xTimer);
-        auto instance =
-            static_cast<FreeRTOSTimer<timer_period>*>(timer_id);
+        auto* timer_id = pvTimerGetTimerID(xTimer);
+        auto instance = static_cast<FreeRTOSTimer<timer_period>*>(timer_id);
         instance->callback();
     }
 };
