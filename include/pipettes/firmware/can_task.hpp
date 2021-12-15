@@ -5,7 +5,6 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 
-
 namespace can_bus {
 class CanBus;
 }
