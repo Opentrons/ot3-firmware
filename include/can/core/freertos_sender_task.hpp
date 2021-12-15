@@ -38,7 +38,7 @@ class MessageSenderTask {
      * Task entry point.
      */
     [[noreturn]] void operator()() {
-        TaskMessage message;
+        TaskMessage message{};
         while (true) {
             if (queue.try_read(&message, portMAX_DELAY)) {
                 LOG("MessageSenderTask: arbid=%X length=%d\n",
@@ -49,7 +49,7 @@ class MessageSenderTask {
         }
     }
 
-    auto get_queue() const -> QueueType& { return queue; }
+    [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
     can_bus::CanBus& can;

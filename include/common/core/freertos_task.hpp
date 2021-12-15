@@ -15,6 +15,7 @@ struct FreeRTOSTaskControl {
     auto operator=(FreeRTOSTaskControl&&) -> FreeRTOSTaskControl&& = delete;
     FreeRTOSTaskControl(FreeRTOSTaskControl&) = delete;
     FreeRTOSTaskControl(FreeRTOSTaskControl&&) = delete;
+    ~FreeRTOSTaskControl() = default;
 
     TaskHandle_t handle{};
     StaticTask_t static_task{};
@@ -56,19 +57,23 @@ class FreeRTOSTask {
         : entry{entry}, control{control} {
         start(priority, task_name);
     }
+    FreeRTOSTask(FreeRTOSTask&) noexcept = default;
+    FreeRTOSTask(FreeRTOSTask&&) noexcept = default;
+    auto operator=(const FreeRTOSTask&) noexcept -> FreeRTOSTask& = default;
+    auto operator=(FreeRTOSTask&&) noexcept -> FreeRTOSTask& = default;
     ~FreeRTOSTask() { vTaskDelete(control.handle); }
 
     /**
      * Get the control block.
      */
-    auto get_control() const -> FreeRTOSTaskControl<StackDepth>& {
+    [[nodiscard]] auto get_control() const -> FreeRTOSTaskControl<StackDepth>& {
         return control;
     }
 
     /**
      * Get a reference to the the entry point
      */
-    auto get_entry_point() const -> EntryPoint& { return entry; }
+    [[nodiscard]] auto get_entry_point() const -> EntryPoint& { return entry; }
 
   private:
     void start(UBaseType_t priority, const char* task_name) {
