@@ -35,7 +35,7 @@ class FreeRTOSTimer {
 
   private:
     TimerHandle_t timer{};
-    std::function<void()> callback;
+    Callback callback;
     StaticTimer_t timer_buffer{};
     UBaseType_t auto_reload = pdTRUE;
 
