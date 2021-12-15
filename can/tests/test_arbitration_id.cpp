@@ -5,14 +5,12 @@ using namespace can_arbitration_id;
 using namespace can_ids;
 
 SCENARIO("Arbitration ID") {
-
     GIVEN("an arbitration id object") {
         auto subject = ArbitrationId();
         subject.node_id(NodeId::head_l);
         subject.originating_node_id(NodeId::head_r);
         subject.function_code(FunctionCode::bootloader);
         subject.message_id(MessageId::heartbeat_request);
-
 
         WHEN("converted to an integer") {
             THEN("the values are read correctly") {

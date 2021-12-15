@@ -36,7 +36,8 @@ class ArbitrationId {
         return static_cast<NodeId>(get(node_id_bit_mask, node_id_shift));
     }
     [[nodiscard]] auto originating_node_id() const -> NodeId {
-        return static_cast<NodeId>(get(originating_node_id_bit_mask, originating_node_id_shift));
+        return static_cast<NodeId>(
+            get(originating_node_id_bit_mask, originating_node_id_shift));
     }
     [[nodiscard]] auto message_id() const -> MessageId {
         return static_cast<MessageId>(
@@ -71,7 +72,8 @@ class ArbitrationId {
     static constexpr auto function_code_bit_mask = function_code_mask
                                                    << function_code_shift;
     static constexpr auto node_id_bit_mask = node_id_mask << node_id_shift;
-    static constexpr auto originating_node_id_bit_mask = node_id_mask << originating_node_id_shift;
+    static constexpr auto originating_node_id_bit_mask =
+        node_id_mask << originating_node_id_shift;
     static constexpr auto message_id_bit_mask = message_id_mask
                                                 << message_id_shift;
 
