@@ -54,15 +54,5 @@ SCENARIO("Fixed point multiplication") {
             }
         }
 
-        WHEN("we check a velocity") {
-            int64_t a = convert_to_integer_64(160, 31);
-            int32_t b = 2147483;
-
-            auto result = fixed_point_multiply(a, b);
-            THEN("the result should be 0.4") {
-                int32_t expected = convert_to_integer(0.5, 31);
-                REQUIRE(result == expected);
-            }
-        }
     }
 }

@@ -15,7 +15,6 @@ add_executable(motor-control
 
 target_ot_motor_control(motor-control)
 
-target_include_directories(motor-control PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(motor-control
         PROPERTIES
         CXX_STANDARD 20
