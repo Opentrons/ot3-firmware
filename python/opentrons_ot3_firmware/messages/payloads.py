@@ -107,7 +107,6 @@ class MoveCompletedPayload(MoveGroupResponsePayload):
     seq_id: utils.UInt8Field
     current_position: utils.UInt32Field
     ack_id: utils.UInt8Field
-    node_id: utils.UInt8Field
 
 
 @dataclass
