@@ -9,7 +9,7 @@ namespace freertos_timer {
 
 // pdMS_TO_TICKS converts milliseconds to ticks. This can only be used for
 // FreeRTOS tick rates less than 1000 Hz.
-template <TickType_t timer_period = pdMS_TO_TICKS(2)>
+template <TickType_t timer_period = pdMS_TO_TICKS(1)>
 class FreeRTOSTimer {
   public:
     /*
@@ -17,15 +17,17 @@ class FreeRTOSTimer {
      * currently set to 6. Any tasks utilizing this timer should have either the
      * same priority or higher priority than 6 for execution.
      */
-    FreeRTOSTimer(const char* name, std::function<void()> &callback)
-        : block_time(timer_period), callback(callback) {
-        timer = xTimerCreateStatic(name, block_time, auto_reload, this,
+    using Callback = std::function<void()>;
+    FreeRTOSTimer(const char* name, Callback callback)
+        : callback{std::move(callback)} {
+        timer = xTimerCreateStatic(name, timer_period, auto_reload, this,
                                    timer_callback, &timer_buffer);
     }
     auto operator=(FreeRTOSTimer&) -> FreeRTOSTimer& = delete;
     auto operator=(FreeRTOSTimer&&) -> FreeRTOSTimer&& = delete;
     FreeRTOSTimer(FreeRTOSTimer&) = delete;
     FreeRTOSTimer(FreeRTOSTimer&&) = delete;
+    ~FreeRTOSTimer() { xTimerDelete(timer, 0); }
 
     void start() { xTimerStart(timer, 0); }
 
@@ -33,7 +35,6 @@ class FreeRTOSTimer {
 
   private:
     TimerHandle_t timer{};
-    TickType_t block_time;
     std::function<void()> callback;
     StaticTimer_t timer_buffer{};
     UBaseType_t auto_reload = pdTRUE;
