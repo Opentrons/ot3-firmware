@@ -53,6 +53,5 @@ SCENARIO("Fixed point multiplication") {
                 REQUIRE(result == expected);
             }
         }
-
     }
 }
