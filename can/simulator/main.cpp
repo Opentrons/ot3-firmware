@@ -74,21 +74,18 @@ static auto read_can_message_buffer_writer =
 /**
  * The can bus poller.
  */
-static auto can_bus_poller = FreeRTOSCanReader<1024, decltype(dispatcher)>{canbus, dispatcher};
+static auto can_bus_poller =
+    FreeRTOSCanReader<1024, decltype(dispatcher)>{canbus, dispatcher};
 
 /**
  * Task entry point
  */
-static void task_entry(void) {
-    can_bus_poller();
-}
+static void task_entry(void) { can_bus_poller(); }
 
 /**
  * The message buffer polling task.
  */
-static auto can_bus_poll_task =
-    FreeRTOSTask<2048, 5>("can_poll", task_entry);
-
+static auto can_bus_poll_task = FreeRTOSTask<2048, 5>("can_poll", task_entry);
 
 int main() {
     vTaskStartScheduler();

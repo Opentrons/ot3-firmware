@@ -1,4 +1,5 @@
 #include "can/simlib/transport.hpp"
+
 #include "common/core/freertos_synchronization.hpp"
 #ifdef USE_SOCKETCAN
 #include "can/simlib/socketcan_transport.hpp"
@@ -10,7 +11,8 @@
  * Create simulating bus transport
  * @return pointer to bus transport
  */
-auto can_transport::create() -> std::shared_ptr<can_transport::BusTransportBase> {
+auto can_transport::create()
+    -> std::shared_ptr<can_transport::BusTransportBase> {
 #ifdef USE_SOCKETCAN
     auto constexpr ChannelEnvironmentVariableName = "CAN_CHANNEL";
     auto constexpr DefaultChannel = "vcan0";

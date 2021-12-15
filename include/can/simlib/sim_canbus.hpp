@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <array>
+#include <memory>
 #include <vector>
 
 #include "can/core/can_bus.hpp"
@@ -54,7 +54,7 @@ class SimCANBus : public CanBus {
     void send(uint32_t arbitration_id, uint8_t* buffer,
               CanFDMessageLength buffer_length) {
         transport->write(arbitration_id, buffer,
-                        static_cast<uint32_t>(buffer_length));
+                         static_cast<uint32_t>(buffer_length));
     }
 
     /**

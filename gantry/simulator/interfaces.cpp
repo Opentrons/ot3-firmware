@@ -2,12 +2,12 @@
 
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
+#include "common/core/freertos_synchronization.hpp"
+#include "common/simulation/spi.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
-#include "common/core/freertos_synchronization.hpp"
-#include "common/simulation/spi.hpp"
 
 /**
  * The CAN bus.
@@ -64,8 +64,7 @@ static motor_handler::MotorInterruptHandler motor_interrupt(motor_queue,
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt);
 
-void interfaces::initialize() {
-}
+void interfaces::initialize() {}
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 
