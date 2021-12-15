@@ -72,32 +72,23 @@ static auto read_can_message_buffer_writer =
     can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
 
 /**
- * New CAN message callback.
- *
- * @param identifier Arbitration id
- * @param data Message data
- * @param length Message data length
+ * The can bus poller.
  */
-void callback(uint32_t identifier, uint8_t *data, uint8_t length) {
-    read_can_message_buffer_writer.send_from_isr(identifier, data,
-                                                 data + length);
-}
+static auto can_bus_poller = FreeRTOSCanReader<1024, decltype(dispatcher)>{canbus, dispatcher};
 
 /**
- * The socket can reader. Reads from socket and writes to message buffer.
+ * Task entry point
  */
-void can_bus_poll_task_entry() {
-    // A Message Buffer poller that reads from buffer and send to dispatcher
-    static auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
-        read_can_message_buffer, dispatcher);
-    poller();
+static void task_entry(void) {
+    can_bus_poller();
 }
 
 /**
  * The message buffer polling task.
  */
 static auto can_bus_poll_task =
-    FreeRTOSTask<2048, 5>("can_poll", can_bus_poll_task_entry);
+    FreeRTOSTask<2048, 5>("can_poll", task_entry);
+
 
 int main() {
     vTaskStartScheduler();
