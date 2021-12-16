@@ -19,23 +19,23 @@ class FunctionCode(int, Enum):
     """Can bus arbitration id function code."""
 
     network_management = 0x0
-    sync = 0x2
-    error = 0x4
-    command = 0x10
-    status = 0x12
-    parameters = 0x14
-    bootloader = 0x7C
-    heartbeat = 0x7E
+    sync = 0x1
+    error = 0x2
+    command = 0x3
+    status = 0x4
+    parameters = 0x5
+    bootloader = 0x6
+    heartbeat = 0x7
 
 
 class MessageId(int, Enum):
     """Can bus arbitration id message id."""
 
-    heartbeat_request = 0x3FFF
-    heartbeat_response = 0x3FFE
+    heartbeat_request = 0x3FF
+    heartbeat_response = 0x3FE
 
-    device_info_request = 0x3002
-    device_info_response = 0x3003
+    device_info_request = 0x302
+    device_info_response = 0x303
 
     stop_request = 0x00
 
@@ -49,9 +49,9 @@ class MessageId(int, Enum):
 
     setup_request = 0x02
 
-    write_eeprom = 0x2001
-    read_eeprom_request = 0x2002
-    read_eeprom_response = 0x2003
+    write_eeprom = 0x201
+    read_eeprom_request = 0x202
+    read_eeprom_response = 0x203
 
     add_move_request = 0x15
     get_move_group_request = 0x16
@@ -60,9 +60,9 @@ class MessageId(int, Enum):
     clear_all_move_groups_request = 0x19
     move_completed = 0x13
 
-    set_motion_constraints = 0x1001
-    get_motion_constraints_request = 0x1002
-    get_motion_constraints_response = 0x1003
+    set_motion_constraints = 0x101
+    get_motion_constraints_request = 0x102
+    get_motion_constraints_response = 0x103
 
     write_motor_driver_register_request = 0x30
     read_motor_driver_register_request = 0x31

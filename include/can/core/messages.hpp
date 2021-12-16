@@ -48,32 +48,13 @@ struct Empty : BaseMessage<MId> {
     auto operator==(const Empty& other) const -> bool = default;
 };
 
-template <MessageId MId>
-struct Response : BaseMessage<MId> {
-    NodeId node_id;
-
-    void set_node_id(NodeId id) { node_id = id; }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize_node_id(Output body, Limit limit) const {
-        return bit_utils::int_to_bytes(static_cast<uint8_t>(node_id), body,
-                                       limit);
-    }
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        return iter - body;
-    }
-};
-
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 
 using HeartbeatResponse = Empty<MessageId::heartbeat_response>;
 
 using DeviceInfoRequest = Empty<MessageId::device_info_request>;
 
-struct DeviceInfoResponse : Response<MessageId::device_info_response> {
+struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     /**
      *   TODO (al, 2021-09-13)
      *   Seth's thoughts on future of payload
@@ -94,8 +75,7 @@ struct DeviceInfoResponse : Response<MessageId::device_info_response> {
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(version, iter, limit);
+        auto iter = bit_utils::int_to_bytes(version, body, limit);
         return iter - body;
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
@@ -124,13 +104,12 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
 
 using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
 
-struct ReadFromEEPromResponse : Response<MessageId::read_eeprom_response> {
+struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     uint8_t serial_number;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(serial_number, iter, limit);
+        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
         return iter - body;
     }
     auto operator==(const ReadFromEEPromResponse& other) const
@@ -179,15 +158,14 @@ struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
     auto operator==(const GetMoveGroupRequest& other) const -> bool = default;
 };
 
-struct GetMoveGroupResponse : Response<MessageId::get_move_group_response> {
+struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
     uint8_t group_id;
     uint8_t num_moves;
     uint32_t total_duration;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(group_id, iter, limit);
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         iter = bit_utils::int_to_bytes(num_moves, iter, limit);
         iter = bit_utils::int_to_bytes(total_duration, iter, limit);
         return iter - body;
@@ -221,7 +199,7 @@ struct ExecuteMoveGroupRequest
 using ClearAllMoveGroupsRequest =
     Empty<MessageId::clear_all_move_groups_request>;
 
-struct MoveCompleted : Response<MessageId::move_completed> {
+struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
     uint32_t current_position;
@@ -229,8 +207,7 @@ struct MoveCompleted : Response<MessageId::move_completed> {
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(group_id, iter, limit);
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         iter = bit_utils::int_to_bytes(seq_id, iter, limit);
         iter = bit_utils::int_to_bytes(current_position, iter, limit);
         iter = bit_utils::int_to_bytes(ack_id, iter, limit);
@@ -269,7 +246,7 @@ using GetMotionConstraintsRequest =
     Empty<MessageId::get_motion_constraints_request>;
 
 struct GetMotionConstraintsResponse
-    : Response<MessageId::get_motion_constraints_response> {
+    : BaseMessage<MessageId::get_motion_constraints_response> {
     um_per_tick min_velocity;
     um_per_tick max_velocity;
     um_per_tick_sq min_acceleration;
@@ -277,8 +254,7 @@ struct GetMotionConstraintsResponse
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(min_velocity, iter, limit);
+        auto iter = bit_utils::int_to_bytes(min_velocity, body, limit);
         iter = bit_utils::int_to_bytes(max_velocity, iter, limit);
         iter = bit_utils::int_to_bytes(min_acceleration, iter, limit);
         iter = bit_utils::int_to_bytes(max_acceleration, iter, limit);
@@ -324,14 +300,13 @@ struct ReadMotorDriverRegister
 };
 
 struct ReadMotorDriverRegisterResponse
-    : Response<MessageId::read_motor_driver_register_response> {
+    : BaseMessage<MessageId::read_motor_driver_register_response> {
     uint8_t reg_address;
     uint32_t data;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(reg_address, iter, limit);
+        auto iter = bit_utils::int_to_bytes(reg_address, body, limit);
         iter = bit_utils::int_to_bytes(data, iter, limit);
         return iter - body;
     }

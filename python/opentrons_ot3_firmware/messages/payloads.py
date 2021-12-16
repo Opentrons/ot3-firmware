@@ -5,13 +5,6 @@ from .. import utils
 
 
 @dataclass
-class ResponsePayload(utils.BinarySerializable):
-    """A response payload."""
-
-    node_id: utils.UInt8Field
-
-
-@dataclass
 class EmptyPayload(utils.BinarySerializable):
     """An empty payload."""
 
@@ -19,14 +12,14 @@ class EmptyPayload(utils.BinarySerializable):
 
 
 @dataclass
-class DeviceInfoResponsePayload(ResponsePayload):
+class DeviceInfoResponsePayload(utils.BinarySerializable):
     """Device info response."""
 
     version: utils.UInt32Field
 
 
 @dataclass
-class GetStatusResponsePayload(ResponsePayload):
+class GetStatusResponsePayload(utils.BinarySerializable):
     """Get status response."""
 
     status: utils.UInt8Field
@@ -41,7 +34,7 @@ class MoveRequestPayload(utils.BinarySerializable):
 
 
 @dataclass
-class GetSpeedResponsePayload(ResponsePayload):
+class GetSpeedResponsePayload(utils.BinarySerializable):
     """Get speed response."""
 
     mm_sec: utils.UInt32Field
@@ -55,7 +48,7 @@ class WriteToEEPromRequestPayload(utils.BinarySerializable):
 
 
 @dataclass
-class ReadFromEEPromResponsePayload(ResponsePayload):
+class ReadFromEEPromResponsePayload(utils.BinarySerializable):
     """Read from ee prom response."""
 
     serial_number: utils.UInt8Field
@@ -69,7 +62,7 @@ class MoveGroupRequestPayload(utils.BinarySerializable):
 
 
 @dataclass
-class MoveGroupResponsePayload(ResponsePayload):
+class MoveGroupResponsePayload(utils.BinarySerializable):
     """A response payload with a group id."""
 
     group_id: utils.UInt8Field
@@ -114,7 +107,6 @@ class MoveCompletedPayload(MoveGroupResponsePayload):
     seq_id: utils.UInt8Field
     current_position: utils.UInt32Field
     ack_id: utils.UInt8Field
-    node_id: utils.UInt8Field
 
 
 @dataclass
@@ -125,13 +117,6 @@ class MotionConstraintsPayload(utils.BinarySerializable):
     max_velocity: utils.Int32Field
     min_acceleration: utils.Int32Field
     max_acceleration: utils.Int32Field
-
-
-@dataclass
-class MotionConstraintsResponsePayload(MotionConstraintsPayload, ResponsePayload):
-    """The min and max velocity and acceleration of a motion system."""
-
-    ...
 
 
 @dataclass
@@ -149,7 +134,7 @@ class MotorDriverRegisterDataPayload(MotorDriverRegisterPayload):
 
 
 @dataclass
-class ReadMotorDriverRegisterResponsePayload(ResponsePayload):
+class ReadMotorDriverRegisterResponsePayload(utils.BinarySerializable):
     """Read motor driver register response payload."""
 
     reg_addr: utils.UInt8Field

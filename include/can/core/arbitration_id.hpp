@@ -35,6 +35,10 @@ class ArbitrationId {
     [[nodiscard]] auto node_id() const -> NodeId {
         return static_cast<NodeId>(get(node_id_bit_mask, node_id_shift));
     }
+    [[nodiscard]] auto originating_node_id() const -> NodeId {
+        return static_cast<NodeId>(
+            get(originating_node_id_bit_mask, originating_node_id_shift));
+    }
     [[nodiscard]] auto message_id() const -> MessageId {
         return static_cast<MessageId>(
             get(message_id_bit_mask, message_id_shift));
@@ -46,23 +50,30 @@ class ArbitrationId {
     void node_id(NodeId v) {
         set(static_cast<uint32_t>(v), node_id_mask, node_id_shift);
     }
+    void originating_node_id(NodeId v) {
+        set(static_cast<uint32_t>(v), node_id_mask, originating_node_id_shift);
+    }
     void message_id(MessageId v) {
         set(static_cast<uint32_t>(v), message_id_mask, message_id_shift);
     }
 
-    // Bits 0-6
-    static constexpr auto function_code_mask = 0x7F;
+    // Bits 0-3
+    static constexpr auto function_code_mask = 0xF;
     static constexpr auto function_code_shift = 0;
-    // Bits 7-14
-    static constexpr auto node_id_mask = 0xFF;
-    static constexpr auto node_id_shift = 7;
-    // Bits 15-29
-    static constexpr auto message_id_mask = 0x3FFF;
-    static constexpr auto message_id_shift = 15;
+    // Bits 4-10
+    static constexpr auto node_id_mask = 0x7F;
+    static constexpr auto node_id_shift = 4;
+    // Bits 11-17
+    static constexpr auto originating_node_id_shift = 11;
+    // Bits 18-28
+    static constexpr auto message_id_mask = 0x7FF;
+    static constexpr auto message_id_shift = 18;
 
     static constexpr auto function_code_bit_mask = function_code_mask
                                                    << function_code_shift;
     static constexpr auto node_id_bit_mask = node_id_mask << node_id_shift;
+    static constexpr auto originating_node_id_bit_mask =
+        node_id_mask << originating_node_id_shift;
     static constexpr auto message_id_bit_mask = message_id_mask
                                                 << message_id_shift;
 

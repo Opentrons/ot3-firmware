@@ -56,6 +56,9 @@ target_can_simlib(gantry_y_simulator)
 target_gantry_core_x(gantry_x_simulator)
 target_gantry_core_y(gantry_y_simulator)
 
+target_ot_motor_control(gantry_x_simulator)
+target_ot_motor_control(gantry_y_simulator)
+
 target_link_libraries(gantry_x_simulator PRIVATE can-core common-simulation freertos-gantry pthread)
 target_link_libraries(gantry_y_simulator PRIVATE can-core common-simulation freertos-gantry pthread)
 

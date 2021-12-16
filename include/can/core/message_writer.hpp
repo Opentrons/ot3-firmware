@@ -36,7 +36,7 @@ class MessageWriter {
         // TODO (al 2021-08-03): populate this from Message?
         arbitration_id.function_code(can_ids::FunctionCode::network_management);
         arbitration_id.node_id(node);
-        message.set_node_id(node_id);
+        arbitration_id.originating_node_id(node_id);
         auto length = message.serialize(buffer.begin(), buffer.end());
         writer.send(arbitration_id, buffer.data(), to_canfd_length(length));
     }
