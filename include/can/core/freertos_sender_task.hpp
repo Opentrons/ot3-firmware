@@ -5,6 +5,7 @@
 #include "FreeRTOS.h"
 #include "can/core/can_bus.hpp"
 #include "can/core/message_core.hpp"
+#include "can/core/messages.hpp"
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
 
@@ -12,8 +13,7 @@ namespace freertos_sender_task {
 
 struct TaskMessage {
     uint32_t arbitration_id;
-    CanFDMessageLength data_length;
-    std::array<uint8_t, message_core::MaxMessageSize> data;
+    can_messages::ResponseMessageType message;
 };
 
 /**
@@ -41,10 +41,8 @@ class MessageSenderTask {
         TaskMessage message{};
         while (true) {
             if (queue.try_read(&message, portMAX_DELAY)) {
-                LOG("MessageSenderTask: arbid=%X length=%d\n",
-                    message.arbitration_id, message.data_length);
-                can.send(message.arbitration_id, message.data.begin(),
-                         message.data_length);
+                auto arbitration_id = message.arbitration_id;
+                std::visit([this, arbitration_id](auto m){this->handle(arbitration_id, m);}, message.message);
             }
         }
     }
@@ -52,8 +50,14 @@ class MessageSenderTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
+    void handle(uint32_t arbitration_id, const auto & message) {
+        auto length = message.serialize(data.begin(), data.end());
+        can.send(arbitration_id, data.begin(), to_canfd_length(length));
+    }
+
     can_bus::CanBus& can;
     QueueType& queue;
+    std::array<uint8_t, message_core::MaxMessageSize> data{};
 };
 
 }  // namespace freertos_sender_task

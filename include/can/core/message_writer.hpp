@@ -41,9 +41,7 @@ class MessageWriter {
         arbitration_id.node_id(node);
         arbitration_id.originating_node_id(node_id);
         task_message.arbitration_id = arbitration_id;
-        auto length = message.serialize(task_message.data.begin(),
-                                        task_message.data.end());
-        task_message.data_length = to_canfd_length(length);
+        task_message.message = message;
         queue.try_write(task_message);
     }
 
