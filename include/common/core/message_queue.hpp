@@ -23,6 +23,7 @@ concept MessageQueue = requires(MQ mq, MessageType mt, const MQ cmq,
     { mq.try_read(&mt) } -> std::same_as<bool>;
     { mq.try_read_isr(&mt) } -> std::same_as<bool>;
     { mq.peek_isr(&mt) } -> std::same_as<bool>;
+    { mq.peek(&mt, 10) } -> std::same_as<bool>;
 
     // Queues must have a const method to check whether there are messages.
     { cmq.has_message() } -> std::same_as<bool>;

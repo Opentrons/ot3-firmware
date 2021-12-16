@@ -4,15 +4,17 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
-add_executable(
-        motor-control
+add_executable(motor-control
         test_main.cpp
         test_motor_interrupt_queue.cpp
         test_motor_pulse.cpp
         test_linear_motion_config.cpp
+        test_move_group.cpp
+        test_fixed_point_utils.cpp
 )
 
-target_include_directories(motor-control PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+target_ot_motor_control(motor-control)
+
 set_target_properties(motor-control
         PROPERTIES
         CXX_STANDARD 20
@@ -27,7 +29,7 @@ target_compile_options(motor-control
         -Wsign-promo
         -Wextra-semi
         -Wctor-dtor-privacy)
-target_link_libraries(motor-control Catch2::Catch2)
+target_link_libraries(motor-control PUBLIC Catch2::Catch2)
 
 catch_discover_tests(motor-control)
 add_build_and_test_target(motor-control)

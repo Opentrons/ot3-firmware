@@ -4,6 +4,12 @@ on:
     paths:
       - "head/**"
       - "common/**"
+      - "can/**"
+      - "motor-control/**"
+      - "python/opentrons_ot3_firmware/constants.py"
+      - "python/opentrons_ot3_firmware/generate_header_wrapper.in"
+      - "python/CMakeLists.txt"
+      - "python/opentrons_ot3_firmware/scripts/generate_header.py"
       - "include/**"
       - "!include/pipettes/**"
       - "!include/gantry/**"
@@ -19,6 +25,12 @@ on:
     paths:
       - "head/**"
       - "common/**"
+      - "can/**"
+      - "motor-control/**"
+      - "python/opentrons_ot3_firmware/constants.py"
+      - "python/opentrons_ot3_firmware/generate_header_wrapper.in"
+      - "python/CMakeLists.txt"
+      - "python/opentrons_ot3_firmware/scripts/generate_header.py"
       - "include/**"
       - "!include/pipettes/**"
       - "!include/gantry/**"
@@ -47,6 +59,9 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
       - uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
@@ -58,15 +73,18 @@ jobs:
         run: cmake --preset=cross .
       - name: "Format"
         run: cmake --build ./build-cross --target head-format-ci
-      - name: "Lint"
-        run: cmake --build ./build-cross --target head-lint
       - name: "Build"
         run: cmake --build ./build-cross --target head
+      - name: "Lint"
+        run: cmake --build ./build-cross --target head-lint
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
       - run: |
           sudo apt update
           sudo apt install gcc-10 g++-10

@@ -39,6 +39,9 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
       - uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
@@ -51,8 +54,6 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target common-format-ci
         # TODO (AL 2021-07-09) - uncomment when adding common-lint is added
-#      - name: "Lint"
-#        run: cmake --build ./build-cross --target common-lint
       - name: "Build"
         run: cmake --build ./build-cross --target common
   host-compile-test:
@@ -60,6 +61,9 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
       - run: |
           sudo apt update
           sudo apt install gcc-10 g++-10

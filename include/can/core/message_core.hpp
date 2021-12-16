@@ -1,8 +1,9 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 
-#include "ids.hpp"
+#include "can/core/ids.hpp"
 
 namespace message_core {
 
@@ -24,19 +25,6 @@ concept HasMessageID = requires {
      * knows how to parse.
      */
     { T::id } -> std::convertible_to<MessageId>;
-};
-
-/**
- * Concept describing an item that has a node id
- * @tparam T
- */
-template <typename T>
-concept HasNodeID = requires {
-    /**
-     * Has a node id member. This is the NodeID that the Serializable
-     * knows how to serialize.
-     */
-    { T::node_id } -> std::convertible_to<NodeId>;
 };
 
 /**
@@ -82,7 +70,6 @@ concept CanMessage = requires(T& t) {
 template <typename T>
 concept CanResponseMessage = requires(T& t) {
     {HasMessageID<T>};
-    {HasNodeID<T>};
     {Serializable<T>};
 };
 

@@ -1,38 +1,19 @@
-set(COMPILE_OPTS
-        -Wall
-        -Werror
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy
-        -fno-rtti)
+function(target_gantry_core_common TARGET)
+    target_sources(${TARGET} PUBLIC
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task.cpp
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/utils.cpp)
+target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
+endfunction()
 
-add_library(gantry-core-x STATIC
-        axis_type_x.cpp
-        )
-
-add_library(gantry-core-y STATIC
-        axis_type_y.cpp)
-
-set_target_properties(gantry-core-x
-        PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE)
-
-set_target_properties(gantry-core-y
-        PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE)
+function(target_gantry_core_x TARGET)
+    target_gantry_core_common(${TARGET})
+    target_sources(${TARGET} PUBLIC
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/axis_type_x.cpp)
+endfunction()
 
 
-target_include_directories(gantry-core-x
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
-target_include_directories(gantry-core-y
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
-
-target_compile_options(gantry-core-x PRIVATE ${COMPILE_OPTS})
-
-target_compile_options(gantry-core-y PRIVATE ${COMPILE_OPTS})
+function(target_gantry_core_y TARGET)
+    target_gantry_core_common(${TARGET})
+    target_sources(${TARGET} PUBLIC
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/axis_type_y.cpp)
+endfunction()

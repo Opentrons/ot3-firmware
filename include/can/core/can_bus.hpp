@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "arbitration_id.hpp"
-#include "ids.hpp"
+#include "can/core/ids.hpp"
 #include "parse.hpp"
 #include "types.h"
 
@@ -21,16 +21,17 @@ class CanBus {
     /**
      * Incoming message callback method
      */
-    using IncomingMessageCallback = void (*)(uint32_t identifier, uint8_t* data,
-                                             uint8_t length);
+    using IncomingMessageCallback = void (*)(void* cb_data, uint32_t identifier,
+                                             uint8_t* data, uint8_t length);
 
     /**
      * Set callback for incoming messages.
      *
-     * @param callback
+     * @param cb_data data that will be passed back to the callback.
+     * @param callback callback function reporting new CAN message.
      */
     virtual void set_incoming_message_callback(
-        IncomingMessageCallback callback) = 0;
+        void* cb_data, IncomingMessageCallback callback) = 0;
 
     /**
      * Write method.

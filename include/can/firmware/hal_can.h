@@ -9,7 +9,7 @@ extern "C" {
 /**
  * Receive message callback.
  */
-typedef void(*can_message_callback)(uint32_t identifier, uint8_t* data, uint8_t length);
+typedef void(*can_message_callback)(void* cb_data, uint32_t identifier, uint8_t* data, uint8_t length);
 
 /**
  * HAL can handle type.
@@ -34,9 +34,10 @@ HAL_CAN_HANDLE can_get_device_handle();
  *
  * This is called from an ISR
  *
+ * @param cb_data a value that will be passed to the callback function.
  * @param callback a callback function.
  */
-void can_register_message_callback(can_message_callback callback);
+void can_register_message_callback(void * cb_data, can_message_callback callback);
 
 
 /**

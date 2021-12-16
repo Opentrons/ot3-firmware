@@ -2,10 +2,8 @@ if (${CMAKE_CROSSCOMPILING})
 #    add_subdirectory(firmware)
 else()
     add_subdirectory(tests)
-    if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-        # Simulator requires linux only kernel interfaces
-        add_subdirectory(simulator)
-    endif()
+    add_subdirectory(simlib)
+    add_subdirectory(simulator)
 endif()
 
 add_subdirectory(core)
@@ -30,3 +28,5 @@ add_custom_target(
         can-format-ci
         COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -Werror --ferror-limit=0 -n ${CAN_SOURCES_FOR_FORMAT}
 )
+
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

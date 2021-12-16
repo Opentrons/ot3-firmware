@@ -48,42 +48,36 @@ SCENARIO("message serializing works") {
                                      .seq_id = 2,
                                      .current_position = 0x3456789a,
                                      .ack_id = 1};
-        message.set_node_id(can_ids::NodeId::pipette);
         auto arr = std::array<uint8_t, 8>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer correctly") {
-                REQUIRE(body.data()[0] ==
-                        static_cast<uint8_t>(can_ids::NodeId::pipette));
-                REQUIRE(body.data()[1] == 1);
-                REQUIRE(body.data()[2] == 2);
-                REQUIRE(body.data()[3] == 0x34);
-                REQUIRE(body.data()[4] == 0x56);
-                REQUIRE(body.data()[5] == 0x78);
-                REQUIRE(body.data()[6] == 0x9a);
-                REQUIRE(body.data()[7] == 1);
+                REQUIRE(body.data()[0] == 1);
+                REQUIRE(body.data()[1] == 2);
+                REQUIRE(body.data()[2] == 0x34);
+                REQUIRE(body.data()[3] == 0x56);
+                REQUIRE(body.data()[4] == 0x78);
+                REQUIRE(body.data()[5] == 0x9a);
+                REQUIRE(body.data()[6] == 1);
             }
-            THEN("size must be returned") { REQUIRE(size == 8); }
+            THEN("size must be returned") { REQUIRE(size == 7); }
         }
     }
 
     GIVEN("a device info response message") {
         auto message = DeviceInfoResponse{.version = 0x00220033};
-        message.set_node_id(can_ids::NodeId::pipette);
-        auto arr = std::array<uint8_t, 5>{0, 0, 0, 0, 0};
+        auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer correctly") {
-                REQUIRE(body.data()[0] ==
-                        static_cast<uint8_t>(can_ids::NodeId::pipette));
-                REQUIRE(body.data()[1] == 0x00);
-                REQUIRE(body.data()[2] == 0x22);
-                REQUIRE(body.data()[3] == 0x00);
-                REQUIRE(body.data()[4] == 0x33);
+                REQUIRE(body.data()[0] == 0x00);
+                REQUIRE(body.data()[1] == 0x22);
+                REQUIRE(body.data()[2] == 0x00);
+                REQUIRE(body.data()[3] == 0x33);
             }
-            THEN("size must be returned") { REQUIRE(size == 5); }
+            THEN("size must be returned") { REQUIRE(size == 4); }
         }
     }
 }

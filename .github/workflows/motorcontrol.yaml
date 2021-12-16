@@ -39,6 +39,9 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: '3.7'
       - run: |
           sudo apt update
           sudo apt install gcc-10 g++-10
@@ -53,7 +56,5 @@ jobs:
         run: cmake --preset=host-gcc10 .
       - name: "Format check"
         run: cmake --build ./build-host --target motor-control-format-ci
-      - name: "Lint"
-        run: cmake --build ./build-host --target lint
-      - name: 'Build and test'
+      - name: "Build and test"
         run: cmake --build ./build-host --target motor-control-build-and-test

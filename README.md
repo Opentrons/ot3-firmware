@@ -8,12 +8,14 @@ Instead, navigate to the [CMake Utils Repository](https://github.com/Opentrons/c
 
 Aside from the common directory, each repository should contain a `firmware`, `include`, `src`, `tests` folder.
 
-1. `firmware` should hold code that will be controlling the peripheral system.
-2. `include` should hold the majority of the header files you will need. This folder should include another subset of
-   directories labeled `firmware`, `src` and `tests` for import cleaness.
-3. `src` should include any libraries, 3D party or otherwise, that are required for `firmware` to control the peripheral
-   system.
-4. `tests` should include tests for the firmware folder.
+1. `include` should hold any header file that crosses subsystem boundaries - public interfaces. This folder
+   should include another subset of directories labeled `firmware`, `src` and `tests` for import cleanness.
+2. Source subdirectories for end executables - `pipettes`, `head`, `gantry` - and subsystems - `can`,
+   `motor-control`. Each should have subdirectories for `core`, `tests`, `firmware`, and the like.
+3. `python` is a subdirectory for python bindings and utilities, providing python bindings for canbus message 
+   definitions. It can be used by external python projects to deal with serializing and unserializing these
+   messages, as well as being a source of truth for generating IDs in c++.
+
 
 ## Working with CMake
 
@@ -50,6 +52,11 @@ To setup this directory to run tests, you should run:
 
    `brew install gcc@10`
    `cmake --preset=host-gcc10 .`
+   
+   The python bindings require specific versions of python - python 3.7 for now. As with the monorepo, the best way
+   to handle this without altering your main system is to install and use [pyenv](https://github.com/pyenv/pyenv),
+   which will be respected by the cmake infrastructure here. A pyenv configuration file is in the root of the repo.
+   
 2. `cmake --build ./build-host --target build-and-test`, which will run all of the tests available in each periphery.
 3. or, `cmake --build ./build-host --target <TARGET>-build-and-test`
 

@@ -63,6 +63,11 @@
           "CMAKE_C_COMPILER": "gcc-10",
           "CMAKE_CXX_COMPILER": "g++-10"
         }
+      },
+      {
+        "name": "host-gcc10-python",
+        "inherits": ["host-gcc10", "configuration-ok"],
+        "displayName": "STM32 firmware host builds with gcc10 and python"
       }
     ],
   "buildPresets": [

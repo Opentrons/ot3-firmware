@@ -19,17 +19,19 @@ class HalCanBus : public CanBus {
      */
     explicit HalCanBus(HAL_CAN_HANDLE handle) : handle{handle} {}
 
-    HalCanBus(const HalCanBus&) = delete;
-    auto operator=(const HalCanBus&) -> HalCanBus& = delete;
-    HalCanBus(const HalCanBus&&) = delete;
-    auto operator=(const HalCanBus&&) -> HalCanBus&& = delete;
+    HalCanBus(const HalCanBus&) = default;
+    auto operator=(const HalCanBus&) -> HalCanBus& = default;
+    HalCanBus(HalCanBus&&) = default;
+    auto operator=(HalCanBus&&) -> HalCanBus& = default;
     ~HalCanBus() final = default;
 
     /**
      * Set the incoming message callback.
-     * @param callback
+     * @param cb_data data passed back to caller in callback.
+     * @param callback message to be called with new CAN message.
      */
-    void set_incoming_message_callback(IncomingMessageCallback callback) final;
+    void set_incoming_message_callback(void* cb_data,
+                                       IncomingMessageCallback callback) final;
 
     /**
      * Add an arbitration id filter.

@@ -20,14 +20,35 @@ using namespace motor_messages;
 using namespace motor_driver_config;
 using namespace freertos_message_queue;
 
-template <spi::TMC2130Spi SpiDriver, lms::MotorMechanicalConfig MEConfig>
+template <lms::MotorMechanicalConfig MEConfig>
 struct Motor {
+<<<<<<< HEAD
     using GenericQueue = FreeRTOSMessageQueue<motor_messages::Move>;
     using CompletedQueue = FreeRTOSMessageQueue<motor_messages::Ack>;
     Motor(SpiDriver& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
+=======
+    using GenericQueue = FreeRTOSMessageQueue<Move>;
+    using CompletedQueue = FreeRTOSMessageQueue<Ack>;
+
+    /**
+     * Construct a motor
+     *
+     * @param spi SPI driver
+     * @param lms_config Linear motion system configuration
+     * @param hardware_iface Hardware interface
+     * @param constraints Motion constraints
+     * @param driver_config Driver configuration
+     * @param queue Input message queue containing motion commands.
+     * @param completed_queue Output message queue with completed motion
+     * commands.
+     */
+    Motor(spi::TMC2130Spi& spi,
+          lms::LinearMotionSystemConfig<MEConfig> lms_config,
+>>>>>>> main
           motor_hardware::MotorHardwareIface& hardware_iface,
           MotionConstraints constraints, RegisterConfig driver_config,
           GenericQueue& queue, CompletedQueue& completed_queue)
+
         : pending_move_queue(queue),
           completed_move_queue(completed_queue),
           driver{spi, driver_config},
@@ -35,8 +56,9 @@ struct Motor {
                             pending_move_queue, completed_move_queue} {}
     GenericQueue& pending_move_queue;
     CompletedQueue& completed_move_queue;
-    motor_driver::MotorDriver<SpiDriver> driver;
+    motor_driver::MotorDriver driver;
     motion_controller::MotionController<MEConfig> motion_controller;
+
     Motor(const Motor&) = delete;
     auto operator=(const Motor&) -> Motor& = delete;
     Motor(Motor&&) = delete;

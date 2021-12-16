@@ -67,6 +67,11 @@ class FreeRTOSMessageQueue {
         return xQueuePeekFromISR(queue, message) == pdTRUE;
     }
 
+    [[nodiscard]] auto peek(Message* message, uint32_t timeout_ticks = 0) const
+        -> bool {
+        return xQueuePeek(queue, message, timeout_ticks) == pdTRUE;
+    }
+
     void reset() { xQueueReset(queue); }
 
   private:

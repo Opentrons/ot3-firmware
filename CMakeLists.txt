@@ -16,19 +16,19 @@ if (NOT ${CMAKE_CROSSCOMPILING})
     enable_testing()
     add_custom_target(build-and-test)
 endif ()
+add_subdirectory(python)
+
 
 # Set a default build type if none was specified
 # From https://blog.kitware.com/cmake-and-the-default-build-type/
-
-# MinSizeRel is the default release type since the binary size is quite important.
-set(default_build_type "Debug")
+set(default_build_type "RelWithDebInfo")
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
             STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-            "Debug" "MinSizeRel" "RelWithDebInfo")
+            "RelWithDebInfo" "Debug" "MinSizeRel")
 endif ()
 message("Build type is ${CMAKE_BUILD_TYPE}")
 
@@ -64,6 +64,7 @@ list(REMOVE_DUPLICATES LINT_TARGETS)
 
 find_package(Clang)
 
+# c++ linting is here but python linting is in the subdir
 file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./include/*.hpp
         ./can/*.hpp ./can/*.cpp
@@ -92,7 +93,10 @@ add_custom_target(
 )
 
 add_custom_target(
-        lint
-        ALL
-        DEPENDS ${LINT_TARGETS}
-)
+      lint
+      ALL
+      DEPENDS ${LINT_TARGETS})
+
+add_dependencies(lint opentrons_ot3_firmware-lint)
+add_dependencies(format opentrons_ot3_firmware-format)
+add_dependencies(format-ci opentrons_ot3_firmware-format-ci)

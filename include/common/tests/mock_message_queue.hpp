@@ -48,6 +48,10 @@ class MockMessageQueue {
 
     auto peek_isr(Message* message) const -> bool { return try_read(message); }
 
+    auto peek(Message* message, uint32_t timeout_ticks) const -> bool {
+        return try_read(message, timeout_ticks);
+    }
+
     void reset() { queue_data_structure.clear(); }
 
     uint8_t get_size() { return queue_data_structure.size(); }

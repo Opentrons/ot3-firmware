@@ -10,14 +10,15 @@
 #include <unistd.h>
 
 #include <cstring>
-#include <iostream>
 
+#include "common/core/logging.hpp"
 #include "common/core/synchronization.hpp"
+#include "transport.hpp"
 
-namespace socket_can {
+namespace socketcan_transport {
 
 template <synchronization::LockableProtocol CriticalSection>
-class SocketCanTransport {
+class SocketCanTransport : public can_transport::BusTransportBase {
   public:
     SocketCanTransport(){};
     ~SocketCanTransport() { close(); };
@@ -51,7 +52,7 @@ auto SocketCanTransport<CriticalSection>::open(const char *address) -> bool {
 
     if (setsockopt(s, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &use_canfd,
                    sizeof(use_canfd))) {
-        std::cout << "Failed to enable can fd." << std::endl;
+        LOG("Failed to enable can fd.");
         return false;
     }
 
@@ -64,7 +65,7 @@ auto SocketCanTransport<CriticalSection>::open(const char *address) -> bool {
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
-    std::cout << "Connected to " << address << std::endl;
+    LOG("Connected to %s\n", address);
     handle = s;
     return true;
 }
@@ -83,6 +84,7 @@ auto SocketCanTransport<CriticalSection>::write(uint32_t arb_id,
     frame.can_id = arb_id | (1 << 31);
     frame.len = buff_len;
     ::memcpy(frame.data, cbuff, buff_len);
+    LOG("Writing: arb_id %X dlc %d\n", arb_id, buff_len);
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
 
@@ -103,18 +105,13 @@ auto SocketCanTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
         buff_len = frame.len;
         ::memcpy(buff, frame.data, buff_len);
 
-        std::cout << "arb_id: " << std::hex << arb_id << " "
-                  << "length: " << buff_len << ":";
-        for (int i = 0; i < buff_len; i++) {
-            std::cout << " " << std::hex << (int)buff[i];
-        }
-        std::cout << std::endl;
+        LOG("Read: arb_id %X dlc %d\n", arb_id, buff_len);
 
         return true;
     } else {
-        std::cout << "read failed: " << errno << std::endl;
+        LOG("Read failed: %d\n", errno);
     }
     return false;
 }
 
-}  // namespace socket_can
+}  // namespace socketcan_transport
