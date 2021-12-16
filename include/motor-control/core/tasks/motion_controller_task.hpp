@@ -11,7 +11,7 @@ namespace motion_controller_task {
 using TaskMessage =
     std::variant<std::monostate, can_messages::StopRequest, can_messages::EnableMotorRequest,
                  can_messages::DisableMotorRequest, can_messages::GetMotionConstraintsRequest,
-                 can_messages::SetMotionConstraints>;
+                 can_messages::SetMotionConstraints, can_messages::AddLinearMoveRequest>;
 
 
 template<lms::MotorMechanicalConfig MEConfig>
@@ -50,6 +50,10 @@ class MotionControllerMessageHandler {
 
     void handle(const can_messages::SetMotionConstraints & m) {
         controller.set_motion_constraints(m);
+    }
+
+    void handle(const can_messages::AddLinearMoveRequest& m) {
+        controller.move(m);
     }
 
     MotorControllerType & controller;

@@ -72,16 +72,4 @@ using MotorDriverTask =
     freertos_message_queue_poller::FreeRTOSMessageQueuePoller<
         TaskMessage, MotorDriverMessageHandler>;
 
-
-
-/**
- * A concept defining a client of the motor task.
- * @tparam Client
- */
-template <class C>
-concept HasTask = requires(C c) {
-    {c.motor_task()} -> std::same_as<MotorDriverTask*>;
-};
-
-
 }  // namespace motor_driver_task
