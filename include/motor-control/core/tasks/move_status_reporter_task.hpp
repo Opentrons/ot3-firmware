@@ -4,15 +4,11 @@
 
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue_poller.hpp"
-#include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/tasks/messages.hpp"
 
 namespace move_status_reporter_task {
 
-/**
- * The message type this task accepts.
- */
-using TaskMessage = motor_messages::Ack;
-
+using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
 
 /**
  * The handler of move status messages
@@ -31,8 +27,8 @@ class MoveStatusMessageHandler {
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .current_position = message.current_position,
-            .ack_id = static_cast<uint8_t>(
-                motor_messages::AckMessageId::complete),
+            .ack_id =
+                static_cast<uint8_t>(motor_messages::AckMessageId::complete),
         };
         //        message_writer.write(NodeId::host, msg);
     }
@@ -47,4 +43,13 @@ using MoveStatusReporterTask =
     freertos_message_queue_poller::FreeRTOSMessageQueuePoller<
         TaskMessage, MoveStatusMessageHandler>;
 
-}  // namespace motor_driver_task
+/**
+ * Concept describing a class that can message this task.
+ * @tparam TaskHolder
+ */
+template <typename TaskHolder>
+concept TaskClient = requires(TaskHolder holder, const TaskMessage& m) {
+    {holder.send_move_status_reporter_queue(m)};
+};
+
+}  // namespace move_status_reporter_task
