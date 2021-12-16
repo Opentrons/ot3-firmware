@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "algorithm": "cpp",
+        "*.def": "cpp",
+        "*.inc": "cpp",
+        "any": "cpp",
+        "optional": "cpp",
+        "future": "cpp",
+        "valarray": "cpp",
+        "variant": "cpp",
+        "__config": "cpp"
+    }
+}
