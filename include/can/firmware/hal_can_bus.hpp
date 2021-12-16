@@ -19,10 +19,10 @@ class HalCanBus : public CanBus {
      */
     explicit HalCanBus(HAL_CAN_HANDLE handle) : handle{handle} {}
 
-    HalCanBus(const HalCanBus&) = delete;
-    auto operator=(const HalCanBus&) -> HalCanBus& = delete;
-    HalCanBus(const HalCanBus&&) = delete;
-    auto operator=(const HalCanBus&&) -> HalCanBus&& = delete;
+    HalCanBus(const HalCanBus&) = default;
+    auto operator=(const HalCanBus&) -> HalCanBus& = default;
+    HalCanBus(HalCanBus&&) = default;
+    auto operator=(HalCanBus&&) -> HalCanBus& = default;
     ~HalCanBus() final = default;
 
     /**

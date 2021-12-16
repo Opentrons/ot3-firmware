@@ -50,6 +50,9 @@ endif()
 target_compile_definitions(gantry_x_simulator PUBLIC ENABLE_LOGGING)
 target_compile_definitions(gantry_y_simulator PUBLIC ENABLE_LOGGING)
 
+target_can_simlib(gantry_x_simulator)
+target_can_simlib(gantry_y_simulator)
+
 target_gantry_core_x(gantry_x_simulator)
 target_gantry_core_y(gantry_y_simulator)
 

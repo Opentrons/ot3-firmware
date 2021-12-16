@@ -32,6 +32,14 @@ add_executable(
         freertos_idle_timer_task.cpp
 )
 
+target_can_simlib(can-simulator)
+
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    target_compile_definitions(can-simulator PUBLIC USE_SOCKETCAN)
+endif()
+
+target_compile_definitions(can-simulator PUBLIC ENABLE_LOGGING)
+
 target_link_libraries(can-simulator PRIVATE can-core freertos pthread)
 
 set_target_properties(can-simulator

@@ -7,9 +7,11 @@
 
 #include <algorithm>
 
+#include "FreeRTOS.h"
 #include "can/core/message_core.hpp"
 #include "common/core/logging.hpp"
 #include "common/core/synchronization.hpp"
+#include "task.h"
 #include "transport.hpp"
 
 namespace socket_transport {
