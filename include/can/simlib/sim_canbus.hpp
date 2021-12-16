@@ -21,9 +21,9 @@ using namespace freertos_task;
  */
 class SimCANBus : public CanBus {
   public:
-    using TranportType = std::shared_ptr<can_transport::BusTransportBase>;
+    using TransportType = std::shared_ptr<can_transport::BusTransportBase>;
 
-    explicit SimCANBus(TranportType transport)
+    explicit SimCANBus(TransportType transport)
         : transport{transport}, reader{*this}, reader_task{"", reader} {}
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
@@ -105,7 +105,7 @@ class SimCANBus : public CanBus {
         std::array<uint8_t, message_core::MaxMessageSize> read_buffer{};
     };
 
-    TranportType transport;
+    TransportType transport;
     Reader reader;
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
