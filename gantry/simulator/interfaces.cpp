@@ -2,7 +2,6 @@
 
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
-#include "common/core/freertos_synchronization.hpp"
 #include "common/simulation/spi.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
