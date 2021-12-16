@@ -132,7 +132,7 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     }
 }
 
-void adc_read_voltages(ADC_HandleTypeDef* handle) {
+struct voltage_read adc_read_voltages(ADC_HandleTypeDef* handle) {
     uint32_t adc1_value = 4294967295;
     uint32_t adc2_value = 4294967295;
     uint32_t z_detect_reading = 4294967295;
@@ -157,16 +157,5 @@ void adc_read_voltages(ADC_HandleTypeDef* handle) {
     struct voltage_read voltage_read = {
         .z_motor = z_detect_reading, .a_motor = adc2_value, .gripper = adc1_value};
 
-    if ((voltage_read.a_motor == voltage_read.z_motor) ==
-        (voltage_read.gripper == 0)) {
-        struct states states = {.z_pipette_state = disconnected,
-                                .a_pipette_state = disconnected,
-                                .gripper_state = disconnected};
-        if ((states.a_pipette_state == states.z_pipette_state) ==
-            states.gripper_state) {
-        }
-    }
-
-    else {
-    }
+    return voltage_read;
 }

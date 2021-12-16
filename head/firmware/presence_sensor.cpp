@@ -10,6 +10,7 @@
 #include "common/core/freertos_task.hpp"
 #include "presence_sensor/core/presence_sensor_messages.hpp"
 #include "presence_sensor/core/presence_sensor_class.hpp"
+#include "common/core/message_buffer.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -28,6 +29,11 @@ using namespace can_ids;
 using namespace can_dispatch;
 using namespace presence_sensor_messages;
 using namespace presence_sensing_message_handler;
+
+using namespace can_parse;
+using namespace can_message_buffer;
+using namespace can_arbitration_id;
+using namespace can_message_buffer;
 
 adc::ADC_interface ADC_intf2 = {
 
@@ -60,4 +66,8 @@ auto presence_sensor_dispatch_target = DispatchParseTarget<
     decltype(presence_sensing_handler), can_messages::PresenceSensingRequest>
     {presence_sensing_handler};
 
-auto presence_sensor_dispatcher = Dispatcher([](auto _) -> bool { return true; }, presence_sensor_dispatch_target);
+template <CanMessageBufferListener Listener>
+auto build_ps_dispatch() -> can_dispatch::Dispatcher<Listener>{
+    auto presence_sensor_dispatcher = Dispatcher([](auto _) -> bool { return true; }, presence_sensor_dispatch_target);
+    return presence_sensor_dispatcher;
+}

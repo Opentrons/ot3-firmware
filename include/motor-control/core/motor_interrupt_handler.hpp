@@ -40,12 +40,12 @@ using namespace motor_messages;
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Move>, Move> &&
-    MessageQueue<QueueImpl<Ack>, Ack>
+requires MessageQueue<QueueImpl<motor_messages::Move>, motor_messages::Move> &&
+    MessageQueue<QueueImpl<motor_messages::Ack>, motor_messages::Ack>
 class MotorInterruptHandler {
   public:
-    using GenericQueue = QueueImpl<Move>;
-    using CompletedQueue = QueueImpl<Ack>;
+    using GenericQueue = QueueImpl<motor_messages::Move>;
+    using CompletedQueue = QueueImpl<motor_messages::Ack>;
 
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(GenericQueue& incoming_queue,
@@ -165,12 +165,12 @@ class MotorInterruptHandler {
         tick_count = 0x0;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack =
-                Ack{.group_id = buffered_move.group_id,
+                motor_messages::Ack{.group_id = buffered_move.group_id,
                     .seq_id = buffered_move.seq_id,
                     .current_position = static_cast<uint32_t>(
                         position_tracker),  // TODO (AA 2021-11-10): convert
                                             // this value to mm instead of steps
-                    .ack_id = AckMessageId::complete};
+                    .ack_id = motor_messages::AckMessageId::complete};
             static_cast<void>(completed_queue.try_write_isr(ack));
         }
         set_buffered_move(Move{});

@@ -281,10 +281,12 @@ static auto dispatcher_left_motor =
                motion_group_dispatch_target_left,
                motion_group_executor_dispatch_target_left,
                device_info_dispatch_target_left);
+static auto ps_dispatch = build_ps_dispatch<decltype(dispatcher_left_motor)>();
 
 static auto main_dispatcher =
     Dispatcher([](auto _) -> bool { return true; }, dispatcher_right_motor,
-               dispatcher_left_motor);
+               dispatcher_left_motor, ps_dispatch);
+
 
 /**
  * The type of the message buffer populated by HAL ISR.
