@@ -7,6 +7,7 @@
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 static auto motor_driver_message_queue =
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -36,6 +37,11 @@ static auto move_group_task_handler =
     move_group_task::MoveGroupMessageHandler(move_group_manager);
 static auto move_group_task_entry = move_group_task::MoveGroupTask(
     move_group_message_queue, move_group_task_handler);
+
+static auto move_status_reporter_task_handler =
+    move_status_reporter_task::MoveStatusMessageHandler();
+static auto move_status_reporter_task_entry = move_status_reporter_task::MoveStatusReporterTask (
+    interfaces::get_motor().completed_move_queue, move_status_reporter_task_handler);
 
 int main() {
     interfaces::initialize();

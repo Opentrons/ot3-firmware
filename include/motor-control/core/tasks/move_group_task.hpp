@@ -61,8 +61,7 @@ class MoveGroupMessageHandler {
 
     void handle(const can_messages::ExecuteMoveGroupRequest& m) {
         auto group = move_groups[m.group_id];
-        for (std::size_t i = 0; i < max_moves_per_group;
-             i++) {
+        for (std::size_t i = 0; i < max_moves_per_group; i++) {
             auto move = group.get_move(i);
             std::visit([this](auto &m) { this->visit_move(m); }, move);
         }
