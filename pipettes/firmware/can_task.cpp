@@ -89,7 +89,7 @@ static motor_handler::MotorInterruptHandler plunger_interrupt(motor_queue,
 // microstepping is currently set to 32 μsteps.
 RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
                                          .ihold_irun = 0x70202,
-                                         .chopconf = 0x50101D5,
+                                         .chopconf = 0x30101D5,
                                          .thigh = 0xFFFFF,
                                          .coolconf = 0x60000};
 
