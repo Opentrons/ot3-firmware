@@ -22,11 +22,6 @@ using namespace freertos_message_queue;
 
 template <lms::MotorMechanicalConfig MEConfig>
 struct Motor {
-<<<<<<< HEAD
-    using GenericQueue = FreeRTOSMessageQueue<motor_messages::Move>;
-    using CompletedQueue = FreeRTOSMessageQueue<motor_messages::Ack>;
-    Motor(SpiDriver& spi, lms::LinearMotionSystemConfig<MEConfig> lms_config,
-=======
     using GenericQueue = FreeRTOSMessageQueue<Move>;
     using CompletedQueue = FreeRTOSMessageQueue<Ack>;
 
@@ -44,7 +39,6 @@ struct Motor {
      */
     Motor(spi::TMC2130Spi& spi,
           lms::LinearMotionSystemConfig<MEConfig> lms_config,
->>>>>>> main
           motor_hardware::MotorHardwareIface& hardware_iface,
           MotionConstraints constraints, RegisterConfig driver_config,
           GenericQueue& queue, CompletedQueue& completed_queue)
