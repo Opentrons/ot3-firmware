@@ -3,7 +3,7 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "motor-control/core/motion_group.hpp"
+#include "motor-control/core/move_group.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 
