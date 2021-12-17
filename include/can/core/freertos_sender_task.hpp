@@ -42,7 +42,9 @@ class MessageSenderTask {
         while (true) {
             if (queue.try_read(&message, portMAX_DELAY)) {
                 auto arbitration_id = message.arbitration_id;
-                std::visit([this, arbitration_id](auto m){this->handle(arbitration_id, m);}, message.message);
+                std::visit([this, arbitration_id](
+                               auto m) { this->handle(arbitration_id, m); },
+                           message.message);
             }
         }
     }
@@ -50,7 +52,7 @@ class MessageSenderTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
-    void handle(uint32_t arbitration_id, const auto & message) {
+    void handle(uint32_t arbitration_id, const auto& message) {
         auto length = message.serialize(data.begin(), data.end());
         can.send(arbitration_id, data.begin(), to_canfd_length(length));
     }
