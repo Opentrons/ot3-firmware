@@ -132,7 +132,7 @@ static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, complete_queue_right, motor_hardware_right);
 
 static motor_class::Motor motor_right{
-    spi_comms3,
+    spi_comms2,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
@@ -152,7 +152,7 @@ static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, complete_queue_left, motor_hardware_left);
 
 static motor_class::Motor motor_left{
-    spi_comms2,
+    spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
