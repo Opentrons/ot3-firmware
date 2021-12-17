@@ -30,14 +30,23 @@ class FreeRTOSMessageQueue {
         vQueueDelete(queue);
     }
 
-    auto try_write(const Message& message, const uint32_t timeout_ticks = 0)
-        -> bool {
+    template <typename TimeoutType>
+    requires std::is_integral_v<TimeoutType>
+    auto try_write(const Message& message, TimeoutType timeout_ticks) -> bool {
         return xQueueSendToBack(queue, &message, timeout_ticks) == pdTRUE;
     }
 
-    auto try_read(Message* message, uint32_t timeout_ticks = 0) -> bool {
+    auto try_write(const Message& message) -> bool {
+        return try_write(message, 0);
+    }
+
+    template <typename TimeoutType>
+    requires std::is_integral_v<TimeoutType>
+    auto try_read(Message* message, TimeoutType timeout_ticks) -> bool {
         return xQueueReceive(queue, message, timeout_ticks);
     }
+
+    auto try_read(Message* message) -> bool { return try_read(message, 0); }
 
     [[nodiscard]] auto try_write_isr(const Message& message) -> bool {
         BaseType_t higher_woken = pdFALSE;
@@ -67,9 +76,15 @@ class FreeRTOSMessageQueue {
         return xQueuePeekFromISR(queue, message) == pdTRUE;
     }
 
-    [[nodiscard]] auto peek(Message* message, uint32_t timeout_ticks = 0) const
+    template <typename TimeoutType>
+    requires std::is_integral_v<TimeoutType>
+    [[nodiscard]] auto peek(Message* message, TimeoutType timeout_ticks) const
         -> bool {
         return xQueuePeek(queue, message, timeout_ticks) == pdTRUE;
+    }
+
+    [[nodiscard]] auto peek(Message* message) const -> bool {
+        return peek(message, 0);
     }
 
     void reset() { xQueueReset(queue); }
