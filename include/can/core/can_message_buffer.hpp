@@ -112,7 +112,9 @@ class CanMessageBufferReader {
      * Read a message from the message buffer and notify listener.
      * @param timeout
      */
-    auto read(uint32_t timeout) -> void {
+    template <typename TimeoutType>
+    requires std::is_integral_v<TimeoutType>
+    auto read(TimeoutType timeout) -> void {
         auto read_amount =
             message_buffer.receive(backing.begin(), backing.end(), timeout);
         if (read_amount > 0) {

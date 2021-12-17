@@ -24,10 +24,10 @@ class FreeRTOSMessageBuffer {
 
     ~FreeRTOSMessageBuffer();
 
-    template <typename Iterator, typename Limit>
+    template <typename Iterator, typename Limit, typename TimeoutType>
     requires bit_utils::ByteIterator<Iterator> &&
-        std::sentinel_for<Limit, Iterator>
-    auto send(const Iterator iter, const Limit limit, uint32_t timeout)
+        std::sentinel_for<Limit, Iterator> && std::is_integral_v<TimeoutType>
+    auto send(const Iterator iter, const Limit limit, TimeoutType timeout)
         -> std::size_t {
         return xMessageBufferSend(handle, iter, limit - iter, timeout);
     }
@@ -51,10 +51,11 @@ class FreeRTOSMessageBuffer {
         return written_bytes;
     }
 
-    template <typename Iterator, typename Limit>
+    template <typename Iterator, typename Limit, typename TimeoutType>
     requires bit_utils::ByteIterator<Iterator> &&
         std::sentinel_for<Limit, Iterator>
-    auto receive(Iterator iter, Limit limit, uint32_t timeout) -> std::size_t {
+    auto receive(Iterator iter, Limit limit, TimeoutType timeout)
+        -> std::size_t {
         return xMessageBufferReceive(handle, iter, limit - iter, timeout);
     }
 
