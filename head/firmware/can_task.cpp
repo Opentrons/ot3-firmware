@@ -285,9 +285,6 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_right.run_interrupt();
 }
 
-can_task::CanReaderTaskEntry::CanReaderTaskEntry(can_bus::CanBus& bus)
-    : can_bus{bus} {}
-
 /**
  * Entry point for the reader task.
  * TODO (2021-12-15, AL): Most of what happens in this task should be moved out
@@ -346,7 +343,7 @@ auto static writer_task_control =
 
 auto can_task::start_reader(can_bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask {
-    return FreeRTOSTask(can_task::CanReaderTaskEntry(canbus),
+    return FreeRTOSTask(can_task::CanReaderTaskEntry{.can_bus = canbus},
                         reader_task_control, 5, "can reader task");
 }
 

@@ -12,7 +12,6 @@ class CanBus;
 namespace can_task {
 
 struct CanReaderTaskEntry {
-    CanReaderTaskEntry(can_bus::CanBus& bus);
     [[noreturn]] void operator()();
     can_bus::CanBus& can_bus;
 };

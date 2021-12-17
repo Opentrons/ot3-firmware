@@ -176,9 +176,6 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-can_task::CanReaderTaskEntry::CanReaderTaskEntry(can_bus::CanBus& bus)
-    : can_bus{bus} {}
-
 [[noreturn]] void can_task::CanReaderTaskEntry::operator()() {
     can_bus.set_incoming_message_callback(nullptr, callback);
     can_start();
@@ -201,9 +198,9 @@ auto static writer_task_control =
 
 auto can_task::start_reader(can_bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask {
-    return can_task::CanMessageReaderTask{can_task::CanReaderTaskEntry(canbus),
-                                          reader_task_control, 5,
-                                          "can reader task"};
+    return can_task::CanMessageReaderTask{
+        can_task::CanReaderTaskEntry{.can_bus = canbus}, reader_task_control, 5,
+        "can reader task"};
 }
 
 auto can_task::start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask {
