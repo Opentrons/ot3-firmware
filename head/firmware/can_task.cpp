@@ -7,13 +7,11 @@
 #include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
-#include "can/core/message_handlers/presence_sensing.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
-#include "common/firmware/tasks.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
@@ -39,24 +37,19 @@ using namespace motor_messages;
 using namespace motor_driver_config;
 using namespace spi;
 
-//hal_can_bus::HalCanBus can_bus_1 = HalCanBus(can_get_device_handle());
-//extern hal_can_bus::HalCanBus can_bus_1;
-hal_can_bus::HalCanBus can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
+static auto can_bus_1 = HalCanBus(can_get_device_handle());
 
 static auto message_writer_right = MessageWriter(can_bus_1, NodeId::head_r);
 static auto message_writer_left = MessageWriter(can_bus_1, NodeId::head_l);
 
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_left(
     "Motor Queue Left");
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack> complete_queue_left(
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_left(
     "Complete Queue Left");
 static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue_right(
     "Motor Queue Right");
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack> complete_queue_right(
+static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue_right(
     "Complete Queue Right");
-//extern freertos_message_queue::FreeRTOSMessageQueue<Move> presence_sensor_queue;
-//extern freertos_message_queue::FreeRTOSMessageQueue<Ack>
-//    complete_queue_presence_sensing;
 
 /**
  * @brief SPI MSP Initialization
@@ -256,12 +249,10 @@ static auto dispatcher_left_motor =
                motion_group_dispatch_target_left,
                motion_group_executor_dispatch_target_left,
                device_info_dispatch_target_left);
-static auto ps_dispatch = build_ps_dispatch<decltype(dispatcher_left_motor)>();
 
 static auto main_dispatcher =
     Dispatcher([](auto _) -> bool { return true; }, dispatcher_right_motor,
-               dispatcher_left_motor, ps_dispatch);
-
+               dispatcher_left_motor);
 
 /**
  * The type of the message buffer populated by HAL ISR.

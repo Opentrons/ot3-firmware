@@ -54,11 +54,7 @@ using HeartbeatResponse = Empty<MessageId::heartbeat_response>;
 
 using DeviceInfoRequest = Empty<MessageId::device_info_request>;
 
-using PresenceSensingRequest = Empty<MessageId::presence_sensing_request>;
-
-using ConnectedMotorsRequest = Empty<MessageId::connected_motors_request>;
-
-struct DeviceInfoResponse : Response<MessageId::device_info_response> {
+struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     /**
      *   TODO (al, 2021-09-13)
      *   Seth's thoughts on future of payload
@@ -84,19 +80,7 @@ struct DeviceInfoResponse : Response<MessageId::device_info_response> {
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
-
-struct PresenceSensingResponse
-    : Response<MessageId::presence_sensing_response> {
-    uint32_t reading;
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = serialize_node_id(body, limit);
-        iter = bit_utils::int_to_bytes(reading, iter, limit);
-        return iter - body;
-    }
-    auto operator==(const PresenceSensingResponse& other) const -> bool = default;
-};
+using PresenceSensingRequest = Empty<MessageId::presence_sensing_request>;
 
 using StopRequest = Empty<MessageId::stop_request>;
 

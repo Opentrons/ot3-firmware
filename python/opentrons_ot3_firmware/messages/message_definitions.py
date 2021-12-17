@@ -8,6 +8,11 @@ from ..utils import BinarySerializable
 from ..constants import MessageId
 from . import payloads
 
+@dataclass
+class PresenceSensingRequest:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[MessageId.presence_sensing_request] = MessageId.presence_sensing_request
 
 @dataclass
 class HeartbeatRequest:  # noqa: D101
