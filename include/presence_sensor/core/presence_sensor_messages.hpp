@@ -17,7 +17,7 @@ struct Reading {
     uint8_t seq_id;
 };
 
-struct Ack {
+struct Ack_ {
    
     AckMessageId ack_id;
 };

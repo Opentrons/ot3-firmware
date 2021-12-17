@@ -22,8 +22,8 @@ using namespace freertos_message_queue;
 
 template <lms::MotorMechanicalConfig MEConfig>
 struct Motor {
-    using GenericQueue = FreeRTOSMessageQueue<Move>;
-    using CompletedQueue = FreeRTOSMessageQueue<Ack>;
+    using GenericQueue = FreeRTOSMessageQueue<motor_messages::Move>;
+    using CompletedQueue = FreeRTOSMessageQueue<motor_messages::Ack>;
 
     /**
      * Construct a motor

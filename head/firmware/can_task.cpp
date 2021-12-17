@@ -12,6 +12,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/firmware/errors.h"
 #include "common/firmware/spi_comms.hpp"
+#include "common/firmware/tasks.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
@@ -250,9 +251,11 @@ static auto dispatcher_left_motor =
                motion_group_executor_dispatch_target_left,
                device_info_dispatch_target_left);
 
+static auto ps_dispatcher = build_ps_dispatch();
+
 static auto main_dispatcher =
     Dispatcher([](auto _) -> bool { return true; }, dispatcher_right_motor,
-               dispatcher_left_motor);
+               dispatcher_left_motor, ps_dispatcher);
 
 /**
  * The type of the message buffer populated by HAL ISR.

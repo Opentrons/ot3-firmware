@@ -1,4 +1,5 @@
-#include "can/core/dispatch.hpp"
+#include "common/firmware/tasks.hpp"
+
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_handlers/presence_sensing.hpp"
@@ -18,7 +19,6 @@
 #pragma GCC diagnostic pop
 #include "common/firmware/adc_comms.hpp"
 #include "common/firmware/errors.h"
-#include "common/firmware/tasks.hpp"
 
 using namespace freertos_task;
 using namespace freertos_can_dispatch;
@@ -56,7 +56,7 @@ can_message_writer::MessageWriter message_writer_presence_sensor =
 
 freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Reading>
     presence_sensor_queue("Presence Sensing Queue");
-freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Ack>
+freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Ack_>
     complete_queue_presence_sensing("Presence Sensing Acked");
 presence_sensor_class::PresenceSensor ps(ADC_comms2, presence_sensor_queue,
                                          complete_queue_presence_sensing);
@@ -64,14 +64,19 @@ presence_sensing_message_handler::PresenceSensorHandler
     presence_sensing_handler =
         presence_sensing_message_handler::PresenceSensorHandler{
             message_writer_presence_sensor, ps};
-
+#if 0
 auto presence_sensor_dispatch_target =
     DispatchParseTarget<decltype(presence_sensing_handler),
                         can_messages::PresenceSensingRequest>{
         presence_sensing_handler};
+#endif 
 
-template <CanMessageBufferListener Listener>
-auto build_ps_dispatch() -> can_dispatch::Dispatcher<Listener> {
+auto presence_sensor_dispatch_target =
+    PresenceSenseDispatchTargetT{
+        presence_sensing_handler};
+
+//template <CanMessageBufferListener Listener>
+auto build_ps_dispatch() -> can_dispatch::Dispatcher<PresenceSenseDispatchTargetT> {
     auto presence_sensor_dispatcher = Dispatcher(
         [](auto _) -> bool { return true; }, presence_sensor_dispatch_target);
     return presence_sensor_dispatcher;

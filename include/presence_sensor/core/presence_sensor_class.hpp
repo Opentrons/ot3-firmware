@@ -17,7 +17,7 @@ namespace presence_sensor_class {
 template <adc::has_get_reading ADCDriver>
 struct PresenceSensor {
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Reading>;
-    using CompleteQueue = freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Ack>;
+    using CompleteQueue = freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Ack_>;
     PresenceSensor(ADCDriver& adc, GenericQueue& queue,
                    CompleteQueue& completed_queue)
         : pending_reading_queue(queue),
