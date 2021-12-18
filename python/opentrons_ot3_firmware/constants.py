@@ -1,5 +1,11 @@
 """Constants for can bus."""
 from enum import Enum
+from typing_extensions import Final
+
+
+NODE_ID_BITS: Final[int] = 7
+FUNCTION_CODE_BITS: Final[int] = 4
+MESSAGE_ID_BITS: Final[int] = 11
 
 
 class NodeId(int, Enum):
