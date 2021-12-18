@@ -24,9 +24,9 @@ class SimCANBus : public CanBus {
     using TransportType = std::shared_ptr<can_transport::BusTransportBase>;
 
     explicit SimCANBus(TransportType transport)
-        : transport{transport},
-          reader{*this},
-          reader_task{reader, reader_task_control, 5, ""} {}
+        : transport{transport}, reader_task{reader} {
+        reader_task.start(this, 5, "");
+    }
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;
     SimCANBus& operator=(const SimCANBus&) = delete;
@@ -73,28 +73,26 @@ class SimCANBus : public CanBus {
 
   private:
     struct Reader {
-        Reader(SimCANBus& bus) : bus{bus} {}
-
-        void operator()() {
+        void operator()(SimCANBus* bus) {
             while (true) {
                 uint32_t read_length = message_core::MaxMessageSize;
                 uint32_t arb_id;
 
-                if (!bus.transport->read(arb_id, read_buffer.data(),
-                                         read_length)) {
+                if (!bus->transport->read(arb_id, read_buffer.data(),
+                                          read_length)) {
                     continue;
                 }
 
                 // If there are filters and any of them return true we can
                 // accept the message.
-                if (bus.filters.empty() ||
+                if (bus->filters.empty() ||
                     std::any_of(
-                        bus.filters.cbegin(), bus.filters.cend(),
+                        bus->filters.cbegin(), bus->filters.cend(),
                         [arb_id](const auto& f) { return f(arb_id); })) {
-                    if (bus.new_message_callback) {
-                        bus.new_message_callback(bus.new_message_callback_data,
-                                                 arb_id, read_buffer.begin(),
-                                                 read_length);
+                    if (bus->new_message_callback) {
+                        bus->new_message_callback(
+                            bus->new_message_callback_data, arb_id,
+                            read_buffer.begin(), read_length);
                     }
                 } else {
                     LOG("Message with arb_id %X and length %d is rejected\n",
@@ -103,7 +101,6 @@ class SimCANBus : public CanBus {
             }
         }
 
-        SimCANBus& bus;
         std::array<uint8_t, message_core::MaxMessageSize> read_buffer{};
     };
 
@@ -111,8 +108,7 @@ class SimCANBus : public CanBus {
     Reader reader;
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
-    FreeRTOSTaskControl<256> reader_task_control{};
-    FreeRTOSTask<256, Reader> reader_task;
+    FreeRTOSTask<256, Reader, SimCANBus> reader_task;
     std::vector<sim_filter::Filter> filters{};
 };
 

@@ -61,28 +61,43 @@ auto static reader_message_buffer =
     freertos_can_dispatch::FreeRTOSCanBufferControl<
         can_task::reader_message_buffer_size, decltype(dispatcher)>{dispatcher};
 
-auto static reader_task_control =
-    freertos_task::FreeRTOSTaskControl<can_task::reader_task_stack_depth>{};
-auto static writer_task_control =
-    freertos_task::FreeRTOSTaskControl<can_task::writer_task_stack_depth>{};
+auto static reader_task = can_task::CanMessageReaderTask{reader_message_buffer};
+auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
+auto constexpr reader_task_stack_depth = 512;
+
+auto static reader_task_control =
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask,
+                                can_bus::CanBus>{reader_task};
+auto static writer_task_control =
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask,
+                                can_bus::CanBus>{writer_task};
+
+/**
+ * Start the can reader task
+ * @param canbus The can bus reference
+ * @return The task entry point.
+ */
 auto can_task::start_reader(can_bus::CanBus& canbus)
-    -> can_task::CanMessageReaderTask {
+    -> can_task::CanMessageReaderTask& {
     LOG("Starting the CAN reader task\n");
 
     canbus.setup_node_id_filter(my_node_id);
 
-    auto poller = can_task::CanReaderTaskEntry{canbus, reader_message_buffer};
-    return freertos_task::FreeRTOSTask<can_task::reader_task_stack_depth,
-                                       decltype(poller)>{
-        poller, reader_task_control, 5, "can task"};
+    reader_task_control.start(&canbus, 5, "can_task");
+
+    return reader_task;
 }
 
+/**
+ * Start the can writer task
+ * @param canbus The can bus reference
+ * @return The task entry point
+ */
 auto can_task::start_writer(can_bus::CanBus& canbus)
-    -> can_task::CanMessageWriterTask {
+    -> can_task::CanMessageWriterTask& {
     LOG("Starting the CAN writer task\n");
 
-    return can_task::CanMessageWriterTask(
-        freertos_sender_task::MessageSenderTask(canbus, can_sender_queue),
-        writer_task_control, 5, "can writer task");
+    writer_task_control.start(&canbus, 5, "can writer task");
+    return writer_task;
 }

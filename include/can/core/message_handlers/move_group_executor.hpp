@@ -20,7 +20,7 @@ template <typename Motor>
 struct TaskEntry {
     MessageWriter &message_writer;
     Motor &motor;
-    void operator()() {
+    void operator()(void *) {
         while (true) {
             auto try_read = Ack{};
             if (motor.completed_move_queue.try_read(&try_read, portMAX_DELAY)) {
@@ -47,9 +47,11 @@ class MoveGroupExecutorHandler {
         move_group_handler::MoveGroupType &motion_group_manager, Motor &motor)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager},
-          motor(motor),
+          motor{motor},
           task_entry{message_writer, motor},
-          ack_task(task_entry, ack_task_block, 5, "ack task") {}
+          ack_task{task_entry} {
+        ack_task.start(nullptr, 5, "ack task");
+    }
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &) = delete;
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &&) = delete;
     ~MoveGroupExecutorHandler() = default;
@@ -84,8 +86,7 @@ class MoveGroupExecutorHandler {
     move_group_handler::MoveGroupType &motion_group_manager;
     Motor &motor;
     TaskEntry<Motor> task_entry;
-    freertos_task::FreeRTOSTaskControl<512> ack_task_block{};
-    freertos_task::FreeRTOSTask<512, TaskEntry<Motor>> ack_task;
+    freertos_task::FreeRTOSTask<512, TaskEntry<Motor>, void> ack_task;
 };
 
 /**

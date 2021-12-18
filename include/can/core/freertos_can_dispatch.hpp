@@ -51,58 +51,6 @@ class FreeRTOSCanBufferPoller {
 };
 
 /**
- * A helper to build a FreeRTOSMessageBuffer holding can messages to build
- * supporting classes to poll and parse the messages.
- *
- * @tparam BufferSize The size of the FreeRTOSMessageBuffer in bytes
- * @tparam HandlerType The type of the parsed message callback. Must conform to
- * HandlesMessages concept.
- * @tparam StackDepth Stack size of polling FreeRTOS task
- * @tparam Priority Priority of polling FreeRTOS task
- * @tparam MessageTypes The CanMessage types this MessageBuffer is interested
- * in.
- */
-template <std::size_t BufferSize, typename HandlerType, uint32_t StackDepth,
-          UBaseType_t Priority, CanMessage... MessageTypes>
-requires HandlesMessages<HandlerType, MessageTypes...>
-struct FreeRTOSCanDispatcherTarget {
-    /**
-     * Constructor.
-     *
-     * @param handler The class called with a fully parsed message in the
-     * message buffer.
-     */
-    FreeRTOSCanDispatcherTarget(HandlerType& handler)
-        : message_buffer{},
-          buffer_target{message_buffer},
-          parse_target{handler},
-          poller{message_buffer, parse_target},
-          task_control{},
-          task{poller, task_control, 5, ""} {}
-
-    using BufferType = FreeRTOSMessageBuffer<BufferSize>;
-
-    // The message buffer
-    BufferType message_buffer;
-    // A CanMessageBufferListener writing CAN messages into message_buffer.
-    DispatchBufferTarget<BufferType, MessageTypes...> buffer_target;
-    // A CanMessageBufferListener that parses CAN messages and notifies a
-    // handler
-    DispatchParseTarget<HandlerType, MessageTypes...> parse_target;
-    // A freertos task entry point that polls message_buffer and notifies
-    // parse_target.
-    FreeRTOSCanBufferPoller<BufferType,
-                            DispatchParseTarget<HandlerType, MessageTypes...>>
-        poller;
-    FreeRTOSTaskControl<StackDepth> task_control;
-    FreeRTOSTask<
-        StackDepth,
-        FreeRTOSCanBufferPoller<
-            BufferType, DispatchParseTarget<HandlerType, MessageTypes...>>>
-        task;
-};
-
-/**
  * A FreeRTOS message buffer for CAN messages along with a reader and writer.
  * @tparam BufferSize Size of the buffer in bytes.
  * @tparam Dispatcher Dispatcher that will receive messages.
@@ -134,14 +82,14 @@ class FreeRTOSCanReader {
     /**
      * Constructor
      */
-    FreeRTOSCanReader(CanBus& can_bus, Control& message_buffer)
-        : can_bus(can_bus), message_buffer{message_buffer} {}
+    FreeRTOSCanReader(Control& message_buffer)
+        : message_buffer{message_buffer} {}
 
     /**
      * The task entry
      */
-    [[noreturn]] void operator()() {
-        can_bus.set_incoming_message_callback(
+    [[noreturn]] void operator()(CanBus* can_bus) {
+        can_bus->set_incoming_message_callback(
             this, FreeRTOSCanReader<BufferSize, Dispatcher>::callback);
         for (;;) {
             message_buffer.reader.read(portMAX_DELAY);
@@ -164,7 +112,6 @@ class FreeRTOSCanReader {
                                                       data + length);  // NOLINT
     }
 
-    CanBus& can_bus;
     Control& message_buffer;
 };
 
