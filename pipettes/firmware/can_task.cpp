@@ -176,10 +176,11 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-[[noreturn]] void can_task::CanReaderTaskEntry::operator()() {
-    can_bus.set_incoming_message_callback(nullptr, callback);
+[[noreturn]] void can_task::CanMessageReaderTask::operator()(
+    can_bus::CanBus* can_bus) {
+    can_bus->set_incoming_message_callback(nullptr, callback);
     can_start();
-    can_bus.setup_node_id_filter(NodeId::pipette);
+    can_bus->setup_node_id_filter(NodeId::pipette);
     initialize_timer(plunger_callback);
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -191,20 +192,23 @@ extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
     poller();
 }
 
+auto static reader_task = can_task::CanMessageReaderTask{};
+auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
+
 auto static reader_task_control =
-    FreeRTOSTaskControl<can_task::reader_task_stack_depth>{};
+    FreeRTOSTask<512, can_task::CanMessageReaderTask, can_bus::CanBus>{
+        reader_task};
 auto static writer_task_control =
-    FreeRTOSTaskControl<can_task::writer_task_stack_depth>{};
+    FreeRTOSTask<512, can_task::CanMessageWriterTask, can_bus::CanBus>{
+        writer_task};
 
 auto can_task::start_reader(can_bus::CanBus& canbus)
-    -> can_task::CanMessageReaderTask {
-    return can_task::CanMessageReaderTask{
-        can_task::CanReaderTaskEntry{.can_bus = canbus}, reader_task_control, 5,
-        "can reader task"};
+    -> can_task::CanMessageReaderTask& {
+    reader_task_control.start(&canbus, 5, "can reader task");
+    return reader_task;
 }
 
-auto can_task::start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask {
-    return can_task::CanMessageWriterTask(
-        freertos_sender_task::MessageSenderTask{canbus, can_sender_queue},
-        writer_task_control, 5, "can writer task");
+auto can_task::start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask& {
+    writer_task_control.start(&canbus, 5, "can writer task");
+    return writer_task;
 }

@@ -3,7 +3,6 @@
 #include "can/core/can_bus.hpp"
 #include "can/core/freertos_sender_task.hpp"
 #include "common/core/freertos_message_queue.hpp"
-#include "common/core/freertos_task.hpp"
 
 namespace can_bus {
 class CanBus;
@@ -11,14 +10,9 @@ class CanBus;
 
 namespace can_task {
 
-struct CanReaderTaskEntry {
-    [[noreturn]] void operator()();
-    can_bus::CanBus& can_bus;
+struct CanMessageReaderTask {
+    [[noreturn]] void operator()(can_bus::CanBus*);
 };
-
-auto constexpr reader_task_stack_depth = 512;
-using CanMessageReaderTask =
-    freertos_task::FreeRTOSTask<reader_task_stack_depth, CanReaderTaskEntry>;
 
 /**
  * Create the can message reader task.
@@ -26,12 +20,10 @@ using CanMessageReaderTask =
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_reader(can_bus::CanBus& canbus) -> CanMessageReaderTask;
+auto start_reader(can_bus::CanBus& canbus) -> CanMessageReaderTask&;
 
-auto constexpr writer_task_stack_depth = 512;
-using CanMessageWriterTask = freertos_task::FreeRTOSTask<
-    writer_task_stack_depth, freertos_sender_task::MessageSenderTask<
-                                 freertos_message_queue::FreeRTOSMessageQueue>>;
+using CanMessageWriterTask = freertos_sender_task::MessageSenderTask<
+    freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
  * Create the can message writer task.
@@ -39,6 +31,6 @@ using CanMessageWriterTask = freertos_task::FreeRTOSTask<
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask;
+auto start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask&;
 
 }  // namespace can_task

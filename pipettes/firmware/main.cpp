@@ -20,8 +20,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
 
-    auto can_reader_task = can_task::start_reader(can_bus_1);
-    auto can_writer_task = can_task::start_writer(can_bus_1);
+    can_task::start_reader(can_bus_1);
+    can_task::start_writer(can_bus_1);
 
     vTaskStartScheduler();
 }
