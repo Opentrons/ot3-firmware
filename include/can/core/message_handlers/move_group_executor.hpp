@@ -20,7 +20,7 @@ template <typename Motor>
 struct TaskEntry {
     MessageWriter &message_writer;
     Motor &motor;
-    void operator()(void *) {
+    void operator()(void* unused) {
         while (true) {
             auto try_read = Ack{};
             if (motor.completed_move_queue.try_read(&try_read, portMAX_DELAY)) {
