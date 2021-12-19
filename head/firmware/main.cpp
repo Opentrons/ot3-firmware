@@ -24,8 +24,8 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
 
-    auto reader = can_task::start_reader(can_bus_1);
-    auto writer = can_task::start_writer(can_bus_1);
+    can_task::start_reader(can_bus_1);
+    can_task::start_writer(can_bus_1);
 
     vTaskStartScheduler();
 }

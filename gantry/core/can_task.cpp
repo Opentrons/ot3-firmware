@@ -64,8 +64,6 @@ auto static reader_message_buffer =
 auto static reader_task = can_task::CanMessageReaderTask{reader_message_buffer};
 auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
-auto constexpr reader_task_stack_depth = 512;
-
 auto static reader_task_control =
     freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask,
                                 can_bus::CanBus>{reader_task};

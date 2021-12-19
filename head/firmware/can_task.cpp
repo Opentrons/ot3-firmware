@@ -290,34 +290,35 @@ extern "C" void motor_callback_glue() {
  * TODO (2021-12-15, AL): Most of what happens in this task should be moved out
  *  when we move to separate motor tasks.
  */
-[[noreturn]] void can_task::CanReaderTaskEntry::operator()() {
-    can_bus.set_incoming_message_callback(nullptr, callback);
+[[noreturn]] void can_task::CanMessageReaderTask::operator()(
+    can_bus::CanBus* can_bus) {
+    can_bus->set_incoming_message_callback(nullptr, callback);
     can_start();
 
     auto filter = ArbitrationId();
 
     // Accept broadcast
     filter.node_id(NodeId::broadcast);
-    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
-                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
+                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept any head
     filter.node_id(NodeId::head);
-    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head right
     filter.node_id(NodeId::head_r);
-    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head left
     filter.node_id(NodeId::head_l);
-    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                       can_arbitration_id::ArbitrationId::node_id_bit_mask);
+    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
+                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Reject everything else.
-    can_bus.add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
+    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
 
     initialize_timer(motor_callback_glue);
 
@@ -336,20 +337,24 @@ extern "C" void motor_callback_glue() {
     poller();
 }
 
+auto static reader_task = can_task::CanMessageReaderTask{};
+auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
+
 auto static reader_task_control =
-    FreeRTOSTaskControl<can_task::reader_task_stack_depth>{};
+    FreeRTOSTask<512, can_task::CanMessageReaderTask, can_bus::CanBus>{
+        reader_task};
 auto static writer_task_control =
-    FreeRTOSTaskControl<can_task::writer_task_stack_depth>{};
+    FreeRTOSTask<512, can_task::CanMessageWriterTask, can_bus::CanBus>{
+        writer_task};
 
 auto can_task::start_reader(can_bus::CanBus& canbus)
-    -> can_task::CanMessageReaderTask {
-    return FreeRTOSTask(can_task::CanReaderTaskEntry{.can_bus = canbus},
-                        reader_task_control, 5, "can reader task");
+    -> can_task::CanMessageReaderTask& {
+    reader_task_control.start(&canbus, 5, "can reader task");
+    return reader_task;
 }
 
 auto can_task::start_writer(can_bus::CanBus& canbus)
-    -> can_task::CanMessageWriterTask {
-    return FreeRTOSTask(
-        freertos_sender_task::MessageSenderTask{canbus, can_sender_queue},
-        writer_task_control, 5, "can writer task");
+    -> can_task::CanMessageWriterTask& {
+    writer_task_control.start(&canbus, 5, "can writer task");
+    return writer_task;
 }
