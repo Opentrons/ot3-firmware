@@ -25,7 +25,7 @@ class SimCANBus : public CanBus {
 
     explicit SimCANBus(TransportType transport)
         : transport{transport}, reader_task{reader} {
-        reader_task.start(this, 5, "");
+        reader_task.start(5, "", this);
     }
     SimCANBus(const SimCANBus&) = delete;
     SimCANBus(const SimCANBus&&) = delete;

@@ -15,7 +15,7 @@ class MotorInterruptDriver {
         motor_handler::MotorInterruptHandler<
             freertos_message_queue::FreeRTOSMessageQueue>& h)
         : task_entry{q, h}, task(task_entry) {
-        task.start(nullptr, 5, "motor interrupt driver");
+        task.start(5, "motor interrupt driver");
     }
 
   private:
@@ -26,7 +26,7 @@ class MotorInterruptDriver {
                       freertos_message_queue::FreeRTOSMessageQueue>& h)
             : queue{q}, handler{h} {}
 
-        void operator()(void*) {
+        void operator()() {
             while (true) {
                 auto move = motor_messages::Move{};
                 LOG("Waiting for next move.\n");
@@ -47,7 +47,7 @@ class MotorInterruptDriver {
     };
 
     TaskEntry task_entry;
-    freertos_task::FreeRTOSTask<128, TaskEntry, void> task;
+    freertos_task::FreeRTOSTask<128, TaskEntry> task;
 };
 
 }  // namespace motor_interrupt_driver

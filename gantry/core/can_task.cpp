@@ -82,7 +82,7 @@ auto can_task::start_reader(can_bus::CanBus& canbus)
 
     canbus.setup_node_id_filter(my_node_id);
 
-    reader_task_control.start(&canbus, 5, "can_task");
+    reader_task_control.start(5, "can_task", &canbus);
 
     return reader_task;
 }
@@ -96,6 +96,6 @@ auto can_task::start_writer(can_bus::CanBus& canbus)
     -> can_task::CanMessageWriterTask& {
     LOG("Starting the CAN writer task\n");
 
-    writer_task_control.start(&canbus, 5, "can writer task");
+    writer_task_control.start(5, "can writer task", &canbus);
     return writer_task;
 }
