@@ -1,23 +1,15 @@
 #pragma once
 
+#include "common/core/freertos_message_queue.hpp"
+#include "gantry/core/tasks.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "motor-control/core/tasks/task_holder.hpp"
 
 namespace gantry_move_status_reporter_task {
 
+using MoveStatusReporterTaskType =
+    move_status_reporter_task::MoveStatusReporterTask<
+        gantry_tasks::QueueClient>;
 
-auto constexpr motion_controller_stack_depth = 256;
-using MotionControllerTaskType =
-    freertos_task::FreeRTOSTask<motion_controller_stack_depth,
-                                MotorControllerType>;
-
-/**
- * Start the motion controller task
- *
- * @param driver The controller to use
- * @param all_tasks All the tasks in the system
- * @return The task
- */
-auto start_task(MotorControllerType& driver,
-                task_holder::TaskHolder& all_tasks) -> MotionControllerTaskType;
-}
+auto start_task(gantry_tasks::QueueClient& queueClient)
+    -> MoveStatusReporterTaskType&;
+}  // namespace gantry_move_status_reporter_task

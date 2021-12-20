@@ -1,22 +1,14 @@
 #pragma once
 
+#include "gantry/core/tasks.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
-#include "motor-control/core/tasks/task_holder.hpp"
 
 namespace gantry_move_group_task {
 
-
-auto constexpr move_group_stack_depth = 256;
 using MoveGroupTaskType =
-    freertos_task::FreeRTOSTask<move_group_stack_depth,
-                                move_group_task::MoveGroupTask>;
+    move_group_task::MoveGroupTask<gantry_tasks::QueueClient,
+                                   gantry_tasks::QueueClient>;
 
-/**
- * Start the move group task
- *
- * @param all_tasks All the tasks in the system
- * @return The task
- */
-auto start_task(task_holder::TaskHolder& all_tasks) -> MoveGroupTaskType;
+auto start_task(gantry_tasks::QueueClient& client) -> MoveGroupTaskType&;
 
-}
+}  // namespace gantry_move_group_task

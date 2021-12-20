@@ -4,12 +4,13 @@
 
 #include "FreeRTOS.h"
 #include "can/core/can_bus.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/message_core.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
 
-namespace freertos_sender_task {
+namespace message_writer_task {
 
 struct TaskMessage {
     uint32_t arbitration_id;
@@ -22,7 +23,7 @@ struct TaskMessage {
  */
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
-class MessageSenderTask {
+class MessageWriterTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
 
@@ -30,7 +31,7 @@ class MessageSenderTask {
      * Constructor
      * @param queue The message queue instance.
      */
-    MessageSenderTask(QueueType& queue) : queue{queue} {}
+    MessageWriterTask(QueueType& queue) : queue{queue} {}
 
     /**
      * Task entry point.
@@ -67,8 +68,9 @@ class MessageSenderTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_can_message(m)};
+concept TaskClient = requires(Client client, can_ids::NodeId node_id,
+                              const can_messages::ResponseMessageType& m) {
+    {client.send_can_message(node_id, m)};
 };
 
-}  // namespace freertos_sender_task
+}  // namespace message_writer_task

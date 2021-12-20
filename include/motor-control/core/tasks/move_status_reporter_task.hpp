@@ -2,9 +2,11 @@
 
 #include <variant>
 
+#include "can/core/can_writer_task.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
-#include "motor-control/core/tasks/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "motor-control/core/tasks/messages.hpp"
 
 namespace move_status_reporter_task {
 
@@ -13,10 +15,10 @@ using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
 /**
  * The handler of move status messages
  */
-template <typename AllTasks>
+template <message_writer_task::TaskClient CanClient>
 class MoveStatusMessageHandler {
   public:
-    MoveStatusMessageHandler(AllTasks& all_tasks): all_tasks{all_tasks} {}
+    MoveStatusMessageHandler(CanClient& can_client) : can_client{can_client} {}
     ~MoveStatusMessageHandler() = default;
 
     /**
@@ -31,17 +33,17 @@ class MoveStatusMessageHandler {
             .ack_id =
                 static_cast<uint8_t>(motor_messages::AckMessageId::complete),
         };
-        //        message_writer.write(NodeId::host, msg);
+        can_client.send_can_message(can_ids::NodeId::host, msg);
     }
 
   private:
-    AllTasks& all_tasks;
+    CanClient& can_client;
 };
 
 /**
  * The task type.
  */
-template <typename AllTasks>
+template <message_writer_task::TaskClient CanClient>
 class MoveStatusReporterTask {
   public:
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
@@ -51,8 +53,8 @@ class MoveStatusReporterTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(AllTasks* all_tasks) {
-        auto handler = MoveStatusMessageHandler{*all_tasks};
+    [[noreturn]] void operator()(CanClient* can_client) {
+        auto handler = MoveStatusMessageHandler{*can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, portMAX_DELAY)) {
@@ -60,6 +62,9 @@ class MoveStatusReporterTask {
             }
         }
     }
+
+    QueueType& get_queue() const { return queue; }
+
   private:
     QueueType& queue;
 };
@@ -69,8 +74,8 @@ class MoveStatusReporterTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client holder, const TaskMessage& m) {
-    {holder.send_move_status_reporter_queue(m)};
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_move_status_reporter_queue(m)};
 };
 
 }  // namespace move_status_reporter_task

@@ -1,7 +1,10 @@
 #pragma once
 #include <variant>
 
+#include "can/core/can_writer_task.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/logging.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/tasks/messages.hpp"
@@ -13,12 +16,14 @@ using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
 /**
  * The message queue message handler.
  */
-template <lms::MotorMechanicalConfig MEConfig, typename AllTasks>
+template <lms::MotorMechanicalConfig MEConfig,
+          message_writer_task::TaskClient CanClient>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
-    MotionControllerMessageHandler(MotorControllerType& controller, AllTasks & all_tasks)
-        : controller{controller}, all_tasks{all_tasks} {}
+    MotionControllerMessageHandler(MotorControllerType& controller,
+                                   CanClient& can_client)
+        : controller{controller}, can_client{can_client} {}
 
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->handle(m); }, message);
@@ -27,11 +32,18 @@ class MotionControllerMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can_messages::EnableMotorRequest& m) {
+    void handle(const can_messages::StopRequest& m) {
+        LOG("Received stop request\n");
         controller.stop();
     }
 
+    void handle(const can_messages::EnableMotorRequest& m) {
+        LOG("Received enable motor request\n");
+        controller.enable_motor();
+    }
+
     void handle(const can_messages::DisableMotorRequest& m) {
+        LOG("Received disable motor request\n");
         controller.disable_motor();
     }
 
@@ -43,35 +55,46 @@ class MotionControllerMessageHandler {
             .min_acceleration = constraints.min_acceleration,
             .max_acceleration = constraints.max_acceleration,
         };
-        //        message_writer.write(NodeId::host, response_msg);
+        LOG("Received get motion constraints request\n");
+        can_client.send_can_message(can_ids::NodeId::host, response_msg);
     }
 
     void handle(const can_messages::SetMotionConstraints& m) {
+        LOG("Received set motion constraints: minvel=%d, maxvel=%d, minacc=%d, "
+            "maxacc=%d\n",
+            m.min_velocity, m.max_velocity, m.min_acceleration,
+            m.max_acceleration);
         controller.set_motion_constraints(m);
     }
 
     void handle(const can_messages::AddLinearMoveRequest& m) {
+        LOG("Received add linear move request: velocity=%d, acceleration=%d, "
+            "groupid=%d, seqid=%d, duration=%d\n",
+            m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration);
         controller.move(m);
     }
 
     MotorControllerType& controller;
-    AllTasks & all_tasks;
+    CanClient& can_client;
 };
 
 /**
  * The task entry point.
  */
-template <lms::MotorMechanicalConfig MEConfig, typename AllTasks>
-class MotorControllerTask {
+template <lms::MotorMechanicalConfig MEConfig,
+          message_writer_task::TaskClient CanClient>
+class MotionControllerTask {
   public:
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
-    MotorControllerTask(QueueType& queue): queue{queue} {}
+    MotionControllerTask(QueueType& queue) : queue{queue} {}
 
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(motion_controller::MotionController<MEConfig>* controller, AllTasks* all_tasks) {
-        auto handler = MotionControllerMessageHandler{*controller, *all_tasks};
+    [[noreturn]] void operator()(
+        motion_controller::MotionController<MEConfig>* controller,
+        CanClient* can_client) {
+        auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, portMAX_DELAY)) {
@@ -79,6 +102,8 @@ class MotorControllerTask {
             }
         }
     }
+
+    QueueType& get_queue() const { return queue; }
 
   private:
     QueueType& queue;
@@ -89,8 +114,8 @@ class MotorControllerTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client holder, const TaskMessage& m) {
-    {holder.send_motion_controller_queue(m)};
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_motion_controller_queue(m)};
 };
 
 }  // namespace motion_controller_task
