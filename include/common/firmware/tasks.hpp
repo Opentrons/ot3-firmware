@@ -27,11 +27,7 @@ using namespace can_arbitration_id;
 using namespace can_message_buffer;
 
 using PresenceSenseDispatchTargetT = DispatchParseTarget<
-                presence_sensing_message_handler::PresenceSensorHandler,
-                can_messages::PresenceSensingRequest>;
-#if 0
-template <CanMessageBufferListener Listener>
-auto build_ps_dispatch() -> decltype(can_dispatch::Dispatcher<Listener>);
-#endif 
+    presence_sensing_message_handler::PresenceSensorHandler<presence_sensor_class::PresenceSensor<adc::ADC>>,
+    can_messages::PresenceSensingRequest>;
 
 auto build_ps_dispatch() -> can_dispatch::Dispatcher<PresenceSenseDispatchTargetT>;

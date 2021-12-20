@@ -34,7 +34,7 @@ class PresenceSensorHandler {
   private:
     void visit(std::monostate &m) {}
 
-    void visit(PresenceSensingRequest &m) {presence_sensor.driver.get_readings(presence_sensor.driver.ADC_intf);}
+    void visit(PresenceSensingRequest &m) {}
 
     MessageWriter &message_writer;
     PresenceSensor &presence_sensor;

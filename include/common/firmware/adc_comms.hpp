@@ -16,7 +16,7 @@ struct ADC_interface {
 class ADC {
   public:
     explicit ADC(ADC_interface ADC_intf);
-    void get_readings(ADC_interface ADC_intf);
+    void get_readings();
 
   private:
     ADC_interface ADC_intf;

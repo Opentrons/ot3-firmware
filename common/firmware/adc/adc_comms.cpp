@@ -10,5 +10,5 @@ using namespace adc;
 
 ADC::ADC(ADC_interface ADC_intf_instance) : ADC_intf(ADC_intf_instance) {}
 
-void ADC::get_readings(ADC_interface ADC_intf_instance) {
+void ADC::get_readings() {
 }
