@@ -3,12 +3,14 @@
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_handlers/presence_sensing.hpp"
+#include "presence_sensor/core/presence_sensor_class.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/message_buffer.hpp"
+#include "common/firmware/adc_comms.hpp"
 
 
 using namespace freertos_task;
