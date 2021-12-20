@@ -14,9 +14,8 @@ using namespace can_messages;
 template <class PresenceSensor>
 class PresenceSensorHandler {
   public:
-    
-
-    PresenceSensorHandler(MessageWriter &message_writer, PresenceSensor &presence_sensor)
+    PresenceSensorHandler(MessageWriter &message_writer,
+                          PresenceSensor &presence_sensor)
         : message_writer{message_writer}, presence_sensor{presence_sensor} {}
     PresenceSensorHandler(const PresenceSensorHandler &) = delete;
     PresenceSensorHandler(const PresenceSensorHandler &&) = delete;
