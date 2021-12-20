@@ -8,6 +8,8 @@ from . import message_definitions as defs
 from ..constants import MessageId
 
 MessageDefinition = Union[
+    defs.PresenceSensingRequest,
+    defs.PresenceSensingResponse,
     defs.HeartbeatRequest,
     defs.HeartbeatResponse,
     defs.DeviceInfoRequest,

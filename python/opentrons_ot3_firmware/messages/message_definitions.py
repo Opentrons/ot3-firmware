@@ -14,6 +14,14 @@ class PresenceSensingRequest:  # noqa: D101
     payload_type: Type[BinarySerializable] = payloads.EmptyPayload
     message_id: Literal[MessageId.presence_sensing_request] = MessageId.presence_sensing_request
 
+
+@dataclass
+class PresenceSensingResponse:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[MessageId.presence_sensing_response] = MessageId.presence_sensing_response
+
+
 @dataclass
 class HeartbeatRequest:  # noqa: D101
     payload: payloads.EmptyPayload

@@ -174,6 +174,23 @@ struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
     auto operator==(const GetMoveGroupResponse& other) const -> bool = default;
 };
 
+struct GetPresenceSensingResponse
+    : BaseMessage<MessageId::presence_sensing_response> {
+    uint8_t z_motor;
+    uint8_t a_motor;
+    uint32_t gripper;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(z_motor, body, limit);
+        iter = bit_utils::int_to_bytes(a_motor, iter, limit);
+        iter = bit_utils::int_to_bytes(gripper, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const GetPresenceSensingResponse& other) const
+        -> bool = default;
+};
+
 struct ExecuteMoveGroupRequest
     : BaseMessage<MessageId::execute_move_group_request> {
     uint8_t group_id;
