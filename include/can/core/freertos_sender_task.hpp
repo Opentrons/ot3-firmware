@@ -62,4 +62,13 @@ class MessageSenderTask {
     std::array<uint8_t, message_core::MaxMessageSize> data{};
 };
 
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_can_message(m)};
+};
+
 }  // namespace freertos_sender_task

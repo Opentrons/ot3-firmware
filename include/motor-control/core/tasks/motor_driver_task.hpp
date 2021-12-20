@@ -91,10 +91,10 @@ class MotorDriverTask {
 
 /**
  * Concept describing a class that can message this task.
- * @tparam TaskHolder
+ * @tparam Client
  */
-template <typename TaskHolder>
-concept TaskClient = requires(TaskHolder holder, const TaskMessage& m) {
+template <typename Client>
+concept TaskClient = requires(Client holder, const TaskMessage& m) {
     {holder.send_motor_driver_queue(m)};
 };
 
