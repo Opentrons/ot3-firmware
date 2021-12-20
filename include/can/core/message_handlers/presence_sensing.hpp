@@ -4,6 +4,7 @@
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
+#include "presence_sensor/core/presence_sensor_driver.hpp"
 #include "presence_sensor/core/presence_sensor_messages.hpp"
 
 namespace presence_sensing_message_handler {
@@ -33,7 +34,16 @@ class PresenceSensorHandler {
   private:
     void visit(std::monostate &m) {}
 
-    void visit(PresenceSensingRequest &m) {}
+    void visit(PresenceSensingRequest &m) {
+        auto voltage_read = presence_sensor.driver.get_readings();
+
+        GetPresenceSensingResponse response_msg{
+            .z_motor = voltage_read.z_motor,
+            .a_motor = voltage_read.a_motor,
+            .gripper = voltage_read.gripper,
+        };
+        message_writer.write(NodeId::host, response_msg);
+    }
 
     MessageWriter &message_writer;
     PresenceSensor &presence_sensor;

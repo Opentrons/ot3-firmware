@@ -176,8 +176,8 @@ struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
 
 struct GetPresenceSensingResponse
     : BaseMessage<MessageId::presence_sensing_response> {
-    uint8_t z_motor;
-    uint8_t a_motor;
+    uint32_t z_motor;
+    uint32_t a_motor;
     uint32_t gripper;
 
     template <bit_utils::ByteIterator Output, typename Limit>

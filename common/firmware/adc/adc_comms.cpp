@@ -13,4 +13,7 @@ ADC::ADC(ADC_interface ADC_intf_instance1, ADC_interface ADC_intf_instance2)
       ADC_intf2(ADC_intf_instance2),
       voltage_read(tmp) {}
 
-void ADC::get_readings() { voltage_read = adc_read_voltages(); }
+struct voltage_read ADC::get_readings() {
+    voltage_read = adc_read_voltages();
+    return voltage_read;
+}
