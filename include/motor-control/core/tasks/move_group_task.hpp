@@ -21,13 +21,13 @@ using TaskMessage = motor_control_task_messages::MoveGroupTaskMessage;
 /**
  * The handler of move group messages
  */
-template <typename TaskHolder>
-requires motion_controller_task::TaskClient<TaskHolder>
+template <typename AllTasks>
+requires motion_controller_task::TaskClient<AllTasks>
 class MoveGroupMessageHandler {
   public:
     MoveGroupMessageHandler(MoveGroupType& move_group_manager,
-                            TaskHolder& holder)
-        : move_groups{move_group_manager}, holder{holder} {}
+                            AllTasks& all_tasks)
+        : move_groups{move_group_manager}, all_tasks{all_tasks} {}
     ~MoveGroupMessageHandler() = default;
 
     /**
@@ -76,15 +76,36 @@ class MoveGroupMessageHandler {
     }
 
     MoveGroupType& move_groups;
-    TaskHolder& holder;
+    AllTasks& all_tasks;
 };
 
 /**
  * The task type.
  */
-template <typename TaskHolder>
-using MoveGroupTask = freertos_message_queue_poller::FreeRTOSMessageQueuePoller<
-    TaskMessage, MoveGroupMessageHandler<TaskHolder>>;
+template <typename AllTasks>
+requires motion_controller_task::TaskClient<AllTasks>
+class MoveGroupTask {
+  public:
+    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    MoveGroupTask(QueueType& queue, MoveGroupType& move_group) : queue{queue}, move_group{move_group} {}
+    ~MoveGroupTask() = default;
+
+    /**
+     * Task entry point.
+     */
+     [[noreturn]] void operator()(AllTasks* all_tasks) {
+         auto handler = MoveGroupMessageHandler{move_group, *all_tasks};
+         TaskMessage message{};
+         for (;;) {
+            if (queue.try_read(&message, portMAX_DELAY)) {
+               handler.handle_message(message);
+            }
+         }
+     }
+   private:
+     QueueType& queue;
+     MoveGroupType& move_group;
+};
 
 /**
  * Concept describing a class that can message this task.

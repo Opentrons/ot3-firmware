@@ -3,8 +3,8 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "common/core/freertos_message_queue_poller.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "common/core/freertos_message_queue.hpp"
 
 namespace move_status_reporter_task {
 
@@ -13,9 +13,10 @@ using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
 /**
  * The handler of move status messages
  */
+template <typename AllTasks>
 class MoveStatusMessageHandler {
   public:
-    MoveStatusMessageHandler() = default;
+    MoveStatusMessageHandler(AllTasks& all_tasks): all_tasks{all_tasks} {}
     ~MoveStatusMessageHandler() = default;
 
     /**
@@ -34,14 +35,34 @@ class MoveStatusMessageHandler {
     }
 
   private:
+    AllTasks& all_tasks;
 };
 
 /**
  * The task type.
  */
-using MoveStatusReporterTask =
-    freertos_message_queue_poller::FreeRTOSMessageQueuePoller<
-        TaskMessage, MoveStatusMessageHandler>;
+template <typename AllTasks>
+class MoveStatusReporterTask {
+  public:
+    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    MoveStatusReporterTask(QueueType& queue) : queue{queue} {}
+    ~MoveStatusReporterTask() = default;
+
+    /**
+     * Task entry point.
+     */
+    [[noreturn]] void operator()(AllTasks* all_tasks) {
+        auto handler = MoveStatusMessageHandler{*all_tasks};
+        TaskMessage message{};
+        for (;;) {
+            if (queue.try_read(&message, portMAX_DELAY)) {
+                handler.handle_message(message);
+            }
+        }
+    }
+  private:
+    QueueType& queue;
+};
 
 /**
  * Concept describing a class that can message this task.

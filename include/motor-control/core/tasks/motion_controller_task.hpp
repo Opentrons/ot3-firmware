@@ -2,7 +2,6 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "common/core/freertos_message_queue_poller.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/tasks/messages.hpp"
@@ -14,12 +13,12 @@ using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
 /**
  * The message queue message handler.
  */
-template <lms::MotorMechanicalConfig MEConfig>
+template <lms::MotorMechanicalConfig MEConfig, typename AllTasks>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
-    MotionControllerMessageHandler(MotorControllerType& controller)
-        : controller{controller} {}
+    MotionControllerMessageHandler(MotorControllerType& controller, AllTasks & all_tasks)
+        : controller{controller}, all_tasks{all_tasks} {}
 
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->handle(m); }, message);
@@ -56,15 +55,34 @@ class MotionControllerMessageHandler {
     }
 
     MotorControllerType& controller;
+    AllTasks & all_tasks;
 };
 
 /**
  * The task entry point.
  */
-template <lms::MotorMechanicalConfig MEConfig>
-using MotorControllerTask =
-    freertos_message_queue_poller::FreeRTOSMessageQueuePoller<
-        TaskMessage, MotionControllerMessageHandler<MEConfig>>;
+template <lms::MotorMechanicalConfig MEConfig, typename AllTasks>
+class MotorControllerTask {
+  public:
+    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    MotorControllerTask(QueueType& queue): queue{queue} {}
+
+    /**
+     * Task entry point.
+     */
+    [[noreturn]] void operator()(motion_controller::MotionController<MEConfig>* controller, AllTasks* all_tasks) {
+        auto handler = MotionControllerMessageHandler{*controller, *all_tasks};
+        TaskMessage message{};
+        for (;;) {
+            if (queue.try_read(&message, portMAX_DELAY)) {
+                handler.handle_message(message);
+            }
+        }
+    }
+
+  private:
+    QueueType& queue;
+};
 
 /**
  * Concept describing a class that can message this task.

@@ -3,7 +3,6 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "common/core/freertos_message_queue_poller.hpp"
 #include "motor-control/core/motor_driver.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/tasks/messages.hpp"
@@ -15,10 +14,11 @@ using TaskMessage = motor_control_task_messages::MotorDriverTaskMessage;
 /**
  * The handler of motor driver messages
  */
+template<typename AllTasks>
 class MotorDriverMessageHandler {
   public:
-    MotorDriverMessageHandler(motor_driver::MotorDriver& driver)
-        : driver{driver} {}
+    MotorDriverMessageHandler(motor_driver::MotorDriver& driver, AllTasks& all_tasks)
+        : driver{driver}, all_tasks{all_tasks} {}
     ~MotorDriverMessageHandler() = default;
 
     /**
@@ -59,14 +59,35 @@ class MotorDriverMessageHandler {
     }
 
     motor_driver::MotorDriver& driver;
+    AllTasks& all_tasks;
 };
 
 /**
  * The task type.
  */
-using MotorDriverTask =
-    freertos_message_queue_poller::FreeRTOSMessageQueuePoller<
-        TaskMessage, MotorDriverMessageHandler>;
+template <typename AllTasks>
+//requires motion_controller_task::TaskClient<AllTasks>
+class MotorDriverTask {
+  public:
+    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    MotorDriverTask(QueueType& queue) : queue{queue} {}
+    ~MotorDriverTask() = default;
+
+    /**
+     * Task entry point.
+     */
+    [[noreturn]] void operator()(motor_driver::MotorDriver* driver, AllTasks* all_tasks) {
+        auto handler = MotorDriverMessageHandler{*driver, *all_tasks};
+        TaskMessage message{};
+        for (;;) {
+            if (queue.try_read(&message, portMAX_DELAY)) {
+                handler.handle_message(message);
+            }
+        }
+    }
+  private:
+    QueueType& queue;
+};
 
 /**
  * Concept describing a class that can message this task.
