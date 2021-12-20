@@ -24,7 +24,6 @@ struct voltage_read {
     uint32_t gripper;
 };
 
-
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
 void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle);

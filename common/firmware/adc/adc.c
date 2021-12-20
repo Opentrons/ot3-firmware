@@ -154,8 +154,9 @@ struct voltage_read adc_read_voltages() {
 
     // HAL_ADC_Stop(&adc2);
 
-    struct voltage_read voltage_read = {
-        .z_motor = z_detect_reading, .a_motor = adc2_value, .gripper = adc1_value};
+    struct voltage_read voltage_read = {.z_motor = z_detect_reading,
+                                        .a_motor = adc2_value,
+                                        .gripper = adc1_value};
 
     return voltage_read;
 }

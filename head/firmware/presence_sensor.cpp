@@ -1,5 +1,3 @@
-#include "common/firmware/tasks.hpp"
-
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_handlers/presence_sensing.hpp"
@@ -9,6 +7,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/message_buffer.hpp"
+#include "common/firmware/tasks.hpp"
 #include "presence_sensor/core/presence_sensor_class.hpp"
 #include "presence_sensor/core/presence_sensor_messages.hpp"
 
@@ -38,7 +37,7 @@ adc::ADC_interface ADC_intf2 = {
 
     .ADC_handle = &adc2};
 
-//adc::ADC ADC_comms2(ADC_intf2);
+// adc::ADC ADC_comms2(ADC_intf2);
 
 adc::ADC_interface ADC_intf1 = {
 
@@ -69,14 +68,14 @@ auto presence_sensor_dispatch_target =
     DispatchParseTarget<decltype(presence_sensing_handler),
                         can_messages::PresenceSensingRequest>{
         presence_sensing_handler};
-#endif 
+#endif
 
 auto presence_sensor_dispatch_target =
-    PresenceSenseDispatchTargetT{
-        presence_sensing_handler};
+    PresenceSenseDispatchTargetT{presence_sensing_handler};
 
-//template <CanMessageBufferListener Listener>
-auto build_ps_dispatch() -> can_dispatch::Dispatcher<PresenceSenseDispatchTargetT> {
+// template <CanMessageBufferListener Listener>
+auto build_ps_dispatch()
+    -> can_dispatch::Dispatcher<PresenceSenseDispatchTargetT> {
     auto presence_sensor_dispatcher = Dispatcher(
         [](auto _) -> bool { return true; }, presence_sensor_dispatch_target);
     return presence_sensor_dispatcher;
