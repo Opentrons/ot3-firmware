@@ -38,7 +38,7 @@ adc::ADC_interface ADC_intf2 = {
 
     .ADC_handle = &adc2};
 
-adc::ADC ADC_comms2(ADC_intf2);
+//adc::ADC ADC_comms2(ADC_intf2);
 
 adc::ADC_interface ADC_intf1 = {
 
@@ -46,7 +46,7 @@ adc::ADC_interface ADC_intf1 = {
 
 };
 
-adc::ADC ADC_comms1(ADC_intf1);
+adc::ADC ADC_comms(ADC_intf1, ADC_intf2);
 hal_can_bus::HalCanBus can_bus_1 =
     hal_can_bus::HalCanBus(can_get_device_handle());
 
@@ -58,7 +58,7 @@ freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Reading>
     presence_sensor_queue("Presence Sensing Queue");
 freertos_message_queue::FreeRTOSMessageQueue<presence_sensor_messages::Ack_>
     complete_queue_presence_sensing("Presence Sensing Acked");
-presence_sensor_class::PresenceSensor ps(ADC_comms2, presence_sensor_queue,
+presence_sensor_class::PresenceSensor ps(ADC_comms, presence_sensor_queue,
                                          complete_queue_presence_sensing);
 presence_sensing_message_handler::PresenceSensorHandler
     presence_sensing_handler =

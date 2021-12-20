@@ -103,7 +103,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     }
 }
 
-void adc_setup() {
+void adc_setup(ADC_HandleTypeDef adc1, ADC_HandleTypeDef adc2) {
     MX_ADC1_Init(&adc1);
     MX_ADC2_Init(&adc2);
     if (HAL_ADCEx_Calibration_Start(&adc1, ADC_SINGLE_ENDED) != HAL_OK) {
@@ -132,7 +132,7 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     }
 }
 
-struct voltage_read adc_read_voltages(ADC_HandleTypeDef* handle) {
+struct voltage_read adc_read_voltages() {
     uint32_t adc1_value = 4294967295;
     uint32_t adc2_value = 4294967295;
     uint32_t z_detect_reading = 4294967295;

@@ -28,7 +28,7 @@ struct voltage_read {
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
 void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle);
-void adc_setup();
+void adc_setup(ADC_HandleTypeDef adc1, ADC_HandleTypeDef adc2);
 struct voltage_read adc_read_voltages();
 
 #ifdef __cplusplus
