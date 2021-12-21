@@ -63,7 +63,7 @@ class MoveStatusReporterTask {
         }
     }
 
-    QueueType& get_queue() const { return queue; }
+    [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
     QueueType& queue;

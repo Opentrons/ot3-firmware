@@ -56,12 +56,12 @@ struct AllTask {
  * Access to the tasks singleton
  * @return
  */
-auto get_tasks() -> AllTask&;
+[[nodiscard]] auto get_tasks() -> AllTask&;
 
 /**
  * Access to the queues singleton
  * @return
  */
-auto get_queues() -> QueueClient&;
+[[nodiscard]] auto get_queues() -> QueueClient&;
 
 }  // namespace gantry_tasks
