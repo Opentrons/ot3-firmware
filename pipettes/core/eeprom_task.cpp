@@ -6,17 +6,16 @@
 
 using namespace pipettes_eeprom_task;
 
-static auto queue = freertos_message_queue::FreeRTOSMessageQueue<
-    eeprom_task::TaskMessage>{};
+static auto queue =
+    freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>{};
 
 static auto task_entry = EEPromTaskType{queue};
 static auto task =
-    freertos_task::FreeRTOSTask<512, EEPromTaskType,
-                                i2c::I2C,
+    freertos_task::FreeRTOSTask<512, EEPromTaskType, i2c::I2C,
                                 pipettes_tasks::QueueClient>{task_entry};
 
-auto pipettes_eeprom_task::start_task(
-    i2c::I2C &driver, pipettes_tasks::QueueClient &client)
+auto pipettes_eeprom_task::start_task(i2c::I2C &driver,
+                                      pipettes_tasks::QueueClient &client)
     -> EEPromTaskType & {
     task.start(5, "eeprom task", &driver, &client);
     return task_entry;

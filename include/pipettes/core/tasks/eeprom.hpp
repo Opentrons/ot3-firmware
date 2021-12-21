@@ -1,25 +1,29 @@
 #pragma once
 
+#include "can/core/can_writer_task.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/eeprom.hpp"
-#include "can/core/can_writer_task.hpp"
-#include "common/core/freertos_message_queue.hpp"
 
 namespace eeprom_task {
 
-using TaskMessage = std::variant<std::monostate, can_messages::WriteToEEPromRequest,
-                                 can_messages::ReadFromEEPromRequest>;
+using TaskMessage =
+    std::variant<std::monostate, can_messages::WriteToEEPromRequest,
+                 can_messages::ReadFromEEPromRequest>;
 
-template <eeprom::EEPromPolicy I2CComm, message_writer_task::TaskClient CanClient>
+template <eeprom::EEPromPolicy I2CComm,
+          message_writer_task::TaskClient CanClient>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(I2CComm &i2c, CanClient& can_client)
+    explicit EEPromMessageHandler(I2CComm &i2c, CanClient &can_client)
         : i2c(i2c), can_client(can_client) {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
-    auto operator=(const EEPromMessageHandler &) -> EEPromMessageHandler & = delete;
-    auto operator=(const EEPromMessageHandler &&) -> EEPromMessageHandler && = delete;
+    auto operator=(const EEPromMessageHandler &)
+        -> EEPromMessageHandler & = delete;
+    auto operator=(const EEPromMessageHandler &&)
+        -> EEPromMessageHandler && = delete;
     ~EEPromMessageHandler() = default;
 
     void handle_message(TaskMessage &m) {
@@ -29,7 +33,9 @@ class EEPromMessageHandler {
   private:
     void visit(std::monostate &m) {}
 
-    void visit(can_messages::WriteToEEPromRequest &m) { eeprom::write(i2c, m.serial_number); }
+    void visit(can_messages::WriteToEEPromRequest &m) {
+        eeprom::write(i2c, m.serial_number);
+    }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
         const uint8_t serial_number = eeprom::read(i2c);
@@ -38,25 +44,24 @@ class EEPromMessageHandler {
     }
 
     I2CComm &i2c;
-    CanClient& can_client;
+    CanClient &can_client;
 };
-
 
 /**
  * The task type.
  */
-template <eeprom::EEPromPolicy I2CComm, message_writer_task::TaskClient CanClient>
+template <eeprom::EEPromPolicy I2CComm,
+          message_writer_task::TaskClient CanClient>
 class EEPromTask {
   public:
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
-    EEPromTask(QueueType& queue) : queue{queue} {}
+    EEPromTask(QueueType &queue) : queue{queue} {}
     ~EEPromTask() = default;
 
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CComm* driver,
-                                 CanClient* can_client) {
+    [[noreturn]] void operator()(I2CComm *driver, CanClient *can_client) {
         auto handler = EEPromMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {
@@ -66,10 +71,10 @@ class EEPromTask {
         }
     }
 
-    [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
+    [[nodiscard]] auto get_queue() const -> QueueType & { return queue; }
 
   private:
-    QueueType& queue;
+    QueueType &queue;
 };
 
 /**
@@ -77,8 +82,8 @@ class EEPromTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
+concept TaskClient = requires(Client client, const TaskMessage &m) {
     {client.send_eeprom_queue(m)};
 };
 
-}  // namespace eeprom_message_handler
+}  // namespace eeprom_task

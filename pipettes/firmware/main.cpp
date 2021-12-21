@@ -11,21 +11,21 @@
 
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
-#include "pipettes/core/motion_controller_task.hpp"
-#include "pipettes/core/motor_driver_task.hpp"
-#include "pipettes/core/move_group_task.hpp"
-#include "pipettes/core/move_status_reporter_task.hpp"
 #include "common/firmware/i2c_comms.hpp"
-#include "pipettes/core/tasks.hpp"
-#include "pipettes/firmware/can_task.hpp"
+#include "common/firmware/spi_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
-#include "common/firmware/spi_comms.hpp"
 #include "pipettes/core/eeprom_task.hpp"
+#include "pipettes/core/motion_controller_task.hpp"
+#include "pipettes/core/motor_driver_task.hpp"
+#include "pipettes/core/move_group_task.hpp"
+#include "pipettes/core/move_status_reporter_task.hpp"
+#include "pipettes/core/tasks.hpp"
+#include "pipettes/firmware/can_task.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -35,8 +35,8 @@
 
 static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move> motor_queue(
-    "Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
+    motor_queue("Motor Queue");
 
 spi::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
@@ -67,16 +67,16 @@ struct motion_controller::HardwareConfig plunger_pins {
 };
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
-static motor_handler::MotorInterruptHandler plunger_interrupt(motor_queue,
-                                                              pipettes_tasks::get_queues(),
-                                                              plunger_hw);
+static motor_handler::MotorInterruptHandler plunger_interrupt(
+    motor_queue, pipettes_tasks::get_queues(), plunger_hw);
 
 // microstepping is currently set to 32 μsteps.
-static motor_driver_config::RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
-                                                .ihold_irun = 0x70202,
-                                                .chopconf = 0x30101D5,
-                                                .thigh = 0xFFFFF,
-                                                .coolconf = 0x60000};
+static motor_driver_config::RegisterConfig MotorDriverConfigurations{
+    .gconf = 0x04,
+    .ihold_irun = 0x70202,
+    .chopconf = 0x30101D5,
+    .thigh = 0xFFFFF,
+    .coolconf = 0x60000};
 
 static auto i2c_comms = i2c::I2C{};
 
@@ -94,16 +94,13 @@ static motor_class::Motor pipette_motor{
         .microstep = 32},
     plunger_hw,
     motor_messages::MotionConstraints{.min_velocity = 1,
-                      .max_velocity = 2,
-                      .min_acceleration = 1,
-                      .max_acceleration = 2},
+                                      .max_velocity = 2,
+                                      .min_acceleration = 1,
+                                      .max_acceleration = 2},
     MotorDriverConfigurations,
     motor_queue};
 
-
-
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
-
 
 auto main() -> int {
     HardwareInit();
@@ -120,8 +117,8 @@ auto main() -> int {
 
     auto motion = pipettes_motion_controller_task::start_task(
         pipette_motor.motion_controller, queues);
-    auto motor = pipettes_motor_driver_task::start_task(
-        pipette_motor.driver, queues);
+    auto motor =
+        pipettes_motor_driver_task::start_task(pipette_motor.driver, queues);
     auto move_group = pipettes_move_group_task::start_task(queues);
     auto move_status_reporter =
         pipettes_move_status_reporter_task::start_task(queues);

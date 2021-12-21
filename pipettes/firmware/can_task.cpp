@@ -38,11 +38,13 @@ auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
 
 /** The parsed message handler */
-static auto can_motor_handler = motor_message_handler::MotorHandler{queue_client};
+static auto can_motor_handler =
+    motor_message_handler::MotorHandler{queue_client};
 static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(queue_client);
 
-static auto eeprom_handler = eeprom_message_handler::EEPromHandler{queue_client};
+static auto eeprom_handler =
+    eeprom_message_handler::EEPromHandler{queue_client};
 static auto device_info_message_handler =
     device_info_handler::DeviceInfoHandler{queue_client, 0};
 
@@ -62,10 +64,10 @@ static auto device_info_dispatch_target =
     device_info_handler::DispatchTarget{device_info_message_handler};
 
 /** Dispatcher to the various handlers */
-static auto dispatcher = Dispatcher(
-    [](auto _) -> bool { return true; }, motor_dispatch_target,
-    motion_group_dispatch_target, eeprom_dispatch_target,
-    device_info_dispatch_target);
+static auto dispatcher =
+    Dispatcher([](auto _) -> bool { return true; }, motor_dispatch_target,
+               motion_group_dispatch_target, eeprom_dispatch_target,
+               device_info_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -88,7 +90,6 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
                                                  data + length);  // NOLINT
 }
 
-
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
@@ -100,9 +101,10 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
     }
 
     // TODO (al, 2021-12-21): Must account for this!!
-//    motor.driver.setup();
+    //    motor.driver.setup();
 
-    auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
+        read_can_message_buffer, dispatcher);
     poller();
 }
 
@@ -110,11 +112,11 @@ auto static reader_task = can_task::CanMessageReaderTask{};
 auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
 auto static reader_task_control =
-    freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask, can_bus::CanBus>{
-        reader_task};
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask,
+                                can_bus::CanBus>{reader_task};
 auto static writer_task_control =
-    freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask, can_bus::CanBus>{
-        writer_task};
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask,
+                                can_bus::CanBus>{writer_task};
 
 auto can_task::start_reader(can_bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask& {

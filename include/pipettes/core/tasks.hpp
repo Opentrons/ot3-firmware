@@ -2,13 +2,13 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "common/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "pipettes/core/tasks/eeprom.hpp"
-#include "common/firmware/i2c_comms.hpp"
 
 namespace pipettes_tasks {
 
@@ -28,7 +28,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
-    void send_eeprom_queue(const eeprom_task::TaskMessage & m);
+    void send_eeprom_queue(const eeprom_task::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
@@ -39,9 +39,8 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>* move_status_report_queue{
         nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        eeprom_task::TaskMessage>* eeprom_queue{
-        nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>*
+        eeprom_queue{nullptr};
 };
 
 /**
@@ -51,8 +50,8 @@ struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     motor_driver_task::MotorDriverTask<QueueClient>* motor_driver{nullptr};
-    motion_controller_task::MotionControllerTask<lms::LeadScrewConfig, QueueClient>*
-        motion_controller{nullptr};
+    motion_controller_task::MotionControllerTask<
+        lms::LeadScrewConfig, QueueClient>* motion_controller{nullptr};
     move_status_reporter_task::MoveStatusReporterTask<QueueClient>*
         move_status_reporter{nullptr};
     move_group_task::MoveGroupTask<QueueClient, QueueClient>* move_group{

@@ -1,6 +1,5 @@
 #include "pipettes/core/tasks.hpp"
 
-
 pipettes_tasks::QueueClient::QueueClient()
     : can_message_writer::MessageWriter{can_ids::NodeId::pipette} {}
 
@@ -24,7 +23,8 @@ void pipettes_tasks::QueueClient::send_move_status_reporter_queue(
     move_status_report_queue->try_write(m);
 }
 
-void pipettes_tasks::QueueClient::send_eeprom_queue(const eeprom_task::TaskMessage & m) {
+void pipettes_tasks::QueueClient::send_eeprom_queue(
+    const eeprom_task::TaskMessage& m) {
     eeprom_queue->try_write(m);
 }
 
