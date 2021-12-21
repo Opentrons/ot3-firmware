@@ -5,7 +5,6 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
-#include "common/core/freertos_message_queue.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 
 namespace move_status_reporter_task {
@@ -43,10 +42,12 @@ class MoveStatusMessageHandler {
 /**
  * The task type.
  */
-template <message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl,
+          message_writer_task::TaskClient CanClient>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveStatusReporterTask {
   public:
-    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    using QueueType = QueueImpl<TaskMessage>;
     MoveStatusReporterTask(QueueType& queue) : queue{queue} {}
     ~MoveStatusReporterTask() = default;
 
@@ -57,7 +58,7 @@ class MoveStatusReporterTask {
         auto handler = MoveStatusMessageHandler{*can_client};
         TaskMessage message{};
         for (;;) {
-            if (queue.try_read(&message, portMAX_DELAY)) {
+            if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
             }
         }

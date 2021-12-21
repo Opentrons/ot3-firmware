@@ -10,6 +10,8 @@ namespace freertos_message_queue {
 template <typename Message, size_t queue_size = 10>
 class FreeRTOSMessageQueue {
   public:
+    static auto constexpr max_delay = portMAX_DELAY;
+
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     explicit FreeRTOSMessageQueue(const char* name) : FreeRTOSMessageQueue() {
         vQueueAddToRegistry(queue, name);

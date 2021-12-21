@@ -8,6 +8,7 @@ namespace pipettes_move_status_reporter_task {
 
 using MoveStatusReporterTaskType =
     move_status_reporter_task::MoveStatusReporterTask<
+        freertos_message_queue::FreeRTOSMessageQueue,
         pipettes_tasks::QueueClient>;
 
 auto start_task(pipettes_tasks::QueueClient& queueClient)

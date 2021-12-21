@@ -6,8 +6,8 @@
 
 namespace pipettes_motor_driver_task {
 
-using MotorDriverTaskType =
-    motor_driver_task::MotorDriverTask<pipettes_tasks::QueueClient>;
+using MotorDriverTaskType = motor_driver_task::MotorDriverTask<
+    freertos_message_queue::FreeRTOSMessageQueue, pipettes_tasks::QueueClient>;
 
 auto start_task(motor_driver::MotorDriver& driver,
                 pipettes_tasks::QueueClient& client) -> MotorDriverTaskType&;

@@ -7,7 +7,8 @@
 namespace pipettes_eeprom_task {
 
 using EEPromTaskType =
-    eeprom_task::EEPromTask<i2c::I2C, pipettes_tasks::QueueClient>;
+    eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue,
+                            i2c::I2C, pipettes_tasks::QueueClient>;
 
 auto start_task(i2c::I2C& driver, pipettes_tasks::QueueClient& client)
     -> EEPromTaskType&;

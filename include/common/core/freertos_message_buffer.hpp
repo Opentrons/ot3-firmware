@@ -16,6 +16,8 @@ namespace freertos_message_buffer {
 template <std::size_t BufferSize>
 class FreeRTOSMessageBuffer {
   public:
+    static auto constexpr max_delay = portMAX_DELAY;
+
     explicit FreeRTOSMessageBuffer();
     auto operator=(FreeRTOSMessageBuffer&) -> FreeRTOSMessageBuffer& = delete;
     auto operator=(FreeRTOSMessageBuffer&&) -> FreeRTOSMessageBuffer&& = delete;

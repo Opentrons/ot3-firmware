@@ -6,7 +6,8 @@
 namespace gantry_move_group_task {
 
 using MoveGroupTaskType =
-    move_group_task::MoveGroupTask<gantry_tasks::QueueClient,
+    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
+                                   gantry_tasks::QueueClient,
                                    gantry_tasks::QueueClient>;
 
 auto start_task(gantry_tasks::QueueClient& client) -> MoveGroupTaskType&;

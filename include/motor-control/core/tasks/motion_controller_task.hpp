@@ -81,11 +81,12 @@ class MotionControllerMessageHandler {
 /**
  * The task entry point.
  */
-template <lms::MotorMechanicalConfig MEConfig,
+template <template <class> class QueueImpl, lms::MotorMechanicalConfig MEConfig,
           message_writer_task::TaskClient CanClient>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MotionControllerTask {
   public:
-    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    using QueueType = QueueImpl<TaskMessage>;
     MotionControllerTask(QueueType& queue) : queue{queue} {}
 
     /**
@@ -97,7 +98,7 @@ class MotionControllerTask {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
         for (;;) {
-            if (queue.try_read(&message, portMAX_DELAY)) {
+            if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
             }
         }

@@ -2,7 +2,6 @@
 
 #include <array>
 
-#include "FreeRTOS.h"
 #include "can/core/can_bus.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_core.hpp"
@@ -39,7 +38,7 @@ class MessageWriterTask {
     [[noreturn]] void operator()(can_bus::CanBus* can) {
         TaskMessage message{};
         while (true) {
-            if (queue.try_read(&message, portMAX_DELAY)) {
+            if (queue.try_read(&message, queue.max_delay)) {
                 auto arbitration_id = message.arbitration_id;
                 std::visit(
                     [this, can, arbitration_id](auto m) {

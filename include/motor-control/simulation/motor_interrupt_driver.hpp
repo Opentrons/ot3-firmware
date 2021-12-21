@@ -31,7 +31,7 @@ class MotorInterruptDriver {
         void operator()() {
             while (true) {
                 auto move = motor_messages::Move{};
-                if (queue.peek(&move, portMAX_DELAY)) {
+                if (queue.peek(&move, queue.max_delay)) {
                     LOG("Enabling motor interrupt handler for group %d, seq "
                         "%d, duration %d\n",
                         move.group_id, move.seq_id, move.duration);

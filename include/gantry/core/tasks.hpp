@@ -43,12 +43,17 @@ struct QueueClient : can_message_writer::MessageWriter {
 struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
-    motor_driver_task::MotorDriverTask<QueueClient>* motor_driver{nullptr};
-    motion_controller_task::MotionControllerTask<lms::BeltConfig, QueueClient>*
-        motion_controller{nullptr};
-    move_status_reporter_task::MoveStatusReporterTask<QueueClient>*
+    motor_driver_task::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
+        motor_driver{nullptr};
+    motion_controller_task::MotionControllerTask<
+        freertos_message_queue::FreeRTOSMessageQueue, lms::BeltConfig,
+        QueueClient>* motion_controller{nullptr};
+    move_status_reporter_task::MoveStatusReporterTask<
+        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
         move_status_reporter{nullptr};
-    move_group_task::MoveGroupTask<QueueClient, QueueClient>* move_group{
+    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
+                                   QueueClient, QueueClient>* move_group{
         nullptr};
 };
 

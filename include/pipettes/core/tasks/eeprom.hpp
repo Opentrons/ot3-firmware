@@ -2,7 +2,6 @@
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/messages.hpp"
-#include "common/core/freertos_message_queue.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/eeprom.hpp"
 
@@ -50,11 +49,12 @@ class EEPromMessageHandler {
 /**
  * The task type.
  */
-template <eeprom::EEPromPolicy I2CComm,
+template <template <class> class QueueImpl, eeprom::EEPromPolicy I2CComm,
           message_writer_task::TaskClient CanClient>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
   public:
-    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    using QueueType = QueueImpl<TaskMessage>;
     EEPromTask(QueueType &queue) : queue{queue} {}
     ~EEPromTask() = default;
 
@@ -65,7 +65,7 @@ class EEPromTask {
         auto handler = EEPromMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {
-            if (queue.try_read(&message, portMAX_DELAY)) {
+            if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
             }
         }

@@ -10,9 +10,9 @@ namespace pipettes_motion_controller_task {
 using MotionControllerType =
     motion_controller::MotionController<lms::LeadScrewConfig>;
 
-using MotionControllerTaskType =
-    motion_controller_task::MotionControllerTask<lms::LeadScrewConfig,
-                                                 pipettes_tasks::QueueClient>;
+using MotionControllerTaskType = motion_controller_task::MotionControllerTask<
+    freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
+    pipettes_tasks::QueueClient>;
 
 auto start_task(MotionControllerType& controller,
                 pipettes_tasks::QueueClient& client)

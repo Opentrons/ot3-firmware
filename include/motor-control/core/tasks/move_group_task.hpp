@@ -93,11 +93,13 @@ class MoveGroupMessageHandler {
 /**
  * The task type.
  */
-template <motion_controller_task::TaskClient MotionControllerClient,
+template <template <class> class QueueImpl,
+          motion_controller_task::TaskClient MotionControllerClient,
           message_writer_task::TaskClient CanClient>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveGroupTask {
   public:
-    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<TaskMessage>;
+    using QueueType = QueueImpl<TaskMessage>;
     MoveGroupTask(QueueType& queue, MoveGroupType& move_group)
         : queue{queue}, move_group{move_group} {}
     ~MoveGroupTask() = default;
@@ -111,7 +113,7 @@ class MoveGroupTask {
             MoveGroupMessageHandler{move_group, *mc_client, *can_client};
         TaskMessage message{};
         for (;;) {
-            if (queue.try_read(&message, portMAX_DELAY)) {
+            if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
             }
         }

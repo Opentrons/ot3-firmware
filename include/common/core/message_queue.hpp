@@ -28,4 +28,6 @@ concept MessageQueue = requires(MQ mq, MessageType mt, const MQ cmq,
     // Queues must have a const method to check whether there are messages.
     { cmq.has_message() } -> std::same_as<bool>;
     { cmq.has_message_isr() } -> std::same_as<bool>;
+    // Defines the maximum wait time.
+    { MQ::max_delay } -> std::convertible_to<int>;
 };

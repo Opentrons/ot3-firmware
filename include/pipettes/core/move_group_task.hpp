@@ -6,7 +6,8 @@
 namespace pipettes_move_group_task {
 
 using MoveGroupTaskType =
-    move_group_task::MoveGroupTask<pipettes_tasks::QueueClient,
+    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
+                                   pipettes_tasks::QueueClient,
                                    pipettes_tasks::QueueClient>;
 
 auto start_task(pipettes_tasks::QueueClient& client) -> MoveGroupTaskType&;

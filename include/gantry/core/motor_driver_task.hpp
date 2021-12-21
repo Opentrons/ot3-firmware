@@ -6,8 +6,8 @@
 
 namespace gantry_motor_driver_task {
 
-using MotorDriverTaskType =
-    motor_driver_task::MotorDriverTask<gantry_tasks::QueueClient>;
+using MotorDriverTaskType = motor_driver_task::MotorDriverTask<
+    freertos_message_queue::FreeRTOSMessageQueue, gantry_tasks::QueueClient>;
 
 auto start_task(motor_driver::MotorDriver& driver,
                 gantry_tasks::QueueClient& client) -> MotorDriverTaskType&;

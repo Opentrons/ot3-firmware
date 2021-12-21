@@ -10,9 +10,9 @@ namespace gantry_motion_controller_task {
 using MotionControllerType =
     motion_controller::MotionController<lms::BeltConfig>;
 
-using MotionControllerTaskType =
-    motion_controller_task::MotionControllerTask<lms::BeltConfig,
-                                                 gantry_tasks::QueueClient>;
+using MotionControllerTaskType = motion_controller_task::MotionControllerTask<
+    freertos_message_queue::FreeRTOSMessageQueue, lms::BeltConfig,
+    gantry_tasks::QueueClient>;
 
 auto start_task(MotionControllerType& controller,
                 gantry_tasks::QueueClient& client) -> MotionControllerTaskType&;
