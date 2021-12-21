@@ -36,6 +36,8 @@ add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
+target_pipette_core(pipettes)
+
 target_ot_motor_control(pipettes)
 
 target_link_libraries(pipettes

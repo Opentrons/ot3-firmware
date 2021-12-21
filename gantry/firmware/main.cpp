@@ -29,7 +29,6 @@ auto main() -> int {
     utility_gpio_init();
 
     interfaces::initialize();
-    interfaces::initialize();
 
     auto& queues = gantry_tasks::get_queues();
     auto& tasks = gantry_tasks::get_tasks();

@@ -23,6 +23,7 @@
 #include "motor-control/firmware/motor_hardware.hpp"
 #include "pipettes/core/eeprom.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
+#include "pipettes/core/tasks.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -30,113 +31,32 @@
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
 
-using namespace can_messages;
-using namespace freertos_can_dispatch;
 using namespace can_dispatch;
-using namespace freertos_task;
-using namespace can_message_writer;
-using namespace i2c;
-using namespace device_info_handler;
-using namespace eeprom_message_handler;
-using namespace motor_message_handler;
-using namespace move_group_handler;
-using namespace move_group_executor_handler;
-using namespace motor_messages;
-using namespace motor_driver_config;
+
+static auto& queue_client = gantry_tasks::get_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     freertos_sender_task::TaskMessage>{};
 
-static auto message_writer_1 = MessageWriter(can_sender_queue, NodeId::pipette);
-
-static freertos_message_queue::FreeRTOSMessageQueue<Move> motor_queue(
-    "Motor Queue");
-static freertos_message_queue::FreeRTOSMessageQueue<Ack> complete_queue(
-    "Complete Queue");
-
-spi::SPI_interface SPI_intf = {
-    .SPI_handle = &hspi2,
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .GPIO_handle = GPIOC,
-    .pin = GPIO_PIN_6,
-};
-static spi::Spi spi_comms(SPI_intf);
-
-struct motion_controller::HardwareConfig plunger_pins {
-    .direction =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_3,
-            .active_setting = GPIO_PIN_SET},
-    .step =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_SET},
-    .enable = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_SET},
-};
-
-static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
-static motor_handler::MotorInterruptHandler plunger_interrupt(motor_queue,
-                                                              complete_queue,
-                                                              plunger_hw);
-
-// microstepping is currently set to 32 μsteps.
-RegisterConfig MotorDriverConfigurations{.gconf = 0x04,
-                                         .ihold_irun = 0x70202,
-                                         .chopconf = 0x30101D5,
-                                         .thigh = 0xFFFFF,
-                                         .coolconf = 0x60000};
-
-/**
- * TODO: This motor class is only used in motor handler and should be
- * instantiated inside of the MotorHandler class. However, some refactors
- * should be made to avoid a pretty gross template signature.
- */
-
-static motor_class::Motor motor{
-    spi_comms,
-    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 3.03},
-        .steps_per_rev = 200,
-        .microstep = 32},
-    plunger_hw,
-    MotionConstraints{.min_velocity = 1,
-                      .max_velocity = 2,
-                      .min_acceleration = 1,
-                      .max_acceleration = 2},
-    MotorDriverConfigurations,
-    motor_queue,
-    complete_queue};
-
-static auto move_group_manager = MoveGroupType{};
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{message_writer_1, motor};
+static auto can_motor_handler = MotorHandler{queue_client};
 static auto can_move_group_handler =
-    MoveGroupHandler(message_writer_1, move_group_manager);
-static auto can_move_group_executor_handler =
-    MoveGroupExecutorHandler(message_writer_1, move_group_manager, motor);
+    MoveGroupHandler(queue_client);
 
-static auto i2c_comms = I2C{};
-static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
+//static auto i2c_comms = I2C{};
+//static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
 static auto device_info_message_handler =
-    DeviceInfoHandler{message_writer_1, 0};
+    DeviceInfoHandler{queue_client};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target =
-    motor_message_handler::DispatchTarget<decltype(motor)>{can_motor_handler};
+    motor_message_handler::DispatchTarget{can_motor_handler};
 
 static auto motion_group_dispatch_target =
     move_group_handler::DispatchTarget{can_move_group_handler};
 
 static auto motion_group_executor_dispatch_target =
-    move_group_executor_handler::DispatchTarget<decltype(motor)>{
+    move_group_executor_handler::DispatchTarget{
         can_move_group_executor_handler};
 
 static auto eeprom_dispatch_target =
