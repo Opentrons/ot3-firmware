@@ -16,7 +16,7 @@ int main() {
     auto& tasks = gantry_tasks::get_tasks();
 
     auto can_writer = can_task::start_writer(interfaces::get_can_bus());
-    auto can_reader = can_task::start_reader(interfaces::get_can_bus());
+    can_task::start_reader(interfaces::get_can_bus());
     auto motion = gantry_motion_controller_task::start_task(
         interfaces::get_motor().motion_controller, queues);
     auto motor = gantry_motor_driver_task::start_task(

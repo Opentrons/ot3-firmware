@@ -27,13 +27,14 @@ struct QueueClient : can_message_writer::MessageWriter {
         const move_status_reporter_task::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<
-        motion_controller_task::TaskMessage>* motion_queue;
+        motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
-        motor_driver_task::TaskMessage>* motor_queue;
+        motor_driver_task::TaskMessage>* motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
-        move_group_queue;
+        move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
-        move_status_reporter_task::TaskMessage>* move_status_report_queue;
+        move_status_reporter_task::TaskMessage>* move_status_report_queue{
+        nullptr};
 };
 
 /**
@@ -41,13 +42,14 @@ struct QueueClient : can_message_writer::MessageWriter {
  */
 struct AllTask {
     message_writer_task::MessageWriterTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* can_writer;
-    motor_driver_task::MotorDriverTask<QueueClient>* motor_driver;
+        freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
+    motor_driver_task::MotorDriverTask<QueueClient>* motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<lms::BeltConfig, QueueClient>*
-        motion_controller;
+        motion_controller{nullptr};
     move_status_reporter_task::MoveStatusReporterTask<QueueClient>*
-        move_status_reporter;
-    move_group_task::MoveGroupTask<QueueClient, QueueClient>* move_group;
+        move_status_reporter{nullptr};
+    move_group_task::MoveGroupTask<QueueClient, QueueClient>* move_group{
+        nullptr};
 };
 
 /**
