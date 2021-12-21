@@ -23,12 +23,17 @@ struct QueueClient : can_message_writer::MessageWriter {
 
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
+    void send_move_status_reporter_queue(
+        const move_status_reporter_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue;
     freertos_message_queue::FreeRTOSMessageQueue<
         motor_driver_task::TaskMessage>* motor_queue;
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
         move_group_queue;
+    freertos_message_queue::FreeRTOSMessageQueue<
+        move_status_reporter_task::TaskMessage>* move_status_report_queue;
 };
 
 /**

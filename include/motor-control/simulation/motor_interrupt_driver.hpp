@@ -8,28 +8,29 @@
 
 namespace motor_interrupt_driver {
 
+template <move_status_reporter_task::TaskClient StatusClient>
 class MotorInterruptDriver {
   public:
     MotorInterruptDriver(
         freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>& q,
         motor_handler::MotorInterruptHandler<
-            freertos_message_queue::FreeRTOSMessageQueue>& h)
+            freertos_message_queue::FreeRTOSMessageQueue, StatusClient>& h)
         : task_entry{q, h}, task(task_entry) {
         task.start(5, "motor interrupt driver");
     }
 
   private:
     struct TaskEntry {
-        TaskEntry(freertos_message_queue::FreeRTOSMessageQueue<
-                      motor_messages::Move>& q,
-                  motor_handler::MotorInterruptHandler<
-                      freertos_message_queue::FreeRTOSMessageQueue>& h)
+        TaskEntry(
+            freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>&
+                q,
+            motor_handler::MotorInterruptHandler<
+                freertos_message_queue::FreeRTOSMessageQueue, StatusClient>& h)
             : queue{q}, handler{h} {}
 
         void operator()() {
             while (true) {
                 auto move = motor_messages::Move{};
-                LOG("Waiting for next move.\n");
                 if (queue.peek(&move, portMAX_DELAY)) {
                     LOG("Enabling motor interrupt handler for group %d, seq "
                         "%d, duration %d\n",
@@ -37,13 +38,15 @@ class MotorInterruptDriver {
                     do {
                         handler.run_interrupt();
                     } while (handler.has_active_move);
+                    LOG("Move completed. Stopping interrupt simulation..\n");
                 }
             }
         }
         freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>&
             queue;
         motor_handler::MotorInterruptHandler<
-            freertos_message_queue::FreeRTOSMessageQueue>& handler;
+            freertos_message_queue::FreeRTOSMessageQueue, StatusClient>&
+            handler;
     };
 
     TaskEntry task_entry;

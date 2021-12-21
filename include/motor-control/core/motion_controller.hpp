@@ -24,16 +24,13 @@ template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
-    using CompletedQueue = freertos_message_queue::FreeRTOSMessageQueue<Ack>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      MotorHardwareIface& hardware_iface,
-                     MotionConstraints constraints, GenericQueue& queue,
-                     CompletedQueue& completed_queue)
+                     MotionConstraints constraints, GenericQueue& queue)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           motion_constraints(constraints),
           queue(queue),
-          completed_queue(completed_queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_steps_per_mm(), 31)) {}
 
@@ -85,7 +82,6 @@ class MotionController {
     MotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
-    CompletedQueue& completed_queue;
     sq31_31 steps_per_mm{0};
 };
 

@@ -20,6 +20,11 @@ void gantry_tasks::QueueClient::send_move_group_queue(
     move_group_queue->try_write(m);
 }
 
+void gantry_tasks::QueueClient::send_move_status_reporter_queue(
+    const move_status_reporter_task::TaskMessage& m) {
+    move_status_report_queue->try_write(m);
+}
+
 static auto tasks = gantry_tasks::AllTask{};
 static auto queue_client = gantry_tasks::QueueClient{utils::get_node_id()};
 

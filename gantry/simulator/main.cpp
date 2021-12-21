@@ -35,6 +35,7 @@ int main() {
     queues.motor_queue = &motor.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.set_queue(&can_writer.get_queue());
+    queues.move_status_report_queue = &move_status_reporter.get_queue();
 
     vTaskStartScheduler();
 }
