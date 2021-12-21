@@ -1,9 +1,8 @@
 #include "pipettes/core/tasks.hpp"
 
-#include "pipettes/core/utils.hpp"
 
-pipettes_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)
-    : can_message_writer::MessageWriter{this_fw} {}
+pipettes_tasks::QueueClient::QueueClient()
+    : can_message_writer::MessageWriter{can_ids::NodeId::pipette} {}
 
 void pipettes_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {
@@ -25,8 +24,12 @@ void pipettes_tasks::QueueClient::send_move_status_reporter_queue(
     move_status_report_queue->try_write(m);
 }
 
+void pipettes_tasks::QueueClient::send_eeprom_queue(const eeprom_task::TaskMessage & m) {
+    eeprom_queue->try_write(m);
+}
+
 static auto tasks = pipettes_tasks::AllTask{};
-static auto queue_client = pipettes_tasks::QueueClient{utils::get_node_id()};
+static auto queue_client = pipettes_tasks::QueueClient{};
 
 /**
  * Access to the tasks singleton

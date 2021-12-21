@@ -15,6 +15,7 @@
 #include "pipettes/core/motor_driver_task.hpp"
 #include "pipettes/core/move_group_task.hpp"
 #include "pipettes/core/move_status_reporter_task.hpp"
+#include "common/firmware/i2c_comms.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "pipettes/firmware/can_task.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
@@ -24,6 +25,7 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #include "common/firmware/spi_comms.hpp"
+#include "pipettes/core/eeprom_task.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -76,6 +78,8 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{.gconf = 0x
                                                 .thigh = 0xFFFFF,
                                                 .coolconf = 0x60000};
 
+static auto i2c_comms = i2c::I2C{};
+
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -98,10 +102,15 @@ static motor_class::Motor pipette_motor{
 
 
 
+extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
+
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
+
+    initialize_timer(plunger_callback);
 
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
@@ -116,18 +125,21 @@ auto main() -> int {
     auto move_group = pipettes_move_group_task::start_task(queues);
     auto move_status_reporter =
         pipettes_move_status_reporter_task::start_task(queues);
+    auto eeprom_task = pipettes_eeprom_task::start_task(i2c_comms, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
     tasks.motor_driver = &motor;
     tasks.move_group = &move_group;
     tasks.move_status_reporter = &move_status_reporter;
+    tasks.eeprom_task = &eeprom_task;
 
     queues.motion_queue = &motion.get_queue();
     queues.motor_queue = &motor.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.set_queue(&can_writer.get_queue());
     queues.move_status_report_queue = &move_status_reporter.get_queue();
+    queues.eeprom_queue = &eeprom_task.get_queue();
 
     vTaskStartScheduler();
 }

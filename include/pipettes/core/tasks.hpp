@@ -7,6 +7,8 @@
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "pipettes/core/tasks/eeprom.hpp"
+#include "common/firmware/i2c_comms.hpp"
 
 namespace pipettes_tasks {
 
@@ -14,7 +16,7 @@ namespace pipettes_tasks {
  * Access to all the message queues in the system.
  */
 struct QueueClient : can_message_writer::MessageWriter {
-    QueueClient(can_ids::NodeId this_fw);
+    QueueClient();
 
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
@@ -26,6 +28,8 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_eeprom_queue(const eeprom_task::TaskMessage & m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -34,6 +38,9 @@ struct QueueClient : can_message_writer::MessageWriter {
         move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>* move_status_report_queue{
+        nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        eeprom_task::TaskMessage>* eeprom_queue{
         nullptr};
 };
 
@@ -50,6 +57,7 @@ struct AllTask {
         move_status_reporter{nullptr};
     move_group_task::MoveGroupTask<QueueClient, QueueClient>* move_group{
         nullptr};
+    eeprom_task::EEPromTask<i2c::I2C, QueueClient>* eeprom_task{nullptr};
 };
 
 /**

@@ -1,26 +1,18 @@
 #pragma once
 
-#include "can/core/can_bus.hpp"
-#include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
-#include "common/core/message_queue.hpp"
-#include "pipettes/core/eeprom.hpp"
+#include "pipettes/core/tasks/eeprom.hpp"
+#include "can/core/dispatch.hpp"
 
 namespace eeprom_message_handler {
 
-using namespace can_bus;
-using namespace can_message_writer;
-using namespace eeprom;
-using namespace can_messages;
-
-template <EEPromPolicy I2CComm>
+template <eeprom_task::TaskClient EEPromTaskClient>
 class EEPromHandler {
   public:
-    using MessageType = std::variant<std::monostate, WriteToEEPromRequest,
-                                     ReadFromEEPromRequest>;
+    using MessageType = std::variant<std::monostate, can_messages::WriteToEEPromRequest,
+                                     can_messages::ReadFromEEPromRequest>;
 
-    explicit EEPromHandler(MessageWriter &message_writer, I2CComm &i2c)
-        : message_writer(message_writer), i2c(i2c) {}
+    explicit EEPromHandler(EEPromTaskClient &client) : client(client) {}
     EEPromHandler(const EEPromHandler &) = delete;
     EEPromHandler(const EEPromHandler &&) = delete;
     auto operator=(const EEPromHandler &) -> EEPromHandler & = delete;
@@ -28,22 +20,22 @@ class EEPromHandler {
     ~EEPromHandler() = default;
 
     void handle(MessageType &m) {
-        std::visit([this](auto o) { this->visit(o); }, m);
+        client.send_eeprom_queue(m);
     }
 
   private:
-    void visit(std::monostate &m) {}
 
-    void visit(WriteToEEPromRequest &m) { eeprom::write(i2c, m.serial_number); }
-
-    void visit(ReadFromEEPromRequest &m) {
-        const uint8_t serial_number = eeprom::read(i2c);
-        auto message = ReadFromEEPromResponse{{}, serial_number};
-        message_writer.write(NodeId::host, message);
-    }
-
-    MessageWriter &message_writer;
-    I2CComm &i2c;
+    EEPromTaskClient &client;
 };
+
+
+/**
+ * Type short cut for creating dispatch parse target for the handler.
+ */
+template <eeprom_task::TaskClient EEPromTaskClient>
+using DispatchTarget =
+    can_dispatch::DispatchParseTarget<EEPromHandler<EEPromTaskClient>,
+                                      can_messages::WriteToEEPromRequest,
+                                      can_messages::ReadFromEEPromRequest>;
 
 }  // namespace eeprom_message_handler

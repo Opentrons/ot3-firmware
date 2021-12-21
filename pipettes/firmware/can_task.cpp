@@ -5,7 +5,6 @@
 #include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
-#include "can/core/message_handlers/move_group_executor.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "can/firmware/hal_can.h"
@@ -33,20 +32,19 @@
 
 using namespace can_dispatch;
 
-static auto& queue_client = gantry_tasks::get_queues();
+static auto& queue_client = pipettes_tasks::get_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
-    freertos_sender_task::TaskMessage>{};
+    message_writer_task::TaskMessage>{};
 
 /** The parsed message handler */
-static auto can_motor_handler = MotorHandler{queue_client};
+static auto can_motor_handler = motor_message_handler::MotorHandler{queue_client};
 static auto can_move_group_handler =
-    MoveGroupHandler(queue_client);
+    move_group_handler::MoveGroupHandler(queue_client);
 
-//static auto i2c_comms = I2C{};
-//static auto eeprom_handler = EEPromHandler{message_writer_1, i2c_comms};
+static auto eeprom_handler = eeprom_message_handler::EEPromHandler{queue_client};
 static auto device_info_message_handler =
-    DeviceInfoHandler{queue_client};
+    device_info_handler::DeviceInfoHandler{queue_client, 0};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target =
@@ -54,10 +52,6 @@ static auto motor_dispatch_target =
 
 static auto motion_group_dispatch_target =
     move_group_handler::DispatchTarget{can_move_group_handler};
-
-static auto motion_group_executor_dispatch_target =
-    move_group_executor_handler::DispatchTarget{
-        can_move_group_executor_handler};
 
 static auto eeprom_dispatch_target =
     DispatchParseTarget<decltype(eeprom_handler),
@@ -71,7 +65,7 @@ static auto device_info_dispatch_target =
 static auto dispatcher = Dispatcher(
     [](auto _) -> bool { return true; }, motor_dispatch_target,
     motion_group_dispatch_target, eeprom_dispatch_target,
-    device_info_dispatch_target, motion_group_executor_dispatch_target);
+    device_info_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -94,21 +88,21 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
                                                  data + length);  // NOLINT
 }
 
-extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
     can_start();
     can_bus->setup_node_id_filter(NodeId::pipette);
-    initialize_timer(plunger_callback);
+    // TODO (al, 2021-12-21): Move this out!!
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
 
-    motor.driver.setup();
+    // TODO (al, 2021-12-21): Must account for this!!
+//    motor.driver.setup();
 
-    auto poller = FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
+    auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(read_can_message_buffer, dispatcher);
     poller();
 }
 
@@ -116,10 +110,10 @@ auto static reader_task = can_task::CanMessageReaderTask{};
 auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
 auto static reader_task_control =
-    FreeRTOSTask<512, can_task::CanMessageReaderTask, can_bus::CanBus>{
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask, can_bus::CanBus>{
         reader_task};
 auto static writer_task_control =
-    FreeRTOSTask<512, can_task::CanMessageWriterTask, can_bus::CanBus>{
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask, can_bus::CanBus>{
         writer_task};
 
 auto can_task::start_reader(can_bus::CanBus& canbus)

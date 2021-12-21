@@ -6,6 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "motor-control/core/motor_driver.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/tasks/messages.hpp"
