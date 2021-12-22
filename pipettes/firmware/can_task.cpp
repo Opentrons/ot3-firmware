@@ -44,18 +44,19 @@ static auto motion_group_dispatch_target =
     move_group_handler::DispatchTarget{can_move_group_handler};
 
 static auto eeprom_dispatch_target =
-    DispatchParseTarget<decltype(eeprom_handler),
-                        can_messages::WriteToEEPromRequest,
-                        can_messages::ReadFromEEPromRequest>{eeprom_handler};
+    can_dispatch::DispatchParseTarget<decltype(eeprom_handler),
+                                      can_messages::WriteToEEPromRequest,
+                                      can_messages::ReadFromEEPromRequest>{
+        eeprom_handler};
 
 static auto device_info_dispatch_target =
     device_info_handler::DispatchTarget{device_info_message_handler};
 
 /** Dispatcher to the various handlers */
-static auto dispatcher =
-    Dispatcher([](auto _) -> bool { return true; }, motor_dispatch_target,
-               motion_group_dispatch_target, eeprom_dispatch_target,
-               device_info_dispatch_target);
+static auto dispatcher = can_dispatch::Dispatcher(
+    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    motion_group_dispatch_target, eeprom_dispatch_target,
+    device_info_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
@@ -82,7 +83,7 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
     can_start();
-    can_bus->setup_node_id_filter(NodeId::pipette);
+    can_bus->setup_node_id_filter(can_ids::NodeId::pipette);
     // TODO (al, 2021-12-21): Move this out!!
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
