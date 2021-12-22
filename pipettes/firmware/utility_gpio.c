@@ -5,7 +5,7 @@
  * @param None
  * @retval None
  */
-void limit_switch_gpio_init(void) {
+void limit_switch_gpio_init() {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
 

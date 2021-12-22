@@ -73,8 +73,6 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{
     .thigh = 0xFFFFF,
     .coolconf = 0x60000};
 
-static auto i2c_comms = i2c::I2C{MX_I2C_Init()};
-
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -101,6 +99,13 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
+
+    //TODO(lc 01/04/2021): We should move this setup to another object
+    // responsible for sensor control.
+    auto i2chandler_struct = I2CHandlerStruct{};
+    i2c_setup(&i2chandler_struct, SINGLE_CHANNEL);
+
+    auto i2c_comms = i2c::I2C{i2chandler_struct.i2c1};
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
