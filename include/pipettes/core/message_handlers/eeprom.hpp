@@ -2,7 +2,7 @@
 
 #include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
-#include "pipettes/core/tasks/eeprom.hpp"
+#include "pipettes/core/tasks/eeprom_task.hpp"
 
 namespace eeprom_message_handler {
 

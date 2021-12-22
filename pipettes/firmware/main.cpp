@@ -18,13 +18,13 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/motor_driver_task_starter.hpp"
+#include "motor-control/core/tasks/move_group_task_starter.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
-#include "pipettes/core/eeprom_task.hpp"
-#include "pipettes/core/motion_controller_task.hpp"
-#include "pipettes/core/motor_driver_task.hpp"
-#include "pipettes/core/move_group_task.hpp"
-#include "pipettes/core/move_status_reporter_task.hpp"
 #include "pipettes/core/tasks.hpp"
+#include "pipettes/core/tasks/eeprom_task_starter.hpp"
 #include "pipettes/firmware/can_task.hpp"
 
 #pragma GCC diagnostic push
@@ -102,6 +102,21 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
+static auto mc_task_builder =
+    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
+                                                pipettes_tasks::QueueClient>{};
+static auto motor_driver_task_builder =
+    motor_driver_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
+static auto move_group_task_builder =
+    move_group_task_starter::TaskStarter<512, pipettes_tasks::QueueClient,
+                                         pipettes_tasks::QueueClient>{};
+static auto move_status_task_builder =
+    move_status_reporter_task_starter::TaskStarter<
+        512, pipettes_tasks::QueueClient>{};
+static auto eeprom_task_builder =
+    eeprom_task_starter::TaskStarter<512, i2c::I2C,
+                                     pipettes_tasks::QueueClient>{};
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -115,14 +130,13 @@ auto main() -> int {
     auto can_writer = can_task::start_writer(can_bus_1);
     can_task::start_reader(can_bus_1);
 
-    auto motion = pipettes_motion_controller_task::start_task(
-        pipette_motor.motion_controller, queues);
+    auto motion =
+        mc_task_builder.start(5, pipette_motor.motion_controller, queues);
     auto motor =
-        pipettes_motor_driver_task::start_task(pipette_motor.driver, queues);
-    auto move_group = pipettes_move_group_task::start_task(queues);
-    auto move_status_reporter =
-        pipettes_move_status_reporter_task::start_task(queues);
-    auto eeprom_task = pipettes_eeprom_task::start_task(i2c_comms, queues);
+        motor_driver_task_builder.start(5, pipette_motor.driver, queues);
+    auto move_group = move_group_task_builder.start(5, queues, queues);
+    auto move_status_reporter = move_status_task_builder.start(5, queues);
+    auto eeprom_task = eeprom_task_builder.start(5, i2c_comms, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

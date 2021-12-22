@@ -8,7 +8,7 @@
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "pipettes/core/tasks/eeprom.hpp"
+#include "pipettes/core/tasks/eeprom_task.hpp"
 
 namespace pipettes_tasks {
 

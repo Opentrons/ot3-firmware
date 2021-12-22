@@ -2,7 +2,7 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "pipettes/core/tasks/eeprom.hpp"
+#include "pipettes/core/tasks/eeprom_task.hpp"
 
 using namespace pipettes_eeprom_task;
 
