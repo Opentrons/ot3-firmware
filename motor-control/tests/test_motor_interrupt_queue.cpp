@@ -2,6 +2,7 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
+#include "motor-control/tests/mock_move_status_reporter_client.hpp"
 
 using namespace motor_handler;
 
@@ -9,9 +10,9 @@ SCENARIO("queue multiple move messages") {
     static constexpr sq0_31 default_velocity = 0x1 << 30;
     GIVEN("a motor interrupt handler") {
         test_mocks::MockMessageQueue<Move> queue;
-        test_mocks::MockMessageQueue<Ack> completed_queue;
+        test_mocks::MockMoveStatusReporterClient reporter{};
         test_mocks::MockMotorHardware hardware;
-        auto handler = MotorInterruptHandler(queue, completed_queue, hardware);
+        auto handler = MotorInterruptHandler(queue, reporter, hardware);
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {

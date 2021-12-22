@@ -9,6 +9,8 @@ namespace test_mocks {
 template <typename Message, std::size_t queue_size = 10>
 class MockMessageQueue {
   public:
+    static auto constexpr max_delay = 10000;
+
     explicit MockMessageQueue() : queue_data_structure() {}
     MockMessageQueue& operator=(MockMessageQueue&) = delete;
     MockMessageQueue&& operator=(MockMessageQueue&&) = delete;

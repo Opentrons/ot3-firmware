@@ -87,7 +87,7 @@ struct AllTask {
 [[nodiscard]] auto get_left_queues() -> QueueClient&;
 
 /**
- * Access to the left queues singleton
+ * Access to the right queues singleton
  * @return
  */
 [[nodiscard]] auto get_right_queues() -> QueueClient&;

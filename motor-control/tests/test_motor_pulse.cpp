@@ -2,6 +2,7 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
+#include "motor-control/tests/mock_move_status_reporter_client.hpp"
 
 using namespace motor_handler;
 
@@ -13,9 +14,10 @@ static constexpr sq0_31 default_velocity =
 struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<Move> queue{};
-    test_mocks::MockMessageQueue<Ack> completed_queue{};
-    MotorInterruptHandler<test_mocks::MockMessageQueue> handler{
-        queue, completed_queue, hw};
+    test_mocks::MockMoveStatusReporterClient reporter{};
+    MotorInterruptHandler<test_mocks::MockMessageQueue,
+                          test_mocks::MockMoveStatusReporterClient>
+        handler{queue, reporter, hw};
 };
 
 sq0_31 convert_velocity(float f) {
@@ -294,9 +296,8 @@ TEST_CASE("Finishing a move") {
         THEN(
             "the ack message should contain the correct information when the "
             "move finishes") {
-            REQUIRE(test_objs.completed_queue.get_size() == 1);
-            auto msg = Ack{};
-            test_objs.completed_queue.try_read(&msg);
+            REQUIRE(test_objs.reporter.messages.size() == 1);
+            auto msg = test_objs.reporter.messages[0];
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position == 100);
