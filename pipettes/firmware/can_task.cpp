@@ -20,8 +20,6 @@
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
 
-using namespace can_dispatch;
-
 static auto& queue_client = pipettes_tasks::get_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<

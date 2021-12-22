@@ -32,6 +32,8 @@ add_executable(head
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 
+target_head_core(head)
+
 target_ot_motor_control(head)
 
 target_link_libraries(head

@@ -8,15 +8,18 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
-namespace gantry_tasks {
+namespace head_tasks {
 
 /**
- * Start gantry tasks.
+ * Start head tasks.
  */
-void start_tasks(
-    can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::BeltConfig>& motion_controller,
-    motor_driver::MotorDriver& motor_driver);
+void start_tasks(can_bus::CanBus& can_bus,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     left_motion_controller,
+                 motor_driver::MotorDriver& left_motor_driver,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     right_motion_controller,
+                 motor_driver::MotorDriver& right_motor_driver);
 
 /**
  * Access to all the message queues in the system.
@@ -55,7 +58,7 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
         motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, lms::BeltConfig,
+        freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
         QueueClient>* motion_controller{nullptr};
     move_status_reporter_task::MoveStatusReporterTask<
         freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
@@ -66,15 +69,27 @@ struct AllTask {
 };
 
 /**
- * Access to the tasks singleton
+ * Access to the right tasks singleton
  * @return
  */
-[[nodiscard]] auto get_tasks() -> AllTask&;
+[[nodiscard]] auto get_right_tasks() -> AllTask&;
 
 /**
- * Access to the queues singleton
+ * Access to the left tasks singleton
  * @return
  */
-[[nodiscard]] auto get_queues() -> QueueClient&;
+[[nodiscard]] auto get_left_tasks() -> AllTask&;
 
-}  // namespace gantry_tasks
+/**
+ * Access to the left queues singleton
+ * @return
+ */
+[[nodiscard]] auto get_left_queues() -> QueueClient&;
+
+/**
+ * Access to the left queues singleton
+ * @return
+ */
+[[nodiscard]] auto get_right_queues() -> QueueClient&;
+
+}  // namespace head_tasks

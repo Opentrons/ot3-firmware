@@ -1,7 +1,7 @@
 #pragma once
 
 #include "can/core/can_bus.hpp"
-#include "can/core/freertos_sender_task.hpp"
+#include "can/core/can_writer_task.hpp"
 #include "common/core/freertos_message_queue.hpp"
 
 namespace can_bus {
@@ -22,7 +22,7 @@ struct CanMessageReaderTask {
  */
 auto start_reader(can_bus::CanBus& canbus) -> CanMessageReaderTask&;
 
-using CanMessageWriterTask = freertos_sender_task::MessageSenderTask<
+using CanMessageWriterTask = message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
