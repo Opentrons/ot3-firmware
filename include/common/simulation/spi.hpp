@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "motor-control/core/spi.hpp"
+#include "common/core/spi.hpp"
 
 namespace sim_spi {
 

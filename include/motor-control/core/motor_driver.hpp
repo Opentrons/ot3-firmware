@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
+#include "common/core/spi.hpp"
 #include "motor_driver_config.hpp"
-#include "spi.hpp"
 
 namespace motor_driver {
 
