@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 
+#include "common/core/i2c.hpp"
+
 namespace i2c {
 class I2C {
   public:
