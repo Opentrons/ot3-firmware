@@ -18,10 +18,14 @@ class TaskStarter {
                                                  MotionClient, CanClient>;
 
     TaskStarter() : task_entry{queue, move_group_manager}, task{task_entry} {}
+    TaskStarter(const TaskStarter& c) = delete;
+    TaskStarter(const TaskStarter&& c) = delete;
+    auto operator=(const TaskStarter& c) = delete;
+    auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    MoveGroupTaskType& start(uint32_t priority, MotionClient& motion_client,
-                             CanClient& can_client) {
+    auto start(uint32_t priority, MotionClient& motion_client,
+               CanClient& can_client) -> MoveGroupTaskType& {
         task.start(priority, "move-group", &motion_client, &can_client);
         return task_entry;
     }

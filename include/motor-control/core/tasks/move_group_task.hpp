@@ -34,6 +34,10 @@ class MoveGroupMessageHandler {
         : move_groups{move_group_manager},
           mc_client{mc_client},
           can_client{can_client} {}
+    MoveGroupMessageHandler(const MoveGroupMessageHandler& c) = delete;
+    MoveGroupMessageHandler(const MoveGroupMessageHandler&& c) = delete;
+    auto operator=(const MoveGroupMessageHandler& c) = delete;
+    auto operator=(const MoveGroupMessageHandler&& c) = delete;
     ~MoveGroupMessageHandler() = default;
 
     /**
@@ -102,6 +106,10 @@ class MoveGroupTask {
     using QueueType = QueueImpl<TaskMessage>;
     MoveGroupTask(QueueType& queue, MoveGroupType& move_group)
         : queue{queue}, move_group{move_group} {}
+    MoveGroupTask(const MoveGroupTask& c) = delete;
+    MoveGroupTask(const MoveGroupTask&& c) = delete;
+    auto operator=(const MoveGroupTask& c) = delete;
+    auto operator=(const MoveGroupTask&& c) = delete;
     ~MoveGroupTask() = default;
 
     /**

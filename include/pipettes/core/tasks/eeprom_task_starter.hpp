@@ -20,6 +20,10 @@ class TaskStarter {
         freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType, I2C, CanClient>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
+    TaskStarter(const TaskStarter& c) = delete;
+    TaskStarter(const TaskStarter&& c) = delete;
+    auto operator=(const TaskStarter& c) = delete;
+    auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
     auto start(uint32_t priority, I2C& driver, CanClient& can_client)

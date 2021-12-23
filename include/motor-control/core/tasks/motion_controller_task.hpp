@@ -24,6 +24,12 @@ class MotionControllerMessageHandler {
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
+    MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
+        delete;
+    MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
+        delete;
+    auto operator=(const MotionControllerMessageHandler& c) = delete;
+    auto operator=(const MotionControllerMessageHandler&& c) = delete;
 
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->handle(m); }, message);
@@ -88,6 +94,10 @@ class MotionControllerTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
     MotionControllerTask(QueueType& queue) : queue{queue} {}
+    MotionControllerTask(const MotionControllerTask& c) = delete;
+    MotionControllerTask(const MotionControllerTask&& c) = delete;
+    auto operator=(const MotionControllerTask& c) = delete;
+    auto operator=(const MotionControllerTask&& c) = delete;
 
     /**
      * Task entry point.

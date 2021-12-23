@@ -56,6 +56,10 @@ class EEPromTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
     EEPromTask(QueueType &queue) : queue{queue} {}
+    EEPromTask(const EEPromTask &c) = delete;
+    EEPromTask(const EEPromTask &&c) = delete;
+    auto operator=(const EEPromTask &c) = delete;
+    auto operator=(const EEPromTask &&c) = delete;
     ~EEPromTask() = default;
 
     /**

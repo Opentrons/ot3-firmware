@@ -46,16 +46,16 @@ void head_tasks::start_tasks(
         right_motion_controller,
     motor_driver::MotorDriver& right_motor_driver) {
     // LEFT and RIGHT each get the same can task message queue
-    auto can_writer = can_task::start_writer(can_bus);
+    auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
 
-    auto left_motion =
+    auto& left_motion =
         left_mc_task_builder.start(5, left_motion_controller, left_queues);
-    auto left_motor =
+    auto& left_motor =
         left_motor_driver_task_builder.start(5, left_motor_driver, left_queues);
-    auto left_move_group =
+    auto& left_move_group =
         left_move_group_task_builder.start(5, left_queues, left_queues);
-    auto left_move_status_reporter =
+    auto& left_move_status_reporter =
         left_move_status_task_builder.start(5, left_queues);
 
     left_tasks.can_writer = &can_writer;
@@ -71,13 +71,13 @@ void head_tasks::start_tasks(
     left_queues.move_status_report_queue =
         &left_move_status_reporter.get_queue();
 
-    auto right_motion =
+    auto& right_motion =
         right_mc_task_builder.start(5, right_motion_controller, right_queues);
-    auto right_motor = right_motor_driver_task_builder.start(
+    auto& right_motor = right_motor_driver_task_builder.start(
         5, right_motor_driver, right_queues);
-    auto right_move_group =
+    auto& right_move_group =
         right_move_group_task_builder.start(5, right_queues, right_queues);
-    auto right_move_status_reporter =
+    auto& right_move_status_reporter =
         right_move_status_task_builder.start(5, right_queues);
 
     right_tasks.can_writer = &can_writer;

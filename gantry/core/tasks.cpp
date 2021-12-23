@@ -29,12 +29,12 @@ void gantry_tasks::start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     motor_driver::MotorDriver& motor_driver) {
-    auto can_writer = can_task::start_writer(can_bus);
+    auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
-    auto motion = mc_task_builder.start(5, motion_controller, queues);
-    auto motor = motor_driver_task_builder.start(5, motor_driver, queues);
-    auto move_group = move_group_task_builder.start(5, queues, queues);
-    auto move_status_reporter = move_status_task_builder.start(5, queues);
+    auto& motion = mc_task_builder.start(5, motion_controller, queues);
+    auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
+    auto& move_group = move_group_task_builder.start(5, queues, queues);
+    auto& move_status_reporter = move_status_task_builder.start(5, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

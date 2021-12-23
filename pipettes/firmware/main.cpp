@@ -127,16 +127,16 @@ auto main() -> int {
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
 
-    auto can_writer = can_task::start_writer(can_bus_1);
+    auto& can_writer = can_task::start_writer(can_bus_1);
     can_task::start_reader(can_bus_1);
 
-    auto motion =
+    auto& motion =
         mc_task_builder.start(5, pipette_motor.motion_controller, queues);
-    auto motor =
+    auto& motor =
         motor_driver_task_builder.start(5, pipette_motor.driver, queues);
-    auto move_group = move_group_task_builder.start(5, queues, queues);
-    auto move_status_reporter = move_status_task_builder.start(5, queues);
-    auto eeprom_task = eeprom_task_builder.start(5, i2c_comms, queues);
+    auto& move_group = move_group_task_builder.start(5, queues, queues);
+    auto& move_status_reporter = move_status_task_builder.start(5, queues);
+    auto& eeprom_task = eeprom_task_builder.start(5, i2c_comms, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

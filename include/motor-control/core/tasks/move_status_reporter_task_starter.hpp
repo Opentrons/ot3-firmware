@@ -19,10 +19,14 @@ class TaskStarter {
                                     CanClient>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
+    TaskStarter(const TaskStarter& c) = delete;
+    TaskStarter(const TaskStarter&& c) = delete;
+    auto operator=(const TaskStarter& c) = delete;
+    auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    MoveStatusReporterTaskType& start(uint32_t priority,
-                                      CanClient& can_client) {
+    auto start(uint32_t priority, CanClient& can_client)
+        -> MoveStatusReporterTaskType& {
         task.start(priority, "move-status", &can_client);
         return task_entry;
     }

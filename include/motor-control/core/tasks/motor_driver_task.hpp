@@ -23,6 +23,10 @@ class MotorDriverMessageHandler {
     MotorDriverMessageHandler(motor_driver::MotorDriver& driver,
                               CanClient& can_client)
         : driver{driver}, can_client{can_client} {}
+    MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
+    MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
+    auto operator=(const MotorDriverMessageHandler& c) = delete;
+    auto operator=(const MotorDriverMessageHandler&& c) = delete;
     ~MotorDriverMessageHandler() = default;
 
     /**
@@ -82,6 +86,10 @@ class MotorDriverTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
     MotorDriverTask(QueueType& queue) : queue{queue} {}
+    MotorDriverTask(const MotorDriverTask& c) = delete;
+    MotorDriverTask(const MotorDriverTask&& c) = delete;
+    auto operator=(const MotorDriverTask& c) = delete;
+    auto operator=(const MotorDriverTask&& c) = delete;
     ~MotorDriverTask() = default;
 
     /**

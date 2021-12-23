@@ -18,6 +18,10 @@ template <message_writer_task::TaskClient CanClient>
 class MoveStatusMessageHandler {
   public:
     MoveStatusMessageHandler(CanClient& can_client) : can_client{can_client} {}
+    MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
+    MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
+    auto operator=(const MoveStatusMessageHandler& c) = delete;
+    auto operator=(const MoveStatusMessageHandler&& c) = delete;
     ~MoveStatusMessageHandler() = default;
 
     /**
@@ -49,6 +53,10 @@ class MoveStatusReporterTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
     MoveStatusReporterTask(QueueType& queue) : queue{queue} {}
+    MoveStatusReporterTask(const MoveStatusReporterTask& c) = delete;
+    MoveStatusReporterTask(const MoveStatusReporterTask&& c) = delete;
+    auto operator=(const MoveStatusReporterTask& c) = delete;
+    auto operator=(const MoveStatusReporterTask&& c) = delete;
     ~MoveStatusReporterTask() = default;
 
     /**

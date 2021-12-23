@@ -23,11 +23,14 @@ class TaskStarter {
                                     MotionControllerType, CanClient>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
+    TaskStarter(const TaskStarter& c) = delete;
+    TaskStarter(const TaskStarter&& c) = delete;
+    auto operator=(const TaskStarter& c) = delete;
+    auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    MotionControllerTaskType& start(uint32_t priority,
-                                    MotionControllerType& controller,
-                                    CanClient& can_client) {
+    auto start(uint32_t priority, MotionControllerType& controller,
+               CanClient& can_client) -> MotionControllerTaskType& {
         task.start(priority, "motion-ctrl", &controller, &can_client);
         return task_entry;
     }
