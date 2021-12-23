@@ -16,7 +16,7 @@ class MotorInterruptDriver {
         motor_handler::MotorInterruptHandler<
             freertos_message_queue::FreeRTOSMessageQueue, StatusClient>& h)
         : task_entry{q, h}, task(task_entry) {
-        task.start(5, "motor interrupt driver");
+        task.start(5, "sim_motor_isr");
     }
 
   private:
