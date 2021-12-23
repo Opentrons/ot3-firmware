@@ -30,6 +30,7 @@ class MotionControllerMessageHandler {
         delete;
     auto operator=(const MotionControllerMessageHandler& c) = delete;
     auto operator=(const MotionControllerMessageHandler&& c) = delete;
+    ~MotionControllerMessageHandler() = default;
 
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->handle(m); }, message);
@@ -98,6 +99,7 @@ class MotionControllerTask {
     MotionControllerTask(const MotionControllerTask&& c) = delete;
     auto operator=(const MotionControllerTask& c) = delete;
     auto operator=(const MotionControllerTask&& c) = delete;
+    ~MotionControllerTask() = default;
 
     /**
      * Task entry point.
