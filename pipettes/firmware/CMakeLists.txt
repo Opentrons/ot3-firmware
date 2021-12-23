@@ -36,7 +36,7 @@ add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
-target_pipette_core(pipettes)
+target_pipettes_core(pipettes)
 
 target_ot_motor_control(pipettes)
 
@@ -55,7 +55,6 @@ set_target_properties(pipettes
 target_include_directories(
         pipettes
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
 
 target_compile_options(pipettes
         PUBLIC
