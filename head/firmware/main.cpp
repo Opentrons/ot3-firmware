@@ -166,6 +166,8 @@ auto main() -> int {
         Error_Handler();
     }
 
+    can_start();
+
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
                             motor_right.driver);

@@ -4,7 +4,6 @@ find_package(FreeRTOS)
 # Set up the include directories
 include_directories(
         .
-        ../firmware
         ${CMAKE_CURRENT_SOURCE_DIR}/../../include
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/include
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix
@@ -25,18 +24,30 @@ list(APPEND FREERTOS_SOURCES "${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/Th
 
 
 # Create the freertos lib
-add_library(freertos STATIC ${FREERTOS_SOURCES})
+add_library(freertos-head STATIC ${FREERTOS_SOURCES})
 
 add_executable(
-        head-simulator
+        head_simulator
         main.cpp
-        ../firmware/freertos_idle_timer_task.cpp
+        freertos_idle_timer_task.cpp
         ${HEAD-CORE-SRC}
 )
 
-target_link_libraries(head-simulator PRIVATE can-core freertos pthread)
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    target_compile_definitions(head_simulator PUBLIC USE_SOCKETCAN)
+endif()
 
-set_target_properties(head-simulator
+target_compile_definitions(head_simulator PUBLIC ENABLE_LOGGING)
+
+target_can_simlib(head_simulator)
+
+target_head_core(head_simulator)
+
+target_ot_motor_control(head_simulator)
+
+target_link_libraries(head_simulator PRIVATE can-core common-simulation freertos-head pthread)
+
+set_target_properties(head_simulator
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
