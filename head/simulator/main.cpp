@@ -5,6 +5,7 @@
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+#include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "task.h"
 
 /**
@@ -71,6 +72,13 @@ static motor_class::Motor motor_left{
                                       .max_acceleration = 2},
     MotorDriverConfigurations,
     motor_queue_left};
+
+
+static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_right(motor_queue_right,
+                                                                       motor_interrupt_right);
+static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(motor_queue_left,
+                                                      motor_interrupt_left);
+
 
 int main() {
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
