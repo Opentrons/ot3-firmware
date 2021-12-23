@@ -29,8 +29,8 @@ using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>;
 using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     motion_message_handler::MotionHandler<head_tasks::QueueClient>,
-    can_messages::AddLinearMoveRequest, can_messages::DisableMotorRequest,
-    can_messages::EnableMotorRequest, can_messages::GetMotionConstraintsRequest,
+    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest>;
 using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     device_info_handler::DeviceInfoHandler<head_tasks::QueueClient>,
