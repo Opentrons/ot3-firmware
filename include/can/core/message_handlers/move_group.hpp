@@ -1,6 +1,5 @@
 #pragma once
 
-#include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 
@@ -27,13 +26,5 @@ class MoveGroupHandler {
   private:
     Client &task_client;
 };
-
-/**
- * Type short cut for creating dispatch parse target for the handler.
- */
-template <move_group_task::TaskClient Client>
-using DispatchTarget = can_dispatch::DispatchParseTarget<
-    MoveGroupHandler<Client>, AddLinearMoveRequest, ClearAllMoveGroupsRequest,
-    ExecuteMoveGroupRequest, GetMoveGroupRequest>;
 
 }  // namespace move_group_handler

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 
@@ -27,14 +26,5 @@ class MotorHandler {
   private:
     MotorDriverTaskClient &motor_client;
 };
-
-/**
- * Type short cut for creating dispatch parse target for the handler.
- */
-template <motor_driver_task::TaskClient MotorDriverTaskClient>
-using DispatchTarget =
-    can_dispatch::DispatchParseTarget<MotorHandler<MotorDriverTaskClient>,
-                                      ReadMotorDriverRegister, SetupRequest,
-                                      WriteMotorDriverRegister>;
 
 }  // namespace motor_message_handler

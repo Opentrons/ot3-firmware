@@ -1,6 +1,5 @@
 #pragma once
 
-#include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
 
@@ -25,14 +24,5 @@ class EEPromHandler {
   private:
     EEPromTaskClient &client;
 };
-
-/**
- * Type short cut for creating dispatch parse target for the handler.
- */
-template <eeprom_task::TaskClient EEPromTaskClient>
-using DispatchTarget =
-    can_dispatch::DispatchParseTarget<EEPromHandler<EEPromTaskClient>,
-                                      can_messages::WriteToEEPromRequest,
-                                      can_messages::ReadFromEEPromRequest>;
 
 }  // namespace eeprom_message_handler

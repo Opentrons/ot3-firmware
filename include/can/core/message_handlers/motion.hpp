@@ -1,6 +1,5 @@
 #pragma once
 
-#include "can/core/dispatch.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 
@@ -31,14 +30,5 @@ class MotionHandler {
   private:
     MotionTaskClient &motion_client;
 };
-
-/**
- * Type short cut for creating dispatch parse target for the handler.
- */
-template <motion_controller_task::TaskClient MotionTaskClient>
-using DispatchTarget = can_dispatch::DispatchParseTarget<
-    MotionHandler<MotionTaskClient>, AddLinearMoveRequest, DisableMotorRequest,
-    EnableMotorRequest, GetMotionConstraintsRequest, SetMotionConstraints,
-    StopRequest>;
 
 }  // namespace motion_message_handler

@@ -16,11 +16,27 @@ class CanBus;
 
 namespace can_task {
 
-using GantryDispatcherType = can_dispatch::Dispatcher<
-    motor_message_handler::DispatchTarget<gantry_tasks::QueueClient>,
-    move_group_handler::DispatchTarget<gantry_tasks::QueueClient>,
-    motion_message_handler::DispatchTarget<gantry_tasks::QueueClient>,
-    device_info_handler::DispatchTarget<gantry_tasks::QueueClient>>;
+using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
+    motor_message_handler::MotorHandler<gantry_tasks::QueueClient>,
+    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
+    can_messages::WriteMotorDriverRegister>;
+using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
+    move_group_handler::MoveGroupHandler<gantry_tasks::QueueClient>,
+    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
+    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>;
+using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
+    motion_message_handler::MotionHandler<gantry_tasks::QueueClient>,
+    can_messages::AddLinearMoveRequest, can_messages::DisableMotorRequest,
+    can_messages::EnableMotorRequest, can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints, can_messages::StopRequest>;
+using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
+    device_info_handler::DeviceInfoHandler<gantry_tasks::QueueClient>,
+    can_messages::DeviceInfoRequest>;
+
+using GantryDispatcherType =
+    can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
+                             MotionControllerDispatchTarget,
+                             DeviceInfoDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =

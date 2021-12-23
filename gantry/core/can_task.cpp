@@ -35,16 +35,16 @@ static auto can_motion_handler =
 static auto device_info_message_handler =
     device_info_handler::DeviceInfoHandler{queue_client, 0};
 static auto device_info_dispatch_target =
-    device_info_handler::DispatchTarget{device_info_message_handler};
+    can_task::DeviceInfoDispatchTarget{device_info_message_handler};
 
 static auto motor_dispatch_target =
-    motor_message_handler::DispatchTarget{can_motor_handler};
+    can_task::MotorDispatchTarget{can_motor_handler};
 
 static auto motion_group_dispatch_target =
-    move_group_handler::DispatchTarget{can_move_group_handler};
+    can_task::MoveGroupDispatchTarget{can_move_group_handler};
 
 static auto motion_dispatch_target =
-    motion_message_handler::DispatchTarget{can_motion_handler};
+    can_task::MotionControllerDispatchTarget{can_motion_handler};
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_task::GantryDispatcherType(

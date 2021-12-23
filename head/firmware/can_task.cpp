@@ -4,6 +4,7 @@
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_handlers/device_info.hpp"
+#include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/messages.hpp"
@@ -18,11 +19,33 @@ static auto& left_queues = head_tasks::get_left_queues();
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
 
+using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
+    motor_message_handler::MotorHandler<head_tasks::QueueClient>,
+    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
+    can_messages::WriteMotorDriverRegister>;
+using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
+    move_group_handler::MoveGroupHandler<head_tasks::QueueClient>,
+    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
+    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>;
+using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
+    motion_message_handler::MotionHandler<head_tasks::QueueClient>,
+    can_messages::AddLinearMoveRequest, can_messages::DisableMotorRequest,
+    can_messages::EnableMotorRequest, can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints, can_messages::StopRequest>;
+using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
+    device_info_handler::DeviceInfoHandler<head_tasks::QueueClient>,
+    can_messages::DeviceInfoRequest>;
+
 /** The parsed message handler */
 static auto can_motor_handler_right =
     motor_message_handler::MotorHandler{right_queues};
 static auto can_motor_handler_left =
     motor_message_handler::MotorHandler{left_queues};
+
+static auto can_motion_handler_right =
+    motion_message_handler::MotionHandler{right_queues};
+static auto can_motion_handler_left =
+    motion_message_handler::MotionHandler{left_queues};
 
 static auto can_move_group_handler_right =
     move_group_handler::MoveGroupHandler(right_queues);
@@ -33,24 +56,27 @@ static auto can_move_group_handler_left =
 static auto device_info_handler_right =
     device_info_handler::DeviceInfoHandler(right_queues, 0);
 static auto device_info_dispatch_target_right =
-    device_info_handler::DispatchTarget{device_info_handler_right};
+    DeviceInfoDispatchTarget{device_info_handler_right};
 
 static auto device_info_handler_left =
     device_info_handler::DeviceInfoHandler(left_queues, 0);
 static auto device_info_dispatch_target_left =
-    device_info_handler::DispatchTarget{device_info_handler_left};
+    DeviceInfoDispatchTarget{device_info_handler_left};
 
 static auto motor_dispatch_target_right =
-    motor_message_handler::DispatchTarget{can_motor_handler_right};
-
+    MotorDispatchTarget{can_motor_handler_right};
 static auto motor_dispatch_target_left =
-    motor_message_handler::DispatchTarget{can_motor_handler_left};
+    MotorDispatchTarget{can_motor_handler_left};
 
-static auto motion_group_dispatch_target_right =
-    move_group_handler::DispatchTarget{can_move_group_handler_right};
+static auto motion_dispatch_target_right =
+    MotionControllerDispatchTarget{can_motion_handler_right};
+static auto motion_dispatch_target_left =
+    MotionControllerDispatchTarget{can_motion_handler_left};
 
-static auto motion_group_dispatch_target_left =
-    move_group_handler::DispatchTarget{can_move_group_handler_left};
+static auto move_group_dispatch_target_right =
+    MoveGroupDispatchTarget{can_move_group_handler_right};
+static auto move_group_dispatch_target_left =
+    MoveGroupDispatchTarget{can_move_group_handler_left};
 
 /**
  * messages to head act like messages to both, head-right and head-left
@@ -74,12 +100,14 @@ CheckForNodeId check_for_node_id_right{.node_id = can_ids::NodeId::head_r};
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = can_dispatch::Dispatcher(
     check_for_node_id_right, motor_dispatch_target_right,
-    motion_group_dispatch_target_right, device_info_dispatch_target_right);
+    motion_dispatch_target_right, move_group_dispatch_target_right,
+    device_info_dispatch_target_right);
 
 /** Dispatcher to the various left motor handlers */
 static auto dispatcher_left_motor = can_dispatch::Dispatcher(
     check_for_node_id_left, motor_dispatch_target_left,
-    motion_group_dispatch_target_left, device_info_dispatch_target_left);
+    motion_dispatch_target_left, move_group_dispatch_target_left,
+    device_info_dispatch_target_left);
 
 static auto main_dispatcher =
     can_dispatch::Dispatcher([](auto _) -> bool { return true; },
