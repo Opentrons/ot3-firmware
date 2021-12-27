@@ -17,6 +17,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
+    ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c
     ${CAN_FW_DIR}/hal_can.c
     ${CAN_FW_DIR}/hal_can_bus.cpp
     ${CAN_FW_DIR}/utils.c)

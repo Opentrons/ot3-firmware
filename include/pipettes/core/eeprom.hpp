@@ -4,11 +4,10 @@
 #include <concepts>
 #include <cstdint>
 
-#include "common/core/bit_utils.hpp"
+#include "common/core/i2c.hpp"
 
-/*
- * A template and helper functions describing
- */
+namespace eeprom {
+
 
 class EEPromWriter {
   public:
@@ -16,28 +15,18 @@ class EEPromWriter {
     static constexpr auto BUFFER_SIZE = 1;
     using BufferType = std::array<uint8_t, BUFFER_SIZE>;
 
-    EEPromWriter();
+    EEPromWriter(i2c::I2CDeviceBase & i2c_device);
 
     void transmit(uint8_t value);
     void receive(BufferType& receive);
 
   private:
     static constexpr auto TIMEOUT = 0xFFFF;
-    void* handle;
+    i2c::I2CDeviceBase & i2c_device;
 };
 
-void write(EEPromWriter& writer, const uint8_t serial_number) {
-    writer.transmit(serial_number);
-}
+void write(EEPromWriter& writer, const uint8_t serial_number);
 
-auto read(EEPromWriter& writer) -> uint8_t {
-    using BufferType = std::array<uint8_t, EEPromWriter::BUFFER_SIZE>;
-    BufferType rxBuffer{0};
-    uint8_t data = 0x0;
+auto read(EEPromWriter& writer) -> uint8_t;
 
-    writer.receive(rxBuffer);
-
-    bit_utils::bytes_to_int(rxBuffer, data);
-    return data;
-}
 }  // namespace eeprom
