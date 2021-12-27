@@ -11,12 +11,11 @@ using TaskMessage =
     std::variant<std::monostate, can_messages::WriteToEEPromRequest,
                  can_messages::ReadFromEEPromRequest>;
 
-template <eeprom::EEPromPolicy I2CComm,
-          message_writer_task::TaskClient CanClient>
+template <message_writer_task::TaskClient CanClient>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(I2CComm &i2c, CanClient &can_client)
-        : i2c(i2c), can_client(can_client) {}
+    explicit EEPromMessageHandler(i2c::I2CDeviceBase &i2c, CanClient &can_client)
+        : eeprom_writer{i2c}, can_client{can_client} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -33,23 +32,23 @@ class EEPromMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(can_messages::WriteToEEPromRequest &m) {
-        eeprom::write(i2c, m.serial_number);
+        eeprom::write(eeprom_writer, m.serial_number);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
-        const uint8_t serial_number = eeprom::read(i2c);
+        const uint8_t serial_number = eeprom::read(eeprom_writer);
         auto message = can_messages::ReadFromEEPromResponse{{}, serial_number};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
-    I2CComm &i2c;
+    eeprom::EEPromWriter eeprom_writer;
     CanClient &can_client;
 };
 
 /**
  * The task type.
  */
-template <template <class> class QueueImpl, eeprom::EEPromPolicy I2CComm,
+template <template <class> class QueueImpl,
           message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
@@ -65,7 +64,7 @@ class EEPromTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CComm *driver, CanClient *can_client) {
+    [[noreturn]] void operator()(i2c::I2CDeviceBase *driver, CanClient *can_client) {
         auto handler = EEPromMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {

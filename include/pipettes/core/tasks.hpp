@@ -62,7 +62,7 @@ struct AllTask {
                                    QueueClient, QueueClient>* move_group{
         nullptr};
     eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue,
-                            i2c::I2C, QueueClient>* eeprom_task{nullptr};
+                            QueueClient>* eeprom_task{nullptr};
 };
 
 /**

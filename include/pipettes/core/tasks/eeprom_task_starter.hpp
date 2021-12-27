@@ -7,17 +7,16 @@
 
 namespace eeprom_task_starter {
 
-template <uint32_t StackDepth, eeprom::EEPromPolicy I2C,
-          message_writer_task::TaskClient CanClient>
+template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
 class TaskStarter {
   public:
     using EEPromTaskType =
         eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue,
-                                I2C, CanClient>;
+                                CanClient>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>;
     using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType, I2C, CanClient>;
+        freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType, i2c::I2CDeviceBase, CanClient>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;
@@ -26,7 +25,7 @@ class TaskStarter {
     auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    auto start(uint32_t priority, I2C& driver, CanClient& can_client)
+    auto start(uint32_t priority, i2c::I2CDeviceBase& driver, CanClient& can_client)
         -> EEPromTaskType& {
         task.start(priority, "eeprom", &driver, &can_client);
         return task_entry;

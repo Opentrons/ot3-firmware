@@ -1,6 +1,7 @@
 #pragma once
 
-#include "platform_specific_hal_conf.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {

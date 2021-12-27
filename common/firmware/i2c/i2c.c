@@ -1,3 +1,5 @@
+#include "platform_specific_hal_conf.h"
+#include "common/firmware/i2c.h"
 
 
 /**

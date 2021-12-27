@@ -1,4 +1,5 @@
 #include "pipettes/core/eeprom.hpp"
+#include "common/core/bit_utils.hpp"
 
 eeprom::EEPromWriter::EEPromWriter(i2c::I2CDeviceBase & i2c_device):i2c_device{i2c_device} {}
 

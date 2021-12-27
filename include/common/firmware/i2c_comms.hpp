@@ -7,9 +7,14 @@
 #include "common/firmware/i2c.h"
 
 namespace i2c {
-class I2C : I2CDeviceBase {
+class I2C : public I2CDeviceBase {
   public:
     I2C(HAL_I2C_HANDLE handle);
+    ~I2C() = default;
+    I2C(const I2C&) = delete;
+    I2C(const I2C&&) = delete;
+    auto operator=(const I2C&) = delete;
+    auto operator=(const I2C&&) = delete;
 
     /**
      * Transmit data.

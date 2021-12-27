@@ -78,7 +78,7 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{
     .thigh = 0xFFFFF,
     .coolconf = 0x60000};
 
-static auto i2c_comms = i2c::I2C{};
+static auto i2c_comms = i2c::I2C{MX_I2C_Init()};
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -114,7 +114,7 @@ static auto move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<
         512, pipettes_tasks::QueueClient>{};
 static auto eeprom_task_builder =
-    eeprom_task_starter::TaskStarter<512, i2c::I2C,
+    eeprom_task_starter::TaskStarter<512,
                                      pipettes_tasks::QueueClient>{};
 
 auto main() -> int {
