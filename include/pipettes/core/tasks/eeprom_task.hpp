@@ -14,7 +14,8 @@ using TaskMessage =
 template <message_writer_task::TaskClient CanClient>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(i2c::I2CDeviceBase &i2c, CanClient &can_client)
+    explicit EEPromMessageHandler(i2c::I2CDeviceBase &i2c,
+                                  CanClient &can_client)
         : eeprom_writer{i2c}, can_client{can_client} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
@@ -64,7 +65,8 @@ class EEPromTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(i2c::I2CDeviceBase *driver, CanClient *can_client) {
+    [[noreturn]] void operator()(i2c::I2CDeviceBase *driver,
+                                 CanClient *can_client) {
         auto handler = EEPromMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {

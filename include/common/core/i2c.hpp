@@ -16,14 +16,15 @@ class I2CDeviceBase {
      * Abstract transmit function
      * @return True if succeeded
      */
-    virtual bool master_transmit(uint16_t dev_address, uint8_t *data, uint16_t size, uint32_t timeout) = 0;
+    virtual bool master_transmit(uint16_t dev_address, uint8_t *data,
+                                 uint16_t size, uint32_t timeout) = 0;
 
     /**
      * Abstract receive function
      * @return True if succeeded
      */
-    virtual bool master_receive(uint16_t dev_address, uint8_t *data, uint16_t size, uint32_t timeout) = 0;
+    virtual bool master_receive(uint16_t dev_address, uint8_t *data,
+                                uint16_t size, uint32_t timeout) = 0;
 };
 
-}
-
+}  // namespace i2c

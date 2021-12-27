@@ -114,8 +114,7 @@ static auto move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<
         512, pipettes_tasks::QueueClient>{};
 static auto eeprom_task_builder =
-    eeprom_task_starter::TaskStarter<512,
-                                     pipettes_tasks::QueueClient>{};
+    eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
 
 auto main() -> int {
     HardwareInit();
