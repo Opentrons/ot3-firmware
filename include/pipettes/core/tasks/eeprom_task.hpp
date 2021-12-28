@@ -2,6 +2,7 @@
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/eeprom.hpp"
 
@@ -33,11 +34,13 @@ class EEPromMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(can_messages::WriteToEEPromRequest &m) {
+        LOG("Received request to write serial number: %d\n", m.serial_number);
         eeprom_writer.write(m.serial_number);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
         uint8_t serial_number = eeprom_writer.read();
+        LOG("Received request to read serial number: %d\n", serial_number);
         auto message = can_messages::ReadFromEEPromResponse{{}, serial_number};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }

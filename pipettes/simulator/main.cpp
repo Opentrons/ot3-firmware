@@ -49,4 +49,8 @@ static motor_class::Motor pipette_motor{
     MotorDriverConfigurations,
     motor_queue};
 
-int main() { vTaskStartScheduler(); }
+int main() {
+    pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
+                                pipette_motor.driver, i2c_comms);
+    vTaskStartScheduler();
+}
