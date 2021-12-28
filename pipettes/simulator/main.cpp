@@ -2,7 +2,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
-#include "common/simulation/i2c.hpp"
+#include "common/simulation/eeprom.hpp"
 #include "common/simulation/spi.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
@@ -33,7 +33,7 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{
     .thigh = 0xFFFFF,
     .coolconf = 0x60000};
 
-static auto i2c_comms = i2c::SimI2C{};
+static auto i2c_comms = sim_i2c::SimEEProm{};
 
 static motor_class::Motor pipette_motor{
     spi_comms,

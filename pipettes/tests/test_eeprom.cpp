@@ -1,5 +1,5 @@
 #include "catch2/catch.hpp"
-#include "common/simulation/i2c.hpp"
+#include "common/simulation/eeprom.hpp"
 #include "pipettes/core/eeprom.hpp"
 
 using namespace eeprom;

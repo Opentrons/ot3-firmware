@@ -4,9 +4,12 @@
 
 #include "common/core/i2c.hpp"
 
-namespace i2c {
+namespace sim_i2c {
 
-class SimI2C : public I2CDeviceBase {
+/**
+ * Simulation of eeprom on i2c. Read back whatever was written.
+ */
+class SimEEProm : public i2c::I2CDeviceBase {
   public:
     auto master_transmit(uint16_t dev_address, uint8_t *data, uint16_t size,
                          uint32_t timeout) -> bool final;
@@ -17,4 +20,4 @@ class SimI2C : public I2CDeviceBase {
     std::vector<uint8_t> data{};
 };
 
-}  // namespace i2c
+}  // namespace sim_i2c
