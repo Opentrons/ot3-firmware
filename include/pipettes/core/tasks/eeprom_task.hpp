@@ -33,11 +33,11 @@ class EEPromMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(can_messages::WriteToEEPromRequest &m) {
-        eeprom::write(eeprom_writer, m.serial_number);
+        eeprom_writer.write(m.serial_number);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
-        const uint8_t serial_number = eeprom::read(eeprom_writer);
+        uint8_t serial_number = eeprom_writer.read();
         auto message = can_messages::ReadFromEEPromResponse{{}, serial_number};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }

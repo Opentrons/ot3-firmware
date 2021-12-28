@@ -4,8 +4,8 @@
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "pipettes/core//can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
-#include "pipettes/firmware/can_task.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};

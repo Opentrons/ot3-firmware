@@ -14,7 +14,6 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c

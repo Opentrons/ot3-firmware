@@ -1,4 +1,4 @@
-#include "pipettes/firmware/can_task.hpp"
+#include "pipettes/core/can_task.hpp"
 
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
@@ -6,20 +6,11 @@
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
-#include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
-#include "can/firmware/hal_can.h"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/firmware/errors.h"
 #include "pipettes/core/message_handlers/eeprom.hpp"
 #include "pipettes/core/tasks.hpp"
-
-#pragma GCC diagnostic push
-// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#pragma GCC diagnostic ignored "-Wvolatile"
-#include "motor_hardware.h"
-#pragma GCC diagnostic pop
 
 static auto& queue_client = pipettes_tasks::get_queues();
 
@@ -101,16 +92,7 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
-    can_start();
     can_bus->setup_node_id_filter(can_ids::NodeId::pipette);
-    // TODO (al, 2021-12-21): Move this out!!
-    if (initialize_spi() != HAL_OK) {
-        Error_Handler();
-    }
-
-    // TODO (al, 2021-12-21): Must account for this!!
-    //    motor.driver.setup();
-
     auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, dispatcher);
     poller();

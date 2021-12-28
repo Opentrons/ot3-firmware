@@ -11,6 +11,7 @@
 
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
+#include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
@@ -101,7 +102,13 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
 
+    if (initialize_spi() != HAL_OK) {
+        Error_Handler();
+    }
+
     initialize_timer(plunger_callback);
+
+    can_start();
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c_comms);
