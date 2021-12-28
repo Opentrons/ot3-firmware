@@ -8,7 +8,7 @@ SCENARIO("read and write pipette serial numbers") {
     GIVEN("write command") {
         const uint8_t DUMMY_VALUE = 0x2;
 
-        auto sim_i2c = i2c::SimI2C{};
+        auto sim_i2c = sim_i2c::SimEEProm{};
         auto subject = eeprom::EEPromWriter{sim_i2c};
 
         WHEN("i2c is initialized") {
