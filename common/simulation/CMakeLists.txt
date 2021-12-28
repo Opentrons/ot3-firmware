@@ -1,4 +1,4 @@
-add_library(common-simulation STATIC spi.cpp)
+add_library(common-simulation STATIC spi.cpp i2c.cpp)
 
 target_link_libraries(common-simulation PUBLIC can-core)
 
