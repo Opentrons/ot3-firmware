@@ -13,6 +13,15 @@
 namespace pipettes_tasks {
 
 /**
+ * Start pipettes tasks.
+ */
+void start_tasks(can_bus::CanBus& can_bus,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     motion_controller,
+                 motor_driver::MotorDriver& motor_driver,
+                 i2c::I2CDeviceBase& i2c);
+
+/**
  * Access to all the message queues in the system.
  */
 struct QueueClient : can_message_writer::MessageWriter {
