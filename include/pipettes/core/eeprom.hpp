@@ -8,10 +8,6 @@ namespace eeprom {
 
 class EEPromWriter {
   public:
-    static constexpr uint16_t DEVICE_ADDRESS = 0x1;
-    static constexpr auto BUFFER_SIZE = 1;
-    using BufferType = std::array<uint8_t, BUFFER_SIZE>;
-
     EEPromWriter(i2c::I2CDeviceBase& i2c_device) : i2c_device{i2c_device} {}
 
     void write(uint8_t serial_number) {
@@ -25,6 +21,7 @@ class EEPromWriter {
     }
 
   private:
+    static constexpr uint16_t DEVICE_ADDRESS = 0x1;
     static constexpr auto TIMEOUT = 0xFFFF;
     i2c::I2CDeviceBase& i2c_device;
 };
