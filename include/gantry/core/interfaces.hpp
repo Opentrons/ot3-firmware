@@ -1,9 +1,9 @@
 #pragma once
 
 #include "can/core/can_bus.hpp"
+#include "common/core/spi.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
-#include "motor-control/core/spi.hpp"
 
 namespace interfaces {
 

@@ -11,6 +11,7 @@
 
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
+#include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
@@ -18,14 +19,8 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
-#include "motor-control/core/tasks/motor_driver_task_starter.hpp"
-#include "motor-control/core/tasks/move_group_task_starter.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "pipettes/core/tasks/eeprom_task_starter.hpp"
-#include "pipettes/firmware/can_task.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -78,7 +73,7 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{
     .thigh = 0xFFFFF,
     .coolconf = 0x60000};
 
-static auto i2c_comms = i2c::I2C{};
+static auto i2c_comms = i2c::I2C{MX_I2C_Init()};
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -102,55 +97,21 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-static auto mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                pipettes_tasks::QueueClient>{};
-static auto motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
-static auto move_group_task_builder =
-    move_group_task_starter::TaskStarter<512, pipettes_tasks::QueueClient,
-                                         pipettes_tasks::QueueClient>{};
-static auto move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, pipettes_tasks::QueueClient>{};
-static auto eeprom_task_builder =
-    eeprom_task_starter::TaskStarter<512, i2c::I2C,
-                                     pipettes_tasks::QueueClient>{};
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
 
+    if (initialize_spi() != HAL_OK) {
+        Error_Handler();
+    }
+
     initialize_timer(plunger_callback);
 
-    auto& queues = pipettes_tasks::get_queues();
-    auto& tasks = pipettes_tasks::get_tasks();
+    can_start();
 
-    auto& can_writer = can_task::start_writer(can_bus_1);
-    can_task::start_reader(can_bus_1);
-
-    auto& motion =
-        mc_task_builder.start(5, pipette_motor.motion_controller, queues);
-    auto& motor =
-        motor_driver_task_builder.start(5, pipette_motor.driver, queues);
-    auto& move_group = move_group_task_builder.start(5, queues, queues);
-    auto& move_status_reporter = move_status_task_builder.start(5, queues);
-    auto& eeprom_task = eeprom_task_builder.start(5, i2c_comms, queues);
-
-    tasks.can_writer = &can_writer;
-    tasks.motion_controller = &motion;
-    tasks.motor_driver = &motor;
-    tasks.move_group = &move_group;
-    tasks.move_status_reporter = &move_status_reporter;
-    tasks.eeprom_task = &eeprom_task;
-
-    queues.motion_queue = &motion.get_queue();
-    queues.motor_queue = &motor.get_queue();
-    queues.move_group_queue = &move_group.get_queue();
-    queues.set_queue(&can_writer.get_queue());
-    queues.move_status_report_queue = &move_status_reporter.get_queue();
-    queues.eeprom_queue = &eeprom_task.get_queue();
+    pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
+                                pipette_motor.driver, i2c_comms);
 
     vTaskStartScheduler();
 }

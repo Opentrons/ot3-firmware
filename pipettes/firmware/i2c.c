@@ -1,3 +1,4 @@
+#include "platform_specific_hal_conf.h"
 #include "common/firmware/i2c.h"
 #include "common/firmware/errors.h"
 
@@ -22,7 +23,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
     }
 }
 
-I2C_HandleTypeDef* MX_I2C_Init()
+HAL_I2C_HANDLE MX_I2C_Init()
 {
     hi2c.Instance = I2C1;
     hi2c.Init.Timing = 0x30A0A7FB;

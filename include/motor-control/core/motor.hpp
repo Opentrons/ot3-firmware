@@ -3,12 +3,12 @@
 #include <variant>
 
 #include "common/core/freertos_message_queue.hpp"
+#include "common/core/spi.hpp"
 #include "linear_motion_system.hpp"
 #include "motion_controller.hpp"
 #include "motor_driver.hpp"
 #include "motor_driver_config.hpp"
 #include "motor_messages.hpp"
-#include "spi.hpp"
 
 namespace motor_hardware {
 class MotorHardwareIface;
