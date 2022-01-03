@@ -97,21 +97,6 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-static auto mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                pipettes_tasks::QueueClient>{};
-static auto motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
-static auto move_group_task_builder =
-    move_group_task_starter::TaskStarter<512, pipettes_tasks::QueueClient,
-                                         pipettes_tasks::QueueClient>{};
-static auto move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, pipettes_tasks::QueueClient>{};
-static auto eeprom_task_builder =
-    eeprom_task_starter::TaskStarter<512, i2c::I2C,
-                                     pipettes_tasks::QueueClient>{};
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
