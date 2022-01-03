@@ -32,6 +32,13 @@ class MessageSenderTask {
      */
     MessageSenderTask(QueueType& queue) : queue{queue} {}
 
+    ~MessageSenderTask() = default;
+
+    MessageSenderTask(const MessageSenderTask&) = delete;
+    MessageSenderTask(const MessageSenderTask&&) = delete;
+    auto operator=(const MessageSenderTask&) = delete;
+    auto operator=(const MessageSenderTask&&) = delete;
+
     /**
      * Task entry point.
      */
