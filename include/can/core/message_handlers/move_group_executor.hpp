@@ -6,8 +6,8 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motion_controller.hpp"
-#include "motor-control/core/motion_group.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/move_group.hpp"
 #include "move_group.hpp"
 
 namespace move_group_executor_handler {
@@ -36,6 +36,7 @@ struct TaskEntry {
         }
     }
 };
+
 template <typename Motor>
 class MoveGroupExecutorHandler {
   public:
@@ -46,9 +47,11 @@ class MoveGroupExecutorHandler {
         move_group_handler::MoveGroupType &motion_group_manager, Motor &motor)
         : message_writer{message_writer},
           motion_group_manager{motion_group_manager},
-          motor(motor),
+          motor{motor},
           task_entry{message_writer, motor},
-          ack_task("ack task", task_entry) {}
+          ack_task{task_entry} {
+        ack_task.start(5, "ack task");
+    }
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &) = delete;
     MoveGroupExecutorHandler(const MoveGroupExecutorHandler &&) = delete;
     ~MoveGroupExecutorHandler() = default;
@@ -83,7 +86,7 @@ class MoveGroupExecutorHandler {
     move_group_handler::MoveGroupType &motion_group_manager;
     Motor &motor;
     TaskEntry<Motor> task_entry;
-    freertos_task::FreeRTOSTask<512, 5> ack_task;
+    freertos_task::FreeRTOSTask<512, TaskEntry<Motor>> ack_task;
 };
 
 /**

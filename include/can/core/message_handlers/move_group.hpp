@@ -3,7 +3,7 @@
 #include "can/core/dispatch.hpp"
 #include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
-#include "motor-control/core/motion_group.hpp"
+#include "motor-control/core/move_group.hpp"
 
 namespace move_group_handler {
 

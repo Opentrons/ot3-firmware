@@ -9,12 +9,19 @@
 
 // clang-format on
 
+#include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
+#include "pipettes/firmware/can_task.hpp"
+
+static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
+
+    can_task::start_reader(can_bus_1);
+    can_task::start_writer(can_bus_1);
 
     vTaskStartScheduler();
 }
