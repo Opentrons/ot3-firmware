@@ -8,8 +8,8 @@
 #include "system_stm32g4xx.h"
 // clang-format on
 
-#include "gantry/core/can_task.hpp"
 #include "gantry/core/interfaces.hpp"
+#include "gantry/core/tasks.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -24,8 +24,10 @@ auto main() -> int {
     utility_gpio_init();
 
     interfaces::initialize();
-    can_task::start_writer(interfaces::get_can_bus());
-    can_task::start_reader(interfaces::get_can_bus());
+
+    gantry_tasks::start_tasks(interfaces::get_can_bus(),
+                              interfaces::get_motor().motion_controller,
+                              interfaces::get_motor().driver);
 
     vTaskStartScheduler();
 }

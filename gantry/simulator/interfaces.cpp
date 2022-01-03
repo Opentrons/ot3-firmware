@@ -3,6 +3,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/simulation/spi.hpp"
+#include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
@@ -28,11 +29,6 @@ static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
  */
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
-/**
- * The completed move queue.
- */
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Ack>
-    complete_queue("Complete Queue");
 
 /**
  * The motor struct.
@@ -50,15 +46,13 @@ static motor_class::Motor motor{
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
     utils::register_config(),
-    motor_queue,
-    complete_queue};
+    motor_queue};
 
 /**
  * Handler of motor interrupts.
  */
-static motor_handler::MotorInterruptHandler motor_interrupt(motor_queue,
-                                                            complete_queue,
-                                                            motor_interface);
+static motor_handler::MotorInterruptHandler motor_interrupt(
+    motor_queue, gantry_tasks::get_queues(), motor_interface);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt);

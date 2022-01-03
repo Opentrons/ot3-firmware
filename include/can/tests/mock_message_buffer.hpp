@@ -11,6 +11,8 @@ namespace mock_message_buffer {
  */
 template <std::size_t MaxBufferSize>
 struct MockMessageBuffer {
+    static auto constexpr max_delay = 10000;
+
     template <typename Iter, typename Limit>
     MockMessageBuffer(Iter iter, Limit limit) : length{limit - iter} {
         std::copy(iter, limit, buff.begin());

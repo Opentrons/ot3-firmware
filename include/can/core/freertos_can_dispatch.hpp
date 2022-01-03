@@ -40,7 +40,7 @@ class FreeRTOSCanBufferPoller {
      */
     [[noreturn]] void operator()() {
         for (;;) {
-            reader.read(portMAX_DELAY);
+            reader.read(buffer.max_delay);
         }
     }
 
@@ -92,7 +92,7 @@ class FreeRTOSCanReader {
         can_bus->set_incoming_message_callback(
             this, FreeRTOSCanReader<BufferSize, Dispatcher>::callback);
         for (;;) {
-            message_buffer.reader.read(portMAX_DELAY);
+            message_buffer.reader.read(message_buffer.message_buffer.max_delay);
         }
     }
 
