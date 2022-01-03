@@ -31,6 +31,12 @@ class MessageWriterTask {
      * @param queue The message queue instance.
      */
     MessageWriterTask(QueueType& queue) : queue{queue} {}
+    MessageWriterTask(const MessageWriterTask&) = delete;
+    MessageWriterTask(const MessageWriterTask&&) = delete;
+    auto operator=(const MessageWriterTask&) = delete;
+    auto operator=(const MessageWriterTask&&) = delete;
+
+    ~MessageWriterTask() = default;
 
     /**
      * Task entry point.

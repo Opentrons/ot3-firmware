@@ -78,7 +78,6 @@ auto can_task::start_reader(can_bus::CanBus& canbus)
     canbus.setup_node_id_filter(my_node_id);
 
     reader_task_control.start(5, "can reader task", &canbus);
-
     return reader_task;
 }
 
