@@ -78,7 +78,7 @@ static motor_class::Motor motor{
     spi_comms,
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
         .mech_config =
-            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 20},
         .steps_per_rev = 200,
         .microstep = 16},
     motor_hardware_iface,

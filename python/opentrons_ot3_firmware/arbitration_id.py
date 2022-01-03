@@ -1,16 +1,17 @@
 """Can bus arbitration id."""
 from __future__ import annotations
 import ctypes
+from .constants import MESSAGE_ID_BITS, NODE_ID_BITS, FUNCTION_CODE_BITS
 
 
 class ArbitrationIdParts(ctypes.Structure):
     """A bit field of the arbitration id parts."""
 
     _fields_ = (
-        ("function_code", ctypes.c_uint, 4),
-        ("node_id", ctypes.c_uint, 7),
-        ("originating_node_id", ctypes.c_uint, 7),
-        ("message_id", ctypes.c_uint, 11),
+        ("function_code", ctypes.c_uint, FUNCTION_CODE_BITS),
+        ("node_id", ctypes.c_uint, NODE_ID_BITS),
+        ("originating_node_id", ctypes.c_uint, NODE_ID_BITS),
+        ("message_id", ctypes.c_uint, MESSAGE_ID_BITS),
         ("padding", ctypes.c_uint, 3),
     )
 

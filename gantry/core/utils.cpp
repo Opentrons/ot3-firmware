@@ -22,14 +22,14 @@ auto utils::register_config_by_axis(enum GantryAxisType which)
         case GantryAxisType::gantry_x:
             return motor_driver_config::RegisterConfig{.gconf = 0x04,
                                                        .ihold_irun = 0x71002,
-                                                       .chopconf = 0x101D5,
+                                                       .chopconf = 0x40101D5,
                                                        .thigh = 0xFFFFF,
                                                        .coolconf = 0x60000};
 
         case GantryAxisType::gantry_y:
             return motor_driver_config::RegisterConfig{.gconf = 0x04,
                                                        .ihold_irun = 0x71002,
-                                                       .chopconf = 0x101D5,
+                                                       .chopconf = 0x40101D5,
                                                        .thigh = 0xFFFFF,
                                                        .coolconf = 0x60000};
     }
