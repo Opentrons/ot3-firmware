@@ -1,4 +1,4 @@
-#include "head/firmware/can_task.hpp"
+#include "head/core/can_task.hpp"
 
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
@@ -8,7 +8,6 @@
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/messages.hpp"
-#include "can/firmware/hal_can.h"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "head/core/tasks.hpp"
@@ -142,7 +141,6 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
-    can_start();
 
     auto filter = can_arbitration_id::ArbitrationId();
 
