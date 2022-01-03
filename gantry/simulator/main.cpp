@@ -5,8 +5,8 @@
 
 int main() {
     interfaces::initialize();
-    auto & can_writer = can_task::start_writer(interfaces::get_can_bus());
-    auto & can_reader = can_task::start_reader(interfaces::get_can_bus());
+    auto& can_writer = can_task::start_writer(interfaces::get_can_bus());
+    auto& can_reader = can_task::start_reader(interfaces::get_can_bus());
 
     vTaskStartScheduler();
 }
