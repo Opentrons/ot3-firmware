@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "motor-control/core/spi.hpp"
+#include "common/core/spi.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)

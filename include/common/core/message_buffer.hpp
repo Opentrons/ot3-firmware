@@ -22,6 +22,8 @@ concept MessageBuffer = requires(T t, std::array<uint8_t, 0> buffer,
     {
         t.receive(buffer.begin(), buffer.end(), timeout)
         } -> std::same_as<std::size_t>;
+    // Defines the maximum wait time.
+    { T::max_delay } -> std::convertible_to<int>;
 };
 
 }  // namespace message_buffer

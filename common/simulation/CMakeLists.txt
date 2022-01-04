@@ -1,4 +1,4 @@
-add_library(common-simulation STATIC spi.cpp)
+add_library(common-simulation STATIC spi.cpp eeprom.cpp)
 
 target_link_libraries(common-simulation PUBLIC can-core)
 

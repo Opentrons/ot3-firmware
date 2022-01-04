@@ -14,9 +14,9 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
+    ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c
     ${CAN_FW_DIR}/hal_can.c
     ${CAN_FW_DIR}/hal_can_bus.cpp
     ${CAN_FW_DIR}/utils.c)
@@ -36,6 +36,8 @@ add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
+target_pipettes_core(pipettes)
+
 target_ot_motor_control(pipettes)
 
 target_link_libraries(pipettes
@@ -53,7 +55,6 @@ set_target_properties(pipettes
 target_include_directories(
         pipettes
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
 
 target_compile_options(pipettes
         PUBLIC

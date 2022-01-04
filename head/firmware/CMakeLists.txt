@@ -12,7 +12,6 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(HEAD_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/can_task.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CAN_FW_DIR}/hal_can.c
         ${CAN_FW_DIR}/hal_can_bus.cpp
@@ -31,6 +30,8 @@ set(HEAD_FW_NON_LINTABLE_SRCS
 add_executable(head
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
+
+target_head_core(head)
 
 target_ot_motor_control(head)
 

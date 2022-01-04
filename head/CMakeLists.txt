@@ -1,13 +1,14 @@
 
+add_subdirectory(core)
+
 if (${CMAKE_CROSSCOMPILING})
   if(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
     add_subdirectory(firmware)
   endif()
 else()
-   add_subdirectory(tests)
+    add_subdirectory(simulator)
+    add_subdirectory(tests)
 endif()
-
-add_subdirectory(core)
 
 file(GLOB_RECURSE HEAD_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/head/*.hpp)
 

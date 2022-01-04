@@ -1,47 +1,27 @@
-#include "pipettes/tests/test_eeprom.hpp"
-
 #include "catch2/catch.hpp"
+#include "common/simulation/eeprom.hpp"
 #include "pipettes/core/eeprom.hpp"
 
-using namespace test_eeprom;
 using namespace eeprom;
 
 SCENARIO("read and write pipette serial numbers") {
     GIVEN("write command") {
         const uint8_t DUMMY_VALUE = 0x2;
 
-        TestI2C testI2C{};
+        auto sim_i2c = sim_i2c::SimEEProm{};
+        auto subject = eeprom::EEPromWriter{sim_i2c};
 
         WHEN("i2c is initialized") {
             THEN("the current value stored should be zero") {
                 const uint8_t ZERO_VALUE = 0x0;
-                REQUIRE(ZERO_VALUE == testI2C.stored);
+                REQUIRE(ZERO_VALUE == subject.read());
             }
         }
 
-        WHEN("the command is received") {
-            THEN("the value should be stored") {
-                write(testI2C, DUMMY_VALUE);
-                REQUIRE(DUMMY_VALUE == testI2C.stored);
-            }
-        }
-
-        WHEN("the value is queried") {
-            THEN("the stored value should be returned") {
-                write(testI2C, DUMMY_VALUE);
-                const uint8_t received_buff = read(testI2C);
-                REQUIRE(DUMMY_VALUE == received_buff);
-            }
-        }
-    }
-
-    GIVEN("A new device") {
-        TestI2C testI2C{};
-        WHEN("The new address is set") {
-            THEN("Transmit and Receive should use the new device address") {
-                REQUIRE(testI2C.DEVICE_ADDRESS == 0x1);
-                testI2C.DEVICE_ADDRESS = 0x3;
-                REQUIRE(testI2C.DEVICE_ADDRESS == 0x3);
+        WHEN("writing a new value") {
+            subject.write(DUMMY_VALUE);
+            THEN("the read value matches what eas written") {
+                REQUIRE(DUMMY_VALUE == subject.read());
             }
         }
     }

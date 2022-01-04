@@ -315,4 +315,13 @@ struct ReadMotorDriverRegisterResponse
         -> bool = default;
 };
 
+/**
+ * A variant of all message types we might send..
+ */
+using ResponseMessageType =
+    std::variant<HeartbeatResponse, DeviceInfoResponse,
+                 GetMotionConstraintsResponse, GetMoveGroupResponse,
+                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
+                 MoveCompleted>;
+
 }  // namespace can_messages

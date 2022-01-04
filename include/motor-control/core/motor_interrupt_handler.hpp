@@ -1,9 +1,9 @@
 #pragma once
-#include <variant>
 
 #include "common/core/message_queue.hpp"
 #include "motor_hardware_interface.hpp"
 #include "motor_messages.hpp"
+#include "tasks/move_status_reporter_task.hpp"
 
 namespace motor_handler {
 
@@ -39,20 +39,19 @@ using namespace motor_messages;
 // (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<Move>, Move> &&
-    MessageQueue<QueueImpl<Ack>, Ack>
+template <template <class> class QueueImpl,
+          move_status_reporter_task::TaskClient StatusClient>
+requires MessageQueue<QueueImpl<Move>, Move>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
-    using CompletedQueue = QueueImpl<Ack>;
 
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(GenericQueue& incoming_queue,
-                          CompletedQueue& outgoing_queue,
+                          StatusClient& outgoing_queue,
                           motor_hardware::MotorHardwareIface& hardware_iface)
         : queue(incoming_queue),
-          completed_queue(outgoing_queue),
+          status_queue_client(outgoing_queue),
           hardware(hardware_iface) {}
     ~MotorInterruptHandler() = default;
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
@@ -171,7 +170,8 @@ class MotorInterruptHandler {
                                31),  // TODO (AA 2021-11-10): convert
                                      // this value to mm instead of steps
                            .ack_id = AckMessageId::complete};
-            static_cast<void>(completed_queue.try_write_isr(ack));
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(ack));
         }
         set_buffered_move(Move{});
     }
@@ -218,7 +218,7 @@ class MotorInterruptHandler {
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;  // in steps
     GenericQueue& queue;
-    CompletedQueue& completed_queue;
+    StatusClient& status_queue_client;
     motor_hardware::MotorHardwareIface& hardware;
     Move buffered_move = Move{};
 };

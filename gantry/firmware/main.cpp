@@ -8,6 +8,9 @@
 #include "system_stm32g4xx.h"
 // clang-format on
 
+#include "gantry/core/interfaces.hpp"
+#include "gantry/core/tasks.hpp"
+
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -19,6 +22,12 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
+
+    interfaces::initialize();
+
+    gantry_tasks::start_tasks(interfaces::get_can_bus(),
+                              interfaces::get_motor().motion_controller,
+                              interfaces::get_motor().driver);
 
     vTaskStartScheduler();
 }
