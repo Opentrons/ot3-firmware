@@ -167,10 +167,6 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
     // Reject everything else.
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
 
-    // TODO (al, 2021-12-21): Must account for this!!
-    //    motor_left.driver.setup();
-    //    motor_right.driver.setup();
-
     auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, main_dispatcher);
     poller();

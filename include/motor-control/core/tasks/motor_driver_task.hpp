@@ -97,6 +97,9 @@ class MotorDriverTask {
      */
     [[noreturn]] void operator()(motor_driver::MotorDriver* driver,
                                  CanClient* can_client) {
+        // Set up the motor driver.
+        driver->setup();
+
         auto handler = MotorDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {
