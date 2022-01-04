@@ -100,7 +100,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
 
-    //TODO(lc 01/04/2021): We should move this setup to another object
+    // TODO(lc 01/04/2021): We should move this setup to another object
     // responsible for sensor control.
     auto i2chandler_struct = I2CHandlerStruct{};
     i2c_setup(&i2chandler_struct, SINGLE_CHANNEL);
