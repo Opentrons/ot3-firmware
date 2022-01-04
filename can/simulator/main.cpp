@@ -9,6 +9,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_buffer.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_synchronization.hpp"
 #include "common/core/freertos_task.hpp"
 
@@ -23,17 +24,14 @@ using namespace freertos_synchronization;
 static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 
 /**
- * The parsed message handler. It will be passed into a DispatchParseTarget
- * templetized with the same message types.
- * @tparam Bus A CanBusWriter instance
+ * The parsed message handler. It will be passed into a DispatchParseTarget.
  */
 struct Loopback {
     /**
      * Constructor
-     * @param can_bus A CanBus instance.
+     * @param writer
      */
-    Loopback(can_bus::CanBus &can_bus, can_ids::NodeId node_id)
-        : writer{canbus, node_id} {}
+    Loopback(can_message_writer::MessageWriter &writer) : writer{writer} {}
     Loopback(const Loopback &) = delete;
     Loopback(const Loopback &&) = delete;
     auto operator=(const Loopback &) -> Loopback & = delete;
@@ -52,42 +50,69 @@ struct Loopback {
     void visit(AddLinearMoveRequest &m) {
         auto response = MoveCompleted{
             .group_id = 0, .seq_id = 1, .current_position = 2, .ack_id = 3};
-        writer.write(NodeId::host, response);
+        writer.send_can_message(NodeId::host, response);
     }
 
-    can_message_writer::MessageWriter writer;
+    can_message_writer::MessageWriter &writer;
 };
 
-// Create global handler
-static auto handler = Loopback{canbus, can_ids::NodeId::host};
+// Message writer.
+static auto message_writer =
+    can_message_writer::MessageWriter{can_ids::NodeId::host};
 
-// Create a DispatchParseTarget to parse messages in message buffer and pass
-// them to the handler.
+// Create global handler
+static auto handler = Loopback{message_writer};
+
+// Create a DispatchParseTarget to parse messages and pass them to the handler.
 static auto dispatcher =
     can_dispatch::DispatchParseTarget<Loopback, AddLinearMoveRequest>{handler};
 
 // Message buffer for read messages.
-static auto read_can_message_buffer = FreeRTOSMessageBuffer<1024>{};
-static auto read_can_message_buffer_writer =
-    can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
+static constexpr auto buffer_size = 1024;
+static auto read_can_message_buffer = FreeRTOSMessageBuffer<buffer_size>{};
+
+// Reader and writer of message buffer
+static auto read_can_message_buffer_control =
+    freertos_can_dispatch::FreeRTOSCanBufferControl<buffer_size,
+                                                    decltype(dispatcher)>{
+        dispatcher};
+
+// Message queue for outgoing messages
+static auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
+    message_writer_task::TaskMessage>{};
+
+// Entry point to task that writes messages to canbus
+static auto can_bus_write_task_entry = message_writer_task::MessageWriterTask<
+    freertos_message_queue::FreeRTOSMessageQueue>{can_sender_queue};
 
 /**
  * The can bus poller.
  */
 static auto can_bus_poller =
-    FreeRTOSCanReader<1024, decltype(dispatcher)>{canbus, dispatcher};
-
-/**
- * Task entry point
- */
-static void task_entry(void) { can_bus_poller(); }
+    FreeRTOSCanReader<buffer_size, decltype(dispatcher)>{
+        read_can_message_buffer_control};
 
 /**
  * The message buffer polling task.
  */
-static auto can_bus_poll_task = FreeRTOSTask<2048, 5>("can_poll", task_entry);
+static auto can_bus_poll_task =
+    FreeRTOSTask<2048, decltype(can_bus_poller), sim_canbus::SimCANBus>{
+        can_bus_poller};
+
+/**
+ * The message writer task.
+ */
+static auto can_bus_write_task =
+    FreeRTOSTask<2048, decltype(can_bus_write_task_entry),
+                 sim_canbus::SimCANBus>{can_bus_write_task_entry};
 
 int main() {
+    message_writer.set_queue(&can_sender_queue);
+
+    can_bus_write_task.start(5, "can_write", &canbus);
+
+    can_bus_poll_task.start(5, "can_poll", &canbus);
+
     vTaskStartScheduler();
     return 0;
 }
