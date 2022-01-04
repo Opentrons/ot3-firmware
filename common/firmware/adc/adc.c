@@ -1,4 +1,4 @@
-#include "adc.h"
+#include "common/firmware/adc.h"
 
 #include <stdbool.h>
 
