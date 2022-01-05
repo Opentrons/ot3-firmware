@@ -5,6 +5,7 @@
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "presence-sensing/core/tasks/presence_sensing_driver_task_starter.hpp"
 
 static auto head_tasks_col = head_tasks::HeadTasks{};
 static auto head_queues = head_tasks::HeadQueueClient{};
@@ -38,6 +39,9 @@ static auto right_move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<
         512, head_tasks::MotorQueueClient>{};
 
+static auto presence_sensing_driver_task_builder =
+    presence_sensing_driver_task_starter::TaskStarter<512,
+                                                   head_tasks::QueueClient>{};
 /**
  * Start gantry tasks.
  */
