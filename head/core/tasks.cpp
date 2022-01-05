@@ -5,11 +5,15 @@
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "presence-sensing/core/tasks/presence_sensing_driver_task_starter.hpp"
+
 
 static auto left_tasks = head_tasks::AllTask{};
 static auto left_queues = head_tasks::QueueClient{can_ids::NodeId::head_l};
 static auto right_tasks = head_tasks::AllTask{};
 static auto right_queues = head_tasks::QueueClient{can_ids::NodeId::head_r};
+static auto presense_sensing_driver_tasks = head_tasks::AllTask{};
+static auto presense_sensing_driver_queues = head_tasks::QueueClient{can_ids::NodeId::head};
 
 static auto left_mc_task_builder =
     motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
@@ -34,14 +38,20 @@ static auto right_move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<512,
                                                    head_tasks::QueueClient>{};
 
+static auto presence_sensing_driver_task_builder =
+    presence_sensing_driver_task_starter::TaskStarter<512, head_tasks::QueueClient,
+                                                      head_tasks::QueueClient>{};
+
 /**
- * Start gantry tasks.
+ * Start head tasks.
  */
 void head_tasks::start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         left_motion_controller,
     motor_driver::MotorDriver& left_motor_driver,
+    presence_sensing_driver::PresenceSensingDriver& 
+        presence_sensing_driver,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
     motor_driver::MotorDriver& right_motor_driver) {
@@ -57,6 +67,8 @@ void head_tasks::start_tasks(
         left_move_group_task_builder.start(5, left_queues, left_queues);
     auto& left_move_status_reporter =
         left_move_status_task_builder.start(5, left_queues);
+    auto& presence_sensing_driver =
+        presence_sensing_driver_task_builder.start(5, presense_sensing_driver_queues);
 
     left_tasks.can_writer = &can_writer;
     left_tasks.motion_controller = &left_motion;
