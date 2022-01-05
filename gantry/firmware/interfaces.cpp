@@ -105,6 +105,7 @@ void interfaces::initialize() {
     if (initialize_spi(get_axis_type()) != HAL_OK) {
         Error_Handler();
     }
+    interfaces::get_motor().driver.setup();
 
     initialize_timer(call_motor_handler);
 
