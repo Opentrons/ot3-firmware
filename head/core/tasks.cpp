@@ -5,6 +5,7 @@
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "presence-sensing/core/tasks/presence_sensing_driver_task_starter.hpp"
 
 static auto left_tasks = head_tasks::AllTask{};
 static auto left_queues = head_tasks::QueueClient{can_ids::NodeId::head_l};
@@ -34,6 +35,9 @@ static auto right_move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<512,
                                                    head_tasks::QueueClient>{};
 
+static auto presence_sensing_driver_task_builder =
+    presence_sensing_driver_task_starter::TaskStarter<512,
+                                                   head_tasks::QueueClient>{};
 /**
  * Start gantry tasks.
  */
@@ -44,7 +48,8 @@ void head_tasks::start_tasks(
     motor_driver::MotorDriver& left_motor_driver,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
-    motor_driver::MotorDriver& right_motor_driver) {
+    motor_driver::MotorDriver& right_motor_driver,
+    presence_sensing_driver::PresenceSensingDriver& presence_Sensing_driver) {
     // LEFT and RIGHT each get the same can task message queue
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
