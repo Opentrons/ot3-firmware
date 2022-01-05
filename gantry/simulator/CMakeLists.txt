@@ -33,42 +33,42 @@ set(GANTRY_SIMULATOR_SRC
         )
 
 add_executable(
-        gantry_x_simulator
+        gantry-x-simulator
         ${GANTRY_SIMULATOR_SRC}
 )
 
 add_executable(
-        gantry_y_simulator
+        gantry-y-simulator
         ${GANTRY_SIMULATOR_SRC}
 )
 
 if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-    target_compile_definitions(gantry_x_simulator PUBLIC USE_SOCKETCAN)
-    target_compile_definitions(gantry_y_simulator PUBLIC USE_SOCKETCAN)
+    target_compile_definitions(gantry-x-simulator PUBLIC USE_SOCKETCAN)
+    target_compile_definitions(gantry-y-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
-target_compile_definitions(gantry_x_simulator PUBLIC ENABLE_LOGGING)
-target_compile_definitions(gantry_y_simulator PUBLIC ENABLE_LOGGING)
+target_compile_definitions(gantry-x-simulator PUBLIC ENABLE_LOGGING)
+target_compile_definitions(gantry-y-simulator PUBLIC ENABLE_LOGGING)
 
-target_can_simlib(gantry_x_simulator)
-target_can_simlib(gantry_y_simulator)
+target_can_simlib(gantry-x-simulator)
+target_can_simlib(gantry-y-simulator)
 
-target_gantry_core_x(gantry_x_simulator)
-target_gantry_core_y(gantry_y_simulator)
+target_gantry_core_x(gantry-x-simulator)
+target_gantry_core_y(gantry-y-simulator)
 
-target_ot_motor_control(gantry_x_simulator)
-target_ot_motor_control(gantry_y_simulator)
+target_ot_motor_control(gantry-x-simulator)
+target_ot_motor_control(gantry-y-simulator)
 
-target_link_libraries(gantry_x_simulator PRIVATE can-core common-simulation freertos-gantry pthread)
-target_link_libraries(gantry_y_simulator PRIVATE can-core common-simulation freertos-gantry pthread)
+target_link_libraries(gantry-x-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
+target_link_libraries(gantry-y-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
 
-set_target_properties(gantry_x_simulator
+set_target_properties(gantry-x-simulator
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
 
-set_target_properties(gantry_y_simulator
+set_target_properties(gantry-y-simulator
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11

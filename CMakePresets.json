@@ -85,7 +85,7 @@
       "description": "build the gantry binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry_x", "gantry_y"]
+      "targets": ["gantry-x", "gantry-y"]
     },
     {
       "name": "gantry-x",
@@ -93,7 +93,7 @@
       "description": "build the x axis binary target",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry_x"]
+      "targets": ["gantry-x"]
     },
     {
       "name": "gantry-y",
@@ -101,7 +101,7 @@
       "description": "build the y axis binary target",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry_y"]
+      "targets": ["gantry-y"]
     },
     {
       "name": "head",

@@ -30,40 +30,40 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         )
 
-add_executable(gantry_x
+add_executable(gantry-x
         ${GANTRY_FW_LINTABLE_SRCS}
         ${GANTRY_FW_NON_LINTABLE_SRCS})
 
 
-add_executable(gantry_y
+add_executable(gantry-y
         ${GANTRY_FW_LINTABLE_SRCS}
         ${GANTRY_FW_NON_LINTABLE_SRCS})
 
-target_gantry_core_x(gantry_x)
-target_gantry_core_y(gantry_y)
+target_gantry_core_x(gantry-x)
+target_gantry_core_y(gantry-y)
 
-target_ot_motor_control(gantry_x)
-target_ot_motor_control(gantry_y)
+target_ot_motor_control(gantry-x)
+target_ot_motor_control(gantry-y)
 
-target_link_libraries(gantry_x
+target_link_libraries(gantry-x
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
         can-core)
 
-target_link_libraries(gantry_y
+target_link_libraries(gantry-y
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
         can-core)
 
 
-set_target_properties(gantry_x
+set_target_properties(gantry-x
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
 
-set_target_properties(gantry_y
+set_target_properties(gantry-y
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
@@ -71,14 +71,14 @@ set_target_properties(gantry_y
         C_STANDARD_REQUIRED TRUE)
 
 
-target_include_directories(gantry_x
+target_include_directories(gantry-x
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-target_include_directories(gantry_y
+target_include_directories(gantry-y
         PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 
-target_compile_options(gantry_x
+target_compile_options(gantry-x
         PUBLIC
         -Wall
         -Werror
@@ -89,7 +89,7 @@ target_compile_options(gantry_x
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
-target_compile_options(gantry_y
+target_compile_options(gantry-y
         PUBLIC
         -Wall
         -Werror
@@ -124,12 +124,12 @@ message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
 # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
 # this dir
 set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
-set_target_properties(gantry_x
+set_target_properties(gantry-x
         PROPERTIES
         CROSSCOMPILING_EMULATOR
         "${ARM_GDB};--command=${GDBINIT_FILE}")
 
-set_target_properties(gantry_y
+set_target_properties(gantry-y
         PROPERTIES
         CROSSCOMPILING_EMULATOR
         "${ARM_GDB};--command=${GDBINIT_FILE}")
@@ -166,12 +166,12 @@ set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 # should be running the entire time and that's tough to accomplish
 # in a custom command
 add_custom_target(gantry-debug-x
-        COMMAND gantry_x
+        COMMAND gantry-x
         USES_TERMINAL
         )
 
 add_custom_target(gantry-debug-y
-        COMMAND gantry_y
+        COMMAND gantry-y
         USES_TERMINAL
         )
 
@@ -180,13 +180,13 @@ add_custom_target(gantry-debug-y
 set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
 # Runs openocd to flash the board (without using a debugger)
 add_custom_target(gantry-flash-x
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE}  "-c" "program $<TARGET_FILE:gantry_x>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE}  "-c" "program $<TARGET_FILE:gantry-x>;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS gantry_x)
+        DEPENDS gantry-x)
 
 add_custom_target(gantry-flash-y
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE} "-c" "program $<TARGET_FILE:gantry_y>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE} "-c" "program $<TARGET_FILE:gantry-y>;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS gantry_y)
+        DEPENDS gantry-y)
