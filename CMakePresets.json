@@ -85,7 +85,7 @@
       "description": "build the gantry binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry_x", "gantry_y"]
+      "targets": ["gantry-x", "gantry-y"]
     },
     {
       "name": "gantry-x",
