@@ -6,14 +6,13 @@ using namespace adc;
 /*
  * Public Functions
  */
-struct voltage_read tmp = {
-    .z_motor = 4294967295, .a_motor = 4294967295, .gripper = 4294967295};
 ADC::ADC(ADC_interface ADC_intf_instance1, ADC_interface ADC_intf_instance2)
-    : ADC_intf1(ADC_intf_instance1),
-      ADC_intf2(ADC_intf_instance2),
-      voltage_read(tmp) {}
+    : ADC_intf1(ADC_intf_instance1), ADC_intf2(ADC_intf_instance2) {}
 
-struct voltage_read ADC::get_readings() {
-    voltage_read = adc_read_voltages();
+auto ADC::get_readings() -> adc::VoltageRead {
+    auto voltage_read = adc::VoltageRead{
+        .z_motor = static_cast<uint16_t>(adc_read_voltage_z_motor()),
+        .a_motor = static_cast<uint16_t>(adc_read_voltage_a_motor()),
+        .gripper = static_cast<uint16_t>(adc_read_voltage_gripper())};
     return voltage_read;
 }
