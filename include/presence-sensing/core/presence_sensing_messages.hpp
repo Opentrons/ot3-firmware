@@ -12,4 +12,11 @@ struct Ack {
     AckMessageId ack_id;
 };
 
+struct GetVoltage{
+    uint32_t z_motor;
+    uint32_t a_motor;
+    uint32_t gripper;
+
+};
+
 }  // namespace presence_sensing_messages
