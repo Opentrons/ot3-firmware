@@ -29,7 +29,7 @@ class TaskStarter {
     auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    auto start(uint32_t priority, PresenceSensorDriver<ADCDriver>& presence_sensing_driver,
+    auto start(uint32_t priority, PresenceSensingDriver<ADCDriver>& presence_sensing_driver,
                CanClient& can_client) -> PresenceSensingDriverTaskType& {
         task.start(priority, "presence-sensing", &presence_sensing_driver, &can_client);
         return task_entry;

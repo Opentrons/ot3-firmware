@@ -62,7 +62,8 @@ class PresenceSensingDriverMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient,
+          adc::has_get_reading ADCDriver>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class PresenceSensingDriverTask {
   public:
@@ -77,7 +78,7 @@ class PresenceSensingDriverTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(presence_sensing_driver::PresenceSensingDriver* driver,
+    [[noreturn]] void operator()(presence_sensing_driver::PresenceSensingDriver<ADCDriver>* driver,
                                  CanClient* can_client) {
         auto handler = PresenceSensingDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};
