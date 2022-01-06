@@ -24,6 +24,5 @@ class ADC : public BaseADC {
   private:
     ADC_interface ADC_intf1;
     ADC_interface ADC_intf2;
-    struct voltage_read voltage_read;
 };
 }  // namespace adc

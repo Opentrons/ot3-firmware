@@ -132,31 +132,24 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     }
 }
 
-struct voltage_read adc_read_voltages() {
-    uint32_t adc1_value = 4294967295;
-    uint32_t adc2_value = 4294967295;
-    uint32_t z_detect_reading = 4294967295;
+static uint32_t adc_read_voltage(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel) {
+    uint32_t return_value = 4294967295;
 
-    ADC_set_chan(ADC_CHANNEL_12, &adc1);
-    HAL_ADC_Start(&adc1);
-    HAL_ADC_PollForConversion(&adc1, HAL_MAX_DELAY);
-    adc1_value = HAL_ADC_GetValue(&adc1);
-
-    ADC_set_chan(ADC_CHANNEL_12, &adc2);
-    HAL_ADC_Start(&adc2);
-    HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
-    adc2_value = HAL_ADC_GetValue(&adc2);
-
-    ADC_set_chan(ADC_CHANNEL_11, &adc2);
-    HAL_ADC_Start(&adc2);
-    HAL_ADC_PollForConversion(&adc2, HAL_MAX_DELAY);
-    z_detect_reading = HAL_ADC_GetValue(&adc2);
+    ADC_set_chan(adc_channel, adc_handle);
+    HAL_ADC_Start(adc_handle);
+    HAL_ADC_PollForConversion(adc_handle, HAL_MAX_DELAY);
+    return_value = HAL_ADC_GetValue(adc_handle);
 
     // HAL_ADC_Stop(&adc2);
+    return return_value;
+}
 
-    struct voltage_read voltage_read = {.z_motor = z_detect_reading,
-                                        .a_motor = adc2_value,
-                                        .gripper = adc1_value};
-
-    return voltage_read;
+uint32_t adc_read_voltage_z_motor() {
+    return adc_read_voltage(&adc2, ADC_CHANNEL_11);
+}
+uint32_t adc_read_voltage_a_motor() {
+    return adc_read_voltage(&adc2, ADC_CHANNEL_12);
+}
+uint32_t adc_read_voltage_gripper() {
+    return adc_read_voltage(&adc1, ADC_CHANNEL_12);
 }
