@@ -2,6 +2,8 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "common/core/adc.hpp"
+#include "common/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
@@ -14,6 +16,7 @@ namespace head_tasks {
 /**
  * Start head tasks.
  */
+template <adc::has_get_reading ADCDriver>
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      left_motion_controller,
@@ -21,7 +24,7 @@ void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      right_motion_controller,
                  motor_driver::MotorDriver& right_motor_driver,
-                 presence_sensing_driver::PresenceSensingDriver& presence_Sensing_driver);
+                 presence_sensing_driver::PresenceSensingDriver<ADCDriver>& presence_sensing_driver);
 
 /**
  * Access to all the message queues in the system.
@@ -75,7 +78,7 @@ struct AllTask {
                                    QueueClient, QueueClient>* move_group{
         nullptr};
     presence_sensing_driver_task::PresenceSensingDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>* presence_sensing_driver_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue,  QueueClient, adc::ADC>* presence_sensing_driver_task{nullptr};
     
 
 };

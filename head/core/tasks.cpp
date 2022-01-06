@@ -1,5 +1,6 @@
+#include "common/core/adc.hpp"
+#include "common/firmware/adc_comms.hpp"
 #include "head/core/tasks.hpp"
-
 #include "head/core/can_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
@@ -49,7 +50,7 @@ void head_tasks::start_tasks(
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
     motor_driver::MotorDriver& right_motor_driver,
-    presence_sensing_driver::PresenceSensingDriver& presence_Sensing_driver) {
+    presence_sensing_driver::PresenceSensingDriver<ADCDriver>& presence_Sensing_driver) {
     // LEFT and RIGHT each get the same can task message queue
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
