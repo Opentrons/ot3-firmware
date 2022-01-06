@@ -1,23 +1,17 @@
 #pragma once
 
-#include "common/core/bit_utils.hpp"
 #include "common/core/adc.hpp"
-#include "presence_sensing_driver_config.hpp"
+#include "common/core/bit_utils.hpp"
 
 namespace presence_sensing_driver {
 
-using namespace presence_sensing_driver_config;
-
-template <adc::has_get_reading ADCDriver>
 class PresenceSensingDriver {
   public:
-    explicit PresenceSensingDriver(ADCDriver& adc) : ADC_comms(adc) {}
-    struct voltage_read get_readings() {
-        return ADC_comms.get_readings();
-    }
+    explicit PresenceSensingDriver(adc::BaseADC& adc) : adc_comms(adc) {}
+    auto get_readings() -> adc::VoltageRead { return adc_comms.get_readings(); }
 
   private:
-    ADCDriver ADC_comms;
+    adc::BaseADC& adc_comms;
 };
 
-}  // namespace motor_driver
+}  // namespace presence_sensing_driver

@@ -15,8 +15,8 @@
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
 #pragma GCC diagnostic pop
-#include "common/firmware/adc_comms.hpp"
 #include "can/firmware/hal_can_bus.hpp"
+#include "common/firmware/adc_comms.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi_comms.hpp"
 #include "head/core/tasks.hpp"
@@ -57,8 +57,6 @@ spi::SPI_interface SPI_intf3 = {
     .pin = GPIO_PIN_4,
 };
 static spi::Spi spi_comms3(SPI_intf3);
-
-
 
 struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
