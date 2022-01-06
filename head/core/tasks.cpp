@@ -35,10 +35,9 @@ static auto left_move_status_task_builder =
 static auto right_move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<512,
                                                    head_tasks::QueueClient>{};
-
 static auto presence_sensing_driver_task_builder =
     presence_sensing_driver_task_starter::TaskStarter<512,
-                                                   head_tasks::QueueClient>{};
+                                                   head_tasks::QueueClient, adc::ADC>{};
 /**
  * Start gantry tasks.
  */
@@ -50,7 +49,7 @@ void head_tasks::start_tasks(
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
     motor_driver::MotorDriver& right_motor_driver,
-    presence_sensing_driver::PresenceSensingDriver<ADCDriver>& presence_Sensing_driver) {
+    presence_sensing_driver::PresenceSensingDriver<adc::ADC>& presence_Sensing_driver) {
     // LEFT and RIGHT each get the same can task message queue
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);

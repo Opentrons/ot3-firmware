@@ -7,7 +7,7 @@
 #include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"
 
-namespace presence_sensing_task_starter {
+namespace presence_sensing_driver_task_starter {
 
 template <uint32_t StackDepth,
           message_writer_task::TaskClient CanClient,
