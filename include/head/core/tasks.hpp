@@ -57,7 +57,7 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
         const move_status_reporter_task::TaskMessage& m);
 
     void send_presence_sensing_driver_queue(
-        const send_presence_sensing_driver_task::TaskMessage& m);
+        const presence_sensing_driver_task::TaskMessage& m);
     
 
     freertos_message_queue::FreeRTOSMessageQueue<

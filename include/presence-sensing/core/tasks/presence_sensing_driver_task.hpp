@@ -52,7 +52,7 @@ class PresenceSensingDriverMessageHandler {
     }
     
 
-    motor_driver::MotorDriver& driver;
+    presence_sensing_driver::PresenceSensingDriver& driver;
     CanClient& can_client;
 };
 
@@ -75,7 +75,7 @@ class PresenceSensingDriverTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(presence_sensing_driver::PresenceSensing* driver,
+    [[noreturn]] void operator()(presence_sensing_driver::PresenceSensingDriver* driver,
                                  CanClient* can_client) {
         auto handler = PresenceSensingDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};

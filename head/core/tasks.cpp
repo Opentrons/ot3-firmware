@@ -56,7 +56,6 @@ void head_tasks::start_tasks(
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
-    presence_sensing_driver_task_builder.start(5, presence_sensing_driver, )
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
