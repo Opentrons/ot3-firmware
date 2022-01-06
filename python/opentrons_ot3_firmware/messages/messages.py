@@ -34,6 +34,8 @@ MessageDefinition = Union[
     defs.WriteMotorDriverRegister,
     defs.ReadMotorDriverRequest,
     defs.ReadMotorDriverResponse,
+    defs.ReadPresenceSensingVoltageRequest,
+    defs.ReadPresenceSensingVoltageResponse,
 ]
 
 
