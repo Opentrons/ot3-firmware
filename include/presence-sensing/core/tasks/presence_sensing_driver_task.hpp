@@ -9,6 +9,7 @@
 #include "presence-sensing/core/presence_sensing_driver.hpp"
 #include "presence-sensing/core/presence_sensing_driver_config.hpp"
 #include "presence-sensing/core/tasks/messages.hpp"
+#include "common/core/adc.hpp"
 
 namespace presence_sensing_driver_task {
 
@@ -17,10 +18,11 @@ using TaskMessage = presence_sensing_task_messages::PresenceSensingTaskMessage;
 /**
  * The handler of Presence Sensing messages
  */
-template <message_writer_task::TaskClient CanClient>
+template <message_writer_task::TaskClient CanClient,
+         adc::has_get_reading ADCDriver>
 class PresenceSensingDriverMessageHandler {
   public:
-    PresenceSensingDriverMessageHandler(presence_sensing_driver::PresenceSensingDriver& driver,
+    PresenceSensingDriverMessageHandler(presence_sensing_driver::PresenceSensingDriver<ADCDriver>& driver,
                               CanClient& can_client)
         : driver{driver}, can_client{can_client} {}
     PresenceSensingDriverMessageHandler(const PresenceSensingDriverMessageHandler& c) = delete;
@@ -41,7 +43,7 @@ class PresenceSensingDriverMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(presence_sensing_messages::GetVoltage &m) {
-        auto voltage_read = presence_sensor.driver.get_readings();
+        auto voltage_read = driver.get_readings();
 
         GetPresenceSensingResponse response_msg{
             .z_motor = voltage_read.z_motor,
@@ -52,7 +54,7 @@ class PresenceSensingDriverMessageHandler {
     }
     
 
-    presence_sensing_driver::PresenceSensingDriver& driver;
+    presence_sensing_driver::PresenceSensingDriver<ADCDriver>& driver;
     CanClient& can_client;
 };
 

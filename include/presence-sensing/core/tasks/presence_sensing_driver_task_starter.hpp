@@ -2,13 +2,15 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
+#include "common/core/adc.hpp"
 #include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"
 
 namespace presence_sensing_task_starter {
 
 template <uint32_t StackDepth,
-          message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient,
+          adc::has_get_reading ADCDriver>
 class TaskStarter {
   public:
     using PresenceSensingDriverTaskType =
@@ -27,7 +29,7 @@ class TaskStarter {
     auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    auto start(uint32_t priority, PresenceSensorDriver& presence_sensing_driver,
+    auto start(uint32_t priority, PresenceSensorDriver<ADCDriver>& presence_sensing_driver,
                CanClient& can_client) -> PresenceSensingDriverTaskType& {
         task.start(priority, "presence-sensing", &presence_sensing_driver, &can_client);
         return task_entry;
