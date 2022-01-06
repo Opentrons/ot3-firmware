@@ -15,7 +15,7 @@ namespace head_tasks {
 /**
  * Start head tasks.
  */
-template <adc::has_get_reading ADCDriver>
+
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      left_motion_controller,
@@ -23,7 +23,7 @@ void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      right_motion_controller,
                  motor_driver::MotorDriver& right_motor_driver,
-                 presence_sensing_driver::PresenceSensingDriver<ADCDriver>& presence_sensing_driver);
+                 presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver);
 
 /**
  * The client for all head message queues not associated with a single motor.
