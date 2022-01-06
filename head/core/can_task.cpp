@@ -19,20 +19,20 @@ auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
 
 using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::MotorHandler<head_tasks::QueueClient>,
+    motor_message_handler::MotorHandler<head_tasks::MotorQueueClient>,
     can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
     can_messages::WriteMotorDriverRegister>;
 using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
-    move_group_handler::MoveGroupHandler<head_tasks::QueueClient>,
+    move_group_handler::MoveGroupHandler<head_tasks::MotorQueueClient>,
     can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
     can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>;
 using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::MotionHandler<head_tasks::QueueClient>,
+    motion_message_handler::MotionHandler<head_tasks::MotorQueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest>;
 using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    device_info_handler::DeviceInfoHandler<head_tasks::QueueClient>,
+    device_info_handler::DeviceInfoHandler<head_tasks::MotorQueueClient>,
     can_messages::DeviceInfoRequest>;
 
 /** The parsed message handler */
