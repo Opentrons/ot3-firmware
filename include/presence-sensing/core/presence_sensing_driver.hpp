@@ -9,9 +9,9 @@ namespace presence_sensing_driver {
 using namespace presence_sensing_driver_config;
 
 template <adc::has_get_reading ADCDriver>
-class PresenceSensorDriver {
+class PresenceSensingDriver {
   public:
-    explicit PresenceSensorDriver(ADCDriver& adc) : ADC_comms(adc) {}
+    explicit PresenceSensingDriver(ADCDriver& adc) : ADC_comms(adc) {}
     struct voltage_read get_readings() {
         return ADC_comms.get_readings();
     }
