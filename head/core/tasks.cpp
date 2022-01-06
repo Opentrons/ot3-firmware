@@ -53,6 +53,7 @@ void head_tasks::start_tasks(
     // LEFT and RIGHT each get the same can task message queue
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
+    presence_sensing_driver_task_builder.start(5, presence_sensing_driver, )
 
     auto& left_motion =
         left_mc_task_builder.start(5, left_motion_controller, left_queues);
