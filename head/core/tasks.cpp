@@ -1,6 +1,7 @@
+#include "head/core/tasks.hpp"
+
 #include "common/core/adc.hpp"
 #include "common/firmware/adc_comms.hpp"
-#include "head/core/tasks.hpp"
 #include "head/core/can_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
@@ -41,8 +42,8 @@ static auto right_move_status_task_builder =
         512, head_tasks::MotorQueueClient>{};
 
 static auto presence_sensing_driver_task_builder =
-    presence_sensing_driver_task_starter::TaskStarter<512,
-                                                      head_tasks::HeadQueueClient, adc::ADC>{};
+    presence_sensing_driver_task_starter::TaskStarter<
+        512, head_tasks::HeadQueueClient>{};
 
 /**
  * Start gantry tasks.
@@ -55,16 +56,21 @@ void head_tasks::start_tasks(
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
     motor_driver::MotorDriver& right_motor_driver,
-    presence_sensing_driver::PresenceSensingDriver<adc::ADC>& presence_Sensing_driver) {
+    presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver) {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
 
+    auto& presence_sensing = presence_sensing_driver_task_builder.start(
+        5, presence_sensing_driver, head_queues);
+
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
+    head_tasks_col.presence_sensing_driver_task = &presence_sensing;
 
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());
+    head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
 
     // Start the left motor tasks
     auto& left_motion =

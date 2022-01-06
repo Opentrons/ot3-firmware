@@ -15,11 +15,11 @@ struct ADC_interface {
     ADC_HandleTypeDef* ADC_handle;
 };
 
-class ADC: public BaseADC {
+class ADC : public BaseADC {
   public:
     explicit ADC(ADC_interface ADC_intf_instance1,
                  ADC_interface ADC_intf_instance2);
-    struct voltage_read get_readings();
+    auto get_readings() -> adc::VoltageRead;
 
   private:
     ADC_interface ADC_intf1;

@@ -5,28 +5,30 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/adc.hpp"
 #include "common/core/logging.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"
-#include "presence-sensing/core/presence_sensing_driver_config.hpp"
-#include "presence-sensing/core/tasks/messages.hpp"
-#include "common/core/adc.hpp"
 
 namespace presence_sensing_driver_task {
 
-using TaskMessage = presence_sensing_task_messages::PresenceSensingTaskMessage;
+using TaskMessage =
+    std::variant<std::monostate,
+                 can_messages::ReadPresenceSensingVoltageRequest>;
 
 /**
  * The handler of Presence Sensing messages
  */
-template <message_writer_task::TaskClient CanClient,
-         adc::has_get_reading ADCDriver>
+template <message_writer_task::TaskClient CanClient>
 class PresenceSensingDriverMessageHandler {
   public:
-    PresenceSensingDriverMessageHandler(presence_sensing_driver::PresenceSensingDriver<ADCDriver>& driver,
-                              CanClient& can_client)
+    PresenceSensingDriverMessageHandler(
+        presence_sensing_driver::PresenceSensingDriver& driver,
+        CanClient& can_client)
         : driver{driver}, can_client{can_client} {}
-    PresenceSensingDriverMessageHandler(const PresenceSensingDriverMessageHandler& c) = delete;
-    PresenceSensingDriverMessageHandler(const PresenceSensingDriverMessageHandler&& c) = delete;
+    PresenceSensingDriverMessageHandler(
+        const PresenceSensingDriverMessageHandler& c) = delete;
+    PresenceSensingDriverMessageHandler(
+        const PresenceSensingDriverMessageHandler&& c) = delete;
     auto operator=(const PresenceSensingDriverMessageHandler& c) = delete;
     auto operator=(const PresenceSensingDriverMessageHandler&& c) = delete;
     ~PresenceSensingDriverMessageHandler() = default;
@@ -36,25 +38,24 @@ class PresenceSensingDriverMessageHandler {
      * @param message
      */
     void handle_message(const TaskMessage& message) {
-        std::visit([this](auto m) { this->handle(m); }, message);
+        std::visit([this](auto m) { this->visit(m); }, message);
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate& m) {}
 
-    void visit(can_messages::VoltageRequest &m) {
+    void visit(can_messages::ReadPresenceSensingVoltageRequest& m) {
         auto voltage_read = driver.get_readings();
 
-         presence_sensing_messages::GetVoltage resp{
+        can_messages::ReadPresenceSensingVoltageResponse resp{
             .z_motor = voltage_read.z_motor,
             .a_motor = voltage_read.a_motor,
             .gripper = voltage_read.gripper,
         };
         can_client.send_can_message(can_ids::NodeId::host, resp);
     }
-    
 
-    presence_sensing_driver::PresenceSensingDriver<ADCDriver>& driver;
+    presence_sensing_driver::PresenceSensingDriver& driver;
     CanClient& can_client;
 };
 
@@ -62,8 +63,7 @@ class PresenceSensingDriverMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient,
-          adc::has_get_reading ADCDriver>
+          message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class PresenceSensingDriverTask {
   public:
@@ -78,9 +78,11 @@ class PresenceSensingDriverTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(presence_sensing_driver::PresenceSensingDriver<ADCDriver>* driver,
-                                 CanClient* can_client) {
-        auto handler = PresenceSensingDriverMessageHandler{*driver, *can_client};
+    [[noreturn]] void operator()(
+        presence_sensing_driver::PresenceSensingDriver* driver,
+        CanClient* can_client) {
+        auto handler =
+            PresenceSensingDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
