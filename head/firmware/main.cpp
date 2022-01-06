@@ -15,7 +15,7 @@
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
 #pragma GCC diagnostic pop
-
+#include "common/firmware/adc_comms.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi_comms.hpp"
@@ -25,6 +25,7 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
+#include "presence-sensing/core/presence_sensing_driver.hpp"
 
 static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 
@@ -56,6 +57,8 @@ spi::SPI_interface SPI_intf3 = {
     .pin = GPIO_PIN_4,
 };
 static spi::Spi spi_comms3(SPI_intf3);
+
+
 
 struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
@@ -152,7 +155,20 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
 }
+adc::ADC_interface ADC_intf2 = {
 
+    .ADC_handle = &adc2};
+
+// adc::ADC ADC_comms2(ADC_intf2);
+
+adc::ADC_interface ADC_intf1 = {
+
+    .ADC_handle = &adc1
+
+};
+
+adc::ADC ADC_comms(ADC_intf1, ADC_intf2);
+static presence_sensing_driver::PresenceSensingDriver psd(ADC_comms);
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -170,7 +186,7 @@ auto main() -> int {
 
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
-                            motor_right.driver);
+                            motor_right.driver, psd);
 
     vTaskStartScheduler();
 }
