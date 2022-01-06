@@ -3,7 +3,6 @@
 #include "common/core/adc.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/firmware/adc_comms.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"
 #include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
 

@@ -1,7 +1,6 @@
 #include "head/core/tasks.hpp"
 
 #include "common/core/adc.hpp"
-#include "common/firmware/adc_comms.hpp"
 #include "head/core/can_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
