@@ -48,6 +48,8 @@ struct Empty : BaseMessage<MId> {
     auto operator==(const Empty& other) const -> bool = default;
 };
 
+using VoltageRequest = Empty<MessageId::voltage_request>;
+
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 
 using HeartbeatResponse = Empty<MessageId::heartbeat_response>;

@@ -42,15 +42,15 @@ class PresenceSensingDriverMessageHandler {
   private:
     void visit(std::monostate &m) {}
 
-    void visit(presence_sensing_messages::GetVoltage &m) {
+    void visit(can_messages::VoltageRequest &m) {
         auto voltage_read = driver.get_readings();
 
-        GetPresenceSensingResponse response_msg{
+         presence_sensing_messages::GetVoltage resp{
             .z_motor = voltage_read.z_motor,
             .a_motor = voltage_read.a_motor,
             .gripper = voltage_read.gripper,
         };
-        can_client.send_can_message(NodeId::host, response_msg);
+        can_client.send_can_message(can_ids::NodeId::host, resp);
     }
     
 
