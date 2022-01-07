@@ -7,6 +7,7 @@
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
+#include "can/core/message_handlers/presence_sensing.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
