@@ -3,6 +3,22 @@
 This package is static data and routines for serializing and unserializing canbus messages, as well as generating
 c++ headers for those messages.
 
+## Tools
+
+The `opentrons_ot3_firmware` package includes some utility scripts.
+
+### Header Generator
+
+This will generate a C++ header file defining constants shared between firmware and the `opentrons-hardware` package.
+
+#### Usage
+
+```
+opentrons_generate_header --target TARGET
+```
+
+Example: `opentrons_generate_header --target some_file.h`
+
 ## How to define a new message
 
 ### 1. Create message id
