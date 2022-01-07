@@ -1,8 +1,7 @@
 #pragma once
 
-#include <stdint.h>
-
 #include <concepts>
+#include <cstdint>
 
 namespace adc {
 
