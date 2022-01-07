@@ -79,7 +79,6 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
         nullptr};
 };
 
-
 /**
  * Access to all tasks associated with a motor. There will be one for the left
  * and one for the right.

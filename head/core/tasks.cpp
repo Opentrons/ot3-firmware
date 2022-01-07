@@ -127,8 +127,7 @@ head_tasks::HeadQueueClient::HeadQueueClient()
 
 void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
     const presence_sensing_driver_task::TaskMessage& m) {
-        presence_sensing_driver_queue->try_write(m);
-
+    presence_sensing_driver_queue->try_write(m);
 }
 
 // Implementation of MotorQueueClient
