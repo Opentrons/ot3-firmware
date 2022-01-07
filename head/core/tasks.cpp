@@ -44,7 +44,7 @@ static auto presence_sensing_driver_task_builder =
     presence_sensing_driver_task_starter::TaskStarter<512,
                                                    head_tasks::QueueClient, adc::ADC>{};
 /**
- * Start gantry tasks.
+ * Start head tasks.
  */
 void head_tasks::start_tasks(
     can_bus::CanBus& can_bus,
@@ -117,6 +117,12 @@ void head_tasks::start_tasks(
 
 head_tasks::HeadQueueClient::HeadQueueClient()
     : can_message_writer::MessageWriter{can_ids::NodeId::head} {}
+
+void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
+    const presence_sensing_driver_task::TaskMessage& m) {
+        presence_sensing_driver_queue->try_write(m);
+
+}
 
 // Implementation of MotorQueueClient
 
