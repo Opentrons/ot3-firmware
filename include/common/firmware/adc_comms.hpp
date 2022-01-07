@@ -19,7 +19,7 @@ class ADC : public BaseADC {
   public:
     explicit ADC(ADC_interface ADC_intf_instance1,
                  ADC_interface ADC_intf_instance2);
-    auto get_readings() -> adc::VoltageRead;
+    auto get_readings() -> adc::VoltageRead override;
 
   private:
     ADC_interface ADC_intf1;
