@@ -15,6 +15,7 @@
 
 static auto& right_queues = head_tasks::get_right_queues();
 static auto& left_queues = head_tasks::get_left_queues();
+static auto& head_queues = head_tasks::get_queue_client();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
@@ -35,8 +36,14 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
 using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     device_info_handler::DeviceInfoHandler<head_tasks::MotorQueueClient>,
     can_messages::DeviceInfoRequest>;
+using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
+    presence_sensing_message_handler::PresenceSensingHandler<
+        head_tasks::HeadQueueClient>,
+    can_messages::ReadPresenceSensingVoltageRequest>;
 
 /** The parsed message handler */
+static auto presence_sensing_handler =
+    presence_sensing_message_handler::PresenceSensingHandler{head_queues};
 static auto can_motor_handler_right =
     motor_message_handler::MotorHandler{right_queues};
 static auto can_motor_handler_left =
@@ -62,6 +69,9 @@ static auto device_info_handler_left =
     device_info_handler::DeviceInfoHandler(left_queues, 0);
 static auto device_info_dispatch_target_left =
     DeviceInfoDispatchTarget{device_info_handler_left};
+
+static auto presence_sensing_disptach_target =
+    PresenceSensingDispatchTarget{presence_sensing_handler};
 
 static auto motor_dispatch_target_right =
     MotorDispatchTarget{can_motor_handler_right};
@@ -109,9 +119,12 @@ static auto dispatcher_left_motor = can_dispatch::Dispatcher(
     motion_dispatch_target_left, move_group_dispatch_target_left,
     device_info_dispatch_target_left);
 
-static auto main_dispatcher =
-    can_dispatch::Dispatcher([](auto _) -> bool { return true; },
-                             dispatcher_right_motor, dispatcher_left_motor);
+static auto dispatcher_presence_sensing = can_dispatch::Dispatcher(
+    [](auto _) -> bool { return true; }, presence_sensing_disptach_target);
+
+static auto main_dispatcher = can_dispatch::Dispatcher(
+    [](auto _) -> bool { return true; }, dispatcher_right_motor,
+    dispatcher_left_motor, dispatcher_presence_sensing);
 
 /**
  * The type of the message buffer populated by HAL ISR.
