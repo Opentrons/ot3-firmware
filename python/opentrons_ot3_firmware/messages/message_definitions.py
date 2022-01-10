@@ -213,3 +213,23 @@ class ReadMotorDriverResponse:  # noqa: D101
     message_id: Literal[
         MessageId.read_motor_driver_register_response
     ] = MessageId.read_motor_driver_register_response
+
+
+@dataclass
+class ReadPresenceSensingVoltageRequest:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[
+        MessageId.read_presence_sensing_voltage_request
+    ] = MessageId.read_presence_sensing_voltage_request
+
+
+@dataclass
+class ReadPresenceSensingVoltageResponse:  # noqa: D101
+    payload: payloads.ReadPresenceSensingVoltageResponsePayload
+    payload_type: Type[
+        BinarySerializable
+    ] = payloads.ReadPresenceSensingVoltageResponsePayload
+    message_id: Literal[
+        MessageId.read_presence_sensing_voltage_response
+    ] = MessageId.read_presence_sensing_voltage_response

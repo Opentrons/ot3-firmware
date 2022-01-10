@@ -139,3 +139,13 @@ class ReadMotorDriverRegisterResponsePayload(utils.BinarySerializable):
 
     reg_addr: utils.UInt8Field
     data: utils.UInt32Field
+
+
+@dataclass
+class ReadPresenceSensingVoltageResponsePayload(utils.BinarySerializable):
+    """Read head presence sensing voltage response payload."""
+
+    # All values in millivolts
+    z_motor: utils.UInt16Field
+    a_motor: utils.UInt16Field
+    gripper: utils.UInt16Field
