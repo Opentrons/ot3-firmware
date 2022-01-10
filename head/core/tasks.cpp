@@ -1,6 +1,6 @@
-#include "common/core/adc.hpp"
-#include "common/firmware/adc_comms.hpp"
 #include "head/core/tasks.hpp"
+
+#include "common/core/adc.hpp"
 #include "head/core/can_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
@@ -41,8 +41,9 @@ static auto right_move_status_task_builder =
         512, head_tasks::MotorQueueClient>{};
 
 static auto presence_sensing_driver_task_builder =
-    presence_sensing_driver_task_starter::TaskStarter<512,
-                                                   head_tasks::QueueClient, adc::ADC>{};
+    presence_sensing_driver_task_starter::TaskStarter<
+        512, head_tasks::HeadQueueClient>{};
+
 /**
  * Start head tasks.
  */
