@@ -53,16 +53,22 @@ void head_tasks::start_tasks(
     motor_driver::MotorDriver& left_motor_driver,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
-    motor_driver::MotorDriver& right_motor_driver) {
+    motor_driver::MotorDriver& right_motor_driver,
+    presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver) {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
 
+    auto& presence_sensing = presence_sensing_driver_task_builder.start(
+        5, presence_sensing_driver, head_queues);
+
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
+    head_tasks_col.presence_sensing_driver_task = &presence_sensing;
 
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());
+    head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
 
     // Start the left motor tasks
     auto& left_motion =

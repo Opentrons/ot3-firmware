@@ -31,6 +31,13 @@ void start_tasks(
  */
 struct HeadQueueClient : can_message_writer::MessageWriter {
     HeadQueueClient();
+
+    void send_presence_sensing_driver_queue(
+        const presence_sensing_driver_task::TaskMessage& m);
+
+    freertos_message_queue::FreeRTOSMessageQueue<
+        presence_sensing_driver_task::TaskMessage>*
+        presence_sensing_driver_queue{nullptr};
 };
 
 /**
@@ -39,6 +46,9 @@ struct HeadQueueClient : can_message_writer::MessageWriter {
 struct HeadTasks {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
+    presence_sensing_driver_task::PresenceSensingDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue, HeadQueueClient>*
+        presence_sensing_driver_task{nullptr};
 };
 
 /**
