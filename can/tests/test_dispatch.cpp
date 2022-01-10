@@ -123,6 +123,9 @@ SCENARIO("Dispatcher") {
             auto operator()(uint32_t arbitration_id) const {
                 auto arb = ArbitrationId(arbitration_id);
                 return (arb.node_id() == node_id);
+                return ((arb.node_id() == node_id) ||
+                        (arb.node_id() == can_ids::NodeId::broadcast) ||
+                        (arb.node_id() == can_ids::NodeId::head));
             }
         };
 
