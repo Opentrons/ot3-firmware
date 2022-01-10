@@ -13,6 +13,7 @@
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
+#include "gantry/core/constants.hpp"
 
 using namespace can_dispatch;
 
@@ -33,7 +34,7 @@ static auto can_motion_handler =
 
 /** Handler of device info requests. */
 static auto device_info_message_handler =
-    device_info_handler::DeviceInfoHandler{queue_client, 0};
+    device_info_handler::DeviceInfoHandler{queue_client, VERSION};
 static auto device_info_dispatch_target =
     can_task::DeviceInfoDispatchTarget{device_info_message_handler};
 

@@ -11,6 +11,7 @@
 #include "common/core/freertos_task.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
 #include "pipettes/core/tasks.hpp"
+#include "pipettes/core/constants.hpp"
 
 static auto& queue_client = pipettes_tasks::get_queues();
 
@@ -29,7 +30,7 @@ static auto can_move_group_handler =
 static auto eeprom_handler =
     eeprom_message_handler::EEPromHandler{queue_client};
 static auto device_info_message_handler =
-    device_info_handler::DeviceInfoHandler{queue_client, 0};
+    device_info_handler::DeviceInfoHandler{queue_client, VERSION};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = can_dispatch::DispatchParseTarget<

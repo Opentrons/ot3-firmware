@@ -11,6 +11,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "head/core/tasks.hpp"
+#include "head/core/constants.hpp"
 
 static auto& right_queues = head_tasks::get_right_queues();
 static auto& left_queues = head_tasks::get_left_queues();
@@ -53,12 +54,12 @@ static auto can_move_group_handler_left =
 
 /** Handler of device info requests. */
 static auto device_info_handler_right =
-    device_info_handler::DeviceInfoHandler(right_queues, 0);
+    device_info_handler::DeviceInfoHandler(right_queues, VERSION);
 static auto device_info_dispatch_target_right =
     DeviceInfoDispatchTarget{device_info_handler_right};
 
 static auto device_info_handler_left =
-    device_info_handler::DeviceInfoHandler(left_queues, 0);
+    device_info_handler::DeviceInfoHandler(left_queues, VERSION);
 static auto device_info_dispatch_target_left =
     DeviceInfoDispatchTarget{device_info_handler_left};
 
