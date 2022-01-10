@@ -113,6 +113,38 @@ SCENARIO("Dispatcher") {
             }
         }
     }
+
+    GIVEN("a dispatcher with two listeners for head ") {
+        auto l1 = Listener{};
+        auto l2 = Listener{};
+        auto buff = BufferType{1};
+        struct CheckForNodeId {
+            NodeId node_id;
+            auto operator()(uint32_t arbitration_id) const {
+                auto arb = ArbitrationId(arbitration_id);
+                return (arb.node_id() == node_id);
+            }
+        };
+
+        CheckForNodeId check_node_id_head{.node_id = NodeId::head};
+        auto subject = Dispatcher(check_node_id_head, l1, l2);
+
+        WHEN(
+            "dispatching a head message to a dispatcher expecting "
+            "head") {
+            auto arbitration_id = ArbitrationId();
+            arbitration_id.node_id(NodeId::head);
+            subject.handle(arbitration_id, buff.begin(), buff.end());
+            THEN("listeners are called") {
+                REQUIRE(l1.id == arbitration_id);
+                REQUIRE(l1.iter == buff.begin());
+                REQUIRE(l1.limit == buff.end());
+                REQUIRE(l2.id == arbitration_id);
+                REQUIRE(l2.iter == buff.begin());
+                REQUIRE(l2.limit == buff.end());
+            }
+        }
+    }
 }
 
 SCENARIO("DispatchBufferTarget") {
