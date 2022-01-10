@@ -9,9 +9,9 @@
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/constants.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "pipettes/core/constants.hpp"
 
 static auto& queue_client = pipettes_tasks::get_queues();
 

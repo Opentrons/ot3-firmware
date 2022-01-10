@@ -10,8 +10,8 @@
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "head/core/tasks.hpp"
 #include "head/core/constants.hpp"
+#include "head/core/tasks.hpp"
 
 static auto& right_queues = head_tasks::get_right_queues();
 static auto& left_queues = head_tasks::get_left_queues();

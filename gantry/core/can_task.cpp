@@ -10,10 +10,10 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.hpp"
+#include "gantry/core/constants.hpp"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
-#include "gantry/core/constants.hpp"
 
 using namespace can_dispatch;
 
