@@ -19,6 +19,10 @@ void sim_spi::SimTMC2130Spi::transmit_receive(
     constexpr uint8_t write_mask =
         static_cast<uint8_t>(spi::TMC2130Spi::Mode::WRITE);
 
+    auto out_iter = receive.begin();
+    // Write status byte into buffer.
+    out_iter = bit_utils::int_to_bytes(status, out_iter, receive.end());
+
     uint8_t reg = control & ~write_mask;
 
     if (control & write_mask) {
@@ -26,12 +30,9 @@ void sim_spi::SimTMC2130Spi::transmit_receive(
         register_map[reg] = data;
     } else {
         // A read command will return the data from the previous read command.
-        auto out_iter = receive.begin();
-        out_iter =
-            bit_utils::int_to_bytes(read_register, out_iter, receive.end());
         out_iter = bit_utils::int_to_bytes(register_map[read_register],
                                            out_iter, receive.end());
-        // For the next read.
-        read_register = reg;
     }
+    // The register is cached for the next read operation.
+    read_register = reg;
 }

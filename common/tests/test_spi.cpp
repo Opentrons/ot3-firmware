@@ -46,7 +46,6 @@ SCENARIO("simulator works") {
             spi::TMC2130Spi::build_command(
                 transmit, spi::TMC2130Spi::Mode::READ, 0x01, 0);
             subject.transmit_receive(transmit, receive);
-            subject.transmit_receive(transmit, receive);
             THEN("the data is what was written") {
                 REQUIRE(receive[1] == 0xBE);
                 REQUIRE(receive[2] == 0xEF);

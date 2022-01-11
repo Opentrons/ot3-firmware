@@ -31,6 +31,8 @@ class SimTMC2130Spi : public spi::TMC2130Spi {
   private:
     RegisterMap register_map;
     uint8_t read_register{0};
+    // This status byte is unused currently but may have some use in the future.
+    uint8_t status{0};
 };
 
 }  // namespace sim_spi
