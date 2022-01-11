@@ -22,11 +22,16 @@ void sim_spi::SimTMC2130Spi::transmit_receive(
     uint8_t reg = control & ~write_mask;
 
     if (control & write_mask) {
+        // This is a write command.
         register_map[reg] = data;
+    } else {
+        // A read command will return the data from the previous read command.
+        auto out_iter = receive.begin();
+        out_iter =
+            bit_utils::int_to_bytes(read_register, out_iter, receive.end());
+        out_iter = bit_utils::int_to_bytes(register_map[read_register],
+                                           out_iter, receive.end());
+        // For the next read.
+        read_register = reg;
     }
-
-    auto out_iter = receive.begin();
-    out_iter = bit_utils::int_to_bytes(reg, out_iter, receive.end());
-    out_iter =
-        bit_utils::int_to_bytes(register_map[reg], out_iter, receive.end());
 }

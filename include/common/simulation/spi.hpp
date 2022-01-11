@@ -30,6 +30,7 @@ class SimTMC2130Spi : public spi::TMC2130Spi {
 
   private:
     RegisterMap register_map;
+    uint8_t read_register{0};
 };
 
 }  // namespace sim_spi

@@ -46,6 +46,7 @@ SCENARIO("simulator works") {
             spi::TMC2130Spi::build_command(
                 transmit, spi::TMC2130Spi::Mode::READ, 0x01, 0);
             subject.transmit_receive(transmit, receive);
+            subject.transmit_receive(transmit, receive);
             THEN("the data is what was written") {
                 REQUIRE(receive[1] == 0xBE);
                 REQUIRE(receive[2] == 0xEF);
@@ -63,6 +64,7 @@ SCENARIO("simulator works") {
             spi::TMC2130Spi::build_command(
                 transmit, spi::TMC2130Spi::Mode::READ, 0x01, 0);
             subject.transmit_receive(transmit, receive);
+            subject.transmit_receive(transmit, receive);
             THEN("the data is was in the register map") {
                 REQUIRE(receive[1] == 0x0);
                 REQUIRE(receive[2] == 0x0);
@@ -72,6 +74,7 @@ SCENARIO("simulator works") {
 
             spi::TMC2130Spi::build_command(
                 transmit, spi::TMC2130Spi::Mode::READ, 0x02, 0);
+            subject.transmit_receive(transmit, receive);
             subject.transmit_receive(transmit, receive);
             THEN("the data is was in the register map") {
                 REQUIRE(receive[1] == 0x0);

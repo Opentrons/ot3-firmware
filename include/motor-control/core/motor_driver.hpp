@@ -33,6 +33,9 @@ class MotorDriver {
         auto txBuffer = spi::TMC2130Spi::BufferType{};
         spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::READ,
                                        motor_reg, command_data);
+        // A read requires two transmissions. The second returns the data in the
+        // register from the first transmission.
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
 
         // Extract data bytes after the address.
