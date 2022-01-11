@@ -11,8 +11,11 @@ ADC::ADC(ADC_interface ADC_intf_instance1, ADC_interface ADC_intf_instance2)
 
 auto ADC::get_readings() -> adc::VoltageRead {
     auto voltage_read = adc::VoltageRead{
-        .z_motor = static_cast<uint16_t>(adc_read_voltage_z_motor()),
-        .a_motor = static_cast<uint16_t>(adc_read_voltage_a_motor()),
-        .gripper = static_cast<uint16_t>(adc_read_voltage_gripper())};
+        .z_motor = static_cast<uint16_t>(
+            (adc_read_z_motor() * FULLSCALE_VOLTAGE) / ADC_FULLSCALE_OUTPUT),
+        .a_motor = static_cast<uint16_t>(
+            (adc_read_a_motor() * FULLSCALE_VOLTAGE) / ADC_FULLSCALE_OUTPUT),
+        .gripper = static_cast<uint16_t>(
+            (adc_read_gripper() * FULLSCALE_VOLTAGE) / ADC_FULLSCALE_OUTPUT)};
     return voltage_read;
 }

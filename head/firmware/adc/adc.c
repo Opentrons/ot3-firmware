@@ -132,7 +132,7 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     }
 }
 
-static uint32_t adc_read_voltage(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel) {
+static uint32_t adc_read(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel) {
     uint32_t return_value = 4294967295;
 
     ADC_set_chan(adc_channel, adc_handle);
@@ -144,12 +144,12 @@ static uint32_t adc_read_voltage(ADC_HandleTypeDef* adc_handle, uint32_t adc_cha
     return return_value;
 }
 
-uint32_t adc_read_voltage_z_motor() {
-    return adc_read_voltage(&adc2, ADC_CHANNEL_11);
+uint32_t adc_read_z_motor() {
+    return adc_read(&adc2, ADC_CHANNEL_11);
 }
-uint32_t adc_read_voltage_a_motor() {
-    return adc_read_voltage(&adc2, ADC_CHANNEL_12);
+uint32_t adc_read_a_motor() {
+    return adc_read(&adc2, ADC_CHANNEL_12);
 }
-uint32_t adc_read_voltage_gripper() {
-    return adc_read_voltage(&adc1, ADC_CHANNEL_12);
+uint32_t adc_read_gripper() {
+    return adc_read(&adc1, ADC_CHANNEL_12);
 }
