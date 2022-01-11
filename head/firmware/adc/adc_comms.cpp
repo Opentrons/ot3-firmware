@@ -1,4 +1,4 @@
-#include "common/firmware/adc_comms.hpp"
+#include "head/firmware/adc_comms.hpp"
 
 #include "platform_specific_hal_conf.h"
 

@@ -16,10 +16,10 @@
 #include "stm32g4xx_hal_conf.h"
 #pragma GCC diagnostic pop
 #include "can/firmware/hal_can_bus.hpp"
-#include "common/firmware/adc_comms.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi_comms.hpp"
 #include "head/core/tasks.hpp"
+#include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
