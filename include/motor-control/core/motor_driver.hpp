@@ -34,9 +34,11 @@ class MotorDriver {
         spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::READ,
                                        motor_reg, command_data);
         spi_comms.transmit_receive(txBuffer, rxBuffer);
-        uint32_t response;
-        auto iter = rxBuffer.cbegin() + 1;
-        iter = bit_utils::bytes_to_int(iter, rxBuffer.cend(), response);
+
+        // Extract data bytes after the address.
+        uint32_t response = 0;
+        const auto * iter = rxBuffer.cbegin();  // NOLINT
+        iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(), response);  // NOLINT
         return response;
     }
 
