@@ -26,7 +26,7 @@ class SimTMC2130Spi : public spi::TMC2130Spi {
         : register_map{register_map} {}
 
     void transmit_receive(const spi::TMC2130Spi::BufferType& transmit,
-                          spi::TMC2130Spi::BufferType& receive);
+                          spi::TMC2130Spi::BufferType& receive) final;
 
   private:
     RegisterMap register_map;

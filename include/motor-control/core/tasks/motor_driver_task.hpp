@@ -61,7 +61,7 @@ class MotorDriverMessageHandler {
         uint32_t data = 0;
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
-            driver.read(
+            data = driver.read(
                 motor_driver_config::DriverRegisters::Addresses(m.reg_address),
                 data);
         }
