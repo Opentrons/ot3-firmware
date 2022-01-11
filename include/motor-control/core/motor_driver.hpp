@@ -37,8 +37,9 @@ class MotorDriver {
 
         // Extract data bytes after the address.
         uint32_t response = 0;
-        const auto * iter = rxBuffer.cbegin();  // NOLINT
-        iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(), response);  // NOLINT
+        const auto* iter = rxBuffer.cbegin();  // NOLINT
+        iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(),  // NOLINT
+                                       response);
         return response;
     }
 
