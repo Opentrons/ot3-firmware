@@ -132,7 +132,7 @@ SCENARIO("Dispatcher") {
         auto subject = Dispatcher(check_node_id_head, l1, l2);
 
         WHEN(
-            "dispatching a head message to a dispatcher expecting "
+            "dispatching a head_l message to a dispatcher expecting "
             "head") {
             auto arbitration_id = ArbitrationId();
             arbitration_id.node_id(NodeId::head);

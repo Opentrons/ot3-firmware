@@ -157,8 +157,6 @@ adc::ADC_interface ADC_intf2 = {
 
     .ADC_handle = &adc2};
 
-// adc::ADC ADC_comms2(ADC_intf2);
-
 adc::ADC_interface ADC_intf1 = {
 
     .ADC_handle = &adc1
@@ -167,6 +165,7 @@ adc::ADC_interface ADC_intf1 = {
 
 adc::ADC ADC_comms(ADC_intf1, ADC_intf2);
 static presence_sensing_driver::PresenceSensingDriver psd(ADC_comms);
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();

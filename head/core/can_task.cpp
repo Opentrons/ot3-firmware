@@ -15,7 +15,7 @@
 
 static auto& right_queues = head_tasks::get_right_queues();
 static auto& left_queues = head_tasks::get_left_queues();
-static auto& head_queues = head_tasks::get_queue_client();
+static auto& common_queues = head_tasks::get_queue_client();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
@@ -43,7 +43,7 @@ using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
 
 /** The parsed message handler */
 static auto presence_sensing_handler =
-    presence_sensing_message_handler::PresenceSensingHandler{head_queues};
+    presence_sensing_message_handler::PresenceSensingHandler{common_queues};
 static auto can_motor_handler_right =
     motor_message_handler::MotorHandler{right_queues};
 static auto can_motor_handler_left =

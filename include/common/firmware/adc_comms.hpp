@@ -5,7 +5,7 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "adc.h"
+#include "head/firmware/adc.h"
 #include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic pop
 #include "common/core/adc.hpp"
