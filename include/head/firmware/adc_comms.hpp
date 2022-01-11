@@ -10,8 +10,8 @@
 #pragma GCC diagnostic pop
 #include "common/core/adc.hpp"
 // check these
-#define FULLSCALE_VOLTAGE 5
-#define ADC_FULLSCALE_OUTPUT 128
+#define FULLSCALE_VOLTAGE 3.3
+#define ADC_FULLSCALE_OUTPUT 4095
 namespace adc {
 struct ADC_interface {
     ADC_HandleTypeDef* ADC_handle;
