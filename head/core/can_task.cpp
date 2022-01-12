@@ -34,7 +34,7 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest>;
 using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    device_info_handler::DeviceInfoHandler<head_tasks::MotorQueueClient>,
+    device_info_handler::DeviceInfoHandler<head_tasks::HeadQueueClient>,
     can_messages::DeviceInfoRequest>;
 using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
     presence_sensing_message_handler::PresenceSensingHandler<
@@ -60,15 +60,10 @@ static auto can_move_group_handler_left =
     move_group_handler::MoveGroupHandler(left_queues);
 
 /** Handler of device info requests. */
-static auto device_info_handler_right =
-    device_info_handler::DeviceInfoHandler(right_queues, 0);
-static auto device_info_dispatch_target_right =
-    DeviceInfoDispatchTarget{device_info_handler_right};
-
-static auto device_info_handler_left =
-    device_info_handler::DeviceInfoHandler(left_queues, 0);
-static auto device_info_dispatch_target_left =
-    DeviceInfoDispatchTarget{device_info_handler_left};
+static auto device_info_message_handler =
+    device_info_handler::DeviceInfoHandler(common_queues, 0);
+static auto device_info_dispatch_target =
+    DeviceInfoDispatchTarget{device_info_message_handler};
 
 static auto presence_sensing_disptach_target =
     PresenceSensingDispatchTarget{presence_sensing_handler};
@@ -110,21 +105,17 @@ CheckForNodeId check_for_node_id_right{.node_id = can_ids::NodeId::head_r};
 /** Dispatcher to the various right motor handlers */
 static auto dispatcher_right_motor = can_dispatch::Dispatcher(
     check_for_node_id_right, motor_dispatch_target_right,
-    motion_dispatch_target_right, move_group_dispatch_target_right,
-    device_info_dispatch_target_right);
+    motion_dispatch_target_right, move_group_dispatch_target_right);
 
 /** Dispatcher to the various left motor handlers */
 static auto dispatcher_left_motor = can_dispatch::Dispatcher(
     check_for_node_id_left, motor_dispatch_target_left,
-    motion_dispatch_target_left, move_group_dispatch_target_left,
-    device_info_dispatch_target_left);
-
-static auto dispatcher_presence_sensing = can_dispatch::Dispatcher(
-    [](auto _) -> bool { return true; }, presence_sensing_disptach_target);
+    motion_dispatch_target_left, move_group_dispatch_target_left);
 
 static auto main_dispatcher = can_dispatch::Dispatcher(
     [](auto _) -> bool { return true; }, dispatcher_right_motor,
-    dispatcher_left_motor, dispatcher_presence_sensing);
+    dispatcher_left_motor, presence_sensing_disptach_target,
+    device_info_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
