@@ -9,29 +9,25 @@
 
 using namespace presence_sensing;
 
-SCENARIO("enqueue presence sensing request msgs") {
-    GIVEN("a presence sensing message handler") {
+SCENARIO("presence sensor handler gets called on presence sensisng request messages") {
+    GIVEN("a queue with ReadPresenceSensingVoltageRequest messages") {
         test_mocks::MockMessageQueue<ReadPresenceSensingVoltageRequest> queue;
         ReadPresenceSensingVoltageRequest m;
         test_mocks::MockPresenceSensingClient ps_client;
         auto handler = PresenceSensingHandler(ps_client);
-
-        WHEN("presence sensing handler called") {
+        queue.try_write(m);
+        queue.try_write(m);
+        queue.try_write(m);
+        WHEN("presence sensing handler called on messages in queue") {
             THEN('presence sensing requests get enqued in ps_client queue') {
-                queue.try_write(m);
-                queue.try_write(m);
-                queue.try_write(m);
                 while (!queue.empty())
                 {
                     handler.handle(queue.back());
                     queue.pop_back();
                 }
-
-
                 REQUIRE(ps_client.get_size() == 3)
             }
         }
     }
-
 
 }
