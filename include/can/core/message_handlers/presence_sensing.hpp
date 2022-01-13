@@ -26,12 +26,16 @@ class PresenceSensingHandler {
 
     using MessageType =
         std::variant<std::monostate, ReadPresenceSensingVoltageRequest>;
-    void handle(MessageType &m) {
-        presence_sensing_client.send_presence_sensing_driver_queue(m);
+    void handle(const MessageType &m) {
+        std::visit([this](auto &message) { handle_message(message); }, m);    
     }
 
   private:
     PresenceSensingDriverTaskClient &presence_sensing_client;
+    void handle_message(std::monostate &m) { static_cast<void>(m); }
+    void handle_message(const auto &m) {
+    presence_sensing_client.send_presence_sensing_driver_queue(m);
+    }
 };
 
 }  // namespace presence_sensing_message_handler

@@ -37,7 +37,6 @@ target_head_core(head)
 
 target_ot_motor_control(head)
 
-target_presence_sensing(head)
 
 target_link_libraries(head
         PUBLIC STM32G491RETx

@@ -10,22 +10,17 @@
 using namespace presence_sensing_message_handler;
 using namespace can_messages;
 
-SCENARIO("Enqueue ReadPresenceSensingVoltageRequest messages in presence sensing client queue") {
+SCENARIO("A handler that enques ReadPresenceSensingVoltageRequest messages to presence sensing client") {
     GIVEN("a queue with ReadPresenceSensingVoltageRequest messages and a presence sensing client queue") {
-        test_mocks::MockMessageQueue<ReadPresenceSensingVoltageRequest> queue{};
-        ReadPresenceSensingVoltageRequest m;
         test_mocks::MockHeadQueueClient ps_client;
         auto handler = PresenceSensingHandler(ps_client);
-        queue.try_write(m);
-        queue.try_write(m);
-        queue.try_write(m);
-        can_messages::Empty<can_ids::MessageId::read_presence_sensing_voltage_request> tmp;
-        WHEN("presence sensing handler gets called on messages in queue") {
+        
+        std::variant<std::monostate, ReadPresenceSensingVoltageRequest> tmp;
+        WHEN("presence sensing handler gets called with ReadPresenceSensingVoltageRequest") {
             THEN('presence sensing requests get enqued in ps_client queue') {
-                while (queue.try_read(&tmp))
-                {
-                    handler.handle(tmp);
-                }
+                handler.handle(decltype(handler)::MessageType(ReadPresenceSensingVoltageRequest()));
+                handler.handle(decltype(handler)::MessageType(ReadPresenceSensingVoltageRequest()));
+                handler.handle(decltype(handler)::MessageType(ReadPresenceSensingVoltageRequest()));
                 REQUIRE(ps_client.messages.size() == 3);
             }
         }
