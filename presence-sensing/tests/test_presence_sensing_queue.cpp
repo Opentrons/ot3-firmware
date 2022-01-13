@@ -8,8 +8,9 @@
 #include "presence-sensing/tests/mock_presence_sensing_client.hpp"
 
 using namespace presence_sensing;
+using namespace can_messages;
 
-SCENARIO("presence sensor handler gets called on presence sensisng request messages") {
+SCENARIO("Enqueue ReadPresenceSensingVoltageRequest messages in presence sensing client queue") {
     GIVEN("a queue with ReadPresenceSensingVoltageRequest messages and a presence sensing client queue") {
         test_mocks::MockMessageQueue<ReadPresenceSensingVoltageRequest> queue;
         ReadPresenceSensingVoltageRequest m;
@@ -18,7 +19,7 @@ SCENARIO("presence sensor handler gets called on presence sensisng request messa
         queue.try_write(m);
         queue.try_write(m);
         queue.try_write(m);
-        WHEN("presence sensing handler called on messages in queue") {
+        WHEN("presence sensing handler gets called on messages in queue") {
             THEN('presence sensing requests get enqued in ps_client queue') {
                 while (!queue.empty())
                 {

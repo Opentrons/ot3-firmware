@@ -3,17 +3,17 @@ add_subdirectory(core)
 add_library(presence-sensing-core INTERFACE)
 target_include_directories(presence-sensing-core INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../include)
 
-target_link_libraries(presence--core INTERFACE can-core)
+target_link_libraries(presence-sensing-core INTERFACE can-core)
 
 if (${CMAKE_CROSSCOMPILING})
     add_subdirectory(firmware)
     function(target_presence_sensing TARGET)
       target_presence_sensing_firmware(${TARGET})
-      target_link_libraries(${TARGET} PUBLIC motor-utils motor-control-core)
+      target_link_libraries(${TARGET} PUBLIC presence-sensing-core)
     endfunction()
 else()
     function(target_presence_sensing TARGET)
-      target_link_libraries(${TARGET} PUBLIC motor-utils motor-control-core)
+      target_link_libraries(${TARGET} PUBLIC presence-sensing-core)
     endfunction()
     add_subdirectory(tests)
     if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
@@ -25,7 +25,7 @@ endif()
 
 find_package(Clang)
 
-file(GLOB_RECURSE PRESENCESENSING_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/motor-control/*.hpp)
+file(GLOB_RECURSE PRESENCESENSING_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/presence-sensing/*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
 # the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
