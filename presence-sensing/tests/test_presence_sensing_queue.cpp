@@ -10,8 +10,8 @@
 using namespace presence_sensing_message_handler;
 using namespace can_messages;
 
-SCENARIO("A handler that enques ReadPresenceSensingVoltageRequest messages to presence sensing client") {
-    GIVEN("a queue with ReadPresenceSensingVoltageRequest messages and a presence sensing client queue") {
+SCENARIO("Presence sensing handler gets ReadPresenceSensingVoltageRequest msgs") {
+    GIVEN("a presence sensing client queue and a presence sensing handler") {
         test_mocks::MockHeadQueueClient ps_client;
         auto handler = PresenceSensingHandler(ps_client);
         
