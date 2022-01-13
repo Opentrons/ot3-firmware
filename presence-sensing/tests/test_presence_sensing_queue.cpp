@@ -10,7 +10,7 @@
 using namespace presence_sensing;
 
 SCENARIO("presence sensor handler gets called on presence sensisng request messages") {
-    GIVEN("a queue with ReadPresenceSensingVoltageRequest messages") {
+    GIVEN("a queue with ReadPresenceSensingVoltageRequest messages and a presence sensing client queue") {
         test_mocks::MockMessageQueue<ReadPresenceSensingVoltageRequest> queue;
         ReadPresenceSensingVoltageRequest m;
         test_mocks::MockPresenceSensingClient ps_client;
