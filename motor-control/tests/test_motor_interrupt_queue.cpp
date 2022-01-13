@@ -24,7 +24,7 @@ SCENARIO("queue multiple move messages") {
                     Move{.duration = 7000, .velocity = default_velocity};
                 constexpr Move msg4 =
                     Move{.duration = 800, .velocity = default_velocity};
-                queue.(msg1);
+                queue.try_write(msg1);
                 queue.try_write(msg2);
                 queue.try_write(msg3);
                 queue.try_write(msg4);
