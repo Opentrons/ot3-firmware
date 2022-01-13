@@ -1,7 +1,7 @@
 #pragma once
 
 #include "can/core/ids.hpp"
-#include "can/core/message_writer.hpp"
+//#include "can/core/message_writer.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
 #include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"

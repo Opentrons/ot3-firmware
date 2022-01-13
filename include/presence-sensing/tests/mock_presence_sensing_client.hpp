@@ -12,6 +12,5 @@ struct MockHeadQueueClient {
             messages.push_back(m);
         }
         std::vector<presence_sensing_driver_task::TaskMessage> messages{};
-    )
 }; 
 }

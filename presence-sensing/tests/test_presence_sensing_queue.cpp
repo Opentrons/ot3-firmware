@@ -7,14 +7,14 @@
 #include "presence-sensing/tests/mock_presence_sensing.hpp"
 #include "presence-sensing/tests/mock_presence_sensing_client.hpp"
 
-using namespace presence_sensing;
+using namespace presence_sensing_message_handler;
 using namespace can_messages;
 
 SCENARIO("Enqueue ReadPresenceSensingVoltageRequest messages in presence sensing client queue") {
     GIVEN("a queue with ReadPresenceSensingVoltageRequest messages and a presence sensing client queue") {
-        test_mocks::MockMessageQueue<ReadPresenceSensingVoltageRequest> queue;
+        test_mocks::MockMessageQueue<ReadPresenceSensingVoltageRequest> queue{};
         ReadPresenceSensingVoltageRequest m;
-        test_mocks::MockPresenceSensingClient ps_client;
+        test_mocks::MockHeadQueueClient ps_client;
         auto handler = PresenceSensingHandler(ps_client);
         queue.try_write(m);
         queue.try_write(m);
