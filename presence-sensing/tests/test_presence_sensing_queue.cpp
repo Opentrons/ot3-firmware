@@ -19,14 +19,14 @@ SCENARIO("Enqueue ReadPresenceSensingVoltageRequest messages in presence sensing
         queue.try_write(m);
         queue.try_write(m);
         queue.try_write(m);
+        can_messages::Empty<can_ids::MessageId::read_presence_sensing_voltage_request> tmp;
         WHEN("presence sensing handler gets called on messages in queue") {
             THEN('presence sensing requests get enqued in ps_client queue') {
-                while (!queue.empty())
+                while (queue.try_read(&tmp))
                 {
-                    handler.handle(queue.back());
-                    queue.pop_back();
+                    handler.handle(tmp);
                 }
-                REQUIRE(ps_client.get_size() == 3)
+                REQUIRE(ps_client.messages.size() == 3);
             }
         }
     }
