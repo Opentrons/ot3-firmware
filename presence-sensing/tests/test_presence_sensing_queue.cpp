@@ -4,7 +4,6 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"
 #include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
-#include "presence-sensing/tests/mock_presence_sensing.hpp"
 #include "presence-sensing/tests/mock_presence_sensing_client.hpp"
 
 using namespace presence_sensing_message_handler;
@@ -16,7 +15,6 @@ SCENARIO(
         test_mocks::MockHeadQueueClient ps_client;
         auto handler = PresenceSensingHandler(ps_client);
 
-        std::variant<std::monostate, ReadPresenceSensingVoltageRequest> tmp;
         WHEN(
             "presence sensing handler gets called with "
             "ReadPresenceSensingVoltageRequest") {
