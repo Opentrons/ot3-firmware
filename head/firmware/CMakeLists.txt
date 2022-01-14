@@ -87,6 +87,24 @@ set_target_properties(head
         CROSSCOMPILING_EMULATOR
         "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
 
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+add_custom_command(OUTPUT head.hex
+        COMMAND ${CROSS_OBJCOPY} ARGS head "-Oihex" head.hex
+        DEPENDS head
+        VERBATIM)
+add_custom_target(head-hex ALL
+        DEPENDS head.hex)
+
+add_custom_command(OUTPUT head.bin
+        COMMAND ${CROSS_OBJCOPY} ARGS head "-Obinary" head.bin
+        DEPENDS head
+        VERBATIM)
+add_custom_target(head-bin ALL
+        DEPENDS head.bin)
+
 
 find_package(Clang)
 

@@ -135,6 +135,44 @@ set_target_properties(gantry-y
         "${ARM_GDB};--command=${GDBINIT_FILE}")
 
 
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+add_custom_command(OUTPUT gantry-x.hex
+        COMMAND ${CROSS_OBJCOPY} ARGS gantry-x "-Oihex" gantry-x.hex
+        DEPENDS gantry-x
+        VERBATIM)
+add_custom_target(gantry-x-hex ALL
+        DEPENDS gantry-x.hex)
+
+add_custom_command(OUTPUT gantry-x.bin
+        COMMAND ${CROSS_OBJCOPY} ARGS gantry-x "-Obinary" gantry-x.bin
+        DEPENDS gantry-x
+        VERBATIM)
+add_custom_target(gantry-x-bin ALL
+        DEPENDS gantry-x.bin)
+
+
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+add_custom_command(OUTPUT gantry-y.hex
+        COMMAND ${CROSS_OBJCOPY} ARGS gantry-y "-Oihex" gantry-y.hex
+        DEPENDS gantry-y
+        VERBATIM)
+add_custom_target(gantry-y-hex ALL
+        DEPENDS gantry-y.hex)
+
+add_custom_command(OUTPUT gantry-y.bin
+        COMMAND ${CROSS_OBJCOPY} ARGS gantry-y "-Obinary" gantry-y.bin
+        DEPENDS gantry-y
+        VERBATIM)
+add_custom_target(gantry-y-bin ALL
+        DEPENDS gantry-y.bin)
+
+
 find_package(Clang)
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html

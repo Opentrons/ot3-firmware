@@ -94,6 +94,25 @@ set_target_properties(pipettes
         CROSSCOMPILING_EMULATOR
         "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L562RETx/gdbinit")
 
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+add_custom_command(OUTPUT pipettes.hex
+        COMMAND ${CROSS_OBJCOPY} ARGS pipettes "-Oihex" pipettes.hex
+        DEPENDS pipettes
+        VERBATIM)
+add_custom_target(pipettes-hex ALL
+        DEPENDS pipettes.hex)
+
+add_custom_command(OUTPUT pipettes.bin
+        COMMAND ${CROSS_OBJCOPY} ARGS pipettes "-Obinary" pipettes.bin
+        DEPENDS pipettes
+        VERBATIM)
+add_custom_target(pipettes-bin ALL
+        DEPENDS pipettes.bin)
+
+
 
 find_package(Clang)
 
