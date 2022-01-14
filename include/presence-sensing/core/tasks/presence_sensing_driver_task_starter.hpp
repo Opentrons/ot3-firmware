@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/core/adc.hpp"
+#include "head/core/adc.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"

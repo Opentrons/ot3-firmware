@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/core/adc.hpp"
+#include "head/core/adc.hpp"
 
 namespace adc {
 

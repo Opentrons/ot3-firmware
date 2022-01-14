@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/core/adc.hpp"
+#include "head/core/adc.hpp"
 
 auto voltage_read = adc::VoltageRead{
         .z_motor = 666,

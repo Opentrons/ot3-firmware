@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/core/adc.hpp"
+#include "head/core/adc.hpp"
 #include "common/core/bit_utils.hpp"
 
 namespace presence_sensing_driver {

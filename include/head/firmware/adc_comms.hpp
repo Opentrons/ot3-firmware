@@ -8,7 +8,7 @@
 #include "head/firmware/adc.h"
 #include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic pop
-#include "common/core/adc.hpp"
+#include "head/core/adc.hpp"
 // check these
 constexpr float FULLSCALE_VOLTAGE = 3.3;
 constexpr float ADC_FULLSCALE_OUTPUT = 4095;
