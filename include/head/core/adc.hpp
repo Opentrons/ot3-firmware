@@ -5,7 +5,7 @@
 
 namespace adc {
 
-struct VoltageRead {
+struct MillivoltsReadings {
     uint16_t z_motor;
     uint16_t a_motor;
     uint16_t gripper;
@@ -20,7 +20,7 @@ class BaseADC {
     BaseADC(BaseADC&&) = default;
     auto operator=(BaseADC&&) -> BaseADC& = default;
 
-    virtual auto get_readings() -> VoltageRead = 0;
+    virtual auto get_readings() -> MillivoltsReadings = 0;
 };
 
 }  // namespace adc

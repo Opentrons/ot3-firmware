@@ -1,5 +1,5 @@
 add_library(presence-sensing-core INTERFACE)
-target_include_directories(presence-sensing-core INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../../include)
+target_include_directories(presence-sensing-core INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../include)
 
 target_link_libraries(presence-sensing-core INTERFACE can-core)
 
@@ -22,7 +22,7 @@ endif()
 
 find_package(Clang)
 
-file(GLOB_RECURSE PRESENCESENSING_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../../include/presence-sensing/*.hpp)
+file(GLOB_RECURSE PRESENCESENSING_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/presence-sensing/*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
 # the ones in tests/ or firmware/) because they don't have semantic reasoning involved and

@@ -9,8 +9,8 @@ using namespace adc;
 ADC::ADC(ADC_interface ADC_intf_instance1, ADC_interface ADC_intf_instance2)
     : ADC_intf1(ADC_intf_instance1), ADC_intf2(ADC_intf_instance2) {}
 
-auto ADC::get_readings() -> adc::VoltageRead {
-    auto voltage_read = adc::VoltageRead{
+auto ADC::get_readings() -> adc::MillivoltsReadings {
+    auto voltage_read = adc::MillivoltsReadings{
         .z_motor = static_cast<uint16_t>(
             (static_cast<float>(adc_read_z_motor()) * FULLSCALE_VOLTAGE) /
             ADC_FULLSCALE_OUTPUT),

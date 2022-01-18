@@ -8,7 +8,9 @@ namespace presence_sensing_driver {
 class PresenceSensingDriver {
   public:
     explicit PresenceSensingDriver(adc::BaseADC& adc) : adc_comms(adc) {}
-    auto get_readings() -> adc::VoltageRead { return adc_comms.get_readings(); }
+    auto get_readings() -> adc::MillivoltsReadings {
+        return adc_comms.get_readings();
+    }
 
   private:
     adc::BaseADC& adc_comms;
