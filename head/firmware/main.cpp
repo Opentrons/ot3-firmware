@@ -165,8 +165,7 @@ adc::ADC_interface ADC_intf1 = {
 
 static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
 
-static auto presence_sensing_driver =
-    presence_sensing_driver::PresenceSensingDriver{ADC_comms};
+static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
 
 auto main() -> int {
     HardwareInit();
