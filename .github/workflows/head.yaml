@@ -3,9 +3,6 @@ on:
   pull_request:
     paths:
       - "head/**"
-      - "head/presence-sensing/**"
-      - "head/presence-sensing/CMakeLists.txt"
-      - "head/presence-sensing/tests/CMakeLists.txt"
       - "common/**"
       - "can/**"
       - "motor-control/**"
@@ -27,9 +24,6 @@ on:
   push:
     paths:
       - "head/**"
-      - "head/presence-sensing/**"
-      - "head/presence-sensing/CMakeLists.txt"
-      - "head/presence-sensing/tests/CMakeLists.txt"
       - "common/**"
       - "can/**"
       - "motor-control/**"
