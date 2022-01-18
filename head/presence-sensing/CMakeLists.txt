@@ -1,5 +1,6 @@
+add_subdirectory(firmware)
 add_library(presence-sensing-core INTERFACE)
-target_include_directories(presence-sensing-core INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../include)
+target_include_directories(presence-sensing-core INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../include) 
 
 target_link_libraries(presence-sensing-core INTERFACE can-core)
 

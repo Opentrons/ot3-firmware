@@ -1,5 +1,6 @@
 
 add_subdirectory(core)
+add_subdirectory(presence-sensing)
 
 if (${CMAKE_CROSSCOMPILING})
   if(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
