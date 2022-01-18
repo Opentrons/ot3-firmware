@@ -5,8 +5,8 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
-#include "head/core/adc.hpp"
 #include "common/core/logging.hpp"
+#include "head/core/adc.hpp"
 #include "presence-sensing/core/presence_sensing_driver.hpp"
 
 namespace presence_sensing_driver_task {
