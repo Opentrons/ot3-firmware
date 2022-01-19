@@ -64,49 +64,49 @@ class BinaryFieldBase(Generic[T]):
 
 
 class UInt64Field(BinaryFieldBase[int]):
-    """Unsigned 64 bit integer field."""
+    """Unsigned 64-bit integer field."""
 
     FORMAT = "Q"
 
 
 class Int64Field(BinaryFieldBase[int]):
-    """Signed 64 bit integer field."""
+    """Signed 64-bit integer field."""
 
     FORMAT = "q"
 
 
 class UInt32Field(BinaryFieldBase[int]):
-    """Unsigned 32 bit integer field."""
+    """Unsigned 32-bit integer field."""
 
     FORMAT = "L"
 
 
 class Int32Field(BinaryFieldBase[int]):
-    """Signed 32 bit integer field."""
+    """Signed 32-bit integer field."""
 
     FORMAT = "l"
 
 
 class UInt16Field(BinaryFieldBase[int]):
-    """Unsigned 16 bit integer field."""
+    """Unsigned 16-bit integer field."""
 
     FORMAT = "H"
 
 
 class Int16Field(BinaryFieldBase[int]):
-    """Signed 16 bit integer field."""
+    """Signed 16-bit integer field."""
 
     FORMAT = "h"
 
 
 class UInt8Field(BinaryFieldBase[int]):
-    """Unsigned 8 bit integer field."""
+    """Unsigned 8-bit integer field."""
 
     FORMAT = "B"
 
 
 class Int8Field(BinaryFieldBase[int]):
-    """Signed 8 bit integer field."""
+    """Signed 8-bit integer field."""
 
     FORMAT = "b"
 
