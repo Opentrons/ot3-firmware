@@ -76,3 +76,9 @@ class MessageId(int, Enum):
 
     read_presence_sensing_voltage_request = 0x600
     read_presence_sensing_voltage_response = 0x601
+
+    fw_update_initiate = 0x60
+    fw_update_data = 0x61
+    fw_update_data_ack = 0x62
+    fw_update_complete = 0x63
+    fw_update_complete_ack = 0x64
