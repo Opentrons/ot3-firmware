@@ -118,6 +118,14 @@
       "configurePreset": "host-gcc10",
       "jobs": 4,
       "targets": ["build-and-test"]
+    },
+    {
+      "name": "bootloader",
+      "displayName": "bootloader binary",
+      "description": "build the bootloader binary targets",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": ["bootloader"]
     }
   ]
 }
