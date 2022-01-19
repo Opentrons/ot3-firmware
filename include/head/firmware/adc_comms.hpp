@@ -10,7 +10,7 @@
 #pragma GCC diagnostic pop
 #include "head/core/adc.hpp"
 // check these
-constexpr int FULLSCALE_VOLTAGE = 3.3;
+constexpr int FULLSCALE_VOLTAGE = 3300;
 constexpr int ADC_FULLSCALE_OUTPUT = 4095;
 namespace adc {
 struct ADC_interface {
