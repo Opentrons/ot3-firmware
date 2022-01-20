@@ -8,6 +8,7 @@ add_executable(
         head
         test_main.cpp
         test_presence_sensing_queue.cpp
+        test_presence_sensing_driver.cpp
         
         
 )
