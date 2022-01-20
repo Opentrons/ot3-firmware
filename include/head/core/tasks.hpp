@@ -2,12 +2,12 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "head/core/tasks/presence_sensing_driver_task.hpp"
 
 namespace head_tasks {
 
