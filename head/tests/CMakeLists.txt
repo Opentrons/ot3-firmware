@@ -9,8 +9,7 @@ add_executable(
         test_main.cpp
         test_presence_sensing_queue.cpp
         test_presence_sensing_driver.cpp
-        
-        
+        test_voltage_conversion.cpp       
 )
 
 target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
