@@ -7,6 +7,9 @@ include(AddBuildAndTestTarget)
 add_executable(
         head
         test_main.cpp
+        test_presence_sensing_queue.cpp
+        
+        
 )
 
 target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
@@ -25,7 +28,7 @@ target_compile_options(head
         -Wextra-semi
         -Wctor-dtor-privacy
         -fno-rtti)
-target_link_libraries(head Catch2::Catch2)
+target_link_libraries(head Catch2::Catch2 common-simulation)
 
 catch_discover_tests(head)
 add_build_and_test_target(head)

@@ -7,7 +7,7 @@
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
+#include "head/core/tasks/presence_sensing_driver_task.hpp"
 
 namespace head_tasks {
 

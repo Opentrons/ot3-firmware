@@ -7,7 +7,7 @@
 #include "can/core/messages.hpp"
 #include "common/core/logging.hpp"
 #include "head/core/adc.hpp"
-#include "presence-sensing/core/presence_sensing_driver.hpp"
+#include "head/core/presence_sensing_driver.hpp"
 
 namespace presence_sensing_driver_task {
 

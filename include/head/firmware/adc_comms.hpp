@@ -9,9 +9,7 @@
 #include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic pop
 #include "head/core/adc.hpp"
-// check these
-constexpr int FULLSCALE_VOLTAGE = 3300;
-constexpr int ADC_FULLSCALE_OUTPUT = 4095;
+
 namespace adc {
 struct ADC_interface {
     ADC_HandleTypeDef* ADC_handle;
@@ -21,7 +19,7 @@ class ADC : public BaseADC {
   public:
     explicit ADC(ADC_interface ADC_intf_instance1,
                  ADC_interface ADC_intf_instance2);
-    auto get_readings() -> adc::MillivoltsReadings override;
+    auto get_readings() -> adc::RawADCReadings override;
 
   private:
     ADC_interface ADC_intf1;

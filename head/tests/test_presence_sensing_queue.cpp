@@ -2,9 +2,9 @@
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
-#include "presence-sensing/core/presence_sensing_driver.hpp"
-#include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
-#include "presence-sensing/tests/mock_presence_sensing_client.hpp"
+#include "head/core/presence_sensing_driver.hpp"
+#include "head/core/tasks/presence_sensing_driver_task.hpp"
+#include "head/tests/mock_presence_sensing_client.hpp"
 
 using namespace presence_sensing_message_handler;
 using namespace can_messages;

@@ -3,8 +3,8 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "head/core/adc.hpp"
-#include "presence-sensing/core/presence_sensing_driver.hpp"
-#include "presence-sensing/core/tasks/presence_sensing_driver_task.hpp"
+#include "head/core/presence_sensing_driver.hpp"
+#include "head/core/tasks/presence_sensing_driver_task.hpp"
 
 namespace presence_sensing_driver_task_starter {
 

@@ -25,7 +25,7 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
-#include "presence-sensing/core/presence_sensing_driver.hpp"
+#include "head/core/presence_sensing_driver.hpp"
 
 static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 

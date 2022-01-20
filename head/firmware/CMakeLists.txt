@@ -37,8 +37,6 @@ target_head_core(head)
 
 target_ot_motor_control(head)
 
-target_presence_sensing(head)
-
 target_link_libraries(head
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Head STM32G4xx_FreeRTOS_Head
