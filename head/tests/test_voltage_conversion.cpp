@@ -2,15 +2,15 @@
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/tests/mock_adc.hpp"
 
-SCENARIO("Raw ADC readings to volate conversions") {
-    GIVEN("Raw readings and a PresenceSensingDriver isntance") {
+SCENARIO("Raw ADC readings to voltage conversions") {
+    GIVEN("Raw readings and a PresenceSensingDriver instance") {
         auto raw_readings =
             adc::RawADCReadings{.z_motor = 666, .a_motor = 666, .gripper = 666};
         static auto adc_comms = adc::MockADC{raw_readings};
 
         auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
-        WHEN("get_readings func is called") {
+        WHEN("get_readings function is called") {
             auto voltage_readings = ps.get_readings();
 
             THEN("RAW readings converted to voltages") {
