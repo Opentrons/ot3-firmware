@@ -15,11 +15,12 @@
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
 #pragma GCC diagnostic pop
-
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi_comms.hpp"
+#include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
+#include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
@@ -152,6 +153,19 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
 }
+adc::ADC_interface ADC_intf2 = {
+
+    .ADC_handle = &adc2};
+
+adc::ADC_interface ADC_intf1 = {
+
+    .ADC_handle = &adc1
+
+};
+
+static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
+
+static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
 
 auto main() -> int {
     HardwareInit();
@@ -170,7 +184,7 @@ auto main() -> int {
 
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
-                            motor_right.driver);
+                            motor_right.driver, psd);
 
     vTaskStartScheduler();
 }
