@@ -60,11 +60,15 @@ jobs:
         with:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
-      - name: "Configure"
+      - name: "Configure l5"
+        run: cmake --preset=cross-pipettes .
+      - name: "Build l5"
+        run: cmake --build --preset=bootloader
+      - name: "Configure g4"
         run: cmake --preset=cross .
       - name: "Format"
         run: cmake --build ./build-cross --target bootloader-format-ci
-      - name: "Build"
+      - name: "Build g4"
         run: cmake --build --preset=bootloader
       - name: "Lint"
         run: cmake --build ./build-cross --target bootloader-lint
