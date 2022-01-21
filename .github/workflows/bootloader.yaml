@@ -63,7 +63,7 @@ jobs:
       - name: "Configure l5"
         run: cmake --preset=cross-pipettes .
       - name: "Build l5"
-        run: cmake --build --preset=bootloader
+        run: cmake --build --preset=bootloader-pipettes
       - name: "Configure g4"
         run: cmake --preset=cross .
       - name: "Format"
