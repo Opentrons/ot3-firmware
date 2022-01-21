@@ -95,6 +95,21 @@ add_executable(bootloader-head
 
 target_stm32G4(bootloader-head)
 
+add_executable(bootloader-gantry-x
+        ${BOOTLOADER_FW_LINTABLE_SRCS}
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+
+target_stm32G4(bootloader-gantry-x)
+
+add_executable(bootloader-gantry-y
+        ${BOOTLOADER_FW_LINTABLE_SRCS}
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+
+target_stm32G4(bootloader-gantry-y)
+
+
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)
 

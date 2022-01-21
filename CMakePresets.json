@@ -125,7 +125,7 @@
       "description": "build the bootloader binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["bootloader-head"]
+      "targets": ["bootloader-head", "bootloader-gantry-x", "bootloader-gantry-y"]
     },
     {
       "name": "bootloader-pipettes",
