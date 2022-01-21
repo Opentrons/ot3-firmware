@@ -84,7 +84,7 @@ def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
     output.write(f"/** {e.__doc__} */\n")
     for i in e:
         name = "_".join(("can", e.__name__, i.name)).upper()
-        output.write(f"#define {name} = 0x{i.value:x},\n")
+        output.write(f"#define {name} = 0x{i.value:x}\n")
 
 
 def write_arbitration_id_c(output: io.StringIO) -> None:
