@@ -12,9 +12,11 @@ set(BOOTLOADER_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         )
 
-add_subdirectory(stm32G4)
-add_subdirectory(stm32L5)
-
+if (${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
+    add_subdirectory(stm32G4)
+elseif (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
+    add_subdirectory(stm32L5)
+endif()
 
 find_package(Clang)
 
