@@ -69,6 +69,7 @@ def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
         for i in e:
             output.write(f"  {i.name} = 0x{i.value:x},\n")
 
+
 def generate_c(output: io.StringIO) -> None:
     """Generate source code into output."""
     generate_file_comment(output)
@@ -117,7 +118,7 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "language",
+        "--language",
         metavar="language",
         type=Languge,
         default=Languge.CPP,

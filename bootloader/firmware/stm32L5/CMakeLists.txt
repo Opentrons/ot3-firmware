@@ -16,7 +16,8 @@ macro(target_stm32L5 TARGET)
     ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's
     target_link_libraries(${TARGET}
             PUBLIC STM32L562RETx
-            STM32L5xx_Drivers_Bootloader)
+            STM32L5xx_Drivers_Bootloader
+            bootloader-core)
 
     set_target_properties(${TARGET}
             PROPERTIES CXX_STANDARD 20
