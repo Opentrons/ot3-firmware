@@ -125,7 +125,15 @@
       "description": "build the bootloader binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["bootloader"]
+      "targets": ["bootloader-head"]
+    },
+    {
+      "name": "bootloader-pipettes",
+      "displayName": "pipettes bootloader binary",
+      "description": "build the pipettes bootloader binary targets",
+      "configurePreset": "cross-pipettes",
+      "jobs": 4,
+      "targets": ["bootloader-pipettes"]
     }
   ]
 }

@@ -1,9 +1,7 @@
 # bootloader source tree
 
 if (${CMAKE_CROSSCOMPILING})
-    if(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
-        add_subdirectory(firmware)
-    endif()
+    add_subdirectory(firmware)
 else ()
     add_subdirectory(tests)
 endif ()

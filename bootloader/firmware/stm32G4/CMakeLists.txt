@@ -1,17 +1,55 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
+find_package(STM32G4xx)
 
-set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
+add_STM32G4_driver("Bootloader")
 
-# Add source files that should be checked by clang-tidy here
-set(BOOTLOADER_FW_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-        ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        )
 
-add_subdirectory(stm32G4)
-add_subdirectory(stm32L5)
+set(BOOTLOADER_FW_NON_LINTABLE_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/can.c)
 
+macro(target_stm32G4 TARGET)
+    ## todo:
+    target_link_libraries(${TARGET}
+            PUBLIC STM32G491RETx
+            STM32G4xx_Drivers_Bootloader)
+
+    set_target_properties(${TARGET}
+            PROPERTIES CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED TRUE
+            C_STANDARD 11
+            C_STANDARD_REQUIRED TRUE)
+
+    target_include_directories(${TARGET}
+            PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+    target_compile_options(${TARGET}
+            PUBLIC
+            -Wall
+            -Werror
+            $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+endmacro()
+
+
+add_executable(bootloader-head
+        ${BOOTLOADER_FW_LINTABLE_SRCS}
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS})
+
+target_stm32G4(bootloader-head)
+
+target_include_directories(STM32G4xx_Drivers_Bootloader
+        PUBLIC .)
+
+target_compile_definitions(STM32G4xx_Drivers_Bootloader
+        PUBLIC STM32G491xx)
 
 #target_include_directories(STM32L5xx_Drivers_Bootloader
 #        PUBLIC ./stm32L5)

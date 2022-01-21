@@ -1,23 +1,55 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
+find_package(STM32L5xx)
 
-set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
-
-# Add source files that should be checked by clang-tidy here
-set(BOOTLOADER_FW_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-        ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        )
-
-add_subdirectory(stm32G4)
-add_subdirectory(stm32L5)
+add_STM32L5_driver("Bootloader")
 
 
-#target_include_directories(STM32L5xx_Drivers_Bootloader
-#        PUBLIC ./stm32L5)
-#
-#target_compile_definitions(STM32L5xx_Drivers_Bootloader
-#        PUBLIC STM32L562xx)
+set(BOOTLOADER_STM32L5xx_FW_NON_LINTABLE_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/stm32l5xx_it.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/can.c)
+
+
+macro(target_stm32L5 TARGET)
+    ## todo:
+    target_link_libraries(${TARGET}
+            PUBLIC STM32L562RETx
+            STM32L5xx_Drivers_Bootloader)
+
+    set_target_properties(${TARGET}
+            PROPERTIES CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED TRUE
+            C_STANDARD 11
+            C_STANDARD_REQUIRED TRUE)
+
+    target_include_directories(${TARGET}
+            PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+    target_compile_options(${TARGET}
+            PUBLIC
+            -Wall
+            -Werror
+            $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+endmacro()
+
+add_executable(bootloader-pipettes
+        ${BOOTLOADER_FW_LINTABLE_SRCS}
+        ${BOOTLOADER_STM32L5xx_FW_NON_LINTABLE_SRCS})
+
+target_stm32L5(bootloader-pipettes)
+
+target_include_directories(STM32L5xx_Drivers_Bootloader
+        PUBLIC .)
+
+target_compile_definitions(STM32L5xx_Drivers_Bootloader
+        PUBLIC STM32L562xx)
 
 #find_program(ARM_GDB
 #        arm-none-eabi-gdb-py
