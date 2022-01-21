@@ -11,7 +11,7 @@ from opentrons_ot3_firmware.constants import (
     FunctionCode,
     NodeId,
 )
-from opentrons_ot3_firmware.arbitration_id import ArbitrationId, ArbitrationIdParts
+from opentrons_ot3_firmware.arbitration_id import ArbitrationIdParts
 
 
 class block:
@@ -91,13 +91,17 @@ def write_arbitration_id_c(output: io.StringIO) -> None:
     """Generate C arbitration id code."""
     output.write(f"/** {ArbitrationIdParts.__doc__} */\n")
     with block(
-        output=output, start=f"struct {ArbitrationIdParts.__name__} {{\n", terminate="};\n\n"
+        output=output,
+        start=f"struct {ArbitrationIdParts.__name__} {{\n",
+        terminate="};\n\n",
     ):
         for i in ArbitrationIdParts._fields_:
             output.write(f"  unsigned int {i[0]}: {i[2]};\n")
 
 
 class Languge(str, Enum):
+    """Langauge enum."""
+
     C = "c"
     CPP = "c++"
     CPP_alt = "cpp"

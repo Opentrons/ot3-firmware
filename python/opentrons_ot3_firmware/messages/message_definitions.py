@@ -238,53 +238,35 @@ class ReadPresenceSensingVoltageResponse:  # noqa: D101
 @dataclass
 class FirmwareUpdateInitiate:  # noqa: D101
     payload: payloads.EmptyPayload
-    payload_type: Type[
-        BinarySerializable
-    ] = payloads.EmptyPayload
-    message_id: Literal[
-        MessageId.fw_update_initiate
-    ] = MessageId.fw_update_initiate
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[MessageId.fw_update_initiate] = MessageId.fw_update_initiate
 
 
 @dataclass
 class FirmwareUpdateData:  # noqa: D101
     payload: payloads.FirmwareUpdateData
-    payload_type: Type[
-        BinarySerializable
-    ] = payloads.FirmwareUpdateData
-    message_id: Literal[
-        MessageId.fw_update_data
-    ] = MessageId.fw_update_data
+    payload_type: Type[BinarySerializable] = payloads.FirmwareUpdateData
+    message_id: Literal[MessageId.fw_update_data] = MessageId.fw_update_data
 
 
 @dataclass
 class FirmwareUpdateDataAcknowledge:  # noqa: D101
     payload: payloads.FirmwareUpdateDataAcknowledge
-    payload_type: Type[
-        BinarySerializable
-    ] = payloads.FirmwareUpdateDataAcknowledge
-    message_id: Literal[
-        MessageId.fw_update_data_ack
-    ] = MessageId.fw_update_data_ack
+    payload_type: Type[BinarySerializable] = payloads.FirmwareUpdateDataAcknowledge
+    message_id: Literal[MessageId.fw_update_data_ack] = MessageId.fw_update_data_ack
 
 
 @dataclass
 class FirmwareUpdateComplete:  # noqa: D101
     payload: payloads.FirmwareUpdateComplete
-    payload_type: Type[
-        BinarySerializable
-    ] = payloads.FirmwareUpdateComplete
-    message_id: Literal[
-        MessageId.fw_update_complete
-    ] = MessageId.fw_update_complete
+    payload_type: Type[BinarySerializable] = payloads.FirmwareUpdateComplete
+    message_id: Literal[MessageId.fw_update_complete] = MessageId.fw_update_complete
 
 
 @dataclass
 class FirmwareUpdateCompleteAcknowledge:  # noqa: D101
     payload: payloads.FirmwareUpdateCompleteAcknowledge
-    payload_type: Type[
-        BinarySerializable
-    ] = payloads.FirmwareUpdateCompleteAcknowledge
+    payload_type: Type[BinarySerializable] = payloads.FirmwareUpdateCompleteAcknowledge
     message_id: Literal[
         MessageId.fw_update_complete_ack
     ] = MessageId.fw_update_complete_ack
