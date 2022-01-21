@@ -5,7 +5,7 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Bootloader")
 
 
-set(BOOTLOADER_FW_NON_LINTABLE_SRCS
+set(BOOTLOADER_G4FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
@@ -41,7 +41,8 @@ endmacro()
 
 add_executable(bootloader-head
         ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS})
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
 
 target_stm32G4(bootloader-head)
 

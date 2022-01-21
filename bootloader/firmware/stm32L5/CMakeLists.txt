@@ -5,7 +5,7 @@ find_package(STM32L5xx)
 add_STM32L5_driver("Bootloader")
 
 
-set(BOOTLOADER_STM32L5xx_FW_NON_LINTABLE_SRCS
+set(BOOTLOADER_L5_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32l5xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
@@ -41,7 +41,8 @@ endmacro()
 
 add_executable(bootloader-pipettes
         ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_STM32L5xx_FW_NON_LINTABLE_SRCS})
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+        ${BOOTLOADER_L5_FW_NON_LINTABLE_SRCS})
 
 target_stm32L5(bootloader-pipettes)
 
