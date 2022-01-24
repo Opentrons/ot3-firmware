@@ -23,9 +23,7 @@ struct Tool {
     uint16_t detection_lower_bound;
 };
 
-
-
-std::vector<Tool> OT3ToolList {
+std::vector<Tool> OT3ToolList{
     {ToolType::UNDEFINED, 0, 0},
     {ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
      PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
