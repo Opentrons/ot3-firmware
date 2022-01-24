@@ -33,6 +33,12 @@ static std::vector<Tool> OT3ToolList{
     {ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
      GRIPPER_DETECTION_LOWER_BOUND}};
 
+struct AttachedTool {
+    ToolType z_motor;
+    ToolType a_motor;
+    ToolType gripper;
+};
+
 class PresenceSensingDriver {
   public:
     explicit PresenceSensingDriver(adc::BaseADC& adc) : adc_comms(adc) {}
@@ -54,15 +60,29 @@ class PresenceSensingDriver {
         return voltage_read;
     }
 
-    auto static get_tool(uint16_t reading) -> Tool {
-        Tool td = {ToolType::UNDEFINED, 0, 0};
+    auto static get_tool(adc::MillivoltsReadings reading) -> AttachedTool {
+        auto at = AttachedTool{.z_motor = ToolType::UNDEFINED,
+                               .a_motor = ToolType::UNDEFINED,
+                               .gripper = ToolType::UNDEFINED};
         for (auto& element : OT3ToolList) {
-            if ((reading < element.detection_upper_bound) &&
-                (reading >= element.detection_lower_bound)) {
-                return element;
+            if ((reading.z_motor < element.detection_upper_bound) &&
+                (reading.z_motor >= element.detection_lower_bound)) {
+                at.z_motor = element.tool_type;
             }
         }
-        return td;
+        for (auto& element : OT3ToolList) {
+            if ((reading.a_motor < element.detection_upper_bound) &&
+                (reading.a_motor >= element.detection_lower_bound)) {
+                at.a_motor = element.tool_type;
+            }
+        }
+        for (auto& element : OT3ToolList) {
+            if ((reading.gripper < element.detection_upper_bound) &&
+                (reading.gripper >= element.detection_lower_bound)) {
+                at.gripper = element.tool_type;
+            }
+        }
+        return at;
     }
 
   private:
