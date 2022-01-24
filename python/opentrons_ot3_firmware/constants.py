@@ -78,6 +78,7 @@ class MessageId(int, Enum):
     fw_update_complete_ack = 0x64
 
 
+
 class ErrorCode(int, Enum):
     """Common error codes."""
 
