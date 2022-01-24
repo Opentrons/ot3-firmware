@@ -28,7 +28,7 @@ enum ErrorCode parse_update_data(
     uint32_t size,
     struct UpdateData * result) {
 
-    // Message size must be the max fdcan length
+    // Message size and null check
     if (!buffer || size != UPDATE_DATA_MESSAGE_SIZE) {
         return can_errorcode_invalid_size;
     }
@@ -75,5 +75,13 @@ enum ErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
     struct UpdateComplete * result) {
+
+    // Message size and null check
+    if (!buffer || size != UPDATE_COMPLETE_MESSAGE_SIZE) {
+        return can_errorcode_invalid_size;
+    }
+
+    to_uint32(buffer, &result->num_messages);
+
     return can_errorcode_ok;
 }
