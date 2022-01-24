@@ -113,10 +113,6 @@ SCENARIO("update data errors") {
             }
         }
     }
-}
-
-
-SCENARIO("update data checksum errors") {
 
     GIVEN("a message with incorrect checksum") {
         auto arr = std::array<uint8_t, 64>{
@@ -141,6 +137,50 @@ SCENARIO("update data checksum errors") {
             THEN("it returns error") {
                 REQUIRE(error == can_errorcode_bad_checksum);
             }
+        }
+    }
+}
+
+
+SCENARIO("update data complete") {
+    GIVEN("a message") {
+        auto arr = std::array<uint8_t, 4>{
+            // Count
+            0xfe, 0xdc, 0xba, 0x98
+        };
+        WHEN("parsed") {
+            UpdateComplete result;
+            auto error = parse_update_complete(arr.data(), arr.size(), &result);
+            THEN("it returns ok") { REQUIRE(error == can_errorcode_ok); }
+            THEN("its fields are populated") {
+                REQUIRE(result.num_messages == 0xfedcba98);
+            }
+        }
+    }
+}
+
+
+SCENARIO("update data complete errors") {
+
+    GIVEN("a null pointer") {
+        WHEN("parsed") {
+            UpdateComplete result;
+            auto error = parse_update_complete(nullptr, 4, &result);
+            THEN("it returns error") {
+                REQUIRE(error == can_errorcode_invalid_size);
+            }
+        }
+    }
+
+    GIVEN("a message") {
+        auto arr = std::array<uint8_t, 4>{
+            // Count
+            0xfe, 0xdc, 0xba, 0x98
+        };
+        WHEN("parsed") {
+            UpdateComplete result;
+            auto error = parse_update_complete(arr.data(), arr.size() + 1, &result);
+            THEN("it returns ok") { REQUIRE(error == can_errorcode_invalid_size); }
         }
     }
 }

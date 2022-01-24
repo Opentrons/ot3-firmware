@@ -55,7 +55,7 @@ enum ErrorCode parse_update_data(
 enum ErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
-    struct UpdateData * result);
+    struct UpdateComplete * result);
 
 #ifdef __cplusplus
 }  // extern "C"
