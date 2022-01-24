@@ -1,48 +1,70 @@
+#include "platform_specific_hal_conf.h"
+#include "common/firmware/can.h"
+#include "common/firmware/errors.h"
+#include "bootloader/core/message_handler.h"
+#include "can/firmware/utils.h"
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_TxHeaderTypeDef TxHeader;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_RxHeaderTypeDef RxHeader;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static FDCAN_HandleTypeDef can;
-static constexpr auto buffsize = 64;
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-static auto buff = std::array<uint8_t, buffsize>{};
+/**
+ * The CAN handle.
+ */
+static FDCAN_HandleTypeDef hcan1;
+
+/**
+ * Send header
+ */
+static FDCAN_TxHeaderTypeDef tx_header;
+
+/**
+ * Receive header
+ */
+static FDCAN_RxHeaderTypeDef rx_header;
+
+static Message rx_message;
+static Message tx_message;
+
 
 int main() {
-    if (MX_FDCAN1_Init(&can) != HAL_OK) {
+    if (MX_FDCAN1_Init(&hcan1) != HAL_OK) {
         Error_Handler();
     }
 
-    if (HAL_FDCAN_Start(&can) != HAL_OK) {
+    if (HAL_FDCAN_Start(&hcan1) != HAL_OK) {
         Error_Handler();
     }
 
-    TxHeader.IdType = FDCAN_EXTENDED_ID;
-    TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-    TxHeader.DataLength = FDCAN_DLC_BYTES_8;
-    TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
-    TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
-    TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
-    TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    TxHeader.MessageMarker = 0;
+    tx_header.IdType = FDCAN_EXTENDED_ID;
+    tx_header.TxFrameType = FDCAN_DATA_FRAME;
+    tx_header.DataLength = FDCAN_DLC_BYTES_8;
+    tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
+    tx_header.FDFormat = FDCAN_FD_CAN;
+    tx_header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    tx_header.MessageMarker = 0;
 
     for (;;) {
-        if (HAL_FDCAN_GetRxFifoFillLevel(&can, FDCAN_RX_FIFO0) > 0) {
-            // Send CAN RX data over debug UART
-            HAL_FDCAN_GetRxMessage(&can, FDCAN_RX_FIFO0, &RxHeader,
-                                   buff.data());
+        if (HAL_FDCAN_GetRxFifoFillLevel(&hcan1, FDCAN_RX_FIFO0) > 0) {
 
-            TxHeader.Identifier = RxHeader.Identifier;
-            TxHeader.DataLength = RxHeader.DataLength;
-            TxHeader.FDFormat = RxHeader.FDFormat;
-
-            if (HAL_FDCAN_AddMessageToTxFifoQ(&can, &TxHeader, buff.data()) !=
-                HAL_OK) {
-                // Transmission request Error
+            if (HAL_FDCAN_GetRxMessage(&hcan1, FDCAN_RX_FIFO0, &rx_header,
+                                   rx_message.data) != HAL_OK) {
+                // Read request Error
                 Error_Handler();
             }
+
+            rx_message.arbitration_id.id = rx_header.Identifier;
+            rx_message.size = length_from_hal(rx_header.DataLength);
+
+            HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
+
+            if (return_code == handle_message_has_response) {
+                tx_header.Identifier = tx_message.arbitration_id.id;
+                tx_header.DataLength = length_to_hal(tx_message.size);
+
+                if (HAL_FDCAN_AddMessageToTxFifoQ(&hcan1, &tx_header,
+                                                  tx_message.data) != HAL_OK) {
+                    // Transmission request Error
+                    Error_Handler();
+                }
+            }
         }
-        vTaskDelay(1);
     }
 }

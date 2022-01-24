@@ -21,6 +21,7 @@ add_library(bootloader-core
         STATIC
         can.c
         messages.c
+        message_handler.c
         ${IDS_HPP}
         )
 

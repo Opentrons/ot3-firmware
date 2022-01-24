@@ -46,10 +46,10 @@ static uint16_t compute_checksum(const uint8_t * begin, const uint8_t * end) {
  * @param result Pointer to UpdateData struct to populate
  * @return result code
  */
-enum ErrorCode parse_update_data(
+ErrorCode parse_update_data(
     const uint8_t * buffer,
     uint32_t size,
-    struct UpdateData * result) {
+    UpdateData * result) {
 
     if (!result) {
         return can_errorcode_invalid_input;
@@ -93,10 +93,10 @@ enum ErrorCode parse_update_data(
  * @param result Pointer to UpdateComplete struct to populate
  * @return result code
  */
-enum ErrorCode parse_update_complete(
+ErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
-    struct UpdateComplete * result) {
+    UpdateComplete * result) {
 
     if (!result) {
         return can_errorcode_invalid_input;
