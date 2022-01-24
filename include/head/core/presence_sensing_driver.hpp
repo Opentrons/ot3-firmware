@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "common/core/bit_utils.hpp"
 #include "head/core/adc.hpp"
 
@@ -24,6 +26,15 @@ class PresenceSensingDriver {
                                        adc::FULLSCALE_VOLTAGE) /
                                       adc::ADC_FULLSCALE_OUTPUT)};
         return voltage_read;
+    }
+
+    auto get_tool() -> adc::Tool(adc::MillivoltsReadings reading) {
+        adc::ToolDetected td = {ToolType::UNDEFINED, 0, 0};
+        for (int i = 0; i < adc::OT3ToolList.size(); i++)
+            if ((reading < adc::OT3ToolList[i].detection_upper_bound) &&
+                (reading >= adc::OT3ToolList[i].detection_lower_bound))
+                return adc::OT3ToolList[i];
+        return td;
     }
 
   private:
