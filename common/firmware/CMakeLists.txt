@@ -4,7 +4,6 @@ else()
     add_subdirectory("STM32G491RETx")
 endif()
 
-add_subdirectory("adc")
 add_subdirectory("uart")
 add_subdirectory("spi")
 add_subdirectory("i2c")
