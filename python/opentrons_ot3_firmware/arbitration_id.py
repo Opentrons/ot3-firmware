@@ -1,7 +1,11 @@
 """Can bus arbitration id."""
 from __future__ import annotations
 import ctypes
-from .constants import MESSAGE_ID_BITS, NODE_ID_BITS, FUNCTION_CODE_BITS
+from typing_extensions import Final
+
+NODE_ID_BITS: Final[int] = 7
+FUNCTION_CODE_BITS: Final[int] = 4
+MESSAGE_ID_BITS: Final[int] = 11
 
 
 class ArbitrationIdParts(ctypes.Structure):

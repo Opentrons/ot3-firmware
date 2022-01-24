@@ -1,11 +1,5 @@
 """Constants for can bus."""
 from enum import Enum
-from typing_extensions import Final
-
-
-NODE_ID_BITS: Final[int] = 7
-FUNCTION_CODE_BITS: Final[int] = 4
-MESSAGE_ID_BITS: Final[int] = 11
 
 
 class NodeId(int, Enum):
@@ -82,3 +76,12 @@ class MessageId(int, Enum):
     fw_update_data_ack = 0x62
     fw_update_complete = 0x63
     fw_update_complete_ack = 0x64
+
+
+
+class ErrorCode(int, Enum):
+    """Common error codes."""
+
+    ok = 0x00
+    invalid_length = 0x01
+    bad_checksum = 0x02

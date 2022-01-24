@@ -160,6 +160,7 @@ class FirmwareUpdateWithAddress(utils.BinarySerializable):
 
 class FirmwareUpdateDataField(utils.BinaryFieldBase[bytes]):
     """The data field of FirmwareUpdateData."""
+
     NUM_BYTES = 56
     FORMAT = f"{NUM_BYTES}s"
 
@@ -177,8 +178,10 @@ class FirmwareUpdateData(FirmwareUpdateWithAddress):
         """Post init processing."""
         data_length = len(self.data.value)
         if data_length > FirmwareUpdateDataField.NUM_BYTES:
-            raise ValueError(f"Data cannot be more than"
-                             f" {FirmwareUpdateDataField.NUM_BYTES} bytes.")
+            raise ValueError(
+                f"Data cannot be more than"
+                f" {FirmwareUpdateDataField.NUM_BYTES} bytes."
+            )
 
 
 @dataclass

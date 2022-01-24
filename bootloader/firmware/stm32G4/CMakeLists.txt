@@ -15,7 +15,8 @@ macro(target_stm32G4 TARGET)
     ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's
     target_link_libraries(${TARGET}
             PUBLIC STM32G491RETx
-            STM32G4xx_Drivers_Bootloader)
+            STM32G4xx_Drivers_Bootloader
+            bootloader-core)
 
     set_target_properties(${TARGET}
             PROPERTIES CXX_STANDARD 20
@@ -108,7 +109,6 @@ add_executable(bootloader-gantry-y
         ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
 
 target_stm32G4(bootloader-gantry-y)
-
 
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)
