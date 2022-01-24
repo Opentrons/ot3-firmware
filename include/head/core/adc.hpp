@@ -2,11 +2,11 @@
 
 #include <concepts>
 #include <cstdint>
-#define 96_CHAN_DETECTION_UPPER_BOUND = 999
-#define 96_CHAN_DETECTION_LOWER_BOUND = 666
+#define PIPETTE_96_CHAN_DETECTION_UPPER_BOUND 999
+#define PIPETTE_96_CHAN_DETECTION_LOWER_BOUND 666
 
-#define GRIPPER_DETECTION_UPPER_BOUND = 999
-#define GRIPPER_DETECTION_LOWER_BOUND = 666
+#define GRIPPER_DETECTION_UPPER_BOUND 999
+#define GRIPPER_DETECTION_LOWER_BOUND 666
 
 namespace adc {
 
@@ -20,11 +20,11 @@ struct Tool {
     uint16_t detection_lower_bound;
 };
 
-static struct Tool OT3ToolList[] = {
-    {ToolType::UNDEFINED, 0, 0},
-    {ToolType::PIPETTE96CHAN, 96_CHAN_DETECTION_UPPER_BOUND,
-     96_CHAN_DETECTION_LOWER_BOUND},
-    {ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
+struct Tool OT3ToolList[] = {
+    {adc::Tool::ToolType::UNDEFINED, 0, 0},
+    {adc::Tool::ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
+     PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
+    {adc::Tool::ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
      GRIPPER_DETECTION_LOWER_BOUND}};
 
 struct MillivoltsReadings {
