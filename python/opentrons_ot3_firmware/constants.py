@@ -86,9 +86,13 @@ class MessageId(int, Enum):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @unique
 =======
 >>>>>>> acae29c (fix defines)
+=======
+
+>>>>>>> eb3dcb1 (unrealted files taken out of branch)
 class ErrorCode(int, Enum):
     """Common error codes."""
 
