@@ -23,13 +23,6 @@ struct Tool {
     uint16_t detection_lower_bound;
 };
 
-std::vector<Tool> OT3ToolList{
-    {ToolType::UNDEFINED, 0, 0},
-    {ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
-     PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
-    {ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
-     GRIPPER_DETECTION_LOWER_BOUND}};
-
 struct MillivoltsReadings {
     uint16_t z_motor;
     uint16_t a_motor;
