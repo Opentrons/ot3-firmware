@@ -28,8 +28,8 @@ class PresenceSensingDriver {
         return voltage_read;
     }
 
-    auto get_tool() -> adc::Tool(adc::MillivoltsReadings reading) {
-        adc::ToolDetected td = {ToolType::UNDEFINED, 0, 0};
+    auto get_tool(uint16_t reading) -> adc::Tool {
+        adc::Tool td = {adc::ToolType::UNDEFINED, 0, 0};
         for (int i = 0; i < adc::OT3ToolList.size(); i++)
             if ((reading < adc::OT3ToolList[i].detection_upper_bound) &&
                 (reading >= adc::OT3ToolList[i].detection_lower_bound))

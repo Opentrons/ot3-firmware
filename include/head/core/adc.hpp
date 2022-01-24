@@ -2,29 +2,31 @@
 
 #include <concepts>
 #include <cstdint>
-#define PIPETTE_96_CHAN_DETECTION_UPPER_BOUND 999
-#define PIPETTE_96_CHAN_DETECTION_LOWER_BOUND 666
+#define PIPETTE_96_CHAN_DETECTION_UPPER_BOUND static_cast<uint16_t>(999)
+#define PIPETTE_96_CHAN_DETECTION_LOWER_BOUND static_cast<uint16_t>(666)
 
-#define GRIPPER_DETECTION_UPPER_BOUND 999
-#define GRIPPER_DETECTION_LOWER_BOUND 666
+#define GRIPPER_DETECTION_UPPER_BOUND static_cast<uint16_t>(999)
+#define GRIPPER_DETECTION_LOWER_BOUND static_cast<uint16_t>(666)
 
 namespace adc {
 
+enum ToolType : uint8_t {
+    UNDEFINED = 0x00,
+    PIPETTE96CHAN = 0x00,
+    GRIPPER = 0x01,
+};
+
 struct Tool {
-    enum ToolType : uint8_t {
-        UNDEFINED = 0x00,
-        PIPETTE96CHAN = 0x00,
-        GRIPPER = 0x01,
-    };
+    ToolType tool_type;
     uint16_t detection_upper_bound;
     uint16_t detection_lower_bound;
 };
 
 struct Tool OT3ToolList[] = {
-    {adc::Tool::ToolType::UNDEFINED, 0, 0},
-    {adc::Tool::ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
+    {ToolType::UNDEFINED, 0, 0},
+    {ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
      PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
-    {adc::Tool::ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
+    {ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
      GRIPPER_DETECTION_LOWER_BOUND}};
 
 struct MillivoltsReadings {
