@@ -83,5 +83,6 @@ class ErrorCode(int, Enum):
     """Common error codes."""
 
     ok = 0x00
-    invalid_length = 0x01
+    invalid_size = 0x01
     bad_checksum = 0x02
+    invalid_byte_count = 0x03

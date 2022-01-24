@@ -8,9 +8,16 @@ include(AddBuildAndTestTarget)
 add_executable(
         bootloader
         test_main.cpp
+        test_messages.cpp
 )
 
-target_include_directories(bootloader PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(
+        bootloader
+        PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_BINARY_DIR}/include
+)
+
 set_target_properties(bootloader
         PROPERTIES
         CXX_STANDARD 20
@@ -26,7 +33,7 @@ target_compile_options(bootloader
         -Wextra-semi
         -Wctor-dtor-privacy
         -fno-rtti)
-target_link_libraries(bootloader Catch2::Catch2)
+target_link_libraries(bootloader Catch2::Catch2 bootloader-core)
 
 catch_discover_tests(bootloader)
 add_build_and_test_target(bootloader)

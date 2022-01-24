@@ -1,5 +1,13 @@
 #pragma once
 
+#include <stdint.h>
+#include "bootloader/core/ids.h"
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Contents of the firmware update data message.
  */
@@ -7,9 +15,12 @@ struct UpdateData {
     uint32_t address;
     uint8_t num_bytes;
     uint8_t reserved;
-    uint8_t data[56];
+    const uint8_t * data;
     uint16_t checksum;
 };
+
+#define UPDATE_DATA_MESSAGE_SIZE    64
+#define UPDATE_DATA_MAX_BYTE_COUNT  56
 
 /**
  * Contents of the firmware update complete message.
@@ -17,6 +28,8 @@ struct UpdateData {
 struct UpdateComplete {
     uint32_t num_messages;
 };
+
+#define UPDATE_COMPLETE_MESSAGE_SIZE    4
 
 
 /**
@@ -26,10 +39,10 @@ struct UpdateComplete {
  * @param result Pointer to UpdateData struct to populate
  * @return result code
  */
-uint16_t parse_update_data(
+enum ErrorCode parse_update_data(
     const uint8_t * buffer,
     uint32_t size,
-    UpdateData * result);
+    struct UpdateData * result);
 
 
 /**
@@ -39,7 +52,11 @@ uint16_t parse_update_data(
  * @param result Pointer to UpdateComplete struct to populate
  * @return result code
  */
-uint16_t parse_update_complete(
+enum ErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
-    UpdateData * result);
+    struct UpdateData * result);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
