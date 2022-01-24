@@ -7,6 +7,7 @@ set(CAN_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 # Add source files that should be checked by clang-tidy here
 set(BOOTLOADER_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/node_id.c
         )
 
 set(BOOTLOADER_FW_NON_LINTABLE_SRCS

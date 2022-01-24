@@ -1,8 +1,9 @@
 #include "platform_specific_hal_conf.h"
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
-#include "bootloader/core/message_handler.h"
 #include "can/firmware/utils.h"
+#include "bootloader/core/message_handler.h"
+#include "bootloader/core/node_id.h"
 
 /**
  * The CAN handle.
@@ -56,6 +57,8 @@ int main() {
             HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
 
             if (return_code == handle_message_has_response) {
+                // Set the originating id to our node id
+                tx_message.arbitration_id.parts.originating_node_id = get_node_id();
                 tx_header.Identifier = tx_message.arbitration_id.id;
                 tx_header.DataLength = length_to_hal(tx_message.size);
 
