@@ -1,11 +1,13 @@
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
+#include "common/simulation/adc.hpp"
 #include "common/simulation/spi.hpp"
 #include "head/core/tasks.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+#include "presence-sensing/core/presence_sensing_driver.hpp"
 #include "task.h"
 
 /**
@@ -78,10 +80,15 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_right(
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
     motor_queue_left, motor_interrupt_left);
 
+static auto adc_comms = adc::SimADC{};
+
+static auto presence_sense_driver =
+    presence_sensing_driver::PresenceSensingDriver{adc_comms};
+
 int main() {
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
-                            motor_right.driver);
+                            motor_right.driver, presence_sense_driver);
 
     vTaskStartScheduler();
     return 0;

@@ -149,3 +149,57 @@ class ReadPresenceSensingVoltageResponsePayload(utils.BinarySerializable):
     z_motor: utils.UInt16Field
     a_motor: utils.UInt16Field
     gripper: utils.UInt16Field
+
+
+@dataclass
+class FirmwareUpdateWithAddress(utils.BinarySerializable):
+    """A FW update payload with an address."""
+
+    address: utils.UInt32Field
+
+
+class FirmwareUpdateDataField(utils.BinaryFieldBase[bytes]):
+    """The data field of FirmwareUpdateData."""
+
+    NUM_BYTES = 56
+    FORMAT = f"{NUM_BYTES}s"
+
+
+@dataclass
+class FirmwareUpdateData(FirmwareUpdateWithAddress):
+    """A FW update data payload."""
+
+    num_bytes: utils.UInt8Field
+    reserved: utils.UInt8Field
+    data: FirmwareUpdateDataField
+    checksum: utils.UInt16Field
+
+    def __post_init__(self) -> None:
+        """Post init processing."""
+        data_length = len(self.data.value)
+        if data_length > FirmwareUpdateDataField.NUM_BYTES:
+            raise ValueError(
+                f"Data cannot be more than"
+                f" {FirmwareUpdateDataField.NUM_BYTES} bytes."
+            )
+
+
+@dataclass
+class FirmwareUpdateDataAcknowledge(FirmwareUpdateWithAddress):
+    """A FW update data acknowledge payload."""
+
+    error_code: utils.UInt16Field
+
+
+@dataclass
+class FirmwareUpdateComplete(utils.BinarySerializable):
+    """All data messages have been transmitted."""
+
+    num_messages: utils.UInt32Field
+
+
+@dataclass
+class FirmwareUpdateCompleteAcknowledge(utils.BinarySerializable):
+    """A response to the FirmwareUpdateComplete message."""
+
+    error_code: utils.UInt16Field

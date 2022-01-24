@@ -29,12 +29,21 @@ class MotorDriver {
     }
 
     auto read(DriverRegisters::Addresses motor_reg, uint32_t command_data)
-        -> spi::TMC2130Spi::BufferType {
+        -> uint32_t {
         auto txBuffer = spi::TMC2130Spi::BufferType{};
         spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::READ,
                                        motor_reg, command_data);
+        // A read requires two transmissions. The second returns the data in the
+        // register from the first transmission.
         spi_comms.transmit_receive(txBuffer, rxBuffer);
-        return txBuffer;
+        spi_comms.transmit_receive(txBuffer, rxBuffer);
+
+        // Extract data bytes after the address.
+        uint32_t response = 0;
+        const auto* iter = rxBuffer.cbegin();                      // NOLINT
+        iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(),  // NOLINT
+                                       response);
+        return response;
     }
 
     auto write(DriverRegisters::Addresses motor_reg, uint32_t command_data)

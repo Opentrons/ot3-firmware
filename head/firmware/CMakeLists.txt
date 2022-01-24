@@ -10,6 +10,7 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
 # Add source files that should be checked by clang-tidy here
 set(HEAD_FW_LINTABLE_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/adc/adc_comms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
@@ -19,6 +20,7 @@ set(HEAD_FW_LINTABLE_SRCS
         )
 
 set(HEAD_FW_NON_LINTABLE_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/adc/adc.c
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
@@ -86,6 +88,24 @@ set_target_properties(head
         PROPERTIES
         CROSSCOMPILING_EMULATOR
         "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+add_custom_command(OUTPUT head.hex
+        COMMAND ${CROSS_OBJCOPY} ARGS head "-Oihex" head.hex
+        DEPENDS head
+        VERBATIM)
+add_custom_target(head-hex ALL
+        DEPENDS head.hex)
+
+add_custom_command(OUTPUT head.bin
+        COMMAND ${CROSS_OBJCOPY} ARGS head "-Obinary" head.bin
+        DEPENDS head
+        VERBATIM)
+add_custom_target(head-bin ALL
+        DEPENDS head.bin)
 
 
 find_package(Clang)

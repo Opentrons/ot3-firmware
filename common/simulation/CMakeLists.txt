@@ -2,6 +2,8 @@ add_library(common-simulation STATIC spi.cpp eeprom.cpp)
 
 target_link_libraries(common-simulation PUBLIC can-core)
 
+target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
+
 set_target_properties(common-simulation
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
