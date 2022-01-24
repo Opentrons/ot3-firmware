@@ -24,7 +24,7 @@ static Message rx_message;
 static Message tx_message;
 
 
-int main() {
+static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     if (MX_FDCAN1_Init(&hcan1) != HAL_OK) {
         Error_Handler();
     }
@@ -32,6 +32,64 @@ int main() {
     if (HAL_FDCAN_Start(&hcan1) != HAL_OK) {
         Error_Handler();
     }
+
+    ArbitrationId arb_mask;
+    ArbitrationId arb_filter;
+
+    FDCAN_FilterTypeDef filter_def = {
+        .IdType = FDCAN_EXTENDED_ID,
+        .FilterIndex = 0,
+        .FilterType = 0,
+        .FilterConfig = 0,
+        .FilterID1 = 0,
+        .FilterID2 = 0};
+
+    // Create filter to only accept messages from host to this node with message id update_data
+    arb_mask.id = 0;
+    arb_mask.parts.node_id = -1;
+    arb_mask.parts.originating_node_id = -1;
+    arb_mask.parts.message_id = -1;
+    arb_filter.id = 0;
+    arb_filter.parts.node_id = get_node_id();
+    arb_filter.parts.originating_node_id = can_nodeid_host;
+    arb_filter.parts.message_id = can_messageid_fw_update_data;
+
+    filter_def.FilterIndex = 0;
+    filter_def.FilterType = filter_type_to_hal(mask),
+    filter_def.FilterConfig = filter_config_to_hal(to_fifo0),
+    filter_def.FilterID1 = arb_mask.id,
+    filter_def.FilterID2 = arb_filter.id;
+    HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
+
+    // Create filter to only accept messages from host to this node with message id update_data_complete
+    arb_mask.id = 0;
+    arb_mask.parts.node_id = -1;
+    arb_mask.parts.originating_node_id = -1;
+    arb_mask.parts.message_id = -1;
+    arb_filter.id = 0;
+    arb_filter.parts.node_id = get_node_id();
+    arb_filter.parts.originating_node_id = can_nodeid_host;
+    arb_filter.parts.message_id = can_messageid_fw_update_complete;
+
+    filter_def.FilterIndex = 1;
+    filter_def.FilterType = filter_type_to_hal(mask),
+    filter_def.FilterConfig = filter_config_to_hal(to_fifo0),
+    filter_def.FilterID1 = arb_mask.id,
+    filter_def.FilterID2 = arb_filter.id;
+    HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
+
+    // Reject everything else
+    filter_def.FilterIndex = 2;
+    filter_def.FilterType = filter_type_to_hal(mask),
+    filter_def.FilterConfig = filter_config_to_hal(reject),
+    filter_def.FilterID1 = 0,
+    filter_def.FilterID2 = 0;
+    HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
+}
+
+
+int main() {
+    initialize_can(&hcan1);
 
     tx_header.IdType = FDCAN_EXTENDED_ID;
     tx_header.TxFrameType = FDCAN_DATA_FRAME;
