@@ -1,7 +1,6 @@
 #include "bootloader/core/messages.h"
 #include "catch2/catch.hpp"
 
-
 SCENARIO("update data") {
     GIVEN("a message with a data byte count of 0") {
         auto arr = std::array<uint8_t, 64>{
@@ -62,9 +61,7 @@ SCENARIO("update data") {
     }
 }
 
-
 SCENARIO("update data errors") {
-
     GIVEN("a null pointer") {
         WHEN("parsed") {
             UpdateData result;
@@ -95,16 +92,11 @@ SCENARIO("update data errors") {
             // Reserved
             0x0,
             // Data
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             // Checksum.
-            0xFF, 0xD2
-        };
+            0xFF, 0xD2};
         WHEN("parsed") {
             UpdateData result;
             auto error = parse_update_data(arr.data(), arr.size(), &result);
@@ -129,8 +121,7 @@ SCENARIO("update data errors") {
             0x45, 0x46, 0x47, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
             0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
             // Checksum.
-            0xF1, 0x93
-        };
+            0xF1, 0x93};
         WHEN("parsed") {
             UpdateData result;
             auto error = parse_update_data(arr.data(), arr.size(), &result);
@@ -141,13 +132,10 @@ SCENARIO("update data errors") {
     }
 }
 
-
 SCENARIO("update data complete") {
     GIVEN("a message") {
-        auto arr = std::array<uint8_t, 4>{
-            // Count
-            0xfe, 0xdc, 0xba, 0x98
-        };
+        auto arr = std::array<uint8_t, 4>{// Count
+                                          0xfe, 0xdc, 0xba, 0x98};
         WHEN("parsed") {
             UpdateComplete result;
             auto error = parse_update_complete(arr.data(), arr.size(), &result);
@@ -159,9 +147,7 @@ SCENARIO("update data complete") {
     }
 }
 
-
 SCENARIO("update data complete errors") {
-
     GIVEN("a null pointer") {
         WHEN("parsed") {
             UpdateComplete result;
@@ -173,14 +159,15 @@ SCENARIO("update data complete errors") {
     }
 
     GIVEN("a message") {
-        auto arr = std::array<uint8_t, 4>{
-            // Count
-            0xfe, 0xdc, 0xba, 0x98
-        };
+        auto arr = std::array<uint8_t, 4>{// Count
+                                          0xfe, 0xdc, 0xba, 0x98};
         WHEN("parsed") {
             UpdateComplete result;
-            auto error = parse_update_complete(arr.data(), arr.size() + 1, &result);
-            THEN("it returns ok") { REQUIRE(error == can_errorcode_invalid_size); }
+            auto error =
+                parse_update_complete(arr.data(), arr.size() + 1, &result);
+            THEN("it returns ok") {
+                REQUIRE(error == can_errorcode_invalid_size);
+            }
         }
     }
 }
