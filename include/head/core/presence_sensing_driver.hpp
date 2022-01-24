@@ -7,11 +7,30 @@
 #include "head/core/adc.hpp"
 
 namespace presence_sensing_driver {
-static std::vector<adc::Tool> OT3ToolList{
-    {adc::ToolType::UNDEFINED, 0, 0},
-    {adc::ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
+
+constexpr uint16_t PIPETTE_96_CHAN_DETECTION_UPPER_BOUND = 999;
+constexpr uint16_t PIPETTE_96_CHAN_DETECTION_LOWER_BOUND = 666;
+
+constexpr uint16_t GRIPPER_DETECTION_UPPER_BOUND = 999;
+constexpr uint16_t GRIPPER_DETECTION_LOWER_BOUND = 666;
+
+enum ToolType : uint8_t {
+    UNDEFINED = 0x00,
+    PIPETTE96CHAN = 0x00,
+    GRIPPER = 0x01,
+};
+
+struct Tool {
+    ToolType tool_type;
+    uint16_t detection_upper_bound;
+    uint16_t detection_lower_bound;
+};
+
+static std::vector<Tool> OT3ToolList{
+    {ToolType::UNDEFINED, 0, 0},
+    {ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
      PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
-    {adc::ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
+    {ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
      GRIPPER_DETECTION_LOWER_BOUND}};
 
 class PresenceSensingDriver {
@@ -35,12 +54,14 @@ class PresenceSensingDriver {
         return voltage_read;
     }
 
-    auto get_tool(uint16_t reading) -> adc::Tool {
-        adc::Tool td = {adc::ToolType::UNDEFINED, 0, 0};
-        for (size_t i = 0; i < OT3ToolList.size(); i++)
-            if ((reading < OT3ToolList[i].detection_upper_bound) &&
-                (reading >= OT3ToolList[i].detection_lower_bound))
-                return OT3ToolList[i];
+    auto static get_tool(uint16_t reading) -> Tool {
+        Tool td = {ToolType::UNDEFINED, 0, 0};
+        for (auto& element : OT3ToolList) {
+            if ((reading < element.detection_upper_bound) &&
+                (reading >= element.detection_lower_bound)) {
+                return element;
+            }
+        }
         return td;
     }
 

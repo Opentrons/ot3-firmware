@@ -2,26 +2,8 @@
 
 #include <concepts>
 #include <cstdint>
-#include <vector>
-#define PIPETTE_96_CHAN_DETECTION_UPPER_BOUND static_cast<uint16_t>(999)
-#define PIPETTE_96_CHAN_DETECTION_LOWER_BOUND static_cast<uint16_t>(666)
-
-#define GRIPPER_DETECTION_UPPER_BOUND static_cast<uint16_t>(999)
-#define GRIPPER_DETECTION_LOWER_BOUND static_cast<uint16_t>(666)
 
 namespace adc {
-
-enum ToolType : uint8_t {
-    UNDEFINED = 0x00,
-    PIPETTE96CHAN = 0x00,
-    GRIPPER = 0x01,
-};
-
-struct Tool {
-    ToolType tool_type;
-    uint16_t detection_upper_bound;
-    uint16_t detection_lower_bound;
-};
 
 struct MillivoltsReadings {
     uint16_t z_motor;
