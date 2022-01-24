@@ -86,3 +86,4 @@ class ErrorCode(int, Enum):
     invalid_size = 0x01
     bad_checksum = 0x02
     invalid_byte_count = 0x03
+    invalid_input = 0x04

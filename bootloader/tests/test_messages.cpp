@@ -72,6 +72,16 @@ SCENARIO("update data errors") {
         }
     }
 
+    GIVEN("a null pointer for outparam") {
+        auto arr = std::array<uint8_t, 64>{};
+        WHEN("parsed") {
+            auto error = parse_update_data(arr.data(), arr.size(), nullptr);
+            THEN("it returns error") {
+                REQUIRE(error == can_errorcode_invalid_input);
+            }
+        }
+    }
+
     GIVEN("a message with invalid size") {
         auto arr = std::array<uint8_t, 65>{};
         WHEN("parsed") {
@@ -158,9 +168,18 @@ SCENARIO("update data complete errors") {
         }
     }
 
-    GIVEN("a message") {
-        auto arr = std::array<uint8_t, 4>{// Count
-                                          0xfe, 0xdc, 0xba, 0x98};
+    GIVEN("a null pointer for result") {
+        auto arr = std::array<uint8_t, 4>{0xfe, 0xdc, 0xba, 0x98};
+        WHEN("parsed") {
+            auto error = parse_update_complete(arr.data(), arr.size(), nullptr);
+            THEN("it returns error") {
+                REQUIRE(error == can_errorcode_invalid_input);
+            }
+        }
+    }
+
+    GIVEN("a message with incorrect size") {
+        auto arr = std::array<uint8_t, 4>{0xfe, 0xdc, 0xba, 0x98};
         WHEN("parsed") {
             UpdateComplete result;
             auto error =

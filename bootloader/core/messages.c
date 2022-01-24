@@ -51,6 +51,10 @@ enum ErrorCode parse_update_data(
     uint32_t size,
     struct UpdateData * result) {
 
+    if (!result) {
+        return can_errorcode_invalid_input;
+    }
+
     // Message size and null check
     if (!buffer || size != UPDATE_DATA_MESSAGE_SIZE) {
         return can_errorcode_invalid_size;
@@ -93,6 +97,10 @@ enum ErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
     struct UpdateComplete * result) {
+
+    if (!result) {
+        return can_errorcode_invalid_input;
+    }
 
     // Message size and null check
     if (!buffer || size != UPDATE_COMPLETE_MESSAGE_SIZE) {
