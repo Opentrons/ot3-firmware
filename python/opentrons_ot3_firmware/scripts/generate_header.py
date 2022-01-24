@@ -10,6 +10,7 @@ from opentrons_ot3_firmware.constants import (
     MessageId,
     FunctionCode,
     NodeId,
+    ErrorCode,
 )
 from opentrons_ot3_firmware.arbitration_id import ArbitrationIdParts
 
@@ -58,6 +59,7 @@ def generate_cpp(output: io.StringIO) -> None:
         write_enum_cpp(FunctionCode, output)
         write_enum_cpp(MessageId, output)
         write_enum_cpp(NodeId, output)
+        write_enum_cpp(ErrorCode, output)
 
 
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
@@ -76,15 +78,19 @@ def generate_c(output: io.StringIO) -> None:
     write_enum_c(FunctionCode, output)
     write_enum_c(MessageId, output)
     write_enum_c(NodeId, output)
+    write_enum_c(ErrorCode, output)
     write_arbitration_id_c(output)
 
 
 def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
     """Generate constants from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
-    for i in e:
-        name = "_".join(("can", e.__name__, i.name)).upper()
-        output.write(f"#define {name} = 0x{i.value:x}\n")
+    with block(
+        output=output, start=f"enum {e.__name__} {{\n", terminate="};\n\n"
+    ):
+        for i in e:
+            name = "_".join(("can", e.__name__, i.name)).lower()
+            output.write(f"  {name} = 0x{i.value:x},\n")
 
 
 def write_arbitration_id_c(output: io.StringIO) -> None:
