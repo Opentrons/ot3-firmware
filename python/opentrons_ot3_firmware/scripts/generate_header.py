@@ -86,6 +86,7 @@ def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
     """Generate constants from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
 <<<<<<< HEAD
+<<<<<<< HEAD
     with block(output=output, start=f"enum {e.__name__} {{\n", terminate="};\n\n"):
 
 =======
@@ -93,6 +94,9 @@ def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
         output=output, start=f"enum {e.__name__} {{\n", terminate="};\n\n"
     ):
 >>>>>>> eb3dcb1 (unrealted files taken out of branch)
+=======
+    with block(output=output, start=f"enum {e.__name__} {{\n", terminate="};\n\n"):
+>>>>>>> 800c9da (replace array with vector)
         for i in e:
             name = "_".join(("can", e.__name__, i.name)).lower()
             output.write(f"  {name} = 0x{i.value:x},\n")
