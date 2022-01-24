@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <cstdint>
+#include <vector>
 #define PIPETTE_96_CHAN_DETECTION_UPPER_BOUND static_cast<uint16_t>(999)
 #define PIPETTE_96_CHAN_DETECTION_LOWER_BOUND static_cast<uint16_t>(666)
 
@@ -22,7 +23,9 @@ struct Tool {
     uint16_t detection_lower_bound;
 };
 
-struct Tool OT3ToolList[] = {
+
+
+std::vector<Tool> OT3ToolList {
     {ToolType::UNDEFINED, 0, 0},
     {ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
      PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
