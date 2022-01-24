@@ -69,19 +69,16 @@ class PresenceSensingDriver {
                 (reading.z_motor >= element.detection_lower_bound)) {
                 at.z_motor = element.tool_type;
             }
-        }
-        for (auto& element : OT3ToolList) {
             if ((reading.a_motor < element.detection_upper_bound) &&
                 (reading.a_motor >= element.detection_lower_bound)) {
                 at.a_motor = element.tool_type;
             }
-        }
-        for (auto& element : OT3ToolList) {
             if ((reading.gripper < element.detection_upper_bound) &&
                 (reading.gripper >= element.detection_lower_bound)) {
                 at.gripper = element.tool_type;
             }
         }
+
         return at;
     }
 
