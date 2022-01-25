@@ -37,7 +37,7 @@ add_executable(
 )
 
 if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-    target_compile_definitions(bootloader-x-simulator PUBLIC USE_SOCKETCAN)
+    target_compile_definitions(bootloader-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
 target_compile_definitions(bootloader-simulator PUBLIC ENABLE_LOGGING)
