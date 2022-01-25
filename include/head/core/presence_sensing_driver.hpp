@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <vector>
 
 #include "common/core/bit_utils.hpp"
@@ -16,8 +15,8 @@ constexpr uint16_t GRIPPER_DETECTION_LOWER_BOUND = 666;
 
 enum ToolType : uint8_t {
     UNDEFINED = 0x00,
-    PIPETTE96CHAN = 0x00,
-    GRIPPER = 0x01,
+    PIPETTE96CHAN = 0x01,
+    GRIPPER = 0x02,
 };
 
 struct Tool {
