@@ -1,7 +1,8 @@
 """Constants for can bus."""
-from enum import Enum
+from enum import Enum, unique
 
 
+@unique
 class NodeId(int, Enum):
     """Can bus arbitration id node id."""
 
@@ -15,6 +16,7 @@ class NodeId(int, Enum):
     head_r = 0x52
 
 
+@unique
 class FunctionCode(int, Enum):
     """Can bus arbitration id function code."""
 
@@ -28,6 +30,7 @@ class FunctionCode(int, Enum):
     heartbeat = 0x7
 
 
+@unique
 class MessageId(int, Enum):
     """Can bus arbitration id message id."""
 
@@ -78,7 +81,7 @@ class MessageId(int, Enum):
     fw_update_complete_ack = 0x64
 
 
-
+@unique
 class ErrorCode(int, Enum):
     """Common error codes."""
 
