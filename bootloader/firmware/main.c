@@ -44,7 +44,7 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
         .FilterID1 = 0,
         .FilterID2 = 0};
 
-    // Create filter to only accept messages from host to this node
+    // Create filter to accept messages from host to this node
     arb_mask.id = 0;
     arb_mask.parts.node_id = -1;
     arb_mask.parts.originating_node_id = -1;
@@ -59,8 +59,21 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     filter_def.FilterID2 = arb_filter.id;
     HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
 
-    // Reject everything else
+    // Create filter to accept broadcast messages
+    arb_mask.id = 0;
+    arb_mask.parts.node_id = -1;
+    arb_filter.id = 0;
+    arb_filter.parts.node_id = can_nodeid_broadcast;
+
     filter_def.FilterIndex = 1;
+    filter_def.FilterType = filter_type_to_hal(mask),
+    filter_def.FilterConfig = filter_config_to_hal(to_fifo0),
+    filter_def.FilterID1 = arb_mask.id,
+    filter_def.FilterID2 = arb_filter.id;
+    HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
+
+    // Reject everything else
+    filter_def.FilterIndex = 2;
     filter_def.FilterType = filter_type_to_hal(mask),
     filter_def.FilterConfig = filter_config_to_hal(reject),
     filter_def.FilterID1 = 0,
