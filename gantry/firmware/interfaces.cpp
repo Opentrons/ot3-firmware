@@ -75,7 +75,6 @@ struct motion_controller::HardwareConfig motor_pins_y {
         .active_setting = GPIO_PIN_SET},
 };
 
-
 /**
  * The motor hardware interface.
  */
