@@ -236,6 +236,15 @@ class ReadPresenceSensingVoltageResponse:  # noqa: D101
 
 
 @dataclass
+class PushToolsDetectedNotification:  # noqa: D101
+    payload: payloads.ToolsDetectedNotificationPayload
+    payload_type: Type[BinarySerializable] = payloads.ToolsDetectedNotificationPayload
+    message_id: Literal[
+        MessageId.tools_detected_notification
+    ] = MessageId.tools_detected_notification
+
+
+@dataclass
 class FirmwareUpdateInitiate:  # noqa: D101
     payload: payloads.EmptyPayload
     payload_type: Type[BinarySerializable] = payloads.EmptyPayload

@@ -336,6 +336,24 @@ struct ReadPresenceSensingVoltageResponse
         -> bool = default;
 };
 
+struct PushToolsDetectedNotification
+    : BaseMessage<MessageId::tools_detected_notification> {
+    uint16_t z_motor;
+    uint16_t a_motor;
+    uint16_t gripper;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(z_motor, body, limit);
+        iter = bit_utils::int_to_bytes(a_motor, iter, limit);
+        iter = bit_utils::int_to_bytes(gripper, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const PushToolsDetectedNotification& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -343,6 +361,7 @@ using ResponseMessageType =
     std::variant<HeartbeatResponse, DeviceInfoResponse,
                  GetMotionConstraintsResponse, GetMoveGroupResponse,
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse>;
+                 MoveCompleted, ReadPresenceSensingVoltageResponse,
+                 PushToolsDetectedNotification>;
 
 }  // namespace can_messages

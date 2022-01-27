@@ -36,6 +36,7 @@ MessageDefinition = Union[
     defs.ReadMotorDriverResponse,
     defs.ReadPresenceSensingVoltageRequest,
     defs.ReadPresenceSensingVoltageResponse,
+    defs.PushToolsDetectedNotification,
     defs.FirmwareUpdateDataAcknowledge,
     defs.FirmwareUpdateCompleteAcknowledge,
 ]
