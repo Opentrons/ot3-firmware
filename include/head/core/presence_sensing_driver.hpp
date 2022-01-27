@@ -7,29 +7,52 @@
 
 namespace presence_sensing_driver {
 
-constexpr uint16_t PIPETTE_96_CHAN_DETECTION_UPPER_BOUND = 999;
-constexpr uint16_t PIPETTE_96_CHAN_DETECTION_LOWER_BOUND = 666;
+constexpr uint16_t PIPETTE_384_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND = 1883;
+constexpr uint16_t PIPETTE_384_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND = 1851;
+
+constexpr uint16_t PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND = 1434;
+constexpr uint16_t PIPETTE_96_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND = 1400;
+
+constexpr uint16_t PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND = 444;
+constexpr uint16_t PIPETTE_SINGLE_Z_CARRIER_DETECTION_LOWER_BOUND = 460;
+
+constexpr uint16_t PIPETTE_MULTI_Z_CARRIER_DETECTION_UPPER_BOUND = 945;
+constexpr uint16_t PIPETTE_MULTI_Z_CARRIER_DETECTION_LOWER_BOUND = 918;
+
+constexpr uint16_t PIPETTE_SINGLE_A_CARRIER_DETECTION_UPPER_BOUND = 2389;
+constexpr uint16_t PIPETTE_SINGLE_A_CARRIER_DETECTION_LOWER_BOUND = 2362;
+
+constexpr uint16_t PIPETTE_MULTI_A_CARRIER_DETECTION_UPPER_BOUND = 2860;
+constexpr uint16_t PIPETTE_MULTI_A_CARRIER_DETECTION_LOWER_BOUND = 2844;
 
 constexpr uint16_t GRIPPER_DETECTION_UPPER_BOUND = 999;
 constexpr uint16_t GRIPPER_DETECTION_LOWER_BOUND = 536;
 
 enum ToolType : uint8_t {
-    UNDEFINED = 0x00,
+    UNDEFINED_TOOL = 0x00,
     PIPETTE96CHAN = 0x01,
     GRIPPER = 0x02,
 };
 
+enum Carrier : uint8_t {
+    UNDEFINED_CARRIER = 0x00,
+    Z_CARRIER = 0x01,
+    A_CARRIER = 0x02,
+};
+
 struct Tool {
     ToolType tool_type;
+    Carrier tool_carrier;
     uint16_t detection_upper_bound;
     uint16_t detection_lower_bound;
 };
 
 static std::vector<Tool> OT3ToolList{
-    {ToolType::UNDEFINED, 0, 0},
-    {ToolType::PIPETTE96CHAN, PIPETTE_96_CHAN_DETECTION_UPPER_BOUND,
-     PIPETTE_96_CHAN_DETECTION_LOWER_BOUND},
-    {ToolType::GRIPPER, GRIPPER_DETECTION_UPPER_BOUND,
+    {ToolType::UNDEFINED_TOOL, Carrier::UNDEFINED_CARRIER, 0, 0},
+    {ToolType::PIPETTE96CHAN, Carrier::Z_CARRIER,
+     PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
+     PIPETTE_96_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
+    {ToolType::GRIPPER, Carrier::UNDEFINED_CARRIER, GRIPPER_DETECTION_UPPER_BOUND,
      GRIPPER_DETECTION_LOWER_BOUND}};
 
 struct AttachedTool {
@@ -60,20 +83,23 @@ class PresenceSensingDriver {
     }
 
     auto static get_tool(adc::MillivoltsReadings reading) -> AttachedTool {
-        auto at = AttachedTool{.z_motor = ToolType::UNDEFINED,
-                               .a_motor = ToolType::UNDEFINED,
-                               .gripper = ToolType::UNDEFINED};
+        auto at = AttachedTool{.z_motor = ToolType::UNDEFINED_TOOL,
+                               .a_motor = ToolType::UNDEFINED_TOOL,
+                               .gripper = ToolType::UNDEFINED_TOOL};
         for (auto& element : OT3ToolList) {
             if ((reading.z_motor < element.detection_upper_bound) &&
-                (reading.z_motor >= element.detection_lower_bound)) {
+                (reading.z_motor >= element.detection_lower_bound) &&
+                (element.tool_carrier == Carrier::Z_CARRIER)) {
                 at.z_motor = element.tool_type;
             }
             if ((reading.a_motor < element.detection_upper_bound) &&
-                (reading.a_motor >= element.detection_lower_bound)) {
+                (reading.a_motor >= element.detection_lower_bound) &&
+                (element.tool_carrier == Carrier::A_CARRIER)) {
                 at.a_motor = element.tool_type;
             }
             if ((reading.gripper < element.detection_upper_bound) &&
-                (reading.gripper >= element.detection_lower_bound)) {
+                (reading.gripper >= element.detection_lower_bound) &&
+                (element.tool_carrier == Carrier::UNDEFINED_CARRIER)) {
                 at.gripper = element.tool_type;
             }
         }
