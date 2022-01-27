@@ -54,6 +54,11 @@ class BinaryFieldBase(Generic[T]):
         """The value."""
         return self._t
 
+    @value.setter
+    def value(self, val: T) -> None:
+        """Set the value."""
+        self._t = val
+
     def __eq__(self, other: object) -> bool:
         """Comparison."""
         return isinstance(other, BinaryFieldBase) and other.value == self.value

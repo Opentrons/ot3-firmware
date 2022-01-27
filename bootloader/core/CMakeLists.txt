@@ -17,7 +17,12 @@ add_custom_command(
         DEPENDS opentrons_generate_header ${generator_sources}
 )
 
-add_library(bootloader-core STATIC can.c ${IDS_HPP})
+add_library(bootloader-core
+        STATIC
+        messages.c
+        message_handler.c
+        ${IDS_HPP}
+        )
 
 target_include_directories(bootloader-core
         PUBLIC
