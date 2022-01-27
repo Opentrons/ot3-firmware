@@ -87,17 +87,7 @@ class MessageId(int, Enum):
     fw_update_complete_ack = 0x64
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 @unique
-=======
->>>>>>> acae29c (fix defines)
-=======
-
->>>>>>> eb3dcb1 (unrealted files taken out of branch)
-=======
->>>>>>> 800c9da (replace array with vector)
 class ErrorCode(int, Enum):
     """Common error codes."""
 
