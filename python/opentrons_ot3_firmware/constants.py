@@ -77,6 +77,8 @@ class MessageId(int, Enum):
     fw_update_complete = 0x63
     fw_update_complete_ack = 0x64
 
+    limit_sw_request = 0x08
+    limit_sw_response = 0x09
 
 
 class ErrorCode(int, Enum):

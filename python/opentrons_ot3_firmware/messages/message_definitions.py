@@ -270,3 +270,17 @@ class FirmwareUpdateCompleteAcknowledge:  # noqa: D101
     message_id: Literal[
         MessageId.fw_update_complete_ack
     ] = MessageId.fw_update_complete_ack
+
+
+@dataclass
+class ReadLimitSwitchRequest:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: MessageId.limit_sw_request
+
+
+@dataclass
+class ReadLimitSwitchResponse:  # noqa: D101
+    payload: payloads.GetLimitSwitchResponse
+    payload_type: Type[BinarySerializable] = payloads.GetLimitSwitchResponse
+    message_id: MessageId.limit_sw_response
