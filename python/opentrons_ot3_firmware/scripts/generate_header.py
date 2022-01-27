@@ -85,9 +85,7 @@ def generate_c(output: io.StringIO) -> None:
 def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
     """Generate constants from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
-    with block(
-        output=output, start="typedef enum {\n", terminate=f"}} {e.__name__};\n\n"
-    ):
+    with block(output=output, start=f"enum {e.__name__} {{\n", terminate="};\n\n"):
         for i in e:
             name = "_".join(("can", e.__name__, i.name)).lower()
             output.write(f"  {name} = 0x{i.value:x},\n")
