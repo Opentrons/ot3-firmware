@@ -1,7 +1,8 @@
 """Constants for can bus."""
-from enum import Enum
+from enum import Enum, unique
 
 
+@unique
 class NodeId(int, Enum):
     """Can bus arbitration id node id."""
 
@@ -13,8 +14,13 @@ class NodeId(int, Enum):
     head = 0x50
     head_l = 0x51
     head_r = 0x52
+    pipette_bootloader = pipette | 0xF
+    gantry_x_bootloader = gantry_x | 0xF
+    gantry_y_bootloader = gantry_y | 0xF
+    head_bootloader = head | 0xF
 
 
+@unique
 class FunctionCode(int, Enum):
     """Can bus arbitration id function code."""
 
@@ -28,6 +34,7 @@ class FunctionCode(int, Enum):
     heartbeat = 0x7
 
 
+@unique
 class MessageId(int, Enum):
     """Can bus arbitration id message id."""
 
@@ -78,7 +85,7 @@ class MessageId(int, Enum):
     fw_update_complete_ack = 0x64
 
 
-
+@unique
 class ErrorCode(int, Enum):
     """Common error codes."""
 
@@ -86,3 +93,4 @@ class ErrorCode(int, Enum):
     invalid_size = 0x01
     bad_checksum = 0x02
     invalid_byte_count = 0x03
+    invalid_input = 0x04

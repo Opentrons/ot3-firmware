@@ -5,7 +5,7 @@ from .arbitration_id import (
     ArbitrationId,
     ArbitrationIdParts,
 )
-from .constants import NodeId, FunctionCode, MessageId
+from .constants import NodeId, FunctionCode, MessageId, ErrorCode
 
 __all__ = [
     "CanMessage",
@@ -14,4 +14,5 @@ __all__ = [
     "FunctionCode",
     "MessageId",
     "ArbitrationIdParts",
+    "ErrorCode",
 ]

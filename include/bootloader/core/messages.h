@@ -11,13 +11,13 @@ extern "C" {
 /**
  * Contents of the firmware update data message.
  */
-struct UpdateData {
+typedef struct {
     uint32_t address;
     uint8_t num_bytes;
     uint8_t reserved;
     const uint8_t * data;
     uint16_t checksum;
-};
+} UpdateData;
 
 #define UPDATE_DATA_MESSAGE_SIZE    64
 #define UPDATE_DATA_MAX_BYTE_COUNT  56
@@ -25,9 +25,9 @@ struct UpdateData {
 /**
  * Contents of the firmware update complete message.
  */
-struct UpdateComplete {
+typedef struct {
     uint32_t num_messages;
-};
+} UpdateComplete;
 
 #define UPDATE_COMPLETE_MESSAGE_SIZE    4
 
@@ -39,10 +39,10 @@ struct UpdateComplete {
  * @param result Pointer to UpdateData struct to populate
  * @return result code
  */
-enum ErrorCode parse_update_data(
+ErrorCode parse_update_data(
     const uint8_t * buffer,
     uint32_t size,
-    struct UpdateData * result);
+    UpdateData * result);
 
 
 /**
@@ -52,10 +52,10 @@ enum ErrorCode parse_update_data(
  * @param result Pointer to UpdateComplete struct to populate
  * @return result code
  */
-enum ErrorCode parse_update_complete(
+ErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
-    struct UpdateComplete * result);
+    UpdateComplete * result);
 
 #ifdef __cplusplus
 }  // extern "C"
