@@ -3,10 +3,13 @@
 #include <array>
 #include <concepts>
 
+#include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "head/core/adc.hpp"
 
 namespace presence_sensing_driver {
+
+using namespace can_ids;
 
 constexpr uint16_t PIPETTE_384_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND = 1883;
 constexpr uint16_t PIPETTE_384_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND = 1851;
@@ -29,6 +32,7 @@ constexpr uint16_t PIPETTE_MULTI_A_CARRIER_DETECTION_LOWER_BOUND = 2844;
 constexpr uint16_t GRIPPER_DETECTION_UPPER_BOUND = 999;
 constexpr uint16_t GRIPPER_DETECTION_LOWER_BOUND = 536;
 
+/*
 enum ToolType : uint8_t {
     UNDEFINED_TOOL = 0x00,
     PIPETTE96CHAN = 0x01,
@@ -37,6 +41,7 @@ enum ToolType : uint8_t {
     PIPETTEMULTI = 0x04,
     GRIPPER = 0x07,
 };
+*/
 
 enum Carrier : uint8_t {
     UNDEFINED_CARRIER = 0x00,
@@ -52,21 +57,21 @@ struct Tool {
 };
 
 static std::array<Tool, 8> OT3ToolList{
-    {{UNDEFINED_TOOL, UNDEFINED_CARRIER, 0, 0},
-     {PIPETTE96CHAN, Z_CARRIER,
+    {{can_ids::ToolType::UNDEFINED_TOOL, UNDEFINED_CARRIER, 0, 0},
+     {can_ids::ToolType::PIPETTE96CHAN, Z_CARRIER,
       PIPETTE_384_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
       PIPETTE_384_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
-     {PIPETTE96CHAN, Z_CARRIER, PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
+     {can_ids::ToolType::PIPETTE96CHAN, Z_CARRIER, PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
       PIPETTE_96_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
-     {PIPETTESINGLE, Z_CARRIER, PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND,
+     {can_ids::ToolType::PIPETTESINGLE, Z_CARRIER, PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND,
       PIPETTE_SINGLE_Z_CARRIER_DETECTION_LOWER_BOUND},
-     {PIPETTEMULTI, Z_CARRIER, PIPETTE_MULTI_Z_CARRIER_DETECTION_UPPER_BOUND,
+     {can_ids::ToolType::PIPETTEMULTI, Z_CARRIER, PIPETTE_MULTI_Z_CARRIER_DETECTION_UPPER_BOUND,
       PIPETTE_MULTI_Z_CARRIER_DETECTION_LOWER_BOUND},
-     {PIPETTESINGLE, A_CARRIER, PIPETTE_SINGLE_A_CARRIER_DETECTION_UPPER_BOUND,
+     {can_ids::ToolType::PIPETTESINGLE, A_CARRIER, PIPETTE_SINGLE_A_CARRIER_DETECTION_UPPER_BOUND,
       PIPETTE_SINGLE_A_CARRIER_DETECTION_LOWER_BOUND},
-     {PIPETTEMULTI, A_CARRIER, PIPETTE_MULTI_A_CARRIER_DETECTION_UPPER_BOUND,
+     {can_ids::ToolType::PIPETTEMULTI, A_CARRIER, PIPETTE_MULTI_A_CARRIER_DETECTION_UPPER_BOUND,
       PIPETTE_MULTI_A_CARRIER_DETECTION_LOWER_BOUND},
-     {GRIPPER, UNDEFINED_CARRIER, GRIPPER_DETECTION_UPPER_BOUND,
+     {can_ids::ToolType::GRIPPER, UNDEFINED_CARRIER, GRIPPER_DETECTION_UPPER_BOUND,
       GRIPPER_DETECTION_LOWER_BOUND}}};
 
 struct AttachedTool {
@@ -97,9 +102,9 @@ class PresenceSensingDriver {
     }
 
     auto static get_tool(adc::MillivoltsReadings reading) -> AttachedTool {
-        auto at = AttachedTool{.z_motor = UNDEFINED_TOOL,
-                               .a_motor = UNDEFINED_TOOL,
-                               .gripper = UNDEFINED_TOOL};
+        auto at = AttachedTool{.z_motor = can_ids::ToolType::UNDEFINED_TOOL,
+                               .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
+                               .gripper = can_ids::ToolType::UNDEFINED_TOOL};
         for (auto& element : OT3ToolList) {
             if ((reading.z_motor < element.detection_upper_bound) &&
                 (reading.z_motor >= element.detection_lower_bound) &&

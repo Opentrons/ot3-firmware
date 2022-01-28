@@ -65,9 +65,9 @@ class PresenceSensingDriverMessageHandler {
             driver.get_readings());
 
         can_messages::PushToolsDetectedNotification resp{
-            .z_motor = at.z_motor,
-            .a_motor = at.a_motor,
-            .gripper = at.gripper,
+            .z_motor = static_cast<uint16_t>(at.z_motor),
+            .a_motor = static_cast<uint16_t>(at.a_motor),
+            .gripper = static_cast<uint16_t>(at.gripper),
         };
 
         can_client.send_can_message(can_ids::NodeId::host, resp);

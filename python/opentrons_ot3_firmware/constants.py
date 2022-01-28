@@ -100,7 +100,7 @@ class ErrorCode(int, Enum):
 @unique
 class ToolType(int, Enum):
     """Tool types detected on Head."""
-    
+
     UNDEFINED_TOOL = 0x00,
     PIPETTE96CHAN = 0x01,
     PIPETTE384CHAN = 0x02,
