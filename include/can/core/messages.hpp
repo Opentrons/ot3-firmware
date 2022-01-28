@@ -338,9 +338,9 @@ struct ReadPresenceSensingVoltageResponse
 
 struct PushToolsDetectedNotification
     : BaseMessage<MessageId::tools_detected_notification> {
-    uint16_t z_motor;
-    uint16_t a_motor;
-    uint16_t gripper;
+    uint8_t z_motor;
+    uint8_t a_motor;
+    uint8_t gripper;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {

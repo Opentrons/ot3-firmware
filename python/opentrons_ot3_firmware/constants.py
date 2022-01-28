@@ -96,3 +96,15 @@ class ErrorCode(int, Enum):
     bad_checksum = 0x02
     invalid_byte_count = 0x03
     invalid_input = 0x04
+
+@unique
+class ToolType(int, Enum):
+    """Tool types detected on Head."""
+    
+    UNDEFINED_TOOL = 0x00,
+    PIPETTE96CHAN = 0x01,
+    PIPETTE384CHAN = 0x02,
+    PIPETTESINGLE = 0x03,
+    PIPETTEMULTI = 0x04,
+    GRIPPER = 0x07,
+

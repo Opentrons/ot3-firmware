@@ -1,6 +1,7 @@
 #pragma once
 
-#include <vector>
+#include <array>
+#include <concepts>
 
 #include "common/core/bit_utils.hpp"
 #include "head/core/adc.hpp"
@@ -13,8 +14,8 @@ constexpr uint16_t PIPETTE_384_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND = 1851;
 constexpr uint16_t PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND = 1434;
 constexpr uint16_t PIPETTE_96_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND = 1400;
 
-constexpr uint16_t PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND = 444;
-constexpr uint16_t PIPETTE_SINGLE_Z_CARRIER_DETECTION_LOWER_BOUND = 460;
+constexpr uint16_t PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND = 460;
+constexpr uint16_t PIPETTE_SINGLE_Z_CARRIER_DETECTION_LOWER_BOUND = 444;
 
 constexpr uint16_t PIPETTE_MULTI_Z_CARRIER_DETECTION_UPPER_BOUND = 945;
 constexpr uint16_t PIPETTE_MULTI_Z_CARRIER_DETECTION_LOWER_BOUND = 918;
@@ -30,15 +31,10 @@ constexpr uint16_t GRIPPER_DETECTION_LOWER_BOUND = 536;
 
 enum ToolType : uint8_t {
     UNDEFINED_TOOL = 0x00,
-
-    ZPIPETTE96CHAN = 0x01,
-    ZPIPETTE384CHAN = 0x02,
-    ZPIPETTESINGLE = 0x03,
-    ZPIPETTEMULTI = 0x04,
-
-    APIPETTESINGLE = 0x05,
-    APIPETTEMULTI = 0x06,
-
+    PIPETTE96CHAN = 0x01,
+    PIPETTE384CHAN = 0x02,
+    PIPETTESINGLE = 0x03,
+    PIPETTEMULTI = 0x04,
     GRIPPER = 0x07,
 };
 
@@ -55,28 +51,23 @@ struct Tool {
     uint16_t detection_lower_bound;
 };
 
-static std::vector<Tool> OT3ToolList{
-    {ToolType::UNDEFINED_TOOL, Carrier::UNDEFINED_CARRIER, 0, 0},
-    {ToolType::ZPIPETTE96CHAN, Carrier::Z_CARRIER,
-     PIPETTE_384_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
-     PIPETTE_384_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
-    {ToolType::ZPIPETTE96CHAN, Carrier::Z_CARRIER,
-     PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
-     PIPETTE_96_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
-    {ToolType::ZPIPETTESINGLE, Carrier::Z_CARRIER,
-     PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND,
-     PIPETTE_SINGLE_Z_CARRIER_DETECTION_LOWER_BOUND},
-    {ToolType::ZPIPETTEMULTI, Carrier::Z_CARRIER,
-     PIPETTE_MULTI_Z_CARRIER_DETECTION_UPPER_BOUND,
-     PIPETTE_MULTI_Z_CARRIER_DETECTION_LOWER_BOUND},
-    {ToolType::APIPETTESINGLE, Carrier::A_CARRIER,
-     PIPETTE_SINGLE_A_CARRIER_DETECTION_UPPER_BOUND,
-     PIPETTE_SINGLE_A_CARRIER_DETECTION_LOWER_BOUND},
-    {ToolType::APIPETTEMULTI, Carrier::A_CARRIER,
-     PIPETTE_MULTI_A_CARRIER_DETECTION_UPPER_BOUND,
-     PIPETTE_MULTI_A_CARRIER_DETECTION_LOWER_BOUND},
-    {ToolType::GRIPPER, Carrier::UNDEFINED_CARRIER,
-     GRIPPER_DETECTION_UPPER_BOUND, GRIPPER_DETECTION_LOWER_BOUND}};
+static std::array<Tool, 8> OT3ToolList{
+    {{UNDEFINED_TOOL, UNDEFINED_CARRIER, 0, 0},
+     {PIPETTE96CHAN, Z_CARRIER,
+      PIPETTE_384_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
+      PIPETTE_384_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
+     {PIPETTE96CHAN, Z_CARRIER, PIPETTE_96_CHAN_Z_CARRIER_DETECTION_UPPER_BOUND,
+      PIPETTE_96_CHAN_Z_CARRIER_DETECTION_LOWER_BOUND},
+     {PIPETTESINGLE, Z_CARRIER, PIPETTE_SINGLE_Z_CARRIER_DETECTION_UPPER_BOUND,
+      PIPETTE_SINGLE_Z_CARRIER_DETECTION_LOWER_BOUND},
+     {PIPETTEMULTI, Z_CARRIER, PIPETTE_MULTI_Z_CARRIER_DETECTION_UPPER_BOUND,
+      PIPETTE_MULTI_Z_CARRIER_DETECTION_LOWER_BOUND},
+     {PIPETTESINGLE, A_CARRIER, PIPETTE_SINGLE_A_CARRIER_DETECTION_UPPER_BOUND,
+      PIPETTE_SINGLE_A_CARRIER_DETECTION_LOWER_BOUND},
+     {PIPETTEMULTI, A_CARRIER, PIPETTE_MULTI_A_CARRIER_DETECTION_UPPER_BOUND,
+      PIPETTE_MULTI_A_CARRIER_DETECTION_LOWER_BOUND},
+     {GRIPPER, UNDEFINED_CARRIER, GRIPPER_DETECTION_UPPER_BOUND,
+      GRIPPER_DETECTION_LOWER_BOUND}}};
 
 struct AttachedTool {
     ToolType z_motor;
@@ -106,23 +97,23 @@ class PresenceSensingDriver {
     }
 
     auto static get_tool(adc::MillivoltsReadings reading) -> AttachedTool {
-        auto at = AttachedTool{.z_motor = ToolType::UNDEFINED_TOOL,
-                               .a_motor = ToolType::UNDEFINED_TOOL,
-                               .gripper = ToolType::UNDEFINED_TOOL};
+        auto at = AttachedTool{.z_motor = UNDEFINED_TOOL,
+                               .a_motor = UNDEFINED_TOOL,
+                               .gripper = UNDEFINED_TOOL};
         for (auto& element : OT3ToolList) {
             if ((reading.z_motor < element.detection_upper_bound) &&
                 (reading.z_motor >= element.detection_lower_bound) &&
-                (element.tool_carrier == Carrier::Z_CARRIER)) {
+                (element.tool_carrier == Z_CARRIER)) {
                 at.z_motor = element.tool_type;
             }
             if ((reading.a_motor < element.detection_upper_bound) &&
                 (reading.a_motor >= element.detection_lower_bound) &&
-                (element.tool_carrier == Carrier::A_CARRIER)) {
+                (element.tool_carrier == A_CARRIER)) {
                 at.a_motor = element.tool_type;
             }
             if ((reading.gripper < element.detection_upper_bound) &&
                 (reading.gripper >= element.detection_lower_bound) &&
-                (element.tool_carrier == Carrier::UNDEFINED_CARRIER)) {
+                (element.tool_carrier == UNDEFINED_CARRIER)) {
                 at.gripper = element.tool_type;
             }
         }

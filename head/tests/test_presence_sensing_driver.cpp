@@ -32,8 +32,21 @@ SCENARIO("get_tool called on presence sensing driver") {
             auto tools = ps.get_tool(ps.get_readings());
 
             THEN("Tools mapped to voltage reading") {
-                REQUIRE(tools.gripper ==
-                        presence_sensing_driver::ToolType::GRIPPER);
+                REQUIRE(tools.gripper == presence_sensing_driver::GRIPPER);
+            }
+        }
+    }
+}
+
+SCENARIO("ot3 tools list for tool detection") {
+    GIVEN("ot3 tools lower and upper voltage bounds for tool detection") {
+        auto tools = presence_sensing_driver::OT3ToolList;
+        WHEN("when lower bound compared with upper bound") {
+            THEN("lower bound is always found lower or equal to upper bounds") {
+                for (auto& element : tools) {
+                    REQUIRE(element.detection_lower_bound <=
+                            element.detection_upper_bound);
+                }
             }
         }
     }
