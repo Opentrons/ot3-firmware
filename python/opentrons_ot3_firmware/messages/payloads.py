@@ -225,6 +225,6 @@ class FirmwareUpdateCompleteAcknowledge(utils.BinarySerializable):
 
 @dataclass
 class GetLimitSwitchResponse(utils.BinarySerializable):
-    """A response to the Limit Swith Status request payload"""
+    """A response to the Limit Switch Status request payload."""
 
     switch_status: utils.UInt8Field
