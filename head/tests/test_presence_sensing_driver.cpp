@@ -32,7 +32,7 @@ SCENARIO("get_tool called on presence sensing driver") {
             auto tools = ps.get_tool(ps.get_readings());
 
             THEN("Tools mapped to voltage reading") {
-                REQUIRE(tools.gripper == presence_sensing_driver::GRIPPER);
+                REQUIRE(tools.gripper == can_ids::ToolType::GRIPPER);
             }
         }
     }
