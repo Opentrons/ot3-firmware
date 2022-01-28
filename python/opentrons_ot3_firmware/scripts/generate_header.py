@@ -81,7 +81,7 @@ def generate_c(output: io.StringIO) -> None:
     write_enum_c(MessageId, output)
     write_enum_c(NodeId, output)
     write_enum_c(ErrorCode, output)
-    write_enum_cpp(ToolType, output)
+    write_enum_c(ToolType, output)
     write_arbitration_id_c(output)
 
 
