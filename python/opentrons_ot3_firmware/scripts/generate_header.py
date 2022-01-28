@@ -84,8 +84,10 @@ def generate_c(output: io.StringIO) -> None:
 
 def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
     """Generate constants from enumeration."""
-    output.write(f"/** {e.__doc__} */\n")
-    with block(output=output, start=f"enum {e.__name__} {{\n", terminate="};\n\n"):
+    output.write(f"/** {e.__doc__} */\n"
+    with block(
+        output=output, start="typedef enum {\n", terminate=f"}} {e.__name__};\n\n"
+    ):
         for i in e:
             name = "_".join(("can", e.__name__, i.name)).lower()
             output.write(f"  {name} = 0x{i.value:x},\n")
@@ -96,8 +98,8 @@ def write_arbitration_id_c(output: io.StringIO) -> None:
     output.write(f"/** {ArbitrationIdParts.__doc__} */\n")
     with block(
         output=output,
-        start=f"struct {ArbitrationIdParts.__name__} {{\n",
-        terminate="};\n\n",
+        start="typedef struct {\n",
+        terminate=f"}} {ArbitrationIdParts.__name__};\n\n",
     ):
         for i in ArbitrationIdParts._fields_:
             output.write(f"  unsigned int {i[0]}: {i[2]};\n")

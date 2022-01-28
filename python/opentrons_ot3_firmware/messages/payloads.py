@@ -1,4 +1,7 @@
 """Payloads of can bus messages."""
+# TODO (amit, 2022-01-26): Figure out why using annotations import ruins
+#  dataclass fields interpretation.
+#  from __future__ import annotations
 from dataclasses import dataclass
 
 from .. import utils
@@ -182,6 +185,21 @@ class FirmwareUpdateData(FirmwareUpdateWithAddress):
                 f"Data cannot be more than"
                 f" {FirmwareUpdateDataField.NUM_BYTES} bytes."
             )
+
+    @classmethod
+    def create(cls, address: int, data: bytes) -> "FirmwareUpdateData":
+        """Create a firmware update data payload."""
+        checksum = 0
+        obj = FirmwareUpdateData(
+            address=utils.UInt32Field(address),
+            num_bytes=utils.UInt8Field(len(data)),
+            reserved=utils.UInt8Field(0),
+            data=FirmwareUpdateDataField(data),
+            checksum=utils.UInt16Field(checksum),
+        )
+        checksum = (1 + ~sum(obj.serialize())) & 0xFFFF
+        obj.checksum.value = checksum
+        return obj
 
 
 @dataclass
