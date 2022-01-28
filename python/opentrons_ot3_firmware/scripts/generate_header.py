@@ -64,7 +64,6 @@ def generate_cpp(output: io.StringIO) -> None:
         write_enum_cpp(ToolType, output)
 
 
-
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
     """Generate enum class from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
@@ -84,7 +83,6 @@ def generate_c(output: io.StringIO) -> None:
     write_enum_c(ErrorCode, output)
     write_enum_cpp(ToolType, output)
     write_arbitration_id_c(output)
-
 
 
 def write_enum_c(e: Type[Enum], output: io.StringIO) -> None:
