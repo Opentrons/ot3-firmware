@@ -57,8 +57,6 @@ class PresenceSensingDriverMessageHandler {
     }
 
     void visit(can_messages::PushToolsDetectedNotification& m) {
-        auto notification =
-            TaskMessage(can_messages::PushToolsDetectedNotification());
         auto tools = presence_sensing_driver::PresenceSensingDriver::get_tool(
             driver.get_readings());
         if (tools.z_motor != driver.getCurrentTools().z_motor ||
