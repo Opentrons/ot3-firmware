@@ -79,7 +79,7 @@ void pipettes_tasks::QueueClient::send_move_group_queue(
 
 void pipettes_tasks::QueueClient::send_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
-    move_status_report_queue->try_write(m);
+    static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
 void pipettes_tasks::QueueClient::send_eeprom_queue(
