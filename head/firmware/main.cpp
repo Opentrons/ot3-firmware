@@ -165,7 +165,12 @@ adc::ADC_interface ADC_intf1 = {
 
 static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
 
-static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
+auto at = presence_sensing_driver::AttachedTool{
+    .z_motor = can_ids::ToolType::UNDEFINED_TOOL,
+    .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
+    .gripper = can_ids::ToolType::UNDEFINED_TOOL};
+
+static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms, at};
 
 auto main() -> int {
     HardwareInit();

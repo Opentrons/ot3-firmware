@@ -82,8 +82,13 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
 
 static auto adc_comms = adc::SimADC{};
 
+auto at = presence_sensing_driver::AttachedTool{
+    .z_motor = can_ids::ToolType::UNDEFINED_TOOL,
+    .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
+    .gripper = can_ids::ToolType::UNDEFINED_TOOL};
+
 static auto presence_sense_driver =
-    presence_sensing_driver::PresenceSensingDriver{adc_comms};
+    presence_sensing_driver::PresenceSensingDriver{adc_comms, at};
 
 int main() {
     head_tasks::start_tasks(canbus, motor_left.motion_controller,

@@ -76,7 +76,9 @@ struct AttachedTool {
 
 class PresenceSensingDriver {
   public:
-    explicit PresenceSensingDriver(adc::BaseADC& adc) : adc_comms(adc) {}
+    explicit PresenceSensingDriver(adc::BaseADC& adc,
+                                   AttachedTool current_tools)
+        : adc_comms(adc), current_tools(current_tools) {}
     auto get_readings() -> adc::MillivoltsReadings {
         auto RawReadings = adc_comms.get_readings();
         auto voltage_read = adc::MillivoltsReadings{
@@ -120,8 +122,17 @@ class PresenceSensingDriver {
         return at;
     }
 
+    auto getCurrentTools() -> AttachedTool { return this->current_tools; }
+
+    void setCurrentTools(AttachedTool tmp) {
+        this->current_tools.z_motor = tmp.z_motor;
+        this->current_tools.a_motor = tmp.a_motor;
+        this->current_tools.gripper = tmp.gripper;
+    }
+
   private:
     adc::BaseADC& adc_comms;
+    AttachedTool current_tools;
 };
 
 }  // namespace presence_sensing_driver

@@ -42,10 +42,6 @@ class PresenceSensingDriverMessageHandler {
         std::visit([this](auto m) { this->visit(m); }, message);
     }
 
-    void push_notification(const TaskMessage& notification) {
-        std::visit([this](auto m) { this->visit(m); }, notification);
-    }
-
   private:
     void visit(std::monostate& m) {}
 
@@ -61,16 +57,21 @@ class PresenceSensingDriverMessageHandler {
     }
 
     void visit(can_messages::PushToolsDetectedNotification& m) {
-        auto at = presence_sensing_driver::PresenceSensingDriver::get_tool(
+        auto notification =
+            TaskMessage(can_messages::PushToolsDetectedNotification());
+        auto tools = presence_sensing_driver::PresenceSensingDriver::get_tool(
             driver.get_readings());
-
-        can_messages::PushToolsDetectedNotification resp{
-            .z_motor = static_cast<uint16_t>(at.z_motor),
-            .a_motor = static_cast<uint16_t>(at.a_motor),
-            .gripper = static_cast<uint16_t>(at.gripper),
-        };
-
-        can_client.send_can_message(can_ids::NodeId::host, resp);
+        if (tools.z_motor != driver.getCurrentTools().z_motor ||
+            tools.a_motor != driver.getCurrentTools().a_motor ||
+            tools.gripper != driver.getCurrentTools().gripper) {
+            can_messages::PushToolsDetectedNotification resp{
+                .z_motor = static_cast<uint16_t>(tools.z_motor),
+                .a_motor = static_cast<uint16_t>(tools.a_motor),
+                .gripper = static_cast<uint16_t>(tools.gripper),
+            };
+            driver.setCurrentTools(tools);
+            can_client.send_can_message(can_ids::NodeId::host, resp);
+        }
     }
 
     presence_sensing_driver::PresenceSensingDriver& driver;
@@ -99,27 +100,16 @@ class PresenceSensingDriverTask {
     [[noreturn]] void operator()(
         presence_sensing_driver::PresenceSensingDriver* driver,
         CanClient* can_client) {
-        auto current_tools =
-            presence_sensing_driver::PresenceSensingDriver::get_tool(
-                driver->get_readings());
         auto handler =
             PresenceSensingDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};
-        auto notification =
-            TaskMessage(can_messages::PushToolsDetectedNotification());
-        auto tools = presence_sensing_driver::PresenceSensingDriver::get_tool(
-            driver->get_readings());
+
         for (;;) {
-            tools = presence_sensing_driver::PresenceSensingDriver::get_tool(
-                driver->get_readings());
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
             }
-            if (tools.z_motor != current_tools.z_motor ||
-                tools.a_motor != current_tools.a_motor ||
-                tools.gripper != current_tools.gripper) {
-                handler.push_notification(notification);
-            }
+            handler.handle_message(
+                TaskMessage(can_messages::PushToolsDetectedNotification()));
         }
     }
 
