@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "bootloader/core/ids.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
@@ -52,6 +54,7 @@ SCENARIO("update data bad checksum error") {
         request.arbitration_id.parts.originating_node_id = can_nodeid_host;
         request.arbitration_id.parts.message_id = can_messageid_fw_update_data;
         request.arbitration_id.parts.padding = 0;
+        std::memset(request.data, 0, sizeof(request.data));
         request.data[0] = 0xDE;
         request.data[1] = 0xAD;
         request.data[2] = 0xBE;
