@@ -186,4 +186,3 @@ macro(add_STM32G4_usb suffix)
                 C_STANDARD_REQUIRED TRUE)
 endmacro()
 set(STM32G4xx_USB_FOUND ${bsp_populated} PARENT_SCOPE)
->>>>>>> e9dcde8227fe92e540765d5926d32629e85cbc0d
