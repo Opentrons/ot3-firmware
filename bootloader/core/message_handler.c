@@ -3,6 +3,7 @@
 #include "bootloader/core/node_id.h"
 #include "bootloader/core/version.h"
 #include "bootloader/core/messages.h"
+#include "bootloader/core/util.h"
 
 
 static HandleMessageReturn handle_device_info_request(const Message* request, Message* response);
@@ -12,10 +13,6 @@ static HandleMessageReturn handle_initiate_fw_update(const Message* request, Mes
 static HandleMessageReturn handle_fw_update_data(const Message* request, Message* response);
 
 static HandleMessageReturn handle_fw_update_complete(const Message* request, Message* response);
-
-static uint8_t * write_uint16(uint8_t * buffer, uint16_t value);
-
-static uint8_t * write_uint32(uint8_t * buffer, uint32_t value);
 
 /**
  * Handle a message
@@ -107,19 +104,4 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
     response->size = p - response->data;
 
     return handle_message_has_response;
-}
-
-
-uint8_t * write_uint16(uint8_t * buffer, uint16_t value) {
-    *(buffer++) = (value >> 8) & 0xFF;
-    *(buffer++) = value & 0xFF;
-    return buffer;
-}
-
-uint8_t * write_uint32(uint8_t * buffer, uint32_t value) {
-    *(buffer++) = (value >> 24) & 0xFF;
-    *(buffer++) = (value >> 16) & 0xFF;
-    *(buffer++) = (value >> 8) & 0xFF;
-    *(buffer++) = value & 0xFF;
-    return buffer;
 }
