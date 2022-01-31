@@ -41,6 +41,8 @@ MessageDefinition = Union[
     defs.FirmwareUpdateDataAcknowledge,
     defs.FirmwareUpdateComplete,
     defs.FirmwareUpdateCompleteAcknowledge,
+    defs.ReadLimitSwitchRequest,
+    defs.ReadLimitSwitchResponse,
 ]
 
 
