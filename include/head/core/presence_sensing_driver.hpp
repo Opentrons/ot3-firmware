@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <concepts>
 
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
