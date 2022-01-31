@@ -8,7 +8,12 @@ SCENARIO("get readings called on presence sensing driver") {
             adc::RawADCReadings{.z_motor = 666, .a_motor = 666, .gripper = 666};
         static auto adc_comms = adc::MockADC{raw_readings};
 
-        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
+        auto at = presence_sensing_driver::AttachedTool{
+            .z_motor = can_ids::ToolType::UNDEFINED_TOOL,
+            .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
+            .gripper = can_ids::ToolType::UNDEFINED_TOOL};
+
+        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms, at);
 
         WHEN("get_readings func is called") {
             auto voltage_readings = ps.get_readings();
@@ -26,7 +31,12 @@ SCENARIO("get_tool called on presence sensing driver") {
             adc::RawADCReadings{.z_motor = 666, .a_motor = 666, .gripper = 666};
         static auto adc_comms = adc::MockADC{raw_readings};
 
-        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
+        auto at = presence_sensing_driver::AttachedTool{
+            .z_motor = can_ids::ToolType::UNDEFINED_TOOL,
+            .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
+            .gripper = can_ids::ToolType::UNDEFINED_TOOL};
+
+        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms, at);
 
         WHEN("get_tool func is called") {
             auto tools = ps.get_tool(ps.get_readings());
