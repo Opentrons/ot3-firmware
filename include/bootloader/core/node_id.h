@@ -11,7 +11,7 @@ extern "C" {
  * not implemented in core lib. Must be implemented in executables.
  * @return Node id.
  */
-NodeId get_node_id(void);
+CANNodeId get_node_id(void);
 
 #ifdef __cplusplus
 }  // extern "C"

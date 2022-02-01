@@ -69,7 +69,7 @@ HandleMessageReturn handle_initiate_fw_update(const Message* request, Message* r
 
 HandleMessageReturn handle_fw_update_data(const Message* request, Message* response) {
     UpdateData data;
-    ErrorCode e = parse_update_data(request->data, request->size, &data);
+    CANErrorCode e = parse_update_data(request->data, request->size, &data);
 
     if (e == can_errorcode_ok) {
         // All is good. Pass on to updater.
@@ -97,7 +97,7 @@ HandleMessageReturn handle_fw_update_data(const Message* request, Message* respo
 
 HandleMessageReturn handle_fw_update_complete(const Message* request, Message* response) {
     UpdateComplete complete;
-    ErrorCode e = parse_update_complete(request->data, request->size, &complete);
+    CANErrorCode e = parse_update_complete(request->data, request->size, &complete);
 
     if (e == can_errorcode_ok) {
         FwUpdateReturn updater_return = fw_update_complete(

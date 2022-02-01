@@ -4,7 +4,7 @@
  * Get the node id this bootloader is installed on
  * @return Node id.
  */
-NodeId get_node_id(void) {
+CANNodeId get_node_id(void) {
 #if defined node_id_pipette
     return can_nodeid_pipette_bootloader;
 #elif defined node_id_head
