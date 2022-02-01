@@ -8,7 +8,7 @@
  * @param result Pointer to UpdateData struct to populate
  * @return result code
  */
-ErrorCode parse_update_data(
+CANErrorCode parse_update_data(
     const uint8_t * buffer,
     uint32_t size,
     UpdateData * result) {
@@ -55,7 +55,7 @@ ErrorCode parse_update_data(
  * @param result Pointer to UpdateComplete struct to populate
  * @return result code
  */
-ErrorCode parse_update_complete(
+CANErrorCode parse_update_complete(
     const uint8_t * buffer,
     uint32_t size,
     UpdateComplete * result) {

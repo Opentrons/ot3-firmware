@@ -8,7 +8,7 @@
 #include "catch2/catch.hpp"
 
 /** Stub out get node id. */
-NodeId get_node_id(void) { return can_nodeid_pipette_bootloader; }
+CANNodeId get_node_id(void) { return can_nodeid_pipette_bootloader; }
 
 /** Stub out get version. */
 uint32_t get_version(void) { return 0xDEADBEEF; }
