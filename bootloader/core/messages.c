@@ -1,43 +1,5 @@
 #include "bootloader/core/messages.h"
-
-/**
- * Extract a uint32 from byte buffer
- * @param buffer pointer to buffer
- * @param result pointer to result
- * @return pointer to position after the uint32
- */
-static const uint8_t * to_uint32(const uint8_t * buffer, uint32_t * result) {
-    *result = 0;
-    *result |= (*buffer++ << 24);
-    *result |= (*buffer++ << 16);
-    *result |= (*buffer++ << 8);
-    *result |= *buffer++;
-    return buffer;
-}
-
-/**
- * Extract a uint16 from byte buffer
- * @param buffer pointer to buffer
- * @param result pointer to result
- * @return pointer to position after the uint16
- */
-static const uint8_t * to_uint16(const uint8_t * buffer, uint16_t * result) {
-    *result = 0;
-    *result |= (*buffer++ << 8);
-    *result |= *buffer++;
-    return buffer;
-}
-
-/**
- * Compute checksum of bytes.
- */
-static uint16_t compute_checksum(const uint8_t * begin, const uint8_t * end) {
-    int32_t computed_checksum = 0;
-    for (; begin < end; begin++) {
-        computed_checksum += *begin;
-    }
-    return (~computed_checksum + 1) & 0xFFFF;
-}
+#include "bootloader/core/util.h"
 
 /**
  * Populate UpdateData fields from buffer.

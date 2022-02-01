@@ -41,8 +41,6 @@ typedef enum {
  */
 HandleMessageReturn handle_message(const Message * request, Message * response);
 
-
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
