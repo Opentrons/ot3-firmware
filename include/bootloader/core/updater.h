@@ -30,10 +30,10 @@ FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t len
 /**
  * Complete the update.
  * @param num_messages how many messages were part of the update.
- * @param crc32 crc32 of the data contents of the update.
+ * @param error_detection crc32/checksum of the data contents of the update.
  * @return Result
  */
-FwUpdateReturn fw_update_complete(uint32_t num_messages, uint32_t crc32);
+FwUpdateReturn fw_update_complete(uint32_t num_messages, uint32_t error_detection);
 
 
 #ifdef __cplusplus
