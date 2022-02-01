@@ -4,14 +4,19 @@
 #include "bootloader/core/version.h"
 #include "bootloader/core/messages.h"
 #include "bootloader/core/util.h"
+#include "bootloader/core/updater.h"
 
 
+/** Handle a device info request message. */
 static HandleMessageReturn handle_device_info_request(const Message* request, Message* response);
 
+/** Handle an initiate firmware update message. */
 static HandleMessageReturn handle_initiate_fw_update(const Message* request, Message* response);
 
+/** Handle a chunk of the firmware update data. */
 static HandleMessageReturn handle_fw_update_data(const Message* request, Message* response);
 
+/** Handle a firwmare ypdate complete message. */
 static HandleMessageReturn handle_fw_update_complete(const Message* request, Message* response);
 
 /**
@@ -57,9 +62,8 @@ HandleMessageReturn handle_device_info_request(const Message* request, Message* 
     return handle_message_has_response;
 }
 
-
 HandleMessageReturn handle_initiate_fw_update(const Message* request, Message* response) {
-
+    fw_update_initialize();
     return handle_message_ok;
 }
 
@@ -68,7 +72,13 @@ HandleMessageReturn handle_fw_update_data(const Message* request, Message* respo
     ErrorCode e = parse_update_data(request->data, request->size, &data);
 
     if (e == can_errorcode_ok) {
-        // All is good. Pass on to flasher.
+        // All is good. Pass on to updater.
+        FwUpdateReturn updater_return = fw_update_data(data.address,
+                                                       data.data,
+                                                       data.num_bytes);
+        if (updater_return != fw_update_ok) {
+            e = can_errorcode_hardware;
+        }
     }
 
     // Build response
@@ -90,7 +100,23 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
     ErrorCode e = parse_update_complete(request->data, request->size, &complete);
 
     if (e == can_errorcode_ok) {
-        e = can_errorcode_invalid_size;
+        FwUpdateReturn updater_return = fw_update_complete(
+            complete.num_messages,
+            // TODO (amit, 2022-02-01) - Provide checksum or crc32.
+            0);
+        switch (updater_return) {
+            case fw_update_error:
+                e = can_errorcode_invalid_size;
+                break;
+            case fw_update_invalid_data:
+                e = can_errorcode_bad_checksum;
+                break;
+            case fw_update_invalid_size:
+                e = can_errorcode_invalid_size;
+                break;
+            default:
+                break;
+        }
     }
 
     // Build response

@@ -94,3 +94,4 @@ class ErrorCode(int, Enum):
     bad_checksum = 0x02
     invalid_byte_count = 0x03
     invalid_input = 0x04
+    hardware = 0x05
