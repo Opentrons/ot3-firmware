@@ -95,7 +95,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_11,
-        .active_setting = GPIO_PIN_SET},
+        .active_setting = GPIO_PIN_RESET},
 };
 
 motor_driver_config::RegisterConfig MotorDriverConfigurations{
