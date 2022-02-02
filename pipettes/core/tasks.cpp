@@ -4,8 +4,9 @@
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
-#include "pipettes/core//can_task.hpp"
+#include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
+#include "can/core/ids.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -31,12 +32,14 @@ void pipettes_tasks::start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
-    motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c) {
+    motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c,
+    can_ids::NodeId id) {
+    queue_client.node_id = id;
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
 
     auto& can_writer = can_task::start_writer(can_bus);
-    can_task::start_reader(can_bus);
+    can_task::start_reader(can_bus, id);
 
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
@@ -59,8 +62,9 @@ void pipettes_tasks::start_tasks(
     queues.eeprom_queue = &eeprom_task.get_queue();
 }
 
-// TODO: Make this decision based on which voltage is on the attach pin
 pipettes_tasks::QueueClient::QueueClient()
+    // This gets overridden in start_tasks, needs to be static here since this is
+    // free-store allocated
     : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
 void pipettes_tasks::QueueClient::send_motion_controller_queue(

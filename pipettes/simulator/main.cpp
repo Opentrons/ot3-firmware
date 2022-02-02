@@ -1,4 +1,5 @@
 #include "FreeRTOS.h"
+#include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
@@ -8,7 +9,11 @@
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/tasks.hpp"
+#include "common/core/logging.hpp"
 #include "task.h"
+
+#include <cstdlib>
+#include <cstring>
 
 static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 
@@ -49,8 +54,26 @@ static motor_class::Motor pipette_motor{
     MotorDriverConfigurations,
     motor_queue};
 
+static auto node_from_env(const char* env) -> can_ids::NodeId {
+    if (!env) {
+        LOG("On left mount by default\n");
+        return can_ids::NodeId::pipette_left;
+    }
+    if (strncmp(env, "left", strlen("left")) == 0) {
+        LOG("On left mount from env var\n");
+        return can_ids::NodeId::pipette_left;
+    } else if (strncmp(env, "right", strlen("right")) == 0) {
+        LOG("On right mount from env var\n");
+        return can_ids::NodeId::pipette_right;
+    } else {
+        LOG("On left mount from invalid env var\n");
+        return can_ids::NodeId::pipette_left;
+    }
+}
+
 int main() {
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms);
+                                pipette_motor.driver, i2c_comms,
+                                node_from_env(std::getenv("MOUNT")));
     vTaskStartScheduler();
 }

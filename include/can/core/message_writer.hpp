@@ -21,6 +21,7 @@ class MessageWriter {
 
     explicit MessageWriter(can_ids::NodeId node_id) : node_id(node_id) {}
 
+
     /**
      * Write a message to the can bus
      *
@@ -44,9 +45,9 @@ class MessageWriter {
     }
 
     void set_queue(QueueType* q) { queue = q; }
+    can_ids::NodeId node_id;
 
   private:
     QueueType* queue{nullptr};
-    can_ids::NodeId node_id;
 };
 }  // namespace can_message_writer

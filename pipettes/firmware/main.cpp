@@ -9,6 +9,7 @@
 
 // clang-format on
 
+#include "can/core/ids.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
@@ -116,7 +117,9 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms);
+                                pipette_motor.driver, i2c_comms,
+                                // TODO: Load from mount interface
+                                can_ids::NodeId::pipette_left);
 
     vTaskStartScheduler();
 }
