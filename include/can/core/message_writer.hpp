@@ -44,9 +44,10 @@ class MessageWriter {
     }
 
     void set_queue(QueueType* q) { queue = q; }
-    can_ids::NodeId node_id;
+    void set_node_id(can_ids::NodeId id) { node_id = id; }
 
   private:
+    can_ids::NodeId node_id;
     QueueType* queue{nullptr};
 };
 }  // namespace can_message_writer
