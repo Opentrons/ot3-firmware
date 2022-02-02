@@ -27,13 +27,13 @@ std::array<Tool, 10> _list{
       .bounds = gripper_bounds},
      {.tool_type = can_ids::ToolType::nothing_attached,
       .tool_carrier = Z_CARRIER,
-      .bounds = nothing_conected_z_bounds},
+      .bounds = nothing_connected_z_bounds},
      {.tool_type = can_ids::ToolType::nothing_attached,
       .tool_carrier = A_CARRIER,
       .bounds = nothing_conected_a_bounds},
      {.tool_type = can_ids::ToolType::nothing_attached,
       .tool_carrier = GRIPPER_CARRIER,
-      .bounds = nothing_conected_gripper_bounds}}};
+      .bounds = nothing_connected_gripper_bounds}}};
 auto ot3_tool_list::get_tool_list() -> const std::array<Tool, 10>& {
     return _list;
 }
