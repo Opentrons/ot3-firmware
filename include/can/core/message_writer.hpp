@@ -21,7 +21,6 @@ class MessageWriter {
 
     explicit MessageWriter(can_ids::NodeId node_id) : node_id(node_id) {}
 
-
     /**
      * Write a message to the can bus
      *

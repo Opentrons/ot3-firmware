@@ -1,8 +1,8 @@
 #include "pipettes/core/can_task.hpp"
 
-#include "can/core/ids.hpp"
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
@@ -100,7 +100,8 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
     poller();
 }
 
-auto static reader_task = can_task::CanMessageReaderTask{can_ids::NodeId::pipette_left};
+auto static reader_task =
+    can_task::CanMessageReaderTask{can_ids::NodeId::pipette_left};
 auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
 auto static reader_task_control =

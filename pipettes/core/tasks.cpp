@@ -1,12 +1,12 @@
 #include "pipettes/core/tasks.hpp"
 
+#include "can/core/ids.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
-#include "can/core/ids.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -63,8 +63,8 @@ void pipettes_tasks::start_tasks(
 }
 
 pipettes_tasks::QueueClient::QueueClient()
-    // This gets overridden in start_tasks, needs to be static here since this is
-    // free-store allocated
+    // This gets overridden in start_tasks, needs to be static here since this
+    // is free-store allocated
     : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
 void pipettes_tasks::QueueClient::send_motion_controller_queue(

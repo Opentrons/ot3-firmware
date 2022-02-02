@@ -1,19 +1,19 @@
+#include <cstdlib>
+#include <cstring>
+
 #include "FreeRTOS.h"
 #include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/core/logging.hpp"
 #include "common/simulation/eeprom.hpp"
 #include "common/simulation/spi.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "common/core/logging.hpp"
 #include "task.h"
-
-#include <cstdlib>
-#include <cstring>
 
 static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 
