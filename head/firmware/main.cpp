@@ -37,8 +37,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
 
-// timer function callback for notifier
-
 /**
  * @brief SPI MSP Initialization
  * This function configures SPI for the Z/A axis motors
