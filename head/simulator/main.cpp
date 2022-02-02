@@ -82,7 +82,7 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
 
 static auto adc_comms = adc::SimADC{};
 
-auto at = presence_sensing_driver::AttachedTool{
+auto at = ot3_tool_list::AttachedTool{
     .z_motor = can_ids::ToolType::UNDEFINED_TOOL,
     .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
     .gripper = can_ids::ToolType::UNDEFINED_TOOL};
