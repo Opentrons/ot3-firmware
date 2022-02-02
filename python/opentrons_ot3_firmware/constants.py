@@ -78,7 +78,8 @@ class MessageId(int, Enum):
     read_presence_sensing_voltage_request = 0x600
     read_presence_sensing_voltage_response = 0x601
 
-    tools_detected_notification = 0x700
+    attached_tools_request = 0x700
+    tools_detected_notification = 0x701
 
     fw_update_initiate = 0x60
     fw_update_data = 0x61
@@ -102,9 +103,10 @@ class ErrorCode(int, Enum):
 class ToolType(int, Enum):
     """Tool types detected on Head."""
 
-    UNDEFINED_TOOL = (0x00,)
-    PIPETTE96CHAN = (0x01,)
-    PIPETTE384CHAN = (0x02,)
-    PIPETTESINGLE = (0x03,)
-    PIPETTEMULTI = (0x04,)
-    GRIPPER = (0x07,)
+    undefined_tool = 0x00
+    pipette_96_chan = 0x01
+    pipette_384_chan = 0x02
+    pipette_single_chan = 0x03
+    pipette_multi_chan = 0x04
+    gripper = 0x05
+    nothing_attached = 0x06

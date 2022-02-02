@@ -245,6 +245,15 @@ class PushToolsDetectedNotification:  # noqa: D101
 
 
 @dataclass
+class AttachedToolsRequest:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[
+        MessageId.attached_tools_request
+    ] = MessageId.attached_tools_request
+
+
+@dataclass
 class FirmwareUpdateInitiate:  # noqa: D101
     payload: payloads.EmptyPayload
     payload_type: Type[BinarySerializable] = payloads.EmptyPayload

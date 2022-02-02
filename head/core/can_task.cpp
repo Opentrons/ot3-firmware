@@ -39,7 +39,8 @@ using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
 using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
     presence_sensing_message_handler::PresenceSensingHandler<
         head_tasks::HeadQueueClient>,
-    can_messages::ReadPresenceSensingVoltageRequest>;
+    can_messages::ReadPresenceSensingVoltageRequest,
+    can_messages::AttachedToolsRequest>;
 
 /** The parsed message handler */
 static auto presence_sensing_handler =

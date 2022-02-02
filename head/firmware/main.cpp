@@ -16,10 +16,12 @@
 #include "stm32g4xx_hal_conf.h"
 #pragma GCC diagnostic pop
 #include "can/firmware/hal_can_bus.hpp"
+#include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/spi_comms.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
+#include "head/core/tool_list.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
@@ -34,6 +36,8 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
+
+// timer function callback for notifier
 
 /**
  * @brief SPI MSP Initialization
@@ -165,10 +169,7 @@ adc::ADC_interface ADC_intf1 = {
 
 static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
 
-auto at = presence_sensing_driver::AttachedTool{
-    .z_motor = can_ids::ToolType::UNDEFINED_TOOL,
-    .a_motor = can_ids::ToolType::UNDEFINED_TOOL,
-    .gripper = can_ids::ToolType::UNDEFINED_TOOL};
+auto at = ot3_tool_list::AttachedTool{};
 
 static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms, at};
 
@@ -190,6 +191,15 @@ auto main() -> int {
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
                             motor_right.driver, psd);
+    static auto timer_for_notifier =
+        freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(100)>(
+            "timer for notifier",
+            ([ObjectPtr =
+                  head_tasks::get_tasks().presence_sensing_driver_task] {
+                ObjectPtr->notifier_callback();
+            }));
+
+    timer_for_notifier.start();
 
     vTaskStartScheduler();
 }
