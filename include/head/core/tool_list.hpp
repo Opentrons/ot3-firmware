@@ -31,7 +31,7 @@ constexpr auto pipette_single_chan_a_bounds =
 constexpr auto pipette_multiple_chan_a_bounds =
     ToolCheckBounds{.upper = 2860, .lower = 2844};
 
-constexpr auto nothing_conected_z_bounds =
+constexpr auto nothing_connected_z_bounds =
     ToolCheckBounds{.upper = 3, .lower = 1};
 
 constexpr auto nothing_conected_a_bounds =
