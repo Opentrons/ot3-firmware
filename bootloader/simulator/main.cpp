@@ -7,7 +7,7 @@
 #include "task.h"
 #include "bootloader/core/version.h"
 #include "bootloader/core/node_id.h"
-
+#include "can/core/ids.hpp"
 
 /** The simulator's bootloader */
 CANNodeId get_node_id(void) {
@@ -61,6 +61,7 @@ void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
 }
 
 int main() {
+    canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);
 
     vTaskStartScheduler();
