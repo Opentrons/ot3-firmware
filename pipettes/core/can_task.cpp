@@ -92,7 +92,8 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
-    can_bus->setup_node_id_filter(can_ids::NodeId::pipette);
+    can_bus->setup_node_id_filter(can_ids::NodeId::pipette_left);
+
     auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, dispatcher);
     poller();

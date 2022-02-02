@@ -59,8 +59,9 @@ void pipettes_tasks::start_tasks(
     queues.eeprom_queue = &eeprom_task.get_queue();
 }
 
+// TODO: Make this decision based on which voltage is on the attach pin
 pipettes_tasks::QueueClient::QueueClient()
-    : can_message_writer::MessageWriter{can_ids::NodeId::pipette} {}
+    : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
 void pipettes_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

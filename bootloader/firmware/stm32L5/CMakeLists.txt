@@ -95,7 +95,7 @@ add_executable(bootloader-pipettes
         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
         ${BOOTLOADER_L5_FW_NON_LINTABLE_SRCS})
 
-target_compile_definitions(bootloader-pipettes PUBLIC node_id_pipette)
+target_compile_definitions(bootloader-pipettes PUBLIC node_id_pipette_left)
 
 target_stm32L5(bootloader-pipettes)
 

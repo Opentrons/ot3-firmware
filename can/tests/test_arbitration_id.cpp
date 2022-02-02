@@ -49,8 +49,8 @@ SCENARIO("Arbitration ID") {
             subject.message_id(MessageId::get_move_group_request);
             subject.originating_node_id(NodeId::broadcast);
             subject.originating_node_id(NodeId::gantry_x);
-            subject.originating_node_id(NodeId::pipette);
-            subject.node_id(NodeId::pipette);
+            subject.originating_node_id(NodeId::pipette_right);
+            subject.node_id(NodeId::pipette_left);
             subject.node_id(NodeId::gantry_x);
             subject.node_id(NodeId::broadcast);
 
@@ -58,7 +58,7 @@ SCENARIO("Arbitration ID") {
                 REQUIRE(subject.message_id() ==
                         MessageId::get_move_group_request);
                 REQUIRE(subject.node_id() == NodeId::broadcast);
-                REQUIRE(subject.originating_node_id() == NodeId::pipette);
+                REQUIRE(subject.originating_node_id() == NodeId::pipette_right);
             }
         }
     }
