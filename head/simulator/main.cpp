@@ -2,6 +2,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "common/simulation/adc.hpp"
 #include "common/simulation/spi.hpp"
+#include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
