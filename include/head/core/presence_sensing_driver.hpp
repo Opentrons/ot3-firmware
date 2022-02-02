@@ -33,11 +33,11 @@ class PresenceSensingDriver {
                                       adc::ADC_FULLSCALE_OUTPUT)};
         return voltage_read;
     }
-    auto getCurrentTools() -> ot3_tool_list::AttachedTool {
+    auto get_current_tools() -> ot3_tool_list::AttachedTool {
         return this->current_tools;
     }
 
-    void setCurrentTools(ot3_tool_list::AttachedTool tmp) {
+    void set_current_tools(ot3_tool_list::AttachedTool tmp) {
         this->current_tools.z_motor = tmp.z_motor;
         this->current_tools.a_motor = tmp.a_motor;
         this->current_tools.gripper = tmp.gripper;

@@ -16,8 +16,7 @@ namespace presence_sensing_driver_task {
 using TaskMessage =
     std::variant<std::monostate,
                  can_messages::ReadPresenceSensingVoltageRequest,
-                 can_messages::AttachedToolsRequest,
-                 can_messages::PushToolsDetectedNotification>;
+                 can_messages::AttachedToolsRequest>;
 
 /**
  * The handler of Presence Sensing messages
@@ -61,30 +60,15 @@ class PresenceSensingDriverMessageHandler {
 
     void visit(can_messages::AttachedToolsRequest& m) {
         auto tools = AttachedTool(driver.get_readings(), get_tool_list());
-        if (tools.z_motor != driver.getCurrentTools().z_motor ||
-            tools.a_motor != driver.getCurrentTools().a_motor ||
-            tools.gripper != driver.getCurrentTools().gripper) {
+        if (tools.z_motor != driver.get_current_tools().z_motor ||
+            tools.a_motor != driver.get_current_tools().a_motor ||
+            tools.gripper != driver.get_current_tools().gripper) {
             can_messages::PushToolsDetectedNotification resp{
                 .z_motor = (tools.z_motor),
                 .a_motor = (tools.a_motor),
                 .gripper = (tools.gripper),
             };
-            driver.setCurrentTools(tools);
-            can_client.send_can_message(can_ids::NodeId::host, resp);
-        }
-    }
-
-    void visit(can_messages::PushToolsDetectedNotification& m) {
-        auto tools = AttachedTool(driver.get_readings(), get_tool_list());
-        if (tools.z_motor != driver.getCurrentTools().z_motor ||
-            tools.a_motor != driver.getCurrentTools().a_motor ||
-            tools.gripper != driver.getCurrentTools().gripper) {
-            can_messages::PushToolsDetectedNotification resp{
-                .z_motor = (tools.z_motor),
-                .a_motor = (tools.a_motor),
-                .gripper = (tools.gripper),
-            };
-            driver.setCurrentTools(tools);
+            driver.set_current_tools(tools);
             can_client.send_can_message(can_ids::NodeId::host, resp);
         }
     }
@@ -130,7 +114,7 @@ class PresenceSensingDriverTask {
 
     void notifier_callback() {
         this->queue.try_write(
-            TaskMessage(can_messages::PushToolsDetectedNotification()));
+            TaskMessage(can_messages::AttachedToolsRequest()));
     }
 
   private:
