@@ -87,6 +87,7 @@ class MessageId(int, Enum):
     limit_sw_request = 0x08
     limit_sw_response = 0x09
 
+
 @unique
 class ErrorCode(int, Enum):
     """Common error codes."""

@@ -2,9 +2,18 @@
 
 #include "FreeRTOS.h"
 #include "bootloader/core/message_handler.h"
+#include "bootloader/core/node_id.h"
+#include "bootloader/core/version.h"
+#include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.hpp"
 #include "task.h"
+
+/** The simulator's bootloader */
+CANNodeId get_node_id(void) { return can_nodeid_pipette_bootloader; }
+
+/** The simulator's version */
+uint32_t get_version(void) { return 0xDEADBEEF; }
 
 /**
  * The CAN bus.
@@ -25,8 +34,9 @@ void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
 
     message.arbitration_id.id = identifier;
     message.size = length;
-    ::memcpy(message.data, data,
-             std::min(static_cast<std::size_t>(length), sizeof(message.data)));
+    std::memcpy(
+        message.data, data,
+        std::min(static_cast<std::size_t>(length), sizeof(message.data)));
 
     auto handle_message_return = handle_message(&message, &response);
     switch (handle_message_return) {
@@ -48,6 +58,7 @@ void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
 }
 
 int main() {
+    canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);
 
     vTaskStartScheduler();

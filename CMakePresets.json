@@ -134,6 +134,22 @@
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": ["bootloader-pipettes"]
+    },
+    {
+      "name": "simulators",
+      "displayName": "simulators",
+      "description": "build the simulators",
+      "configurePreset": "host",
+      "jobs": 4,
+      "targets": ["bootloader-simulator","head-simulator", "gantry-x-simulator", "gantry-y-simulator", "pipettes-simulator"]
+    },
+    {
+      "name": "simulators-gcc10",
+      "displayName": "simulators gcc10",
+      "description": "build the simulators using gcc10 (osx)",
+      "configurePreset": "host-gcc10",
+      "jobs": 4,
+      "targets": ["bootloader-simulator","head-simulator", "gantry-x-simulator", "gantry-y-simulator", "pipettes-simulator"]
     }
   ]
 }
