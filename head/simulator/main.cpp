@@ -7,7 +7,7 @@
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
-#include "presence-sensing/core/presence_sensing_driver.hpp"
+#include "head/core/presence_sensing_driver.hpp"
 #include "task.h"
 
 /**
