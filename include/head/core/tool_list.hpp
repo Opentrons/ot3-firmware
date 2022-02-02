@@ -38,7 +38,7 @@ constexpr auto nothing_conected_a_bounds =
     ToolCheckBounds{.upper = 54, .lower = 16};
 
 // revisit these, not sure if EE has a calculation for gripper carrier bounds
-constexpr auto nothing_conected_gripper_bounds =
+constexpr auto nothing_connected_gripper_bounds =
     ToolCheckBounds{.upper = 54, .lower = 16};
 
 constexpr auto gripper_bounds = ToolCheckBounds{.upper = 999, .lower = 536};
