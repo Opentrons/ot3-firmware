@@ -31,6 +31,16 @@ constexpr auto pipette_single_chan_a_bounds =
 constexpr auto pipette_multiple_chan_a_bounds =
     ToolCheckBounds{.upper = 2860, .lower = 2844};
 
+constexpr auto nothing_conected_z_bounds =
+    ToolCheckBounds{.upper = 3, .lower = 1};
+
+constexpr auto nothing_conected_a_bounds =
+    ToolCheckBounds{.upper = 54, .lower = 16};
+
+// revisit these, not sure if EE has a calculation for gripper carrier bounds
+constexpr auto nothing_conected_gripper_bounds =
+    ToolCheckBounds{.upper = 54, .lower = 16};
+
 constexpr auto gripper_bounds = ToolCheckBounds{.upper = 999, .lower = 536};
 
 constexpr auto undefined_bounds = ToolCheckBounds{.upper = 0, .lower = 0};
@@ -52,7 +62,7 @@ struct Tool {
     }
 };
 
-auto get_tool_list() -> const std::array<Tool, 8>&;
+auto get_tool_list() -> const std::array<Tool, 10>&;
 struct AttachedTool {
     ToolType z_motor{};
     ToolType a_motor{};
@@ -62,7 +72,7 @@ struct AttachedTool {
           a_motor(can_ids::ToolType::undefined_tool),
           gripper(can_ids::ToolType::undefined_tool) {}
     AttachedTool(adc::MillivoltsReadings reading,
-                 const std::array<Tool, 8>& arr) {
+                 const std::array<Tool, 10>& arr) {
         for (const auto& element : arr) {
             if (element.within_bounds(reading.z_motor) &&
                 (element.tool_carrier == Z_CARRIER)) {
