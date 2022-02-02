@@ -12,6 +12,7 @@ add_executable(
         test_voltage_conversion.cpp       
 )
 
+
 target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(head
         PROPERTIES
@@ -28,6 +29,9 @@ target_compile_options(head
         -Wextra-semi
         -Wctor-dtor-privacy
         -fno-rtti)
+
+target_head_core_tool_list(head)
+
 target_link_libraries(head Catch2::Catch2 common-simulation)
 
 catch_discover_tests(head)
