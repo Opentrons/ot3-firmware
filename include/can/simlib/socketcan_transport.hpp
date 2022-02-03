@@ -59,7 +59,7 @@ auto SocketCanTransport<CriticalSection>::open() -> bool {
         return false;
     }
 
-    strcpy(ifr.ifr_name, address);
+    strcpy(ifr.ifr_name, address.c_str());
     ioctl(s, SIOCGIFINDEX, &ifr);
 
     addr.can_family = AF_CAN;
