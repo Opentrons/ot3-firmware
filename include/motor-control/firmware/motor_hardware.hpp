@@ -38,7 +38,7 @@ class MotorHardware : public MotorHardwareIface {
     void deactivate_motor() final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
-    bool check_limit_switch() final;
+    auto check_limit_switch() -> bool final;
     void set_LED(bool status) final;
 
   private:
