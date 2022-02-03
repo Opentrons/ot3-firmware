@@ -33,8 +33,8 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
         Error_Handler();
     }
 
-    ArbitrationId arb_mask;
-    ArbitrationId arb_filter;
+    CANArbitrationId arb_mask;
+    CANArbitrationId arb_filter;
 
     FDCAN_FilterTypeDef filter_def = {
         .IdType = FDCAN_EXTENDED_ID,
