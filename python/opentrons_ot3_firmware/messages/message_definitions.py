@@ -278,6 +278,7 @@ class ReadLimitSwitchRequest:  # noqa: D101
     payload_type: Type[BinarySerializable] = payloads.EmptyPayload
     message_id: Literal[MessageId.limit_sw_request] = MessageId.limit_sw_request
 
+
 @dataclass
 class ReadLimitSwitchResponse:  # noqa: D101
     payload: payloads.GetLimitSwitchResponse
