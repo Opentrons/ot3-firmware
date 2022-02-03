@@ -8,13 +8,15 @@ class NodeId(int, Enum):
 
     broadcast = 0x00
     host = 0x10
-    pipette = 0x20
+    pipette_left = 0x60
+    pipette_right = 0x70
     gantry_x = 0x30
     gantry_y = 0x40
     head = 0x50
     head_l = 0x51
     head_r = 0x52
-    pipette_bootloader = pipette | 0xF
+    pipette_left_bootloader = pipette_left | 0xF
+    pipette_right_bootloader = pipette_right | 0xF
     gantry_x_bootloader = gantry_x | 0xF
     gantry_y_bootloader = gantry_y | 0xF
     head_bootloader = head | 0xF
@@ -87,6 +89,7 @@ class MessageId(int, Enum):
     limit_sw_request = 0x08
     limit_sw_response = 0x09
 
+
 @unique
 class ErrorCode(int, Enum):
     """Common error codes."""
@@ -96,3 +99,4 @@ class ErrorCode(int, Enum):
     bad_checksum = 0x02
     invalid_byte_count = 0x03
     invalid_input = 0x04
+    hardware = 0x05

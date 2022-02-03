@@ -13,15 +13,15 @@ extern "C" {
  * Arbitration ID type.
  */
 typedef union {
-    ArbitrationIdParts parts;
+    CANArbitrationIdParts parts;
     uint32_t id;
-} ArbitrationId;
+} CANArbitrationId;
 
 /**
  * Message definition.
  */
 typedef struct {
-    ArbitrationId arbitration_id;
+    CANArbitrationId arbitration_id;
     uint8_t size;
     uint8_t data[64];
 } Message;
@@ -40,8 +40,6 @@ typedef enum {
  * @return Return code
  */
 HandleMessageReturn handle_message(const Message * request, Message * response);
-
-
 
 #ifdef __cplusplus
 }  // extern "C"
