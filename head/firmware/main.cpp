@@ -14,6 +14,7 @@
 #include "motor_hardware.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
+#include "utility_hardware.h"
 #pragma GCC diagnostic pop
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
@@ -76,6 +77,14 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
         .port = GPIOC,
         .pin = GPIO_PIN_4,
         .active_setting = GPIO_PIN_SET},
+    .limit_switch = {
+        .port = GPIOB,
+        .pin = GPIO_PIN_7,
+        .active_setting = GPIO_PIN_SET},
+    .led = {
+        .port = GPIOB,
+        .pin = GPIO_PIN_6,
+        .active_setting = GPIO_PIN_RESET},
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_right {
@@ -96,6 +105,15 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         .port = GPIOB,
         .pin = GPIO_PIN_11,
         .active_setting = GPIO_PIN_SET},
+    .limit_switch = {
+        .port = GPIOB,
+        .pin = GPIO_PIN_9,
+        .active_setting = GPIO_PIN_SET},
+    .led = {
+        .port = GPIOB,
+        .pin = GPIO_PIN_6,
+        .active_setting = GPIO_PIN_RESET},
+
 };
 
 motor_driver_config::RegisterConfig MotorDriverConfigurations{
@@ -180,11 +198,17 @@ auto main() -> int {
         Error_Handler();
     }
 
+    utility_gpio_init();
+
     can_start();
 
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
                             motor_right.driver, psd);
 
+
     vTaskStartScheduler();
+
+
+
 }

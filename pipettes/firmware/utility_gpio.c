@@ -35,22 +35,6 @@ void LED_drive_gpio_init() {
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
-void turn_on_LED_pin() {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
-}
-
-void turn_off_LED_pin() {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
-}
-
-void check_limit_switch() {
-    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2)) {
-        turn_on_LED_pin();
-    } else {
-        turn_off_LED_pin();
-    }
-}
-
 void utility_gpio_init() {
     limit_switch_gpio_init();
     LED_drive_gpio_init();

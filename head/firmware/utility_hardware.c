@@ -1,4 +1,6 @@
-#include "head/core/za_gpio_constants.h"
+#include "utility_hardware.h"
+#include "platform_specific_hal_conf.h"
+
 
 /**
  * @brief LED Driver GPIO Initialization Function
@@ -14,7 +16,7 @@ void LED_drive_gpio_init() {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
@@ -34,32 +36,6 @@ void limit_switch_gpio_init() {
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-}
-
-void turn_on_LED_pin() {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-}
-
-void turn_off_LED_pin() {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-}
-
-void check_limit_switch(MountType mount) {
-    if (mount == left || mount == both) {
-        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_7)) {
-            turn_on_LED_pin(mount);
-        } else {
-            turn_off_LED_pin(mount);
-        }
-    }
-    if (mount == right || mount == both) {
-        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)) {
-            turn_on_LED_pin(mount);
-        } else {
-            turn_off_LED_pin(mount);
-        }
-
-    }
 }
 
 void utility_gpio_init() {

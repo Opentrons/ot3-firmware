@@ -53,6 +53,16 @@ struct motion_controller::HardwareConfig motor_pins_x {
         .port = GPIOA,
         .pin = GPIO_PIN_9,
         .active_setting = GPIO_PIN_SET},
+    .limit_switch = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_2,
+        .active_setting = GPIO_PIN_SET},
+    .led = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOB,
+        .pin = GPIO_PIN_11,
+        .active_setting = GPIO_PIN_RESET},
 };
 
 struct motion_controller::HardwareConfig motor_pins_y {
@@ -73,6 +83,16 @@ struct motion_controller::HardwareConfig motor_pins_y {
         .port = GPIOA,
         .pin = GPIO_PIN_9,
         .active_setting = GPIO_PIN_SET},
+    .limit_switch = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_2,
+        .active_setting = GPIO_PIN_SET},
+    .led = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOB,
+        .pin = GPIO_PIN_11,
+        .active_setting = GPIO_PIN_RESET},
 };
 
 /**

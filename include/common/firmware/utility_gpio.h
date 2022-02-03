@@ -8,9 +8,6 @@ extern "C" {
 
 void limit_switch_gpio_init();
 void LED_drive_gpio_init();
-void turn_on_LED_pin();
-void turn_off_LED_pin();
-void check_limit_switch();
 void utility_gpio_init();
 
 #ifdef __cplusplus
