@@ -10,7 +10,7 @@
 #include "task.h"
 
 /** The simulator's bootloader */
-CANNodeId get_node_id(void) { return can_nodeid_pipette_bootloader; }
+CANNodeId get_node_id(void) { return can_nodeid_pipette_left_bootloader; }
 
 /** The simulator's version */
 uint32_t get_version(void) { return 0xDEADBEEF; }

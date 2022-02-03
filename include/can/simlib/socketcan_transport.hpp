@@ -20,14 +20,14 @@ namespace socketcan_transport {
 template <synchronization::LockableProtocol CriticalSection>
 class SocketCanTransport : public can_transport::BusTransportBase {
   public:
-    SocketCanTransport(){};
+    explicit SocketCanTransport(const char *address) : address{address} {}
     ~SocketCanTransport() { close(); };
     SocketCanTransport(const SocketCanTransport &) = delete;
     SocketCanTransport(const SocketCanTransport &&) = delete;
     SocketCanTransport &operator=(const SocketCanTransport &) = delete;
     SocketCanTransport &&operator=(const SocketCanTransport &&) = delete;
 
-    auto open(const char *address) -> bool;
+    auto open() -> bool;
     void close();
 
     auto write(uint32_t arb_id, const uint8_t *cbuff, uint32_t buff_len)
@@ -36,15 +36,18 @@ class SocketCanTransport : public can_transport::BusTransportBase {
 
   private:
     int handle{0};
+    std::string address;
     CriticalSection critical_section{};
 };
 
 template <synchronization::LockableProtocol CriticalSection>
-auto SocketCanTransport<CriticalSection>::open(const char *address) -> bool {
+auto SocketCanTransport<CriticalSection>::open() -> bool {
     struct sockaddr_can addr;
     struct ifreq ifr;
     int s = 0;
     constexpr int use_canfd = 1;
+
+    LOG("Trying to connect to %s\n", address.c_str());
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) == -1) {
         return false;
@@ -65,7 +68,7 @@ auto SocketCanTransport<CriticalSection>::open(const char *address) -> bool {
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
-    LOG("Connected to %s\n", address);
+    LOG("Connected to %s\n", address.c_str());
     handle = s;
     return true;
 }
