@@ -104,16 +104,18 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOC,
             .pin = GPIO_PIN_6,
             .active_setting = GPIO_PIN_SET},
-    .enable = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_11,
-        .active_setting = GPIO_PIN_RESET},
-    .limit_switch = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_9,
-        .active_setting = GPIO_PIN_SET},
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_11,
+            .active_setting = GPIO_PIN_RESET},
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_9,
+            .active_setting = GPIO_PIN_SET},
     .led = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,

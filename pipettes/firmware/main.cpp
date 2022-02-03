@@ -61,8 +61,9 @@ struct motion_controller::HardwareConfig plunger_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_SET},
-    .limit_switch = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
