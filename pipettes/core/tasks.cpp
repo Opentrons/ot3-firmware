@@ -34,7 +34,7 @@ void pipettes_tasks::start_tasks(
         motion_controller,
     motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c,
     can_ids::NodeId id) {
-    queue_client.node_id = id;
+    queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
 
