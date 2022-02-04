@@ -4,6 +4,8 @@
 #include "can/firmware/utils.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
+#include "common/firmware/clocking.h"
+#include "bootloader/firmware/system.h"
 
 /**
  * The CAN handle.
@@ -83,6 +85,9 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
 
 
 int main() {
+    HardwareInit();
+    RCC_Peripheral_Clock_Select();
+
     initialize_can(&hcan1);
 
     tx_header.IdType = FDCAN_EXTENDED_ID;
