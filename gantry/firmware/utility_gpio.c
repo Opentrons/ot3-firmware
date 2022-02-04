@@ -30,22 +30,11 @@ void LED_drive_gpio_init(void) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_11;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
-
-void turn_off_LED_pin(void) {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-}
-
-void turn_on_LED_pin(void) {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-}
-
 void utility_gpio_init(void) {
     limit_switch_gpio_init();
     LED_drive_gpio_init();
-
-    turn_off_LED_pin();
 }

@@ -115,7 +115,7 @@
       "name": "tests",
       "displayName": "tests",
       "description": "build and run all tests",
-      "configurePreset": "host-gcc10",
+      "configurePreset": "host",
       "jobs": 4,
       "targets": ["build-and-test"]
     },

@@ -14,6 +14,7 @@
 #include "motor_hardware.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
+#include "utility_hardware.h"
 #pragma GCC diagnostic pop
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/firmware/clocking.h"
@@ -71,11 +72,23 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .port = GPIOC,
             .pin = GPIO_PIN_0,
             .active_setting = GPIO_PIN_SET},
-    .enable = {
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_4,
+            .active_setting = GPIO_PIN_SET},
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_7,
+            .active_setting = GPIO_PIN_SET},
+    .led = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_SET},
+        .port = GPIOB,
+        .pin = GPIO_PIN_6,
+        .active_setting = GPIO_PIN_RESET},
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_right {
@@ -91,10 +104,22 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOC,
             .pin = GPIO_PIN_6,
             .active_setting = GPIO_PIN_SET},
-    .enable = {
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_11,
+            .active_setting = GPIO_PIN_RESET},
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_9,
+            .active_setting = GPIO_PIN_SET},
+    .led = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
-        .pin = GPIO_PIN_11,
+        .pin = GPIO_PIN_6,
         .active_setting = GPIO_PIN_RESET},
 };
 
@@ -179,6 +204,8 @@ auto main() -> int {
     if (initialize_spi(&hspi3) != HAL_OK) {
         Error_Handler();
     }
+
+    utility_gpio_init();
 
     can_start();
 

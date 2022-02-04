@@ -55,11 +55,23 @@ struct motion_controller::HardwareConfig plunger_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_SET},
-    .enable = {
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_SET},
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_2,
+            .active_setting = GPIO_PIN_SET},
+    .led = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
+        .port = GPIOA,
         .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_SET},
+        .active_setting = GPIO_PIN_RESET},
 };
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
