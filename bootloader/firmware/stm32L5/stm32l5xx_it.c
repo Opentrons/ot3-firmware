@@ -147,4 +147,10 @@ void TIM7_IRQHandler(void) {  }
  * @}
  */
 
+/** Interrupt handlers that are typically routed to FreeRTOS. No FreeRTOS on Bootloader. */
+void SVC_Handler(void) {}
+void PendSV_Handler(void) {}
+void SysTick_Handler(void) {}
+
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
