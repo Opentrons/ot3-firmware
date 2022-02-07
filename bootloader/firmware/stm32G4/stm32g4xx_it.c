@@ -57,6 +57,7 @@ DMA_HandleTypeDef hdma_spi1_rx;
  */
 void NMI_Handler(void) {}
 
+
 /**
  * @brief  This function handles Hard Fault exception.
  * @param  None
@@ -143,5 +144,11 @@ void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
  * @brief This function handles TIM7 global interrupt.
  */
 //void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
+
+/** Interrupt handlers that are typically routed to FreeRTOS. No FreeRTOS on Bootloader. */
+void SVC_Handler(void) {}
+void PendSV_Handler(void) {}
+void SysTick_Handler(void) {}
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
