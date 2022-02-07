@@ -57,21 +57,23 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     filter_def.FilterIndex = 0;
     filter_def.FilterType = filter_type_to_hal(mask),
     filter_def.FilterConfig = filter_config_to_hal(to_fifo0),
-    filter_def.FilterID1 = arb_mask.id,
-    filter_def.FilterID2 = arb_filter.id;
+    filter_def.FilterID1 = arb_filter.id,
+    filter_def.FilterID2 = arb_mask.id;
     HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
 
-    // Create filter to accept broadcast messages
+    // Create filter to accept broadcast DeviceInfoRequest messages
     arb_mask.id = 0;
     arb_mask.parts.node_id = -1;
+    arb_mask.parts.message_id = -1;
     arb_filter.id = 0;
     arb_filter.parts.node_id = can_nodeid_broadcast;
+    arb_filter.parts.message_id = can_messageid_device_info_request;
 
     filter_def.FilterIndex = 1;
     filter_def.FilterType = filter_type_to_hal(mask),
     filter_def.FilterConfig = filter_config_to_hal(to_fifo0),
-    filter_def.FilterID1 = arb_mask.id,
-    filter_def.FilterID2 = arb_filter.id;
+    filter_def.FilterID1 = arb_filter.id,
+    filter_def.FilterID2 = arb_mask.id;
     HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
 
     // Reject everything else
