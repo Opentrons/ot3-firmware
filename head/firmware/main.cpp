@@ -173,9 +173,9 @@ static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms, at};
 
 auto timer_for_notifier = freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(100)>(
     "timer for notifier", ([] {
-        auto presence_sensing_task =
+        auto* presence_sensing_task =
             head_tasks::get_tasks().presence_sensing_driver_task;
-        if (presence_sensing_task) {
+        if (presence_sensing_task != nullptr) {
             presence_sensing_task->notifier_callback();
         }
     }));
