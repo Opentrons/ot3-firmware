@@ -171,12 +171,15 @@ auto at = ot3_tool_list::AttachedTool{};
 
 static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms, at};
 
-static auto timer_for_notifier =
-    freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(5000)>(
-        "timer for notifier",
-        ([ObjectPtr = head_tasks::get_tasks().presence_sensing_driver_task] {
-            ObjectPtr->notifier_callback();
-        }));
+auto timer_for_notifier = freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(100)>(
+    "timer for notifier", ([] {
+        auto presence_sensing_task =
+            head_tasks::get_tasks().presence_sensing_driver_task;
+        if (presence_sensing_task) {
+            presence_sensing_task->notifier_callback();
+        }
+    }));
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();

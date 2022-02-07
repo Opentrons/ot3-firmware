@@ -113,8 +113,8 @@ class PresenceSensingDriverTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
     void notifier_callback() {
-        this->queue.try_write(
-            TaskMessage(can_messages::AttachedToolsRequest()));
+        auto msg = TaskMessage(can_messages::AttachedToolsRequest());
+        this->queue.try_write(msg);
     }
 
   private:
