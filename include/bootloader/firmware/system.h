@@ -1,6 +1,6 @@
-#ifndef OT3FIRMWARE_SYSTEM_H
-#define OT3FIRMWARE_SYSTEM_H
+#pragma once
 
+/**
+ * Initialize hardware and clocks. Defined in system_stmXXXX.c.
+ */
 void HardwareInit(void);
-
-#endif  // OT3FIRMWARE_SYSTEM_H
