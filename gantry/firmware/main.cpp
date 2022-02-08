@@ -16,6 +16,7 @@
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "common/firmware/clocking.h"
 #include "common/firmware/utility_gpio.h"
+
 #pragma GCC diagnostic pop
 
 auto main() -> int {

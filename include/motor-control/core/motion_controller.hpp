@@ -57,6 +57,8 @@ class MotionController {
 
     void stop() { hardware.stop_timer_interrupt(); }
 
+    auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
+
     void enable_motor() {
         hardware.start_timer_interrupt();
         hardware.activate_motor();

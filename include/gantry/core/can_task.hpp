@@ -28,7 +28,8 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     motion_message_handler::MotionHandler<gantry_tasks::QueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::StopRequest>;
+    can_messages::SetMotionConstraints, can_messages::StopRequest,
+    can_messages::ReadLimitSwitchRequest>;
 using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     device_info_handler::DeviceInfoHandler<gantry_tasks::QueueClient>,
     can_messages::DeviceInfoRequest>;
