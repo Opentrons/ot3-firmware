@@ -6,6 +6,7 @@ if (${CMAKE_CROSSCOMPILING})
     add_subdirectory(firmware)
 else ()
     add_subdirectory(tests)
+    add_subdirectory(simulator)
 endif ()
 
 file(GLOB_RECURSE BOOTLOADER_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/bootloader/*.hpp)

@@ -18,6 +18,8 @@ class MotorHardwareIface {
     virtual void deactivate_motor() = 0;
     virtual void start_timer_interrupt() = 0;
     virtual void stop_timer_interrupt() = 0;
+    virtual auto check_limit_switch() -> bool = 0;
+    virtual void set_LED(bool status) = 0;
 };
 
 };  // namespace motor_hardware

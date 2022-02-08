@@ -9,6 +9,7 @@ add_executable(
         bootloader
         test_main.cpp
         test_messages.cpp
+        test_message_handler.cpp
 )
 
 target_include_directories(

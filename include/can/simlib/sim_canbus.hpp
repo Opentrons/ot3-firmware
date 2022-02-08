@@ -75,12 +75,27 @@ class SimCANBus : public CanBus {
     struct Reader {
         void operator()(SimCANBus* bus) {
             while (true) {
+                if (!bus->transport->open()) {
+                    LOG("Failed to connect.\n");
+                    vTaskDelay(2000);
+                    continue;
+                }
+
+                _read_messages(bus);
+
+                bus->transport->close();
+            }
+        }
+
+        void _read_messages(SimCANBus* bus) {
+            while (true) {
                 uint32_t read_length = message_core::MaxMessageSize;
                 uint32_t arb_id;
 
                 if (!bus->transport->read(arb_id, read_buffer.data(),
                                           read_length)) {
-                    continue;
+                    LOG("Disconnected.\n");
+                    break;
                 }
 
                 // If there are filters and any of them return true we can

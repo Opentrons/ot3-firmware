@@ -2,6 +2,7 @@
 
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
@@ -92,13 +93,15 @@ void callback(void* cb_data, uint32_t identifier, uint8_t* data,
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
     can_bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
-    can_bus->setup_node_id_filter(can_ids::NodeId::pipette);
+    can_bus->setup_node_id_filter(listen_id);
+
     auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, dispatcher);
     poller();
 }
 
-auto static reader_task = can_task::CanMessageReaderTask{};
+auto static reader_task =
+    can_task::CanMessageReaderTask{can_ids::NodeId::pipette_left};
 auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
 auto static reader_task_control =
@@ -108,8 +111,9 @@ auto static writer_task_control =
     freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask,
                                 can_bus::CanBus>{writer_task};
 
-auto can_task::start_reader(can_bus::CanBus& canbus)
+auto can_task::start_reader(can_bus::CanBus& canbus, can_ids::NodeId id)
     -> can_task::CanMessageReaderTask& {
+    reader_task.listen_id = id;
     reader_task_control.start(5, "can reader task", &canbus);
     return reader_task;
 }

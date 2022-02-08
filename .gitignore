@@ -10,3 +10,4 @@ build-host/
 cmake-build-debug/
 node_modules
 __pycache__
+./Pipfile

@@ -20,7 +20,9 @@ add_custom_command(
 add_library(bootloader-core
         STATIC
         messages.c
+        util.c
         message_handler.c
+        updater.c
         ${IDS_HPP}
         )
 

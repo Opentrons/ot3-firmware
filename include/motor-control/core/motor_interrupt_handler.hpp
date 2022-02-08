@@ -72,6 +72,7 @@ class MotorInterruptHandler {
             hardware.step();
         }
         hardware.unstep();
+        hardware.set_LED(hardware.check_limit_switch());
     }
 
     // Start or stop the handler; this will also start or stop the timer

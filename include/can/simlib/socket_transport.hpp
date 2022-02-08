@@ -19,14 +19,15 @@ namespace socket_transport {
 template <synchronization::LockableProtocol CriticalSection>
 class SocketTransport : public can_transport::BusTransportBase {
   public:
-    SocketTransport() = default;
+    explicit SocketTransport(const char *ip, uint32_t port)
+        : ip{ip}, port{port} {}
     ~SocketTransport() = default;
     SocketTransport(const SocketTransport &) = delete;
     SocketTransport(const SocketTransport &&) = delete;
     SocketTransport &operator=(const SocketTransport &) = delete;
     SocketTransport &&operator=(const SocketTransport &&) = delete;
 
-    auto open(const char *ip, uint32_t port) -> bool;
+    auto open() -> bool;
     void close();
 
     auto write(uint32_t arb_id, const uint8_t *buff, uint32_t buff_len) -> bool;
@@ -34,14 +35,17 @@ class SocketTransport : public can_transport::BusTransportBase {
 
   private:
     int handle{0};
+    std::string ip;
+    uint32_t port;
     CriticalSection critical_section{};
 };
 
 template <synchronization::LockableProtocol CriticalSection>
-auto SocketTransport<CriticalSection>::open(const char *ip, uint32_t port)
-    -> bool {
+auto SocketTransport<CriticalSection>::open() -> bool {
     struct sockaddr_in addr;
     int s = 0;
+
+    LOG("Trying to connect to %s:%d\n", ip.c_str(), port);
 
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         return false;
@@ -49,14 +53,20 @@ auto SocketTransport<CriticalSection>::open(const char *ip, uint32_t port)
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    ::inet_aton(ip, &addr.sin_addr);
+    ::inet_aton(ip.c_str(), &addr.sin_addr);
 
     if (connect(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
-    LOG("Connected to %s:%d\n", ip, port);
+    LOG("Connected to %s:%d\n", ip.c_str(), port);
     handle = s;
     return true;
+}
+
+template <synchronization::LockableProtocol CriticalSection>
+void SocketTransport<CriticalSection>::close() {
+    ::close(handle);
+    handle = 0;
 }
 
 template <synchronization::LockableProtocol CriticalSection>
@@ -89,15 +99,18 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     // Critical section block
     auto lock = synchronization::Lock(critical_section);
 
-    ::read(handle, &arb_id, sizeof(arb_id));
-    ::read(handle, &buff_len, sizeof(buff_len));
+    if (::read(handle, &arb_id, sizeof(arb_id)) < sizeof(arb_id)) return false;
+
+    if (::read(handle, &buff_len, sizeof(buff_len)) < sizeof(buff_len))
+        return false;
+
     arb_id = ntohl(arb_id);
     buff_len = std::min(static_cast<uint32_t>(message_core::MaxMessageSize),
                         ntohl(buff_len));
 
     LOG("Read: arbitration %X dlc %d\n", arb_id, buff_len);
     if (buff_len > 0) {
-        ::read(handle, buff, buff_len);
+        if (::read(handle, buff, buff_len) < buff_len) return false;
     }
     return true;
 }

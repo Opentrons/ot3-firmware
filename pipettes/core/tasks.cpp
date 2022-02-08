@@ -1,10 +1,11 @@
 #include "pipettes/core/tasks.hpp"
 
+#include "can/core/ids.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
-#include "pipettes/core//can_task.hpp"
+#include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
@@ -31,12 +32,14 @@ void pipettes_tasks::start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
-    motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c) {
+    motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c,
+    can_ids::NodeId id) {
+    queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
 
     auto& can_writer = can_task::start_writer(can_bus);
-    can_task::start_reader(can_bus);
+    can_task::start_reader(can_bus, id);
 
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
@@ -60,7 +63,9 @@ void pipettes_tasks::start_tasks(
 }
 
 pipettes_tasks::QueueClient::QueueClient()
-    : can_message_writer::MessageWriter{can_ids::NodeId::pipette} {}
+    // This gets overridden in start_tasks, needs to be static here since this
+    // is free-store allocated
+    : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
 void pipettes_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {
@@ -79,7 +84,7 @@ void pipettes_tasks::QueueClient::send_move_group_queue(
 
 void pipettes_tasks::QueueClient::send_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
-    move_status_report_queue->try_write(m);
+    static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
 void pipettes_tasks::QueueClient::send_eeprom_queue(

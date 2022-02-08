@@ -8,6 +8,7 @@ set(CAN_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(BOOTLOADER_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/main.c
         ${CMAKE_CURRENT_SOURCE_DIR}/node_id.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/version.c
         )
 
 set(BOOTLOADER_FW_NON_LINTABLE_SRCS

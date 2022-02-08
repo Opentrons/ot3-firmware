@@ -152,7 +152,7 @@ void head_tasks::MotorQueueClient::send_move_group_queue(
 
 void head_tasks::MotorQueueClient::send_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
-    move_status_report_queue->try_write(m);
+    static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
 auto head_tasks::get_tasks() -> HeadTasks& { return head_tasks_col; }

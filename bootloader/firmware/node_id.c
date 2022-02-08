@@ -4,9 +4,10 @@
  * Get the node id this bootloader is installed on
  * @return Node id.
  */
-NodeId get_node_id(void) {
-#if defined node_id_pipette
-    return can_nodeid_pipette_bootloader;
+CANNodeId get_node_id(void) {
+#if defined node_id_pipette_left
+    // TODO make this decision based on the mount sense voltage
+    return can_nodeid_pipette_left_bootloader;
 #elif defined node_id_head
     return can_nodeid_head_bootloader;
 #elif defined node_id_gantry_x

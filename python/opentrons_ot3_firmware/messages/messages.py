@@ -38,8 +38,13 @@ MessageDefinition = Union[
     defs.ReadPresenceSensingVoltageResponse,
     defs.AttachedToolsRequest,
     defs.PushToolsDetectedNotification,
+    defs.FirmwareUpdateInitiate,
+    defs.FirmwareUpdateData,
     defs.FirmwareUpdateDataAcknowledge,
+    defs.FirmwareUpdateComplete,
     defs.FirmwareUpdateCompleteAcknowledge,
+    defs.ReadLimitSwitchRequest,
+    defs.ReadLimitSwitchResponse,
 ]
 
 

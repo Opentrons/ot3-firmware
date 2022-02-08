@@ -10,6 +10,17 @@ namespace can_transport {
 class BusTransportBase {
   public:
     /**
+     * Open connection.
+     * @return True on success.
+     */
+    virtual auto open() -> bool = 0;
+
+    /**
+     * Close connection.
+     */
+    virtual void close() = 0;
+
+    /**
      * Write a message
      * @param arb_id  The arbitration id
      * @param buff The message data buffer

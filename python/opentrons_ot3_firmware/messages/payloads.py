@@ -231,3 +231,10 @@ class FirmwareUpdateCompleteAcknowledge(utils.BinarySerializable):
     """A response to the FirmwareUpdateComplete message."""
 
     error_code: utils.UInt16Field
+
+
+@dataclass
+class GetLimitSwitchResponse(utils.BinarySerializable):
+    """A response to the Limit Switch Status request payload."""
+
+    switch_status: utils.UInt8Field
