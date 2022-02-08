@@ -6,6 +6,11 @@
 extern "C" {
 #endif  // __cplusplus
 
+/**
+ * The application firmware updater.
+ * These functions will be implemented in simulation and in firmware.
+ */
+
 typedef enum {
     fw_update_ok,
     fw_update_error,

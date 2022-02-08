@@ -106,7 +106,7 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
             0);
         switch (updater_return) {
             case fw_update_error:
-                e = can_errorcode_invalid_size;
+                e = can_errorcode_hardware;
                 break;
             case fw_update_invalid_data:
                 e = can_errorcode_bad_checksum;
