@@ -57,9 +57,7 @@ class MotionController {
 
     void stop() { hardware.stop_timer_interrupt(); }
 
-    auto read_limit_switch() -> uint8_t {
-        return static_cast<uint8_t>(hardware.check_limit_switch());
-    }
+    bool read_limit_switch() { return hardware.check_limit_switch(); }
 
     void enable_motor() {
         hardware.start_timer_interrupt();
