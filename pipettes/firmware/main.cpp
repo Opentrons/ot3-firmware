@@ -22,6 +22,7 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #include "pipettes/core/tasks.hpp"
+#include "common/firmware/utility_gpio.h"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -112,6 +113,7 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
+    utility_gpio_init();
 
     // TODO(lc 01/04/2021): We should move this setup to another object
     // responsible for sensor control.

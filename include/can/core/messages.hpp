@@ -339,11 +339,11 @@ struct ReadPresenceSensingVoltageResponse
 };
 
 struct ReadLimitSwitchResponse : BaseMessage<MessageId::limit_sw_response> {
-    uint8_t status;
+    uint8_t switch_status;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(status, body, limit);
+        auto iter = bit_utils::int_to_bytes(switch_status, body, limit);
         return iter - body;
     }
     auto operator==(const ReadLimitSwitchResponse& other) const
