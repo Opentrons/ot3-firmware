@@ -43,8 +43,8 @@ static auto motion_controller_dispatch_target =
         decltype(can_motion_handler), can_messages::DisableMotorRequest,
         can_messages::EnableMotorRequest,
         can_messages::GetMotionConstraintsRequest,
-        can_messages::SetMotionConstraints, can_messages::StopRequest>{
-        can_motion_handler};
+        can_messages::SetMotionConstraints, can_messages::StopRequest,
+        can_messages::ReadLimitSwitchRequest>{can_motion_handler};
 
 static auto motion_group_dispatch_target = can_dispatch::DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
