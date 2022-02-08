@@ -89,6 +89,8 @@ using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
 
 using SetupRequest = Empty<MessageId::setup_request>;
 
+using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint8_t serial_number;
 
@@ -336,13 +338,26 @@ struct ReadPresenceSensingVoltageResponse
         -> bool = default;
 };
 
+struct ReadLimitSwitchResponse : BaseMessage<MessageId::limit_sw_response> {
+    uint8_t status;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(status, body, limit);
+        return iter - body;
+    }
+    auto operator==(const ReadLimitSwitchResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
+
 using ResponseMessageType =
     std::variant<HeartbeatResponse, DeviceInfoResponse,
                  GetMotionConstraintsResponse, GetMoveGroupResponse,
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse>;
-
+                 MoveCompleted, ReadPresenceSensingVoltageResponse,
+                 ReadLimitSwitchResponse>;
 }  // namespace can_messages
