@@ -6,6 +6,7 @@
 #include "head/core/adc.hpp"
 
 namespace ot3_tool_list {
+
 using namespace can_ids;
 
 struct ToolCheckBounds {
@@ -34,7 +35,7 @@ constexpr auto pipette_multiple_chan_a_bounds =
 constexpr auto nothing_connected_z_bounds =
     ToolCheckBounds{.upper = 3, .lower = 1};
 
-constexpr auto nothing_conected_a_bounds =
+constexpr auto nothing_connected_a_bounds =
     ToolCheckBounds{.upper = 54, .lower = 16};
 
 // revisit these, not sure if EE has a calculation for gripper carrier bounds
@@ -62,7 +63,11 @@ struct Tool {
     }
 };
 
-auto get_tool_list() -> const std::array<Tool, 10>&;
+template <typename T, size_t S>
+using ToolList = std::array<T, S>;
+using OT3Tools = ToolList<Tool, 10>;
+
+auto get_tool_list() -> const OT3Tools&;
 struct AttachedTool {
     ToolType z_motor{};
     ToolType a_motor{};
@@ -71,8 +76,7 @@ struct AttachedTool {
         : z_motor(can_ids::ToolType::undefined_tool),
           a_motor(can_ids::ToolType::undefined_tool),
           gripper(can_ids::ToolType::undefined_tool) {}
-    AttachedTool(adc::MillivoltsReadings reading,
-                 const std::array<Tool, 10>& arr) {
+    AttachedTool(adc::MillivoltsReadings reading, const OT3Tools& arr) {
         for (const auto& element : arr) {
             if (element.within_bounds(reading.z_motor) &&
                 (element.tool_carrier == Z_CARRIER)) {
