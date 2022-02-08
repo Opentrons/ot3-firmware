@@ -82,10 +82,10 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
 
 static auto adc_comms = adc::SimADC{};
 
-auto at = ot3_tool_list::AttachedTool{};
+static auto attached_tools = ot3_tool_list::AttachedTool{};
 
 static auto presence_sense_driver =
-    presence_sensing_driver::PresenceSensingDriver{adc_comms, at};
+    presence_sensing_driver::PresenceSensingDriver{adc_comms, attached_tools};
 
 int main() {
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
