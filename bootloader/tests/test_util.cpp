@@ -8,6 +8,7 @@
 using Result = std::pair<uint32_t, uint64_t>;
 static auto results = std::vector<Result>{};
 
+
 auto dword_address_iter_cb(uint32_t address, uint64_t data) -> void {
     results.push_back(Result{address, data});
 }
@@ -19,30 +20,29 @@ SCENARIO("dword_address_iter") {
             0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8, 0xF7
         };
         WHEN("called") {
+            results.clear();
             dword_address_iter(0x800000, arr.data(), arr.size(),
                                dword_address_iter_cb);
 
-            THEN("it has one result") { REQUIRE(results.size() == 2); }
+            auto expected = std::vector<Result>{
+                Result{0x800000, 0xFFFEFDFCFBFAF9F8},
+                Result{0x800008, 0xFEFDFCFBFAF9F8F7}};
+
             THEN("the address and data are correct") {
-                auto expected =
-                    std::vector<Result>{
-                        Result{0x800000, 0xFFFEFDFCFBFAF9F8},
-                        Result{0x800008, 0xFEFDFCFBFAF9F8F7}
-                    };
                 REQUIRE(results == expected);
             }
         }
     }
 
-    GIVEN("a data buffer shofter than 64bits boundary") {
+    GIVEN("a data buffer shorter than 64bit boundary") {
         auto arr = std::array<uint8_t, 3>{
             0xFF, 0xFE, 0xFD
         };
         WHEN("called") {
+            results.clear();
             dword_address_iter(0x800000, arr.data(), arr.size(),
                                dword_address_iter_cb);
 
-            THEN("it has one result") { REQUIRE(results.size() == 1); }
             THEN("the address and data are correct") {
                 auto expected =
                     std::vector<Result>{Result{0x800000, 0xFFFEFD0000000000}};
@@ -58,20 +58,34 @@ SCENARIO("dword_address_iter") {
             0xFD, 0xFC
         };
         WHEN("called") {
+            results.clear();
             dword_address_iter(0x800000, arr.data(), arr.size(),
                                dword_address_iter_cb);
 
-            THEN("it has one result") { REQUIRE(results.size() == 3); }
             THEN("the address and data are correct") {
                 auto expected =
                     std::vector<Result>{
                         Result{0x800000, 0xFFFEFDFCFBFAF9F8},
                         Result{0x800008, 0xFEFDFCFBFAF9F8F7},
-                        Result{0x800008, 0xFDFC000000000000}
+                        Result{0x800010, 0xFDFC000000000000}
                     };
                 REQUIRE(results == expected);
             }
         }
     }
 
+    GIVEN("an empty data buffer") {
+        WHEN("called") {
+            results.clear();
+            dword_address_iter(0x800000, nullptr, 0,
+                               dword_address_iter_cb);
+
+            THEN("the address and data are correct") {
+                auto expected =
+                    std::vector<Result>{
+                    };
+                REQUIRE(results == expected);
+            }
+        }
+    }
 }
