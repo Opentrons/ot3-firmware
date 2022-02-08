@@ -15,6 +15,7 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/spi_comms.hpp"
+#include "common/firmware/utility_gpio.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
@@ -22,7 +23,6 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "common/firmware/utility_gpio.h"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
