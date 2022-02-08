@@ -63,9 +63,7 @@ struct Tool {
     }
 };
 
-template <typename T, size_t S>
-using ToolList = std::array<T, S>;
-using OT3Tools = ToolList<Tool, 10>;
+using OT3Tools = std::array<Tool, 10>;
 
 auto get_tool_list() -> const OT3Tools&;
 struct AttachedTool {
