@@ -192,7 +192,7 @@ adc::ADC_interface ADC_intf1 = {
 
 static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
 
-auto attached_tools = ot3_tool_list::AttachedTool{};
+static auto attached_tools = ot3_tool_list::AttachedTool{};
 
 static auto psd =
     presence_sensing_driver::PresenceSensingDriver{ADC_comms, attached_tools};
