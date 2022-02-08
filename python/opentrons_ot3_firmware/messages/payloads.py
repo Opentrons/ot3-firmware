@@ -156,7 +156,7 @@ class ReadPresenceSensingVoltageResponsePayload(utils.BinarySerializable):
 
 @dataclass
 class ToolsDetectedNotificationPayload(utils.BinarySerializable):
-    """A tool detection notification for tools attached to z axis, a axis and gripper."""
+    """Tool detection notification."""
 
     # Tools are mapped to an enum
     z_motor: utils.UInt8Field
