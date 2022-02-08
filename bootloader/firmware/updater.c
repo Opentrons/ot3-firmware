@@ -1,6 +1,16 @@
 #include "platform_specific_hal_conf.h"
 #include "bootloader/core/updater.h"
 #include <string.h>
+#include "bootloader/core/util.h"
+
+
+/**
+ * Callback to buffer iterator that writes a value to flash.
+ * @param address The address to write to
+ * @param data The 64bit value
+ * @return true on success
+ */
+static bool _fw_write_to_flash(uint32_t address, uint64_t data);
 
 
 typedef struct {
@@ -19,7 +29,6 @@ FwUpdateReturn fw_update_initialize(void) {
     // TODO (amit, 2022-02-01): Erase app flash space?
     return fw_update_ok;
 }
-
 
 
 FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t length) {
@@ -45,30 +54,18 @@ FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t len
         return fw_update_error;
     }
 
-    uint64_t double_word = 0;
+    FwUpdateReturn ret = fw_update_ok;
 
-    HAL_StatusTypeDef ret = HAL_OK;
-    for(int i = 0; i < length; i++ ) {
-        double_word |= (*data[i] << (sizeof(double_word) );
-
-
-
-        ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,
-                                address + i,
-                                data32[i]);
-        if (ret != HAL_OK) {
-            break;
-        }
+    if (!dword_address_iter(address, data, length, _fw_write_to_flash)) {
+        ret = fw_update_error;
     }
 
-    HAL_FLASH_Lock();
-
-    if (ret != HAL_OK) {
-        return fw_update_error;
+    if (HAL_FLASH_Lock() != HAL_OK) {
+        ret = fw_update_error;
     }
 
     update_state.num_messages_received++;
-    return fw_update_ok;
+    return ret;
 }
 
 
@@ -84,4 +81,10 @@ FwUpdateReturn fw_update_complete(uint32_t num_messages, uint32_t error_detectio
     // TODO (amit, 2022-02-01): Finalize update, but do not start app. We want
     //  CAN response to go back to host first.
     return fw_update_ok;
+}
+
+bool _fw_write_to_flash(uint32_t address, uint64_t data) {
+    return HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,
+                             address,
+                             data) == HAL_OK;
 }
