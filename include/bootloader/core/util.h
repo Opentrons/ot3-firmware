@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +50,7 @@ uint16_t compute_checksum(const uint8_t * begin, const uint8_t * end);
 /**
  * Callback given to dword_address_iter.
  */
-typedef void (*address_iter_callback) (uint32_t address, uint64_t data);
+typedef bool (*address_iter_callback) (uint32_t address, uint64_t data);
 
 /**
  * Iterate a byte buffer creating double word values and addresses.
@@ -59,8 +60,9 @@ typedef void (*address_iter_callback) (uint32_t address, uint64_t data);
  * @param buffer A byte buffer
  * @param length Length in bytes of the buffer.
  * @param callback A callback that will be called for each 64 bit address
+ * @return True on success
  */
-void dword_address_iter(uint32_t address, const uint8_t * buffer, uint8_t length, address_iter_callback callback);
+bool dword_address_iter(uint32_t address, const uint8_t * buffer, uint8_t length, address_iter_callback callback);
 
 
 #ifdef __cplusplus

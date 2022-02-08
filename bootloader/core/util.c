@@ -89,28 +89,32 @@ uint16_t compute_checksum(const uint8_t * begin, const uint8_t * end) {
  * @param buffer A byte buffer
  * @param length Length in bytes of the buffer.
  * @param callback A callback that will be called for each 64 bit address
+ * @return True on success
  */
-void dword_address_iter(uint32_t address, const uint8_t * buffer, uint8_t length, address_iter_callback callback) {
+bool dword_address_iter(uint32_t address, const uint8_t * buffer, uint8_t length, address_iter_callback callback) {
     if (!buffer || length <= 0) {
-        return;
+        return true;
     }
     uint64_t double_word = 0;
     for (int i = 0; i < length; i++) {
-        if ((i != 0 && 0 == (i % (sizeof(uint64_t))))) {
+        uint8_t double_word_index = i % sizeof(uint64_t);
+        if (i != 0 && double_word_index == 0) {
             // We have a complete double word. Call the callback.
-            callback(address, double_word);
+            if (!callback(address, double_word)) {
+                return false;
+            }
             // Clear word.
             double_word = 0;
             // Increment address
             address += sizeof(uint64_t);
         }
         // The number of bytes to shift.
-        int shift_bytes = sizeof(uint64_t) - ((i % sizeof(uint64_t)) + 1);
+        int shift_bytes = sizeof(uint64_t) - (double_word_index + 1);
         int shift_amount = shift_bytes * 8;
         // Or the shifted byte into the double word
         double_word |= ((uint64_t)buffer[i] << shift_amount);
     }
     // Send the last address
-    callback(address, double_word);
+    return callback(address, double_word);
 }
 

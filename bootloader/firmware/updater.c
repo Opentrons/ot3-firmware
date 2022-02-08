@@ -21,6 +21,7 @@ FwUpdateReturn fw_update_initialize(void) {
 }
 
 
+
 FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t length) {
 
     if (!update_state.erased) {
