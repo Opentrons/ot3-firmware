@@ -54,7 +54,7 @@ class WriteToEEPromRequestPayload(utils.BinarySerializable):
 class ReadFromEEPromResponsePayload(utils.BinarySerializable):
     """Read from ee prom response."""
 
-    serial_number: utils.UInt8Field
+    serial_number: utils.UInt16Field
 
 
 @dataclass
@@ -153,6 +153,16 @@ class ReadPresenceSensingVoltageResponsePayload(utils.BinarySerializable):
     z_motor: utils.UInt16Field
     a_motor: utils.UInt16Field
     gripper: utils.UInt16Field
+
+
+@dataclass
+class ToolsDetectedNotificationPayload(utils.BinarySerializable):
+    """Tool detection notification."""
+
+    # Tools are mapped to an enum
+    z_motor: utils.UInt8Field
+    a_motor: utils.UInt8Field
+    gripper: utils.UInt8Field
 
 
 @dataclass

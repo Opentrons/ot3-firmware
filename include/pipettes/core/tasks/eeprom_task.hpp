@@ -2,9 +2,11 @@
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/bit_utils.hpp"
+#include "common/core/buffer_type.hpp"
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
-#include "pipettes/core/eeprom.hpp"
+#include "pipettes/core/messages.hpp"
 
 namespace eeprom_task {
 
@@ -13,11 +15,25 @@ using TaskMessage =
                  can_messages::ReadFromEEPromRequest>;
 
 template <message_writer_task::TaskClient CanClient>
+struct EEPromCallback {
+    CanClient &can_client;
+
+    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
+        uint16_t data = 0x0;
+        const auto *iter = buffer.cbegin();
+        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
+
+        auto message = can_messages::ReadFromEEPromResponse{{}, data};
+        can_client.send_can_message(can_ids::NodeId::host, message);
+    }
+};
+
+template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(i2c::I2CDeviceBase &i2c,
+    explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
                                   CanClient &can_client)
-        : eeprom_writer{i2c}, can_client{can_client} {}
+        : writer{i2c_writer}, can_client{can_client}, callback{can_client} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -35,24 +51,25 @@ class EEPromMessageHandler {
 
     void visit(can_messages::WriteToEEPromRequest &m) {
         LOG("Received request to write serial number: %d\n", m.serial_number);
-        eeprom_writer.write(m.serial_number);
+        writer.write(m.serial_number, DEVICE_ADDRESS);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
-        uint8_t serial_number = eeprom_writer.read();
-        LOG("Received request to read serial number: %d\n", serial_number);
-        auto message = can_messages::ReadFromEEPromResponse{{}, serial_number};
-        can_client.send_can_message(can_ids::NodeId::host, message);
+        LOG("Received request to read serial number");
+        writer.read(DEVICE_ADDRESS, callback);
     }
 
-    eeprom::EEPromWriter eeprom_writer;
+    static constexpr uint16_t DEVICE_ADDRESS = 0x1;
+    static constexpr int SERIAL_NUMBER_SIZE = 0x2;
+    I2CQueueWriter &writer;
     CanClient &can_client;
+    EEPromCallback<CanClient> callback;
 };
 
 /**
  * The task type.
  */
-template <template <class> class QueueImpl,
+template <template <class> class QueueImpl, class I2CQueueWriter,
           message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
@@ -68,9 +85,9 @@ class EEPromTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(i2c::I2CDeviceBase *driver,
+    [[noreturn]] void operator()(I2CQueueWriter *writer,
                                  CanClient *can_client) {
-        auto handler = EEPromMessageHandler{*driver, *can_client};
+        auto handler = EEPromMessageHandler{*writer, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

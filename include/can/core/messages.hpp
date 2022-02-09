@@ -92,11 +92,11 @@ using SetupRequest = Empty<MessageId::setup_request>;
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
-    uint8_t serial_number;
+    uint16_t serial_number;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
-        uint8_t serial_number = 0;
+        uint16_t serial_number = 0;
         body = bit_utils::bytes_to_int(body, limit, serial_number);
         return WriteToEEPromRequest{.serial_number = serial_number};
     }
@@ -107,7 +107,7 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
 using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
 
 struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
-    uint8_t serial_number;
+    uint16_t serial_number;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -321,6 +321,8 @@ struct ReadMotorDriverRegisterResponse
 using ReadPresenceSensingVoltageRequest =
     Empty<MessageId::read_presence_sensing_voltage_request>;
 
+using AttachedToolsRequest = Empty<MessageId::attached_tools_request>;
+
 struct ReadPresenceSensingVoltageResponse
     : BaseMessage<MessageId::read_presence_sensing_voltage_response> {
     uint16_t z_motor;
@@ -336,6 +338,27 @@ struct ReadPresenceSensingVoltageResponse
     }
 
     auto operator==(const ReadPresenceSensingVoltageResponse& other) const
+        -> bool = default;
+};
+
+struct PushToolsDetectedNotification
+    : BaseMessage<MessageId::tools_detected_notification> {
+    can_ids::ToolType z_motor{};
+    can_ids::ToolType a_motor{};
+    can_ids::ToolType gripper{};
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(z_motor), body, limit);
+        iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(a_motor), iter, limit);
+        iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(gripper), iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const PushToolsDetectedNotification& other) const
         -> bool = default;
 };
 
@@ -360,5 +383,5 @@ using ResponseMessageType =
                  GetMotionConstraintsResponse, GetMoveGroupResponse,
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 ReadLimitSwitchResponse>;
+                 PushToolsDetectedNotification, ReadLimitSwitchResponse>;
 }  // namespace can_messages

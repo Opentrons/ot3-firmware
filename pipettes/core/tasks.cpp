@@ -1,12 +1,14 @@
 #include "pipettes/core/tasks.hpp"
 
 #include "can/core/ids.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
+#include "pipettes/core/tasks/i2c_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -25,6 +27,8 @@ static auto move_status_task_builder =
 static auto eeprom_task_builder =
     eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
 
+static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
+
 /**
  * Start pipettes tasks.
  */
@@ -39,13 +43,19 @@ void pipettes_tasks::start_tasks(
     auto& tasks = pipettes_tasks::get_tasks();
 
     auto& can_writer = can_task::start_writer(can_bus);
+    auto i2c_writer =
+        i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();
     can_task::start_reader(can_bus, id);
+
+    auto& i2c_task = i2c_task_builder.start(5, i2c);
+    i2c_writer.set_queue(&i2c_task.get_queue());
 
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(5, queues);
-    auto& eeprom_task = eeprom_task_builder.start(5, i2c, queues);
+
+    auto& eeprom_task = eeprom_task_builder.start(5, i2c_writer, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
@@ -53,6 +63,7 @@ void pipettes_tasks::start_tasks(
     tasks.move_group = &move_group;
     tasks.move_status_reporter = &move_status_reporter;
     tasks.eeprom_task = &eeprom_task;
+    tasks.i2c_task = &i2c_task;
 
     queues.motion_queue = &motion.get_queue();
     queues.motor_queue = &motor.get_queue();
@@ -60,6 +71,8 @@ void pipettes_tasks::start_tasks(
     queues.set_queue(&can_writer.get_queue());
     queues.move_status_report_queue = &move_status_reporter.get_queue();
     queues.eeprom_queue = &eeprom_task.get_queue();
+
+    queues.i2c_queue = &i2c_task.get_queue();
 }
 
 pipettes_tasks::QueueClient::QueueClient()
