@@ -1,7 +1,8 @@
+#include <string.h>
 #include "platform_specific_hal_conf.h"
 #include "bootloader/core/updater.h"
-#include <string.h>
 #include "bootloader/core/util.h"
+#include "bootloader/firmware/constants.h"
 
 
 /**
@@ -21,7 +22,11 @@ typedef struct {
     int erased;
 } UpdateState;
 
-static UpdateState update_state = {.num_messages_received=0, .error_detection=0, .erased=0};
+static UpdateState update_state = {
+    .num_messages_received=0,
+    .error_detection=0,
+    .erased=0
+};
 
 
 FwUpdateReturn fw_update_initialize(void) {
@@ -33,25 +38,26 @@ FwUpdateReturn fw_update_initialize(void) {
 
 FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t length) {
 
+    // TODO (amit, 2022-02-01): Update error detection with crc32 or checksum of data.
+
+    // TODO (amit, 2022-02-01): Validate the address. Don't overwrite something horrible.
+
+    if (HAL_FLASH_Unlock() != HAL_OK) {
+        return fw_update_error;
+    }
+
     if (!update_state.erased) {
         FLASH_EraseInitTypeDef erase_struct =  {
             .TypeErase=FLASH_TYPEERASE_PAGES,
             .Banks=FLASH_BANK_1,
-            .Page=0,
-            .NbPages=FLASH_PAGE_NB
+            .Page=APP_START_PAGE,
+            .NbPages=APP_NUM_PAGES
         };
         uint32_t error;
         if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
             return fw_update_error;
         }
         update_state.erased = 1;
-    }
-
-    // TODO (amit, 2022-02-01): Update error detection with crc32 or checksum of data.
-    // TODO (amit, 2022-02-01): Validate the address. Don't overwrite something horrible.
-
-    if (HAL_FLASH_Unlock() != HAL_OK) {
-        return fw_update_error;
     }
 
     FwUpdateReturn ret = fw_update_ok;
@@ -82,6 +88,7 @@ FwUpdateReturn fw_update_complete(uint32_t num_messages, uint32_t error_detectio
     //  CAN response to go back to host first.
     return fw_update_ok;
 }
+
 
 bool _fw_write_to_flash(uint32_t address, uint64_t data) {
     return HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,
