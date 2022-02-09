@@ -11,7 +11,7 @@
  * @param data The 64bit value
  * @return true on success
  */
-static bool _fw_write_to_flash(uint32_t address, uint64_t data);
+static bool fw_write_to_flash(uint32_t address, uint64_t data);
 
 
 typedef struct {
@@ -53,7 +53,7 @@ FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t len
             .Page=APP_START_PAGE,
             .NbPages=APP_NUM_PAGES
         };
-        uint32_t error;
+        uint32_t error = 0;
         if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
             return fw_update_error;
         }
@@ -62,7 +62,7 @@ FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t len
 
     FwUpdateReturn ret = fw_update_ok;
 
-    if (!dword_address_iter(address, data, length, _fw_write_to_flash)) {
+    if (!dword_address_iter(address, data, length, fw_write_to_flash)) {
         ret = fw_update_error;
     }
 
@@ -90,7 +90,7 @@ FwUpdateReturn fw_update_complete(uint32_t num_messages, uint32_t error_detectio
 }
 
 
-bool _fw_write_to_flash(uint32_t address, uint64_t data) {
+bool fw_write_to_flash(uint32_t address, uint64_t data) {
     return HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD,
                              address,
                              data) == HAL_OK;
