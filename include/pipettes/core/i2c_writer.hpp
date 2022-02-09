@@ -23,28 +23,30 @@ class I2CWriter {
 
   public:
     I2CWriter() = default;
+    ~I2CWriter() = default;
+    I2CWriter(const I2CWriter&) = delete;
+    auto operator=(const I2CWriter&) -> I2CWriter& = delete;
+    I2CWriter(I2CWriter&&) = delete;
+    auto operator=(I2CWriter&&) -> I2CWriter& = delete;
 
-    template <GenericByteBuffer Buffer, typename Data>
+    template <typename Data>
     requires std::is_integral_v<Data>
-    void write(Buffer& buffer, Data data, uint16_t device_address) {
-        add_to_buffer(buffer, data);
-        uint16_t buff_size = buffer.size();
+    void write(Data data, uint16_t device_address) {
+        std::array<uint8_t, MAX_SIZE> max_buffer{};
+        buffering(max_buffer, data);
         pipette_messages::WriteToI2C write_msg{.address = device_address,
-                                               .buffer = buffer.data(),
-                                               .size = buff_size};
+                                               .buffer = max_buffer,
+                                               .size = MAX_SIZE};
         queue->try_write(write_msg);
     }
 
-    template <GenericByteBuffer Buffer>
-    void read(Buffer& buffer, uint16_t device_address,
-              const Callback
-                  callback) {  // NOLINT (performance-unnecessary-value-param)
+    void read(uint16_t device_address, const Callback callback) {  // NOLINT (performance-unnecessary-value-param)
         // We want to copy the callback every time as opposed to passing a
         // reference to it from the eeprom task.
-        uint16_t buff_size = buffer.size();
+        std::array<uint8_t, MAX_SIZE> max_buffer{};
         pipette_messages::ReadFromI2C read_msg{.address = device_address,
-                                               .buffer = buffer.data(),
-                                               .size = buff_size,
+                                               .buffer = max_buffer,
+                                               .size = MAX_SIZE,
                                                .client_callback = callback};
         queue->try_write(read_msg);
     }
@@ -53,20 +55,21 @@ class I2CWriter {
 
     template <GenericByteBuffer Buffer, typename Data>
     requires std::is_integral_v<Data>
-    void add_to_int(Buffer& buffer, Data& data) {
+    void debuffering(Buffer& buffer, Data& data) {
         auto* iter = buffer.begin();
         iter = bit_utils::bytes_to_int(iter, buffer.end(), data);
     }
 
     template <GenericByteBuffer Buffer, typename Data>
     requires std::is_integral_v<Data>
-    void add_to_buffer(Buffer& buffer, Data& data) {
+    void buffering(Buffer& buffer, Data& data) {
         auto* iter = buffer.begin();
         iter = bit_utils::int_to_bytes(data, iter, buffer.end());
     }
 
   private:
     QueueType* queue{nullptr};
+    static constexpr auto MAX_SIZE = 5;
 };
 
 }  // namespace i2c_writer

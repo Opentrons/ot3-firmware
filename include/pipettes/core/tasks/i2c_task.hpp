@@ -26,18 +26,18 @@ class I2CMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(WriteToI2C &m) {
-        i2c_device.master_transmit(m.buffer, m.size, m.address, TIMEOUT);
+        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address, TIMEOUT);
     }
 
     void visit(ReadFromI2C &m) {
-        auto callback = std::move(m.client_callback);
-        i2c_device.master_receive(m.buffer, m.size, m.address, TIMEOUT);
-        callback(m.buffer, m.size);
+        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address, TIMEOUT);
+        m.client_callback(m.buffer);
     }
     i2c::I2CDeviceBase &i2c_device;
 
     // Default timeout should be 60 seconds
-    static constexpr auto TIMEOUT = 0xEA60;
+    // freertos expects this time to be in milliseconds
+    static constexpr auto TIMEOUT = 60000;
 };
 
 /**

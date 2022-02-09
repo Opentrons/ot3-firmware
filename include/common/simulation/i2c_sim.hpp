@@ -11,9 +11,9 @@ namespace sim_i2c {
  */
 class SimI2C : public i2c::I2CDeviceBase {
   public:
-    auto master_transmit(uint8_t *data, uint16_t size, uint16_t dev_address,
+    auto central_transmit(uint8_t *data, uint16_t size, uint16_t dev_address,
                          uint32_t timeout) -> bool final;
-    auto master_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
+    auto central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
                         uint32_t timeout) -> bool final;
 
   private:

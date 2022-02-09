@@ -20,23 +20,22 @@ SCENARIO("read and write data to the i2c task") {
         // make a copy of the two byte array before it's manipulated by
         // the i2c writer.
         auto empty_arr = two_byte_arr;
-        writer.write(two_byte_arr, two_byte_data, ADDRESS);
+        writer.write(two_byte_data, ADDRESS);
         i2c_queue.try_read(&empty_msg);
         auto write_msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(write_msg);
         i2c.handle_message(converted_msg);
 
-        sim_i2c.master_receive(empty_arr.data(), empty_arr.size(), ADDRESS, 1);
-        REQUIRE(empty_arr[1] == two_byte_data);
+        sim_i2c.central_receive(empty_arr.data(), empty_arr.size(), ADDRESS, 1);
+        REQUIRE(empty_arr[1] == 2);
     }
     GIVEN("read command") {
         uint8_t update = 0x0;
-        auto callback = [&update](const uint8_t* value,
-                                  const uint16_t) -> void { update = *value; };
+        auto callback = [&update](std::array<uint8_t, 5> value) -> void { update = value[0]; };
         uint8_t data_to_store = 0x3;
-        sim_i2c.master_transmit(&data_to_store, 1, ADDRESS, 1);
+        sim_i2c.central_transmit(&data_to_store, 1, ADDRESS, 1);
 
-        writer.read(two_byte_arr, ADDRESS, callback);
+        writer.read(ADDRESS, callback);
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);

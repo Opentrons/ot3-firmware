@@ -6,17 +6,18 @@
 
 namespace pipette_messages {
 
-using Callback = std::function<void(uint8_t *, uint16_t)>;
+using MaxBufferSize = std::array<uint8_t, 5>;
+using Callback = std::function<void(MaxBufferSize)>;
 
 struct WriteToI2C {
     uint16_t address;
-    uint8_t *buffer;
+    MaxBufferSize buffer;
     uint16_t size;
 };
 
 struct ReadFromI2C {
     uint16_t address;
-    uint8_t *buffer;
+    MaxBufferSize buffer;
     uint16_t size;
     Callback client_callback;
 };
