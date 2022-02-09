@@ -1,13 +1,21 @@
 #pragma once
 
+#include <array>
+
+#include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "head/core/adc.hpp"
+#include "head/core/tool_list.hpp"
 
+using namespace ot3_tool_list;
 namespace presence_sensing_driver {
+using namespace can_ids;
 
 class PresenceSensingDriver {
   public:
-    explicit PresenceSensingDriver(adc::BaseADC& adc) : adc_comms(adc) {}
+    PresenceSensingDriver(adc::BaseADC& adc,
+                          ot3_tool_list::AttachedTool current_tools)
+        : adc_comms(adc), current_tools(current_tools) {}
     auto get_readings() -> adc::MillivoltsReadings {
         auto RawReadings = adc_comms.get_readings();
         auto voltage_read = adc::MillivoltsReadings{
@@ -25,9 +33,19 @@ class PresenceSensingDriver {
                                       adc::ADC_FULLSCALE_OUTPUT)};
         return voltage_read;
     }
+    auto get_current_tools() -> ot3_tool_list::AttachedTool {
+        return this->current_tools;
+    }
+
+    void set_current_tools(ot3_tool_list::AttachedTool tmp) {
+        this->current_tools.z_motor = tmp.z_motor;
+        this->current_tools.a_motor = tmp.a_motor;
+        this->current_tools.gripper = tmp.gripper;
+    }
 
   private:
     adc::BaseADC& adc_comms;
+    ot3_tool_list::AttachedTool current_tools;
 };
 
 }  // namespace presence_sensing_driver

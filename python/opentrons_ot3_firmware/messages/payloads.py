@@ -155,6 +155,16 @@ class ReadPresenceSensingVoltageResponsePayload(utils.BinarySerializable):
 
 
 @dataclass
+class ToolsDetectedNotificationPayload(utils.BinarySerializable):
+    """Tool detection notification."""
+
+    # Tools are mapped to an enum
+    z_motor: utils.UInt8Field
+    a_motor: utils.UInt8Field
+    gripper: utils.UInt8Field
+
+
+@dataclass
 class FirmwareUpdateWithAddress(utils.BinarySerializable):
     """A FW update payload with an address."""
 
