@@ -18,10 +18,10 @@ template <message_writer_task::TaskClient CanClient>
 struct EEPromCallback {
     CanClient &can_client;
 
-    void operator()(pipette_messages::MaxBufferSize buffer) {
+    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
         uint16_t data = 0x0;
-        auto *iter = buffer.begin();
-        iter = bit_utils::bytes_to_int(iter, buffer.end(), data);
+        const auto *iter = buffer.cbegin();
+        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
 
         auto message = can_messages::ReadFromEEPromResponse{{}, data};
         can_client.send_can_message(can_ids::NodeId::host, message);
