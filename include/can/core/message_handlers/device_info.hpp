@@ -4,19 +4,18 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 
-namespace device_info_handler {
+namespace system_handler {
 
 using namespace can_ids;
 using namespace can_messages;
 
 /**
- * A HandlesMessages implementing class that will respond to DeviceInfoRequest
- * with a DeviceInfoResponse.
+ * A HandlesMessages implementing class that will respond to system messages.
  *
- * @tparam CanClient can writer task cliene
+ * @tparam CanClient can writer task client
  */
 template <message_writer_task::TaskClient CanClient>
-class DeviceInfoHandler {
+class SystemMessageHandler {
   public:
     /**
      * Constructor
@@ -24,15 +23,15 @@ class DeviceInfoHandler {
      * @param writer A message writer for sending the response
      * @param version The firmware version on this device
      */
-    DeviceInfoHandler(CanClient &writer, uint32_t version)
+    SystemMessageHandler(CanClient &writer, uint32_t version)
         : writer(writer), response{.version = version} {}
-    DeviceInfoHandler(const DeviceInfoHandler &) = delete;
-    DeviceInfoHandler(const DeviceInfoHandler &&) = delete;
-    auto operator=(const DeviceInfoHandler &) -> DeviceInfoHandler & = delete;
-    auto operator=(const DeviceInfoHandler &&) -> DeviceInfoHandler && = delete;
-    ~DeviceInfoHandler() = default;
+    SystemMessageHandler(const SystemMessageHandler &) = delete;
+    SystemMessageHandler(const SystemMessageHandler &&) = delete;
+    auto operator=(const SystemMessageHandler &) -> SystemMessageHandler & = delete;
+    auto operator=(const SystemMessageHandler &&) -> SystemMessageHandler && = delete;
+    ~SystemMessageHandler() = default;
 
-    using MessageType = std::variant<std::monostate, DeviceInfoRequest>;
+    using MessageType = std::variant<std::monostate, DeviceInfoRequest, InitiateFirmwareUpdate>;
 
     /**
      * Message handler
@@ -42,6 +41,7 @@ class DeviceInfoHandler {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
+
   private:
     void visit(std::monostate &m) {}
 
@@ -49,8 +49,12 @@ class DeviceInfoHandler {
         writer.send_can_message(can_ids::NodeId::host, response);
     }
 
+    void visit(InitiateFirmwareUpdate &m) {
+
+    }
+
     CanClient &writer;
     can_messages::DeviceInfoResponse response;
 };
 
-}  // namespace device_info_handler
+}  // namespace system_handler

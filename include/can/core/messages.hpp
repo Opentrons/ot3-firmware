@@ -373,6 +373,8 @@ struct ReadLimitSwitchResponse : BaseMessage<MessageId::limit_sw_response> {
         -> bool = default;
 };
 
+using InitiateFirmwareUpdate = Empty<MessageId::fw_update_initiate>;
+
 /**
  * A variant of all message types we might send..
  */

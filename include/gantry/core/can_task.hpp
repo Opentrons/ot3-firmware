@@ -30,14 +30,14 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest,
     can_messages::ReadLimitSwitchRequest>;
-using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    device_info_handler::DeviceInfoHandler<gantry_tasks::QueueClient>,
-    can_messages::DeviceInfoRequest>;
+using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
+    system_handler::SystemMessageHandler<gantry_tasks::QueueClient>,
+    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate>;
 
 using GantryDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
                              MotionControllerDispatchTarget,
-                             DeviceInfoDispatchTarget>;
+                             SystemDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =

@@ -34,9 +34,9 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest,
     can_messages::ReadLimitSwitchRequest>;
-using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    device_info_handler::DeviceInfoHandler<head_tasks::HeadQueueClient>,
-    can_messages::DeviceInfoRequest>;
+using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
+    system_handler::SystemMessageHandler<head_tasks::HeadQueueClient>,
+    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate>;
 using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
     presence_sensing_message_handler::PresenceSensingHandler<
         head_tasks::HeadQueueClient>,
@@ -61,11 +61,11 @@ static auto can_move_group_handler_right =
 static auto can_move_group_handler_left =
     move_group_handler::MoveGroupHandler(left_queues);
 
-/** Handler of device info requests. */
-static auto device_info_message_handler =
-    device_info_handler::DeviceInfoHandler(common_queues, 0);
-static auto device_info_dispatch_target =
-    DeviceInfoDispatchTarget{device_info_message_handler};
+/** Handler of system messages. */
+static auto system_message_handler =
+    system_handler::SystemMessageHandler(common_queues, 0);
+static auto system_dispatch_target =
+    SystemDispatchTarget{system_message_handler};
 
 static auto presence_sensing_disptach_target =
     PresenceSensingDispatchTarget{presence_sensing_handler};
@@ -117,7 +117,7 @@ static auto dispatcher_left_motor = can_dispatch::Dispatcher(
 static auto main_dispatcher = can_dispatch::Dispatcher(
     [](auto _) -> bool { return true; }, dispatcher_right_motor,
     dispatcher_left_motor, presence_sensing_disptach_target,
-    device_info_dispatch_target);
+    system_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.

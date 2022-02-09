@@ -31,11 +31,11 @@ static auto can_move_group_handler =
 static auto can_motion_handler =
     motion_message_handler::MotionHandler{queue_client};
 
-/** Handler of device info requests. */
-static auto device_info_message_handler =
-    device_info_handler::DeviceInfoHandler{queue_client, 0};
-static auto device_info_dispatch_target =
-    can_task::DeviceInfoDispatchTarget{device_info_message_handler};
+/** Handler of system messages. */
+static auto system_message_handler =
+    system_handler::SystemMessageHandler{queue_client, 0};
+static auto system_dispatch_target =
+    can_task::SystemDispatchTarget{system_message_handler};
 
 static auto motor_dispatch_target =
     can_task::MotorDispatchTarget{can_motor_handler};
@@ -50,7 +50,7 @@ static auto motion_dispatch_target =
 static auto dispatcher = can_task::GantryDispatcherType(
     [](auto _) -> bool { return true; }, motor_dispatch_target,
     motion_group_dispatch_target, motion_dispatch_target,
-    device_info_dispatch_target);
+    system_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_can_dispatch::FreeRTOSCanBufferControl<
