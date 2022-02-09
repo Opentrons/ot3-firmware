@@ -92,11 +92,11 @@ using SetupRequest = Empty<MessageId::setup_request>;
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
-    uint8_t serial_number;
+    uint16_t serial_number;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
-        uint8_t serial_number = 0;
+        uint16_t serial_number = 0;
         body = bit_utils::bytes_to_int(body, limit, serial_number);
         return WriteToEEPromRequest{.serial_number = serial_number};
     }
@@ -107,7 +107,7 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
 using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
 
 struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
-    uint8_t serial_number;
+    uint16_t serial_number;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
