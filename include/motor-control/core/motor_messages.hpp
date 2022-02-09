@@ -17,12 +17,15 @@ struct MotionConstraints {
     um_per_tick_sq max_acceleration;
 };
 
+enum class MoveStopCondition : uint8_t { limit_switch = 0x1, cap_sensor = 0x2 };
+
 struct Move {
     ticks duration;  // in ticks
     steps_per_tick velocity;
     steps_per_tick_sq acceleration;
     uint8_t group_id;
     uint8_t seq_id;
+    MoveStopCondition stop_condition;
 };
 
 const uint8_t NO_GROUP = 0xff;
@@ -34,6 +37,7 @@ struct Ack {
     uint8_t seq_id;
     uint32_t current_position;
     AckMessageId ack_id;
+    bool lim_sw_triggered;
 };
 
 constexpr const int RADIX = 31;

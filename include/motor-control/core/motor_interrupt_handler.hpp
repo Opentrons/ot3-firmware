@@ -104,9 +104,14 @@ class MotorInterruptHandler {
             update_move();
             return false;
         }
+        if (has_active_move && limit_switch_triggered()) {
+            return false;
+        }
+
         if (has_active_move && can_step() && tick()) {
             return true;
         }
+
         if (has_active_move && !can_step()) {
             finish_current_move();
             if (has_messages()) {
@@ -116,6 +121,31 @@ class MotorInterruptHandler {
                 }
             }
             return false;
+        }
+        return false;
+    }
+    void send_ack(bool lim_sw_status, AckMessageId ack_msg_id) {
+        if (buffered_move.group_id != NO_GROUP) {
+            auto ack = Ack{.group_id = buffered_move.group_id,
+                           .seq_id = buffered_move.seq_id,
+                           .current_position = static_cast<uint32_t>(
+                               position_tracker >>
+                               31),  // TODO (AA 2021-11-10): convert
+                                     // this value to mm instead of steps
+                           .ack_id = ack_msg_id,
+                           .lim_sw_triggered = lim_sw_status};
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(ack));
+        }
+    }
+    auto limit_switch_triggered() -> bool {
+        if (hardware.check_limit_switch() && can_step()) {
+            send_ack(true, AckMessageId::error);
+            return true;
+        }
+        if (hardware.check_limit_switch() && !can_step()) {
+            send_ack(true, AckMessageId::complete);
+            return true;
         }
         return false;
     }
@@ -163,17 +193,7 @@ class MotorInterruptHandler {
     void finish_current_move() {
         has_active_move = false;
         tick_count = 0x0;
-        if (buffered_move.group_id != NO_GROUP) {
-            auto ack = Ack{.group_id = buffered_move.group_id,
-                           .seq_id = buffered_move.seq_id,
-                           .current_position = static_cast<uint32_t>(
-                               position_tracker >>
-                               31),  // TODO (AA 2021-11-10): convert
-                                     // this value to mm instead of steps
-                           .ack_id = AckMessageId::complete};
-            static_cast<void>(
-                status_queue_client.send_move_status_reporter_queue(ack));
-        }
+        send_ack(false, AckMessageId::complete);
         set_buffered_move(Move{});
     }
 
