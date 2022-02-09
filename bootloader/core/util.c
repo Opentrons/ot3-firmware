@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include "bootloader/core/util.h"
 
 
@@ -110,9 +111,7 @@ bool dword_address_iter(uint32_t address, const uint8_t * buffer, uint8_t length
         }
         // The number of bytes to shift.
         int shift_bytes = sizeof(uint64_t) - (double_word_index + 1);
-        int shift_amount = shift_bytes * 8;
-        // Or the shifted byte into the double word
-        double_word |= ((uint64_t)buffer[i] << shift_amount);
+        memcpy((uint8_t*)(&double_word) + shift_bytes, buffer + i, 1);
     }
     // Send the last address
     return callback(address, double_word);
