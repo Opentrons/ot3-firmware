@@ -17,14 +17,13 @@ uint32_t get_version(void) { return 0xDEADBEEF; }
 
 FwUpdateReturn fw_update_initialize(UpdateState* state) { return fw_update_ok; }
 
-FwUpdateReturn fw_update_data(UpdateState* state,
-                              uint32_t address,
-                              const uint8_t* data,
-                              uint8_t length) {
+FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address,
+                              const uint8_t* data, uint8_t length) {
     return fw_update_ok;
 }
 
-FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages, uint32_t crc32) {
+FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages,
+                                  uint32_t crc32) {
     return fw_update_invalid_size;
 }
 
