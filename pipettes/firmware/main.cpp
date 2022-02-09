@@ -15,6 +15,7 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/spi_comms.hpp"
+#include "common/firmware/utility_gpio.h"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
@@ -112,6 +113,7 @@ auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
+    utility_gpio_init();
 
     // TODO(lc 01/04/2021): We should move this setup to another object
     // responsible for sensor control.
