@@ -3,6 +3,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/system_hardware.h"
 
 namespace system_handler {
 
@@ -50,7 +51,7 @@ class SystemMessageHandler {
     }
 
     void visit(InitiateFirmwareUpdate &m) {
-
+        enter_bootloader();
     }
 
     CanClient &writer;
