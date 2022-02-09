@@ -8,7 +8,9 @@
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "pipettes/core/i2c_writer.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
+#include "pipettes/core/tasks/i2c_task.hpp"
 
 namespace pipettes_tasks {
 
@@ -50,6 +52,8 @@ struct QueueClient : can_message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>*
         eeprom_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c_task::TaskMessage>*
+        i2c_queue{nullptr};
 };
 
 /**
@@ -70,8 +74,13 @@ struct AllTask {
     move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
                                    QueueClient, QueueClient>* move_group{
         nullptr};
-    eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue,
-                            QueueClient>* eeprom_task{nullptr};
+
+    i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>* i2c_task{
+        nullptr};
+    eeprom_task::EEPromTask<
+        freertos_message_queue::FreeRTOSMessageQueue,
+        i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
+        QueueClient>* eeprom_task{nullptr};
 };
 
 /**

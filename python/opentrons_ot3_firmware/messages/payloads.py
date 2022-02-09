@@ -54,7 +54,7 @@ class WriteToEEPromRequestPayload(utils.BinarySerializable):
 class ReadFromEEPromResponsePayload(utils.BinarySerializable):
     """Read from ee prom response."""
 
-    serial_number: utils.UInt8Field
+    serial_number: utils.UInt16Field
 
 
 @dataclass
