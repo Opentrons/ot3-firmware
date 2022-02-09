@@ -22,6 +22,7 @@ add_library(bootloader-core
         messages.c
         util.c
         message_handler.c
+        update_state.c
         ${IDS_HPP}
         )
 

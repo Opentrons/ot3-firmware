@@ -13,33 +13,23 @@
 static bool fw_write_to_flash(uint32_t address, uint64_t data);
 
 
-typedef struct {
-    /** Number of data messages received. */
-    uint32_t num_messages_received;
-    /** Running error detection value of update date. */
-    uint32_t error_detection;
-    bool erased;
-} UpdateState;
-
-static UpdateState update_state = {
-    .num_messages_received=0,
-    .error_detection=0,
-    .erased=false
-};
-
-
-FwUpdateReturn fw_update_initialize(void) {
-    update_state.num_messages_received=0;
-    update_state.error_detection=0;
-    update_state.erased=false;
+FwUpdateReturn fw_update_initialize(UpdateState* state) {
+    if (!state) {
+        return fw_update_error;
+    }
+    state->num_messages_received=0;
+    state->error_detection=0;
+    state->erased=false;
 
     // TODO (amit, 2022-02-01): Erase app flash space?
     return fw_update_ok;
 }
 
 
-FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t length) {
-
+FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_t* data, uint8_t length) {
+    if (!state) {
+        return fw_update_error;
+    }
     // TODO (amit, 2022-02-01): Update error detection with crc32 or checksum of data.
 
     // TODO (amit, 2022-02-01): Validate the address. Don't overwrite something horrible.
@@ -72,17 +62,21 @@ FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t len
         ret = fw_update_error;
     }
 
-    update_state.num_messages_received++;
+    state->num_messages_received++;
     return ret;
 }
 
 
-FwUpdateReturn fw_update_complete(uint32_t num_messages, uint32_t error_detection) {
-    if (num_messages != update_state.num_messages_received) {
+FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages, uint32_t error_detection) {
+    if (!state) {
+        return fw_update_error;
+    }
+
+    if (num_messages != state->num_messages_received) {
         // TODO (amit, 2022-02-01): Erase app flash space?
         return fw_update_invalid_size;
     }
-    if (error_detection != update_state.error_detection) {
+    if (error_detection != state->error_detection) {
         // TODO (amit, 2022-02-01): Erase app flash space?
         return fw_update_invalid_data;
     }

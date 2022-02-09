@@ -5,6 +5,7 @@
 #include "bootloader/core/messages.h"
 #include "bootloader/core/util.h"
 #include "bootloader/core/updater.h"
+#include "bootloader/core/update_state.h"
 
 
 /** Handle a device info request message. */
@@ -63,7 +64,7 @@ HandleMessageReturn handle_device_info_request(const Message* request, Message* 
 }
 
 HandleMessageReturn handle_initiate_fw_update(const Message* request, Message* response) {
-    fw_update_initialize();
+    fw_update_initialize(get_update_state());
     return handle_message_ok;
 }
 
@@ -73,7 +74,8 @@ HandleMessageReturn handle_fw_update_data(const Message* request, Message* respo
 
     if (e == can_errorcode_ok) {
         // All is good. Pass on to updater.
-        FwUpdateReturn updater_return = fw_update_data(data.address,
+        FwUpdateReturn updater_return = fw_update_data(get_update_state(),
+                                                       data.address,
                                                        data.data,
                                                        data.num_bytes);
         if (updater_return != fw_update_ok) {
@@ -101,6 +103,7 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
 
     if (e == can_errorcode_ok) {
         FwUpdateReturn updater_return = fw_update_complete(
+            get_update_state(),
             complete.num_messages,
             // TODO (amit, 2022-02-01) - Provide checksum or crc32.
             0);
