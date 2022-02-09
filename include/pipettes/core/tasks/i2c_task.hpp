@@ -26,11 +26,13 @@ class I2CMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(WriteToI2C &m) {
-        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address, TIMEOUT);
+        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address,
+                                    TIMEOUT);
     }
 
     void visit(ReadFromI2C &m) {
-        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address, TIMEOUT);
+        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
+                                   TIMEOUT);
         m.client_callback(m.buffer);
     }
     i2c::I2CDeviceBase &i2c_device;

@@ -22,14 +22,14 @@ class I2C : public I2CDeviceBase {
      * @return True if succeeded
      */
     auto central_transmit(uint8_t *data, uint16_t size, uint16_t dev_address,
-                         uint32_t timeout) -> bool final;
+                          uint32_t timeout) -> bool final;
 
     /**
      * Receive data
      * @return True if succeeded
      */
     auto central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
-                        uint32_t timeout) -> bool final;
+                         uint32_t timeout) -> bool final;
 
   private:
     HAL_I2C_HANDLE handle;

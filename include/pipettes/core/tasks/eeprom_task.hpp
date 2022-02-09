@@ -1,12 +1,11 @@
 #pragma once
 
-#include "common/core/buffer_type.hpp"
 #include "can/core/can_writer_task.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/buffer_type.hpp"
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
-
 #include "pipettes/core/messages.hpp"
 
 namespace eeprom_task {

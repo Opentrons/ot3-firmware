@@ -31,7 +31,9 @@ SCENARIO("read and write data to the i2c task") {
     }
     GIVEN("read command") {
         uint8_t update = 0x0;
-        auto callback = [&update](std::array<uint8_t, 5> value) -> void { update = value[0]; };
+        auto callback = [&update](std::array<uint8_t, 5> value) -> void {
+            update = value[0];
+        };
         uint8_t data_to_store = 0x3;
         sim_i2c.central_transmit(&data_to_store, 1, ADDRESS, 1);
 

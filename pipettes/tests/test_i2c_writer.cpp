@@ -39,7 +39,7 @@ SCENARIO("Test the i2c command queue writer") {
                     std::get<i2c_writer::WriteToI2C>(empty_msg);
                 auto wb_two = write_msg_two_byte.buffer;
                 REQUIRE(wb_two.size() == MAX_SIZE);
-                REQUIRE(wb_two[1]== two_byte_data);
+                REQUIRE(wb_two[1] == two_byte_data);
             }
         }
         WHEN("we read messages") {
@@ -53,14 +53,16 @@ SCENARIO("Test the i2c command queue writer") {
                     std::get<i2c_writer::ReadFromI2C>(empty_msg);
                 auto rb_one = read_msg_two_byte.buffer;
                 REQUIRE(rb_one.size() == MAX_SIZE);
-                REQUIRE(std::all_of(rb_one.begin(), rb_one.end(), [](uint8_t i){ return i == 0; }));
+                REQUIRE(std::all_of(rb_one.begin(), rb_one.end(),
+                                    [](uint8_t i) { return i == 0; }));
 
                 queue.try_read(&empty_msg);
                 auto read_msg_four_byte =
                     std::get<i2c_writer::ReadFromI2C>(empty_msg);
                 auto rb_two = read_msg_four_byte.buffer;
                 REQUIRE(rb_two.size() == MAX_SIZE);
-                REQUIRE(std::all_of(rb_two.begin(), rb_two.end(), [](uint8_t i){ return i == 0; }));
+                REQUIRE(std::all_of(rb_two.begin(), rb_two.end(),
+                                    [](uint8_t i) { return i == 0; }));
             }
         }
     }
