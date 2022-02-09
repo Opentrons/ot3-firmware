@@ -1,4 +1,3 @@
-#include <string.h>
 #include "platform_specific_hal_conf.h"
 #include "bootloader/core/updater.h"
 #include "bootloader/core/util.h"
@@ -19,18 +18,21 @@ typedef struct {
     uint32_t num_messages_received;
     /** Running error detection value of update date. */
     uint32_t error_detection;
-    int erased;
+    bool erased;
 } UpdateState;
 
 static UpdateState update_state = {
     .num_messages_received=0,
     .error_detection=0,
-    .erased=0
+    .erased=false
 };
 
 
 FwUpdateReturn fw_update_initialize(void) {
-    memset(&update_state, 0, sizeof(update_state));
+    update_state.num_messages_received=0;
+    update_state.error_detection=0;
+    update_state.erased=false;
+
     // TODO (amit, 2022-02-01): Erase app flash space?
     return fw_update_ok;
 }
@@ -57,7 +59,7 @@ FwUpdateReturn fw_update_data(uint32_t address, const uint8_t* data, uint8_t len
         if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
             return fw_update_error;
         }
-        update_state.erased = 1;
+        update_state.erased = true;
     }
 
     FwUpdateReturn ret = fw_update_ok;
