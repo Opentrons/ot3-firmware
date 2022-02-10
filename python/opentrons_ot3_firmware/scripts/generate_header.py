@@ -12,6 +12,7 @@ from opentrons_ot3_firmware.constants import (
     NodeId,
     ErrorCode,
     ToolType,
+    SensorType,
 )
 from opentrons_ot3_firmware.arbitration_id import ArbitrationIdParts
 
@@ -62,6 +63,7 @@ def generate_cpp(output: io.StringIO) -> None:
         write_enum_cpp(NodeId, output)
         write_enum_cpp(ErrorCode, output)
         write_enum_cpp(ToolType, output)
+        write_enum_cpp(SensorType, output)
 
 
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
