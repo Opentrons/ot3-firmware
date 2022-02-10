@@ -243,14 +243,14 @@ class GetLimitSwitchResponse(utils.BinarySerializable):
 
 @dataclass
 class ReadFromSensorRequest(utils.BinarySerializable):
-    """Take a single reading from a sensor request payload"""
+    """Take a single reading from a sensor request payload."""
 
     sensor: utils.UInt8Field
 
 
 @dataclass
 class WriteToSensorRequest(utils.BinarySerializable):
-    """Write a piece of data to a sensor request payload"""
+    """Write a piece of data to a sensor request payload."""
 
     sensor: utils.UInt8Field
     data: utils.UInt16Field
@@ -258,7 +258,7 @@ class WriteToSensorRequest(utils.BinarySerializable):
 
 @dataclass
 class BaselineSensorRequest(utils.BinarySerializable):
-    """Take a specified amount of readings from a sensor request payload"""
+    """Take a specified amount of readings from a sensor request payload."""
 
     sensor: utils.UInt8Field
     sample_rate: utils.UInt8Field
@@ -266,7 +266,7 @@ class BaselineSensorRequest(utils.BinarySerializable):
 
 @dataclass
 class ReadFromSensorResponse(utils.BinarySerializable):
-    """A response for either a single reading or an averaged reading of a sensor"""
+    """A response for either a single reading or an averaged reading of a sensor."""
 
     sensor: constants.SensorType
     sensor_data: utils.UInt32Field
