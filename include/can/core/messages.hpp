@@ -375,6 +375,20 @@ struct ReadLimitSwitchResponse : BaseMessage<MessageId::limit_sw_response> {
 
 using InitiateFirmwareUpdate = Empty<MessageId::fw_update_initiate>;
 
+using FirmwareUpdateStatusRequest = Empty<MessageId::fw_update_status_request>;
+
+struct FirmwareUpdateStatusResponse : BaseMessage<MessageId::fw_update_status_response> {
+    uint32_t flags;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(flags, body, limit);
+        return iter - body;
+    }
+    auto operator==(const FirmwareUpdateStatusResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -384,5 +398,6 @@ using ResponseMessageType =
                  GetMotionConstraintsResponse, GetMoveGroupResponse,
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse>;
+                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
+                 FirmwareUpdateStatusResponse>;
 }  // namespace can_messages

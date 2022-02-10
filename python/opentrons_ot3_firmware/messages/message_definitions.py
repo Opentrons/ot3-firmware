@@ -291,6 +291,24 @@ class FirmwareUpdateCompleteAcknowledge:  # noqa: D101
 
 
 @dataclass
+class FirmwareUpdateStatusRequest:  # noqa: D101
+    payload: payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[
+        MessageId.fw_update_status_request
+    ] = MessageId.fw_update_status_request
+
+
+@dataclass
+class FirmwareUpdateStatusResponse:  # noqa: D101
+    payload: payloads.FirmwareUpdateStatus
+    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    message_id: Literal[
+        MessageId.fw_update_status_response
+    ] = MessageId.fw_update_status_response
+
+
+@dataclass
 class ReadLimitSwitchRequest:  # noqa: D101
     payload: payloads.EmptyPayload
     payload_type: Type[BinarySerializable] = payloads.EmptyPayload

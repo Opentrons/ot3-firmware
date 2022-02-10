@@ -234,6 +234,14 @@ class FirmwareUpdateCompleteAcknowledge(utils.BinarySerializable):
 
 
 @dataclass
+class FirmwareUpdateStatus(utils.BinarySerializable):
+    """A response to the FirmwareUpdateStatusRequest message."""
+
+    flags: utils.UInt32Field
+
+
+
+@dataclass
 class GetLimitSwitchResponse(utils.BinarySerializable):
     """A response to the Limit Switch Status request payload."""
 

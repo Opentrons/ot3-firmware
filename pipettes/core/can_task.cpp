@@ -61,7 +61,8 @@ static auto eeprom_dispatch_target =
 static auto system_dispatch_target =
     can_dispatch::DispatchParseTarget<decltype(system_message_handler),
                                       can_messages::DeviceInfoRequest,
-                                      can_messages::InitiateFirmwareUpdate>{
+                                      can_messages::InitiateFirmwareUpdate,
+                                      can_messages::FirmwareUpdateStatusRequest>{
         system_message_handler};
 
 /** Dispatcher to the various handlers */

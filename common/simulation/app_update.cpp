@@ -5,3 +5,7 @@
 void app_update_start() {
     LOG("Starting app update!\n");
 }
+
+update_flag_type app_update_flags() {
+    return 0;
+}

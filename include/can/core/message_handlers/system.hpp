@@ -32,7 +32,7 @@ class SystemMessageHandler {
     auto operator=(const SystemMessageHandler &&) -> SystemMessageHandler && = delete;
     ~SystemMessageHandler() = default;
 
-    using MessageType = std::variant<std::monostate, DeviceInfoRequest, InitiateFirmwareUpdate>;
+    using MessageType = std::variant<std::monostate, DeviceInfoRequest, InitiateFirmwareUpdate, FirmwareUpdateStatusRequest>;
 
     /**
      * Message handler
@@ -52,6 +52,11 @@ class SystemMessageHandler {
 
     void visit(InitiateFirmwareUpdate &m) {
         app_update_start();
+    }
+
+    void visit(FirmwareUpdateStatusRequest &m) {
+        auto status_response = FirmwareUpdateStatusResponse{.flags=app_update_flags()};
+        writer.send_can_message(can_ids::NodeId::host, status_response);
     }
 
     CanClient &writer;

@@ -36,7 +36,8 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::ReadLimitSwitchRequest>;
 using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     system_handler::SystemMessageHandler<head_tasks::HeadQueueClient>,
-    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate>;
+    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
+    can_messages::FirmwareUpdateStatusRequest>;
 using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
     presence_sensing_message_handler::PresenceSensingHandler<
         head_tasks::HeadQueueClient>,

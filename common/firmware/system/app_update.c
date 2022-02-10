@@ -6,7 +6,7 @@
 
 
 /** Fixed location in RAM that stores firmware update flags. */
-static uint32_t __attribute__(( section(".fw_update_flag_section") )) firmware_update_flags;
+static update_flag_type __attribute__(( section(".fw_update_flag_section") )) firmware_update_flags;
 
 
 // (Code taken from opentrons-modules)
@@ -59,6 +59,12 @@ void app_update_start() {
         : "r" (*sysmem_boot_loc)
         : "memory"  );
 }
+
+
+update_flag_type app_update_flags() {
+    return firmware_update_flags;
+}
+
 
 
 bool is_app_update_requested() {

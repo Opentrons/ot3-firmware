@@ -32,7 +32,8 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::ReadLimitSwitchRequest>;
 using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     system_handler::SystemMessageHandler<gantry_tasks::QueueClient>,
-    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate>;
+    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
+    can_messages::FirmwareUpdateStatusRequest>;
 
 using GantryDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,

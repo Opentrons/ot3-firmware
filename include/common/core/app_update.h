@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,12 +12,18 @@ extern "C" {
 #define UPDATE_FLAG_NONE         0
 #define UPDATE_FLAG_REQUESTED    1
 
+typedef uint32_t update_flag_type;
+
 
 /**
  * Start an update of the application firmware. Defined here but implemented in common firmware and
  * simulation.
  */
 void app_update_start();
+
+
+/** Get the update flags. */
+update_flag_type app_update_flags();
 
 
 /** Has an app firmware update been requested. */
