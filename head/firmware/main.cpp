@@ -7,6 +7,7 @@
 #include "task.h"
 #include "system_stm32g4xx.h"
 #include "common/firmware/errors.h"
+#include "common/core/app_update.h"
 // clang-format on
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -209,6 +210,8 @@ auto timer_for_notifier = freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(100)>(
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+
+    app_update_clear_flags();
 
     initialize_timer(motor_callback_glue);
 
