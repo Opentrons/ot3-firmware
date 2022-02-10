@@ -92,6 +92,11 @@ class MessageId(int, Enum):
     limit_sw_request = 0x08
     limit_sw_response = 0x09
 
+    read_sensor_request = 0x802
+    write_sensor_request = 0x803
+    baseline_sensor_request = 0x804
+    read_sensor_response = 0x805
+
 
 @unique
 class ErrorCode(int, Enum):
@@ -116,3 +121,11 @@ class ToolType(int, Enum):
     pipette_multi_chan = 0x04
     gripper = 0x05
     nothing_attached = 0x06
+
+
+@unique
+class SensorType(int, Enum):
+    """Sensor types available."""
+    tip = 0x00
+    capacitive = 0x01
+    humidity = 0x02
