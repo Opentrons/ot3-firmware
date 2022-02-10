@@ -106,3 +106,25 @@ The common directory will hold code that should be shared amongst all peripheral
 
 This is the top-level directory for running the pipette peripheral system. Eventually, we will most likely have separate
 directories for different applications on the pipettes.
+
+## Simulate
+
+Each peripheral system can be run in a simulating mode. Because we use the posix FreeRTOS port everything above the HAL is portable this mode is perfect for testing CAN communication and other business logic.
+
+### Building
+
+`cmake --build --preset=simulators` will build all the applications.
+
+### CAN Communication
+
+Two modes of CAN communication are supported:
+- socketcan (linux only)
+- opentrons_sock (mac + linux)
+
+To use socket_can, define the environment variable `USE_SOCKETCAN` during the build.
+
+For more information on interacting with simulation see [this readme](https://github.com/Opentrons/opentrons/blob/edge/hardware/README.md).
+
+### Running
+
+Each simulator is an executable binary using the pattern `build-host/{PROJ}/simulator/{PROJ}-simulator`
