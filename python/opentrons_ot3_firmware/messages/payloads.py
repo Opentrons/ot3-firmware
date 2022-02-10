@@ -240,7 +240,6 @@ class FirmwareUpdateStatus(utils.BinarySerializable):
     flags: utils.UInt32Field
 
 
-
 @dataclass
 class GetLimitSwitchResponse(utils.BinarySerializable):
     """A response to the Limit Switch Status request payload."""

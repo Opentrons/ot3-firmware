@@ -377,7 +377,8 @@ using InitiateFirmwareUpdate = Empty<MessageId::fw_update_initiate>;
 
 using FirmwareUpdateStatusRequest = Empty<MessageId::fw_update_status_request>;
 
-struct FirmwareUpdateStatusResponse : BaseMessage<MessageId::fw_update_status_response> {
+struct FirmwareUpdateStatusResponse
+    : BaseMessage<MessageId::fw_update_status_response> {
     uint32_t flags;
 
     template <bit_utils::ByteIterator Output, typename Limit>
