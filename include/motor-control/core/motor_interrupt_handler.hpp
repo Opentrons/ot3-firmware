@@ -124,27 +124,14 @@ class MotorInterruptHandler {
         }
         return false;
     }
-    void send_ack(bool lim_sw_status, AckMessageId ack_msg_id) {
-        if (buffered_move.group_id != NO_GROUP) {
-            auto ack = Ack{.group_id = buffered_move.group_id,
-                           .seq_id = buffered_move.seq_id,
-                           .current_position = static_cast<uint32_t>(
-                               position_tracker >>
-                               31),  // TODO (AA 2021-11-10): convert
-                                     // this value to mm instead of steps
-                           .ack_id = ack_msg_id,
-                           .lim_sw_triggered = lim_sw_status};
-            static_cast<void>(
-                status_queue_client.send_move_status_reporter_queue(ack));
-        }
-    }
+
     auto limit_switch_triggered() -> bool {
         if (hardware.check_limit_switch() && can_step()) {
-            send_ack(true, AckMessageId::error);
+            finish_current_move(AckMessageId::error, true);
             return true;
         }
         if (hardware.check_limit_switch() && !can_step()) {
-            send_ack(true, AckMessageId::complete);
+            finish_current_move(AckMessageId::complete, true);
             return true;
         }
         return false;
@@ -190,10 +177,24 @@ class MotorInterruptHandler {
         return (buffered_move.velocity > 0);
     }
 
-    void finish_current_move() {
+    void finish_current_move(AckMessageId ack_msg_id = AckMessageId::complete,
+                             bool lim_switch_status = false) {
         has_active_move = false;
         tick_count = 0x0;
-        send_ack(false, AckMessageId::complete);
+
+        if (buffered_move.group_id != NO_GROUP) {
+            auto ack = Ack{.group_id = buffered_move.group_id,
+                           .seq_id = buffered_move.seq_id,
+                           .current_position = static_cast<uint32_t>(
+                               position_tracker >>
+                               31),  // TODO (AA 2021-11-10): convert
+                                     // this value to mm instead of steps
+                           .ack_id = ack_msg_id,
+                           .lim_sw_triggered = lim_switch_status};
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(ack));
+        }
+
         set_buffered_move(Move{});
     }
 

@@ -17,7 +17,11 @@ struct MotionConstraints {
     um_per_tick_sq max_acceleration;
 };
 
-enum class MoveStopCondition : uint8_t { limit_switch = 0x1, cap_sensor = 0x2 };
+enum class MoveStopCondition : uint8_t {
+    none = 0x0,
+    limit_switch = 0x1,
+    cap_sensor = 0x2
+};
 
 struct Move {
     ticks duration;  // in ticks
@@ -25,7 +29,7 @@ struct Move {
     steps_per_tick_sq acceleration;
     uint8_t group_id;
     uint8_t seq_id;
-    MoveStopCondition stop_condition;
+    MoveStopCondition stop_condition = MoveStopCondition::none;
 };
 
 const uint8_t NO_GROUP = 0xff;

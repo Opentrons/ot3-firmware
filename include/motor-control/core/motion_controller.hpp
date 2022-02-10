@@ -51,8 +51,8 @@ class MotionController {
                  .acceleration = acceleration_steps,
                  .group_id = can_msg.group_id,
                  .seq_id = can_msg.seq_id,
-                 .stop_condition = static_cast<MoveStopCondition>(
-                     can_msg.request_stop_condition)};
+                 .stop_condition =
+                     MoveStopCondition(can_msg.request_stop_condition)};
 
         queue.try_write(msg);
     }
