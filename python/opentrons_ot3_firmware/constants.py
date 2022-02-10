@@ -92,10 +92,10 @@ class MessageId(int, Enum):
     limit_sw_request = 0x08
     limit_sw_response = 0x09
 
-    read_sensor_request = 0x802
-    write_sensor_request = 0x803
-    baseline_sensor_request = 0x804
-    read_sensor_response = 0x805
+    read_sensor_request = 0x82
+    write_sensor_request = 0x83
+    baseline_sensor_request = 0x84
+    read_sensor_response = 0x85
 
 
 @unique
