@@ -53,6 +53,12 @@ SECTIONS
     . = ALIGN(4);
   } >ROM
 
+  /* Location in RAM where firmware update flags are stored. */
+  .fw_update_flag_block 0x20000100 (NOLOAD) :
+  {
+    KEEP(*(.fw_update_flag_section))
+  } > RAM
+
   /* The program code and other data into "ROM" Rom type memory */
   .text :
   {
