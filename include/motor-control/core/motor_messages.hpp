@@ -23,13 +23,13 @@ enum class MoveStopCondition : uint8_t {
     cap_sensor = 0x2
 };
 
-struct Move {
-    ticks duration;  // in ticks
+struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     steps_per_tick velocity;
     steps_per_tick_sq acceleration;
     uint8_t group_id;
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
+    ticks duration;  // in ticks
 };
 const uint8_t NO_GROUP = 0xff;
 
