@@ -400,13 +400,11 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
     }
 
     auto operator==(const WriteToSensorRequest& other) const -> bool = default;
-
 };
 
 struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
     uint8_t sensor;
     uint8_t sample_rate;
-
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BaselineSensorRequest {
@@ -414,11 +412,11 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
         uint8_t sample_rate = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, sample_rate);
-        return BaselineSensorRequest{.sensor = sensor, .sample_rate = sample_rate};
+        return BaselineSensorRequest{.sensor = sensor,
+                                     .sample_rate = sample_rate};
     }
 
     auto operator==(const BaselineSensorRequest& other) const -> bool = default;
-
 };
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
@@ -433,7 +431,7 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
         return iter - body;
     }
     auto operator==(const ReadFromSensorResponse& other) const
-    -> bool = default;
+        -> bool = default;
 };
 
 /**

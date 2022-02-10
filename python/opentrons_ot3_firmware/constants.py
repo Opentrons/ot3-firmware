@@ -126,6 +126,7 @@ class ToolType(int, Enum):
 @unique
 class SensorType(int, Enum):
     """Sensor types available."""
+
     tip = 0x00
     capacitive = 0x01
     humidity = 0x02

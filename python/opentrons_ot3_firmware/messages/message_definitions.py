@@ -322,7 +322,9 @@ class WriteToSensorRequest:  # noqa: D101
 class BaselineSensorRequest:  # noqa: D101
     payload: payloads.BaselineSensorRequest
     payload_type: Type[BinarySerializable] = payloads.BaselineSensorRequest
-    message_id: Literal[MessageId.baseline_sensor_request] = MessageId.baseline_sensor_request
+    message_id: Literal[
+        MessageId.baseline_sensor_request
+    ] = MessageId.baseline_sensor_request
 
 
 @dataclass
