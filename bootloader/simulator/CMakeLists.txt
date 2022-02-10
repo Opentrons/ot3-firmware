@@ -28,6 +28,7 @@ add_library(freertos-bootloader STATIC ${FREERTOS_SOURCES})
 
 set(BOOTLOADER_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/updater.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         )
 

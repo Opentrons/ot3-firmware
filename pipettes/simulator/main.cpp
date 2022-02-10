@@ -38,7 +38,7 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{
     .thigh = 0xFFFFF,
     .coolconf = 0x60000};
 
-static auto i2c_comms = i2c_sim::SimEEProm{};
+static auto i2c_comms = sim_i2c::SimI2C{};
 
 static motor_class::Motor pipette_motor{
     spi_comms,

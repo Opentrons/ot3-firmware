@@ -10,6 +10,7 @@ add_executable(
         test_main.cpp
         test_messages.cpp
         test_message_handler.cpp
+        test_util.cpp
 )
 
 target_include_directories(
