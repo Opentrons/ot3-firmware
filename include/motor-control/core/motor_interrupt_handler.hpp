@@ -104,8 +104,11 @@ class MotorInterruptHandler {
             update_move();
             return false;
         }
-        if (has_active_move && limit_switch_triggered()) {
-            return false;
+        if (has_active_move &&
+            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            if (limit_switch_triggered()) {
+                return false;
+            }
         }
 
         if (has_active_move && can_step() && tick()) {
