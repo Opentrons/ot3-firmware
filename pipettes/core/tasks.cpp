@@ -9,6 +9,7 @@
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
 #include "pipettes/core/tasks/i2c_task_starter.hpp"
+#include "sensors//core/tasks/humidity_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -28,6 +29,9 @@ static auto move_status_task_builder =
         512, pipettes_tasks::QueueClient>{};
 static auto eeprom_task_builder =
     eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
+
+static auto humidity_task_builder =
+    humidity_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
 
 static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
 
@@ -56,6 +60,8 @@ void pipettes_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(5, queues);
 
     auto& eeprom_task = eeprom_task_builder.start(5, i2c_task_client, queues);
+    auto& humidity_task = humidity_task_builder.start(5, i2c_task_client, queues);
+
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
@@ -63,6 +69,7 @@ void pipettes_tasks::start_tasks(
     tasks.move_group = &move_group;
     tasks.move_status_reporter = &move_status_reporter;
     tasks.eeprom_task = &eeprom_task;
+    tasks.humidity_task = &humidity_task;
     tasks.i2c_task = &i2c_task;
 
     queues.motion_queue = &motion.get_queue();
@@ -71,6 +78,7 @@ void pipettes_tasks::start_tasks(
     queues.set_queue(&can_writer.get_queue());
     queues.move_status_report_queue = &move_status_reporter.get_queue();
     queues.eeprom_queue = &eeprom_task.get_queue();
+    queues.humidity_queue = &humidity_task.get_queue();
 
     queues.i2c_queue = &i2c_task.get_queue();
 }
@@ -103,6 +111,11 @@ void pipettes_tasks::QueueClient::send_move_status_reporter_queue(
 void pipettes_tasks::QueueClient::send_eeprom_queue(
     const eeprom_task::TaskMessage& m) {
     eeprom_queue->try_write(m);
+}
+
+void pipettes_tasks::QueueClient::send_humidity_queue(
+    const sensor_task_utils::TaskMessage& m) {
+    humidity_queue->try_write(m);
 }
 
 /**
