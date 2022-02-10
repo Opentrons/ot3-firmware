@@ -31,7 +31,6 @@ struct Move {
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 };
-
 const uint8_t NO_GROUP = 0xff;
 
 enum class AckMessageId : uint8_t { complete = 0x1, error = 0x04 };
