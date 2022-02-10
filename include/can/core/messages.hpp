@@ -373,6 +373,67 @@ struct ReadLimitSwitchResponse : BaseMessage<MessageId::limit_sw_response> {
         -> bool = default;
 };
 
+struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
+    uint8_t sensor;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadFromSensorRequest {
+        uint8_t sensor = 0;
+        body = bit_utils::bytes_to_int(body, limit, sensor);
+        return ReadFromSensorRequest{.sensor = sensor};
+    }
+
+    auto operator==(const ReadFromSensorRequest& other) const -> bool = default;
+};
+
+struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
+    uint8_t sensor;
+    uint16_t data;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> WriteToSensorRequest {
+        uint8_t sensor = 0;
+        uint16_t data = 0;
+        body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, data);
+        return WriteToSensorRequest{.sensor = sensor, .data = data};
+    }
+
+    auto operator==(const WriteToSensorRequest& other) const -> bool = default;
+};
+
+struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
+    uint8_t sensor;
+    uint8_t sample_rate;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> BaselineSensorRequest {
+        uint8_t sensor = 0;
+        uint8_t sample_rate = 0;
+        body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, sample_rate);
+        return BaselineSensorRequest{.sensor = sensor,
+                                     .sample_rate = sample_rate};
+    }
+
+    auto operator==(const BaselineSensorRequest& other) const -> bool = default;
+};
+
+struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
+    can_ids::SensorType sensor{};
+    uint32_t sensor_data;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(sensor_data, body, limit);
+        return iter - body;
+    }
+    auto operator==(const ReadFromSensorResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -382,5 +443,6 @@ using ResponseMessageType =
                  GetMotionConstraintsResponse, GetMoveGroupResponse,
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse>;
+                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
+                 ReadFromSensorResponse>;
 }  // namespace can_messages

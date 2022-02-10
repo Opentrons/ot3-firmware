@@ -302,3 +302,33 @@ class ReadLimitSwitchResponse:  # noqa: D101
     payload: payloads.GetLimitSwitchResponse
     payload_type: Type[BinarySerializable] = payloads.GetLimitSwitchResponse
     message_id: Literal[MessageId.limit_sw_response] = MessageId.limit_sw_response
+
+
+@dataclass
+class ReadFromSensorRequest:  # noqa: D101
+    payload: payloads.ReadFromSensorRequest
+    payload_type: Type[BinarySerializable] = payloads.ReadFromSensorRequest
+    message_id: Literal[MessageId.read_sensor_request] = MessageId.read_sensor_request
+
+
+@dataclass
+class WriteToSensorRequest:  # noqa: D101
+    payload: payloads.WriteToSensorRequest
+    payload_type: Type[BinarySerializable] = payloads.WriteToSensorRequest
+    message_id: Literal[MessageId.write_sensor_request] = MessageId.write_sensor_request
+
+
+@dataclass
+class BaselineSensorRequest:  # noqa: D101
+    payload: payloads.BaselineSensorRequest
+    payload_type: Type[BinarySerializable] = payloads.BaselineSensorRequest
+    message_id: Literal[
+        MessageId.baseline_sensor_request
+    ] = MessageId.baseline_sensor_request
+
+
+@dataclass
+class ReadFromSensorResponse:  # noqa: D101
+    payload: payloads.ReadFromSensorResponse
+    payload_type: Type[BinarySerializable] = payloads.ReadFromSensorResponse
+    message_id: Literal[MessageId.read_sensor_response] = MessageId.read_sensor_response
