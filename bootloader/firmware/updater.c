@@ -38,7 +38,7 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
         return fw_update_error;
     }
 
-    if (!update_state.erased) {
+    if (!state->erased) {
         FLASH_EraseInitTypeDef erase_struct =  {
             .TypeErase=FLASH_TYPEERASE_PAGES,
             .Banks=FLASH_BANK_1,
@@ -49,7 +49,7 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
         if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
             return fw_update_error;
         }
-        update_state.erased = true;
+        state->erased = true;
     }
 
     FwUpdateReturn ret = fw_update_ok;
