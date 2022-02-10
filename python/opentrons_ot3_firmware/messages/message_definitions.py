@@ -302,7 +302,7 @@ class FirmwareUpdateStatusRequest:  # noqa: D101
 @dataclass
 class FirmwareUpdateStatusResponse:  # noqa: D101
     payload: payloads.FirmwareUpdateStatus
-    payload_type: Type[BinarySerializable] = payloads.EmptyPayload
+    payload_type: Type[BinarySerializable] = payloads.FirmwareUpdateStatus
     message_id: Literal[
         MessageId.fw_update_status_response
     ] = MessageId.fw_update_status_response
