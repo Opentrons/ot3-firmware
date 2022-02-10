@@ -42,7 +42,7 @@ add_executable(
         ${GANTRY_SIMULATOR_SRC}
 )
 
-if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(gantry-x-simulator PUBLIC USE_SOCKETCAN)
     target_compile_definitions(gantry-y-simulator PUBLIC USE_SOCKETCAN)
 endif()
