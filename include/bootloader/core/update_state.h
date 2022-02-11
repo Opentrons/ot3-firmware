@@ -23,6 +23,13 @@ typedef struct {
  */
 UpdateState * get_update_state();
 
+
+/**
+ * Reset the state to default;
+ * @param state pointer to state
+ */
+void reset_update_state(UpdateState * state);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
