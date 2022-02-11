@@ -21,6 +21,4 @@ FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages,
     return fw_update_ok;
 }
 
-void fw_update_start_application() {
-
-}
+void fw_update_start_application() {}
