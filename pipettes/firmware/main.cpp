@@ -11,6 +11,7 @@
 
 #include "can/core/ids.hpp"
 #include "can/firmware/hal_can_bus.hpp"
+#include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
@@ -125,6 +126,8 @@ auto main() -> int {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
+
+    app_update_clear_flags();
 
     initialize_timer(plunger_callback);
 

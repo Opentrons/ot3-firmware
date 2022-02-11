@@ -2,10 +2,10 @@
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
-#include "can/core/message_handlers/device_info.hpp"
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
+#include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "gantry/core/tasks.hpp"
 #include "motor-control/core/motor.hpp"
@@ -30,14 +30,15 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest,
     can_messages::ReadLimitSwitchRequest>;
-using DeviceInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    device_info_handler::DeviceInfoHandler<gantry_tasks::QueueClient>,
-    can_messages::DeviceInfoRequest>;
+using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
+    system_handler::SystemMessageHandler<gantry_tasks::QueueClient>,
+    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
+    can_messages::FirmwareUpdateStatusRequest>;
 
 using GantryDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
                              MotionControllerDispatchTarget,
-                             DeviceInfoDispatchTarget>;
+                             SystemDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =
