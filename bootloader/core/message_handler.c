@@ -6,6 +6,7 @@
 #include "bootloader/core/util.h"
 #include "bootloader/core/updater.h"
 #include "bootloader/core/update_state.h"
+#include "common/core/app_update.h"
 
 
 /** Handle a device info request message. */
@@ -17,8 +18,11 @@ static HandleMessageReturn handle_initiate_fw_update(const Message* request, Mes
 /** Handle a chunk of the firmware update data. */
 static HandleMessageReturn handle_fw_update_data(const Message* request, Message* response);
 
-/** Handle a firwmare ypdate complete message. */
+/** Handle a firmware update complete message. */
 static HandleMessageReturn handle_fw_update_complete(const Message* request, Message* response);
+
+/** Handle a request to get firmware update status. */
+static HandleMessageReturn handle_fw_update_status_request(const Message* request, Message* response);
 
 /**
  * Handle a message
@@ -45,6 +49,12 @@ HandleMessageReturn handle_message(const Message* request, Message* response) {
             break;
         case can_messageid_device_info_request:
             ret = handle_device_info_request(request, response);
+            break;
+        case can_messageid_fw_update_status_request:
+            ret = handle_fw_update_status_request(request, response);
+            break;
+        case can_messageid_fw_update_start_app:
+            fw_update_start_application();
             break;
         default:
             break;
@@ -132,5 +142,18 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
     response->arbitration_id.parts.originating_node_id = get_node_id();
     response->size = p - response->data;
 
+    return handle_message_has_response;
+}
+
+
+HandleMessageReturn handle_fw_update_status_request(const Message* request, Message* response) {
+    uint8_t* p = response->data;
+    p = write_uint32(p, app_update_flags());
+
+    response->arbitration_id.id = 0;
+    response->arbitration_id.parts.message_id = can_messageid_fw_update_status_response;
+    response->arbitration_id.parts.node_id = can_nodeid_host;
+    response->arbitration_id.parts.originating_node_id = get_node_id();
+    response->size = p - response->data;
     return handle_message_has_response;
 }

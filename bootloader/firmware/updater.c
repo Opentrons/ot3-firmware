@@ -89,3 +89,7 @@ bool fw_write_to_flash(uint32_t address, uint64_t data) {
                              address,
                              data) == HAL_OK;
 }
+
+void fw_update_start_application() {
+
+}
