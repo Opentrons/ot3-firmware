@@ -4,6 +4,7 @@ find_package(STM32L5xx)
 
 add_STM32L5_driver("Bootloader")
 
+add_subdirectory("startup")
 
 set(BOOTLOADER_L5_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
@@ -16,7 +17,7 @@ set(BOOTLOADER_L5_FW_NON_LINTABLE_SRCS
 macro(target_stm32L5 TARGET)
     ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's
     target_link_libraries(${TARGET}
-            PUBLIC STM32L562RETx
+            PUBLIC STM32L562RETx_bootloader
             STM32L5xx_Drivers_Bootloader
             bootloader-core)
 
