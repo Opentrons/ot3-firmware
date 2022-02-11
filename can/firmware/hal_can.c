@@ -87,7 +87,7 @@ void can_register_message_callback(void * cb_data, can_message_callback callback
  * @param buffer_length length of buffer as defined by HAL
  */
 void can_send_message(HAL_CAN_HANDLE handle, uint32_t arbitration_id, uint8_t* buffer,
-                      enum CanFDMessageLength  buffer_length)
+                      CanFDMessageLength  buffer_length)
 {
     FDCAN_TxHeaderTypeDef tx_header = {
         .Identifier=arbitration_id,
@@ -120,7 +120,7 @@ void can_send_message(HAL_CAN_HANDLE handle, uint32_t arbitration_id, uint8_t* b
 * @param val1 filter value
 * @param val2 filter value
 */
-void can_add_filter(HAL_CAN_HANDLE handle, uint32_t index, enum CanFilterType type, enum CanFilterConfig config,
+void can_add_filter(HAL_CAN_HANDLE handle, uint32_t index, CanFilterType type, CanFilterConfig config,
                 uint32_t val1, uint32_t val2)
 {
     FDCAN_FilterTypeDef filter_def = {
