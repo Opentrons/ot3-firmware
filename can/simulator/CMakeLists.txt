@@ -34,7 +34,7 @@ add_executable(
 
 target_can_simlib(can-simulator)
 
-if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(can-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
