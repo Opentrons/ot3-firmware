@@ -39,19 +39,19 @@ MEMORY
 {
   CCMSRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 16K
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 112K
-  ROM    (rx)    : ORIGIN = 0x08000000,   LENGTH = 512K
+  FLASH   (rx)    : ORIGIN = 0x08000000,   LENGTH = 512K
 }
 
 /* Sections */
 SECTIONS
 {
-  /* The startup code into "ROM" Rom type memory */
+  /* The startup code into FLASH */
   .isr_vector :
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
 
   /* Location in RAM where firmware update flags are stored. */
   .fw_update_flag_block 0x20000100 (NOLOAD) :
@@ -59,7 +59,7 @@ SECTIONS
     KEEP(*(.fw_update_flag_section))
   } > RAM
 
-  /* The program code and other data into "ROM" Rom type memory */
+  /* The program code and other data into FLASH */
   .text :
   {
     . = ALIGN(4);
@@ -75,22 +75,22 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >ROM
+  } >FLASH
 
-  /* Constant data into "ROM" Rom type memory */
+  /* Constant data into FLASH */
   .rodata :
   {
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
 
   .ARM.extab   : { 
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
   
   .ARM : {
     . = ALIGN(4);
@@ -98,7 +98,7 @@ SECTIONS
     *(.ARM.exidx*)
     __exidx_end = .;
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
 
   .preinit_array     :
   {
@@ -107,7 +107,7 @@ SECTIONS
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
   
   .init_array :
   {
@@ -117,7 +117,7 @@ SECTIONS
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
   
   .fini_array :
   {
@@ -127,12 +127,12 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(4);
-  } >ROM
+  } >FLASH
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 
-  /* Initialized data sections into "RAM" Ram type memory */
+  /* Initialized data sections into FLASH */
   .data : 
   {
     . = ALIGN(4);
@@ -143,9 +143,9 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
     
-  } >RAM AT> ROM
+  } >RAM AT> FLASH
 
-  /* Uninitialized data section into "RAM" Ram type memory */
+  /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
   {
