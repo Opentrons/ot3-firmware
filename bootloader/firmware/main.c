@@ -1,4 +1,5 @@
 #include "platform_specific_hal_conf.h"
+#include "platform_specific_hal.h"
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "can/firmware/utils.h"
@@ -120,6 +121,11 @@ int main() {
                 tx_message.arbitration_id.parts.originating_node_id = get_node_id();
                 tx_header.Identifier = tx_message.arbitration_id.id;
                 tx_header.DataLength = length_to_hal(tx_message.size);
+
+                // Wait for there to be room.
+                while (HAL_FDCAN_GetTxFifoFreeLevel(&hcan1) == 0) {
+                    HAL_Delay(1);
+                }
 
                 if (HAL_FDCAN_AddMessageToTxFifoQ(&hcan1, &tx_header,
                                                   tx_message.data) != HAL_OK) {
