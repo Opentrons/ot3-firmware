@@ -1,11 +1,12 @@
 #include "platform_specific_hal_conf.h"
 #include "platform_specific_hal.h"
+#include "common/core/app_update.h"
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
+#include "common/firmware/clocking.h"
 #include "can/firmware/utils.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
-#include "common/firmware/clocking.h"
 #include "bootloader/firmware/system.h"
 
 /**
@@ -90,6 +91,12 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
 int main() {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+
+    // We will jump to application there's no update requested and the app is
+    // already present.
+    if (!is_app_update_requested() && is_app_in_flash()) {
+
+    }
 
     initialize_can(&hcan1);
 

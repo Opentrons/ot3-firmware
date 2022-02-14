@@ -34,6 +34,10 @@ bool is_app_update_requested();
 void app_update_clear_flags();
 
 
+/** Is the main application present in flash. */
+bool is_app_in_flash();
+
+
 
 #ifdef __cplusplus
 }  // extern "C"
