@@ -2,7 +2,7 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
 

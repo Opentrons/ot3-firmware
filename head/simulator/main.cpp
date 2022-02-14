@@ -2,7 +2,7 @@
 
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/simulation/spi.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"

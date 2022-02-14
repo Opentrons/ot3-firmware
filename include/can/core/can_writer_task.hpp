@@ -6,7 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_core.hpp"
 #include "can/core/messages.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 
 namespace message_writer_task {

@@ -11,7 +11,7 @@
 
 #include <cstring>
 
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
 

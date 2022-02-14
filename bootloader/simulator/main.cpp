@@ -7,7 +7,7 @@
 #include "bootloader/core/node_id.h"
 #include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "task.h"
 
 /** The simulator's bootloader */

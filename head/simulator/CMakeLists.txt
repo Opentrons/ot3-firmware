@@ -37,7 +37,7 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(head-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
-target_compile_definitions(head-simulator PUBLIC ENABLE_LOGGING)
+target_enable_logging(head-simulator)
 
 target_can_simlib(head-simulator)
 

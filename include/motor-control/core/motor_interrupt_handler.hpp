@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor_hardware_interface.hpp"
 #include "motor_messages.hpp"

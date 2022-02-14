@@ -4,7 +4,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "sensors/core/tasks/environment_sensor_callbacks.hpp"
 #include "sensors/core/utils.hpp"
