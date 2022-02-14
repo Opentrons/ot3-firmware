@@ -7,6 +7,7 @@
 #include "can/firmware/utils.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
+#include "bootloader/core/updater.h"
 #include "bootloader/firmware/system.h"
 
 /**
@@ -27,8 +28,83 @@ static FDCAN_RxHeaderTypeDef rx_header;
 static Message rx_message;
 static Message tx_message;
 
+/**
+ * The entry point to the CAN application updater.
+ */
+static void upgrade_application();
 
-static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
+/**
+ * Initialize the CAN handle.
+ * @param can_handle
+ */
+static void initialize_can(FDCAN_HandleTypeDef * can_handle);
+
+
+int main() {
+    HardwareInit();
+    RCC_Peripheral_Clock_Select();
+
+    // We will jump to application if there's no update requested and the app is
+    // already present.
+    if (!is_app_update_requested() && is_app_in_flash()) {
+        fw_update_start_application();
+    } else {
+        upgrade_application();
+    }
+}
+
+
+void upgrade_application() {
+
+    initialize_can(&hcan1);
+
+    tx_header.IdType = FDCAN_EXTENDED_ID;
+    tx_header.TxFrameType = FDCAN_DATA_FRAME;
+    tx_header.DataLength = FDCAN_DLC_BYTES_8;
+    tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
+    tx_header.FDFormat = FDCAN_FD_CAN;
+    tx_header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    tx_header.MessageMarker = 0;
+
+    for (;;) {
+        if (HAL_FDCAN_GetRxFifoFillLevel(&hcan1, FDCAN_RX_FIFO0) > 0) {
+
+            if (HAL_FDCAN_GetRxMessage(&hcan1, FDCAN_RX_FIFO0, &rx_header,
+                                       rx_message.data) != HAL_OK) {
+                // Read request Error
+                Error_Handler();
+            }
+
+            rx_message.arbitration_id.id = rx_header.Identifier;
+            rx_message.size = length_from_hal(rx_header.DataLength);
+
+            HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
+
+            if (return_code == handle_message_has_response) {
+                // Set the originating id to our node id
+                tx_message.arbitration_id.parts.originating_node_id = get_node_id();
+                tx_header.Identifier = tx_message.arbitration_id.id;
+                tx_header.DataLength = length_to_hal(tx_message.size);
+
+                // Wait for there to be room.
+                while (HAL_FDCAN_GetTxFifoFreeLevel(&hcan1) == 0) {
+                    HAL_Delay(1);
+                }
+
+                if (HAL_FDCAN_AddMessageToTxFifoQ(&hcan1, &tx_header,
+                                                  tx_message.data) != HAL_OK) {
+                    // Transmission request Error
+                    Error_Handler();
+                }
+            }
+        }
+    }
+}
+
+
+
+void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     if (MX_FDCAN1_Init(&hcan1) != HAL_OK) {
         Error_Handler();
     }
@@ -85,61 +161,4 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     filter_def.FilterID1 = 0,
     filter_def.FilterID2 = 0;
     HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
-}
-
-
-int main() {
-    HardwareInit();
-    RCC_Peripheral_Clock_Select();
-
-    // We will jump to application there's no update requested and the app is
-    // already present.
-    if (!is_app_update_requested() && is_app_in_flash()) {
-
-    }
-
-    initialize_can(&hcan1);
-
-    tx_header.IdType = FDCAN_EXTENDED_ID;
-    tx_header.TxFrameType = FDCAN_DATA_FRAME;
-    tx_header.DataLength = FDCAN_DLC_BYTES_8;
-    tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
-    tx_header.FDFormat = FDCAN_FD_CAN;
-    tx_header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    tx_header.MessageMarker = 0;
-
-    for (;;) {
-        if (HAL_FDCAN_GetRxFifoFillLevel(&hcan1, FDCAN_RX_FIFO0) > 0) {
-
-            if (HAL_FDCAN_GetRxMessage(&hcan1, FDCAN_RX_FIFO0, &rx_header,
-                                   rx_message.data) != HAL_OK) {
-                // Read request Error
-                Error_Handler();
-            }
-
-            rx_message.arbitration_id.id = rx_header.Identifier;
-            rx_message.size = length_from_hal(rx_header.DataLength);
-
-            HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
-
-            if (return_code == handle_message_has_response) {
-                // Set the originating id to our node id
-                tx_message.arbitration_id.parts.originating_node_id = get_node_id();
-                tx_header.Identifier = tx_message.arbitration_id.id;
-                tx_header.DataLength = length_to_hal(tx_message.size);
-
-                // Wait for there to be room.
-                while (HAL_FDCAN_GetTxFifoFreeLevel(&hcan1) == 0) {
-                    HAL_Delay(1);
-                }
-
-                if (HAL_FDCAN_AddMessageToTxFifoQ(&hcan1, &tx_header,
-                                                  tx_message.data) != HAL_OK) {
-                    // Transmission request Error
-                    Error_Handler();
-                }
-            }
-        }
-    }
 }
