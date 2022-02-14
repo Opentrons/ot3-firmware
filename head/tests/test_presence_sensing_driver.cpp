@@ -1,4 +1,5 @@
 #include "catch2/catch.hpp"
+#include "common/core/tool_detection.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/tests/mock_adc.hpp"
 
@@ -8,9 +9,7 @@ SCENARIO("get readings called on presence sensing driver") {
             adc::RawADCReadings{.z_motor = 666, .a_motor = 666, .gripper = 666};
         static auto adc_comms = adc::MockADC{raw_readings};
 
-        auto at = ot3_tool_list::AttachedTool{};
-
-        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms, at);
+        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
         WHEN("get_readings func is called") {
             auto voltage_readings = ps.get_readings();
@@ -40,10 +39,9 @@ SCENARIO("get_tool called on presence sensing driver") {
             auto raw_readings = adc::RawADCReadings{
                 .z_motor = 2332, .a_motor = 3548, .gripper = 666};
             static auto adc_comms = adc::MockADC{raw_readings};
-            auto ps = presence_sensing_driver::PresenceSensingDriver(
-                adc_comms, ot3_tool_list::AttachedTool{});
-            auto tools = ot3_tool_list::AttachedTool(
-                ps.get_readings(), ot3_tool_list::get_tool_list());
+            auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
+            auto tools = attached_tools::AttachedTools(
+                ps.get_readings(), tool_detection::lookup_table());
 
             THEN("Tools mapped to voltage reading") {
                 REQUIRE(tools.gripper == can_ids::ToolType::gripper);
@@ -55,10 +53,9 @@ SCENARIO("get_tool called on presence sensing driver") {
             auto raw_readings = adc::RawADCReadings{
                 .z_motor = 9999, .a_motor = 9999, .gripper = 9999};
             static auto adc_comms = adc::MockADC{raw_readings};
-            auto ps = presence_sensing_driver::PresenceSensingDriver(
-                adc_comms, ot3_tool_list::AttachedTool{});
-            auto tools = ot3_tool_list::AttachedTool(
-                ps.get_readings(), ot3_tool_list::get_tool_list());
+            auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
+            auto tools = attached_tools::AttachedTools(
+                ps.get_readings(), tool_detection::lookup_table());
 
             THEN("Tools mapped to voltage reading") {
                 REQUIRE(tools.gripper == can_ids::ToolType::undefined_tool);
@@ -72,28 +69,14 @@ SCENARIO("get_tool called on presence sensing driver") {
             auto raw_readings =
                 adc::RawADCReadings{.z_motor = 2, .a_motor = 20, .gripper = 20};
             static auto adc_comms = adc::MockADC{raw_readings};
-            auto ps = presence_sensing_driver::PresenceSensingDriver(
-                adc_comms, ot3_tool_list::AttachedTool{});
-            auto tools = ot3_tool_list::AttachedTool(
-                ps.get_readings(), ot3_tool_list::get_tool_list());
+            auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
+            auto tools = attached_tools::AttachedTools(
+                ps.get_readings(), tool_detection::lookup_table());
 
             THEN("Tools mapped to voltage reading") {
                 REQUIRE(tools.gripper == can_ids::ToolType::nothing_attached);
                 REQUIRE(tools.a_motor == can_ids::ToolType::nothing_attached);
                 REQUIRE(tools.z_motor == can_ids::ToolType::nothing_attached);
-            }
-        }
-    }
-}
-
-SCENARIO("ot3 tools list for tool detection") {
-    GIVEN("ot3 tools lower and upper voltage bounds for tool detection") {
-        auto tools = ot3_tool_list::get_tool_list();
-        WHEN("when lower bound compared with upper bound") {
-            THEN("lower bound is always found lower or equal to upper bounds") {
-                for (auto& element : tools) {
-                    REQUIRE(element.bounds.lower <= element.bounds.upper);
-                }
             }
         }
     }
