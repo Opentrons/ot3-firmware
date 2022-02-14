@@ -15,17 +15,17 @@ auto dword_address_iter_cb(uint32_t address, uint64_t data) -> bool {
 
 SCENARIO("dword_address_iter") {
     GIVEN("a data buffer on 64bit boundary") {
-        auto arr = std::array<uint8_t, 16>{0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA,
-                                           0xF9, 0xF8, 0xFE, 0xFD, 0xFC, 0xFB,
-                                           0xFA, 0xF9, 0xF8, 0xF7};
+        auto arr = std::array<uint8_t, 16>{
+            0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8,
+            0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8, 0xF7};
         WHEN("called") {
             results.clear();
             auto ret = dword_address_iter(0x800000, arr.data(), arr.size(),
                                           dword_address_iter_cb);
 
             auto expected =
-                std::vector<Result>{Result{0x800000, 0xFFFEFDFCFBFAF9F8},
-                                    Result{0x800008, 0xFEFDFCFBFAF9F8F7}};
+                std::vector<Result>{Result{0x800000, 0xF8F9FAFBFCFDFEFF},
+                                    Result{0x800008, 0xF7F8F9FAFBFCFDFE}};
 
             THEN("returns true") { REQUIRE(ret); }
             THEN("the address and data are correct") {
@@ -44,16 +44,17 @@ SCENARIO("dword_address_iter") {
             THEN("returns true") { REQUIRE(ret); }
             THEN("the address and data are correct") {
                 auto expected =
-                    std::vector<Result>{Result{0x800000, 0xFFFEFD0000000000}};
+                    std::vector<Result>{Result{0x800000, 0x0000000000FDFEFF}};
                 REQUIRE(results == expected);
             }
         }
     }
 
     GIVEN("a data buffer not on 64bit boundary") {
-        auto arr = std::array<uint8_t, 18>{0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA,
-                                           0xF9, 0xF8, 0xFE, 0xFD, 0xFC, 0xFB,
-                                           0xFA, 0xF9, 0xF8, 0xF7, 0xFD, 0xFC};
+        auto arr = std::array<uint8_t, 18>{
+            0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8,
+            0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8, 0xF7,
+            0xFD, 0xFC};
         WHEN("called") {
             results.clear();
             auto ret = dword_address_iter(0x800000, arr.data(), arr.size(),
@@ -61,9 +62,9 @@ SCENARIO("dword_address_iter") {
             THEN("returns true") { REQUIRE(ret); }
             THEN("the address and data are correct") {
                 auto expected =
-                    std::vector<Result>{Result{0x800000, 0xFFFEFDFCFBFAF9F8},
-                                        Result{0x800008, 0xFEFDFCFBFAF9F8F7},
-                                        Result{0x800010, 0xFDFC000000000000}};
+                    std::vector<Result>{Result{0x800000, 0xF8F9FAFBFCFDFEFF},
+                                        Result{0x800008, 0xF7F8F9FAFBFCFDFE},
+                                        Result{0x800010, 0x000000000000FCFD}};
                 REQUIRE(results == expected);
             }
         }

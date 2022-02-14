@@ -110,7 +110,7 @@ bool dword_address_iter(uint32_t address, const uint8_t * buffer, uint8_t length
             address += sizeof(uint64_t);
         }
         // The number of bytes to shift.
-        int shift_bytes = sizeof(uint64_t) - (double_word_index + 1);
+        int shift_bytes = double_word_index;
         memcpy((uint8_t*)(&double_word) + shift_bytes, buffer + i, 1);
     }
     // Send the last address
