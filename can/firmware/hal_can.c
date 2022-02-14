@@ -1,6 +1,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "platform_specific_hal_conf.h"
+#include "platform_specific_hal.h"
 #include "can/firmware/hal_can.h"
 #include "can/firmware/utils.h"
 #include "common/firmware/can.h"
@@ -102,8 +103,9 @@ void can_send_message(HAL_CAN_HANDLE handle, uint32_t arbitration_id, uint8_t* b
     };
 
     // Wait for there to be room.
-    while (HAL_FDCAN_GetTxFifoFreeLevel(handle) == 0)
-    {}
+    while (HAL_FDCAN_GetTxFifoFreeLevel(handle) == 0) {
+        HAL_Delay(1);
+    }
 
     HAL_FDCAN_AddMessageToTxFifoQ(handle, &tx_header, buffer);
 }
