@@ -12,6 +12,7 @@ add_executable(motor-control
         test_move_group.cpp
         test_fixed_point_utils.cpp
         test_motor_driver.cpp
+        test_limit_switch.cpp
 )
 
 target_ot_motor_control(motor-control)

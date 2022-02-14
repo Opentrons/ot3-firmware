@@ -72,7 +72,6 @@ class MotorInterruptHandler {
             hardware.step();
         }
         hardware.unstep();
-        hardware.set_LED(hardware.check_limit_switch());
     }
 
     // Start or stop the handler; this will also start or stop the timer
@@ -108,12 +107,17 @@ class MotorInterruptHandler {
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 limit_switch_triggered()) {
+                finish_current_move(AckMessageId::triggered_lim_sw, true);
                 return false;
             }
             if (can_step() && tick()) {
                 return true;
             }
             if (!can_step()) {
+                if (buffered_move.stop_condition ==
+                    MoveStopCondition::limit_switch) {
+                    finish_current_move(AckMessageId::error, false);
+                }
                 finish_current_move();
                 if (has_messages()) {
                     update_move();
@@ -128,15 +132,7 @@ class MotorInterruptHandler {
     }
 
     auto limit_switch_triggered() -> bool {
-        if (hardware.check_limit_switch() && can_step()) {
-            finish_current_move(AckMessageId::error, true);
-            return true;
-        }
-        if (hardware.check_limit_switch() && !can_step()) {
-            finish_current_move(AckMessageId::complete, true);
-            return true;
-        }
-        return false;
+        return hardware.check_limit_switch();
     }
     [[nodiscard]] auto tick() -> bool {
         /*
@@ -196,7 +192,6 @@ class MotorInterruptHandler {
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
         }
-
         set_buffered_move(Move{});
     }
 

@@ -33,7 +33,11 @@ struct Move {        // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 const uint8_t NO_GROUP = 0xff;
 
-enum class AckMessageId : uint8_t { complete = 0x1, error = 0x04 };
+enum class AckMessageId : uint8_t {
+    complete = 0x1,
+    triggered_lim_sw = 0x2,
+    error = 0x04
+};
 
 struct Ack {
     uint8_t group_id;
