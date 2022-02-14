@@ -31,7 +31,7 @@ static Message tx_message;
 /**
  * The entry point to the CAN application updater.
  */
-static void upgrade_application();
+static void run_upgrade();
 
 /**
  * Initialize the CAN handle.
@@ -49,12 +49,12 @@ int main() {
     if (!is_app_update_requested() && is_app_in_flash()) {
         fw_update_start_application();
     } else {
-        upgrade_application();
+        run_upgrade();
     }
 }
 
 
-void upgrade_application() {
+void run_upgrade() {
 
     initialize_can(&hcan1);
 
