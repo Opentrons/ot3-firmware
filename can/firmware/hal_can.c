@@ -100,6 +100,11 @@ void can_send_message(HAL_CAN_HANDLE handle, uint32_t arbitration_id, uint8_t* b
         .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
         .MessageMarker=0
     };
+
+    // Wait for there to be room.
+    while (HAL_FDCAN_GetTxFifoFreeLevel(handle) == 0)
+    {}
+
     HAL_FDCAN_AddMessageToTxFifoQ(handle, &tx_header, buffer);
 }
 
