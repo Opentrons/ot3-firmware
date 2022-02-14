@@ -4,6 +4,7 @@
 #include "motor_hardware_interface.hpp"
 #include "motor_messages.hpp"
 #include "tasks/move_status_reporter_task.hpp"
+#include "common/core/logging.h"
 
 namespace motor_handler {
 

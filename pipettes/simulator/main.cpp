@@ -6,7 +6,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/simulation/i2c_sim.hpp"
 #include "common/simulation/spi.hpp"
 #include "motor-control/core/motor.hpp"

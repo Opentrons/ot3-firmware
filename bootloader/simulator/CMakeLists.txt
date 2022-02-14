@@ -41,11 +41,11 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(bootloader-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
-target_compile_definitions(bootloader-simulator PUBLIC ENABLE_LOGGING)
+target_enable_logging(bootloader-simulator)
 
 target_can_simlib(bootloader-simulator)
 
-target_link_libraries(bootloader-simulator PRIVATE can-core freertos-bootloader pthread bootloader-core)
+target_link_libraries(bootloader-simulator PRIVATE can-core freertos-bootloader pthread bootloader-core common-simulation)
 
 set_target_properties(bootloader-simulator
         PROPERTIES CXX_STANDARD 20

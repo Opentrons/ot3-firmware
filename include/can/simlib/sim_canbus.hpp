@@ -9,7 +9,7 @@
 #include "can/simlib/filter.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 
 namespace sim_canbus {
 

@@ -9,7 +9,7 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"

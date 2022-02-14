@@ -1,6 +1,6 @@
 #include "common/core/app_update.h"
 
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 
 void app_update_start() { LOG("Starting app update!\n"); }
 
