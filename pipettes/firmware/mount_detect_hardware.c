@@ -1,4 +1,5 @@
 #include "mount_detect_hardware.h"
+#include "platform_specific_hal_conf.h"
 
 #include "common/firmware/errors.h"
 
@@ -16,7 +17,6 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1) {
     adc1->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
     adc1->Init.Resolution = ADC_RESOLUTION_12B;
     adc1->Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    adc1->Init.GainCompensation = 0;
     adc1->Init.ScanConvMode = ADC_SCAN_DISABLE;
     adc1->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
     adc1->Init.LowPowerAutoWait = DISABLE;
@@ -44,7 +44,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hadc->Instance == ADC1) {
         /* Peripheral clock enable */
-        __HAL_RCC_ADC12_CLK_ENABLE();
+        __HAL_RCC_ADC_CLK_ENABLE();
 
         __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -55,29 +55,29 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     }
 }
 
-void adc_setup() {
-    MX_ADC1_Init(&adc1);
-    if (HAL_ADCEx_Calibration_Start(&adc1, ADC_SINGLE_ENDED) != HAL_OK) {
+void adc_init(void) {
+    MX_ADC1_Init(&hadc1);
+    if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK) {
         /* Calibration Error */
         Error_Handler();
     }
     ADC_ChannelConfTypeDef sConfig = {0};
     // Configure channel 16 (PB1) for single ended long duration read on
     // the tool ID pin
-    sConfig.Channel = ADC_CHAN_16;
+    sConfig.Channel = ADC_CHANNEL_16;
     sConfig.Rank = ADC_REGULAR_RANK_1;
     sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset = 0;
-    if (HAL_ADC_ConfigChannel(&adc1, &sConfig) != HAL_OK) {
+    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
         Error_Handler();
     }
 }
 
 
-uint16_t adc_read() {
-    HAL_ADC_Start(&hadc);
-    HAL_ADC_PollForConversion(&hadc, HAL_MAX_DELAY);
-    return HAL_ADC_GetValue(&hadc);
+uint16_t adc_read(void) {
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    return HAL_ADC_GetValue(&hadc1);
 }

@@ -23,6 +23,7 @@
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
+#include "mount_detection.hpp"
 #include "pipettes/core/tasks.hpp"
 
 #pragma GCC diagnostic push
@@ -115,6 +116,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
     utility_gpio_init();
+    adc_init();
+    auto id = pipette_mounts::detect_id();
 
     // TODO(lc 01/04/2021): We should move this setup to another object
     // responsible for sensor control.
@@ -136,7 +139,7 @@ auto main() -> int {
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c_comms,
                                 // TODO: Load from mount interface
-                                can_ids::NodeId::pipette_left);
+                                id);
 
     vTaskStartScheduler();
 }
