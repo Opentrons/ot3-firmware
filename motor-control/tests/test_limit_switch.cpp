@@ -35,7 +35,8 @@ TEST_CASE("Move with stop condition == limit switch") {
     GIVEN("the move is in progress") {
         WHEN("the limit switch has been triggered") {
             test_objs.hw.set_mock_lim_sw(true);
-            while (!test_objs.handler.pulse());
+            while (!test_objs.handler.pulse())
+                ;
             THEN("the move should be stopped with ack id = limit switch") {
                 Ack read_ack = test_objs.reporter.messages.back();
                 REQUIRE(read_ack.ack_id == AckMessageId::triggered_lim_sw);
