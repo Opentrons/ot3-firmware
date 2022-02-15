@@ -92,14 +92,15 @@ bool fw_write_to_flash(uint32_t address, uint64_t data) {
 }
 
 
-typedef void (*pFunction)(void);
-pFunction JumpToApplication;
-uint32_t JumpAppAddress;
+#define SYSMEM_START APP_FLASH_ADDRESS
+#define SYSMEM_BOOT (SYSMEM_START + 4)
+
+const uint32_t *const sysmem_boot_loc = (uint32_t*)SYSMEM_BOOT;
 
 void fw_update_start_application() {
     // Disable irqs.
     __disable_irq();
-//
+
     // systick should be off at boot
     SysTick->CTRL = 0;
     SysTick->LOAD = 0;
@@ -112,12 +113,12 @@ void fw_update_start_application() {
         NVIC->ICPR[i]=0xFFFFFFFF;
     }
 
-    // Set the bootloader jump address.
-    JumpAppAddress = *(__IO uint32_t *) (APP_FLASH_ADDRESS + 4);
-    JumpToApplication = (pFunction) JumpAppAddress;
-
     // Initialize user bootloader's Stack Pointer
     __set_MSP(*(__IO uint32_t *) APP_FLASH_ADDRESS);
 
-    JumpToApplication();
+    asm volatile (
+        "bx %0"
+        : // no outputs
+        : "r" (*sysmem_boot_loc)
+        : "memory"  );
 }
