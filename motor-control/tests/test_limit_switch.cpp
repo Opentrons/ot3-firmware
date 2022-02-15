@@ -30,27 +30,29 @@ struct HandlerContainer {
 
 TEST_CASE("Move with stop condition == limit switch") {
     HandlerContainer test_objs{};
-    Move msg1 = Move{.stop_condition = MoveStopCondition::limit_switch};
+    Move msg1 = Move{.duration = 0.5,
+                     .velocity = convert_velocity(0.5),
+                     .stop_condition = MoveStopCondition::limit_switch};
     test_objs.queue.try_write_isr(msg1);
     GIVEN("the move is in progress") {
         WHEN("the limit switch has been triggered") {
             test_objs.hw.set_mock_lim_sw(true);
-            while (!test_objs.handler.pulse())
-                ;
+            test_objs.handler.pulse();
             THEN("the move should be stopped with ack id = limit switch") {
                 Ack read_ack = test_objs.reporter.messages.back();
-                REQUIRE(read_ack.ack_id == AckMessageId::triggered_lim_sw);
+                REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }
     }
     GIVEN("the limit switch has not been triggered") {
         test_objs.hw.set_mock_lim_sw(false);
         WHEN("the move is finished") {
-            while (!test_objs.handler.pulse())
-                ;
+            test_objs.handler.pulse();  // check whether I only need to call
+                                        // once
             THEN("the move should be stopped with ack id = error") {
                 Ack read_ack = test_objs.reporter.messages.back();
-                REQUIRE(read_ack.ack_id == AckMessageId::error);
+                REQUIRE(read_ack.ack_id ==
+                        AckMessageId::complete_without_condition);
             }
         }
     }
@@ -58,17 +60,19 @@ TEST_CASE("Move with stop condition == limit switch") {
 TEST_CASE("Move with stop condition != limit switch") {
     HandlerContainer test_objs{};
     GIVEN("Move with stop condition none in progress") {
-        Move msg1 = Move{.stop_condition = MoveStopCondition::none};
+        Move msg1 = Move{.duration = 0.5,
+                         .velocity = convert_velocity(0.5),
+                         .stop_condition = MoveStopCondition::limit_switch};
         test_objs.queue.try_write_isr(msg1);
         WHEN("a limit switch is triggered") {
             test_objs.hw.set_mock_lim_sw(true);
             THEN(
                 "when the move is done, the ack id of the finished message is "
                 "not lim sw triggered") {
-                while (!test_objs.handler.pulse())
-                    ;
+                test_objs.handler.pulse();
                 Ack read_ack = test_objs.reporter.messages.back();
-                REQUIRE(read_ack.ack_id != AckMessageId::triggered_lim_sw);
+                REQUIRE(read_ack.ack_id !=
+                        AckMessageId::complete_without_condition);
             }
         }
     }

@@ -107,7 +107,7 @@ class MotorInterruptHandler {
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 limit_switch_triggered()) {
-                finish_current_move(AckMessageId::triggered_lim_sw, true);
+                finish_current_move(AckMessageId::stopped_by_condition, true);
                 return false;
             }
             if (can_step() && tick()) {
@@ -116,7 +116,8 @@ class MotorInterruptHandler {
             if (!can_step()) {
                 if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch) {
-                    finish_current_move(AckMessageId::error, false);
+                    finish_current_move(
+                        AckMessageId::complete_without_condition, false);
                 }
                 finish_current_move();
                 if (has_messages()) {
@@ -175,20 +176,22 @@ class MotorInterruptHandler {
         return (buffered_move.velocity > 0);
     }
 
-    void finish_current_move(AckMessageId ack_msg_id = AckMessageId::complete,
-                             bool lim_switch_status = false) {
+    void finish_current_move(
+        AckMessageId ack_msg_id = AckMessageId::complete_without_condition,
+        bool lim_switch_status = false) {
         has_active_move = false;
         tick_count = 0x0;
 
         if (buffered_move.group_id != NO_GROUP) {
-            auto ack = Ack{.group_id = buffered_move.group_id,
-                           .seq_id = buffered_move.seq_id,
-                           .current_position = static_cast<uint32_t>(
-                               position_tracker >>
-                               31),  // TODO (AA 2021-11-10): convert
-                                     // this value to mm instead of steps
-                           .ack_id = ack_msg_id,
-                           .lim_sw_triggered = lim_switch_status};
+            auto ack = Ack{
+                .group_id = buffered_move.group_id,
+                .seq_id = buffered_move.seq_id,
+                .current_position = static_cast<uint32_t>(
+                    position_tracker >>
+                    31),  // TODO (AA 2021-11-10): convert
+                          // this value to mm instead of steps
+                .ack_id = ack_msg_id,
+            };
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
         }

@@ -34,9 +34,8 @@ struct Move {        // NOLINT(cppcoreguidelines-pro-type-member-init)
 const uint8_t NO_GROUP = 0xff;
 
 enum class AckMessageId : uint8_t {
-    complete = 0x1,
-    triggered_lim_sw = 0x2,
-    error = 0x04
+    complete_without_condition = 0x1,
+    stopped_by_condition = 0x2
 };
 
 struct Ack {
@@ -44,7 +43,7 @@ struct Ack {
     uint8_t seq_id;
     uint32_t current_position;
     AckMessageId ack_id;
-    bool lim_sw_triggered;
+    //    bool lim_sw_triggered;
 };
 
 constexpr const int RADIX = 31;
