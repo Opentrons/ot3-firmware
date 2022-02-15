@@ -1,4 +1,5 @@
 #include "platform_specific_hal_conf.h"
+#include "platform_specific_hal.h"
 #include "bootloader/core/updater.h"
 #include "bootloader/core/util.h"
 #include "bootloader/firmware/constants.h"
@@ -90,6 +91,33 @@ bool fw_write_to_flash(uint32_t address, uint64_t data) {
                              data) == HAL_OK;
 }
 
-void fw_update_start_application() {
 
+typedef void (*pFunction)(void);
+pFunction JumpToApplication;
+uint32_t JumpAppAddress;
+
+void fw_update_start_application() {
+    // Disable irqs.
+    __disable_irq();
+//
+    // systick should be off at boot
+    SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
+
+    /* Clear Interrupt Enable Register & Interrupt Pending Register */
+    for (int i=0;i<8;i++)
+    {
+        NVIC->ICER[i]=0xFFFFFFFF;
+        NVIC->ICPR[i]=0xFFFFFFFF;
+    }
+
+    // Set the bootloader jump address.
+    JumpAppAddress = *(__IO uint32_t *) (APP_FLASH_ADDRESS + 4);
+    JumpToApplication = (pFunction) JumpAppAddress;
+
+    // Initialize user bootloader's Stack Pointer
+    __set_MSP(*(__IO uint32_t *) APP_FLASH_ADDRESS);
+
+    JumpToApplication();
 }

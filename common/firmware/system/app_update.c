@@ -56,7 +56,7 @@ update_flag_type app_update_flags() {
 
 
 bool is_app_update_requested() {
-    return firmware_update_flags & UPDATE_FLAG_REQUESTED;
+    return firmware_update_flags == UPDATE_FLAG_REQUESTED;
 }
 
 
