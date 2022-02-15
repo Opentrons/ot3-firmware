@@ -17,9 +17,7 @@ FwUpdateReturn fw_update_initialize(UpdateState* state) {
     if (!state) {
         return fw_update_error;
     }
-    state->num_messages_received=0;
-    state->error_detection=0;
-    state->erased=false;
+    reset_update_state(state);
 
     // TODO (amit, 2022-02-01): Erase app flash space?
     return fw_update_ok;

@@ -26,6 +26,18 @@ void app_update_start() {
     // Disable irqs.
     __disable_irq();
 
+    // systick should be off at boot
+    SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
+
+    /* Clear Interrupt Enable Register & Interrupt Pending Register */
+    for (int i=0;i<8;i++)
+    {
+        NVIC->ICER[i]=0xFFFFFFFF;
+        NVIC->ICPR[i]=0xFFFFFFFF;
+    }
+
     // Set the bootloader jump address.
     JumpAddress = *(__IO uint32_t *) (SYSMEM_BOOT);
     JumpToBootloader = (pFunction) JumpAddress;

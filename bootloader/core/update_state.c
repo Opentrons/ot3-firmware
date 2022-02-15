@@ -10,3 +10,11 @@ static UpdateState update_state = {
 UpdateState * get_update_state() {
     return &update_state;
 }
+
+void reset_update_state(UpdateState * state) {
+    if (state) {
+        state->num_messages_received = 0;
+        state->error_detection = 0;
+        state->erased = false;
+    }
+}

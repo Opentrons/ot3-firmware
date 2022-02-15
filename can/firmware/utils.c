@@ -4,10 +4,10 @@
 
 /**
  * Convert a CanFilterConfig to a hal value
- * @param config can filter config enum class
+ * @param config can filter config enum
  * @return hal defined constant
  */
-uint32_t filter_config_to_hal(enum CanFilterConfig config)  {
+uint32_t filter_config_to_hal(CanFilterConfig config)  {
     uint32_t result = FDCAN_FILTER_DISABLE;
     switch (config) {
         case reject:
@@ -36,7 +36,7 @@ uint32_t filter_config_to_hal(enum CanFilterConfig config)  {
  * @param type can filter type enum class
  * @return hal defined constant
  */
-uint32_t filter_type_to_hal(enum CanFilterType type)  {
+uint32_t filter_type_to_hal(CanFilterType type)  {
     uint32_t result = FDCAN_FILTER_RANGE;
     switch (type) {
         case exact:
@@ -59,7 +59,7 @@ uint32_t filter_type_to_hal(enum CanFilterType type)  {
  * @param length length
  * @return hal encoded length
  */
-uint32_t length_to_hal(enum CanFDMessageLength length)  {
+uint32_t length_to_hal(CanFDMessageLength length)  {
     switch (length) {
         case l0:
             return FDCAN_DLC_BYTES_0;
@@ -103,7 +103,7 @@ uint32_t length_to_hal(enum CanFDMessageLength length)  {
  * @param length hal encoded length
  * @return CanFDMessageLength
  */
-enum CanFDMessageLength length_from_hal(uint32_t length)  {
+CanFDMessageLength length_from_hal(uint32_t length)  {
     switch (length) {
         case FDCAN_DLC_BYTES_0:
             return l0;

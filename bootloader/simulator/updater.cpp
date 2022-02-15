@@ -3,9 +3,7 @@
 #include "bootloader/core/update_state.h"
 
 FwUpdateReturn fw_update_initialize(UpdateState* state) {
-    state->num_messages_received = 0;
-    state->error_detection = 0;
-    state->erased = false;
+    reset_update_state(state);
     return fw_update_ok;
 }
 
