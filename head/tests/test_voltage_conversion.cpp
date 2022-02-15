@@ -3,17 +3,14 @@
 #include "head/tests/mock_adc.hpp"
 
 SCENARIO("Raw ADC readings to voltage conversions") {
-    GIVEN("Raw readings and a PresenceSensingDriver instance") {
-        auto raw_readings =
-            adc::RawADCReadings{.z_motor = 666, .a_motor = 666, .gripper = 666};
-        static auto adc_comms = adc::MockADC{raw_readings};
-        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
+    GIVEN("Raw readings and an ADC instance") {
+        static auto adc_comms = adc::MockADC{666, 333, 999};
         WHEN("get_readings function is called") {
-            auto voltage_readings = ps.get_readings();
+            auto voltage_readings = adc_comms.get_voltages();
 
             THEN("RAW readings converted to voltages") {
-                REQUIRE(voltage_readings.gripper == 536);
-                REQUIRE(voltage_readings.a_motor == 536);
+                REQUIRE(voltage_readings.gripper == 805);
+                REQUIRE(voltage_readings.a_motor == 268);
                 REQUIRE(voltage_readings.z_motor == 536);
             }
         }

@@ -11,6 +11,7 @@ add_executable(
         test_synchronization.cpp
         test_spi.cpp
         test_tool_detection.cpp
+        test_voltage_conversion.cpp
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)

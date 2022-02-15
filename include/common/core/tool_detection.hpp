@@ -45,18 +45,17 @@ struct Tool {
 // filtering prevents such strange values from happening
 auto lookup_table() -> std::span<Tool>;
 
-
 #if !defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)
 // Clang 12 and 13 and head currently have a bug in the way they handle specific
 // uses of template concepts that stems from a disagreement about interpretation
 // of standards language between them, and, well, everybody else. This bug
-// completely breaks the compilation of half of std::ranges, which we use extensively
-// here. The bug: https://github.com/llvm/llvm-project/issues/44178
-// Since we only ever compile tests and firmware and simulation with gcc, it's not
-// really a problem, but it does break linting, which uses clang-tidy and therefore
-// clang. Our options are limited here; the only way I could see to actually get
-// to use this code is to have dummy versions of the functions here that get used
-// during lint.
+// completely breaks the compilation of half of std::ranges, which we use
+// extensively here. The bug: https://github.com/llvm/llvm-project/issues/44178
+// Since we only ever compile tests and firmware and simulation with gcc, it's
+// not really a problem, but it does break linting, which uses clang-tidy and
+// therefore clang. Our options are limited here; the only way I could see to
+// actually get to use this code is to have dummy versions of the functions here
+// that get used during lint.
 
 // Limit filter options to one of the two available pieces of metadata
 template <typename T>
@@ -128,15 +127,15 @@ inline auto carrier_from_reading(millivolts_t reading) -> Carrier {
 // Turn a reading into specifically the tool type attached. If the
 // lookup table isn't specified, the full built in table is used.
 template <ToolList Lookup>
-auto tooltype_from_reading(millivolts_t reading,
-                           Lookup with_lookup) -> can_ids::ToolType {
+auto tooltype_from_reading(millivolts_t reading, Lookup with_lookup)
+    -> can_ids::ToolType {
     return tool_from_reading(reading, with_lookup).tool_type;
 };
 
 inline auto tooltype_from_reading(millivolts_t reading) -> can_ids::ToolType {
     return tooltype_from_reading(reading, lookup_table());
 }
-#else // defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)
+#else   // defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)
 template <typename FilterTarget>
 auto lookup_table_filtered(FilterTarget filter_by) {
     return filter_lookup_table(filter_by, lookup_table());
@@ -177,15 +176,14 @@ inline auto carrier_from_reading(millivolts_t reading) -> Carrier {
 }
 
 template <typename Lookup>
-auto tooltype_from_reading(millivolts_t reading,
-                           Lookup with_lookup) -> can_ids::ToolType {
+auto tooltype_from_reading(millivolts_t reading, Lookup with_lookup)
+    -> can_ids::ToolType {
     return tool_from_reading(reading, with_lookup).tool_type;
 };
 
 inline auto tooltype_from_reading(millivolts_t reading) -> can_ids::ToolType {
     return tooltype_from_reading(reading, lookup_table());
 }
-#endif // defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)
-
+#endif  // defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)
 
 };  // namespace tool_detection

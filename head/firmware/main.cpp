@@ -180,17 +180,8 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
 }
-adc::ADC_interface ADC_intf2 = {
 
-    .ADC_handle = &adc2};
-
-adc::ADC_interface ADC_intf1 = {
-
-    .ADC_handle = &adc1
-
-};
-
-static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
+static auto ADC_comms = adc::ADC(&adc1, &adc2);
 
 static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
 

@@ -3,24 +3,6 @@
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/tests/mock_adc.hpp"
 
-SCENARIO("get readings called on presence sensing driver") {
-    GIVEN("PresenceSensingDriver instance") {
-        auto raw_readings =
-            adc::RawADCReadings{.z_motor = 666, .a_motor = 666, .gripper = 666};
-        static auto adc_comms = adc::MockADC{raw_readings};
-
-        auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
-
-        WHEN("get_readings func is called") {
-            auto voltage_readings = ps.get_readings();
-
-            THEN("mocked driver readings read") {
-                REQUIRE(voltage_readings.gripper == 536);
-            }
-        }
-    }
-}
-
 SCENARIO("get_tool called on presence sensing driver") {
     GIVEN(
         "PresenceSensingDriver instance with valid and invalid ADC readings") {
@@ -36,9 +18,7 @@ SCENARIO("get_tool called on presence sensing driver") {
         */
 
         WHEN("get_tool func is called and raw ADC readings are within bounds") {
-            auto raw_readings = adc::RawADCReadings{
-                .z_motor = 2332, .a_motor = 3548, .gripper = 666};
-            static auto adc_comms = adc::MockADC{raw_readings};
+            static auto adc_comms = adc::MockADC(2332, 3548, 666);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
             auto tools = attached_tools::AttachedTools(
                 ps.get_readings(), tool_detection::lookup_table());
@@ -50,9 +30,7 @@ SCENARIO("get_tool called on presence sensing driver") {
             }
         }
         WHEN("get_tool func is called and raw ADC readings are out of bounds") {
-            auto raw_readings = adc::RawADCReadings{
-                .z_motor = 9999, .a_motor = 9999, .gripper = 9999};
-            static auto adc_comms = adc::MockADC{raw_readings};
+            static auto adc_comms = adc::MockADC(9999, 9999, 9999);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
             auto tools = attached_tools::AttachedTools(
                 ps.get_readings(), tool_detection::lookup_table());
@@ -66,9 +44,7 @@ SCENARIO("get_tool called on presence sensing driver") {
         WHEN(
             "get_tool func is called and raw ADC readings are for no tool "
             "attached") {
-            auto raw_readings =
-                adc::RawADCReadings{.z_motor = 2, .a_motor = 20, .gripper = 20};
-            static auto adc_comms = adc::MockADC{raw_readings};
+            static auto adc_comms = adc::MockADC(2, 20, 20);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
             auto tools = attached_tools::AttachedTools(
                 ps.get_readings(), tool_detection::lookup_table());
