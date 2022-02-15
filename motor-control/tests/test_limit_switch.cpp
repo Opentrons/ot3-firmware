@@ -35,11 +35,10 @@ TEST_CASE("Move with stop condition == limit switch") {
     GIVEN("the move is in progress") {
         WHEN("the limit switch has been triggered") {
             test_objs.hw.set_mock_lim_sw(true);
+            while (!test_objs.handler.pulse());
             THEN("the move should be stopped with ack id = limit switch") {
-                if (test_objs.reporter.messages.size() == 1) {
-                    auto msg = test_objs.reporter.messages[0];
-                    REQUIRE(msg.ack_id == AckMessageId::triggered_lim_sw);
-                }
+                Ack read_ack = test_objs.reporter.messages.back();
+                REQUIRE(read_ack.ack_id == AckMessageId::triggered_lim_sw);
             }
         }
     }
@@ -48,10 +47,8 @@ TEST_CASE("Move with stop condition == limit switch") {
         WHEN("the move is finished") {
             test_objs.handler.finish_current_move();
             THEN("the move should be stopped with ack id = error") {
-                if (test_objs.reporter.messages.size() == 2) {
-                    auto msg = test_objs.reporter.messages[0];
-                    REQUIRE(msg.ack_id == AckMessageId::error);
-                }
+                Ack read_ack = test_objs.reporter.messages.back();
+                REQUIRE(read_ack.ack_id == AckMessageId::error);
             }
         }
     }
@@ -66,10 +63,8 @@ TEST_CASE("Move with stop condition != limit switch") {
             THEN(
                 "when the move is done, the ack id of the finished message is "
                 "not lim sw triggered") {
-                if (test_objs.reporter.messages.size() == 1) {
-                    auto msg = test_objs.reporter.messages[0];
-                    REQUIRE(msg.ack_id != AckMessageId::triggered_lim_sw);
-                }
+                Ack read_ack = test_objs.reporter.messages.back();
+                REQUIRE(read_ack.ack_id != AckMessageId::triggered_lim_sw);
             }
         }
     }
