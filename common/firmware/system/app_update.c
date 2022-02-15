@@ -24,6 +24,9 @@ void app_update_start() {
     // Notify bootloader that an update is requested by main application.
     firmware_update_flags = UPDATE_FLAG_REQUESTED;
 
+    // Clear reset flags for bootloader.
+    __HAL_RCC_CLEAR_RESET_FLAGS();
+
     // Disable irqs.
     __disable_irq();
 

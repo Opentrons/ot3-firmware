@@ -40,16 +40,30 @@ static void run_upgrade();
 static void initialize_can(FDCAN_HandleTypeDef * can_handle);
 
 
+/**
+ * Check against RCC_CSR register. Were we started from:
+ *   pin reset
+ *   low-power reset
+ *   brown-out reset
+ */
+#define RESET_CHECK_MASK (RCC_CSR_PINRSTF | RCC_CSR_LPWRRSTF | RCC_CSR_BORRSTF)
+
+/**
+ * Are we starting due to power on.
+ */
+#define IS_POWER_ON_RESET() ((RCC->CSR & RESET_CHECK_MASK) == RESET_CHECK_MASK)
+
+
 int main() {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
 
     // We will jump to application if there's no update requested and the app is
     // already present.
-    if (!is_app_update_requested() && is_app_in_flash()) {
-        fw_update_start_application();
-    } else {
+    if ((!IS_POWER_ON_RESET() && is_app_update_requested()) || !is_app_in_flash()) {
         run_upgrade();
+    } else {
+        fw_update_start_application();
     }
 }
 
