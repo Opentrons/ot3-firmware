@@ -12,6 +12,8 @@
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
+static auto i2c_task_client =
+    i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto mc_task_builder =
     motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
@@ -43,19 +45,17 @@ void pipettes_tasks::start_tasks(
     auto& tasks = pipettes_tasks::get_tasks();
 
     auto& can_writer = can_task::start_writer(can_bus);
-    auto i2c_writer =
-        i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();
     can_task::start_reader(can_bus, id);
 
     auto& i2c_task = i2c_task_builder.start(5, i2c);
-    i2c_writer.set_queue(&i2c_task.get_queue());
+    i2c_task_client.set_queue(&i2c_task.get_queue());
 
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(5, queues);
 
-    auto& eeprom_task = eeprom_task_builder.start(5, i2c_writer, queues);
+    auto& eeprom_task = eeprom_task_builder.start(5, i2c_task_client, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

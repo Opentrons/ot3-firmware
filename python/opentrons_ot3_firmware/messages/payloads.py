@@ -48,7 +48,7 @@ class GetSpeedResponsePayload(utils.BinarySerializable):
 class WriteToEEPromRequestPayload(utils.BinarySerializable):
     """Write to eeprom request."""
 
-    serial_number: utils.UInt8Field
+    serial_number: utils.UInt16Field
 
 
 @dataclass

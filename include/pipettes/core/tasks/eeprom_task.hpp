@@ -55,7 +55,7 @@ class EEPromMessageHandler {
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
-        LOG("Received request to read serial number");
+        LOG("Received request to read serial number\n");
         writer.read(DEVICE_ADDRESS, callback);
     }
 
