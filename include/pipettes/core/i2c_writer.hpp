@@ -41,10 +41,11 @@ class I2CWriter {
 
     void read(uint16_t device_address,
               const Callback
-                  callback) {  // NOLINT (performance-unnecessary-value-param)
+                  callback,  // NOLINT (performance-unnecessary-value-param)
+              uint8_t reg = 0x0) {
         // We want to copy the callback every time as opposed to passing a
         // reference to it from the eeprom task.
-        std::array<uint8_t, MAX_SIZE> max_buffer{};
+        std::array<uint8_t, MAX_SIZE> max_buffer{reg};
         pipette_messages::ReadFromI2C read_msg{.address = device_address,
                                                .buffer = max_buffer,
                                                .size = MAX_SIZE,
