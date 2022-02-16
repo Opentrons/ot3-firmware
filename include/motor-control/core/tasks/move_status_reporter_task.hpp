@@ -33,9 +33,7 @@ class MoveStatusMessageHandler {
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .current_position = message.current_position,
-            .ack_id =
-                static_cast<uint8_t>(motor_messages::AckMessageId::complete),
-        };
+            .ack_id = static_cast<uint8_t>(message.ack_id)};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }
 

@@ -17,17 +17,26 @@ struct MotionConstraints {
     um_per_tick_sq max_acceleration;
 };
 
-struct Move {
+enum class MoveStopCondition : uint8_t {
+    none = 0x0,
+    limit_switch = 0x1,
+    cap_sensor = 0x2
+};
+
+struct Move {        // NOLINT(cppcoreguidelines-pro-type-member-init)
     ticks duration;  // in ticks
     steps_per_tick velocity;
     steps_per_tick_sq acceleration;
     uint8_t group_id;
     uint8_t seq_id;
+    MoveStopCondition stop_condition = MoveStopCondition::none;
 };
-
 const uint8_t NO_GROUP = 0xff;
 
-enum class AckMessageId : uint8_t { complete = 0x1, error = 0x04 };
+enum class AckMessageId : uint8_t {
+    complete_without_condition = 0x1,
+    stopped_by_condition = 0x2
+};
 
 struct Ack {
     uint8_t group_id;

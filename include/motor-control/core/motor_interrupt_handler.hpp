@@ -72,7 +72,6 @@ class MotorInterruptHandler {
             hardware.step();
         }
         hardware.unstep();
-        hardware.set_LED(hardware.check_limit_switch());
     }
 
     // Start or stop the handler; this will also start or stop the timer
@@ -104,20 +103,37 @@ class MotorInterruptHandler {
             update_move();
             return false;
         }
-        if (has_active_move && can_step() && tick()) {
-            return true;
-        }
-        if (has_active_move && !can_step()) {
-            finish_current_move();
-            if (has_messages()) {
-                update_move();
-                if (can_step() && tick()) {
-                    return true;
-                }
+        if (has_active_move) {
+            if (buffered_move.stop_condition ==
+                    MoveStopCondition::limit_switch &&
+                limit_switch_triggered()) {
+                finish_current_move(AckMessageId::stopped_by_condition);
+                return false;
             }
-            return false;
+            if (can_step() && tick()) {
+                return true;
+            }
+            if (!can_step()) {
+                if (buffered_move.stop_condition ==
+                    MoveStopCondition::limit_switch) {
+                    finish_current_move();
+                    return false;
+                }
+                finish_current_move();
+                if (has_messages()) {
+                    update_move();
+                    if (can_step() && tick()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
         return false;
+    }
+
+    auto limit_switch_triggered() -> bool {
+        return hardware.check_limit_switch();
     }
     [[nodiscard]] auto tick() -> bool {
         /*
@@ -160,17 +176,21 @@ class MotorInterruptHandler {
         return (buffered_move.velocity > 0);
     }
 
-    void finish_current_move() {
+    void finish_current_move(
+        AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
+
         if (buffered_move.group_id != NO_GROUP) {
-            auto ack = Ack{.group_id = buffered_move.group_id,
-                           .seq_id = buffered_move.seq_id,
-                           .current_position = static_cast<uint32_t>(
-                               position_tracker >>
-                               31),  // TODO (AA 2021-11-10): convert
-                                     // this value to mm instead of steps
-                           .ack_id = AckMessageId::complete};
+            auto ack = Ack{
+                .group_id = buffered_move.group_id,
+                .seq_id = buffered_move.seq_id,
+                .current_position = static_cast<uint32_t>(
+                    position_tracker >>
+                    31),  // TODO (AA 2021-11-10): convert
+                          // this value to mm instead of steps
+                .ack_id = ack_msg_id,
+            };
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
         }
