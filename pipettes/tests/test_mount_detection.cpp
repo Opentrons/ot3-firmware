@@ -7,19 +7,19 @@ SCENARIO("Initial mount detection") {
         WHEN("Checking left-side voltages") {
             // Use a list of voltages that are rough midpoints of Z mount bounds
             auto voltage = GENERATE(1860, 1430, 450, 920);
-            THEN("the mount should always be right") {
+            THEN("the mount should always be left") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==
-                        can_ids::NodeId::pipette_right);
+                        can_ids::NodeId::pipette_left);
             }
         }
         WHEN("Checking right-side voltages") {
             // Roughly the midpoints of A mount bounds
             auto voltage = GENERATE(2375, 2852);
-            THEN("the mount should always be left") {
+            THEN("the mount should always be right") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==
-                        can_ids::NodeId::pipette_left);
+                        can_ids::NodeId::pipette_right);
             }
         }
         WHEN("Checking out of bounds voltages") {
