@@ -107,7 +107,7 @@ class MotorInterruptHandler {
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 limit_switch_triggered()) {
-                finish_current_move(AckMessageId::stopped_by_condition, true);
+                finish_current_move(AckMessageId::stopped_by_condition);
                 return false;
             }
             if (can_step() && tick()) {
@@ -116,8 +116,8 @@ class MotorInterruptHandler {
             if (!can_step()) {
                 if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch) {
-                    finish_current_move(
-                        AckMessageId::complete_without_condition, false);
+                    finish_current_move();
+                    return false;
                 }
                 finish_current_move();
                 if (has_messages()) {
@@ -177,8 +177,7 @@ class MotorInterruptHandler {
     }
 
     void finish_current_move(
-        AckMessageId ack_msg_id = AckMessageId::complete_without_condition,
-        bool lim_switch_status = false) {
+        AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
 
