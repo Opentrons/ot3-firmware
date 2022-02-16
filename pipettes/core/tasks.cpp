@@ -61,7 +61,8 @@ void pipettes_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(5, queues);
 
     auto& eeprom_task = eeprom_task_builder.start(5, i2c_task_client, queues);
-    auto& environment_sensor_task = environment_sensor_task_builder.start(5, i2c_task_client, queues);
+    auto& environment_sensor_task =
+        environment_sensor_task_builder.start(5, i2c_task_client, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
