@@ -33,7 +33,6 @@ struct Tool {
     [[nodiscard]] auto within_bounds(millivolts_t reading) const -> bool {
         return ((reading >= this->bounds.lower) &&
                 (reading < this->bounds.upper));
-        return false;
     }
 };
 
