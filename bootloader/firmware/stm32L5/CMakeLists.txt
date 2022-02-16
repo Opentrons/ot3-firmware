@@ -84,7 +84,7 @@ macro(target_stm32L5 TARGET)
 
     # Runs openocd to flash the board (without using a debugger)
     add_custom_target(${TARGET}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:${TARGET}>;reset;exit"
+            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg" "-c" "program $<TARGET_FILE:${TARGET}>;reset;exit"
             VERBATIM
             COMMENT "Flashing board"
             DEPENDS ${TARGET})
