@@ -13,7 +13,6 @@ class FakeSensor : public sensor_simulator::SensorType {
         DEVICE_ID = 0x2;
         REGISTER_MAP = {{0x2, 0}};
     }
-
 };
 
 auto fakesensor = FakeSensor{};

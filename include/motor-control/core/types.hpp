@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-using sq0_31 = int32_t;  // 0: signed bit,  1-31: fractional bits
+using sq0_31 = int32_t;   // 0: signed bit,  1-31: fractional bits
 using sq14_15 = int32_t;  // 0: signed bit,  1-31: fractional bits
 using q31_31 =
     uint64_t;  // 0: overflow bit, 1-32: integer bits, 33-64: fractional bits

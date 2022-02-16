@@ -14,8 +14,7 @@
 
 namespace hdc2080_utils {
 
-static auto convert(uint16_t data, can_ids::SensorType type)
-    -> sq14_15;
+static auto convert(uint16_t data, can_ids::SensorType type) -> sq14_15;
 
 // constants
 static constexpr float TEMP_CONST_MULTIPLIER = 165.0;
@@ -47,16 +46,19 @@ static constexpr uint8_t SAMPLE_RATE =
 static constexpr uint8_t SET_DATARDY = 1 << 7;
 static constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
 
-[[maybe_unused]] static auto convert(uint16_t data, can_ids::SensorType type) -> sq14_15 {
+[[maybe_unused]] static auto convert(uint16_t data, can_ids::SensorType type)
+    -> sq14_15 {
     switch (type) {
         case can_ids::SensorType::humidity: {
             // returns humidity in relative humidity percentage
-            float calculated_humidity = HUMIDITY_CONST * ((float)data / MAX_SIZE);
+            float calculated_humidity =
+                HUMIDITY_CONST * ((float)data / MAX_SIZE);
             return convert_to_fixed_point(calculated_humidity, 15);
         }
         case can_ids::SensorType::temperature: {
             // returns temperature in celsius
-            float calculated_temp = TEMP_CONST_MULTIPLIER * ((float)data / MAX_SIZE) - TEMP_CONST;
+            float calculated_temp =
+                TEMP_CONST_MULTIPLIER * ((float)data / MAX_SIZE) - TEMP_CONST;
             return convert_to_fixed_point(calculated_temp, 15);
         }
         default:

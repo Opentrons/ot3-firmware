@@ -13,8 +13,8 @@
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/eeprom.hpp"
+#include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/sensors.hpp"
 #include "task.h"
 

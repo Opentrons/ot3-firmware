@@ -1,16 +1,15 @@
+#include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
-#include "can/core/messages.hpp"
 #include "pipettes/core/i2c_writer.hpp"
-#include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/hdc2080.hpp"
+#include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 
 float fixed_to_float(uint32_t data) {
     constexpr uint32_t power_of_two = 2 << 15;
-    return (1.0 * static_cast<float>(data))/ power_of_two;
-
+    return (1.0 * static_cast<float>(data)) / power_of_two;
 }
 
 SCENARIO("read temperature and humidity values") {
@@ -41,32 +40,36 @@ SCENARIO("read temperature and humidity values") {
             }
             AND_WHEN("we read the messages from the queue") {
                 i2c_queue.try_read(&empty_msg);
-                auto read_message = std::get<i2c_writer::ReadFromI2C>(empty_msg);
+                auto read_message =
+                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
                 i2c_queue.try_read(&empty_msg);
-                auto write_message = std::get<i2c_writer::WriteToI2C>(empty_msg);
+                auto write_message =
+                    std::get<i2c_writer::WriteToI2C>(empty_msg);
 
                 THEN("The write and read command addresses are correct") {
                     REQUIRE(write_message.address == hdc2080_utils::ADDRESS);
-                    REQUIRE(write_message.buffer[0] == hdc2080_utils::LSB_HUMIDITY_REGISTER);
+                    REQUIRE(write_message.buffer[0] ==
+                            hdc2080_utils::LSB_HUMIDITY_REGISTER);
                     REQUIRE(read_message.address == hdc2080_utils::ADDRESS);
-                    REQUIRE(read_message.buffer[0] == hdc2080_utils::LSB_HUMIDITY_REGISTER);
-
+                    REQUIRE(read_message.buffer[0] ==
+                            hdc2080_utils::LSB_HUMIDITY_REGISTER);
                 }
-                THEN("using the callback with data returns the expected value") {
+                THEN(
+                    "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> my_buff = {250, 80, 0, 0, 0};
                     read_message.client_callback(my_buff);
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
-                    auto response_msg = std::get<can_messages::ReadFromSensorResponse>(can_msg.message);
+                    auto response_msg =
+                        std::get<can_messages::ReadFromSensorResponse>(
+                            can_msg.message);
                     float check_data = fixed_to_float(response_msg.sensor_data);
                     float expected = 48.88916;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }
-
         }
-
     }
     GIVEN("a request to read the temperature of the sensor") {
         auto read_temperature = sensor_task_utils::TaskMessage(
@@ -78,23 +81,30 @@ SCENARIO("read temperature and humidity values") {
             }
             AND_WHEN("we read the messages from the queue") {
                 i2c_queue.try_read(&empty_msg);
-                auto read_message = std::get<i2c_writer::ReadFromI2C>(empty_msg);
+                auto read_message =
+                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
                 i2c_queue.try_read(&empty_msg);
-                auto write_message = std::get<i2c_writer::WriteToI2C>(empty_msg);
+                auto write_message =
+                    std::get<i2c_writer::WriteToI2C>(empty_msg);
 
                 THEN("The write and read command addresses are correct") {
                     REQUIRE(write_message.address == hdc2080_utils::ADDRESS);
-                    REQUIRE(write_message.buffer[0] == hdc2080_utils::LSB_TEMPERATURE_REGISTER);
+                    REQUIRE(write_message.buffer[0] ==
+                            hdc2080_utils::LSB_TEMPERATURE_REGISTER);
                     REQUIRE(read_message.address == hdc2080_utils::ADDRESS);
-                    REQUIRE(read_message.buffer[0] == hdc2080_utils::LSB_TEMPERATURE_REGISTER);
+                    REQUIRE(read_message.buffer[0] ==
+                            hdc2080_utils::LSB_TEMPERATURE_REGISTER);
                 }
-                THEN("using the callback with data returns the expected value") {
+                THEN(
+                    "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> my_buff = {200, 0, 0, 0, 0};
                     read_message.client_callback(my_buff);
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
-                    auto response_msg = std::get<can_messages::ReadFromSensorResponse>(can_msg.message);
+                    auto response_msg =
+                        std::get<can_messages::ReadFromSensorResponse>(
+                            can_msg.message);
                     float check_data = fixed_to_float(response_msg.sensor_data);
                     float expected = 44.20312;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));

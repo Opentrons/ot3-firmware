@@ -1,6 +1,6 @@
 
-#include "common/core/bit_utils.hpp"
 #include "common/simulation/i2c_sim.hpp"
+#include "common/core/bit_utils.hpp"
 
 auto sim_i2c::SimI2C::central_transmit(uint8_t *data, uint16_t size,
                                        uint16_t dev_address, uint32_t timeout)
