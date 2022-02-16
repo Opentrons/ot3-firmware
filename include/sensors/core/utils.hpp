@@ -17,9 +17,6 @@ concept TaskClient = requires(Client client, const TaskMessage &m) {
     {client.send_environment_sensor_queue(m)};
 };
 
-enum class BitMode {
-    LSB,
-    MSB
-};
+enum class BitMode : uint8_t { LSB = 0x0, MSB = 0x1 };
 
 }  // namespace sensor_task_utils

@@ -26,7 +26,7 @@ struct HumidityReadingCallback {
         auto humidity = convert(data, SensorType::humidity);
 
         auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::humidity, static_cast<uint16_t>(humidity)};
+            {}, SensorType::humidity, static_cast<uint32_t>(humidity)};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 };
@@ -42,7 +42,7 @@ struct TemperatureReadingCallback {
         auto temperature = convert(data, SensorType::temperature);
 
         auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::temperature, static_cast<uint16_t>(temperature)};
+            {}, SensorType::temperature, static_cast<uint32_t>(temperature)};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 };
@@ -65,13 +65,15 @@ template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
 class EnvironmentSensorMessageHandler {
   public:
     explicit EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
-                                    CanClient &can_client)
+                                             CanClient &can_client)
         : writer{i2c_writer},
           can_client{can_client},
           humidity_callback{can_client},
           temperature_callback{can_client} {}
-    EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) = delete;
-    EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) = delete;
+    EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
+        delete;
+    EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
+        delete;
     auto operator=(const EnvironmentSensorMessageHandler &)
         -> EnvironmentSensorMessageHandler & = delete;
     auto operator=(const EnvironmentSensorMessageHandler &&)
@@ -84,11 +86,12 @@ class EnvironmentSensorMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        auto uint16_t configuration_data = DRDY_CONFIG << 8 | SAMPLE_RATE;
+        uint16_t configuration_data = DRDY_CONFIG << 8 | SAMPLE_RATE;
         writer.write(configuration_data, ADDRESS);
         configuration_data = INTERRUPT_REGISTER << 8 | SET_DATARDY;
         writer.write(configuration_data, ADDRESS);
-        configuration_data = MEASURE_REGISTER << 8 | BEGIN_MEASUREMENT_RECORDING;
+        configuration_data =
+            MEASURE_REGISTER << 8 | BEGIN_MEASUREMENT_RECORDING;
         writer.write(configuration_data, ADDRESS);
     }
 
@@ -111,14 +114,17 @@ class EnvironmentSensorMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
             writer.write(HUMIDITY_REGISTER, ADDRESS);
-            writer.read(ADDRESS, humidity_callback);
+            writer.read(ADDRESS, humidity_callback, HUMIDITY_REGISTER);
         } else {
             writer.write(TEMPERATURE_REGISTER, ADDRESS);
-            writer.read(ADDRESS, temperature_callback);
+            writer.read(ADDRESS, temperature_callback, TEMPERATURE_REGISTER);
         }
     }
 
     InternalCallback internal_callback{};
+    sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
+    uint8_t HUMIDITY_REGISTER = LSB_HUMIDITY_REGISTER;
+    uint8_t TEMPERATURE_REGISTER = LSB_TEMPERATURE_REGISTER;
 
     I2CQueueWriter &writer;
     CanClient &can_client;

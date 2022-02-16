@@ -31,7 +31,8 @@ static auto eeprom_task_builder =
     eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
 
 static auto environment_sensor_task_builder =
-    environment_sensor_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
+    environment_sensor_task_starter::TaskStarter<512,
+                                                 pipettes_tasks::QueueClient>{};
 
 static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
 

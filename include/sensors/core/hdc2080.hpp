@@ -1,6 +1,9 @@
 #pragma once
 
 #include "can/core/ids.hpp"
+// TODO (lc 02-16-2022) We should refactor the fixed point
+// helper functions such that they live in a shared location.
+#include "motor-control/core/utils.hpp"
 
 /*
  * Configurations and register information for the TI HDC2080 sensor
@@ -11,18 +14,16 @@
 
 namespace hdc2080_utils {
 
-static auto convert(uint16_t data, can_ids::SensorType type, BitMode mode) -> float;
+static auto convert(uint16_t data, can_ids::SensorType type)
+    -> sq14_15;
 
 // constants
 static constexpr float TEMP_CONST_MULTIPLIER = 165.0;
 static constexpr float TEMP_CONST = 40.5;
 static constexpr float HUMIDITY_CONST = 100.0;
 
-// max bits in LSB mode is 2^8
-static constexpr float LSB_MAX_SIZE = 256;
-
-// max bits in MSB mode is 2^16
-static constexpr float MSB_MAX_SIZE = 65536.0;
+// max bits for regular sensor value reading is 2^16
+static constexpr float MAX_SIZE = 65536.0;
 
 static constexpr uint16_t ADDRESS = 0x41 << 1;
 static constexpr uint16_t DEVICE_ID = 0x07D0;
@@ -46,21 +47,21 @@ static constexpr uint8_t SAMPLE_RATE =
 static constexpr uint8_t SET_DATARDY = 1 << 7;
 static constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
 
-static auto convert(uint16_t data, can_ids::SensorType type, BitMode mode) -> float {
-    auto MAX_SIZE = (mode == BitMode::LSB) ? LSB_MAX_SIZE : MSB_MAX_SIZE;
+[[maybe_unused]] static auto convert(uint16_t data, can_ids::SensorType type) -> sq14_15 {
     switch (type) {
         case can_ids::SensorType::humidity: {
             // returns humidity in relative humidity percentage
-            return HUMIDITY_CONST * ((float)data / MAX_SIZE);
+            float calculated_humidity = HUMIDITY_CONST * ((float)data / MAX_SIZE);
+            return convert_to_fixed_point(calculated_humidity, 15);
         }
         case can_ids::SensorType::temperature: {
             // returns temperature in celsius
-            return TEMP_CONST_MULTIPLIER * ((float)data / MAX_SIZE) -
-                   TEMP_CONST;
+            float calculated_temp = TEMP_CONST_MULTIPLIER * ((float)data / MAX_SIZE) - TEMP_CONST;
+            return convert_to_fixed_point(calculated_temp, 15);
         }
         default:
             return 0.0;
     }
 }
 
-}  // namespace humidity_utils
+}  // namespace hdc2080_utils

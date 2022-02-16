@@ -11,7 +11,7 @@
 #include "pipettes/core/i2c_writer.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "pipettes/core/tasks/i2c_task.hpp"
-#include "sensors/core/tasks/humidity_task.hpp"
+#include "sensors/core/tasks/environmental_sensor_task.hpp"
 
 namespace pipettes_tasks {
 
@@ -42,7 +42,7 @@ struct QueueClient : can_message_writer::MessageWriter {
 
     void send_eeprom_queue(const eeprom_task::TaskMessage& m);
 
-    void send_humidity_queue(const sensor_task_utils::TaskMessage& m);
+    void send_environment_sensor_queue(const sensor_task_utils::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
@@ -56,7 +56,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>*
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
-        sensor_task_utils::TaskMessage>* humidity_queue{nullptr};
+        sensor_task_utils::TaskMessage>* environment_sensor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c_task::TaskMessage>*
         i2c_queue{nullptr};
 };
@@ -86,10 +86,10 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
         QueueClient>* eeprom_task{nullptr};
-    humidity_task::HumidityTask<
+    environment_sensor_task::EnvironmentSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* humidity_task{nullptr};
+        QueueClient>* environment_sensor_task{nullptr};
 };
 
 /**
