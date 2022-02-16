@@ -137,8 +137,7 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms,
-                                id);
+                                pipette_motor.driver, i2c_comms, id);
 
     vTaskStartScheduler();
 }
