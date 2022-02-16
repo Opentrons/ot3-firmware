@@ -10,11 +10,8 @@ add_executable(
         test_eeprom_task.cpp
         test_i2c_writer.cpp
         test_i2c_task.cpp
-<<<<<<< HEAD
         test_mount_detection.cpp
-=======
         test_environment_sensor.cpp
->>>>>>> Add test and simulator
 )
 
 target_include_directories(pipettes PUBLIC ${CMAKE_SOURCE_DIR}/include)
