@@ -10,6 +10,7 @@ add_executable(
         test_eeprom_task.cpp
         test_i2c_writer.cpp
         test_i2c_task.cpp
+        test_mount_detection.cpp
 )
 
 target_include_directories(pipettes PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -27,7 +28,7 @@ target_compile_options(pipettes
         -Wsign-promo
         -Wextra-semi
         -Wctor-dtor-privacy)
-target_link_libraries(pipettes Catch2::Catch2 common-simulation)
+target_link_libraries(pipettes Catch2::Catch2 common-simulation common-core)
 
 catch_discover_tests(pipettes)
 add_build_and_test_target(pipettes)

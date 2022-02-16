@@ -10,9 +10,9 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
 # Add source files that should be checked by clang-tidy here
 set(HEAD_FW_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/adc/adc_comms.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/adc/adc_comms.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
         ${CAN_FW_DIR}/hal_can.c
         ${CAN_FW_DIR}/hal_can_bus.cpp
@@ -129,7 +129,7 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(head-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${HEAD_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${HEAD_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
 list(APPEND LINT_TARGETS head-lint)
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
 # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an

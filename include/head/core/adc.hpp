@@ -3,33 +3,39 @@
 #include <concepts>
 #include <cstdint>
 
+#include "common/core/adc_channel.hpp"
+
 namespace adc {
 
 struct MillivoltsReadings {
-    uint16_t z_motor;
-    uint16_t a_motor;
-    uint16_t gripper;
+    millivolts_t z_motor;
+    millivolts_t a_motor;
+    millivolts_t gripper;
 };
-
-struct RawADCReadings {
-    uint16_t z_motor;
-    uint16_t a_motor;
-    uint16_t gripper;
-};
-
-constexpr int FULLSCALE_VOLTAGE = 3300;
-constexpr int ADC_FULLSCALE_OUTPUT = 4095;
 
 class BaseADC {
   public:
+    static constexpr uint32_t ADC_FULLSCALE_MV = 3300;
+    static constexpr uint32_t ADC_FULLSCALE_READING = 4095;
+    using ChannelType = BaseADCChannel<ADC_FULLSCALE_MV, ADC_FULLSCALE_READING>;
     BaseADC() = default;
-    virtual ~BaseADC() = default;
     BaseADC(const BaseADC&) = default;
     auto operator=(const BaseADC&) -> BaseADC& = default;
-    BaseADC(BaseADC&&) = default;
-    auto operator=(BaseADC&&) -> BaseADC& = default;
+    BaseADC(BaseADC&&) noexcept = default;
+    auto operator=(BaseADC&&) noexcept -> BaseADC& = default;
+    virtual ~BaseADC() = default;
 
-    virtual auto get_readings() -> RawADCReadings = 0;
+    auto get_voltages() -> MillivoltsReadings {
+        return MillivoltsReadings{
+            .z_motor = get_z_channel().get_voltage(),
+            .a_motor = get_a_channel().get_voltage(),
+            .gripper = get_gripper_channel().get_voltage()};
+    }
+
+  protected:
+    virtual auto get_z_channel() -> ChannelType& = 0;
+    virtual auto get_a_channel() -> ChannelType& = 0;
+    virtual auto get_gripper_channel() -> ChannelType& = 0;
 };
 
 }  // namespace adc

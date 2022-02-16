@@ -23,7 +23,6 @@
 #include "common/firmware/spi_comms.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
-#include "head/core/tool_list.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor.hpp"
@@ -181,22 +180,10 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
 }
-adc::ADC_interface ADC_intf2 = {
 
-    .ADC_handle = &adc2};
+static auto ADC_comms = adc::ADC(&adc1, &adc2);
 
-adc::ADC_interface ADC_intf1 = {
-
-    .ADC_handle = &adc1
-
-};
-
-static auto ADC_comms = adc::ADC(ADC_intf1, ADC_intf2);
-
-static auto attached_tools = ot3_tool_list::AttachedTool{};
-
-static auto psd =
-    presence_sensing_driver::PresenceSensingDriver{ADC_comms, attached_tools};
+static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
 
 auto timer_for_notifier = freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(100)>(
     "timer for notifier", ([] {

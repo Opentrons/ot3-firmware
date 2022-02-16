@@ -14,10 +14,7 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
 void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle);
 void adc_setup();
-
-uint32_t adc_read_z_motor();
-uint32_t adc_read_a_motor();
-uint32_t adc_read_gripper();
+uint32_t adc_read(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel);
 
 #ifdef __cplusplus
 }  // extern "C"
