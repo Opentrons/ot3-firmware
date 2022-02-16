@@ -43,7 +43,6 @@ struct Ack {
     uint8_t seq_id;
     uint32_t current_position;
     AckMessageId ack_id;
-    //    bool lim_sw_triggered;
 };
 
 constexpr const int RADIX = 31;

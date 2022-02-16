@@ -7,6 +7,8 @@
 
 using namespace motor_handler;
 
+#define TO_RADIX 31
+
 struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::Move> queue{};
@@ -15,20 +17,6 @@ struct HandlerContainer {
                           test_mocks::MockMoveStatusReporterClient>
         handler{queue, reporter, hw};
 };
-
-/*test cases:
- * 1. move message has stop condition limit switch and hits a limit switch-
- * should stop the move with id limit switch
- *
- * 2. move message has stop condition limit switch and finishes the move without
- * hitting a limit switch, should exit with error code
- *
- * 3. move message has non-limit switch stop condition and hits a limit switch -
- * should not finish the move
- *
- * */
-
-#define TO_RADIX 31
 
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
@@ -76,7 +64,6 @@ TEST_CASE("Move with stop condition == limit switch, case 2") {
         test_objs.hw.set_mock_lim_sw(false);
         CHECK(!test_objs.handler.pulse());
         WHEN("the move is finished") {
-            //            REQUIRE(!test_objs.handler.pulse());
             THEN("the move should have ack_id complete_without_condition") {
                 REQUIRE(!test_objs.handler.pulse());
                 REQUIRE(test_objs.handler.pulse());
