@@ -14,7 +14,12 @@ using TaskMessage =
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage &m) {
-    {client.send_humidity_queue(m)};
+    {client.send_environment_sensor_queue(m)};
+};
+
+enum class BitMode {
+    LSB,
+    MSB
 };
 
 }  // namespace sensor_task_utils

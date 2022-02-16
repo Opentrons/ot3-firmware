@@ -41,11 +41,11 @@ class SensorHandler {
                        sensor_task_utils::TaskMessage m) {
         switch (type) {
             case can_ids::SensorType::temperature: {
-                client.send_humidity_queue(m);
+                client.send_environment_sensor_queue(m);
                 break;
             }
             case can_ids::SensorType::humidity: {
-                client.send_humidity_queue(m);
+                client.send_environment_sensor_queue(m);
             }
             default:
                 break;

@@ -6,18 +6,18 @@
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "sensors/core/utils.hpp"
 
-namespace humidity_task_starter {
+namespace environment_sensor_task_starter {
 
 template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
 class TaskStarter {
   public:
     using I2CWriterType =
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>;
-    using HumidityTaskType = humidity_task::HumidityTask<
+    using EnvironmentTaskType = environment_sensor_task::EnvironmentSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue, I2CWriterType, CanClient>;
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         sensor_task_utils::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<StackDepth, HumidityTaskType,
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, EnvironmentTaskType,
                                                  I2CWriterType, CanClient>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
@@ -28,15 +28,15 @@ class TaskStarter {
     ~TaskStarter() = default;
 
     auto start(uint32_t priority, I2CWriterType& writer, CanClient& can_client)
-        -> HumidityTaskType& {
+        -> EnvironmentTaskType& {
         task.start(priority, "humidity", &writer, &can_client);
         return task_entry;
     }
 
   private:
     QueueType queue{};
-    HumidityTaskType task_entry;
+    EnvironmentTaskType task_entry;
     TaskType task;
 };
 
-}  // namespace humidity_task_starter
+}  // namespace environment_sensor_task_starter

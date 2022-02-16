@@ -4,30 +4,41 @@
 
 /*
  * Configurations and register information for the TI HDC2080 sensor
+ *
+ * Datasheet can be found at:
+ * https://www.ti.com/lit/ds/symlink/hdc2080.pdf?ts=1644850101397&ref_url=https%253A%252F%252Fwww.google.com%252F#:~:text=The%20HDC2080%20device%20is%20an,to%20dissipate%20condensation%20and%20moisture.
  */
 
-namespace humidity_utils {
+namespace hdc2080_utils {
 
-static auto convert(uint16_t data, can_ids::SensorType type) -> float;
+static auto convert(uint16_t data, can_ids::SensorType type, BitMode mode) -> float;
 
 // constants
 static constexpr float TEMP_CONST_MULTIPLIER = 165.0;
 static constexpr float TEMP_CONST = 40.5;
 static constexpr float HUMIDITY_CONST = 100.0;
-// max bits on this sensor is 2^8
-static constexpr float MAX_SIZE = 65536.0;
+
+// max bits in LSB mode is 2^8
+static constexpr float LSB_MAX_SIZE = 256;
+
+// max bits in MSB mode is 2^16
+static constexpr float MSB_MAX_SIZE = 65536.0;
 
 static constexpr uint16_t ADDRESS = 0x41 << 1;
 static constexpr uint16_t DEVICE_ID = 0x07D0;
 
-// Registers to read from
+// Registers to read from or write to
 static constexpr uint8_t INTERRUPT_REGISTER = 0x07;
 static constexpr uint8_t DRDY_CONFIG = 0x0E;
+static const uint8_t MEASURE_REGISTER = 0x0F;
 // Low configurations for both temperature and humidity
 // this records the status when a reading goes below
 // a certain threshold.
-static constexpr uint8_t TEMPERATURE_REGISTER = 0x00;
-static constexpr uint8_t HUMIDITY_REGISTER = 0x02;
+static constexpr uint8_t LSB_TEMPERATURE_REGISTER = 0x00;
+static constexpr uint8_t LSB_HUMIDITY_REGISTER = 0x02;
+
+static constexpr uint8_t MSB_HUMIDITY_REGISTER = 0x01;
+static constexpr uint8_t MSB_TEMPERATURE_REGISTER = 0x03;
 
 // humidity sensor configurations
 static constexpr uint8_t SAMPLE_RATE =
@@ -35,10 +46,11 @@ static constexpr uint8_t SAMPLE_RATE =
 static constexpr uint8_t SET_DATARDY = 1 << 7;
 static constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
 
-static auto convert(uint16_t data, can_ids::SensorType type) -> float {
+static auto convert(uint16_t data, can_ids::SensorType type, BitMode mode) -> float {
+    auto MAX_SIZE = (mode == BitMode::LSB) ? LSB_MAX_SIZE : MSB_MAX_SIZE;
     switch (type) {
         case can_ids::SensorType::humidity: {
-            // returns humidity in
+            // returns humidity in relative humidity percentage
             return HUMIDITY_CONST * ((float)data / MAX_SIZE);
         }
         case can_ids::SensorType::temperature: {
