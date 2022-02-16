@@ -138,7 +138,6 @@ auto main() -> int {
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c_comms,
-                                // TODO: Load from mount interface
                                 id);
 
     vTaskStartScheduler();
