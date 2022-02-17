@@ -58,11 +58,16 @@ int main() {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
 
+    // TODO (al, 2022-02-17): Need detection of FW needing update due to failure.
     // We will jump to application if there's no update requested and the app is
     // already present.
     if ((!IS_POWER_ON_RESET() && is_app_update_requested()) || !is_app_in_flash()) {
         run_upgrade();
     } else {
+        // Clear reset flags. Otherwise, they will persist for the lifetime of
+        // the bootloader and the application.
+        __HAL_RCC_CLEAR_RESET_FLAGS();
+
         fw_update_start_application();
     }
 }
