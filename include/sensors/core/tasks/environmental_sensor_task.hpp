@@ -81,8 +81,8 @@ class EnvironmentSensorMessageHandler {
     ~EnvironmentSensorMessageHandler() = default;
 
     void initialize() {
-        writer.write(DEVICE_ID, ADDRESS);
-        writer.read(ADDRESS, internal_callback);
+        writer.write(DEVICE_ID_REGISTER, ADDRESS);
+        writer.read(ADDRESS, internal_callback, DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
