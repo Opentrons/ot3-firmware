@@ -1,7 +1,3 @@
-#include <array>
-#include <cstdio>
-#include <cstring>
-
 // clang-format off
 #include "FreeRTOS.h"
 #include "system_stm32l5xx.h"

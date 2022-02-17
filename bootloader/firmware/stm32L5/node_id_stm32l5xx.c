@@ -3,6 +3,8 @@
 #include "bootloader/core/node_id.h"
 #include "stm32l5xx_hal.h"
 
+#if defined(node_id_pipette_dynamic)
+
 #define ADC_MAX_VAL 4095
 #define ADC_REF_MV  3300
 static CANNodeId dynamic_id_backing = can_nodeid_broadcast;
@@ -97,6 +99,9 @@ static CANNodeId get_dynamic_nodeid() {
     }
     return dynamic_id_backing;
 }
+
+
+#endif // #if defined(node_id_pipette_dynamic)
 
 
 /**
