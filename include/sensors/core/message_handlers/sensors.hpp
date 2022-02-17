@@ -25,6 +25,10 @@ class SensorHandler {
 
     void visit(std::monostate &m) {}
 
+    void visit(can_messages::SetSensorThresholdRequest &m) {
+        send_to_queue(can_ids::SensorType(m.sensor), m);
+    }
+
     void visit(can_messages::BaselineSensorRequest &m) {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
