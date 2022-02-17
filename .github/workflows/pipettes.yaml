@@ -99,3 +99,6 @@ jobs:
         run: cmake --preset=host-gcc10 .
       - name: 'Build and test'
         run: cmake --build ./build-host --target pipettes-build-and-test
+      - name: 'Build simulator'
+        run: cmake --build ./build-host --target pipettes-simulator
+
