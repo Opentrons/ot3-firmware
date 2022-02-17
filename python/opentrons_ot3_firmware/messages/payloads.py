@@ -278,3 +278,19 @@ class ReadFromSensorResponse(utils.BinarySerializable):
 
     sensor: constants.SensorType
     sensor_data: utils.UInt32Field
+
+
+@dataclass
+class SetSensorThresholdRequest(utils.BinarySerializable):
+    """A request to set the threshold value of a sensor."""
+
+    sensor: constants.SensorType
+    threshold: utils.UInt32Field
+
+
+@dataclass
+class SensorThresholdResponse(utils.BinarySerializable):
+    """A response that sends back the current threshold value of the sensor."""
+
+    sensor: constants.SensorType
+    threshold: utils.UInt32Field

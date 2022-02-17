@@ -496,6 +496,7 @@ using ResponseMessageType =
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
                  PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse>;
+                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+                 SensorThresholdResponse>;
 
 }  // namespace can_messages
