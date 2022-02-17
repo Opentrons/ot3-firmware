@@ -116,6 +116,11 @@ void fw_update_start_application() {
     // Initialize user bootloader's Stack Pointer
     __set_MSP(*(__IO uint32_t *) APP_FLASH_ADDRESS);
 
+    /**
+     * Unlike in the application, we're not running freertos so we're currently
+     * using the MSP, making c function call preambles unsafe, so we have to use
+     * asm to jump to the application.
+     */
     asm volatile (
         "bx %0"
         : // no outputs
