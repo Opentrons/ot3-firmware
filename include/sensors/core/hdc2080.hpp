@@ -31,6 +31,7 @@ static constexpr uint16_t DEVICE_ID = 0x07D0;
 static constexpr uint8_t INTERRUPT_REGISTER = 0x07;
 static constexpr uint8_t DRDY_CONFIG = 0x0E;
 static const uint8_t MEASURE_REGISTER = 0x0F;
+static const uint8_t DEVICE_ID_REGISTER = 0xFE;
 // Low configurations for both temperature and humidity
 // this records the status when a reading goes below
 // a certain threshold.
