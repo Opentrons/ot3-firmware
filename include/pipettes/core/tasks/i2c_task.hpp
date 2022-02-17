@@ -35,6 +35,17 @@ class I2CMessageHandler {
                                    TIMEOUT);
         m.client_callback(m.buffer);
     }
+
+    void visit(PollReadFromI2C &m) {
+        auto empty_array = m.buffer;
+        for (int i = 0; i < m.polling; i++) {
+            i2c_device.central_receive(m.buffer.data(), m.buffer.size(),
+                                       m.address, TIMEOUT);
+            m.client_callback(m.buffer);
+            m.buffer = empty_array;
+        }
+    }
+
     i2c::I2CDeviceBase &i2c_device;
 
     // Default timeout should be 60 seconds
