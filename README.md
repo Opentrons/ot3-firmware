@@ -128,3 +128,15 @@ For more information on interacting with simulation see [this readme](https://gi
 ### Running
 
 Each simulator is an executable binary using the pattern `build-host/{PROJ}/simulator/{PROJ}-simulator`
+
+### Environment Variables
+
+The simulators can be customized using environment variables.
+
+#### Socket CAN
+`CAN_CHANNEL` - is the SocketCAN channel to use.
+
+#### Opentrons Socket
+`CAN_SERVER_HOST` - Host name of opentrons can socket server
+
+`CAN_PORT` - Port of opentrons can socket server
