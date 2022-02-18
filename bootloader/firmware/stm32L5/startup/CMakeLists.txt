@@ -7,6 +7,7 @@ target_link_options(STM32L562RETx_bootloader
   INTERFACE
   "LINKER:-T,${CMAKE_CURRENT_SOURCE_DIR}/STM32L562RETx_FLASH.ld"
   "LINKER:--print-memory-usage"
+  "LINKER:--gc-sections"
   "LINKER:--error-unresolved-symbols")
 
 # Incurs at least a relink when you change the linker file (and a recompile of main
