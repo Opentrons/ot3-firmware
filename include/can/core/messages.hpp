@@ -439,7 +439,7 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
     can_ids::SensorType sensor{};
-    uint32_t sensor_data;
+    uint32_t sensor_data = 0;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -452,6 +452,41 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
         -> bool = default;
 };
 
+struct SetSensorThresholdRequest
+    : BaseMessage<MessageId::set_sensor_threshold_request> {
+    uint8_t sensor;
+    uint32_t threshold;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetSensorThresholdRequest {
+        uint8_t sensor = 0;
+        uint8_t threshold = 0;
+        body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, threshold);
+        return SetSensorThresholdRequest{.sensor = sensor,
+                                         .threshold = threshold};
+    }
+
+    auto operator==(const SetSensorThresholdRequest& other) const
+        -> bool = default;
+};
+
+struct SensorThresholdResponse
+    : BaseMessage<MessageId::set_sensor_threshold_response> {
+    can_ids::SensorType sensor{};
+    uint32_t threshold = 0;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(threshold, body, limit);
+        return iter - body;
+    }
+    auto operator==(const SensorThresholdResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -461,6 +496,7 @@ using ResponseMessageType =
                  ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
                  PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse>;
+                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+                 SensorThresholdResponse>;
 
 }  // namespace can_messages
