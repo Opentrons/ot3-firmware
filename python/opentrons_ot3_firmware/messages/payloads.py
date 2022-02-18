@@ -5,7 +5,6 @@
 from dataclasses import dataclass
 
 from .. import utils
-from opentrons_ot3_firmware import constants
 
 
 @dataclass
