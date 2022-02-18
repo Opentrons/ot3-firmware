@@ -1,3 +1,6 @@
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "common/firmware/i2c_comms.hpp"
 
 #include "common/core/i2c.hpp"
@@ -23,4 +26,8 @@ auto I2C::central_transmit(uint8_t* data, uint16_t size, uint16_t dev_address,
 auto I2C::central_receive(uint8_t* data, uint16_t size, uint16_t dev_address,
                           uint32_t timeout) -> bool {
     return hal_i2c_master_receive(handle, dev_address, data, size, timeout);
+}
+
+auto I2C::wait_during_poll(uint16_t delay) -> void {
+    vTaskDelay(delay);
 }

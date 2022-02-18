@@ -43,6 +43,7 @@ class I2CMessageHandler {
                                        m.address, TIMEOUT);
             m.client_callback(m.buffer);
             m.buffer = empty_array;
+            i2c_device.wait_during_poll(m.delay_ms);
         }
     }
 

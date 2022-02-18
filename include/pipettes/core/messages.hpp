@@ -25,6 +25,7 @@ struct PollReadFromI2C {
     int polling;
     MaxMessageBuffer buffer;
     Callback client_callback;
+    int delay_ms;
 };
 
 }  // namespace pipette_messages

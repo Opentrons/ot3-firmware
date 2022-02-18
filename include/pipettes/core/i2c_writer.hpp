@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
-#include <type_traits>
 #include <variant>
 
 #include "common/core/bit_utils.hpp"
@@ -54,7 +52,7 @@ class I2CWriter {
     }
 
     void poll_read(
-        uint16_t device_address, uint8_t number_reads,
+        uint16_t device_address, uint8_t number_reads, uint16_t delay,
         const Callback
             callback,  // NOLINT (performance-unnecessary-value-param)
         uint8_t reg = 0x0) {
@@ -64,7 +62,8 @@ class I2CWriter {
         pipette_messages::PollReadFromI2C read_msg{.address = device_address,
                                                    .polling = number_reads,
                                                    .buffer = max_buffer,
-                                                   .client_callback = callback};
+                                                   .client_callback = callback,
+                                                   .delay_ms = delay};
         queue->try_write(read_msg);
     }
 
