@@ -6,7 +6,8 @@ namespace sensor_task_utils {
 using TaskMessage =
     std::variant<std::monostate, can_messages::ReadFromSensorRequest,
                  can_messages::WriteToSensorRequest,
-                 can_messages::BaselineSensorRequest>;
+                 can_messages::BaselineSensorRequest,
+                 can_messages::SetSensorThresholdRequest>;
 
 /**
  * Concept describing a class that can message this task.

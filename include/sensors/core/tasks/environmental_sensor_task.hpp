@@ -104,6 +104,8 @@ class EnvironmentSensorMessageHandler {
 
     void visit(can_messages::BaselineSensorRequest &m) {}
 
+    void visit(can_messages::SetSensorThresholdRequest &m) {}
+
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor\n", m.data,
             m.sensor);
