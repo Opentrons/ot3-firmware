@@ -12,7 +12,8 @@ namespace i2c_writer {
 
 using namespace pipette_messages;
 
-using TaskMessage = std::variant<std::monostate, WriteToI2C, ReadFromI2C>;
+using TaskMessage =
+    std::variant<std::monostate, WriteToI2C, ReadFromI2C, PollReadFromI2C>;
 
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
@@ -32,8 +33,8 @@ class I2CWriter {
     void write(Data data, uint16_t device_address) {
         std::array<uint8_t, MAX_SIZE> max_buffer{};
         buffering(max_buffer, data);
-        pipette_messages::WriteToI2C write_msg{
-            .address = device_address, .buffer = max_buffer, .size = MAX_SIZE};
+        pipette_messages::WriteToI2C write_msg{.address = device_address,
+                                               .buffer = max_buffer};
         queue->try_write(write_msg);
     }
 
@@ -46,8 +47,23 @@ class I2CWriter {
         std::array<uint8_t, MAX_SIZE> max_buffer{reg};
         pipette_messages::ReadFromI2C read_msg{.address = device_address,
                                                .buffer = max_buffer,
-                                               .size = MAX_SIZE,
                                                .client_callback = callback};
+        queue->try_write(read_msg);
+    }
+
+    void poll_read(
+        uint16_t device_address, uint8_t number_reads, uint16_t delay,
+        const Callback
+            callback,  // NOLINT (performance-unnecessary-value-param)
+        uint8_t reg = 0x0) {
+        // We want to copy the callback every time as opposed to passing a
+        // reference to it from the eeprom task.
+        std::array<uint8_t, MAX_SIZE> max_buffer{reg};
+        pipette_messages::PollReadFromI2C read_msg{.address = device_address,
+                                                   .polling = number_reads,
+                                                   .buffer = max_buffer,
+                                                   .client_callback = callback,
+                                                   .delay_ms = delay};
         queue->try_write(read_msg);
     }
 

@@ -19,6 +19,7 @@ class SimI2C : public i2c::I2CDeviceBase {
                           uint32_t timeout) -> bool final;
     auto central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
                          uint32_t timeout) -> bool final;
+    auto wait_during_poll(uint16_t delay) -> void final;
 
   private:
     SensorMap sensor_map;

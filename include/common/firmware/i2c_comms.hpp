@@ -30,6 +30,12 @@ class I2C : public I2CDeviceBase {
     auto central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
                          uint32_t timeout) -> bool final;
 
+    /**
+     * Abstract delay function
+     * @return Nothing.
+     */
+    auto wait_during_poll(uint16_t delay) -> void final;
+
   private:
     HAL_I2C_HANDLE handle;
 };

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <map>
 
 #include "catch2/catch.hpp"
@@ -61,5 +60,23 @@ SCENARIO("read and write data to the i2c task") {
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
         REQUIRE(update == data_to_store[1]);
+    }
+    GIVEN("poll read command") {
+        uint8_t update = 0x0;
+        constexpr int NUM_READS = 10;
+        constexpr int DELAY_MS = 1;
+        auto callback = [&update](std::array<uint8_t, 5> value) -> void {
+            update += value[2];
+        };
+        std::array<uint8_t, 2> data_to_store = {0x2, 0x3};
+        sim_i2c.central_transmit(data_to_store.data(), 2, ADDRESS, 1);
+
+        writer.poll_read(ADDRESS, NUM_READS, DELAY_MS, callback, 0x2);
+        i2c_queue.try_read(&empty_msg);
+        auto read_msg = std::get<i2c_writer::PollReadFromI2C>(empty_msg);
+        auto converted_msg = i2c_writer::TaskMessage(read_msg);
+        i2c.handle_message(converted_msg);
+        uint8_t expected_accumulated_data = data_to_store[1] * NUM_READS;
+        REQUIRE(update == expected_accumulated_data);
     }
 }

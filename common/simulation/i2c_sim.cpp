@@ -23,3 +23,5 @@ auto sim_i2c::SimI2C::central_receive(uint8_t *data, uint16_t size,
     iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
     return true;
 }
+
+auto sim_i2c::SimI2C::wait_during_poll(uint16_t delay) -> void {}
