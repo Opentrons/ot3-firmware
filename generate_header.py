@@ -4,18 +4,10 @@ import argparse
 import io
 from enum import Enum
 from typing import Type, Any
+from types import ModuleType
 import sys
-
-from opentrons_ot3_firmware.constants import (
-    MessageId,
-    FunctionCode,
-    NodeId,
-    ErrorCode,
-    ToolType,
-    SensorType,
-)
-from opentrons_ot3_firmware.arbitration_id import ArbitrationIdParts
-
+import os.path
+import importlib
 
 class block:
     """C block generator."""
@@ -50,7 +42,7 @@ def generate_file_comment(output: io.StringIO) -> None:
     output.write("#pragma once\n\n")
 
 
-def generate_cpp(output: io.StringIO) -> None:
+def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     """Generate source code into output."""
     generate_file_comment(output)
     with block(
@@ -58,12 +50,12 @@ def generate_cpp(output: io.StringIO) -> None:
         start="namespace can_ids {\n\n",
         terminate="} // namespace can_ids\n\n",
     ):
-        write_enum_cpp(FunctionCode, output)
-        write_enum_cpp(MessageId, output)
-        write_enum_cpp(NodeId, output)
-        write_enum_cpp(ErrorCode, output)
-        write_enum_cpp(ToolType, output)
-        write_enum_cpp(SensorType, output)
+        write_enum_cpp(constants_mod.FunctionCode, output)
+        write_enum_cpp(constants_mod.MessageId, output)
+        write_enum_cpp(constants_mod.NodeId, output)
+        write_enum_cpp(constants_mod.ErrorCode, output)
+        write_enum_cpp(constants_mod.ToolType, output)
+        write_enum_cpp(constants_mod.SensorType, output)
 
 
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
@@ -76,16 +68,16 @@ def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
             output.write(f"  {i.name} = 0x{i.value:x},\n")
 
 
-def generate_c(output: io.StringIO) -> None:
+def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: ModuleType) -> None:
     """Generate source code into output."""
     generate_file_comment(output)
     can = "CAN"
-    write_enum_c(FunctionCode, output, can)
-    write_enum_c(MessageId, output, can)
-    write_enum_c(NodeId, output, can)
-    write_enum_c(ErrorCode, output, can)
-    write_enum_c(ToolType, output, can)
-    write_arbitration_id_c(output, can)
+    write_enum_c(constants_mod.FunctionCode, output, can)
+    write_enum_c(constants_mod.MessageId, output, can)
+    write_enum_c(constants_mod.NodeId, output, can)
+    write_enum_c(constants_mod.ErrorCode, output, can)
+    write_enum_c(constants_mod.ToolType, output, can)
+    write_arbitration_id_c(output, can, arbitration_id)
 
 
 def write_enum_c(e: Type[Enum], output: io.StringIO, prefix: str) -> None:
@@ -101,15 +93,15 @@ def write_enum_c(e: Type[Enum], output: io.StringIO, prefix: str) -> None:
             output.write(f"  {name} = 0x{i.value:x},\n")
 
 
-def write_arbitration_id_c(output: io.StringIO, prefix: str) -> None:
+def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: ModuleType) -> None:
     """Generate C arbitration id code."""
-    output.write(f"/** {ArbitrationIdParts.__doc__} */\n")
+    output.write(f"/** {arbitration_id.ArbitrationIdParts.__doc__} */\n")
     with block(
         output=output,
         start="typedef struct {\n",
-        terminate=f"}} {prefix}{ArbitrationIdParts.__name__};\n\n",
+        terminate=f"}} {prefix}{arbitration_id.ArbitrationIdParts.__name__};\n\n",
     ):
-        for i in ArbitrationIdParts._fields_:
+        for i in arbitration_id.ArbitrationIdParts._fields_:
             output.write(f"  unsigned int {i[0]}: {i[2]};\n")
 
 
@@ -134,6 +126,14 @@ def main() -> None:
         nargs="?",
         help="path of header file to generate; use - or do not specify for stdout",
     )
+    parser.add_argument(
+        "-s",
+        "--source-dir",
+        type=str,
+        default="",
+        help="a path containing an importable opentrons_hardware. if not specified, will use installed package",
+    )
+
 
     parser.add_argument(
         "--language",
@@ -146,11 +146,14 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-
+    if args.source_dir:
+        sys.path.append(os.path.join(args.source_dir, os.path.pardir))
+    constants = importlib.import_module('opentrons_hardware.firmware_bindings.constants')
+    arbid = importlib.import_module('opentrons_hardware.firmware_bindings.arbitration_id')
     if args.language in {Languge.CPP, Languge.CPP_alt}:
-        generate_cpp(args.target)
+        generate_cpp(args.target, constants)
     if args.language in {Languge.C}:
-        generate_c(args.target)
+        generate_c(args.target, constants, arbid)
 
 
 if __name__ == "__main__":

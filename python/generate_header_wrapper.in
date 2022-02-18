@@ -1,8 +1,0 @@
-#!/bin/sh
-_here=`pwd`
-cd ${CMAKE_CURRENT_LIST_DIR}
-mkdir -p $(dirname $1)
-${POETRY} run opentrons_generate_header "$@"
-_code=$?
-cd $_here
-exit $_code

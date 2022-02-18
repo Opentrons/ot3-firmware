@@ -1,0 +1,114 @@
+/********************************************
+* This is a generated file. Do not modify.  *
+********************************************/
+#pragma once
+
+/** Can bus arbitration id function code. */
+typedef enum {
+  can_functioncode_network_management = 0x0,
+  can_functioncode_sync = 0x1,
+  can_functioncode_error = 0x2,
+  can_functioncode_command = 0x3,
+  can_functioncode_status = 0x4,
+  can_functioncode_parameters = 0x5,
+  can_functioncode_bootloader = 0x6,
+  can_functioncode_heartbeat = 0x7,
+} CANFunctionCode;
+
+/** Can bus arbitration id message id. */
+typedef enum {
+  can_messageid_heartbeat_request = 0x3ff,
+  can_messageid_heartbeat_response = 0x3fe,
+  can_messageid_device_info_request = 0x302,
+  can_messageid_device_info_response = 0x303,
+  can_messageid_stop_request = 0x0,
+  can_messageid_get_status_request = 0x1,
+  can_messageid_get_status_response = 0x5,
+  can_messageid_enable_motor_request = 0x6,
+  can_messageid_disable_motor_request = 0x7,
+  can_messageid_move_request = 0x10,
+  can_messageid_setup_request = 0x2,
+  can_messageid_write_eeprom = 0x201,
+  can_messageid_read_eeprom_request = 0x202,
+  can_messageid_read_eeprom_response = 0x203,
+  can_messageid_add_move_request = 0x15,
+  can_messageid_get_move_group_request = 0x16,
+  can_messageid_get_move_group_response = 0x17,
+  can_messageid_execute_move_group_request = 0x18,
+  can_messageid_clear_all_move_groups_request = 0x19,
+  can_messageid_move_completed = 0x13,
+  can_messageid_set_motion_constraints = 0x101,
+  can_messageid_get_motion_constraints_request = 0x102,
+  can_messageid_get_motion_constraints_response = 0x103,
+  can_messageid_write_motor_driver_register_request = 0x30,
+  can_messageid_read_motor_driver_register_request = 0x31,
+  can_messageid_read_motor_driver_register_response = 0x32,
+  can_messageid_read_presence_sensing_voltage_request = 0x600,
+  can_messageid_read_presence_sensing_voltage_response = 0x601,
+  can_messageid_attached_tools_request = 0x700,
+  can_messageid_tools_detected_notification = 0x701,
+  can_messageid_fw_update_initiate = 0x60,
+  can_messageid_fw_update_data = 0x61,
+  can_messageid_fw_update_data_ack = 0x62,
+  can_messageid_fw_update_complete = 0x63,
+  can_messageid_fw_update_complete_ack = 0x64,
+  can_messageid_fw_update_status_request = 0x65,
+  can_messageid_fw_update_status_response = 0x66,
+  can_messageid_limit_sw_request = 0x8,
+  can_messageid_limit_sw_response = 0x9,
+  can_messageid_read_sensor_request = 0x82,
+  can_messageid_write_sensor_request = 0x83,
+  can_messageid_baseline_sensor_request = 0x84,
+  can_messageid_read_sensor_response = 0x85,
+  can_messageid_set_sensor_threshold_request = 0x86,
+  can_messageid_set_sensor_threshold_response = 0x87,
+} CANMessageId;
+
+/** Can bus arbitration id node id. */
+typedef enum {
+  can_nodeid_broadcast = 0x0,
+  can_nodeid_host = 0x10,
+  can_nodeid_pipette_left = 0x60,
+  can_nodeid_pipette_right = 0x70,
+  can_nodeid_gantry_x = 0x30,
+  can_nodeid_gantry_y = 0x40,
+  can_nodeid_head = 0x50,
+  can_nodeid_head_l = 0x51,
+  can_nodeid_head_r = 0x52,
+  can_nodeid_pipette_left_bootloader = 0x6f,
+  can_nodeid_pipette_right_bootloader = 0x7f,
+  can_nodeid_gantry_x_bootloader = 0x3f,
+  can_nodeid_gantry_y_bootloader = 0x4f,
+  can_nodeid_head_bootloader = 0x5f,
+} CANNodeId;
+
+/** Common error codes. */
+typedef enum {
+  can_errorcode_ok = 0x0,
+  can_errorcode_invalid_size = 0x1,
+  can_errorcode_bad_checksum = 0x2,
+  can_errorcode_invalid_byte_count = 0x3,
+  can_errorcode_invalid_input = 0x4,
+  can_errorcode_hardware = 0x5,
+} CANErrorCode;
+
+/** Tool types detected on Head. */
+typedef enum {
+  can_tooltype_undefined_tool = 0x0,
+  can_tooltype_pipette_96_chan = 0x1,
+  can_tooltype_pipette_384_chan = 0x2,
+  can_tooltype_pipette_single_chan = 0x3,
+  can_tooltype_pipette_multi_chan = 0x4,
+  can_tooltype_gripper = 0x5,
+  can_tooltype_nothing_attached = 0x6,
+} CANToolType;
+
+/** A bit field of the arbitration id parts. */
+typedef struct {
+  unsigned int function_code: 4;
+  unsigned int node_id: 7;
+  unsigned int originating_node_id: 7;
+  unsigned int message_id: 11;
+  unsigned int padding: 3;
+} CANArbitrationIdParts;
+
