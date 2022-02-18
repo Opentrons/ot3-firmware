@@ -75,6 +75,23 @@ generally be used when the code needs to be ported to other devices (in this cas
 host-compiling is used when you want to run things like tests. For more information check out this
 helpful [article](https://landley.net/writing/docs/cross-compiling.html).
 
+## Integrating CANbus definition changes from the Opentrons monorepo
+
+The CANbus node ids, message ids, enums, and definitions are set in
+[the Opentrons monorepo](https://github.com/Opentrons/opentrons/tree/edge/hardware/opentrons_hardware/firmware_bindings/constants.py)
+and generated to c++ and c. To avoid convoluted automation setups, we manually run the header generation when we
+need to make changes. To generate these headers, you can run `cmake --build --preset=<any preset> --target update-headers`.
+
+This requires the Opentrons monorepo to be checked out somewhere and found by CMake. If you check it out as a sibling
+to where you check out this repository, it will be found automatically; otherwise, pass 
+`-DOPENTRONS_HARDWARE_IMPORT_PATH=/path/to/opentrons_hardware` when you run a cmake configure. For instance, if you have the
+monorepo checked out to `/my/favorite/path/opentrons`, you would pass
+`-DOPENTRONS_HARDWARE_IMPORT_PATH=/my/favorite/path/opentrons/hardware/opentrons_hardware`, the path containing the
+opentrons_hardware source. 
+
+If you don't have constants.py available, everything will still build and run fine, but you won't be able to generate new
+header files.
+
 ## Run
 
 Connect to an STM32 nucleo board and run either:
