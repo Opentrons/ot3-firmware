@@ -48,15 +48,18 @@ auto SocketTransport<CriticalSection>::open() -> bool {
     struct sockaddr_in addr;
     int s = 0;
 
-    LOG("Trying to connect to %s:%d\n", host.c_str(), port);
+    LOG("Creating connection to %s:%d\n", host.c_str(), port);
 
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         return false;
     }
 
+    auto ip = host_to_ip(host);
+    LOG("Trying to connect to %s:%d\n", ip.c_str(), port);
+
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    ::inet_aton(host_to_ip(host).c_str(), &addr.sin_addr);
+    ::inet_aton(ip.c_str(), &addr.sin_addr);
 
     if (connect(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
