@@ -129,4 +129,4 @@ add_custom_target(update-headers
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     VERBATIM
     COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++"
-    COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
+    COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
