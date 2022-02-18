@@ -215,17 +215,6 @@ add_custom_target(gantry-debug-y
         )
 
 
+target_stm32G4_flash(gantry-x $<TARGET_FILE_DIR:gantry-x>/gantry-x.bin $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.bin)
+target_stm32G4_flash(gantry-y $<TARGET_FILE_DIR:gantry-y>/gantry-y.bin $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.bin)
 
-set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
-# Runs openocd to flash the board (without using a debugger)
-add_custom_target(gantry-flash-x
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE}  "-c" "program $<TARGET_FILE:gantry-x>;reset;exit"
-        VERBATIM
-        COMMENT "Flashing board"
-        DEPENDS gantry-x)
-
-add_custom_target(gantry-flash-y
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE} "-c" "program $<TARGET_FILE:gantry-y>;reset;exit"
-        VERBATIM
-        COMMENT "Flashing board"
-        DEPENDS gantry-y)
