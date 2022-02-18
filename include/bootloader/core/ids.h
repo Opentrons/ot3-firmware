@@ -60,6 +60,8 @@ typedef enum {
   can_messageid_write_sensor_request = 0x83,
   can_messageid_baseline_sensor_request = 0x84,
   can_messageid_read_sensor_response = 0x85,
+  can_messageid_set_sensor_threshold_request = 0x86,
+  can_messageid_set_sensor_threshold_response = 0x87,
 } CANMessageId;
 
 /** Can bus arbitration id node id. */
