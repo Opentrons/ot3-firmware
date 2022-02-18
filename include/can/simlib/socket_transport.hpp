@@ -1,6 +1,7 @@
 #pragma once
 
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -19,8 +20,8 @@ namespace socket_transport {
 template <synchronization::LockableProtocol CriticalSection>
 class SocketTransport : public can_transport::BusTransportBase {
   public:
-    explicit SocketTransport(const char *ip, uint32_t port)
-        : ip{ip}, port{port} {}
+    explicit SocketTransport(const char *host, uint32_t port)
+        : host{host}, port{port} {}
     ~SocketTransport() = default;
     SocketTransport(const SocketTransport &) = delete;
     SocketTransport(const SocketTransport &&) = delete;
@@ -33,9 +34,11 @@ class SocketTransport : public can_transport::BusTransportBase {
     auto write(uint32_t arb_id, const uint8_t *buff, uint32_t buff_len) -> bool;
     auto read(uint32_t &arb_id, uint8_t *buff, uint32_t &buff_len) -> bool;
 
+    static auto host_to_ip(const std::string &host) -> std::string;
+
   private:
     int handle{0};
-    std::string ip;
+    std::string host;
     uint32_t port;
     CriticalSection critical_section{};
 };
@@ -45,7 +48,7 @@ auto SocketTransport<CriticalSection>::open() -> bool {
     struct sockaddr_in addr;
     int s = 0;
 
-    LOG("Trying to connect to %s:%d\n", ip.c_str(), port);
+    LOG("Trying to connect to %s:%d\n", host.c_str(), port);
 
     if ((s = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         return false;
@@ -53,12 +56,12 @@ auto SocketTransport<CriticalSection>::open() -> bool {
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    ::inet_aton(ip.c_str(), &addr.sin_addr);
+    ::inet_aton(host_to_ip(host).c_str(), &addr.sin_addr);
 
     if (connect(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
-    LOG("Connected to %s:%d\n", ip.c_str(), port);
+    LOG("Connected to %s:%d\n", host.c_str(), port);
     handle = s;
     return true;
 }
@@ -113,6 +116,17 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
         if (::read(handle, buff, buff_len) < buff_len) return false;
     }
     return true;
+}
+
+template <synchronization::LockableProtocol CriticalSection>
+auto SocketTransport<CriticalSection>::host_to_ip(const std::string &host)
+    -> std::string {
+    auto h = gethostbyname(host.c_str());
+    if (!h) {
+        throw std::runtime_error("Invalid host: " + std::string(host));
+    }
+    auto addr_list = reinterpret_cast<struct in_addr **>(h->h_addr_list);
+    return inet_ntoa(*addr_list[0]);
 }
 
 }  // namespace socket_transport
