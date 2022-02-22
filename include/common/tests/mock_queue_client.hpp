@@ -5,6 +5,7 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_message_writer.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
+#include "sensors/core/utils.hpp"
 
 namespace mock_client {
 
@@ -14,9 +15,16 @@ namespace mock_client {
 struct QueueClient
     : mock_message_writer::MockMessageWriter<test_mocks::MockMessageQueue> {
     test_mocks::MockMessageQueue<eeprom_task::TaskMessage>* eeprom_queue;
+    test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>*
+        environment_sensor_queue;
 
     void send_eeprom_queue(const eeprom_task::TaskMessage& m) {
         eeprom_queue->try_write(m);
+    }
+
+    void send_environment_sensor_queue(
+        const sensor_task_utils::TaskMessage& m) {
+        environment_sensor_queue->try_write(m);
     }
 };
 }  // namespace mock_client

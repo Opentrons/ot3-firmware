@@ -9,7 +9,8 @@ set(BOOTLOADER_G4FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/can.c)
+        ${CMAKE_CURRENT_SOURCE_DIR}/can.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/node_id_stm32g4xx.c)
 
 macro(target_stm32G4 TARGET)
     ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's

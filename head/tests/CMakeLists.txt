@@ -30,9 +30,7 @@ target_compile_options(head
         -Wctor-dtor-privacy
         -fno-rtti)
 
-target_head_core_tool_list(head)
-
-target_link_libraries(head Catch2::Catch2 common-simulation)
+target_link_libraries(head PUBLIC Catch2::Catch2 common-simulation common-core)
 
 catch_discover_tests(head)
 add_build_and_test_target(head)
