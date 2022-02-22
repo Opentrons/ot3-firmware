@@ -37,7 +37,6 @@ typedef enum {
   can_messageid_execute_move_group_request = 0x18,
   can_messageid_clear_all_move_groups_request = 0x19,
   can_messageid_home_request = 0x20,
-  can_messageid_home_response = 0x21,
   can_messageid_move_completed = 0x13,
   can_messageid_set_motion_constraints = 0x101,
   can_messageid_get_motion_constraints_request = 0x102,

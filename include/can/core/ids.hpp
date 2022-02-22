@@ -39,7 +39,6 @@ enum class MessageId {
     execute_move_group_request = 0x18,
     clear_all_move_groups_request = 0x19,
     home_request = 0x20,
-    home_response = 0x21,
     move_completed = 0x13,
     set_motion_constraints = 0x101,
     get_motion_constraints_request = 0x102,

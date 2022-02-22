@@ -148,6 +148,8 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     auto operator==(const AddLinearMoveRequest& other) const -> bool = default;
 };
 
+// get rid of homeresponse
+
 struct HomeRequest : BaseMessage<MessageId::home_request> {
     uint8_t group_id;
     uint8_t seq_id;
@@ -199,20 +201,6 @@ struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
         return iter - body;
     }
     auto operator==(const GetMoveGroupResponse& other) const -> bool = default;
-};
-
-struct HomeResponse : BaseMessage<MessageId::home_response> {
-    uint8_t group_id;
-    uint8_t seq_id;
-    uint8_t homed;
-    uint8_t ack_id;
-
-    template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
-        return iter - body;
-    }
-    auto operator==(const HomeResponse& other) const -> bool = default;
 };
 
 struct ExecuteMoveGroupRequest
@@ -499,6 +487,6 @@ using ResponseMessageType = std::variant<
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    ReadFromSensorResponse, FirmwareUpdateStatusResponse, HomeResponse>;
+    ReadFromSensorResponse, FirmwareUpdateStatusResponse>;
 
 }  // namespace can_messages
