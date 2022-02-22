@@ -149,4 +149,10 @@ add_custom_target(pipettes-debug
         USES_TERMINAL
         )
 
-target_stm32L5_flash(pipettes $<TARGET_FILE_DIR:pipettes>/pipettes.bin $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.bin)
+
+# A target to flash bootloader and firmware
+add_custom_target(pipettes-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg" "-c" "init;reset init;halt;stm32l5x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex;flash write_image pipettes.hex;reset;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS pipettes-hex bootloader-pipettes-hex)

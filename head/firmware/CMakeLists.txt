@@ -144,4 +144,9 @@ add_custom_target(head-debug
         )
 
 
-target_stm32G4_flash(head $<TARGET_FILE_DIR:head>/head.bin $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.bin)
+# A target to flash bootloader and firmware
+add_custom_target(head-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "init;reset init;halt;stm32g4x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex;flash write_image head.hex;reset;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS head-hex bootloader-head-hex)
