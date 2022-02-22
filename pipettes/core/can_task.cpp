@@ -12,6 +12,7 @@
 #include "common/core/freertos_task.hpp"
 #include "pipettes/core/message_handlers/eeprom.hpp"
 #include "pipettes/core/tasks.hpp"
+#include "sensors/core/message_handlers/sensors.hpp"
 
 static auto& queue_client = pipettes_tasks::get_queues();
 
@@ -29,8 +30,12 @@ static auto can_move_group_handler =
 
 static auto eeprom_handler =
     eeprom_message_handler::EEPromHandler{queue_client};
+
 static auto system_message_handler =
     system_handler::SystemMessageHandler{queue_client, 0};
+
+static auto sensor_handler =
+    sensor_message_handler::SensorHandler{queue_client};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = can_dispatch::DispatchParseTarget<
@@ -63,11 +68,16 @@ static auto system_dispatch_target = can_dispatch::DispatchParseTarget<
     can_messages::InitiateFirmwareUpdate,
     can_messages::FirmwareUpdateStatusRequest>{system_message_handler};
 
+static auto sensor_dispatch_target = can_dispatch::DispatchParseTarget<
+    decltype(sensor_handler), can_messages::ReadFromSensorRequest,
+    can_messages::WriteToSensorRequest, can_messages::BaselineSensorRequest,
+    can_messages::SetSensorThresholdRequest>{sensor_handler};
+
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_dispatch::Dispatcher(
     [](auto _) -> bool { return true; }, motor_dispatch_target,
     motion_controller_dispatch_target, motion_group_dispatch_target,
-    eeprom_dispatch_target, system_dispatch_target);
+    eeprom_dispatch_target, sensor_dispatch_target, system_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.

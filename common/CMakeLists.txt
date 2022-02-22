@@ -1,3 +1,4 @@
+add_subdirectory(core)
 if (${CMAKE_CROSSCOMPILING})
    add_subdirectory(firmware)
 else()

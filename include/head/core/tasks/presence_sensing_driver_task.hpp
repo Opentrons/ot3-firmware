@@ -7,10 +7,9 @@
 #include "can/core/messages.hpp"
 #include "common/core/logging.hpp"
 #include "head/core/adc.hpp"
+#include "head/core/attached_tools.hpp"
 #include "head/core/presence_sensing_driver.hpp"
-#include "head/core/tool_list.hpp"
 
-using namespace ot3_tool_list;
 namespace presence_sensing_driver_task {
 
 using TaskMessage =
@@ -59,7 +58,7 @@ class PresenceSensingDriverMessageHandler {
     }
 
     void visit(can_messages::AttachedToolsRequest& m) {
-        auto tools = AttachedTool(driver.get_readings(), get_tool_list());
+        auto tools = attached_tools::AttachedTools(driver.get_readings());
         if (tools.z_motor != driver.get_current_tools().z_motor ||
             tools.a_motor != driver.get_current_tools().a_motor ||
             tools.gripper != driver.get_current_tools().gripper) {

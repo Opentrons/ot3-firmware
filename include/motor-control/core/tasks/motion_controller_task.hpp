@@ -78,7 +78,7 @@ class MotionControllerMessageHandler {
         LOG("Received add linear move request: velocity=%d, acceleration=%d, "
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d\n",
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
-            m.stop_condition);
+            m.request_stop_condition);
         controller.move(m);
     }
 

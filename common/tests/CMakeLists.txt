@@ -10,6 +10,8 @@ add_executable(
         test_bit_utils.cpp
         test_synchronization.cpp
         test_spi.cpp
+        test_tool_detection.cpp
+        test_voltage_conversion.cpp
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
@@ -28,7 +30,7 @@ target_compile_options(common
   -Wextra-semi
   -Wctor-dtor-privacy
   -fno-rtti)
-target_link_libraries(common Catch2::Catch2 common-simulation)
+target_link_libraries(common Catch2::Catch2 common-simulation common-core)
 
 catch_discover_tests(common)
 add_build_and_test_target(common)
