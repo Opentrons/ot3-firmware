@@ -148,6 +148,31 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     auto operator==(const AddLinearMoveRequest& other) const -> bool = default;
 };
 
+struct HomeRequest : BaseMessage<MessageId::home_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    ticks duration;
+    um_per_tick velocity;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> HomeRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        ticks duration = 0;
+        um_per_tick velocity = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        return HomeRequest{.group_id = group_id,
+                           .seq_id = seq_id,
+                           .duration = duration,
+                           .velocity = velocity};
+    }
+
+    auto operator==(const HomeRequest& other) const -> bool = default;
+};
+
 struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
     uint8_t group_id;
 
@@ -490,6 +515,7 @@ struct SensorThresholdResponse
 /**
  * A variant of all message types we might send..
  */
+
 using ResponseMessageType =
     std::variant<HeartbeatResponse, DeviceInfoResponse,
                  GetMotionConstraintsResponse, GetMoveGroupResponse,
@@ -498,5 +524,4 @@ using ResponseMessageType =
                  PushToolsDetectedNotification, ReadLimitSwitchResponse,
                  ReadFromSensorResponse, FirmwareUpdateStatusResponse,
                  SensorThresholdResponse>;
-
 }  // namespace can_messages
