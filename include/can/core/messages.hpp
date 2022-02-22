@@ -148,6 +148,31 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     auto operator==(const AddLinearMoveRequest& other) const -> bool = default;
 };
 
+struct HomeRequest : BaseMessage<MessageId::home_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    ticks duration;
+    um_per_tick velocity;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> HomeRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        ticks duration = 0;
+        um_per_tick velocity = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+        return HomeRequest{.group_id = group_id,
+                           .seq_id = seq_id,
+                           .duration = duration,
+                           .velocity = velocity};
+    }
+
+    auto operator==(const HomeRequest& other) const -> bool = default;
+};
+
 struct GetMoveGroupRequest : BaseMessage<MessageId::get_move_group_request> {
     uint8_t group_id;
 
@@ -174,6 +199,20 @@ struct GetMoveGroupResponse : BaseMessage<MessageId::get_move_group_response> {
         return iter - body;
     }
     auto operator==(const GetMoveGroupResponse& other) const -> bool = default;
+};
+
+struct HomeResponse : BaseMessage<MessageId::home_response> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint8_t homed;
+    uint8_t ack_id;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        return iter - body;
+    }
+    auto operator==(const HomeResponse& other) const -> bool = default;
 };
 
 struct ExecuteMoveGroupRequest
@@ -455,12 +494,11 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 /**
  * A variant of all message types we might send..
  */
-using ResponseMessageType =
-    std::variant<HeartbeatResponse, DeviceInfoResponse,
-                 GetMotionConstraintsResponse, GetMoveGroupResponse,
-                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse>;
+using ResponseMessageType = std::variant<
+    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
+    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
+    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
+    PushToolsDetectedNotification, ReadLimitSwitchResponse,
+    ReadFromSensorResponse, FirmwareUpdateStatusResponse, HomeResponse>;
 
 }  // namespace can_messages
