@@ -148,8 +148,6 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     auto operator==(const AddLinearMoveRequest& other) const -> bool = default;
 };
 
-// get rid of homeresponse
-
 struct HomeRequest : BaseMessage<MessageId::home_request> {
     uint8_t group_id;
     uint8_t seq_id;
@@ -482,11 +480,12 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 /**
  * A variant of all message types we might send..
  */
-using ResponseMessageType = std::variant<
-    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
-    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
-    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
-    PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    ReadFromSensorResponse, FirmwareUpdateStatusResponse>;
+using ResponseMessageType =
+    std::variant<HeartbeatResponse, DeviceInfoResponse,
+                 GetMotionConstraintsResponse, GetMoveGroupResponse,
+                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
+                 MoveCompleted, ReadPresenceSensingVoltageResponse,
+                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
+                 ReadFromSensorResponse, FirmwareUpdateStatusResponse>;
 
 }  // namespace can_messages
