@@ -215,15 +215,17 @@ add_custom_target(gantry-debug-y
         )
 
 
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
+
 # A target to flash bootloader and firmware
 add_custom_target(gantry-x-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "init;reset init;halt;stm32g4x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex;flash write_image gantry-x.hex;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "init;reset init;halt;stm32g4x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex;flash write_image gantry-x.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS gantry-x-hex bootloader-gantry-x-hex)
 
 add_custom_target(gantry-y-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "init;reset init;halt;stm32g4x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex;flash write_image gantry-y.hex;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "init;reset init;halt;stm32g4x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex;flash write_image gantry-y.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
         DEPENDS gantry-y-hex bootloader-gantry-y-hex)
