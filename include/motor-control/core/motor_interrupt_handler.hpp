@@ -145,6 +145,7 @@ class MotorInterruptHandler {
             finish_current_move(AckMessageId::complete);
             return true;
         }
+        return false;
     }
 
     auto limit_switch_triggered() -> bool {
