@@ -514,14 +514,15 @@ struct SensorThresholdResponse
 
 /**
  * A variant of all message types we might send..
- */git ad
+ */
+git ad
 
-using ResponseMessageType =
-    std::variant<HeartbeatResponse, DeviceInfoResponse,
-                 GetMotionConstraintsResponse, GetMoveGroupResponse,
-                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-                 SensorThresholdResponse>;
+    using ResponseMessageType =
+        std::variant<HeartbeatResponse, DeviceInfoResponse,
+                     GetMotionConstraintsResponse, GetMoveGroupResponse,
+                     ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
+                     MoveCompleted, ReadPresenceSensingVoltageResponse,
+                     PushToolsDetectedNotification, ReadLimitSwitchResponse,
+                     ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+                     SensorThresholdResponse>;
 }  // namespace can_messages
