@@ -70,8 +70,7 @@ TEST_CASE("Move with stop condition == limit switch, case 2") {
                 REQUIRE(!test_objs.handler.pulse());
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
                 Ack read_ack = test_objs.reporter.messages.back();
-                REQUIRE(read_ack.ack_id ==
-                        AckMessageId::complete);
+                REQUIRE(read_ack.ack_id == AckMessageId::complete);
             }
         }
     }
@@ -95,8 +94,7 @@ TEST_CASE("Move with stop condition != limit switch") {
             THEN("the move should have ack_id complete_without_condition") {
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
                 Ack read_ack = test_objs.reporter.messages.back();
-                REQUIRE(read_ack.ack_id ==
-                        AckMessageId::complete);
+                REQUIRE(read_ack.ack_id == AckMessageId::complete);
             }
         }
     }
