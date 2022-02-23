@@ -41,27 +41,27 @@ void MX_ADC1_Init(ADC_HandleTypeDef* adc) {
  * @param None
  * @retval None
  */
-void MX_ADC2_Init(ADC_HandleTypeDef* adc2) {
+void MX_ADC2_Init(ADC_HandleTypeDef* adc) {
     /** Common config
      */
 
-    adc2->Instance = ADC2;
-    adc2->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-    adc2->Init.Resolution = ADC_RESOLUTION_12B;
-    adc2->Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    adc2->Init.GainCompensation = 0;
-    adc2->Init.ScanConvMode = ADC_SCAN_DISABLE;
-    adc2->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-    adc2->Init.LowPowerAutoWait = DISABLE;
-    adc2->Init.ContinuousConvMode = DISABLE;
-    adc2->Init.NbrOfConversion = 1;
-    adc2->Init.DiscontinuousConvMode = DISABLE;
-    adc2->Init.ExternalTrigConv = ADC_SOFTWARE_START;
-    adc2->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adc2->Init.DMAContinuousRequests = DISABLE;
-    adc2->Init.Overrun = ADC_OVR_DATA_PRESERVED;
-    adc2->Init.OversamplingMode = DISABLE;
-    if (HAL_ADC_Init(adc2) != HAL_OK) {
+    adc->Instance = ADC2;
+    adc->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+    adc->Init.Resolution = ADC_RESOLUTION_12B;
+    adc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adc->Init.GainCompensation = 0;
+    adc->Init.ScanConvMode = ADC_SCAN_DISABLE;
+    adc->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    adc->Init.LowPowerAutoWait = DISABLE;
+    adc->Init.ContinuousConvMode = DISABLE;
+    adc->Init.NbrOfConversion = 1;
+    adc->Init.DiscontinuousConvMode = DISABLE;
+    adc->Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    adc->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    adc->Init.DMAContinuousRequests = DISABLE;
+    adc->Init.Overrun = ADC_OVR_DATA_PRESERVED;
+    adc->Init.OversamplingMode = DISABLE;
+    if (HAL_ADC_Init(adc) != HAL_OK) {
         Error_Handler();
     }
 }
