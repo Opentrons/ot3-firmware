@@ -26,9 +26,9 @@ using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::WriteMotorDriverRegister>;
 using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
     move_group_handler::MoveGroupHandler<head_tasks::MotorQueueClient>,
-    can_messages::AddLinearMoveRequest, can_messages::HomeRequest,
-    can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>;
+    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
+    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
+    can_messages::HomeRequest>;
 using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     motion_message_handler::MotionHandler<head_tasks::MotorQueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
