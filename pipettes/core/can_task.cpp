@@ -54,8 +54,8 @@ static auto motion_controller_dispatch_target =
 static auto motion_group_dispatch_target = can_dispatch::DispatchParseTarget<
     decltype(can_move_group_handler), can_messages::AddLinearMoveRequest,
     can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>{
-    can_move_group_handler};
+    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
+    can_messages::HomeRequest>{can_move_group_handler};
 
 static auto eeprom_dispatch_target =
     can_dispatch::DispatchParseTarget<decltype(eeprom_handler),

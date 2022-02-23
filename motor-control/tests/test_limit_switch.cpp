@@ -42,7 +42,9 @@ TEST_CASE("Move with stop condition == limit switch") {
             CHECK(!test_objs.handler.pulse());
             CHECK(!test_objs.handler.pulse());
             CHECK(!test_objs.handler.pulse());
-            THEN("the move should be stopped with ack id = limit switch") {
+            THEN(
+                "the move should be stopped with ack id = stopped by "
+                "condition") {
                 REQUIRE(!test_objs.handler.pulse());
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
                 Ack read_ack = test_objs.reporter.messages.back();

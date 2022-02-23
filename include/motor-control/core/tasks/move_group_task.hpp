@@ -17,7 +17,8 @@ constexpr std::size_t max_moves_per_group = 5;
 
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
-                                 can_messages::AddLinearMoveRequest>;
+                                 can_messages::AddLinearMoveRequest,
+                                 can_messages::HomeRequest>;
 
 using TaskMessage = motor_control_task_messages::MoveGroupTaskMessage;
 
@@ -57,6 +58,12 @@ class MoveGroupMessageHandler {
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
+    void handle(const can_messages::HomeRequest& m) {
+        LOG("Received home request: groupid=%d, seqid=%d\n", m.group_id,
+            m.seq_id);
+        static_cast<void>(move_groups[m.group_id].set_move(m));
+    }
+
     void handle(const can_messages::GetMoveGroupRequest& m) {
         LOG("Received get move group request: groupid=%d\n", m.group_id);
         auto group = move_groups[m.group_id];
@@ -86,6 +93,10 @@ class MoveGroupMessageHandler {
     void visit_move(const std::monostate& m) {}
 
     void visit_move(const can_messages::AddLinearMoveRequest& m) {
+        mc_client.send_motion_controller_queue(m);
+    }
+
+    void visit_move(const can_messages::HomeRequest& m) {
         mc_client.send_motion_controller_queue(m);
     }
 

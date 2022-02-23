@@ -55,6 +55,19 @@ class MotionController {
         queue.try_write(msg);
     }
 
+    void move(const can_messages::HomeRequest& can_msg) {
+        steps_per_tick velocity_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        Move msg{.duration = can_msg.duration,
+                 .velocity = velocity_steps,
+                 .acceleration = 0,
+                 .group_id = can_msg.group_id,
+                 .seq_id = can_msg.seq_id,
+                 .stop_condition = MoveStopCondition::limit_switch};
+
+        queue.try_write(msg);
+    }
+
     void stop() { hardware.stop_timer_interrupt(); }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }

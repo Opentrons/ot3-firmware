@@ -138,11 +138,13 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, acceleration);
         body = bit_utils::bytes_to_int(body, limit, velocity);
-        return AddLinearMoveRequest{.group_id = group_id,
-                                    .seq_id = seq_id,
-                                    .duration = duration,
-                                    .acceleration = acceleration,
-                                    .velocity = velocity};
+        return AddLinearMoveRequest{
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .duration = duration,
+            .acceleration = acceleration,
+            .velocity = velocity,
+        };
     }
 
     auto operator==(const AddLinearMoveRequest& other) const -> bool = default;
@@ -164,6 +166,7 @@ struct HomeRequest : BaseMessage<MessageId::home_request> {
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, velocity);
+
         return HomeRequest{.group_id = group_id,
                            .seq_id = seq_id,
                            .duration = duration,

@@ -82,6 +82,13 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
+    void handle(const can_messages::HomeRequest& m) {
+        LOG("Received home request: velocity=%d, "
+            "groupid=%d, seqid=%d\n",
+            m.velocity, m.group_id, m.seq_id);
+        controller.move(m);
+    }
+
     void handle(const can_messages::ReadLimitSwitchRequest& m) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d\n", response);
