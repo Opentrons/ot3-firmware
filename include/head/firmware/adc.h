@@ -13,7 +13,7 @@ extern ADC_HandleTypeDef adc2;
 void MX_ADC1_Init(ADC_HandleTypeDef* adc1);
 void MX_ADC2_Init(ADC_HandleTypeDef* adc2);
 void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle);
-void adc_setup();
+void adc_setup(ADC_HandleTypeDef* adc1, ADC_HandleTypeDef* adc2);
 uint32_t adc_read(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel);
 
 #ifdef __cplusplus

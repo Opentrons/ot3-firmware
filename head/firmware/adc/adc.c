@@ -12,26 +12,26 @@ ADC_HandleTypeDef adc2 = {0};
  * @param None
  * @retval None
  */
-void MX_ADC1_Init(ADC_HandleTypeDef* adc1) {
+void MX_ADC1_Init(ADC_HandleTypeDef* adc) {
     /** Common config
      */
-    adc1->Instance = ADC1;
-    adc1->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-    adc1->Init.Resolution = ADC_RESOLUTION_12B;
-    adc1->Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    adc1->Init.GainCompensation = 0;
-    adc1->Init.ScanConvMode = ADC_SCAN_DISABLE;
-    adc1->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-    adc1->Init.LowPowerAutoWait = DISABLE;
-    adc1->Init.ContinuousConvMode = DISABLE;
-    adc1->Init.NbrOfConversion = 1;
-    adc1->Init.DiscontinuousConvMode = DISABLE;
-    adc1->Init.ExternalTrigConv = ADC_SOFTWARE_START;
-    adc1->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adc1->Init.DMAContinuousRequests = DISABLE;
-    adc1->Init.Overrun = ADC_OVR_DATA_PRESERVED;
-    adc1->Init.OversamplingMode = DISABLE;
-    if (HAL_ADC_Init(adc1) != HAL_OK) {
+    adc->Instance = ADC1;
+    adc->Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+    adc->Init.Resolution = ADC_RESOLUTION_12B;
+    adc->Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    adc->Init.GainCompensation = 0;
+    adc->Init.ScanConvMode = ADC_SCAN_DISABLE;
+    adc->Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    adc->Init.LowPowerAutoWait = DISABLE;
+    adc->Init.ContinuousConvMode = DISABLE;
+    adc->Init.NbrOfConversion = 1;
+    adc->Init.DiscontinuousConvMode = DISABLE;
+    adc->Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    adc->Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    adc->Init.DMAContinuousRequests = DISABLE;
+    adc->Init.Overrun = ADC_OVR_DATA_PRESERVED;
+    adc->Init.OversamplingMode = DISABLE;
+    if (HAL_ADC_Init(adc) != HAL_OK) {
         Error_Handler();
     }
 }
@@ -103,20 +103,20 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
     }
 }
 
-void adc_setup(ADC_HandleTypeDef adc1, ADC_HandleTypeDef adc2) {
-    MX_ADC1_Init(&adc1);
-    MX_ADC2_Init(&adc2);
-    if (HAL_ADCEx_Calibration_Start(&adc1, ADC_SINGLE_ENDED) != HAL_OK) {
+void adc_setup(ADC_HandleTypeDef* hadc1, ADC_HandleTypeDef* hadc2) {
+    MX_ADC1_Init(hadc1);
+    MX_ADC2_Init(hadc2);
+    if (HAL_ADCEx_Calibration_Start(hadc1, ADC_SINGLE_ENDED) != HAL_OK) {
         /* Calibration Error */
         Error_Handler();
     }
-    if (HAL_ADCEx_Calibration_Start(&adc2, ADC_SINGLE_ENDED) != HAL_OK) {
+    if (HAL_ADCEx_Calibration_Start(hadc2, ADC_SINGLE_ENDED) != HAL_OK) {
         /* Calibration Error */
         Error_Handler();
     }
 }
 
-void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
+void adc_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
     ADC_ChannelConfTypeDef sConfig = {0};
     /** Configure for the selected ADC regular channel its corresponding rank in
      * the sequencer and its sample time.
@@ -133,9 +133,9 @@ void ADC_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
 }
 
 uint32_t adc_read(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel) {
-    uint32_t return_value = 4294967295;
+    uint32_t return_value = 0;
 
-    ADC_set_chan(adc_channel, adc_handle);
+    adc_set_chan(adc_channel, adc_handle);
     HAL_ADC_Start(adc_handle);
     HAL_ADC_PollForConversion(adc_handle, HAL_MAX_DELAY);
     return_value = HAL_ADC_GetValue(adc_handle);
