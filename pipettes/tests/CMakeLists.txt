@@ -12,6 +12,7 @@ add_executable(
         test_i2c_task.cpp
         test_mount_detection.cpp
         test_environment_sensor.cpp
+        test_capacitive_sensor.cpp
 )
 
 target_include_directories(pipettes PUBLIC ${CMAKE_SOURCE_DIR}/include)

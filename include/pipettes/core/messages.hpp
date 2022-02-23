@@ -7,7 +7,8 @@
 namespace pipette_messages {
 
 using MaxMessageBuffer = std::array<uint8_t, 5>;
-using Callback = std::function<void(const MaxMessageBuffer&)>;
+using SingleRegisterCallback = std::function<void(const MaxMessageBuffer&)>;
+using MultiRegisterCallback = std::function<void(const MaxMessageBuffer&, const MaxMessageBuffer&, bool)>;
 
 struct WriteToI2C {
     uint16_t address;
@@ -17,14 +18,23 @@ struct WriteToI2C {
 struct ReadFromI2C {
     uint16_t address;
     MaxMessageBuffer buffer;
-    Callback client_callback;
+    SingleRegisterCallback client_callback;
 };
 
-struct PollReadFromI2C {
+struct SingleRegisterPollReadFromI2C {
     uint16_t address;
     int polling;
     MaxMessageBuffer buffer;
-    Callback client_callback;
+    SingleRegisterCallback client_callback;
+    int delay_ms;
+};
+
+struct MultiRegisterPollReadFromI2C {
+    uint16_t address;
+    int polling;
+    MaxMessageBuffer register_buffer_1;
+    MaxMessageBuffer register_buffer_2;
+    MultiRegisterCallback client_callback;
     int delay_ms;
 };
 

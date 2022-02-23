@@ -12,6 +12,7 @@
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "pipettes/core/tasks/i2c_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
+#include "sensors/core/tasks/capacitive_sensor_task.hpp"
 
 namespace pipettes_tasks {
 
@@ -44,6 +45,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 
     void send_environment_sensor_queue(const sensor_task_utils::TaskMessage& m);
 
+    void send_capacitive_sensor_queue(const sensor_task_utils::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -57,6 +60,8 @@ struct QueueClient : can_message_writer::MessageWriter {
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         sensor_task_utils::TaskMessage>* environment_sensor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        sensor_task_utils::TaskMessage>* capacitive_sensor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c_task::TaskMessage>*
         i2c_queue{nullptr};
 };
@@ -90,6 +95,10 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
         QueueClient>* environment_sensor_task{nullptr};
+    capacitive_sensor_task::CapacitiveSensorTask<
+        freertos_message_queue::FreeRTOSMessageQueue,
+        i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
+        QueueClient>* capacitive_sensor_task{nullptr};
 };
 
 /**

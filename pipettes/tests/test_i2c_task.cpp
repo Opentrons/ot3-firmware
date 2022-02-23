@@ -71,9 +71,9 @@ SCENARIO("read and write data to the i2c task") {
         std::array<uint8_t, 2> data_to_store = {0x2, 0x3};
         sim_i2c.central_transmit(data_to_store.data(), 2, ADDRESS, 1);
 
-        writer.poll_read(ADDRESS, NUM_READS, DELAY_MS, callback, 0x2);
+        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS, callback, 0x2);
         i2c_queue.try_read(&empty_msg);
-        auto read_msg = std::get<i2c_writer::PollReadFromI2C>(empty_msg);
+        auto read_msg = std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
         uint8_t expected_accumulated_data = data_to_store[1] * NUM_READS;

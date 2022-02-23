@@ -17,6 +17,8 @@ struct QueueClient
     test_mocks::MockMessageQueue<eeprom_task::TaskMessage>* eeprom_queue;
     test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>*
         environment_sensor_queue;
+    test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>*
+        capacitive_sensor_queue;
 
     void send_eeprom_queue(const eeprom_task::TaskMessage& m) {
         eeprom_queue->try_write(m);
@@ -25,6 +27,11 @@ struct QueueClient
     void send_environment_sensor_queue(
         const sensor_task_utils::TaskMessage& m) {
         environment_sensor_queue->try_write(m);
+    }
+
+    void send_capacitive_sensor_queue(
+        const sensor_task_utils::TaskMessage& m) {
+        capacitve_sensor_queue->try_write(m);
     }
 };
 }  // namespace mock_client

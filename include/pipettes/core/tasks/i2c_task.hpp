@@ -36,16 +36,42 @@ class I2CMessageHandler {
         m.client_callback(m.buffer);
     }
 
-    void visit(PollReadFromI2C &m) {
+    void visit(SingleRegisterPollReadFromI2C &m) {
         auto empty_array = m.buffer;
         for (int i = 0; i < m.polling; i++) {
+            i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address,
+                                        TIMEOUT);
             i2c_device.central_receive(m.buffer.data(), m.buffer.size(),
                                        m.address, TIMEOUT);
-            m.client_callback(m.buffer);
             m.buffer = empty_array;
             i2c_device.wait_during_poll(m.delay_ms);
         }
+        m.client_callback(m.buffer);
     }
+
+    void visit(MultiRegisterPollReadFromI2C &m) {
+        auto empty_array_reg_1 = m.register_buffer_1;
+        auto empty_array_reg_2 = m.register_buffer_2;
+        bool final_read = false;
+        for (int i = 0; i < m.polling; i++) {
+            if (i == m.polling -1) {
+                final_read = true;
+            }
+            i2c_device.central_transmit(m.register_buffer_1.data(), m.register_buffer_1.size(), m.address,
+                                        TIMEOUT);
+            i2c_device.central_receive(m.register_buffer_1.data(), m.register_buffer_1.size(),
+                                       m.address, TIMEOUT);
+            i2c_device.central_transmit(m.register_buffer_2.data(), m.register_buffer_2.size(), m.address,
+                                        TIMEOUT);
+            i2c_device.central_receive(m.register_buffer_2.data(), m.register_buffer_2.size(),
+                                       m.address, TIMEOUT);
+            m.client_callback(m.register_buffer_1, m.register_buffer_2, final_read);
+            m.register_buffer_1 = empty_array_reg_1;
+            m.register_buffer_2 = empty_array_reg_2;
+            i2c_device.wait_during_poll(m.delay_ms);
+        }
+    }
+
 
     i2c::I2CDeviceBase &i2c_device;
 
