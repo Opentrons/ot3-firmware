@@ -150,9 +150,21 @@ add_custom_target(pipettes-debug
         )
 
 
-# A target to flash bootloader and firmware
+# Targets to create full image hex file containing both bootloader and application
+add_custom_command(
+        OUTPUT pipettes-image.hex
+        DEPENDS pipettes-hex bootloader-pipettes-hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py pipettes-image.hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex pipettes.hex
+        VERBATIM)
+add_custom_target(pipettes-image-hex ALL
+        DEPENDS pipettes-image.hex)
+
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
+
+# Targets to flash bootloader and firmware
 add_custom_target(pipettes-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg" "-c" "init;reset init;halt;stm32l5x mass_erase 0;flash write_image $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex;flash write_image pipettes.hex;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/pipettes-image.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS pipettes-hex bootloader-pipettes-hex)
+        DEPENDS pipettes-image-hex)
