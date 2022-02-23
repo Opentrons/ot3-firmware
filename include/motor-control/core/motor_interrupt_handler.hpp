@@ -133,15 +133,7 @@ class MotorInterruptHandler {
     }
 
     auto homing_stopped() -> bool {
-        if (!can_step() && !limit_switch_triggered()) {
-            finish_current_move(AckMessageId::timeout);
-            return true;
-        }
-        if (can_step() && limit_switch_triggered()) {
-            finish_current_move(AckMessageId::position_error);
-            return true;
-        }
-        if (!can_step() && limit_switch_triggered()) {
+        if (limit_switch_triggered()) {
             finish_current_move(AckMessageId::complete);
             return true;
         }

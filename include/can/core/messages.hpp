@@ -124,6 +124,7 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     ticks duration;
     um_per_tick_sq acceleration;
     um_per_tick velocity;
+    uint8_t request_stop_condition;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> AddLinearMoveRequest {

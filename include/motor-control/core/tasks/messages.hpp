@@ -5,13 +5,12 @@
 
 namespace motor_control_task_messages {
 
-using MotionControlTaskMessage =
-    std::variant<std::monostate, can_messages::AddLinearMoveRequest,
-                 can_messages::DisableMotorRequest,
-                 can_messages::EnableMotorRequest,
-                 can_messages::GetMotionConstraintsRequest,
-                 can_messages::SetMotionConstraints, can_messages::StopRequest,
-                 can_messages::ReadLimitSwitchRequest>;
+using MotionControlTaskMessage = std::variant<
+    std::monostate, can_messages::AddLinearMoveRequest,
+    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
+    can_messages::GetMotionConstraintsRequest,
+    can_messages::SetMotionConstraints, can_messages::StopRequest,
+    can_messages::ReadLimitSwitchRequest, can_messages::HomeRequest>;
 
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can_messages::ReadMotorDriverRegister,
@@ -22,7 +21,7 @@ using MoveGroupTaskMessage =
     std::variant<std::monostate, can_messages::AddLinearMoveRequest,
                  can_messages::ClearAllMoveGroupsRequest,
                  can_messages::ExecuteMoveGroupRequest,
-                 can_messages::GetMoveGroupRequest>;
+                 can_messages::GetMoveGroupRequest, can_messages::HomeRequest>;
 
 using MoveStatusReporterTaskMessage = motor_messages::Ack;
 
