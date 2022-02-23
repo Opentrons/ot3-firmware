@@ -144,9 +144,21 @@ add_custom_target(head-debug
         )
 
 
-# Runs openocd to flash the board (without using a debugger)
+# Targets to create full image hex file containing both bootloader and application
+add_custom_command(
+        OUTPUT head-image.hex
+        DEPENDS head-hex bootloader-head-hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py head-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex head.hex
+        VERBATIM)
+add_custom_target(head-image-hex ALL
+        DEPENDS head-image.hex)
+
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
+
+# Targets to flash bootloader and firmware
 add_custom_target(head-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:head>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/head-image.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS head)
+        DEPENDS head-image-hex)

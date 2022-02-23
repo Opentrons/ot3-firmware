@@ -214,18 +214,35 @@ add_custom_target(gantry-debug-y
         USES_TERMINAL
         )
 
+# Targets to create full image hex file containing both bootloader and application
+add_custom_command(
+        OUTPUT gantry-x-image.hex
+        DEPENDS gantry-x-hex bootloader-gantry-x-hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-x-image.hex $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex gantry-x.hex
+        VERBATIM)
+add_custom_target(gantry-x-image-hex ALL
+        DEPENDS gantry-x-image.hex)
+
+add_custom_command(
+        OUTPUT gantry-y-image.hex
+        DEPENDS gantry-y-hex bootloader-gantry-y-hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-y-image.hex $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex gantry-y.hex
+        VERBATIM)
+add_custom_target(gantry-y-image-hex ALL
+        DEPENDS gantry-y-image.hex)
 
 
 set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
-# Runs openocd to flash the board (without using a debugger)
-add_custom_target(gantry-flash-x
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE}  "-c" "program $<TARGET_FILE:gantry-x>;reset;exit"
-        VERBATIM
-        COMMENT "Flashing board"
-        DEPENDS gantry-x)
 
-add_custom_target(gantry-flash-y
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" ${DISCO_FILE} "-c" "program $<TARGET_FILE:gantry-y>;reset;exit"
+# Targets to flash bootloader and firmware
+add_custom_target(gantry-x-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-x-image.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS gantry-y)
+        DEPENDS gantry-x-image-hex)
+
+add_custom_target(gantry-y-flash
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-y-image.hex;reset;exit"
+        VERBATIM
+        COMMENT "Flashing board"
+        DEPENDS gantry-y-image-hex)
