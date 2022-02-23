@@ -19,7 +19,7 @@ struct SPI_interface {
 class Spi : public TMC2130Spi {
   public:
     explicit Spi(SPI_interface SPI_int);
-    void transmit_receive(const TMC2130Spi::BufferType& transmit,
+    bool transmit_receive(const TMC2130Spi::BufferType& transmit,
                           TMC2130Spi::BufferType& receive) final;
 
   private:
