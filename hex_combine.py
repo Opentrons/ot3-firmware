@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Script to combine multiple hex files into one."""
 import argparse
 import re
