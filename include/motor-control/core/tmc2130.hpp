@@ -43,6 +43,9 @@ class TMC2130 {
         addr_byte |= static_cast<uint8_t>(mode);
         iter = bit_utils::int_to_bytes(addr_byte, iter, buffer.end());
         iter = bit_utils::int_to_bytes(val, iter, buffer.end());
+        if (iter != buffer.end()) {
+            return MessageT();
+        }
         return buffer;
     }
 
@@ -333,7 +336,6 @@ class TMC2130 {
         // Ignore the typical linter warning because we're only using
         // this on __packed structures that mimic hardware registers
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-
         return RG(*reinterpret_cast<Reg*>(&ret.value()));
     }
 

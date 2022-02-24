@@ -29,7 +29,6 @@ class MotorDriver {
         return tmc2130.write(motor_reg, command_data);
     }
 
-  private:
     tmc2130::TMC2130 tmc2130;
 };
 

@@ -19,8 +19,8 @@ struct SPI_interface {
 class Spi : public TMC2130Spi {
   public:
     explicit Spi(SPI_interface SPI_int);
-    bool transmit_receive(const TMC2130Spi::BufferType& transmit,
-                          TMC2130Spi::BufferType& receive) final;
+    auto transmit_receive(const TMC2130Spi::BufferType& transmit,
+                          TMC2130Spi::BufferType& receive) -> bool final;
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;

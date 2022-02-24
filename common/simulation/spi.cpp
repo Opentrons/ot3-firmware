@@ -3,7 +3,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.hpp"
 
-void sim_spi::SimTMC2130Spi::transmit_receive(
+bool sim_spi::SimTMC2130Spi::transmit_receive(
     const spi::TMC2130Spi::BufferType& transmit,
     spi::TMC2130Spi::BufferType& receive) {
     uint8_t control = 0;
@@ -35,4 +35,5 @@ void sim_spi::SimTMC2130Spi::transmit_receive(
     }
     // The register is cached for the next read operation.
     read_register = reg;
+    return true;
 }

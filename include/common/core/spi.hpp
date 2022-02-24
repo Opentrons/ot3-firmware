@@ -26,8 +26,8 @@ class TMC2130Spi {
      * @param transmit The transmit buffer.
      * @param receive The receive buffer.
      */
-    virtual bool transmit_receive(const TMC2130Spi::BufferType& transmit,
-                                  TMC2130Spi::BufferType& receive);
+    virtual auto transmit_receive(const TMC2130Spi::BufferType& transmit,
+                                  TMC2130Spi::BufferType& receive) -> bool;
 
     /**
      * Fill a buffer with a command.
