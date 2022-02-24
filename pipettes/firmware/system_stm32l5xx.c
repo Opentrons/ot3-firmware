@@ -194,9 +194,7 @@ const uint32_t MSIRangeTable[16] = {100000U,   200000U,   400000U,   800000U,  1
 void SystemInit(void)
 {
     /* Configure the Vector Table location -------------------------------------*/
-#if defined(USER_VECT_TAB_ADDRESS)
-    SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;
-#endif
+    SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET;
 
     /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
