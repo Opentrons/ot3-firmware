@@ -15,6 +15,7 @@
 #include "pipettes/core/tasks.hpp"
 #include "sensors/simulation/eeprom.hpp"
 #include "sensors/simulation/hdc2080.hpp"
+#include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/sensors.hpp"
 #include "task.h"
 

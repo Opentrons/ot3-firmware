@@ -12,7 +12,6 @@ class FDC1004 : public sensor_simulator::SensorType {
         REGISTER_MAP = {
             {fdc1004_utils::CONFIGURATION_MEASUREMENT, 0},
             {fdc1004_utils::FDC_CONFIGURATION, 0},
-            {fdc1004_utils::MEASURE_REGISTER, 0},
             {fdc1004_utils::MSB_MEASUREMENT_1, 5},
             {fdc1004_utils::LSB_MEASUREMENT_1, 2},
             {fdc1004_utils::DEVICE_ID_REGISTER, fdc1004_utils::DEVICE_ID}};
