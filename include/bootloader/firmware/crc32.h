@@ -12,7 +12,7 @@ void crc32_init();
  * @param length Length of data
  * @return Computed CRC
  */
-uint32_t crc32_compute(uint8_t* data, uint8_t length);
+uint32_t crc32_compute(const uint8_t* data, uint8_t length);
 
 /**
  * Continue accumulating CRC using provided data.
@@ -20,7 +20,7 @@ uint32_t crc32_compute(uint8_t* data, uint8_t length);
  * @param length Length of data
  * @return Accumulated CRC
  */
-uint32_t crc32_accumulate(uint8_t* data, uint8_t length);
+uint32_t crc32_accumulate(const uint8_t* data, uint8_t length);
 
 /**
  * Reset the accumulated CRC value.

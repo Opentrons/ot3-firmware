@@ -27,7 +27,7 @@ void crc32_init() {
  * @param length Length of data
  * @return Computed CRC
  */
-uint32_t crc32_compute(uint8_t* data, uint8_t length) {
+uint32_t crc32_compute(const uint8_t* data, uint8_t length) {
     return HAL_CRC_Calculate(&hcrc, (uint32_t*)data, length);
 }
 
@@ -37,7 +37,7 @@ uint32_t crc32_compute(uint8_t* data, uint8_t length) {
  * @param length Length of data
  * @return Accumulated CRC
  */
-uint32_t crc32_accumulate(uint8_t* data, uint8_t length) {
+uint32_t crc32_accumulate(const uint8_t* data, uint8_t length) {
     return HAL_CRC_Accumulate(&hcrc, (uint32_t*)data, length);
 }
 

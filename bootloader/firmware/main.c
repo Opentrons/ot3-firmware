@@ -9,6 +9,7 @@
 #include "bootloader/core/node_id.h"
 #include "bootloader/core/updater.h"
 #include "bootloader/firmware/system.h"
+#include "bootloader/firmware/crc32.h"
 
 /**
  * The CAN handle.
@@ -74,6 +75,8 @@ int main() {
 
 
 void run_upgrade() {
+
+    crc32_init();
 
     initialize_can(&hcan1);
 
