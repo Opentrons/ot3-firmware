@@ -23,7 +23,8 @@ using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
 using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
     move_group_handler::MoveGroupHandler<gantry_tasks::QueueClient>,
     can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest>;
+    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
+    can_messages::HomeRequest>;
 using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     motion_message_handler::MotionHandler<gantry_tasks::QueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,

@@ -13,6 +13,9 @@
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/tasks.hpp"
+#include "sensors/simulation/eeprom.hpp"
+#include "sensors/simulation/hdc2080.hpp"
+#include "sensors/simulation/sensors.hpp"
 #include "task.h"
 
 static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
@@ -38,7 +41,12 @@ static motor_driver_config::RegisterConfig MotorDriverConfigurations{
     .thigh = 0xFFFFF,
     .coolconf = 0x60000};
 
-static auto i2c_comms = sim_i2c::SimI2C{};
+static auto hdcsensor = hdc2080_simulator::HDC2080{};
+static auto eeprom = eeprom_simulator::EEProm{};
+std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
+    {hdcsensor.ADDRESS, hdcsensor}, {eeprom.ADDRESS, eeprom}};
+
+static auto i2c_comms = sim_i2c::SimI2C{sensor_map};
 
 static motor_class::Motor pipette_motor{
     spi_comms,

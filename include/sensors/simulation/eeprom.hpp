@@ -1,0 +1,14 @@
+#pragma once
+
+#include "sensors/simulation/sensors.hpp"
+
+namespace eeprom_simulator {
+class EEProm : public sensor_simulator::SensorType {
+  public:
+    EEProm() {
+        DEVICE_ID = 0x0;
+        ADDRESS = 0x1;
+        REGISTER_MAP = {{0x0, 0}};
+    }
+};
+};  // namespace eeprom_simulator

@@ -12,14 +12,20 @@ using Callback = std::function<void(const MaxMessageBuffer&)>;
 struct WriteToI2C {
     uint16_t address;
     MaxMessageBuffer buffer;
-    uint16_t size;
 };
 
 struct ReadFromI2C {
     uint16_t address;
     MaxMessageBuffer buffer;
-    uint16_t size;
     Callback client_callback;
+};
+
+struct PollReadFromI2C {
+    uint16_t address;
+    int polling;
+    MaxMessageBuffer buffer;
+    Callback client_callback;
+    int delay_ms;
 };
 
 }  // namespace pipette_messages

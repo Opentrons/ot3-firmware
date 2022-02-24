@@ -22,20 +22,20 @@ auto can_transport::create()
     auto transport = std::make_shared<socketcan_transport::SocketCanTransport<
         freertos_synchronization::FreeRTOSCriticalSection>>(channel);
 #else
-    auto constexpr ServerIpEnvironmentVariableName = "CAN_SERVER_IP";
-    auto constexpr DefaultServerIp = "127.0.0.1";
+    auto constexpr ServerHostEnvironmentVariableName = "CAN_SERVER_HOST";
+    auto constexpr DefaultServerHost = "localhost";
     auto constexpr PortEnvironmentVariableName = "CAN_PORT";
     auto constexpr DefaultPort = 9898;
 
-    const char* env_server_ip_val =
-        std::getenv(ServerIpEnvironmentVariableName);
-    auto ip = env_server_ip_val ? env_server_ip_val : DefaultServerIp;
+    const char* env_server_host_val =
+        std::getenv(ServerHostEnvironmentVariableName);
+    auto host = env_server_host_val ? env_server_host_val : DefaultServerHost;
     const char* env_port_val = std::getenv(PortEnvironmentVariableName);
     auto port =
         env_port_val ? std::strtoul(env_port_val, nullptr, 10) : DefaultPort;
 
     auto transport = std::make_shared<socket_transport::SocketTransport<
-        freertos_synchronization::FreeRTOSCriticalSection>>(ip, port);
+        freertos_synchronization::FreeRTOSCriticalSection>>(host, port);
 
 #endif
     return transport;
