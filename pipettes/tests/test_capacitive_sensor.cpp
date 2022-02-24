@@ -75,7 +75,7 @@ SCENARIO("read capacitance sensor values") {
                 }
                 THEN(
                     "using the callback with data returns the expected value") {
-                    std::array<uint8_t, 5> buffer_a = { 0, 0, 20, 80, 0};
+                    std::array<uint8_t, 5> buffer_a = {0, 0, 20, 80, 0};
                     std::array<uint8_t, 5> buffer_b = {0, 0, 10, 10, 0};
                     read_message.client_callback->operator()(buffer_a,
                                                              buffer_b);

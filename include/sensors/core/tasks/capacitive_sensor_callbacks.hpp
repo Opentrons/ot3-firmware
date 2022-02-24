@@ -17,8 +17,9 @@ struct ReadCapacitanceCallback
     ReadCapacitanceCallback(CanClient &can_client, float current_offset)
         : can_client{can_client}, current_offset{current_offset} {}
 
-    void operator()(const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
-                    const sensor_callbacks::MaxMessageBuffer &LSB_buffer) override {
+    void operator()(
+        const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
+        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) override {
         uint32_t msb_data = 0x0;
         uint32_t lsb_data = 0x0;
         const auto *MSB_iter = MSB_buffer.cbegin();
