@@ -38,6 +38,8 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
     }
 
     if (!state->erased) {
+#ifndef FLASH_BANK_2
+        // Single bank flash mode. Erase all the pages above the bootloader area.
         FLASH_EraseInitTypeDef erase_struct =  {
             .TypeErase=FLASH_TYPEERASE_PAGES,
             .Banks=FLASH_BANK_1,
@@ -48,6 +50,29 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
         if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
             return fw_update_error;
         }
+#else
+        // Dual bank flash mode.
+        // Erase all the pages above the bootloader area in the first bank.
+        FLASH_EraseInitTypeDef erase_struct =  {
+            .TypeErase=FLASH_TYPEERASE_PAGES,
+            .Banks=FLASH_BANK_1,
+            .Page=APP_START_PAGE,
+            .NbPages=FLASH_PAGE_NB_PER_BANK - APP_START_PAGE
+        };
+        uint32_t error = 0;
+        if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
+            return fw_update_error;
+        }
+
+        // Erase the second bank.
+        erase_struct.Banks=FLASH_BANK_2;
+        erase_struct.Page=0;
+        erase_struct.NbPages=FLASH_PAGE_NB_PER_BANK;
+        error = 0;
+        if (HAL_FLASHEx_Erase(&erase_struct, &error) != HAL_OK) {
+            return fw_update_error;
+        }
+#endif
         state->erased = true;
     }
 
