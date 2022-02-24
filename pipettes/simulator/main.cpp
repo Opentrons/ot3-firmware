@@ -45,7 +45,9 @@ static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
 static auto eeprom = eeprom_simulator::EEProm{};
 std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
-    {hdcsensor.ADDRESS, hdcsensor}, {eeprom.ADDRESS, eeprom}, {capsensor.ADDRESS, capsensor}};
+    {hdcsensor.ADDRESS, hdcsensor},
+    {eeprom.ADDRESS, eeprom},
+    {capsensor.ADDRESS, capsensor}};
 
 static auto i2c_comms = sim_i2c::SimI2C{sensor_map};
 
