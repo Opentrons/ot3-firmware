@@ -29,9 +29,8 @@ struct QueueClient
         environment_sensor_queue->try_write(m);
     }
 
-    void send_capacitive_sensor_queue(
-        const sensor_task_utils::TaskMessage& m) {
-        capacitve_sensor_queue->try_write(m);
+    void send_capacitive_sensor_queue(const sensor_task_utils::TaskMessage& m) {
+        capacitive_sensor_queue->try_write(m);
     }
 };
 }  // namespace mock_client

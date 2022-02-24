@@ -3,6 +3,7 @@
 #include "can/core/messages.hpp"
 
 namespace sensor_task_utils {
+
 using TaskMessage =
     std::variant<std::monostate, can_messages::ReadFromSensorRequest,
                  can_messages::WriteToSensorRequest,
