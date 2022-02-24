@@ -5,13 +5,14 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "pipettes/core/tasks/i2c_task.hpp"
 #include "sensors/simulation/sensors.hpp"
+#include "sensors/tests/callbacks.hpp"
 
 class FakeSensor : public sensor_simulator::SensorType {
   public:
     FakeSensor() {
         ADDRESS = 0x1;
         DEVICE_ID = 0x2;
-        REGISTER_MAP = {{0x2, 0}};
+        REGISTER_MAP = {{0x2, 0x3}, {0x5, 0x4}};
     }
 };
 
@@ -30,13 +31,14 @@ SCENARIO("read and write data to the i2c task") {
     auto sim_i2c = sim_i2c::SimI2C{sensor_map};
 
     auto i2c = i2c_task::I2CMessageHandler{sim_i2c};
-    std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
-    uint16_t two_byte_data = 514;
 
     GIVEN("write command") {
+        std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
+        uint32_t write_data = 0x2010200;
+
         // make a copy of the two byte array before it's manipulated by
         // the i2c writer.
-        writer.write(two_byte_data, ADDRESS);
+        writer.write(write_data, ADDRESS);
         i2c_queue.try_read(&empty_msg);
         auto write_msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(write_msg);
@@ -44,39 +46,54 @@ SCENARIO("read and write data to the i2c task") {
 
         sim_i2c.central_receive(five_byte_arr.data(), five_byte_arr.size(),
                                 ADDRESS, 1);
-        REQUIRE(five_byte_arr[2] == 2);
+        REQUIRE(five_byte_arr[3] == 2);
     }
     GIVEN("read command") {
-        uint8_t update = 0x0;
-        auto callback = [&update](std::array<uint8_t, 5> value) -> void {
-            update = value[2];
-        };
-        std::array<uint8_t, 2> data_to_store = {0x2, 0x3};
-        sim_i2c.central_transmit(data_to_store.data(), 2, ADDRESS, 1);
+        auto callback = mock_callbacks::UpdateCallback{};
 
-        writer.read(ADDRESS, callback, 0x2);
+        writer.read(ADDRESS, &callback, 0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
-        REQUIRE(update == data_to_store[1]);
+        REQUIRE(callback.update_value == fakesensor.REGISTER_MAP[2]);
     }
-    GIVEN("poll read command") {
-        uint8_t update = 0x0;
+    GIVEN("poll one register command") {
         constexpr int NUM_READS = 10;
         constexpr int DELAY_MS = 1;
-        auto callback = [&update](std::array<uint8_t, 5> value) -> void {
-            update += value[2];
-        };
+        auto callback = mock_callbacks::UpdateCallback{};
         std::array<uint8_t, 2> data_to_store = {0x2, 0x3};
         sim_i2c.central_transmit(data_to_store.data(), 2, ADDRESS, 1);
 
-        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS, callback, 0x2);
+        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS, &callback,
+                                    0x2);
         i2c_queue.try_read(&empty_msg);
-        auto read_msg = std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
+        auto read_msg =
+            std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
-        uint8_t expected_accumulated_data = data_to_store[1] * NUM_READS;
-        REQUIRE(update == expected_accumulated_data);
+        uint8_t expected_accumulated_data =
+            fakesensor.REGISTER_MAP[2] * NUM_READS;
+        REQUIRE(callback.update_value == expected_accumulated_data);
+    }
+
+    GIVEN("poll two registers command") {
+        constexpr int NUM_READS = 10;
+        constexpr int DELAY_MS = 1;
+        auto callback = mock_callbacks::MultiUpdateCallback{};
+
+        writer.multi_register_poll(ADDRESS, NUM_READS, DELAY_MS, &callback, 0x2,
+                                   0x5);
+        i2c_queue.try_read(&empty_msg);
+        auto read_msg =
+            std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);
+        auto converted_msg = i2c_writer::TaskMessage(read_msg);
+        i2c.handle_message(converted_msg);
+        uint8_t expected_accumulated_data_reg_a =
+            fakesensor.REGISTER_MAP[2] * NUM_READS;
+        uint8_t expected_accumulated_data_reg_b =
+            fakesensor.REGISTER_MAP[5] * NUM_READS;
+        REQUIRE(callback.register_a_value == expected_accumulated_data_reg_a);
+        REQUIRE(callback.register_b_value == expected_accumulated_data_reg_b);
     }
 }

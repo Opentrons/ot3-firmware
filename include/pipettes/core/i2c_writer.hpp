@@ -7,13 +7,15 @@
 #include "common/core/buffer_type.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/messages.hpp"
+#include "sensors/core/callback_types.hpp"
 
 namespace i2c_writer {
 
 using namespace pipette_messages;
 
 using TaskMessage =
-    std::variant<std::monostate, WriteToI2C, ReadFromI2C, SingleRegisterPollReadFromI2C>;
+    std::variant<std::monostate, WriteToI2C, ReadFromI2C,
+                 SingleRegisterPollReadFromI2C, MultiRegisterPollReadFromI2C>;
 
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
@@ -39,8 +41,7 @@ class I2CWriter {
     }
 
     void read(uint16_t device_address,
-              const SingleRegisterCallback
-                  callback,  // NOLINT (performance-unnecessary-value-param)
+              sensor_callbacks::SingleRegisterCallback* callback,
               uint8_t reg = 0x0) {
         // We want to copy the callback every time as opposed to passing a
         // reference to it from the eeprom task.
@@ -59,9 +60,7 @@ class I2CWriter {
      */
     void single_register_poll(
         uint16_t device_address, uint8_t number_reads, uint16_t delay,
-        const SingleRegisterCallback
-            callback,  // NOLINT (performance-unnecessary-value-param)
-        uint8_t reg = 0x0) {
+        sensor_callbacks::SingleRegisterCallback* callback, uint8_t reg = 0x0) {
         // We want to copy the callback every time as opposed to passing a
         // reference to it from the eeprom task.
         std::array<uint8_t, MAX_SIZE> max_buffer{reg};
@@ -81,14 +80,11 @@ class I2CWriter {
      * A poll function automatically initiates a read/write to the specified
      * registers on the i2c bus.
      */
-    void multi_register_poll(
-        uint16_t device_address, uint8_t number_reads, uint16_t delay,
-        const MultiRegisterCallback
-        callback,  // NOLINT (performance-unnecessary-value-param)
-        uint8_t register_1 = 0x0,
-        uint8_t register_2 = 0x0) {
-        // We want to copy the callback every time as opposed to passing a
-        // reference to it from the eeprom task.
+    void multi_register_poll(uint16_t device_address, uint8_t number_reads,
+                             uint16_t delay,
+                             sensor_callbacks::MultiRegisterCallback* callback,
+                             uint8_t register_1 = 0x0,
+                             uint8_t register_2 = 0x0) {
         std::array<uint8_t, MAX_SIZE> buffer_1{register_1};
         std::array<uint8_t, MAX_SIZE> buffer_2{register_2};
         pipette_messages::MultiRegisterPollReadFromI2C read_msg{

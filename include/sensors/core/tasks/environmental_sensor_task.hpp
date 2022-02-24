@@ -6,60 +6,12 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
-#include "pipettes/core/messages.hpp"
-#include "sensors/core/hdc2080.hpp"
+#include "sensors/core/tasks/environment_sensor_callbacks.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace environment_sensor_task {
 
-using namespace hdc2080_utils;
-using namespace can_ids;
-
-template <message_writer_task::TaskClient CanClient>
-struct HumidityReadingCallback {
-    CanClient &can_client;
-
-    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
-        uint16_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        auto humidity = convert(data, SensorType::humidity);
-
-        auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::humidity, static_cast<uint32_t>(humidity)};
-        can_client.send_can_message(can_ids::NodeId::host, message);
-    }
-};
-
-template <message_writer_task::TaskClient CanClient>
-struct TemperatureReadingCallback {
-    CanClient &can_client;
-
-    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
-        uint16_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        auto temperature = convert(data, SensorType::temperature);
-
-        auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::temperature, static_cast<uint32_t>(temperature)};
-        can_client.send_can_message(can_ids::NodeId::host, message);
-    }
-};
-
-// This struct should be used when the message handler
-// class receives information it should handle (i.e. the device info)
-struct InternalCallback {
-    std::array<uint16_t, 1> storage{};
-
-    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
-        uint16_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        storage[0] = data;
-    }
-};
+using namespace environment_sensor_callbacks;
 
 template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
 class EnvironmentSensorMessageHandler {
@@ -82,7 +34,7 @@ class EnvironmentSensorMessageHandler {
 
     void initialize() {
         writer.write(DEVICE_ID_REGISTER, ADDRESS);
-        writer.read(ADDRESS, internal_callback, DEVICE_ID_REGISTER);
+        writer.read(ADDRESS, &internal_callback, DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -116,10 +68,10 @@ class EnvironmentSensorMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
             writer.write(HUMIDITY_REGISTER, ADDRESS);
-            writer.read(ADDRESS, humidity_callback, HUMIDITY_REGISTER);
+            writer.read(ADDRESS, &humidity_callback, HUMIDITY_REGISTER);
         } else {
             writer.write(TEMPERATURE_REGISTER, ADDRESS);
-            writer.read(ADDRESS, temperature_callback, TEMPERATURE_REGISTER);
+            writer.read(ADDRESS, &temperature_callback, TEMPERATURE_REGISTER);
         }
     }
 

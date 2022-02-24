@@ -7,6 +7,7 @@
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/messages.hpp"
+#include "sensors/core/callback_types.hpp"
 
 namespace eeprom_task {
 
@@ -15,10 +16,11 @@ using TaskMessage =
                  can_messages::ReadFromEEPromRequest>;
 
 template <message_writer_task::TaskClient CanClient>
-struct EEPromCallback {
-    CanClient &can_client;
+struct EEPromCallback : public sensor_callbacks::SingleRegisterCallback {
+  public:
+    EEPromCallback(CanClient &can_client) : can_client{can_client} {}
 
-    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
+    void operator()(const sensor_callbacks::MaxMessageBuffer &buffer) override {
         uint16_t data = 0x0;
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
@@ -26,6 +28,11 @@ struct EEPromCallback {
         auto message = can_messages::ReadFromEEPromResponse{{}, data};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
+
+    void operator()() override {}
+
+  private:
+    CanClient &can_client;
 };
 
 template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
@@ -56,7 +63,7 @@ class EEPromMessageHandler {
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
         LOG("Received request to read serial number\n");
-        writer.read(DEVICE_ADDRESS, callback);
+        writer.read(DEVICE_ADDRESS, &callback);
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0x1;

@@ -3,7 +3,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "pipettes/core/i2c_writer.hpp"
-#include "pipettes/core/tasks/eeprom_task.hpp"
+#include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace environment_sensor_task_starter {
