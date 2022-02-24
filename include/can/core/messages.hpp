@@ -401,7 +401,8 @@ struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
         uint8_t offset_reading = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, offset_reading);
-        return ReadFromSensorRequest{.sensor = sensor, .offset_reading = offset_reading};
+        return ReadFromSensorRequest{.sensor = sensor,
+                                     .offset_reading = offset_reading};
     }
 
     auto operator==(const ReadFromSensorRequest& other) const -> bool = default;
