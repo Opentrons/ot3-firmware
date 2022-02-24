@@ -55,6 +55,7 @@ typedef enum {
   can_messageid_fw_update_complete_ack = 0x64,
   can_messageid_fw_update_status_request = 0x65,
   can_messageid_fw_update_status_response = 0x66,
+  can_messageid_fw_update_start_app = 0x67,
   can_messageid_limit_sw_request = 0x8,
   can_messageid_limit_sw_response = 0x9,
   can_messageid_read_sensor_request = 0x82,

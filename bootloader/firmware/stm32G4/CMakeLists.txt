@@ -4,6 +4,8 @@ find_package(STM32G4xx)
 
 add_STM32G4_driver("Bootloader")
 
+add_subdirectory("startup")
+
 
 set(BOOTLOADER_G4FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
@@ -15,7 +17,7 @@ set(BOOTLOADER_G4FW_NON_LINTABLE_SRCS
 macro(target_stm32G4 TARGET)
     ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's
     target_link_libraries(${TARGET}
-            PUBLIC STM32G491RETx
+            PUBLIC STM32G491RETx_bootloader
             STM32G4xx_Drivers_Bootloader
             bootloader-core)
 
