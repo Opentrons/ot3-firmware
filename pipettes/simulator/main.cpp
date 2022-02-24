@@ -10,6 +10,7 @@
 #include "common/simulation/i2c_sim.hpp"
 #include "common/simulation/spi.hpp"
 #include "motor-control/core/motor.hpp"
+#include "motor-control/core/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/tasks.hpp"
@@ -34,12 +35,17 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
     motor_queue, plunger_interrupt);
 
 // microstepping is currently set to 32 μsteps.
-static motor_driver_config::RegisterConfig MotorDriverConfigurations{
-    .gconf = 0x04,
-    .ihold_irun = 0x70202,
-    .chopconf = 0x30101D5,
-    .thigh = 0xFFFFF,
-    .coolconf = 0x60000};
+static tmc2130::TMC2130RegisterMap MotorDriverConfigurations{
+    .gconfig = {.en_pwm_mode = 1},
+    .ihold_irun = {.hold_current = 0x2,
+                   .run_current = 0x2,
+                   .hold_current_delay = 0x7},
+    .tpowerdown = {},
+    .tcoolthrs = {.threshold = 0},
+    .thigh = {.threshold = 0xFFFFF},
+    .chopconf =
+        {.toff = 0x5, .hstrt = 0x5, .hend = 0x3, .tbl = 0x2, .mres = 0x3},
+    .coolconf = {.sgt = 0b110}};
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto eeprom = eeprom_simulator::EEProm{};
