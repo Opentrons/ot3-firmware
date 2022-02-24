@@ -52,7 +52,7 @@ macro(target_stm32L5 TARGET)
     set_target_properties(${TARGET}
             PROPERTIES
             CROSSCOMPILING_EMULATOR
-            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L562RETx/gdbinit")
 
     find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
             PATHS "${CrossGCC_BINDIR}"
