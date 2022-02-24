@@ -392,7 +392,7 @@ struct FirmwareUpdateStatusResponse
 };
 
 struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
-    uint8_t sensor;
+    uint8_t sensor = 0;
     uint8_t offset_reading = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -425,8 +425,8 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
 };
 
 struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
-    uint8_t sensor;
-    uint8_t sample_rate;
+    uint8_t sensor = 0;
+    uint8_t sample_rate = 1;
     uint8_t offset_update = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
