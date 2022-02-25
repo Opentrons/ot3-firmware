@@ -144,12 +144,10 @@ SCENARIO("update data errors") {
 
 SCENARIO("update data complete") {
     GIVEN("a message") {
-        auto arr = std::array<uint8_t, 8>{
-            // Count
-            0xfe, 0xdc, 0xba, 0x98,
-            // CRC32
-            0xff, 0xfe, 0xfd, 0xfc
-        };
+        auto arr = std::array<uint8_t, 8>{// Count
+                                          0xfe, 0xdc, 0xba, 0x98,
+                                          // CRC32
+                                          0xff, 0xfe, 0xfd, 0xfc};
         WHEN("parsed") {
             UpdateComplete result;
             auto error = parse_update_complete(arr.data(), arr.size(), &result);
@@ -174,7 +172,8 @@ SCENARIO("update data complete errors") {
     }
 
     GIVEN("a null pointer for result") {
-        auto arr = std::array<uint8_t, 8>{0xfe, 0xdc, 0xba, 0x98, 0xff, 0xfe, 0xfd, 0xfc};
+        auto arr = std::array<uint8_t, 8>{0xfe, 0xdc, 0xba, 0x98,
+                                          0xff, 0xfe, 0xfd, 0xfc};
         WHEN("parsed") {
             auto error = parse_update_complete(arr.data(), arr.size(), nullptr);
             THEN("it returns error") {
@@ -184,7 +183,8 @@ SCENARIO("update data complete errors") {
     }
 
     GIVEN("a message with incorrect size") {
-        auto arr = std::array<uint8_t, 8>{0xfe, 0xdc, 0xba, 0x98, 0xff, 0xfe, 0xfd, 0xfc};
+        auto arr = std::array<uint8_t, 8>{0xfe, 0xdc, 0xba, 0x98,
+                                          0xff, 0xfe, 0xfd, 0xfc};
         WHEN("parsed") {
             UpdateComplete result;
             auto error =
