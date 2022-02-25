@@ -115,8 +115,7 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
         FwUpdateReturn updater_return = fw_update_complete(
             get_update_state(),
             complete.num_messages,
-            // TODO (amit, 2022-02-01) - Provide checksum or crc32.
-            0);
+            complete.crc32);
         switch (updater_return) {
             case fw_update_error:
                 e = can_errorcode_hardware;

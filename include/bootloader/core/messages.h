@@ -27,9 +27,10 @@ typedef struct {
  */
 typedef struct {
     uint32_t num_messages;
+    uint32_t crc32;
 } UpdateComplete;
 
-#define UPDATE_COMPLETE_MESSAGE_SIZE    4
+#define UPDATE_COMPLETE_MESSAGE_SIZE    8
 
 
 /**
