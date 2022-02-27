@@ -43,8 +43,8 @@ SCENARIO("Test the i2c command queue writer") {
         }
         WHEN("we read messages") {
             auto callback = mock_callbacks::EmptyCallback{};
-            writer.read(ADDRESS, &callback);
-            writer.read(ADDRESS, &callback);
+            writer.read(ADDRESS, callback, callback);
+            writer.read(ADDRESS, callback, callback);
             THEN("the queue has properly formatted read messages") {
                 REQUIRE(queue.get_size() == 2);
 

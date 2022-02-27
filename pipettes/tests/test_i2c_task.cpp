@@ -31,6 +31,10 @@ SCENARIO("read and write data to the i2c task") {
     auto sim_i2c = sim_i2c::SimI2C{sensor_map};
 
     auto i2c = i2c_task::I2CMessageHandler{sim_i2c};
+    auto single_update = mock_callbacks::UpdateCallback{};
+    auto multi_update = mock_callbacks::MultiUpdateCallback{};
+    sensor_callbacks::SingleRegisterCallback single_callback{single_update};
+    sensor_callbacks::MultiRegisterCallback multi_callback{multi_update};
 
     GIVEN("write command") {
         std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
@@ -49,23 +53,20 @@ SCENARIO("read and write data to the i2c task") {
         REQUIRE(five_byte_arr[3] == 2);
     }
     GIVEN("read command") {
-        auto callback = mock_callbacks::UpdateCallback{};
-
-        writer.read(ADDRESS, &callback, 0x2);
+        single_update.reset();
+        writer.read(ADDRESS, single_callback, single_callback, 0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
-        REQUIRE(callback.update_value == fakesensor.REGISTER_MAP[2]);
+        REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP[2]);
     }
     GIVEN("poll one register command") {
         constexpr int NUM_READS = 10;
         constexpr int DELAY_MS = 1;
-        auto callback = mock_callbacks::UpdateCallback{};
-        std::array<uint8_t, 2> data_to_store = {0x2, 0x3};
-        sim_i2c.central_transmit(data_to_store.data(), 2, ADDRESS, 1);
+        single_update.reset();
 
-        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS, &callback,
+        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS, single_callback, single_callback,
                                     0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
@@ -74,15 +75,14 @@ SCENARIO("read and write data to the i2c task") {
         i2c.handle_message(converted_msg);
         uint8_t expected_accumulated_data =
             fakesensor.REGISTER_MAP[2] * NUM_READS;
-        REQUIRE(callback.update_value == expected_accumulated_data);
+        REQUIRE(single_update.update_value == expected_accumulated_data);
     }
 
     GIVEN("poll two registers command") {
         constexpr int NUM_READS = 10;
         constexpr int DELAY_MS = 1;
-        auto callback = mock_callbacks::MultiUpdateCallback{};
 
-        writer.multi_register_poll(ADDRESS, NUM_READS, DELAY_MS, &callback, 0x2,
+        writer.multi_register_poll(ADDRESS, NUM_READS, DELAY_MS, multi_callback, multi_callback, 0x2,
                                    0x5);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
@@ -93,7 +93,7 @@ SCENARIO("read and write data to the i2c task") {
             fakesensor.REGISTER_MAP[2] * NUM_READS;
         uint8_t expected_accumulated_data_reg_b =
             fakesensor.REGISTER_MAP[5] * NUM_READS;
-        REQUIRE(callback.register_a_value == expected_accumulated_data_reg_a);
-        REQUIRE(callback.register_b_value == expected_accumulated_data_reg_b);
+        REQUIRE(multi_update.register_a_value == expected_accumulated_data_reg_a);
+        REQUIRE(multi_update.register_b_value == expected_accumulated_data_reg_b);
     }
 }

@@ -33,7 +33,8 @@ class I2CMessageHandler {
     void visit(ReadFromI2C &m) {
         i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
                                    TIMEOUT);
-        m.client_callback->operator()(m.buffer);
+        m.handle_buffer(m.buffer);
+        m.client_callback();
     }
 
     void visit(SingleRegisterPollReadFromI2C &m) {
@@ -43,11 +44,11 @@ class I2CMessageHandler {
                                         m.address, TIMEOUT);
             i2c_device.central_receive(m.buffer.data(), m.buffer.size(),
                                        m.address, TIMEOUT);
-            m.client_callback->operator()(m.buffer);
+            m.handle_buffer(m.buffer);
             m.buffer = empty_array;
             i2c_device.wait_during_poll(m.delay_ms);
         }
-        m.client_callback->operator()();
+        m.client_callback();
     }
 
     void visit(MultiRegisterPollReadFromI2C &m) {
@@ -66,13 +67,12 @@ class I2CMessageHandler {
             i2c_device.central_receive(m.register_buffer_2.data(),
                                        m.register_buffer_2.size(), m.address,
                                        TIMEOUT);
-            m.client_callback->operator()(m.register_buffer_1,
-                                          m.register_buffer_2);
+            m.handle_buffer(m.register_buffer_1, m.register_buffer_2);
             m.register_buffer_1 = empty_array_reg_1;
             m.register_buffer_2 = empty_array_reg_2;
             i2c_device.wait_during_poll(m.delay_ms);
         }
-        m.client_callback->operator()();
+        m.client_callback();
     }
 
     i2c::I2CDeviceBase &i2c_device;

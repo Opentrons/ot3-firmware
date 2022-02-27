@@ -33,7 +33,8 @@ class CapacitiveMessageHandler {
 
     void initialize() {
         writer.write(DEVICE_ID_REGISTER, ADDRESS);
-        writer.read(ADDRESS, &internal_callback, DEVICE_ID_REGISTER);
+        sensor_callbacks::SingleRegisterCallback callback{internal_callback};
+        writer.read(ADDRESS, callback, callback, DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -53,11 +54,13 @@ class CapacitiveMessageHandler {
             capdac_callback.reset();
             capdac_callback.set_offset(CAPDAC_OFFSET);
             writer.write(CONFIGURATION_MEASUREMENT, ADDRESS);
-            writer.read(ADDRESS, &capdac_callback, CONFIGURATION_MEASUREMENT);
+            sensor_callbacks::SingleRegisterCallback callback{capdac_callback};
+            writer.read(ADDRESS, callback, callback, CONFIGURATION_MEASUREMENT);
         } else {
             capacitance_callback.reset();
             capacitance_callback.set_offset(CAPDAC_OFFSET);
-            writer.multi_register_poll(ADDRESS, 1, DELAY, &capacitance_callback,
+            sensor_callbacks::MultiRegisterCallback callback{capacitance_callback};
+            writer.multi_register_poll(ADDRESS, 1, DELAY, callback, callback,
                                        MSB_MEASUREMENT_1, LSB_MEASUREMENT_1);
         }
     }
@@ -74,15 +77,17 @@ class CapacitiveMessageHandler {
             capdac_callback.reset();
             capdac_callback.set_number_of_reads(m.sample_rate);
             capdac_callback.set_offset(CAPDAC_OFFSET);
+            sensor_callbacks::SingleRegisterCallback callback{capdac_callback};
             writer.single_register_poll(ADDRESS, m.sample_rate, DELAY,
-                                        &capdac_callback,
+                                        callback, callback,
                                         CONFIGURATION_MEASUREMENT);
         } else {
             capacitance_callback.reset();
             capacitance_callback.set_number_of_reads(m.sample_rate);
             capacitance_callback.set_offset(CAPDAC_OFFSET);
+            sensor_callbacks::MultiRegisterCallback callback{capacitance_callback};
             writer.multi_register_poll(ADDRESS, m.sample_rate, DELAY,
-                                       &capacitance_callback, MSB_MEASUREMENT_1,
+                                       callback, callback, MSB_MEASUREMENT_1,
                                        LSB_MEASUREMENT_1);
         }
     }

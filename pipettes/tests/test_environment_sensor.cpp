@@ -53,7 +53,8 @@ SCENARIO("read temperature and humidity values") {
                 THEN(
                     "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> my_buff = {250, 80, 0, 0, 0};
-                    read_message.client_callback->operator()(my_buff);
+                    read_message.handle_buffer(my_buff);
+                    read_message.client_callback();
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
@@ -95,7 +96,8 @@ SCENARIO("read temperature and humidity values") {
                 THEN(
                     "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> my_buff = {200, 0, 0, 0, 0};
-                    read_message.client_callback->operator()(my_buff);
+                    read_message.handle_buffer(my_buff);
+                    read_message.client_callback();
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);

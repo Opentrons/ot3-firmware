@@ -34,7 +34,8 @@ class EnvironmentSensorMessageHandler {
 
     void initialize() {
         writer.write(DEVICE_ID_REGISTER, ADDRESS);
-        writer.read(ADDRESS, &internal_callback, DEVICE_ID_REGISTER);
+        sensor_callbacks::SingleRegisterCallback callback{internal_callback};
+        writer.read(ADDRESS, callback, callback, DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -68,10 +69,14 @@ class EnvironmentSensorMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
             writer.write(HUMIDITY_REGISTER, ADDRESS);
-            writer.read(ADDRESS, &humidity_callback, HUMIDITY_REGISTER);
+            sensor_callbacks::SingleRegisterCallback callback{
+                humidity_callback};
+            writer.read(ADDRESS, callback, callback, HUMIDITY_REGISTER);
         } else {
             writer.write(TEMPERATURE_REGISTER, ADDRESS);
-            writer.read(ADDRESS, &temperature_callback, TEMPERATURE_REGISTER);
+            sensor_callbacks::SingleRegisterCallback callback{
+                temperature_callback};
+            writer.read(ADDRESS, callback, callback, TEMPERATURE_REGISTER);
         }
     }
 

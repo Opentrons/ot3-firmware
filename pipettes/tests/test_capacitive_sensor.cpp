@@ -77,9 +77,8 @@ SCENARIO("read capacitance sensor values") {
                     "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> buffer_a = {0, 0, 20, 80, 0};
                     std::array<uint8_t, 5> buffer_b = {0, 0, 10, 10, 0};
-                    read_message.client_callback->operator()(buffer_a,
-                                                             buffer_b);
-                    read_message.client_callback->operator()();
+                    read_message.handle_buffer(buffer_a, buffer_b);
+                    read_message.client_callback();
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);

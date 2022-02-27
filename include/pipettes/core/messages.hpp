@@ -13,15 +13,17 @@ struct WriteToI2C {
 struct ReadFromI2C {
     uint16_t address;
     sensor_callbacks::MaxMessageBuffer buffer;
-    sensor_callbacks::SingleRegisterCallback* client_callback;
+    sensor_callbacks::SingleBufferTypeDef handle_buffer;
+    sensor_callbacks::SendToCanFunctionTypeDef client_callback;
 };
 
 struct SingleRegisterPollReadFromI2C {
     uint16_t address;
     int polling;
-    sensor_callbacks::MaxMessageBuffer buffer;
-    sensor_callbacks::SingleRegisterCallback* client_callback;
     int delay_ms;
+    sensor_callbacks::MaxMessageBuffer buffer;
+    sensor_callbacks::SendToCanFunctionTypeDef client_callback;
+    sensor_callbacks::SingleBufferTypeDef handle_buffer;
 };
 
 struct MultiRegisterPollReadFromI2C {
@@ -29,7 +31,8 @@ struct MultiRegisterPollReadFromI2C {
     int polling;
     sensor_callbacks::MaxMessageBuffer register_buffer_1;
     sensor_callbacks::MaxMessageBuffer register_buffer_2;
-    sensor_callbacks::MultiRegisterCallback* client_callback;
+    sensor_callbacks::SendToCanFunctionTypeDef client_callback;
+    sensor_callbacks::MultiBufferTypeDef handle_buffer;
     int delay_ms;
 };
 

@@ -10,16 +10,22 @@ namespace capacitance_callbacks {
 using namespace fdc1004_utils;
 using namespace can_ids;
 
+/*
+ * ReadCapacitanceCallback.
+ *
+ * Struct to take a capacitance reading. The first part of sensor
+ * data is stored in the MSB register and the second part is in the
+ * LSB register. The size of the data is 24 bits.
+ */
 template <message_writer_task::TaskClient CanClient>
-struct ReadCapacitanceCallback
-    : public sensor_callbacks::MultiRegisterCallback {
+struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, float current_offset)
         : can_client{can_client}, current_offset{current_offset} {}
 
-    void operator()(
+    void handle_data(
         const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
-        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) override {
+        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
         uint32_t msb_data = 0x0;
         uint32_t lsb_data = 0x0;
         const auto *MSB_iter = MSB_buffer.cbegin();
@@ -31,7 +37,7 @@ struct ReadCapacitanceCallback
         measurement += (msb_data << MSB_SHIFT | lsb_data);
     }
 
-    void operator()() override {
+    void send_to_can() {
         uint32_t capacitive =
             convert(measurement, number_of_reads, current_offset);
         auto message = can_messages::ReadFromSensorResponse{
@@ -57,19 +63,27 @@ struct ReadCapacitanceCallback
     uint16_t number_of_reads = 1;
 };
 
+/*
+ * ReadOffsetCallback.
+ *
+ * Struct to take a CAPDAC reading. The maximum size of this
+ * data is 5 bits. CAPDAC is used to determine any additional offsets
+ * for the capacitance sensor based on the environment.
+ */
 template <message_writer_task::TaskClient CanClient>
-struct ReadOffsetCallback : public sensor_callbacks::SingleRegisterCallback {
+struct ReadOffsetCallback {
   public:
     ReadOffsetCallback(CanClient &can_client, float current_offset)
         : can_client{can_client}, current_offset{current_offset} {}
 
-    void operator()(const sensor_callbacks::MaxMessageBuffer &buffer) override {
+    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
         uint16_t data = 0x0;
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
+        measurement += data;
     }
 
-    void operator()() override {
+    void send_to_can() {
         uint32_t offset =
             calculate_capdac(measurement, number_of_reads, current_offset);
         auto message = can_messages::ReadFromSensorResponse{
@@ -97,10 +111,10 @@ struct ReadOffsetCallback : public sensor_callbacks::SingleRegisterCallback {
 
 // This struct should be used when the message handler
 // class receives information it should handle (i.e. the device info)
-struct InternalCallback : public sensor_callbacks::SingleRegisterCallback {
+struct InternalCallback {
     std::array<uint16_t, 1> storage{};
 
-    void operator()(const sensor_callbacks::MaxMessageBuffer &buffer) override {
+    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
         uint16_t data = 0x0;
         const auto *iter = buffer.cbegin();
         // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
@@ -108,7 +122,7 @@ struct InternalCallback : public sensor_callbacks::SingleRegisterCallback {
         storage[0] = data;
     }
 
-    void operator()() override {}
+    void send_to_can() {}
 
     auto get_storage() -> uint16_t { return storage[0]; }
 };
