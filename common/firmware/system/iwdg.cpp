@@ -6,14 +6,15 @@
 auto SLEEP_TIME = ((IWDG_INTERVAL_MS - 50) * portTICK_PERIOD_MS);
 
 void iwdg::TaskEntry::operator()() {
-    MX_IWDG_Init();
     for (;;) {
         iwdg_refresh();
         vTaskDelay(SLEEP_TIME);
     }
 }
 
-iwdg::IndependentWatchDog::IndependentWatchDog() : task{te} {}
+iwdg::IndependentWatchDog::IndependentWatchDog() : task{te} {
+    MX_IWDG_Init();
+}
 
 void iwdg::IndependentWatchDog::start(uint32_t priority) {
     task.start(priority, "iwdg");

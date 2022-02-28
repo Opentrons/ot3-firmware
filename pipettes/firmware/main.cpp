@@ -11,6 +11,7 @@
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/i2c_comms.hpp"
+#include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "motor-control/core/linear_motion_system.hpp"
@@ -27,6 +28,8 @@
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
+
+static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 
@@ -134,6 +137,8 @@ auto main() -> int {
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c_comms, id);
+
+    iWatchdog.start(6);
 
     vTaskStartScheduler();
 }
