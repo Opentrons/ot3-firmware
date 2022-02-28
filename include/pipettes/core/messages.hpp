@@ -29,11 +29,11 @@ struct SingleRegisterPollReadFromI2C {
 struct MultiRegisterPollReadFromI2C {
     uint16_t address;
     int polling;
+    int delay_ms;
     sensor_callbacks::MaxMessageBuffer register_buffer_1;
     sensor_callbacks::MaxMessageBuffer register_buffer_2;
     sensor_callbacks::SendToCanFunctionTypeDef client_callback;
     sensor_callbacks::MultiBufferTypeDef handle_buffer;
-    int delay_ms;
 };
 
 }  // namespace pipette_messages

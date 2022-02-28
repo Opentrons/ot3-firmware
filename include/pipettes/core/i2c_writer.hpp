@@ -41,7 +41,7 @@ class I2CWriter {
         queue->try_write(write_msg);
     }
 
-    /*
+    /**
      * A single read to the i2c bus.
      *
      * @param device_address: device address on the i2c bus
@@ -68,7 +68,7 @@ class I2CWriter {
         queue->try_write(read_msg);
     }
 
-    /*
+    /**
      * Single Register Poll.
      *
      * This function will poll the results of a single register.
@@ -104,7 +104,7 @@ class I2CWriter {
         queue->try_write(read_msg);
     }
 
-    /*
+    /**
      * Multi Register Poll.
      *
      * This function will poll the results of two registers. Typically this is
@@ -138,11 +138,11 @@ class I2CWriter {
         pipette_messages::MultiRegisterPollReadFromI2C read_msg{
             .address = device_address,
             .polling = number_reads,
+            .delay_ms = delay,
             .register_buffer_1 = buffer_1,
             .register_buffer_2 = buffer_2,
             .client_callback = std::move(client_callback),
-            .handle_buffer = std::move(handle_callback),
-            .delay_ms = delay};
+            .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);
     }
 
