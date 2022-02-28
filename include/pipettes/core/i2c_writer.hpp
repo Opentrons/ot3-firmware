@@ -63,8 +63,8 @@ class I2CWriter {
         pipette_messages::ReadFromI2C read_msg{
             .address = device_address,
             .buffer = max_buffer,
-            .handle_buffer = handle_callback,
-            .client_callback = client_callback};
+            .handle_buffer = std::move(handle_callback),
+            .client_callback = std::move(client_callback)};
         queue->try_write(read_msg);
     }
 
@@ -99,8 +99,8 @@ class I2CWriter {
             .polling = number_reads,
             .delay_ms = delay,
             .buffer = max_buffer,
-            .client_callback = client_callback,
-            .handle_buffer = handle_callback};
+            .client_callback = std::move(client_callback),
+            .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);
     }
 
@@ -140,8 +140,8 @@ class I2CWriter {
             .polling = number_reads,
             .register_buffer_1 = buffer_1,
             .register_buffer_2 = buffer_2,
-            .client_callback = client_callback,
-            .handle_buffer = handle_callback,
+            .client_callback = std::move(client_callback),
+            .handle_buffer = std::move(handle_callback),
             .delay_ms = delay};
         queue->try_write(read_msg);
     }
