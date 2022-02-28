@@ -12,9 +12,7 @@ void iwdg::TaskEntry::operator()() {
     }
 }
 
-iwdg::IndependentWatchDog::IndependentWatchDog() : task{te} {
-    MX_IWDG_Init();
-}
+iwdg::IndependentWatchDog::IndependentWatchDog() : task{te} { MX_IWDG_Init(); }
 
 void iwdg::IndependentWatchDog::start(uint32_t priority) {
     task.start(priority, "iwdg");
