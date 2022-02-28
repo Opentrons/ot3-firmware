@@ -3,6 +3,7 @@
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces.hpp"
@@ -17,10 +18,12 @@
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
 
+static auto iWatchdog = iwdg::IndependentWatchDog{};
+
 /**
  * The SPI configuration.
  */
-spi::SPI_interface SPI_intf = {
+static spi::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
@@ -155,6 +158,8 @@ void interfaces::initialize() {
 
     // Start the can bus
     can_start();
+
+    iWatchdog.start(6);
 }
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }

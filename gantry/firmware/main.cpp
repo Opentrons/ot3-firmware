@@ -9,11 +9,10 @@
 // clang-format on
 
 #include "common/core/app_update.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
-
 #include "common/firmware/clocking.h"
 #include "common/firmware/utility_gpio.h"
+#include "gantry/core/interfaces.hpp"
+#include "gantry/core/tasks.hpp"
 
 auto main() -> int {
     HardwareInit();

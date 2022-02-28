@@ -14,6 +14,7 @@ set(GANTRY_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
+        ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/utils.c
         ${CAN_FW_DIR}/hal_can.c
@@ -29,6 +30,7 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
+        ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
 
 add_executable(gantry-x
