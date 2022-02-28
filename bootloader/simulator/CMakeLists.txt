@@ -1,5 +1,3 @@
-find_package(Boost 1.71.0)
-
 # Load free for the posix port
 find_package(FreeRTOS)
 
