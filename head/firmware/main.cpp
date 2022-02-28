@@ -8,6 +8,7 @@
 #include "system_stm32g4xx.h"
 #include "common/firmware/errors.h"
 #include "common/core/app_update.h"
+#include "common/firmware/iwdg.hpp"
 // clang-format on
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -29,6 +30,8 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
+
+static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 
@@ -218,6 +221,8 @@ auto main() -> int {
                             motor_right.driver, psd);
 
     timer_for_notifier.start();
+
+    iWatchdog.start(6);
 
     vTaskStartScheduler();
 }
