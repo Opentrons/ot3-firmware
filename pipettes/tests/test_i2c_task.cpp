@@ -66,8 +66,8 @@ SCENARIO("read and write data to the i2c task") {
         constexpr int DELAY_MS = 1;
         single_update.reset();
 
-        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS, single_callback, single_callback,
-                                    0x2);
+        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS,
+                                    single_callback, single_callback, 0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
             std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
@@ -82,8 +82,8 @@ SCENARIO("read and write data to the i2c task") {
         constexpr int NUM_READS = 10;
         constexpr int DELAY_MS = 1;
 
-        writer.multi_register_poll(ADDRESS, NUM_READS, DELAY_MS, multi_callback, multi_callback, 0x2,
-                                   0x5);
+        writer.multi_register_poll(ADDRESS, NUM_READS, DELAY_MS, multi_callback,
+                                   multi_callback, 0x2, 0x5);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
             std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);
@@ -93,7 +93,9 @@ SCENARIO("read and write data to the i2c task") {
             fakesensor.REGISTER_MAP[2] * NUM_READS;
         uint8_t expected_accumulated_data_reg_b =
             fakesensor.REGISTER_MAP[5] * NUM_READS;
-        REQUIRE(multi_update.register_a_value == expected_accumulated_data_reg_a);
-        REQUIRE(multi_update.register_b_value == expected_accumulated_data_reg_b);
+        REQUIRE(multi_update.register_a_value ==
+                expected_accumulated_data_reg_a);
+        REQUIRE(multi_update.register_b_value ==
+                expected_accumulated_data_reg_b);
     }
 }
