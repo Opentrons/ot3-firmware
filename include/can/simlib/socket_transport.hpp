@@ -44,7 +44,13 @@ auto SocketTransport<CriticalSection>::open() -> bool {
     LOG("Creating connection to %s:%d\n", host.c_str(), port);
 
     tcp::resolver resolver(context);
-    boost::asio::connect(socket, resolver.resolve(host, std::to_string(port)));
+    try {
+        boost::asio::connect(socket,
+                             resolver.resolve(host, std::to_string(port)));
+    }
+    catch (boost::system::system_error) {
+        return false;
+    }
 
     LOG("Connected to %s:%d\n", host.c_str(), port);
     return true;
