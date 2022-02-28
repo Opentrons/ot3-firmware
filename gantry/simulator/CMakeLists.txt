@@ -59,8 +59,8 @@ target_gantry_core_y(gantry-y-simulator)
 target_ot_motor_control(gantry-x-simulator)
 target_ot_motor_control(gantry-y-simulator)
 
-target_link_libraries(gantry-x-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
-target_link_libraries(gantry-y-simulator PRIVATE can-core common-simulation freertos-gantry pthread)
+target_link_libraries(gantry-x-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost)
+target_link_libraries(gantry-y-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost)
 
 set_target_properties(gantry-x-simulator
         PROPERTIES CXX_STANDARD 20

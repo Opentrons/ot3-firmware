@@ -1,3 +1,5 @@
+find_package(Boost 1.71.0)
+
 # Load free for the posix port
 find_package(FreeRTOS)
 
@@ -45,7 +47,7 @@ target_compile_definitions(bootloader-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(bootloader-simulator)
 
-target_link_libraries(bootloader-simulator PRIVATE can-core freertos-bootloader pthread bootloader-core common-simulation)
+target_link_libraries(bootloader-simulator PRIVATE can-core freertos-bootloader pthread bootloader-core common-simulation Boost::boost)
 
 set_target_properties(bootloader-simulator
         PROPERTIES CXX_STANDARD 20
