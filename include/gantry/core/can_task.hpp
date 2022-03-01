@@ -19,7 +19,8 @@ namespace can_task {
 using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
     motor_message_handler::MotorHandler<gantry_tasks::QueueClient>,
     can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister>;
+    can_messages::WriteMotorDriverRegister,
+    can_messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
     move_group_handler::MoveGroupHandler<gantry_tasks::QueueClient>,
     can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,

@@ -15,7 +15,8 @@ using MotionControlTaskMessage = std::variant<
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can_messages::ReadMotorDriverRegister,
                  can_messages::SetupRequest,
-                 can_messages::WriteMotorDriverRegister>;
+                 can_messages::WriteMotorDriverRegister,
+                 can_messages::WriteMotorCurrentRequest>;
 
 using MoveGroupTaskMessage =
     std::variant<std::monostate, can_messages::AddLinearMoveRequest,

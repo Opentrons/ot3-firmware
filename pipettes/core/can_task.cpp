@@ -40,8 +40,8 @@ static auto sensor_handler =
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target = can_dispatch::DispatchParseTarget<
     decltype(can_motor_handler), can_messages::ReadMotorDriverRegister,
-    can_messages::SetupRequest, can_messages::WriteMotorDriverRegister>{
-    can_motor_handler};
+    can_messages::SetupRequest, can_messages::WriteMotorDriverRegister,
+    can_messages::WriteMotorCurrentRequest>{can_motor_handler};
 
 static auto motion_controller_dispatch_target =
     can_dispatch::DispatchParseTarget<

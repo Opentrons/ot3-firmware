@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
@@ -10,6 +11,7 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tmc2130_registers.hpp"
+#include "motor-control/core/utils.hpp"
 
 namespace motor_driver_task {
 
@@ -67,6 +69,34 @@ class MotorDriverMessageHandler {
             .data = data,
         };
         can_client.send_can_message(can_ids::NodeId::host, response_msg);
+    }
+
+    void handle(const can_messages::WriteMotorCurrentRequest& m) {
+        LOG("Received write motor current request: hold_current=%d, "
+            "run_current=%d\n",
+            m.hold_current, m.run_current);
+
+        if (m.hold_current) {
+            driver.tmc2130.get_register_map().ihold_irun.hold_current =
+                convert_to_tmc2130_current_value(m.hold_current);
+        };
+        if (m.run_current) {
+            driver.tmc2130.get_register_map().ihold_irun.run_current =
+                convert_to_tmc2130_current_value(m.run_current);
+        }
+        driver.tmc2130.write_config();
+    }
+
+    uint32_t convert_to_tmc2130_current_value(uint32_t c) {
+        const auto VFS = 0.325;
+        const auto R_SENSE = 0.1;
+        const auto SMALL_R = 0.02;
+        auto float_constant = std::sqrt(2) * 32 * (R_SENSE + SMALL_R) / VFS;
+        auto fixed_point_constant =
+            convert_to_fixed_point_64_bit(float_constant, 31);
+        auto val = fixed_point_multiply(fixed_point_constant, c) - 1;
+        LOG("Converted value from %d to %d\n", c, val);
+        return val;
     }
 
     motor_driver::MotorDriver& driver;
