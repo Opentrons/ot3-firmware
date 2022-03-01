@@ -12,7 +12,6 @@
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/tmc2130_registers.hpp"
-#include "motor-control/core/utils.hpp"
 
 namespace motor_driver_task {
 

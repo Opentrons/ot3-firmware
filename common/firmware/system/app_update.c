@@ -3,6 +3,7 @@
 #include "platform_specific_hal_conf.h"
 #include "platform_specific_hal.h"
 #include "common/core/app_update.h"
+#include "bootloader/firmware/constants.h"
 
 
 /** Fixed location in RAM that stores firmware update flags. */
@@ -55,11 +56,19 @@ update_flag_type app_update_flags() {
 
 
 bool is_app_update_requested() {
-    return firmware_update_flags & UPDATE_FLAG_REQUESTED;
+    return firmware_update_flags == UPDATE_FLAG_REQUESTED;
 }
 
 
-/** Clear the update flags. */
 void app_update_clear_flags() {
     firmware_update_flags = UPDATE_FLAG_NONE;
+}
+
+
+bool is_app_in_flash() {
+    // Check if start of flash points to RAM.
+    if (((*(__IO uint32_t *) APP_FLASH_ADDRESS) & 0x2FFC0000) == 0x20000000) {
+        return true;
+    }
+    return false;
 }

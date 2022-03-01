@@ -34,7 +34,7 @@ auto Spi::transmit_receive(const BufferType& transmit, BufferType& receive)
     auto response = hal_transmit_receive(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<uint8_t*>(transmit.data()), receive.data(),
-        spi::TMC2130Spi::BufferSize, TIMEOUT, this->SPI_intf.SPI_handle);
+        spi::SpiDeviceBase::BufferSize, TIMEOUT, this->SPI_intf.SPI_handle);
 
     Set_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
     return response == HAL_OK;

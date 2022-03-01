@@ -69,7 +69,8 @@ CANErrorCode parse_update_complete(
         return can_errorcode_invalid_size;
     }
 
-    to_uint32(buffer, &result->num_messages);
+    buffer = to_uint32(buffer, &result->num_messages);
+    to_uint32(buffer, &result->crc32);
 
     return can_errorcode_ok;
 }

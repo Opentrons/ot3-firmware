@@ -48,7 +48,7 @@ target_pipettes_core(pipettes-simulator)
 
 target_ot_motor_control(pipettes-simulator)
 
-target_link_libraries(pipettes-simulator PRIVATE can-core common-simulation freertos-pipettes pthread)
+target_link_libraries(pipettes-simulator PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost)
 
 
 # Set up the include directories

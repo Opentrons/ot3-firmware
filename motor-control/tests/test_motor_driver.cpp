@@ -7,7 +7,7 @@
 using namespace motor_driver_config;
 
 TEST_CASE("Setup") {
-    auto spi = sim_spi::SimTMC2130Spi{};
+    auto spi = sim_spi::SimSpiDeviceBase{};
     tmc2130::TMC2130RegisterMap register_config{
         .gconfig = {.en_pwm_mode = 1},
         .ihold_irun = {.hold_current = 0x2,

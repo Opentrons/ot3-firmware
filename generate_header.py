@@ -48,7 +48,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     with block(
         output=output,
         start="namespace can_ids {\n\n",
-        terminate="} // namespace can_ids\n\n",
+        terminate="}  // namespace can_ids\n\n",
     ):
         write_enum_cpp(constants_mod.FunctionCode, output)
         write_enum_cpp(constants_mod.MessageId, output)
@@ -65,7 +65,7 @@ def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
         output=output, start=f"enum class {e.__name__} {{\n", terminate="};\n\n"
     ):
         for i in e:
-            output.write(f"  {i.name} = 0x{i.value:x},\n")
+            output.write(f"    {i.name} = 0x{i.value:x},\n")
 
 
 def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: ModuleType) -> None:

@@ -16,11 +16,12 @@ struct SPI_interface {
     uint32_t pin;
 };
 
-class Spi : public TMC2130Spi {
+class Spi : public SpiDeviceBase {
   public:
     explicit Spi(SPI_interface SPI_int);
-    auto transmit_receive(const TMC2130Spi::BufferType& transmit,
-                          TMC2130Spi::BufferType& receive) -> bool final;
+
+    auto transmit_receive(const SpiDeviceBase::BufferType& transmit,
+                          SpiDeviceBase::BufferType& receive) -> bool final;
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;

@@ -19,8 +19,8 @@ static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 /**
  * The SPI busses.
  */
-static auto spi_comms_right = sim_spi::SimTMC2130Spi();
-static auto spi_comms_left = sim_spi::SimTMC2130Spi();
+static auto spi_comms_right = sim_spi::SimSpiDeviceBase();
+static auto spi_comms_left = sim_spi::SimSpiDeviceBase();
 
 /**
  * The motor interfaces.

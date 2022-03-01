@@ -24,8 +24,8 @@ SCENARIO("dword_address_iter") {
                                           dword_address_iter_cb);
 
             auto expected =
-                std::vector<Result>{Result{0x800000, 0xFFFEFDFCFBFAF9F8},
-                                    Result{0x800008, 0xFEFDFCFBFAF9F8F7}};
+                std::vector<Result>{Result{0x800000, 0xF8F9FAFBFCFDFEFF},
+                                    Result{0x800008, 0xF7F8F9FAFBFCFDFE}};
 
             THEN("returns true") { REQUIRE(ret); }
             THEN("the address and data are correct") {
@@ -44,7 +44,7 @@ SCENARIO("dword_address_iter") {
             THEN("returns true") { REQUIRE(ret); }
             THEN("the address and data are correct") {
                 auto expected =
-                    std::vector<Result>{Result{0x800000, 0xFFFEFD0000000000}};
+                    std::vector<Result>{Result{0x800000, 0x0000000000FDFEFF}};
                 REQUIRE(results == expected);
             }
         }
@@ -61,9 +61,9 @@ SCENARIO("dword_address_iter") {
             THEN("returns true") { REQUIRE(ret); }
             THEN("the address and data are correct") {
                 auto expected =
-                    std::vector<Result>{Result{0x800000, 0xFFFEFDFCFBFAF9F8},
-                                        Result{0x800008, 0xFEFDFCFBFAF9F8F7},
-                                        Result{0x800010, 0xFDFC000000000000}};
+                    std::vector<Result>{Result{0x800000, 0xF8F9FAFBFCFDFEFF},
+                                        Result{0x800008, 0xF7F8F9FAFBFCFDFE},
+                                        Result{0x800010, 0x000000000000FCFD}};
                 REQUIRE(results == expected);
             }
         }

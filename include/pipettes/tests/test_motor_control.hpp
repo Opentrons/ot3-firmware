@@ -28,7 +28,7 @@ enum class MotorRegisters : uint8_t {
 static constexpr auto BUFFER_SIZE = 5;
 using BufferType = std::array<uint8_t, BUFFER_SIZE>;
 
-template <spi::TMC2130Spi SpiDriver>
+template <spi::SpiDeviceBase SpiDriver>
 class TestMotorDriver {
   public:
     TestMotorDriver(SpiDriver& spi) : spi_comms(spi) {}
@@ -60,7 +60,7 @@ class TestMotorDriver {
     void reset_status() { status = 0; }
 };
 
-template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
+template <spi::SpiDeviceBase SpiDriver, template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<Move>, Move>
 class TestMotionController {
   public:
@@ -86,7 +86,7 @@ class TestMotionController {
     GenericQueue& queue;
 };
 
-template <spi::TMC2130Spi SpiDriver, template <class> class QueueImpl>
+template <spi::SpiDeviceBase SpiDriver, template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<Move>, Move>
 struct TestMotor {
     using GenericQueue = QueueImpl<Move>;

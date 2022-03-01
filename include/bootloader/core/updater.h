@@ -45,6 +45,11 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
  */
 FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages, uint32_t error_detection);
 
+/**
+ * Start the application. This function will not return.
+ */
+void fw_update_start_application(void);
+
 
 #ifdef __cplusplus
 }  // extern "C"

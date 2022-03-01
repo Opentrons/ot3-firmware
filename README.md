@@ -157,3 +157,18 @@ The simulators can be customized using environment variables.
 `CAN_SERVER_HOST` - Host name of opentrons can socket server
 
 `CAN_PORT` - Port of opentrons can socket server
+
+
+## FW Update
+
+Firmware update can be performed over the CAN bus.
+
+### Prerequisites
+
+- A bootloader must be flashed onto a device in order to perform FW update over CAN. A bootloader can be flashed using one of the `bootloader-{subsystem}-flash` targets.
+- A CAN analyzer or other CAN connection to device.
+
+### Instructions
+
+1. Create a `hex` file for the subsystem to be updated. There are `{subsystem}-hex` targets for each subsystem.
+2. Use [update firmware](https://github.com/Opentrons/opentrons/tree/edge/hardware#opentrons_update_fw) script.

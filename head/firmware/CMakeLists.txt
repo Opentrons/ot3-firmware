@@ -14,6 +14,7 @@ set(HEAD_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/adc/adc_comms.cpp
         ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
+        ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${CAN_FW_DIR}/hal_can.c
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/utils.c
@@ -29,7 +30,9 @@ set(HEAD_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_hardware.c
         ${COMMON_EXECUTABLE_DIR}/spi/spi.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-        ${COMMON_EXECUTABLE_DIR}/system/app_update.c)
+        ${COMMON_EXECUTABLE_DIR}/system/app_update.c
+        ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
+        )
 
 add_executable(head
         ${HEAD_FW_LINTABLE_SRCS}
@@ -144,9 +147,21 @@ add_custom_target(head-debug
         )
 
 
-# Runs openocd to flash the board (without using a debugger)
+# Targets to create full image hex file containing both bootloader and application
+add_custom_command(
+        OUTPUT head-image.hex
+        DEPENDS head-hex bootloader-head-hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py head-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex head.hex
+        VERBATIM)
+add_custom_target(head-image-hex ALL
+        DEPENDS head-image.hex)
+
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
+
+# Targets to flash bootloader and firmware
 add_custom_target(head-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:head>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/head-image.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS head)
+        DEPENDS head-image-hex)

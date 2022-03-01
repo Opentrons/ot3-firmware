@@ -1,11 +1,15 @@
 #include "platform_specific_hal_conf.h"
+#include "platform_specific_hal.h"
+#include "common/core/app_update.h"
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
+#include "common/firmware/clocking.h"
 #include "can/firmware/utils.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
-#include "common/firmware/clocking.h"
+#include "bootloader/core/updater.h"
 #include "bootloader/firmware/system.h"
+#include "bootloader/firmware/crc32.h"
 
 /**
  * The CAN handle.
@@ -25,8 +29,120 @@ static FDCAN_RxHeaderTypeDef rx_header;
 static Message rx_message;
 static Message tx_message;
 
+/**
+ * The entry point to the CAN application updater.
+ */
+static void run_upgrade();
 
-static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
+/**
+ * Initialize the CAN handle.
+ * @param can_handle
+ */
+static void initialize_can(FDCAN_HandleTypeDef * can_handle);
+
+
+/**
+ * Check against RCC_CSR register. Were we started from:
+ *   pin reset
+ *   low-power reset
+ *   brown-out reset
+ */
+#define RESET_CHECK_MASK (RCC_CSR_PINRSTF | RCC_CSR_LPWRRSTF | RCC_CSR_BORRSTF)
+
+/**
+ * Check against the RCC_CSR. Were we started by the watchdog timer.
+ */
+#define WATCHDOG_CHECK_MASK (RCC_CSR_IWDGRSTF | RCC_CSR_WWDGRSTF)
+
+/**
+ * Are we starting due to power on.
+ */
+#define IS_POWER_ON_RESET() ((RCC->CSR & RESET_CHECK_MASK) != 0)
+
+/**
+ * Are we starting due to watchdog reset.
+ */
+#define IS_WATCHDOG_RESET() ((RCC->CSR & WATCHDOG_CHECK_MASK) != 0)
+
+
+int main() {
+    HardwareInit();
+    RCC_Peripheral_Clock_Select();
+
+    // TODO (al, 2022-02-17): Need detection of FW needing update due to failure.
+    // We will jump to application if there's no update requested and the app is
+    // already present and we weren't restarted by the watchdog.
+    if (IS_WATCHDOG_RESET() ||
+        (!IS_POWER_ON_RESET() && is_app_update_requested()) ||
+        !is_app_in_flash()) {
+        // Perform the firmware update.
+        run_upgrade();
+    } else {
+        // Clear reset flags. Otherwise, they will persist for the lifetime of
+        // the bootloader and the application.
+        __HAL_RCC_CLEAR_RESET_FLAGS();
+
+        fw_update_start_application();
+    }
+}
+
+
+/**
+ * Entry point of the fw update over CAN.
+ */
+void run_upgrade() {
+
+    crc32_init();
+
+    initialize_can(&hcan1);
+
+    tx_header.IdType = FDCAN_EXTENDED_ID;
+    tx_header.TxFrameType = FDCAN_DATA_FRAME;
+    tx_header.DataLength = FDCAN_DLC_BYTES_8;
+    tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
+    tx_header.FDFormat = FDCAN_FD_CAN;
+    tx_header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+    tx_header.MessageMarker = 0;
+
+    for (;;) {
+        if (HAL_FDCAN_GetRxFifoFillLevel(&hcan1, FDCAN_RX_FIFO0) > 0) {
+
+            if (HAL_FDCAN_GetRxMessage(&hcan1, FDCAN_RX_FIFO0, &rx_header,
+                                       rx_message.data) != HAL_OK) {
+                // Read request Error
+                Error_Handler();
+            }
+
+            rx_message.arbitration_id.id = rx_header.Identifier;
+            rx_message.size = length_from_hal(rx_header.DataLength);
+
+            HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
+
+            if (return_code == handle_message_has_response) {
+                // Set the originating id to our node id
+                tx_message.arbitration_id.parts.originating_node_id = get_node_id();
+                tx_header.Identifier = tx_message.arbitration_id.id;
+                tx_header.DataLength = length_to_hal(tx_message.size);
+
+                // Wait for there to be room.
+                while (HAL_FDCAN_GetTxFifoFreeLevel(&hcan1) == 0) {
+                    HAL_Delay(1);
+                }
+
+                if (HAL_FDCAN_AddMessageToTxFifoQ(&hcan1, &tx_header,
+                                                  tx_message.data) != HAL_OK) {
+                    // Transmission request Error
+                    Error_Handler();
+                }
+            }
+        }
+    }
+}
+
+
+
+void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     if (MX_FDCAN1_Init(&hcan1) != HAL_OK) {
         Error_Handler();
     }
@@ -83,50 +199,4 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     filter_def.FilterID1 = 0,
     filter_def.FilterID2 = 0;
     HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
-}
-
-
-int main() {
-    HardwareInit();
-    RCC_Peripheral_Clock_Select();
-
-    initialize_can(&hcan1);
-
-    tx_header.IdType = FDCAN_EXTENDED_ID;
-    tx_header.TxFrameType = FDCAN_DATA_FRAME;
-    tx_header.DataLength = FDCAN_DLC_BYTES_8;
-    tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    tx_header.BitRateSwitch = FDCAN_BRS_OFF;
-    tx_header.FDFormat = FDCAN_FD_CAN;
-    tx_header.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    tx_header.MessageMarker = 0;
-
-    for (;;) {
-        if (HAL_FDCAN_GetRxFifoFillLevel(&hcan1, FDCAN_RX_FIFO0) > 0) {
-
-            if (HAL_FDCAN_GetRxMessage(&hcan1, FDCAN_RX_FIFO0, &rx_header,
-                                   rx_message.data) != HAL_OK) {
-                // Read request Error
-                Error_Handler();
-            }
-
-            rx_message.arbitration_id.id = rx_header.Identifier;
-            rx_message.size = length_from_hal(rx_header.DataLength);
-
-            HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
-
-            if (return_code == handle_message_has_response) {
-                // Set the originating id to our node id
-                tx_message.arbitration_id.parts.originating_node_id = get_node_id();
-                tx_header.Identifier = tx_message.arbitration_id.id;
-                tx_header.DataLength = length_to_hal(tx_message.size);
-
-                if (HAL_FDCAN_AddMessageToTxFifoQ(&hcan1, &tx_header,
-                                                  tx_message.data) != HAL_OK) {
-                    // Transmission request Error
-                    Error_Handler();
-                }
-            }
-        }
-    }
 }

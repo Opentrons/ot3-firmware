@@ -9,16 +9,10 @@
 // clang-format on
 
 #include "common/core/app_update.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
-
-#pragma GCC diagnostic push
-// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#pragma GCC diagnostic ignored "-Wvolatile"
 #include "common/firmware/clocking.h"
 #include "common/firmware/utility_gpio.h"
-
-#pragma GCC diagnostic pop
+#include "gantry/core/interfaces.hpp"
+#include "gantry/core/tasks.hpp"
 
 auto main() -> int {
     HardwareInit();

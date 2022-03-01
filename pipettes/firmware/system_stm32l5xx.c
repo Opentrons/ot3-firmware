@@ -102,6 +102,7 @@
 #include "stm32l5xx.h"
 #include "stm32l5xx_hal.h"
 #include "common/firmware/errors.h"
+#include "bootloader/firmware/constants.h"
 
 /**
   * @}
@@ -131,30 +132,12 @@
 #define HSI_VALUE    16000000U /*!< Value of the Internal oscillator in Hz*/
 #endif /* HSI_VALUE */
 
-/* Note: Following vector table addresses must be defined in line with linker
-         configuration. */
-/*!< Uncomment the following line if you need to relocate the vector table
-     anywhere in Flash or Sram, else the vector table is kept at the automatic
-     remap of boot address selected */
-/* #define USER_VECT_TAB_ADDRESS */
+/**
+ * The vector table is offset by the space reserved for our bootloader. This must
+ * align with the value in the linker script.
+ */
+#define VECT_TAB_OFFSET         APP_OFFSET
 
-#if defined(USER_VECT_TAB_ADDRESS)
-/*!< Uncomment the following line if you need to relocate your vector Table
-     in Sram else user remap will be done in Flash. */
-/* #define VECT_TAB_SRAM */
-
-#if defined(VECT_TAB_SRAM)
-#define VECT_TAB_BASE_ADDRESS   SRAM1_BASE      /*!< Vector Table base address field.
-                                                     This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET         0x00000000U     /*!< Vector Table base offset field.
-                                                     This value must be a multiple of 0x200. */
-#else
-#define VECT_TAB_BASE_ADDRESS   FLASH_BASE      /*!< Vector Table base address field.
-                                                     This value must be a multiple of 0x200. */
-#define VECT_TAB_OFFSET         0x00000000U     /*!< Vector Table base offset field.
-                                                     This value must be a multiple of 0x200. */
-#endif /* VECT_TAB_SRAM */
-#endif /* USER_VECT_TAB_ADDRESS */
 
 /******************************************************************************/
 /**
@@ -211,9 +194,7 @@ const uint32_t MSIRangeTable[16] = {100000U,   200000U,   400000U,   800000U,  1
 void SystemInit(void)
 {
     /* Configure the Vector Table location -------------------------------------*/
-#if defined(USER_VECT_TAB_ADDRESS)
-    SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;
-#endif
+    SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET;
 
     /* FPU settings ------------------------------------------------------------*/
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)

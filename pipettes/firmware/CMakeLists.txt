@@ -17,6 +17,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c
+    ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
     ${CAN_FW_DIR}/hal_can.c
     ${CAN_FW_DIR}/hal_can_bus.cpp
     ${CAN_FW_DIR}/utils.c)
@@ -32,7 +33,8 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
     ${COMMON_EXECUTABLE_DIR}/spi/spi.c
-    ${COMMON_EXECUTABLE_DIR}/system/app_update.c)
+    ${COMMON_EXECUTABLE_DIR}/system/app_update.c
+    ${COMMON_EXECUTABLE_DIR}/system/iwdg.c)
 
 add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
@@ -149,9 +151,22 @@ add_custom_target(pipettes-debug
         USES_TERMINAL
         )
 
-# Runs openocd to flash the board (without using a debugger)
+
+# Targets to create full image hex file containing both bootloader and application
+add_custom_command(
+        OUTPUT pipettes-image.hex
+        DEPENDS pipettes-hex bootloader-pipettes-hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py pipettes-image.hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex pipettes.hex
+        VERBATIM)
+add_custom_target(pipettes-image-hex ALL
+        DEPENDS pipettes-image.hex)
+
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
+
+# Targets to flash bootloader and firmware
 add_custom_target(pipettes-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg" "-c" "program $<TARGET_FILE:pipettes>;reset;exit"
+        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/pipettes-image.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS pipettes)
+        DEPENDS pipettes-image-hex)
