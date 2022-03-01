@@ -25,50 +25,47 @@ namespace sensor_callbacks {
 // Max sized buffer for data we'll ever need is ~40 bits.
 using MaxMessageBuffer = std::array<uint8_t, 5>;
 
-
-template<typename Callback>
+template <typename Callback>
 concept SingleRegister = requires(Callback cb, const MaxMessageBuffer &buffer) {
     {cb.handle_data(buffer)};
     {cb.send_to_can()};
 };
 
-template<typename Callback>
+template <typename Callback>
 concept MultiRegister = requires(Callback cb, const MaxMessageBuffer &buffer) {
     {cb.handle_data(buffer, buffer)};
     {cb.send_to_can()};
 };
 
-template<SingleRegister scb>
+template <SingleRegister scb>
 struct SingleRegisterCallback {
-    SingleRegisterCallback(scb& callback) : callback{callback} {}
-    scb& callback;
+    SingleRegisterCallback(scb &callback) : callback{callback} {}
+    scb &callback;
 
     void operator()(const MaxMessageBuffer &buffer) {
         callback.handle_data(buffer);
     }
 
-    void operator()() {
-        callback.send_to_can();
-    }
+    void operator()() { callback.send_to_can(); }
 };
 
-template<MultiRegister mcb>
+template <MultiRegister mcb>
 struct MultiRegisterCallback {
-    MultiRegisterCallback(mcb& callback) : callback{callback} {}
-    mcb& callback;
+    MultiRegisterCallback(mcb &callback) : callback{callback} {}
+    mcb &callback;
 
-    void operator()(const MaxMessageBuffer &buffer_a, const MaxMessageBuffer &buffer_b) {
+    void operator()(const MaxMessageBuffer &buffer_a,
+                    const MaxMessageBuffer &buffer_b) {
         callback.handle_data(buffer_a, buffer_b);
     }
 
-    void operator()() {
-        callback.send_to_can();
-    }
+    void operator()() { callback.send_to_can(); }
 };
 
 // Types representing the possible callback signatures
 using SendToCanFunctionTypeDef = std::function<void()>;
-using SingleBufferTypeDef = std::function<void(const MaxMessageBuffer&)>;
-using MultiBufferTypeDef = std::function<void(const MaxMessageBuffer&, const MaxMessageBuffer&)>;
+using SingleBufferTypeDef = std::function<void(const MaxMessageBuffer &)>;
+using MultiBufferTypeDef =
+    std::function<void(const MaxMessageBuffer &, const MaxMessageBuffer &)>;
 
 }  // namespace sensor_callbacks

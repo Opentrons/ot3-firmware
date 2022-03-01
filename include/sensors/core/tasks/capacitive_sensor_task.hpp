@@ -59,7 +59,8 @@ class CapacitiveMessageHandler {
         } else {
             capacitance_callback.reset();
             capacitance_callback.set_offset(CAPDAC_OFFSET);
-            sensor_callbacks::MultiRegisterCallback callback{capacitance_callback};
+            sensor_callbacks::MultiRegisterCallback callback{
+                capacitance_callback};
             writer.multi_register_poll(ADDRESS, 1, DELAY, callback, callback,
                                        MSB_MEASUREMENT_1, LSB_MEASUREMENT_1);
         }
@@ -78,16 +79,16 @@ class CapacitiveMessageHandler {
             capdac_callback.set_number_of_reads(m.sample_rate);
             capdac_callback.set_offset(CAPDAC_OFFSET);
             sensor_callbacks::SingleRegisterCallback callback{capdac_callback};
-            writer.single_register_poll(ADDRESS, m.sample_rate, DELAY,
-                                        callback, callback,
-                                        CONFIGURATION_MEASUREMENT);
+            writer.single_register_poll(ADDRESS, m.sample_rate, DELAY, callback,
+                                        callback, CONFIGURATION_MEASUREMENT);
         } else {
             capacitance_callback.reset();
             capacitance_callback.set_number_of_reads(m.sample_rate);
             capacitance_callback.set_offset(CAPDAC_OFFSET);
-            sensor_callbacks::MultiRegisterCallback callback{capacitance_callback};
-            writer.multi_register_poll(ADDRESS, m.sample_rate, DELAY,
-                                       callback, callback, MSB_MEASUREMENT_1,
+            sensor_callbacks::MultiRegisterCallback callback{
+                capacitance_callback};
+            writer.multi_register_poll(ADDRESS, m.sample_rate, DELAY, callback,
+                                       callback, MSB_MEASUREMENT_1,
                                        LSB_MEASUREMENT_1);
         }
     }

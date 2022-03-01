@@ -45,7 +45,6 @@ struct TemperatureReadingCallback {
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
         temperature = convert(data, SensorType::temperature);
-
     }
 
     void send_to_can() {

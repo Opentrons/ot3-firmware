@@ -38,6 +38,9 @@ class I2CMessageHandler {
     }
 
     void visit(SingleRegisterPollReadFromI2C &m) {
+        // TODO (lc, 03-01-2022): see about making this non-blocking
+        // TODO (lc, 03-01-2022): we should try to consolidate polling to
+        // support any number of registers potentially.
         auto empty_array = m.buffer;
         for (int i = 0; i < m.polling; i++) {
             i2c_device.central_transmit(m.buffer.data(), m.buffer.size(),
@@ -52,6 +55,9 @@ class I2CMessageHandler {
     }
 
     void visit(MultiRegisterPollReadFromI2C &m) {
+        // TODO (lc, 03-01-2022): see about making this non-blocking
+        // TODO (lc, 03-01-2022): we should try to consolidate polling to
+        // support any number of registers potentially.
         auto empty_array_reg_1 = m.register_buffer_1;
         auto empty_array_reg_2 = m.register_buffer_2;
         for (int i = 0; i < m.polling; i++) {

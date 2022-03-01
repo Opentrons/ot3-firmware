@@ -23,9 +23,8 @@ struct ReadCapacitanceCallback {
     ReadCapacitanceCallback(CanClient &can_client, float current_offset)
         : can_client{can_client}, current_offset{current_offset} {}
 
-    void handle_data(
-        const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
-        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
+    void handle_data(const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
+                     const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
         uint32_t msb_data = 0x0;
         uint32_t lsb_data = 0x0;
         const auto *MSB_iter = MSB_buffer.cbegin();
@@ -51,7 +50,7 @@ struct ReadCapacitanceCallback {
     }
 
     void set_number_of_reads(uint16_t number_of_reads) {
-        number_of_reads = number_of_reads;
+        this->number_of_reads = number_of_reads;
     }
 
     void set_offset(float new_offset) { current_offset = new_offset; }
@@ -97,7 +96,7 @@ struct ReadOffsetCallback {
     }
 
     void set_number_of_reads(uint16_t number_of_reads) {
-        number_of_reads = number_of_reads;
+        this->number_of_reads = number_of_reads;
     }
 
     void set_offset(float new_offset) { current_offset = new_offset; }

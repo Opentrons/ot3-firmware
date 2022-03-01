@@ -19,9 +19,7 @@ struct UpdateCallback {
 
     void send_to_can() {}
 
-    void reset() {
-        update_value = 0;
-    }
+    void reset() { update_value = 0; }
 };
 
 struct MultiUpdateCallback {
