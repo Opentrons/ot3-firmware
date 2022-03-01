@@ -50,7 +50,8 @@ if (${CMAKE_CROSSCOMPILING})
     configure_file(common/firmware/platform_specific_hal.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal.h)
 
     include_directories(${CMAKE_BINARY_DIR}/generated/)
-
+else()
+    find_package(Boost 1.71.0)
 endif ()
 
 set(LINT_TARGETS "")
