@@ -3,6 +3,7 @@
 #include "bootloader/core/updater.h"
 #include "bootloader/core/util.h"
 #include "bootloader/firmware/constants.h"
+#include "bootloader/firmware/crc32.h"
 
 
 /**
@@ -20,7 +21,8 @@ FwUpdateReturn fw_update_initialize(UpdateState* state) {
     }
     reset_update_state(state);
 
-    // TODO (amit, 2022-02-01): Erase app flash space?
+    crc32_reset_accumulator();
+
     return fw_update_ok;
 }
 
@@ -29,7 +31,9 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
     if (!state) {
         return fw_update_error;
     }
-    // TODO (amit, 2022-02-01): Update error detection with crc32 or checksum of data.
+
+    // Update CRC value
+    state->error_detection = crc32_accumulate(data, length);
 
     // TODO (amit, 2022-02-01): Validate the address. Don't overwrite something horrible.
 
@@ -97,15 +101,11 @@ FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages, uin
     }
 
     if (num_messages != state->num_messages_received) {
-        // TODO (amit, 2022-02-01): Erase app flash space?
         return fw_update_invalid_size;
     }
     if (error_detection != state->error_detection) {
-        // TODO (amit, 2022-02-01): Erase app flash space?
         return fw_update_invalid_data;
     }
-    // TODO (amit, 2022-02-01): Finalize update, but do not start app. We want
-    //  CAN response to go back to host first.
     return fw_update_ok;
 }
 

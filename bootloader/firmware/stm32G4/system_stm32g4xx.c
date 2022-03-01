@@ -353,16 +353,32 @@ void HardwareInit(void) {
     SystemCoreClockUpdate();
 }
 
-/**
- * @}
- */
 
 /**
- * @}
+* @brief CRC MSP Initialization
+* @param hcrc: CRC handle pointer
+* @retval None
  */
+void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
+{
+    if(hcrc->Instance==CRC)
+    {
+        __HAL_RCC_CRC_CLK_ENABLE();
+    }
+
+}
 
 /**
- * @}
+* @brief CRC MSP De-Initialization
+* @param hcrc: CRC handle pointer
+* @retval None
  */
+void HAL_CRC_MspDeInit(CRC_HandleTypeDef* hcrc)
+{
+    if(hcrc->Instance==CRC)
+    {
+        __HAL_RCC_CRC_CLK_DISABLE();
+    }
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
