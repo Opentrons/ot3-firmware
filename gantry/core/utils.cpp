@@ -47,7 +47,7 @@ auto utils::register_config_by_axis(enum GantryAxisType which)
                              .hend = 0x3,
                              .tbl = 0x2,
                              .mres = 0x4},
-                .coolconf = {.sgt = 0b110}};
+                .coolconf = {.sgt = 0x6}};
     }
     std::abort();
 }
