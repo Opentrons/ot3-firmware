@@ -75,8 +75,8 @@ SCENARIO("read capacitance sensor values") {
                 }
                 THEN(
                     "using the callback with data returns the expected value") {
-                    std::array<uint8_t, 5> buffer_a = {0, 0, 20, 80, 0};
-                    std::array<uint8_t, 5> buffer_b = {0, 0, 10, 10, 0};
+                    std::array<uint8_t, 5> buffer_a = {0, 0, 200, 80, 0};
+                    std::array<uint8_t, 5> buffer_b = {0, 0, 100, 10, 0};
                     read_message.handle_buffer(buffer_a, buffer_b);
                     read_message.client_callback();
                     mock_message_writer::TaskMessage can_msg{};
@@ -87,7 +87,7 @@ SCENARIO("read capacitance sensor values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 15);
-                    float expected = 1.2695;
+                    float expected = 0.41731;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }
