@@ -17,8 +17,8 @@ class CapacitiveMessageHandler {
                                       CanClient &can_client)
         : writer{i2c_writer},
           can_client{can_client},
-          capacitance_callback{can_client, CAPDAC_OFFSET},
-          capdac_callback{can_client, CAPDAC_OFFSET} {}
+          capacitance_callback{can_client, capdac_offset},
+          capdac_callback{can_client, capdac_offset} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
     auto operator=(const CapacitiveMessageHandler &)
@@ -52,13 +52,13 @@ class CapacitiveMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (bool(m.offset_reading)) {
             capdac_callback.reset();
-            capdac_callback.set_offset(CAPDAC_OFFSET);
+            capdac_callback.set_offset(capdac_offset);
             writer.write(CONFIGURATION_MEASUREMENT, ADDRESS);
             sensor_callbacks::SingleRegisterCallback callback{capdac_callback};
             writer.read(ADDRESS, callback, callback, CONFIGURATION_MEASUREMENT);
         } else {
             capacitance_callback.reset();
-            capacitance_callback.set_offset(CAPDAC_OFFSET);
+            capacitance_callback.set_offset(capdac_offset);
             sensor_callbacks::MultiRegisterCallback callback{
                 capacitance_callback};
             writer.multi_register_poll(ADDRESS, 1, DELAY, callback, callback,
@@ -77,14 +77,14 @@ class CapacitiveMessageHandler {
         if (bool(m.offset_update)) {
             capdac_callback.reset();
             capdac_callback.set_number_of_reads(m.sample_rate);
-            capdac_callback.set_offset(CAPDAC_OFFSET);
+            capdac_callback.set_offset(capdac_offset);
             sensor_callbacks::SingleRegisterCallback callback{capdac_callback};
             writer.single_register_poll(ADDRESS, m.sample_rate, DELAY, callback,
                                         callback, CONFIGURATION_MEASUREMENT);
         } else {
             capacitance_callback.reset();
             capacitance_callback.set_number_of_reads(m.sample_rate);
-            capacitance_callback.set_offset(CAPDAC_OFFSET);
+            capacitance_callback.set_offset(capdac_offset);
             sensor_callbacks::MultiRegisterCallback callback{
                 capacitance_callback};
             writer.multi_register_poll(ADDRESS, m.sample_rate, DELAY, callback,
@@ -96,18 +96,18 @@ class CapacitiveMessageHandler {
     void visit(can_messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
-        THRESHOLD = m.threshold;
+        threshold = m.threshold;
         auto message = can_messages::SensorThresholdResponse{
-            {}, SensorType::capacitive, THRESHOLD};
+            {}, SensorType::capacitive, threshold};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     InternalCallback internal_callback{};
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
     // 8 pF
-    uint32_t THRESHOLD = 0x8;
-    float CAPDAC_OFFSET = 0x0;
-    uint16_t DELAY = 20;
+    uint32_t threshold = 0x8;
+    float capdac_offset = 0x0;
+    static constexpr uint16_t DELAY = 20;
     I2CQueueWriter &writer;
     CanClient &can_client;
     ReadCapacitanceCallback<CanClient> capacitance_callback;
