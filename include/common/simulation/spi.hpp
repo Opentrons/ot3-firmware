@@ -7,26 +7,26 @@
 namespace sim_spi {
 
 /**
- * Implementation of TMC2130Spi protocol for simulation purposes.
+ * Implementation of SpiDeviceBase protocol for simulation purposes.
  */
-class SimTMC2130Spi : public spi::TMC2130Spi {
+class SimSpiDeviceBase : public spi::SpiDeviceBase {
   public:
     using RegisterMap = std::map<uint8_t, uint32_t>;
 
     /**
      * Constructor.
      */
-    SimTMC2130Spi(void) : register_map{} {}
+    SimSpiDeviceBase(void) : register_map{} {}
 
     /**
      * Construct with a register map.
      * @param register_map map of register to value
      */
-    SimTMC2130Spi(const RegisterMap& register_map)
+    SimSpiDeviceBase(const RegisterMap& register_map)
         : register_map{register_map} {}
 
-    bool transmit_receive(const spi::TMC2130Spi::BufferType& transmit,
-                          spi::TMC2130Spi::BufferType& receive) final;
+    bool transmit_receive(const spi::SpiDeviceBase::BufferType& transmit,
+                          spi::SpiDeviceBase::BufferType& receive) final;
 
   private:
     RegisterMap register_map;

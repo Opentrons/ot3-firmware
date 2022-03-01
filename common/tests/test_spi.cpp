@@ -4,11 +4,11 @@
 #include "common/simulation/spi.hpp"
 
 SCENARIO("build_command works") {
-    auto arr = spi::TMC2130Spi::BufferType{};
+    auto arr = spi::SpiDeviceBase::BufferType{};
     GIVEN("a message buffer") {
         WHEN("called with write mode") {
-            spi::TMC2130Spi::build_command(arr, spi::TMC2130Spi::Mode::WRITE,
-                                           0x12, 0x01020304);
+            spi::SpiDeviceBase::build_command(
+                arr, spi::SpiDeviceBase::Mode::WRITE, 0x12, 0x01020304);
             THEN("the write bit is set") { REQUIRE(arr[0] == 0x92); }
             THEN("the data is correct.") {
                 REQUIRE(arr[1] == 0x1);
@@ -19,8 +19,8 @@ SCENARIO("build_command works") {
         }
 
         WHEN("called read write mode") {
-            spi::TMC2130Spi::build_command(arr, spi::TMC2130Spi::Mode::READ,
-                                           0x12, 0xDEADBEEF);
+            spi::SpiDeviceBase::build_command(
+                arr, spi::SpiDeviceBase::Mode::READ, 0x12, 0xDEADBEEF);
             THEN("the write bit is not set") { REQUIRE(arr[0] == 0x12); }
             THEN("the data is correct.") {
                 REQUIRE(arr[1] == 0xDE);
@@ -33,18 +33,18 @@ SCENARIO("build_command works") {
 }
 
 SCENARIO("simulator works") {
-    auto transmit = spi::TMC2130Spi::BufferType{};
-    auto receive = spi::TMC2130Spi::BufferType{};
+    auto transmit = spi::SpiDeviceBase::BufferType{};
+    auto receive = spi::SpiDeviceBase::BufferType{};
 
     GIVEN("a register write command") {
-        auto subject = sim_spi::SimTMC2130Spi{};
-        subject.build_command(transmit, spi::TMC2130Spi::Mode::WRITE, 0x01,
+        auto subject = sim_spi::SimSpiDeviceBase{};
+        subject.build_command(transmit, spi::SpiDeviceBase::Mode::WRITE, 0x01,
                               0xBEEFDEAD);
         subject.transmit_receive(transmit, receive);
 
         WHEN("called with a read command") {
-            spi::TMC2130Spi::build_command(
-                transmit, spi::TMC2130Spi::Mode::READ, 0x01, 0);
+            spi::SpiDeviceBase::build_command(
+                transmit, spi::SpiDeviceBase::Mode::READ, 0x01, 0);
             subject.transmit_receive(transmit, receive);
             THEN("the data is what was written") {
                 REQUIRE(receive[1] == 0xBE);
@@ -56,12 +56,13 @@ SCENARIO("simulator works") {
     }
 
     GIVEN("a registter map") {
-        auto register_map = sim_spi::SimTMC2130Spi::RegisterMap{{1, 2}, {2, 3}};
-        auto subject = sim_spi::SimTMC2130Spi{register_map};
+        auto register_map =
+            sim_spi::SimSpiDeviceBase::RegisterMap{{1, 2}, {2, 3}};
+        auto subject = sim_spi::SimSpiDeviceBase{register_map};
 
         WHEN("called with a read command") {
-            spi::TMC2130Spi::build_command(
-                transmit, spi::TMC2130Spi::Mode::READ, 0x01, 0);
+            spi::SpiDeviceBase::build_command(
+                transmit, spi::SpiDeviceBase::Mode::READ, 0x01, 0);
             subject.transmit_receive(transmit, receive);
             subject.transmit_receive(transmit, receive);
             THEN("the data is was in the register map") {
@@ -71,8 +72,8 @@ SCENARIO("simulator works") {
                 REQUIRE(receive[4] == 0x2);
             }
 
-            spi::TMC2130Spi::build_command(
-                transmit, spi::TMC2130Spi::Mode::READ, 0x02, 0);
+            spi::SpiDeviceBase::build_command(
+                transmit, spi::SpiDeviceBase::Mode::READ, 0x02, 0);
             subject.transmit_receive(transmit, receive);
             subject.transmit_receive(transmit, receive);
             THEN("the data is was in the register map") {

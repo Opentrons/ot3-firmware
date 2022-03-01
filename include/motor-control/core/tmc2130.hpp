@@ -21,10 +21,10 @@ class TMC2130 {
     static constexpr size_t MESSAGE_LEN = 5;
     // The type of a single TMC2130 message.
     using MessageT = std::array<uint8_t, MESSAGE_LEN>;
-    spi::TMC2130Spi::BufferType rxBuffer{0};
+    spi::SpiDeviceBase::BufferType rxBuffer{0};
 
     TMC2130() = delete;
-    TMC2130(const TMC2130RegisterMap& registers, spi::TMC2130Spi& spi)
+    TMC2130(const TMC2130RegisterMap& registers, spi::SpiDeviceBase& spi)
         : _registers(registers), _spi_comms(spi), _initialized(false) {}
 
     /**
@@ -35,7 +35,7 @@ class TMC2130 {
      * @return An array with the contents of the message, or nothing if
      * there was an error
      */
-    static auto build_message(Registers addr, spi::TMC2130Spi::Mode mode,
+    static auto build_message(Registers addr, spi::SpiDeviceBase::Mode mode,
                               RegisterSerializedType val) -> MessageT {
         MessageT buffer = {0};
         auto* iter = buffer.begin();
@@ -51,7 +51,7 @@ class TMC2130 {
 
     auto read(Registers addr, uint32_t command_data) -> uint32_t {
         auto txBuffer =
-            build_message(addr, spi::TMC2130Spi::Mode::READ, command_data);
+            build_message(addr, spi::SpiDeviceBase::Mode::READ, command_data);
         // A read requires two transmissions. The second returns the data in the
         // register from the first transmission.
         _spi_comms.transmit_receive(txBuffer, rxBuffer);
@@ -67,7 +67,7 @@ class TMC2130 {
 
     auto write(Registers addr, uint32_t command_data) -> bool {
         auto txBuffer =
-            build_message(addr, spi::TMC2130Spi::Mode::WRITE, command_data);
+            build_message(addr, spi::SpiDeviceBase::Mode::WRITE, command_data);
         auto response = _spi_comms.transmit_receive(txBuffer, rxBuffer);
         return response;
     }
@@ -340,7 +340,7 @@ class TMC2130 {
     }
 
     TMC2130RegisterMap _registers = {};
-    spi::TMC2130Spi& _spi_comms;
+    spi::SpiDeviceBase& _spi_comms;
     bool _initialized;
 };
 }  // namespace tmc2130

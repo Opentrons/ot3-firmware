@@ -36,7 +36,7 @@ struct Motor {
      * @param queue Input message queue containing motion commands.
      * commands.
      */
-    Motor(spi::TMC2130Spi& spi,
+    Motor(spi::SpiDeviceBase& spi,
           lms::LinearMotionSystemConfig<MEConfig> lms_config,
           motor_hardware::MotorHardwareIface& hardware_iface,
           MotionConstraints constraints,

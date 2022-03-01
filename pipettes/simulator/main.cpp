@@ -24,7 +24,7 @@ static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
-static sim_spi::SimTMC2130Spi spi_comms{};
+static sim_spi::SimSpiDeviceBase spi_comms{};
 
 static sim_motor_hardware_iface::SimMotorHardwareIface plunger_hw{};
 

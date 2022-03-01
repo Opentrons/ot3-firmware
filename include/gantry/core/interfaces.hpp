@@ -22,7 +22,7 @@ auto get_can_bus() -> can_bus::CanBus &;
  * Get the SPI interface
  * @return the SPI interface
  */
-auto get_spi() -> spi::TMC2130Spi &;
+auto get_spi() -> spi::SpiDeviceBase &;
 
 /**
  * Get the motor hardware interface
