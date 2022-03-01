@@ -4,6 +4,7 @@
 #include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/clocking.h"
+#include "common/firmware/iwdg.h"
 #include "can/firmware/utils.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
@@ -30,9 +31,15 @@ static Message rx_message;
 static Message tx_message;
 
 /**
+ * Check if application needs to be updated.
+ * @return true if application needs to be updated.
+ */
+static bool requires_an_update();
+
+/**
  * The entry point to the CAN application updater.
  */
-static void run_upgrade();
+static void run_update();
 
 /**
  * Initialize the CAN handle.
@@ -68,29 +75,47 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle);
 int main() {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+    MX_IWDG_Init();
 
-    // TODO (al, 2022-02-17): Need detection of FW needing update due to failure.
-    // We will jump to application if there's no update requested and the app is
-    // already present and we weren't restarted by the watchdog.
-    if (IS_WATCHDOG_RESET() ||
-        (!IS_POWER_ON_RESET() && is_app_update_requested()) ||
-        !is_app_in_flash()) {
+    bool requires_update = requires_an_update();
+
+    // Clear reset flags. Otherwise, they will persist for the lifetime of
+    // the bootloader and the application.
+    __HAL_RCC_CLEAR_RESET_FLAGS();
+
+    if (requires_update) {
         // Perform the firmware update.
-        run_upgrade();
+        run_update();
     } else {
-        // Clear reset flags. Otherwise, they will persist for the lifetime of
-        // the bootloader and the application.
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-
+        // Start the application.
         fw_update_start_application();
     }
 }
 
 
 /**
+ * Check if application needs to be updated.
+ * @return true if application needs to be updated.
+ */
+bool requires_an_update() {
+    // An update is required if:
+    // - Restarted by watchdog
+    // - The application is not in flash
+    // - The bootloader is not powering on from a reset and the application has
+    //    requested an update.
+    if (IS_WATCHDOG_RESET() ||
+        (!IS_POWER_ON_RESET() && is_app_update_requested()) ||
+        !is_app_in_flash()) {
+        return true;
+    }
+    return false;
+}
+
+
+/**
  * Entry point of the fw update over CAN.
  */
-void run_upgrade() {
+void run_update() {
 
     crc32_init();
 
@@ -137,11 +162,16 @@ void run_upgrade() {
                 }
             }
         }
+        // Refresh the watch dog.
+        iwdg_refresh();
     }
 }
 
 
-
+/**
+ * Initialize the CAN bus
+ * @param can_handle Handle to can bus
+ */
 void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     if (MX_FDCAN1_Init(&hcan1) != HAL_OK) {
         Error_Handler();

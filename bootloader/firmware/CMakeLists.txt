@@ -14,6 +14,7 @@ set(BOOTLOADER_FW_LINTABLE_SRCS
 set(BOOTLOADER_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
+        ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         ${CAN_EXECUTABLE_DIR}/utils.c
         ${CMAKE_CURRENT_SOURCE_DIR}/crc32.c
         )
