@@ -4,12 +4,14 @@
  */
 #pragma once
 
+#include <cmath>
 #include <concepts>
 #include <cstdint>
 #include <functional>
 #include <optional>
 
 #include "common/core/bit_utils.hpp"
+#include "tmc2130_config.hpp"
 #include "tmc2130_registers.hpp"
 
 namespace tmc2130 {
@@ -25,8 +27,11 @@ class TMC2130 {
     spi::SpiDeviceBase::BufferType rxBuffer{0};
 
     TMC2130() = delete;
-    TMC2130(const TMC2130RegisterMap& registers, spi::SpiDeviceBase& spi)
-        : _registers(registers), _spi_comms(spi), _initialized(false) {}
+    TMC2130(const TMC2130DriverConfig& conf, spi::SpiDeviceBase& spi)
+        : _registers(conf.registers),
+          _current_config(conf.current_config),
+          _spi_comms(spi),
+          _initialized(false) {}
 
     /**
      * @brief Build a message to send over SPI
@@ -125,6 +130,20 @@ class TMC2130 {
         }
         _initialized = true;
         return true;
+    }
+
+    auto convert_to_tmc2130_current_value(uint32_t c) -> uint32_t {
+        constexpr auto SMALL_R = 0.02;
+        constexpr auto sqrt_2 = std::sqrt(2);
+        auto FLOAT_CONSTANT = static_cast<float>(
+            sqrt_2 * 32.0 * (_current_config.r_sense + SMALL_R) /
+            _current_config.v_sf);
+        auto fixed_point_constant = static_cast<uint32_t>(
+            FLOAT_CONSTANT * static_cast<float>(1LL << 16));
+        uint64_t val = static_cast<uint64_t>(fixed_point_constant) *
+                       static_cast<uint64_t>(c);
+        auto new_val = static_cast<uint32_t>(val >> 32);
+        return new_val - 1;
     }
 
     /**
@@ -341,7 +360,9 @@ class TMC2130 {
     }
 
     TMC2130RegisterMap _registers = {};
+    TMC2130MotorCurrentConfig _current_config = {};
     spi::SpiDeviceBase& _spi_comms;
     bool _initialized;
 };
+
 }  // namespace tmc2130

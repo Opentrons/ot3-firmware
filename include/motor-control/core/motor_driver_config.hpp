@@ -79,22 +79,4 @@ struct DriverRegisters {
     }
 };
 
-struct RegisterConfig {
-    uint32_t gconf = 0;
-    uint32_t gstat = 0;
-    uint32_t ioin = 0;
-    uint32_t ihold_irun = 0;
-    uint32_t tpowerdown = 0;
-    uint32_t tpwnthrs = 0;
-    uint32_t tcoolthrs = 0;
-    uint32_t chopconf = 0;
-    uint32_t thigh = 0;
-    uint32_t coolconf = 0;
-    uint32_t xdirect = 0;
-    uint32_t vdcmin = 0;
-    uint32_t dcctrl = 0;
-    uint32_t pwmconf = 0;
-    uint32_t encm_ctrl = 0;
-};
-
 }  // namespace motor_driver_config

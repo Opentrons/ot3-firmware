@@ -78,28 +78,13 @@ class MotorDriverMessageHandler {
 
         if (m.hold_current != 0U) {
             driver.tmc2130.get_register_map().ihold_irun.hold_current =
-                convert_to_tmc2130_current_value(m.hold_current);
+                driver.tmc2130.convert_to_tmc2130_current_value(m.hold_current);
         };
         if (m.run_current != 0U) {
             driver.tmc2130.get_register_map().ihold_irun.run_current =
-                convert_to_tmc2130_current_value(m.run_current);
+                driver.tmc2130.convert_to_tmc2130_current_value(m.run_current);
         }
         driver.tmc2130.write_config();
-    }
-
-    auto convert_to_tmc2130_current_value(uint32_t c) -> uint32_t {
-        constexpr auto VFS = 0.325;
-        constexpr auto R_SENSE = 0.1;
-        constexpr auto SMALL_R = 0.02;
-        constexpr auto sqrt_2 = std::sqrt(2);
-        auto FLOAT_CONSTANT =
-            static_cast<float>(sqrt_2 * 32.0 * (R_SENSE + SMALL_R) / VFS);
-        auto fixed_point_constant = static_cast<uint32_t>(
-            FLOAT_CONSTANT * static_cast<float>(1LL << 16));
-        uint64_t val = static_cast<uint64_t>(fixed_point_constant) *
-                       static_cast<uint64_t>(c);
-        auto new_val = static_cast<uint32_t>(val >> 32);
-        return new_val - 1;
     }
 
     motor_driver::MotorDriver& driver;
