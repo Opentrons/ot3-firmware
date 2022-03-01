@@ -47,8 +47,7 @@ auto SocketTransport<CriticalSection>::open() -> bool {
     try {
         boost::asio::connect(socket,
                              resolver.resolve(host, std::to_string(port)));
-    }
-    catch (boost::system::system_error) {
+    } catch (boost::system::system_error) {
         return false;
     }
 
