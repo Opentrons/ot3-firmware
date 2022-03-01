@@ -1,4 +1,6 @@
 #include "common/firmware/utility_gpio.h"
+#include "platform_specific_hal_conf.h"
+
 
 /**
  * @brief Limit Switch GPIO Initialization Function

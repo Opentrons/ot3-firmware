@@ -49,9 +49,19 @@ static void initialize_can(FDCAN_HandleTypeDef * can_handle);
 #define RESET_CHECK_MASK (RCC_CSR_PINRSTF | RCC_CSR_LPWRRSTF | RCC_CSR_BORRSTF)
 
 /**
+ * Check against the RCC_CSR. Were we started by the watchdog timer.
+ */
+#define WATCHDOG_CHECK_MASK (RCC_CSR_IWDGRSTF | RCC_CSR_WWDGRSTF)
+
+/**
  * Are we starting due to power on.
  */
-#define IS_POWER_ON_RESET() ((RCC->CSR & RESET_CHECK_MASK) == RESET_CHECK_MASK)
+#define IS_POWER_ON_RESET() ((RCC->CSR & RESET_CHECK_MASK) != 0)
+
+/**
+ * Are we starting due to watchdog reset.
+ */
+#define IS_WATCHDOG_RESET() ((RCC->CSR & WATCHDOG_CHECK_MASK) != 0)
 
 
 int main() {
@@ -60,8 +70,11 @@ int main() {
 
     // TODO (al, 2022-02-17): Need detection of FW needing update due to failure.
     // We will jump to application if there's no update requested and the app is
-    // already present.
-    if ((!IS_POWER_ON_RESET() && is_app_update_requested()) || !is_app_in_flash()) {
+    // already present and we weren't restarted by the watchdog.
+    if (IS_WATCHDOG_RESET() ||
+        (!IS_POWER_ON_RESET() && is_app_update_requested()) ||
+        !is_app_in_flash()) {
+        // Perform the firmware update.
         run_upgrade();
     } else {
         // Clear reset flags. Otherwise, they will persist for the lifetime of
@@ -73,6 +86,9 @@ int main() {
 }
 
 
+/**
+ * Entry point of the fw update over CAN.
+ */
 void run_upgrade() {
 
     initialize_can(&hcan1);
