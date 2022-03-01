@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
@@ -76,27 +77,30 @@ class MotorDriverMessageHandler {
             "run_current=%d\n",
             m.hold_current, m.run_current);
 
-        if (m.hold_current) {
+        if (m.hold_current != 0U) {
             driver.tmc2130.get_register_map().ihold_irun.hold_current =
                 convert_to_tmc2130_current_value(m.hold_current);
         };
-        if (m.run_current) {
+        if (m.run_current != 0U) {
             driver.tmc2130.get_register_map().ihold_irun.run_current =
                 convert_to_tmc2130_current_value(m.run_current);
         }
         driver.tmc2130.write_config();
     }
 
-    uint32_t convert_to_tmc2130_current_value(uint32_t c) {
+    auto convert_to_tmc2130_current_value(uint32_t c) -> uint32_t {
         const auto VFS = 0.325;
         const auto R_SENSE = 0.1;
         const auto SMALL_R = 0.02;
-        auto float_constant = std::sqrt(2) * 32 * (R_SENSE + SMALL_R) / VFS;
-        auto fixed_point_constant =
-            convert_to_fixed_point_64_bit(float_constant, 31);
-        auto val = fixed_point_multiply(fixed_point_constant, c) - 1;
-        LOG("Converted value from %d to %d\n", c, val);
-        return val;
+        const auto sqrt_2 = std::sqrt(2);
+        auto FLOAT_CONSTANT =
+            static_cast<float>(sqrt_2 * 32.0 * (R_SENSE + SMALL_R) / VFS);
+        auto fixed_point_constant = static_cast<uint32_t>(
+            FLOAT_CONSTANT * static_cast<float>(1LL << 16));
+        uint64_t val = static_cast<uint64_t>(fixed_point_constant) *
+                       static_cast<uint64_t>(c);
+        auto new_val = static_cast<uint32_t>(val >> 32);
+        return new_val - 1;
     }
 
     motor_driver::MotorDriver& driver;
