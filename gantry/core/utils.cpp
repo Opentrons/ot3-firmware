@@ -26,12 +26,12 @@ auto utils::register_config_by_axis(enum GantryAxisType which)
                                .run_current = 0x10,
                                .hold_current_delay = 0x7},
                 .thigh = {.threshold = 0xFFFFF},
-                .chopconf = {.toff = 0b101,
-                             .hstrt = 0b101,
-                             .hend = 0b11,
-                             .tbl = 0b10,
-                             .mres = 0b100},
-                .coolconf = {.sgt = 0b110}};
+                .chopconf = {.toff = 0x5,
+                             .hstrt = 0x5,
+                             .hend = 0x3,
+                             .tbl = 0x2,
+                             .mres = 0x4},
+                .coolconf = {.sgt = 0x6}};
 
         case GantryAxisType::gantry_y:
             return tmc2130::TMC2130RegisterMap{

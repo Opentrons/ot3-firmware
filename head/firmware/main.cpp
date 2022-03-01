@@ -136,7 +136,7 @@ static tmc2130::TMC2130RegisterMap MotorDriverConfigurations{
     .thigh = {.threshold = 0xFFFFF},
     .chopconf =
         {.toff = 0x5, .hstrt = 0x5, .hend = 0x3, .tbl = 0x2, .mres = 0x4},
-    .coolconf = {.sgt = 0b110}};
+    .coolconf = {.sgt = 0x6}};
 
 /**
  * TODO: This motor class is only used in motor handler and should be

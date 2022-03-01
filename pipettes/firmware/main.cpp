@@ -82,14 +82,14 @@ static motor_handler::MotorInterruptHandler plunger_interrupt(
 static tmc2130::TMC2130RegisterMap MotorDriverConfigurations{
     .gconfig = {.en_pwm_mode = 1},
     .ihold_irun = {.hold_current = 0x2,
-                   .run_current = 0x2,
+                   .run_current = 0x10,
                    .hold_current_delay = 0x7},
     .tpowerdown = {},
     .tcoolthrs = {.threshold = 0},
     .thigh = {.threshold = 0xFFFFF},
     .chopconf =
         {.toff = 0x5, .hstrt = 0x5, .hend = 0x3, .tbl = 0x2, .mres = 0x3},
-    .coolconf = {.sgt = 0b110}};
+    .coolconf = {.sgt = 0x6}};
 
 /**
  * TODO: This motor class is only used in motor handler and should be
