@@ -6,6 +6,7 @@
 #include "head/simulation/adc.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "task.h"
@@ -18,8 +19,8 @@ static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 /**
  * The SPI busses.
  */
-static auto spi_comms_right = sim_spi::SimTMC2130Spi();
-static auto spi_comms_left = sim_spi::SimTMC2130Spi();
+static auto spi_comms_right = sim_spi::SimSpiDeviceBase();
+static auto spi_comms_left = sim_spi::SimSpiDeviceBase();
 
 /**
  * The motor interfaces.
@@ -34,12 +35,17 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_left("Motor Queue Left");
 
-motor_driver_config::RegisterConfig MotorDriverConfigurations{
-    .gconf = 0x04,
-    .ihold_irun = 0x70202,
-    .chopconf = 0x40101D5,
-    .thigh = 0xFFFFF,
-    .coolconf = 0x60000};
+static tmc2130::TMC2130RegisterMap MotorDriverConfigurations{
+    .gconfig = {.en_pwm_mode = 1},
+    .ihold_irun = {.hold_current = 0x2,
+                   .run_current = 0x10,
+                   .hold_current_delay = 0x7},
+    .tpowerdown = {},
+    .tcoolthrs = {.threshold = 0},
+    .thigh = {.threshold = 0xFFFFF},
+    .chopconf =
+        {.toff = 0x5, .hstrt = 0x5, .hend = 0x3, .tbl = 0x2, .mres = 0x4},
+    .coolconf = {.sgt = 0b110}};
 
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_interface_right);

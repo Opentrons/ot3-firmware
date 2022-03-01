@@ -9,6 +9,7 @@
 #include "motor_driver.hpp"
 #include "motor_driver_config.hpp"
 #include "motor_messages.hpp"
+#include "tmc2130.hpp"
 
 namespace motor_hardware {
 class MotorHardwareIface;
@@ -35,11 +36,11 @@ struct Motor {
      * @param queue Input message queue containing motion commands.
      * commands.
      */
-    Motor(spi::TMC2130Spi& spi,
+    Motor(spi::SpiDeviceBase& spi,
           lms::LinearMotionSystemConfig<MEConfig> lms_config,
           motor_hardware::MotorHardwareIface& hardware_iface,
-          MotionConstraints constraints, RegisterConfig driver_config,
-          GenericQueue& queue)
+          MotionConstraints constraints,
+          tmc2130::TMC2130RegisterMap driver_config, GenericQueue& queue)
 
         : pending_move_queue(queue),
           driver{spi, driver_config},

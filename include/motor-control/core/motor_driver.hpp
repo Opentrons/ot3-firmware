@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/core/bit_utils.hpp"
 #include "common/core/spi.hpp"
 #include "motor_driver_config.hpp"
+#include "tmc2130.hpp"
 
 namespace motor_driver {
 
@@ -14,50 +14,23 @@ using namespace motor_driver_config;
  */
 class MotorDriver {
   public:
-    spi::TMC2130Spi::BufferType rxBuffer{0};
+    spi::SpiDeviceBase::BufferType rxBuffer{0};
 
-    explicit MotorDriver(spi::TMC2130Spi& spi, RegisterConfig conf)
-        : spi_comms(spi), register_config(conf) {}
+    explicit MotorDriver(spi::SpiDeviceBase& spi,
+                         tmc2130::TMC2130RegisterMap conf)
+        : tmc2130{conf, spi} {}
 
-    void setup() {
-        write(DriverRegisters::Addresses::GCONF, register_config.gconf);
-        write(DriverRegisters::Addresses::IHOLD_IRUN,
-              register_config.ihold_irun);
-        write(DriverRegisters::Addresses::CHOPCONF, register_config.chopconf);
-        write(DriverRegisters::Addresses::THIGH, register_config.thigh);
-        write(DriverRegisters::Addresses::COOLCONF, register_config.coolconf);
+    void setup() { tmc2130.write_config(); }
+
+    auto read(tmc2130::Registers motor_reg, uint32_t command_data) -> uint32_t {
+        return tmc2130.read(motor_reg, command_data);
     }
 
-    auto read(DriverRegisters::Addresses motor_reg, uint32_t command_data)
-        -> uint32_t {
-        auto txBuffer = spi::TMC2130Spi::BufferType{};
-        spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::READ,
-                                       motor_reg, command_data);
-        // A read requires two transmissions. The second returns the data in the
-        // register from the first transmission.
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-
-        // Extract data bytes after the address.
-        uint32_t response = 0;
-        const auto* iter = rxBuffer.cbegin();                      // NOLINT
-        iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(),  // NOLINT
-                                       response);
-        return response;
+    auto write(tmc2130::Registers motor_reg, uint32_t command_data) -> bool {
+        return tmc2130.write(motor_reg, command_data);
     }
 
-    auto write(DriverRegisters::Addresses motor_reg, uint32_t command_data)
-        -> spi::TMC2130Spi::BufferType {
-        auto txBuffer = spi::TMC2130Spi::BufferType{};
-        spi::TMC2130Spi::build_command(txBuffer, spi::TMC2130Spi::Mode::WRITE,
-                                       motor_reg, command_data);
-        spi_comms.transmit_receive(txBuffer, rxBuffer);
-        return txBuffer;
-    }
-
-  private:
-    spi::TMC2130Spi& spi_comms;
-    RegisterConfig register_config;
+    tmc2130::TMC2130 tmc2130;
 };
 
 }  // namespace motor_driver

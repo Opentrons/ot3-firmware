@@ -9,6 +9,7 @@
 #include "motor-control/core/motor_driver.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tmc2130_registers.hpp"
 
 namespace motor_driver_task {
 
@@ -50,9 +51,7 @@ class MotorDriverMessageHandler {
             m.reg_address, m.data);
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
-            driver.write(
-                motor_driver_config::DriverRegisters::Addresses(m.reg_address),
-                m.data);
+            driver.write(tmc2130::Registers(m.reg_address), m.data);
         }
     }
 
@@ -61,9 +60,7 @@ class MotorDriverMessageHandler {
         uint32_t data = 0;
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
-            data = driver.read(
-                motor_driver_config::DriverRegisters::Addresses(m.reg_address),
-                data);
+            data = driver.read(tmc2130::Registers(m.reg_address), data);
         }
         can_messages::ReadMotorDriverRegisterResponse response_msg{
             .reg_address = m.reg_address,

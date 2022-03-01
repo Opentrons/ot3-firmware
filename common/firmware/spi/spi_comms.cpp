@@ -28,12 +28,14 @@ using namespace spi;
 
 Spi::Spi(SPI_interface SPI_intf_instance) : SPI_intf(SPI_intf_instance) {}
 
-void Spi::transmit_receive(const BufferType& transmit, BufferType& receive) {
+auto Spi::transmit_receive(const BufferType& transmit, BufferType& receive)
+    -> bool {
     Reset_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    hal_transmit_receive(const_cast<uint8_t*>(transmit.data()), receive.data(),
-                         spi::TMC2130Spi::BufferSize, TIMEOUT,
-                         this->SPI_intf.SPI_handle);
+    auto response = hal_transmit_receive(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        const_cast<uint8_t*>(transmit.data()), receive.data(),
+        spi::SpiDeviceBase::BufferSize, TIMEOUT, this->SPI_intf.SPI_handle);
 
     Set_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
+    return response == HAL_OK;
 }

@@ -29,6 +29,7 @@
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_driver_config.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/tmc2130_registers.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -128,12 +129,17 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         .active_setting = GPIO_PIN_RESET},
 };
 
-motor_driver_config::RegisterConfig MotorDriverConfigurations{
-    .gconf = 0x04,
-    .ihold_irun = 0x71002,
-    .chopconf = 0x40101D5,
-    .thigh = 0xFFFFF,
-    .coolconf = 0x60000};
+static tmc2130::TMC2130RegisterMap MotorDriverConfigurations{
+    .gconfig = {.en_pwm_mode = 1},
+    .ihold_irun = {.hold_current = 0x2,
+                   .run_current = 0x10,
+                   .hold_current_delay = 0x7},
+    .tpowerdown = {},
+    .tcoolthrs = {.threshold = 0},
+    .thigh = {.threshold = 0xFFFFF},
+    .chopconf =
+        {.toff = 0x5, .hstrt = 0x5, .hend = 0x3, .tbl = 0x2, .mres = 0x4},
+    .coolconf = {.sgt = 0x6}};
 
 /**
  * TODO: This motor class is only used in motor handler and should be
