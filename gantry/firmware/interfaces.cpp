@@ -134,7 +134,7 @@ static motor_class::Motor motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    utils::register_config(),
+    utils::driver_config(),
     motor_queue};
 
 /**

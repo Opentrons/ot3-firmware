@@ -8,24 +8,32 @@ using namespace motor_driver_config;
 
 TEST_CASE("Setup") {
     auto spi = sim_spi::SimSpiDeviceBase{};
-    tmc2130::TMC2130RegisterMap register_config{
-        .gconfig = {.en_pwm_mode = 1},
-        .ihold_irun = {.hold_current = 0x2,
-                       .run_current = 0x2,
-                       .hold_current_delay = 0x7},
-        .tpowerdown = {},
-        .tcoolthrs = {.threshold = 0},
-        .thigh = {.threshold = 0xFFFFF},
-        .chopconf =
-            {.toff = 0x5, .hstrt = 0x5, .hend = 0x3, .tbl = 0x2, .mres = 0x3},
-        .coolconf = {.sgt = 0b110}};
+    tmc2130::TMC2130DriverConfig driver_config{
+        .registers = {.gconfig = {.en_pwm_mode = 1},
+                      .ihold_irun = {.hold_current = 0x2,
+                                     .run_current = 0x2,
+                                     .hold_current_delay = 0x7},
+                      .tpowerdown = {},
+                      .tcoolthrs = {.threshold = 0},
+                      .thigh = {.threshold = 0xFFFFF},
+                      .chopconf = {.toff = 0x5,
+                                   .hstrt = 0x5,
+                                   .hend = 0x3,
+                                   .tbl = 0x2,
+                                   .mres = 0x3},
+                      .coolconf = {.sgt = 0b110}},
+        .current_config = {
+            .r_sense = 0.1,
+            .v_sf = 0.325,
+        }};
 
-    auto subject = motor_driver::MotorDriver{spi, register_config};
+    auto subject = motor_driver::MotorDriver{spi, driver_config};
 
     GIVEN("Driver") {
         WHEN("Setup is called") {
             subject.setup();
             THEN("Registers have the configured values.") {
+                auto register_config = driver_config.registers;
                 REQUIRE(subject.tmc2130.get_gconf().value().en_pwm_mode ==
                         register_config.gconfig.en_pwm_mode);
                 REQUIRE(subject.tmc2130.get_register_map()

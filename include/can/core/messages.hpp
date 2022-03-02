@@ -368,6 +368,25 @@ struct ReadMotorDriverRegisterResponse
         -> bool = default;
 };
 
+struct WriteMotorCurrentRequest
+    : BaseMessage<MessageId::write_motor_current_request> {
+    uint32_t hold_current;
+    uint32_t run_current;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> WriteMotorCurrentRequest {
+        uint32_t hold_current = 0;
+        uint32_t run_current = 0;
+        body = bit_utils::bytes_to_int(body, limit, hold_current);
+        body = bit_utils::bytes_to_int(body, limit, run_current);
+        return WriteMotorCurrentRequest{.hold_current = hold_current,
+                                        .run_current = run_current};
+    }
+
+    auto operator==(const WriteMotorCurrentRequest& other) const
+        -> bool = default;
+};
+
 using ReadPresenceSensingVoltageRequest =
     Empty<MessageId::read_presence_sensing_voltage_request>;
 

@@ -10,8 +10,9 @@ using namespace can_messages;
 template <motor_driver_task::TaskClient MotorDriverTaskClient>
 class MotorHandler {
   public:
-    using MessageType = std::variant<std::monostate, ReadMotorDriverRegister,
-                                     SetupRequest, WriteMotorDriverRegister>;
+    using MessageType =
+        std::variant<std::monostate, ReadMotorDriverRegister, SetupRequest,
+                     WriteMotorDriverRegister, WriteMotorCurrentRequest>;
 
     MotorHandler(MotorDriverTaskClient &motor_client)
         : motor_client{motor_client} {}

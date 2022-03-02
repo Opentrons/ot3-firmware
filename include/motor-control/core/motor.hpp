@@ -40,7 +40,7 @@ struct Motor {
           lms::LinearMotionSystemConfig<MEConfig> lms_config,
           motor_hardware::MotorHardwareIface& hardware_iface,
           MotionConstraints constraints,
-          tmc2130::TMC2130RegisterMap driver_config, GenericQueue& queue)
+          tmc2130::TMC2130DriverConfig driver_config, GenericQueue& queue)
 
         : pending_move_queue(queue),
           driver{spi, driver_config},

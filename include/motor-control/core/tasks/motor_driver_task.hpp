@@ -69,6 +69,22 @@ class MotorDriverMessageHandler {
         can_client.send_can_message(can_ids::NodeId::host, response_msg);
     }
 
+    void handle(const can_messages::WriteMotorCurrentRequest& m) {
+        LOG("Received write motor current request: hold_current=%d, "
+            "run_current=%d\n",
+            m.hold_current, m.run_current);
+
+        if (m.hold_current != 0U) {
+            driver.tmc2130.get_register_map().ihold_irun.hold_current =
+                driver.tmc2130.convert_to_tmc2130_current_value(m.hold_current);
+        };
+        if (m.run_current != 0U) {
+            driver.tmc2130.get_register_map().ihold_irun.run_current =
+                driver.tmc2130.convert_to_tmc2130_current_value(m.run_current);
+        }
+        driver.tmc2130.write_config();
+    }
+
     motor_driver::MotorDriver& driver;
     CanClient& can_client;
 };

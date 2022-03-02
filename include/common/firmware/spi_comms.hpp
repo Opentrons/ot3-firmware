@@ -19,6 +19,7 @@ struct SPI_interface {
 class Spi : public SpiDeviceBase {
   public:
     explicit Spi(SPI_interface SPI_int);
+
     auto transmit_receive(const SpiDeviceBase::BufferType& transmit,
                           SpiDeviceBase::BufferType& receive) -> bool final;
 
