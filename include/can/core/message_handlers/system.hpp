@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -36,7 +37,7 @@ class SystemMessageHandler {
 
     using MessageType =
         std::variant<std::monostate, DeviceInfoRequest, InitiateFirmwareUpdate,
-                     FirmwareUpdateStatusRequest>;
+                     FirmwareUpdateStatusRequest, TaskInfoRequest>;
 
     /**
      * Message handler
@@ -59,6 +60,20 @@ class SystemMessageHandler {
         auto status_response =
             FirmwareUpdateStatusResponse{.flags = app_update_flags()};
         writer.send_can_message(can_ids::NodeId::host, status_response);
+    }
+
+    void visit(TaskInfoRequest& m) {
+        auto tasks = std::array<TaskStatus_t, 20>{};
+        auto num_tasks = uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
+        for (UBaseType_t i = 0; i < num_tasks; i++) {
+            auto r = TaskInfoResponse{};
+            ::memcpy(r.name, tasks[i].pcTaskName, sizeof(r.name));
+            r.runtime_counter = tasks[i].ulRunTimeCounter;
+            r.stack_high_water_mark = tasks[i].usStackHighWaterMark;
+            r.state = tasks[i].eCurrentState;
+            r.priority = tasks[i].uxCurrentPriority;
+            writer.send_can_message(can_ids::NodeId::host, r);
+        }
     }
 
     CanClient &writer;

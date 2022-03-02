@@ -81,6 +81,29 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
+
+using TaskInfoRequest = Empty<MessageId::task_info_request>;
+
+struct TaskInfoResponse : BaseMessage<MessageId::task_info_response> {
+    char name[12];
+    uint32_t runtime_counter;
+    uint32_t stack_high_water_mark;
+    uint16_t state;
+    uint16_t priority;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = std::copy(name, name + sizeof(name), body);
+        iter = bit_utils::int_to_bytes(runtime_counter, iter, limit);
+        iter = bit_utils::int_to_bytes(stack_high_water_mark, iter, limit);
+        iter = bit_utils::int_to_bytes(state, iter, limit);
+        iter = bit_utils::int_to_bytes(priority, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const TaskInfoResponse& other) const -> bool = default;
+};
+
 using StopRequest = Empty<MessageId::stop_request>;
 
 using EnableMotorRequest = Empty<MessageId::enable_motor_request>;
@@ -526,5 +549,5 @@ using ResponseMessageType =
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
                  PushToolsDetectedNotification, ReadLimitSwitchResponse,
                  ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-                 SensorThresholdResponse>;
+                 SensorThresholdResponse, TaskInfoResponse>;
 }  // namespace can_messages
