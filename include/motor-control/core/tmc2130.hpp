@@ -132,11 +132,12 @@ class TMC2130 {
         return true;
     }
 
-    auto convert_to_tmc2130_current_value(uint32_t c) -> uint32_t {
-        constexpr auto SMALL_R = 0.02;
-        constexpr auto sqrt_2 = std::sqrt(2);
+    [[nodiscard]] auto convert_to_tmc2130_current_value(uint32_t c) const
+        -> uint32_t {
+        constexpr const float SMALL_R = 0.02;
+        const auto SQRT_TWO = static_cast<float>(std::sqrt(2));
         auto FLOAT_CONSTANT = static_cast<float>(
-            sqrt_2 * 32.0 * (_current_config.r_sense + SMALL_R) /
+            SQRT_TWO * 32.0 * (_current_config.r_sense + SMALL_R) /
             _current_config.v_sf);
         auto fixed_point_constant = static_cast<uint32_t>(
             FLOAT_CONSTANT * static_cast<float>(1LL << 16));
