@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstring>
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -69,7 +67,7 @@ class SystemMessageHandler {
             uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
         for (UBaseType_t i = 0; i < num_tasks; i++) {
             auto r = TaskInfoResponse{};
-            ::memcpy(r.name, tasks[i].pcTaskName, sizeof(r.name));
+            std::copy_n(tasks[i].pcTaskName, r.name.size(), r.name.begin());
             r.runtime_counter = tasks[i].ulRunTimeCounter;
             r.stack_high_water_mark = tasks[i].usStackHighWaterMark;
             r.state = tasks[i].eCurrentState;

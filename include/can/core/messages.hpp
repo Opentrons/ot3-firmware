@@ -84,7 +84,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
 using TaskInfoRequest = Empty<MessageId::task_info_request>;
 
 struct TaskInfoResponse : BaseMessage<MessageId::task_info_response> {
-    char name[12];
+    std::array<char, 12> name{};
     uint32_t runtime_counter;
     uint32_t stack_high_water_mark;
     uint16_t state;
@@ -92,7 +92,7 @@ struct TaskInfoResponse : BaseMessage<MessageId::task_info_response> {
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = std::copy(name, name + sizeof(name), body);
+        auto iter = std::copy(name.cbegin(), name.cend(), body);
         iter = bit_utils::int_to_bytes(runtime_counter, iter, limit);
         iter = bit_utils::int_to_bytes(stack_high_water_mark, iter, limit);
         iter = bit_utils::int_to_bytes(state, iter, limit);
