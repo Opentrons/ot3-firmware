@@ -8,6 +8,7 @@
 #include <concepts>
 #include <cstdint>
 #include <functional>
+#include <numbers>
 #include <optional>
 
 #include "common/core/bit_utils.hpp"
@@ -15,6 +16,8 @@
 #include "tmc2130_registers.hpp"
 
 namespace tmc2130 {
+
+using namespace std::numbers;
 
 // using namespace tmc2130_registers;
 
@@ -135,7 +138,7 @@ class TMC2130 {
     [[nodiscard]] auto convert_to_tmc2130_current_value(uint32_t c) const
         -> uint32_t {
         constexpr const float SMALL_R = 0.02;
-        const auto SQRT_TWO = static_cast<float>(std::sqrt(2));
+        constexpr auto SQRT_TWO = sqrt2;
         auto FLOAT_CONSTANT = static_cast<float>(
             SQRT_TWO * 32.0 * (_current_config.r_sense + SMALL_R) /
             _current_config.v_sf);
