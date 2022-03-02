@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cmath>
-#include <cstdint>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
