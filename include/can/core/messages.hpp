@@ -81,7 +81,6 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
-
 using TaskInfoRequest = Empty<MessageId::task_info_request>;
 
 struct TaskInfoResponse : BaseMessage<MessageId::task_info_response> {

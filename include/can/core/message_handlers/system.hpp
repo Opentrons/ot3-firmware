@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -62,9 +63,10 @@ class SystemMessageHandler {
         writer.send_can_message(can_ids::NodeId::host, status_response);
     }
 
-    void visit(TaskInfoRequest& m) {
+    void visit(TaskInfoRequest &m) {
         auto tasks = std::array<TaskStatus_t, 20>{};
-        auto num_tasks = uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
+        auto num_tasks =
+            uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
         for (UBaseType_t i = 0; i < num_tasks; i++) {
             auto r = TaskInfoResponse{};
             ::memcpy(r.name, tasks[i].pcTaskName, sizeof(r.name));

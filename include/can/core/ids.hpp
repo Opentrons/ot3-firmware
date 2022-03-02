@@ -1,6 +1,6 @@
 /********************************************
-* This is a generated file. Do not modify.  *
-********************************************/
+ * This is a generated file. Do not modify.  *
+ ********************************************/
 #pragma once
 
 namespace can_ids {
@@ -118,4 +118,3 @@ enum class SensorType {
 };
 
 }  // namespace can_ids
-
