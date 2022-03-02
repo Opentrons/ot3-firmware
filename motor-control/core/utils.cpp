@@ -27,6 +27,5 @@ sq0_31 fixed_point_multiply(sq31_31 a, sq0_31 b) {
 }
 
 float fixed_point_to_float(uint32_t data, int to_radix) {
-    const uint32_t power_of_two = 2 << to_radix;
-    return (1.0 * static_cast<float>(data)) / power_of_two;
+    return (1.0 * static_cast<float>(data)) / static_cast<float>(2 << to_radix);
 }

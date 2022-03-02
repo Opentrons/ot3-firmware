@@ -41,7 +41,7 @@ class EEPromMessageHandler {
   public:
     explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
                                   CanClient &can_client)
-        : writer{i2c_writer}, can_client{can_client}, callback{can_client} {}
+        : writer{i2c_writer}, can_client{can_client}, handler{can_client} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -64,15 +64,17 @@ class EEPromMessageHandler {
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
         LOG("Received request to read serial number\n");
-        sensor_callbacks::SingleRegisterCallback single_callback{callback};
-        writer.read(DEVICE_ADDRESS, single_callback, single_callback);
+        writer.read(
+            DEVICE_ADDRESS,
+            [this]() {handler.send_to_can();},
+            [this](auto message_a) {handler.handle_data(message_a);});
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0x1;
     static constexpr int SERIAL_NUMBER_SIZE = 0x2;
     I2CQueueWriter &writer;
     CanClient &can_client;
-    EEPromCallback<CanClient> callback;
+    EEPromCallback<CanClient> handler;
 };
 
 /**

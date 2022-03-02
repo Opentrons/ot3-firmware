@@ -13,8 +13,8 @@ struct WriteToI2C {
 struct ReadFromI2C {
     uint16_t address;
     sensor_callbacks::MaxMessageBuffer buffer;
-    sensor_callbacks::SingleBufferTypeDef handle_buffer;
     sensor_callbacks::SendToCanFunctionTypeDef client_callback;
+    sensor_callbacks::SingleBufferTypeDef handle_buffer;
 };
 
 struct SingleRegisterPollReadFromI2C {

@@ -25,8 +25,8 @@ struct ReadCapacitanceCallback {
 
     void handle_data(const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
                      const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
-        uint32_t msb_data = 0x0;
-        uint32_t lsb_data = 0x0;
+        uint16_t msb_data = 0x0;
+        uint16_t lsb_data = 0x0;
         const auto *MSB_iter = MSB_buffer.cbegin();
         MSB_iter =
             bit_utils::bytes_to_int(MSB_iter, MSB_buffer.cend(), msb_data);

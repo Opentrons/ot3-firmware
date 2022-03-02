@@ -55,16 +55,14 @@ class I2CWriter {
      * A poll function automatically initiates a read/write to the specified
      * register on the i2c bus.
      */
-    void read(uint16_t device_address, SingleBufferTypeDef handle_callback,
-              SendToCanFunctionTypeDef client_callback, uint8_t reg = 0x0) {
-        // We want to copy the callback every time as opposed to passing a
-        // reference to it from the eeprom task.
+    void read(uint16_t device_address, SendToCanFunctionTypeDef client_callback,
+              SingleBufferTypeDef handle_callback, uint8_t reg = 0x0) {
         std::array<uint8_t, MAX_SIZE> max_buffer{reg};
         pipette_messages::ReadFromI2C read_msg{
             .address = device_address,
             .buffer = max_buffer,
-            .handle_buffer = std::move(handle_callback),
-            .client_callback = std::move(client_callback)};
+            .client_callback = std::move(client_callback),
+            .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);
     }
 
@@ -86,13 +84,11 @@ class I2CWriter {
      * A poll function automatically initiates a read/write to the specified
      * register on the i2c bus.
      */
-    void single_register_poll(uint16_t device_address, uint8_t number_reads,
+    void single_register_poll(uint16_t device_address, uint16_t number_reads,
                               uint16_t delay,
                               SendToCanFunctionTypeDef client_callback,
                               SingleBufferTypeDef handle_callback,
                               uint8_t reg = 0x0) {
-        // We want to copy the callback every time as opposed to passing a
-        // reference to it from the eeprom task.
         std::array<uint8_t, MAX_SIZE> max_buffer{reg};
         pipette_messages::SingleRegisterPollReadFromI2C read_msg{
             .address = device_address,
@@ -129,7 +125,7 @@ class I2CWriter {
      * register on the i2c bus.
      */
     void multi_register_poll(
-        uint16_t device_address, uint8_t number_reads, uint16_t delay,
+        uint16_t device_address, uint16_t number_reads, uint16_t delay,
         sensor_callbacks::SendToCanFunctionTypeDef client_callback,
         sensor_callbacks::MultiBufferTypeDef handle_callback,
         uint8_t register_1 = 0x0, uint8_t register_2 = 0x0) {

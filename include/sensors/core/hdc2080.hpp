@@ -14,40 +14,38 @@
 
 namespace hdc2080_utils {
 
-static auto convert(uint16_t data, can_ids::SensorType type) -> sq14_15;
-
 // constants
-static constexpr float TEMP_CONST_MULTIPLIER = 165.0;
-static constexpr float TEMP_CONST = 40.5;
-static constexpr float HUMIDITY_CONST = 100.0;
+constexpr float TEMP_CONST_MULTIPLIER = 165.0;
+constexpr float TEMP_CONST = 40.5;
+constexpr float HUMIDITY_CONST = 100.0;
 
 // max bits for regular sensor value reading is 2^16
-static constexpr float MAX_SIZE = 65536.0;
+constexpr float MAX_SIZE = 65536.0;
 
-static constexpr uint16_t ADDRESS = 0x41 << 1;
-static constexpr uint16_t DEVICE_ID = 0x07D0;
+constexpr uint16_t ADDRESS = 0x41 << 1;
+constexpr uint16_t DEVICE_ID = 0x07D0;
 
 // Registers to read from or write to
-static constexpr uint8_t INTERRUPT_REGISTER = 0x07;
-static constexpr uint8_t DRDY_CONFIG = 0x0E;
-static const uint8_t MEASURE_REGISTER = 0x0F;
-static const uint8_t DEVICE_ID_REGISTER = 0xFE;
+constexpr uint8_t INTERRUPT_REGISTER = 0x07;
+constexpr uint8_t DRDY_CONFIG = 0x0E;
+constexpr uint8_t MEASURE_REGISTER = 0x0F;
+constexpr uint8_t DEVICE_ID_REGISTER = 0xFE;
 // Low configurations for both temperature and humidity
 // this records the status when a reading goes below
 // a certain threshold.
-static constexpr uint8_t LSB_TEMPERATURE_REGISTER = 0x00;
-static constexpr uint8_t LSB_HUMIDITY_REGISTER = 0x02;
+constexpr uint8_t LSB_TEMPERATURE_REGISTER = 0x00;
+constexpr uint8_t LSB_HUMIDITY_REGISTER = 0x02;
 
-static constexpr uint8_t MSB_HUMIDITY_REGISTER = 0x01;
-static constexpr uint8_t MSB_TEMPERATURE_REGISTER = 0x03;
+constexpr uint8_t MSB_HUMIDITY_REGISTER = 0x01;
+constexpr uint8_t MSB_TEMPERATURE_REGISTER = 0x03;
 
 // humidity sensor configurations
-static constexpr uint8_t SAMPLE_RATE =
+constexpr uint8_t SAMPLE_RATE =
     (5 << 4) | (1 << 2) | (1 << 1);  // 1 sample/second, positive DRDY output
-static constexpr uint8_t SET_DATARDY = 1 << 7;
-static constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
+constexpr uint8_t SET_DATARDY = 1 << 7;
+constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
 
-[[maybe_unused]] static auto convert(uint16_t data, can_ids::SensorType type)
+inline auto convert(uint16_t data, can_ids::SensorType type)
     -> sq14_15 {
     switch (type) {
         case can_ids::SensorType::humidity: {

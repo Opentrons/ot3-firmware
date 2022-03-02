@@ -33,8 +33,6 @@ SCENARIO("read and write data to the i2c task") {
     auto i2c = i2c_task::I2CMessageHandler{sim_i2c};
     auto single_update = mock_callbacks::UpdateCallback{};
     auto multi_update = mock_callbacks::MultiUpdateCallback{};
-    sensor_callbacks::SingleRegisterCallback single_callback{single_update};
-    sensor_callbacks::MultiRegisterCallback multi_callback{multi_update};
 
     GIVEN("write command") {
         std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
@@ -54,7 +52,11 @@ SCENARIO("read and write data to the i2c task") {
     }
     GIVEN("read command") {
         single_update.reset();
-        writer.read(ADDRESS, single_callback, single_callback, 0x2);
+        writer.read(
+            ADDRESS,
+            [&single_update]() {single_update.send_to_can();},
+            [&single_update](auto message_a) {single_update.handle_data(message_a);},
+            0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
@@ -67,7 +69,9 @@ SCENARIO("read and write data to the i2c task") {
         single_update.reset();
 
         writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS,
-                                    single_callback, single_callback, 0x2);
+                                    [&single_update]() {single_update.send_to_can();},
+                                    [&single_update](auto message_a) {single_update.handle_data(message_a);},
+                                    0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
             std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
@@ -82,8 +86,11 @@ SCENARIO("read and write data to the i2c task") {
         constexpr int NUM_READS = 10;
         constexpr int DELAY_MS = 1;
 
-        writer.multi_register_poll(ADDRESS, NUM_READS, DELAY_MS, multi_callback,
-                                   multi_callback, 0x2, 0x5);
+        writer.multi_register_poll(
+            ADDRESS, NUM_READS, DELAY_MS,
+            [&multi_update]() {multi_update.send_to_can();},
+            [&multi_update](auto message_a, auto message_b) {multi_update.handle_data(message_a, message_b);},
+            0x2, 0x5);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
             std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);

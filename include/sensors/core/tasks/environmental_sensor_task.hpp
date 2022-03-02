@@ -20,8 +20,8 @@ class EnvironmentSensorMessageHandler {
                                              CanClient &can_client)
         : writer{i2c_writer},
           can_client{can_client},
-          humidity_callback{can_client},
-          temperature_callback{can_client} {}
+          humidity_handler{can_client},
+          temperature_handler{can_client} {}
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
         delete;
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
@@ -34,8 +34,11 @@ class EnvironmentSensorMessageHandler {
 
     void initialize() {
         writer.write(DEVICE_ID_REGISTER, ADDRESS);
-        sensor_callbacks::SingleRegisterCallback callback{internal_callback};
-        writer.read(ADDRESS, callback, callback, DEVICE_ID_REGISTER);
+        writer.read(
+            ADDRESS,
+            [this]() {internal_handler.send_to_can();},
+            [this](auto message_a) {internal_handler.handle_data(message_a);},
+            DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -69,26 +72,30 @@ class EnvironmentSensorMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
             writer.write(HUMIDITY_REGISTER, ADDRESS);
-            sensor_callbacks::SingleRegisterCallback callback{
-                humidity_callback};
-            writer.read(ADDRESS, callback, callback, HUMIDITY_REGISTER);
+            writer.read(
+                ADDRESS,
+                [this]() {humidity_handler.send_to_can();},
+                [this](auto message_a) {humidity_handler.handle_data(message_a);},
+                HUMIDITY_REGISTER);
         } else {
             writer.write(TEMPERATURE_REGISTER, ADDRESS);
-            sensor_callbacks::SingleRegisterCallback callback{
-                temperature_callback};
-            writer.read(ADDRESS, callback, callback, TEMPERATURE_REGISTER);
+            writer.read(
+                ADDRESS,
+                [this]() {temperature_handler.send_to_can();},
+                [this](auto message_a) {temperature_handler.handle_data(message_a);},
+                TEMPERATURE_REGISTER);
         }
     }
 
-    InternalCallback internal_callback{};
+    InternalCallback internal_handler{};
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
     uint8_t HUMIDITY_REGISTER = LSB_HUMIDITY_REGISTER;
     uint8_t TEMPERATURE_REGISTER = LSB_TEMPERATURE_REGISTER;
 
     I2CQueueWriter &writer;
     CanClient &can_client;
-    HumidityReadingCallback<CanClient> humidity_callback;
-    TemperatureReadingCallback<CanClient> temperature_callback;
+    HumidityReadingCallback<CanClient> humidity_handler;
+    TemperatureReadingCallback<CanClient> temperature_handler;
 };
 
 /**

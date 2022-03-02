@@ -41,6 +41,7 @@ class I2CMessageHandler {
         // TODO (lc, 03-01-2022): see about making this non-blocking
         // TODO (lc, 03-01-2022): we should try to consolidate polling to
         // support any number of registers potentially.
+        // TODO (lc, 03-01-2022): put in timer interrupt
         auto empty_array = m.buffer;
         for (int i = 0; i < m.polling; i++) {
             i2c_device.central_transmit(m.buffer.data(), m.buffer.size(),
@@ -58,6 +59,7 @@ class I2CMessageHandler {
         // TODO (lc, 03-01-2022): see about making this non-blocking
         // TODO (lc, 03-01-2022): we should try to consolidate polling to
         // support any number of registers potentially.
+        // TODO (lc, 03-01-2022): put in timer interrupt
         auto empty_array_reg_1 = m.register_buffer_1;
         auto empty_array_reg_2 = m.register_buffer_2;
         for (int i = 0; i < m.polling; i++) {
@@ -76,6 +78,8 @@ class I2CMessageHandler {
             m.handle_buffer(m.register_buffer_1, m.register_buffer_2);
             m.register_buffer_1 = empty_array_reg_1;
             m.register_buffer_2 = empty_array_reg_2;
+            // not fully correct mapping of frequency. See related github comment:
+            // https://github.com/Opentrons/ot3-firmware/pull/261#discussion_r816862421
             i2c_device.wait_during_poll(m.delay_ms);
         }
         m.client_callback();
