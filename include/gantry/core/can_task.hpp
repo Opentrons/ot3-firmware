@@ -34,7 +34,7 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
 using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     system_handler::SystemMessageHandler<gantry_tasks::QueueClient>,
     can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
-    can_messages::FirmwareUpdateStatusRequest>;
+    can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
 
 using GantryDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,

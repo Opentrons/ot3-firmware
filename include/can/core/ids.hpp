@@ -23,6 +23,8 @@ enum class MessageId {
     heartbeat_response = 0x3fe,
     device_info_request = 0x302,
     device_info_response = 0x303,
+    task_info_request = 0x304,
+    task_info_response = 0x305,
     stop_request = 0x0,
     get_status_request = 0x1,
     get_status_response = 0x5,

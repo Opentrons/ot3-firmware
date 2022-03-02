@@ -21,6 +21,8 @@ typedef enum {
   can_messageid_heartbeat_response = 0x3fe,
   can_messageid_device_info_request = 0x302,
   can_messageid_device_info_response = 0x303,
+  can_messageid_task_info_request = 0x304,
+  can_messageid_task_info_response = 0x305,
   can_messageid_stop_request = 0x0,
   can_messageid_get_status_request = 0x1,
   can_messageid_get_status_response = 0x5,
