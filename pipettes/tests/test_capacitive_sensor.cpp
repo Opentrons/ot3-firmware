@@ -123,7 +123,7 @@ SCENARIO("read capacitance sensor values") {
                 float expected = 0.3418;
                 float check_data =
                     fixed_point_to_float(response_msg.sensor_data, 15);
-                REQUIRE(check_data == Approx(expected).epsilon(1e-4));
+                REQUIRE(check_data >= Approx(expected).epsilon(1e-4));
             }
         }
     }
