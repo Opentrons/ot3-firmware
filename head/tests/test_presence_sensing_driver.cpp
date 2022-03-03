@@ -20,7 +20,7 @@ SCENARIO("get_tool called on presence sensing driver") {
         */
 
         WHEN("get_tool func is called and raw ADC readings are within bounds") {
-            auto adc_comms = adc::MockADC(2332, 3548, 666);
+            auto adc_comms = adc::MockADC(1855, 2850, 666);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
             attached_tools::AttachedTools tools;
             bool updated;
@@ -31,7 +31,7 @@ SCENARIO("get_tool called on presence sensing driver") {
                 REQUIRE(tools.a_motor == can_ids::ToolType::pipette_multi_chan);
                 REQUIRE(tools.z_motor == can_ids::ToolType::pipette_384_chan);
                 AND_WHEN("Tools switch to invalid voltages") {
-                    adc_comms.get_z_channel().mock_set_reading(9999);
+                    adc_comms.get_z_channel().mock_set_reading_by_voltage(3300);
                     std::tie(updated, tools) = ps.update_tools();
                     THEN("The invalid reading is ignored") {
                         REQUIRE(!updated);
@@ -42,7 +42,7 @@ SCENARIO("get_tool called on presence sensing driver") {
             }
         }
         WHEN("get_tool func is called and raw ADC readings are out of bounds") {
-            auto adc_comms = adc::MockADC(9999, 9999, 9999);
+            auto adc_comms = adc::MockADC(5000, 4000, 3400);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
             attached_tools::AttachedTools tools;
             bool updated;
@@ -53,7 +53,7 @@ SCENARIO("get_tool called on presence sensing driver") {
                 REQUIRE(tools.a_motor == can_ids::ToolType::undefined_tool);
                 REQUIRE(tools.z_motor == can_ids::ToolType::undefined_tool);
                 AND_WHEN("tools switch to valid voltages") {
-                    adc_comms.get_a_channel().mock_set_reading(3548);
+                    adc_comms.get_a_channel().mock_set_reading_by_voltage(2850);
                     std::tie(updated, tools) = ps.update_tools();
                     THEN("the valid tool is read out") {
                         REQUIRE(updated);
