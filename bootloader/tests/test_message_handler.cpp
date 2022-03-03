@@ -30,6 +30,11 @@ FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages,
 
 void fw_update_start_application() {}
 
+
+FwUpdateReturn fw_update_erase_application(UpdateState* state) {
+    return fw_update_ok;
+}
+
 /** Stub the update flags. */
 update_flag_type app_update_flags() { return 0xABE0DEAD; }
 
