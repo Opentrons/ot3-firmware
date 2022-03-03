@@ -29,13 +29,17 @@ constexpr uint8_t CONFIGURATION_MEASUREMENT = 0x08;
 constexpr uint8_t FDC_CONFIGURATION = 0x0C;
 constexpr uint8_t DEVICE_ID_REGISTER = 0xFF;
 
+// CHA
+constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
+// CHB
+constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
 // configurations
 constexpr uint16_t DEVICE_CONFIGURATION =
     0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
     0x4 << 10;   // CHB = CAPDAC
 constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
-                                        1 << 8 |   // Repeat enabled
-                                        1 << 7;    // Measurement 1 enabled
+                                 1 << 8 |   // Repeat enabled
+                                 1 << 7;    // Measurement 1 enabled
 
 constexpr uint16_t DEVICE_ID = 0x1004;
 
@@ -47,28 +51,28 @@ constexpr float MAX_MEASUREMENT = 524288.0;
 // single ended capdac offset measurement in pF
 constexpr float CAPDAC_OFFSET = 3.125;
 
-inline auto convert(uint32_t measurement,
-                    uint16_t read_count,
-                    float current_offset) -> sq14_15 {
+inline auto convert_capacitance(uint32_t capacitance,
+                                uint16_t read_count,
+                                float current_offset) -> sq14_15 {
     auto average =
-        static_cast<float>(measurement) / static_cast<float>(read_count);
-    float capacitance = average / MAX_MEASUREMENT + current_offset;
-    return convert_to_fixed_point(capacitance, 15);
+        static_cast<float>(capacitance) / static_cast<float>(read_count);
+    float converted_capacitance = average / MAX_MEASUREMENT + current_offset;
+    return convert_to_fixed_point(converted_capacitance, 15);
 }
 
-inline auto calculate_capdac(uint16_t measurement,
-                             uint16_t read_count,
-                             float current_offset)
+inline auto update_capdac(uint16_t capacitance, float current_offset)
     -> uint16_t {
-    float average =
-        static_cast<float>(measurement) / static_cast<float>(read_count);
-    float offset = (average + current_offset) / CAPDAC_OFFSET;
-    if (offset > MAX_CAPDAC_OFFSET) {
-        offset = MAX_CAPDAC_OFFSET;
+    /**
+     * CAPDAC is a unitless offset. To calculate the capacitive offset,
+     * you would multiply CAPDAC (unitless) * CAPDAC_OFFSET (pF)
+     */
+    float capdac = (static_cast<float>(capacitance)  + current_offset) / CAPDAC_OFFSET;
+    if (capdac > MAX_CAPDAC_OFFSET) {
+        capdac = MAX_CAPDAC_OFFSET;
     }
-    uint16_t new_offset = static_cast<uint8_t>(offset) << MAX_CAPDAC_RESOLUTION;
+    uint16_t new_capdac = static_cast<uint8_t>(capdac) << MAX_CAPDAC_RESOLUTION;
 
-    return new_offset;
+    return new_capdac;
 }
 
 }  // namespace fdc1004_utils

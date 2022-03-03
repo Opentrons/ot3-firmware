@@ -45,8 +45,7 @@ constexpr uint8_t SAMPLE_RATE =
 constexpr uint8_t SET_DATARDY = 1 << 7;
 constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
 
-inline auto convert(uint16_t data, can_ids::SensorType type)
-    -> sq14_15 {
+inline auto convert(uint16_t data, can_ids::SensorType type) -> sq14_15 {
     switch (type) {
         case can_ids::SensorType::humidity: {
             // returns humidity in relative humidity percentage

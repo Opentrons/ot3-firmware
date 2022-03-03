@@ -65,9 +65,8 @@ class EEPromMessageHandler {
     void visit(can_messages::ReadFromEEPromRequest &m) {
         LOG("Received request to read serial number\n");
         writer.read(
-            DEVICE_ADDRESS,
-            [this]() {handler.send_to_can();},
-            [this](auto message_a) {handler.handle_data(message_a);});
+            DEVICE_ADDRESS, [this]() { handler.send_to_can(); },
+            [this](auto message_a) { handler.handle_data(message_a); });
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0x1;

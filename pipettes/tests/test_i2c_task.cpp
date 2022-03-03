@@ -53,9 +53,10 @@ SCENARIO("read and write data to the i2c task") {
     GIVEN("read command") {
         single_update.reset();
         writer.read(
-            ADDRESS,
-            [&single_update]() {single_update.send_to_can();},
-            [&single_update](auto message_a) {single_update.handle_data(message_a);},
+            ADDRESS, [&single_update]() { single_update.send_to_can(); },
+            [&single_update](auto message_a) {
+                single_update.handle_data(message_a);
+            },
             0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
@@ -68,10 +69,13 @@ SCENARIO("read and write data to the i2c task") {
         constexpr int DELAY_MS = 1;
         single_update.reset();
 
-        writer.single_register_poll(ADDRESS, NUM_READS, DELAY_MS,
-                                    [&single_update]() {single_update.send_to_can();},
-                                    [&single_update](auto message_a) {single_update.handle_data(message_a);},
-                                    0x2);
+        writer.single_register_poll(
+            ADDRESS, NUM_READS, DELAY_MS,
+            [&single_update]() { single_update.send_to_can(); },
+            [&single_update](auto message_a) {
+                single_update.handle_data(message_a);
+            },
+            0x2);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
             std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
@@ -88,8 +92,10 @@ SCENARIO("read and write data to the i2c task") {
 
         writer.multi_register_poll(
             ADDRESS, NUM_READS, DELAY_MS,
-            [&multi_update]() {multi_update.send_to_can();},
-            [&multi_update](auto message_a, auto message_b) {multi_update.handle_data(message_a, message_b);},
+            [&multi_update]() { multi_update.send_to_can(); },
+            [&multi_update](auto message_a, auto message_b) {
+                multi_update.handle_data(message_a, message_b);
+            },
             0x2, 0x5);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =

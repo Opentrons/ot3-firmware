@@ -35,9 +35,8 @@ class EnvironmentSensorMessageHandler {
     void initialize() {
         writer.write(DEVICE_ID_REGISTER, ADDRESS);
         writer.read(
-            ADDRESS,
-            [this]() {internal_handler.send_to_can();},
-            [this](auto message_a) {internal_handler.handle_data(message_a);},
+            ADDRESS, [this]() { internal_handler.send_to_can(); },
+            [this](auto message_a) { internal_handler.handle_data(message_a); },
             DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
@@ -73,16 +72,18 @@ class EnvironmentSensorMessageHandler {
         if (SensorType(m.sensor) == SensorType::humidity) {
             writer.write(HUMIDITY_REGISTER, ADDRESS);
             writer.read(
-                ADDRESS,
-                [this]() {humidity_handler.send_to_can();},
-                [this](auto message_a) {humidity_handler.handle_data(message_a);},
+                ADDRESS, [this]() { humidity_handler.send_to_can(); },
+                [this](auto message_a) {
+                    humidity_handler.handle_data(message_a);
+                },
                 HUMIDITY_REGISTER);
         } else {
             writer.write(TEMPERATURE_REGISTER, ADDRESS);
             writer.read(
-                ADDRESS,
-                [this]() {temperature_handler.send_to_can();},
-                [this](auto message_a) {temperature_handler.handle_data(message_a);},
+                ADDRESS, [this]() { temperature_handler.send_to_can(); },
+                [this](auto message_a) {
+                    temperature_handler.handle_data(message_a);
+                },
                 TEMPERATURE_REGISTER);
         }
     }

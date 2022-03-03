@@ -78,7 +78,8 @@ class I2CMessageHandler {
             m.handle_buffer(m.register_buffer_1, m.register_buffer_2);
             m.register_buffer_1 = empty_array_reg_1;
             m.register_buffer_2 = empty_array_reg_2;
-            // not fully correct mapping of frequency. See related github comment:
+            // not fully correct mapping of frequency. See related github
+            // comment:
             // https://github.com/Opentrons/ot3-firmware/pull/261#discussion_r816862421
             i2c_device.wait_during_poll(m.delay_ms);
         }
