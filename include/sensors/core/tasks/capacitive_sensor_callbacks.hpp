@@ -22,7 +22,7 @@ template <message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
-                            uint32_t threshold, uint16_t current_offset)
+                            uint32_t threshold, float current_offset)
         : can_client{can_client},
           i2c_writer{i2c_writer},
           current_offset{current_offset},
@@ -53,7 +53,7 @@ struct ReadCapacitanceCallback {
             auto capdac = update_capdac(capacitance, current_offset);
             // convert back to pF
             current_offset = get_offset_pf(capdac);
-            LOG("Setting offset to %d \n", current_offset);
+            LOG("Setting offset to %d \n", static_cast<int>(current_offset));
             uint16_t update = CONFIGURATION_MEASUREMENT |
                               POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL |
                               capdac;
@@ -75,7 +75,7 @@ struct ReadCapacitanceCallback {
   private:
     CanClient &can_client;
     I2CQueueWriter &i2c_writer;
-    uint16_t current_offset;
+    float current_offset;
     uint32_t zero_threshold;
     uint32_t measurement = 0;
     uint16_t number_of_reads = 1;

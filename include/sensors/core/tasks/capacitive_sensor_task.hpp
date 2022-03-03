@@ -64,7 +64,7 @@ class CapacitiveMessageHandler {
         capdac_offset = capacitance_handler.get_offset();
         if (bool(m.offset_reading)) {
             auto message = can_messages::ReadFromSensorResponse{
-                {}, SensorType::capacitive, capdac_offset};
+                {}, SensorType::capacitive, static_cast<uint32_t>(capdac_offset)};
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
             capacitance_handler.reset();
@@ -111,7 +111,8 @@ class CapacitiveMessageHandler {
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
     // 3 pF
     uint32_t zero_threshold = 0x3;
-    uint16_t capdac_offset = 0x0;
+    // 0 pF
+    float capdac_offset = 0x0;
     static constexpr uint16_t DELAY = 20;
     I2CQueueWriter &writer;
     CanClient &can_client;

@@ -75,9 +75,8 @@ inline auto update_capdac(uint16_t capacitance, float current_offset)
     return new_capdac;
 }
 
-inline auto get_offset_pf(uint16_t unitless_capdac) -> uint16_t {
-    float offset = static_cast<float>(unitless_capdac) * CAPDAC_OFFSET;
-    return convert_to_fixed_point(offset, 7);
+inline auto get_offset_pf(uint16_t unitless_capdac) -> float {
+    return static_cast<float>(unitless_capdac) * CAPDAC_OFFSET;
 }
 
 }  // namespace fdc1004_utils
