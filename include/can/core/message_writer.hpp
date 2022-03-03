@@ -29,7 +29,7 @@ class MessageWriter {
      * @param message The message to send
      */
     template <message_core::CanResponseMessage ResponseMessage>
-    void send_can_message(can_ids::NodeId node, ResponseMessage& message) {
+    void send_can_message(can_ids::NodeId node, ResponseMessage&& message) {
         auto arbitration_id = can_arbitration_id::ArbitrationId{};
         auto task_message = message_writer_task::TaskMessage{};
 

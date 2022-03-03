@@ -64,7 +64,9 @@ class CapacitiveMessageHandler {
         capdac_offset = capacitance_handler.get_offset();
         if (bool(m.offset_reading)) {
             auto message = can_messages::ReadFromSensorResponse{
-                {}, SensorType::capacitive, static_cast<uint32_t>(capdac_offset)};
+                {},
+                SensorType::capacitive,
+                static_cast<uint32_t>(capdac_offset)};
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
             capacitance_handler.reset();

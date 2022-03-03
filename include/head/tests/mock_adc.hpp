@@ -16,7 +16,6 @@ class MockADC : public adc::BaseADC {
           a_channel(a_reading),
           gripper_channel(gripper_reading) {}
 
-  protected:
     auto get_gripper_channel() -> MockChannelType& override {
         return gripper_channel;
     }

@@ -30,6 +30,10 @@ struct AttachedTools {
           gripper(tooltype_from_reading(reading.gripper, arr)) {
         {}
     }
+    constexpr AttachedTools(can_ids::ToolType z_motor_in,
+                            can_ids::ToolType a_motor_in,
+                            can_ids::ToolType gripper_in)
+        : z_motor(z_motor_in), a_motor(a_motor_in), gripper(gripper_in) {}
 };
 
 }  // namespace attached_tools

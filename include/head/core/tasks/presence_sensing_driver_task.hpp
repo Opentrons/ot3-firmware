@@ -1,5 +1,6 @@
 #pragma once
 
+#include <tuple>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
@@ -58,17 +59,17 @@ class PresenceSensingDriverMessageHandler {
     }
 
     void visit(can_messages::AttachedToolsRequest& m) {
-        auto tools = attached_tools::AttachedTools(driver.get_readings());
-        if (tools.z_motor != driver.get_current_tools().z_motor ||
-            tools.a_motor != driver.get_current_tools().a_motor ||
-            tools.gripper != driver.get_current_tools().gripper) {
-            can_messages::PushToolsDetectedNotification resp{
-                .z_motor = (tools.z_motor),
-                .a_motor = (tools.a_motor),
-                .gripper = (tools.gripper),
-            };
-            driver.set_current_tools(tools);
-            can_client.send_can_message(can_ids::NodeId::host, resp);
+        attached_tools::AttachedTools new_tools;
+        bool updated = false;
+        std::tie(updated, new_tools) = driver.update_tools();
+        if (updated) {
+            can_client.send_can_message(
+                can_ids::NodeId::host,
+                can_messages::PushToolsDetectedNotification{
+                    .z_motor = (new_tools.z_motor),
+                    .a_motor = (new_tools.a_motor),
+                    .gripper = (new_tools.gripper),
+                });
         }
     }
 
