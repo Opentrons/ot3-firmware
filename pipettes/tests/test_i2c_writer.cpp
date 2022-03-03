@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "pipettes/core/i2c_writer.hpp"
+#include "sensors/tests/callbacks.hpp"
 
 SCENARIO("Test the i2c command queue writer") {
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> queue{};
@@ -16,8 +17,6 @@ SCENARIO("Test the i2c command queue writer") {
         // Test that different sized buffers can
         // be passed in
         constexpr uint16_t ADDRESS = 0x1;
-        using BufferType = std::array<uint8_t, 5>;
-        auto callback = [](BufferType) -> void {};
 
         WHEN("we write messages") {
             writer.write(two_byte_data, ADDRESS);
@@ -43,8 +42,9 @@ SCENARIO("Test the i2c command queue writer") {
             }
         }
         WHEN("we read messages") {
-            writer.read(ADDRESS, callback);
-            writer.read(ADDRESS, callback);
+            auto callback = mock_callbacks::EmptyCallback{};
+            writer.read(ADDRESS, callback, callback);
+            writer.read(ADDRESS, callback, callback);
             THEN("the queue has properly formatted read messages") {
                 REQUIRE(queue.get_size() == 2);
 

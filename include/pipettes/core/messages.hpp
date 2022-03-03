@@ -1,31 +1,39 @@
 #pragma once
 
-#include <functional>
-
 #include "common/core/i2c.hpp"
+#include "sensors/core/callback_types.hpp"
 
 namespace pipette_messages {
 
-using MaxMessageBuffer = std::array<uint8_t, 5>;
-using Callback = std::function<void(const MaxMessageBuffer&)>;
-
 struct WriteToI2C {
     uint16_t address;
-    MaxMessageBuffer buffer;
+    sensor_callbacks::MaxMessageBuffer buffer;
 };
 
 struct ReadFromI2C {
     uint16_t address;
-    MaxMessageBuffer buffer;
-    Callback client_callback;
+    sensor_callbacks::MaxMessageBuffer buffer;
+    sensor_callbacks::SendToCanFunctionTypeDef client_callback;
+    sensor_callbacks::SingleBufferTypeDef handle_buffer;
 };
 
-struct PollReadFromI2C {
+struct SingleRegisterPollReadFromI2C {
     uint16_t address;
     int polling;
-    MaxMessageBuffer buffer;
-    Callback client_callback;
     int delay_ms;
+    sensor_callbacks::MaxMessageBuffer buffer;
+    sensor_callbacks::SendToCanFunctionTypeDef client_callback;
+    sensor_callbacks::SingleBufferTypeDef handle_buffer;
+};
+
+struct MultiRegisterPollReadFromI2C {
+    uint16_t address;
+    int polling;
+    int delay_ms;
+    sensor_callbacks::MaxMessageBuffer register_buffer_1;
+    sensor_callbacks::MaxMessageBuffer register_buffer_2;
+    sensor_callbacks::SendToCanFunctionTypeDef client_callback;
+    sensor_callbacks::MultiBufferTypeDef handle_buffer;
 };
 
 }  // namespace pipette_messages

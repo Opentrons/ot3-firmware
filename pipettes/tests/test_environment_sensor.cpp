@@ -2,15 +2,11 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
+#include "motor-control/core/utils.hpp"
 #include "pipettes/core/i2c_writer.hpp"
 #include "sensors/core/hdc2080.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-
-float fixed_to_float(uint32_t data) {
-    constexpr uint32_t power_of_two = 2 << 15;
-    return (1.0 * static_cast<float>(data)) / power_of_two;
-}
 
 SCENARIO("read temperature and humidity values") {
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
@@ -57,14 +53,16 @@ SCENARIO("read temperature and humidity values") {
                 THEN(
                     "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> my_buff = {250, 80, 0, 0, 0};
-                    read_message.client_callback(my_buff);
+                    read_message.handle_buffer(my_buff);
+                    read_message.client_callback();
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =
                         std::get<can_messages::ReadFromSensorResponse>(
                             can_msg.message);
-                    float check_data = fixed_to_float(response_msg.sensor_data);
+                    float check_data =
+                        fixed_point_to_float(response_msg.sensor_data, 15);
                     float expected = 48.88916;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
@@ -98,14 +96,16 @@ SCENARIO("read temperature and humidity values") {
                 THEN(
                     "using the callback with data returns the expected value") {
                     std::array<uint8_t, 5> my_buff = {200, 0, 0, 0, 0};
-                    read_message.client_callback(my_buff);
+                    read_message.handle_buffer(my_buff);
+                    read_message.client_callback();
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =
                         std::get<can_messages::ReadFromSensorResponse>(
                             can_msg.message);
-                    float check_data = fixed_to_float(response_msg.sensor_data);
+                    float check_data =
+                        fixed_point_to_float(response_msg.sensor_data, 15);
                     float expected = 44.20312;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }

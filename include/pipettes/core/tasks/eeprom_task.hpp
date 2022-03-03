@@ -7,6 +7,7 @@
 #include "common/core/logging.hpp"
 #include "common/core/message_queue.hpp"
 #include "pipettes/core/messages.hpp"
+#include "sensors/core/callback_types.hpp"
 
 namespace eeprom_task {
 
@@ -16,16 +17,23 @@ using TaskMessage =
 
 template <message_writer_task::TaskClient CanClient>
 struct EEPromCallback {
-    CanClient &can_client;
+  public:
+    EEPromCallback(CanClient &can_client) : can_client{can_client} {}
 
-    void operator()(const pipette_messages::MaxMessageBuffer &buffer) {
-        uint16_t data = 0x0;
+    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
+    }
 
+    void send_to_can() {
         auto message = can_messages::ReadFromEEPromResponse{{}, data};
         can_client.send_can_message(can_ids::NodeId::host, message);
+        data = 0;
     }
+
+  private:
+    CanClient &can_client;
+    uint16_t data = 0;
 };
 
 template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
@@ -33,7 +41,7 @@ class EEPromMessageHandler {
   public:
     explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
                                   CanClient &can_client)
-        : writer{i2c_writer}, can_client{can_client}, callback{can_client} {}
+        : writer{i2c_writer}, can_client{can_client}, handler{can_client} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -56,14 +64,16 @@ class EEPromMessageHandler {
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
         LOG("Received request to read serial number\n");
-        writer.read(DEVICE_ADDRESS, callback);
+        writer.read(
+            DEVICE_ADDRESS, [this]() { handler.send_to_can(); },
+            [this](auto message_a) { handler.handle_data(message_a); });
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0x1;
     static constexpr int SERIAL_NUMBER_SIZE = 0x2;
     I2CQueueWriter &writer;
     CanClient &can_client;
-    EEPromCallback<CanClient> callback;
+    EEPromCallback<CanClient> handler;
 };
 
 /**

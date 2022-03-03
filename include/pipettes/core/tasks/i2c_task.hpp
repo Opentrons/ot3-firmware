@@ -33,18 +33,57 @@ class I2CMessageHandler {
     void visit(ReadFromI2C &m) {
         i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
                                    TIMEOUT);
-        m.client_callback(m.buffer);
+        m.handle_buffer(m.buffer);
+        m.client_callback();
     }
 
-    void visit(PollReadFromI2C &m) {
+    void visit(SingleRegisterPollReadFromI2C &m) {
+        // TODO (lc, 03-01-2022): see about making this non-blocking
+        // TODO (lc, 03-01-2022): we should try to consolidate polling to
+        // support any number of registers potentially.
+        // TODO (lc, 03-01-2022): put in timer interrupt
         auto empty_array = m.buffer;
         for (int i = 0; i < m.polling; i++) {
+            i2c_device.central_transmit(m.buffer.data(), m.buffer.size(),
+                                        m.address, TIMEOUT);
             i2c_device.central_receive(m.buffer.data(), m.buffer.size(),
                                        m.address, TIMEOUT);
-            m.client_callback(m.buffer);
+            m.handle_buffer(m.buffer);
             m.buffer = empty_array;
             i2c_device.wait_during_poll(m.delay_ms);
         }
+        m.client_callback();
+    }
+
+    void visit(MultiRegisterPollReadFromI2C &m) {
+        // TODO (lc, 03-01-2022): see about making this non-blocking
+        // TODO (lc, 03-01-2022): we should try to consolidate polling to
+        // support any number of registers potentially.
+        // TODO (lc, 03-01-2022): put in timer interrupt
+        auto empty_array_reg_1 = m.register_buffer_1;
+        auto empty_array_reg_2 = m.register_buffer_2;
+        for (int i = 0; i < m.polling; i++) {
+            i2c_device.central_transmit(m.register_buffer_1.data(),
+                                        m.register_buffer_1.size(), m.address,
+                                        TIMEOUT);
+            i2c_device.central_receive(m.register_buffer_1.data(),
+                                       m.register_buffer_1.size(), m.address,
+                                       TIMEOUT);
+            i2c_device.central_transmit(m.register_buffer_2.data(),
+                                        m.register_buffer_2.size(), m.address,
+                                        TIMEOUT);
+            i2c_device.central_receive(m.register_buffer_2.data(),
+                                       m.register_buffer_2.size(), m.address,
+                                       TIMEOUT);
+            m.handle_buffer(m.register_buffer_1, m.register_buffer_2);
+            m.register_buffer_1 = empty_array_reg_1;
+            m.register_buffer_2 = empty_array_reg_2;
+            // not fully correct mapping of frequency. See related github
+            // comment:
+            // https://github.com/Opentrons/ot3-firmware/pull/261#discussion_r816862421
+            i2c_device.wait_during_poll(m.delay_ms);
+        }
+        m.client_callback();
     }
 
     i2c::I2CDeviceBase &i2c_device;
