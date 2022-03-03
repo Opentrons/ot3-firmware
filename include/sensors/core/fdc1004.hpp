@@ -35,8 +35,8 @@ constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
 constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
 // configurations
 constexpr uint16_t DEVICE_CONFIGURATION =
-    0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
-    0x4 << 10;   // CHB = CAPDAC
+    0x0 << 13 |                             // CHA = CIN1 (U.FL Connector)
+    0x4 << 10;                              // CHB = CAPDAC
 constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
                                  1 << 8 |   // Repeat enabled
                                  1 << 7;    // Measurement 1 enabled
@@ -51,8 +51,7 @@ constexpr float MAX_MEASUREMENT = 524288.0;
 // single ended capdac offset measurement in pF
 constexpr float CAPDAC_OFFSET = 3.125;
 
-inline auto convert_capacitance(uint32_t capacitance,
-                                uint16_t read_count,
+inline auto convert_capacitance(uint32_t capacitance, uint16_t read_count,
                                 float current_offset) -> sq14_15 {
     auto average =
         static_cast<float>(capacitance) / static_cast<float>(read_count);
@@ -66,7 +65,8 @@ inline auto update_capdac(uint16_t capacitance, float current_offset)
      * CAPDAC is a unitless offset. To calculate the capacitive offset,
      * you would multiply CAPDAC (unitless) * CAPDAC_OFFSET (pF)
      */
-    float capdac = (static_cast<float>(capacitance)  + current_offset) / CAPDAC_OFFSET;
+    float capdac =
+        (static_cast<float>(capacitance) + current_offset) / CAPDAC_OFFSET;
     if (capdac > MAX_CAPDAC_OFFSET) {
         capdac = MAX_CAPDAC_OFFSET;
     }

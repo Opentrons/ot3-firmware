@@ -1,9 +1,9 @@
 #pragma once
-#include <iostream>
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/logging.hpp"
 #include "sensors/core/callback_types.hpp"
 #include "sensors/core/fdc1004.hpp"
 
@@ -21,8 +21,12 @@ using namespace can_ids;
 template <message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
-    ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer, uint32_t threshold, uint16_t current_offset)
-        : can_client{can_client}, i2c_writer{i2c_writer}, current_offset{current_offset}, zero_threshold{threshold} {}
+    ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
+                            uint32_t threshold, uint16_t current_offset)
+        : can_client{can_client},
+          i2c_writer{i2c_writer},
+          current_offset{current_offset},
+          zero_threshold{threshold} {}
 
     void handle_data(const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
                      const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
@@ -43,13 +47,16 @@ struct ReadCapacitanceCallback {
         auto message = can_messages::ReadFromSensorResponse{
             {}, SensorType::capacitive, capacitance};
         can_client.send_can_message(can_ids::NodeId::host, message);
-        std::cout << "CAPACITANCE " << static_cast<int>(capacitance) << "\n";
         if (capacitance > zero_threshold || capacitance < -zero_threshold) {
-            std::cout << "greater than threshold " << "\n";
+            LOG("Capacitance %d exceeds zero threshold %d \n", capacitance,
+                zero_threshold);
             auto capdac = update_capdac(capacitance, current_offset);
-            current_offset = capdac;
-            std::cout << "current offset " << static_cast<int>(current_offset)  << "\n";
-            uint16_t update = CONFIGURATION_MEASUREMENT | POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL | capdac;
+            // convert back to pF
+            current_offset = capdac * CAPDAC_OFFSET;
+            LOG("Setting offset to %d \n", current_offset);
+            uint16_t update = CONFIGURATION_MEASUREMENT |
+                              POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL |
+                              capdac;
             i2c_writer.write(update, ADDRESS);
         }
     }

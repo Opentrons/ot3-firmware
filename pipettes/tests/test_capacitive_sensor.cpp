@@ -104,9 +104,8 @@ SCENARIO("read capacitance sensor values") {
             std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
             i2c_queue.try_read(&empty_msg);
             auto read_message =
-                std::get<i2c_writer::MultiRegisterPollReadFromI2C>(
-                    empty_msg);
-            for (int i=0; i<NUM_READS; i++) {
+                std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);
+            for (int i = 0; i < NUM_READS; i++) {
                 read_message.handle_buffer(buffer_a, buffer_b);
             }
             read_message.client_callback();
@@ -121,13 +120,11 @@ SCENARIO("read capacitance sensor values") {
                 auto response_msg =
                     std::get<can_messages::ReadFromSensorResponse>(
                         can_msg.message);
-                float expected = 0.10938;
+                float expected = 0.3418;
                 float check_data =
                     fixed_point_to_float(response_msg.sensor_data, 15);
                 REQUIRE(check_data == Approx(expected).epsilon(1e-4));
-
             }
         }
-
     }
 }

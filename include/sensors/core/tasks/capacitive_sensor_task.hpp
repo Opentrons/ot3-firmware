@@ -17,7 +17,8 @@ class CapacitiveMessageHandler {
                                       CanClient &can_client)
         : writer{i2c_writer},
           can_client{can_client},
-          capacitance_handler{can_client, writer, zero_threshold, capdac_offset} {}
+          capacitance_handler{can_client, writer, zero_threshold,
+                              capdac_offset} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
     auto operator=(const CapacitiveMessageHandler &)
@@ -33,9 +34,10 @@ class CapacitiveMessageHandler {
     void initialize() {
         writer.write(DEVICE_ID_REGISTER, ADDRESS);
         writer.read(
-            ADDRESS,
-            [this]() {internal_callback.send_to_can();},
-            [this](auto message_a) {internal_callback.handle_data(message_a);},
+            ADDRESS, [this]() { internal_callback.send_to_can(); },
+            [this](auto message_a) {
+                internal_callback.handle_data(message_a);
+            },
             DEVICE_ID_REGISTER);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
@@ -60,9 +62,7 @@ class CapacitiveMessageHandler {
          */
         LOG("Received request to read from %d sensor\n", m.sensor);
         capdac_offset = capacitance_handler.get_offset();
-        std::cout << "capdac  " << static_cast<int>(capdac_offset) << "\n";
         if (bool(m.offset_reading)) {
-            std::cout << "offset reading  " << "\n";
             auto message = can_messages::ReadFromSensorResponse{
                 {}, SensorType::capacitive, capdac_offset};
             can_client.send_can_message(can_ids::NodeId::host, message);
@@ -70,8 +70,10 @@ class CapacitiveMessageHandler {
             capacitance_handler.reset();
             writer.multi_register_poll(
                 ADDRESS, 1, DELAY,
-                [this]() {capacitance_handler.send_to_can();},
-                [this](auto message_a, auto message_b) {capacitance_handler.handle_data(message_a, message_b);},
+                [this]() { capacitance_handler.send_to_can(); },
+                [this](auto message_a, auto message_b) {
+                    capacitance_handler.handle_data(message_a, message_b);
+                },
                 MSB_MEASUREMENT_1, LSB_MEASUREMENT_1);
         }
     }
@@ -89,8 +91,10 @@ class CapacitiveMessageHandler {
         capacitance_handler.set_number_of_reads(m.sample_rate);
         writer.multi_register_poll(
             ADDRESS, m.sample_rate, DELAY,
-            [this]() {capacitance_handler.send_to_can();},
-            [this](auto message_a, auto message_b) {capacitance_handler.handle_data(message_a, message_b);},
+            [this]() { capacitance_handler.send_to_can(); },
+            [this](auto message_a, auto message_b) {
+                capacitance_handler.handle_data(message_a, message_b);
+            },
             MSB_MEASUREMENT_1, LSB_MEASUREMENT_1);
     }
 
