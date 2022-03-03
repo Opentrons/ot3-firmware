@@ -52,7 +52,7 @@ struct ReadCapacitanceCallback {
                 zero_threshold);
             auto capdac = update_capdac(capacitance, current_offset);
             // convert back to pF
-            current_offset = capdac * CAPDAC_OFFSET;
+            current_offset = get_offset_pf(capdac);
             LOG("Setting offset to %d \n", current_offset);
             uint16_t update = CONFIGURATION_MEASUREMENT |
                               POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL |

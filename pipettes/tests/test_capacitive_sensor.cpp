@@ -120,7 +120,7 @@ SCENARIO("read capacitance sensor values") {
                 auto response_msg =
                     std::get<can_messages::ReadFromSensorResponse>(
                         can_msg.message);
-                float expected = 0.3418;
+                float expected = 0.75;
                 float check_data =
                     fixed_point_to_float(response_msg.sensor_data, 15);
                 REQUIRE(check_data == Approx(expected).epsilon(1e-4));
