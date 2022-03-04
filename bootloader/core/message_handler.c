@@ -24,6 +24,9 @@ static HandleMessageReturn handle_fw_update_complete(const Message* request, Mes
 /** Handle a request to get firmware update status. */
 static HandleMessageReturn handle_fw_update_status_request(const Message* request, Message* response);
 
+/** Handle a request to erase an application from flash. */
+static HandleMessageReturn handle_fw_update_erase_application(const Message* request, Message* response);
+
 /**
  * Handle a message
  * @param request The request
@@ -56,6 +59,8 @@ HandleMessageReturn handle_message(const Message* request, Message* response) {
         case can_messageid_fw_update_start_app:
             fw_update_start_application();
             break;
+        case can_messageid_fw_update_erase_app:
+            ret = handle_fw_update_erase_application(request, response);
         default:
             break;
     }
@@ -154,5 +159,21 @@ HandleMessageReturn handle_fw_update_status_request(const Message* request, Mess
     response->arbitration_id.parts.node_id = can_nodeid_host;
     response->arbitration_id.parts.originating_node_id = get_node_id();
     response->size = p - response->data;
+    return handle_message_has_response;
+}
+
+static HandleMessageReturn handle_fw_update_erase_application(const Message* request, Message* response) {
+    FwUpdateReturn updater_return = fw_update_erase_application(get_update_state());
+
+    // Build response
+    uint8_t* p = response->data;
+    p = write_uint16(p, updater_return == fw_update_ok ? can_errorcode_ok : can_errorcode_hardware);
+
+    response->arbitration_id.id = 0;
+    response->arbitration_id.parts.message_id = can_messageid_fw_update_erase_app_ack;
+    response->arbitration_id.parts.node_id = can_nodeid_host;
+    response->arbitration_id.parts.originating_node_id = get_node_id();
+    response->size = p - response->data;
+
     return handle_message_has_response;
 }

@@ -3,7 +3,6 @@
 static UpdateState update_state = {
     .num_messages_received=0,
     .error_detection=0,
-    .erased=false
 };
 
 
@@ -15,6 +14,5 @@ void reset_update_state(UpdateState * state) {
     if (state) {
         state->num_messages_received = 0;
         state->error_detection = 0;
-        state->erased = false;
     }
 }

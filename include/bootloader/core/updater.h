@@ -46,6 +46,13 @@ FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address, const uint8_
 FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages, uint32_t error_detection);
 
 /**
+ * Erase the application from flash.
+ * @param state The update state.
+ * @return Result
+ */
+FwUpdateReturn fw_update_erase_application(UpdateState* state);
+
+/**
  * Start the application. This function will not return.
  */
 void fw_update_start_application(void);

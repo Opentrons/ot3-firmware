@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +12,6 @@ typedef struct {
     uint32_t num_messages_received;
     /** Running error detection value of update date. */
     uint32_t error_detection;
-    bool erased;
 } UpdateState;
 
 
