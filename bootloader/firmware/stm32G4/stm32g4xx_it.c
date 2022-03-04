@@ -148,7 +148,9 @@ void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 /** Interrupt handlers that are typically routed to FreeRTOS. No FreeRTOS on Bootloader. */
 void SVC_Handler(void) {}
 void PendSV_Handler(void) {}
-void SysTick_Handler(void) {}
+void SysTick_Handler(void) {
+    HAL_IncTick();
+}
 
 
 void FLASH_IRQHandler(void) {
