@@ -123,7 +123,7 @@ FwUpdateReturn fw_update_erase_application(UpdateState* state) {
     erase_struct.Banks=FLASH_BANK_2;
     erase_struct.Page=0;
     erase_struct.NbPages=FLASH_PAGE_NB_PER_BANK;
-    
+
     if (HAL_FLASHEx_Erase_IT(&erase_struct) != HAL_OK) {
         return fw_update_error;
     }
@@ -147,13 +147,13 @@ void fw_update_wait_erase(const UpdateState * state) {
  * Callback from HAL_FLASH_IRQHandler indicating that an operation is
  * complete.
  * @param ReturnValue This is overloaded to mean a whole heck of a lot.
- *  for page erase it is the page (or 0xFFFFFFFFU indicating complete)
+ *  for page erase it is the page (or 0xFFFFFFFF indicating complete)
  *  for mass erase this is the bank. (not in use by us)
  *  for program it is the address. (not in use by us)
  */
 void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue) {
     // If we're erasing and getting the magic ReturnValue then we're done.
-    if (get_update_state()->erase_state == erase_state_running && ReturnValue == 0xFFFFFFFFu) {
+    if (get_update_state()->erase_state == erase_state_running && ReturnValue == 0xFFFFFFFFU) {
         get_update_state()->erase_state = erase_state_done;
     }
     // Refresh the watch dog
