@@ -165,6 +165,8 @@ void run_update() {
                     Error_Handler();
                 }
             }
+        } else {
+            HAL_Delay(1);
         }
         // Refresh the watch dog.
         iwdg_refresh();
