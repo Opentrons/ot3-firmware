@@ -77,6 +77,10 @@ int main() {
     RCC_Peripheral_Clock_Select();
     MX_IWDG_Init();
 
+    // Enable the flash interrupt.
+    HAL_NVIC_SetPriority(FLASH_IRQn, 15, 15);
+    HAL_NVIC_EnableIRQ(FLASH_IRQn);
+
     bool requires_update = requires_an_update();
 
     // Clear reset flags. Otherwise, they will persist for the lifetime of

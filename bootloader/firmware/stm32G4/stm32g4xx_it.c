@@ -151,4 +151,9 @@ void PendSV_Handler(void) {}
 void SysTick_Handler(void) {}
 
 
+void FLASH_IRQHandler(void) {
+    HAL_FLASH_IRQHandler();
+}
+
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
