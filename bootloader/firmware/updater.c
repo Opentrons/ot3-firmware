@@ -123,7 +123,7 @@ FwUpdateReturn fw_update_erase_application(UpdateState* state) {
     erase_struct.Banks=FLASH_BANK_2;
     erase_struct.Page=0;
     erase_struct.NbPages=FLASH_PAGE_NB_PER_BANK;
-    error = 0;
+    
     if (HAL_FLASHEx_Erase_IT(&erase_struct) != HAL_OK) {
         return fw_update_error;
     }
