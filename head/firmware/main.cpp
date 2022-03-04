@@ -133,10 +133,9 @@ static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x2,
-                           .run_current = 0x10,
+            .ihold_irun = {.hold_current = 0xB,
+                           .run_current = 0x19,
                            .hold_current_delay = 0x7},
-            .tpowerdown = {},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
             .chopconf = {.toff = 0x5,
