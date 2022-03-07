@@ -18,7 +18,7 @@ jobs:
           path: ot3-firmware
 
       - name: Substitute current sha into yaml
-        id: "sub-step"
+        id: sub-step
         uses: Opentrons/opentrons-emulation@working-with-other-repos
         with:
           command: yaml-sub
@@ -29,4 +29,4 @@ jobs:
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
 
       - name: Echo Output
-        run: echo "${{ steps.sub-step.outputs.modified-yaml }}"
+        run: echo ${{ steps.sub-step.outputs.modified-yaml }}
