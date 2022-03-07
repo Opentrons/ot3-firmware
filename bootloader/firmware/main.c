@@ -77,6 +77,10 @@ int main() {
     RCC_Peripheral_Clock_Select();
     MX_IWDG_Init();
 
+    // Enable the flash interrupt.
+    HAL_NVIC_SetPriority(FLASH_IRQn, 15, 15);
+    HAL_NVIC_EnableIRQ(FLASH_IRQn);
+
     bool requires_update = requires_an_update();
 
     // Clear reset flags. Otherwise, they will persist for the lifetime of
@@ -161,6 +165,8 @@ void run_update() {
                     Error_Handler();
                 }
             }
+        } else {
+            HAL_Delay(1);
         }
         // Refresh the watch dog.
         iwdg_refresh();
