@@ -1,11 +1,20 @@
-#include "head/firmware/adc.h"
-
 #include <stdbool.h>
 
 #include "common/firmware/errors.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "head/firmware/adc.h"
 
-ADC_HandleTypeDef adc1 = {0};
-ADC_HandleTypeDef adc2 = {0};
+static ADC_HandleTypeDef adc1 = {0};
+static ADC_HandleTypeDef adc2 = {0};
+
+ADC_HandleTypeDef* get_adc1_handle(void) {
+    return &adc1;
+}
+
+ADC_HandleTypeDef* get_adc2_handle(void) {
+    return &adc2;
+}
 
 /**
  * @brief ADC1 Initialization Function
@@ -133,13 +142,36 @@ void adc_set_chan(uint32_t chan, ADC_HandleTypeDef* handle) {
 }
 
 uint32_t adc_read(ADC_HandleTypeDef* adc_handle, uint32_t adc_channel) {
-    uint32_t return_value = 0;
+    uint16_t return_value = 0;
+    HAL_StatusTypeDef status = HAL_OK;
 
     adc_set_chan(adc_channel, adc_handle);
-    HAL_ADC_Start(adc_handle);
-    HAL_ADC_PollForConversion(adc_handle, HAL_MAX_DELAY);
+    do {
+        status = HAL_ADC_Start(adc_handle);
+        if (status == HAL_BUSY) {
+            vTaskDelay(1);
+        }
+    } while (status == HAL_BUSY);
+    if (status != HAL_OK) {
+        Error_Handler();
+    }
+    // No busy handling here - with HAL_MAX_DELAY, we should never
+    // get a timeout and since we just started we shouldn't get a busy
+    status = HAL_ADC_PollForConversion(adc_handle, HAL_MAX_DELAY);
+    if (status != HAL_OK) {
+        Error_Handler();
+    }
+
     return_value = HAL_ADC_GetValue(adc_handle);
 
-    // HAL_ADC_Stop(&adc2);
+    do {
+        status = HAL_ADC_Stop(adc_handle);
+        if (status == HAL_BUSY) {
+            vTaskDelay(1);
+        }
+    } while (status == HAL_BUSY);
+    if (status != HAL_OK) {
+        Error_Handler();
+    }
     return return_value;
 }
