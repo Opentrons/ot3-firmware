@@ -23,7 +23,7 @@ jobs:
         shell: bash
 
       - name: Substitute current sha into yaml
-        uses: ./opentrons-emulation/action
+        uses: ./opentrons-emulation
         with:
           command: yaml-sub
           substitutions: >-
