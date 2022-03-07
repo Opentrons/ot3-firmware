@@ -1,19 +1,23 @@
-on: [pull_request, push]
+on: [ pull_request, push ]
 
 jobs:
   ot3-emulator:
     runs-on: "ubuntu-20.04"
     name: OT-3 Emulator
     steps:
-      - name: Setup SocketCan
-        run: |
-          sudo apt-get update
-          sudo apt-get install linux-modules-extra-$(uname -r)
-          sudo modprobe vcan
-      - name: Checkout firmware repo
-        uses: actions/checkout@v2
-      - name: Run OT-3 Emulator
-        uses: Opentrons/opentrons-emulation@v1.3
+
+      - name: Checkout opentrons-emulation repo
+        uses: actions/checkout@v3
         with:
-          ot3-firmware-commit-id: ${{ github.sha }}
-          modules-commit-id: latest
+          repository: Opentrons/opentrons-emulation
+          ref: main
+          
+      - name: Substitute current sha into yaml
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          command: yaml-sub
+          substitutions: >-
+            [
+              ["otie", "source-location", "${{ github.sha }}"]
+            ]
+          input-file: ${{ github.workspace }}/emulation_setups/ot3only.yaml
