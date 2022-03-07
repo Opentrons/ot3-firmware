@@ -23,7 +23,7 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
             return tmc2130::TMC2130DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
-                                             .run_current = 0x10,
+                                             .run_current = 0x18,
                                              .hold_current_delay = 0x7},
                               .thigh = {.threshold = 0xFFFFF},
                               .chopconf = {.toff = 0x5,
@@ -41,7 +41,7 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
             return tmc2130::TMC2130DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
-                                             .run_current = 0x10,
+                                             .run_current = 0x18,
                                              .hold_current_delay = 0x7},
                               .thigh = {.threshold = 0xFFFFF},
                               .chopconf = {.toff = 0x5,
