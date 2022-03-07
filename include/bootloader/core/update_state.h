@@ -20,8 +20,9 @@ typedef struct {
     uint32_t num_messages_received;
     /** Running error detection value of update date. */
     uint32_t error_detection;
-    /** The current flash erasing state */
-    EraseState erase_state;
+    /** The current flash erasing state. Marked `_Atomic` because it's
+     * modified in interrupt and main process. */
+    _Atomic EraseState erase_state;
 
 } UpdateState;
 
