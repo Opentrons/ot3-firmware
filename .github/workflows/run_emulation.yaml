@@ -17,12 +17,8 @@ jobs:
         with:
           path: ot3-firmware
 
-      - name: Debug Time
-        run: ls -l ${{ github.workspace }}
-        shell: bash
-
       - name: Substitute current sha into yaml
-        id: yaml-sub
+        id: "sub-step"
         uses: Opentrons/opentrons-emulation@working-with-other-repos
         with:
           command: yaml-sub
@@ -33,4 +29,4 @@ jobs:
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
 
       - name: Echo Output
-        run: echo "${{ steps }}"
+        run: echo "${{ steps.sub-step }}"
