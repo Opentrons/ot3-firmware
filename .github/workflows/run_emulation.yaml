@@ -29,5 +29,8 @@ jobs:
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
           output-file-location: ${{ github.workspace }}/output.yaml
 
-      - name: See file
-        run: cat ${{ github.workspace }}/output.yaml
+      - name: Build Emulator
+        uses: Opentrons/opentrons-emulation@working-with-other-repos
+        with:
+          command: setup
+          input-file: ${{ github.workspace }}/output.yaml
