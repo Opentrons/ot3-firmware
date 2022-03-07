@@ -29,4 +29,4 @@ jobs:
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
 
       - name: Echo Output
-        run: echo "${{ steps.sub-step.outpu }}"
+        run: echo "${{ steps.sub-step.outputs }}"
