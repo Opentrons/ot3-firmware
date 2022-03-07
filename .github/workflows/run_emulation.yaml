@@ -23,9 +23,8 @@ jobs:
         shell: bash
 
       - name: Substitute current sha into yaml
-        uses: Opentrons/opentrons-emulation/opentrons-emulation@main
+        uses: ./opentrons-emulation/.github/actions/yaml-sub
         with:
-          command: yaml-sub
           substitutions: >-
             [
               ["otie", "source-location", "${{ github.sha }}"]
