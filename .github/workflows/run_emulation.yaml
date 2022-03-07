@@ -11,7 +11,7 @@ jobs:
         with:
           repository: Opentrons/opentrons-emulation
           ref: main
-          
+
       - name: Substitute current sha into yaml
         uses: Opentrons/opentrons-emulation@main
         with:
@@ -20,4 +20,4 @@ jobs:
             [
               ["otie", "source-location", "${{ github.sha }}"]
             ]
-          input-file: ${{ github.workspace }}/emulation_setups/ot3only.yaml
+          input-file: ${{ github.workspace }}/emulation_setups/ot3_only.yaml
