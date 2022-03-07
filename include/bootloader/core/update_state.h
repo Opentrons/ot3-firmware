@@ -2,6 +2,13 @@
 
 #include <stdint.h>
 
+#ifndef __cplusplus
+#include <stdatomic.h>
+#else
+// _Atomic keyword is not supported in CPP and we don't need it.
+#define _Atomic
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
