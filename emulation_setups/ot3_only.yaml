@@ -16,7 +16,7 @@ robot:
   hardware: ot3
   source-type: remote
   # Need to replace source-location below with latest ot3-firmware-sha using yaml-sub Github Action
-  source-location: replace-this
+  source-location: latest
   robot-server-source-type: remote
   robot-server-source-location: latest
   can-server-source-type: remote
