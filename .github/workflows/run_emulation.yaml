@@ -33,4 +33,4 @@ jobs:
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
 
       - name: Echo Output
-        run: echo "${{ steps.yaml-sub.outputs.modified-yaml }}"
+        run: echo "${{ steps.yaml-sub.outputs.subbed-yaml }}"
