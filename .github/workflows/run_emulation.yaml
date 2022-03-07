@@ -20,13 +20,13 @@ jobs:
       - name: Debug Time
         run: ls -l ${{ github.workspace }}
         shell: bash
-#
-#      - name: Substitute current sha into yaml
-#        uses: Opentrons/opentrons-emulation@main
-#        with:
-#          command: yaml-sub
-#          substitutions: >-
-#            [
-#              ["otie", "source-location", "${{ github.sha }}"]
-#            ]
-#          input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
+
+      - name: Substitute current sha into yaml
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          command: yaml-sub
+          substitutions: >-
+            [
+              ["otie", "source-location", "${{ github.sha }}"]
+            ]
+          input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
