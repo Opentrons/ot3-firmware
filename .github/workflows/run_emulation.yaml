@@ -34,3 +34,21 @@ jobs:
         with:
           command: setup
           input-file: ${{ github.workspace }}/output.yaml
+
+      - name: Run Emulation
+        uses: Opentrons/opentrons-emulation@working-with-other-repos
+        with:
+          command: run
+          input-file: ${{ github.workspace }}/output.yaml
+
+      - name: Give it some time to start up
+        run: sleep 10s
+
+      - name: Test Emulation
+        run: "curl --request GET --header 'opentrons-version: *' http://localhost:31950/modules"
+
+      - name: Teardown Emulation
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          input-file: ${{ github.workspace }}/output.yaml
+          command: teardown
