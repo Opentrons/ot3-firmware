@@ -8,16 +8,18 @@ jobs:
 
       - name: Checkout ot3-firmware repo
         uses: actions/checkout@v3
+        with:
+          path: ot3-firmware
 
       - name: Checkout opentrons-emulation repo
         uses: actions/checkout@v3
         with:
           repository: Opentrons/opentrons-emulation
-          path: ../opentrons-emulation
+          path: opentrons-emulation
           ref: main
 
       - name: Debug Time
-        run: ls -l ${{ github.workspace }}/../opentrons-emulation
+        run: ls -l ${{ github.workspace }}
         shell: bash
 #
 #      - name: Substitute current sha into yaml
@@ -28,4 +30,4 @@ jobs:
 #            [
 #              ["otie", "source-location", "${{ github.sha }}"]
 #            ]
-#          input-file: ${{ github.workspace }}/emulation_setups/ot3_only.yaml
+#          input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
