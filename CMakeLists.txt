@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.20)
 
 if (NOT DEFINED ENV{PRESET_IN_USE})
     message(FATAL_ERROR "Use a preset. Use cmake --list-presets to show available presets.")
-endif()
+endif ()
 
 project("OT3Firmware"
         LANGUAGES CXX C ASM
@@ -40,17 +40,17 @@ if (${CMAKE_CROSSCOMPILING})
     set(STM32G4 0)
     if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
         set(STM32L5 1)
-    elseif(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
+    elseif (${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
         set(STM32G4 1)
-    else()
-        message( FATAL_ERROR "Failed to find a suitable architecture." )
+    else ()
+        message(FATAL_ERROR "Failed to find a suitable architecture.")
     endif ()
 
     configure_file(common/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
     configure_file(common/firmware/platform_specific_hal.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal.h)
 
     include_directories(${CMAKE_BINARY_DIR}/generated/)
-else()
+else ()
     find_package(Boost 1.71.0)
 endif ()
 
@@ -61,6 +61,7 @@ add_subdirectory(motor-control)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
 add_subdirectory(head)
+add_subdirectory(gripper)
 add_subdirectory(bootloader)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
@@ -75,6 +76,7 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./pipettes/*.hpp ./pipettes/*.cpp
         ./head/*.hpp ./head/*.cpp
         ./motor-control/*.hpp ./motor-control/*.cpp
+        ./gripper/*.hpp ./gripper/*.cpp
         ./bootloader/*.hpp ./bootloader/*.cpp
         )
 
@@ -96,9 +98,9 @@ add_custom_target(
 )
 
 add_custom_target(
-      lint
-      ALL
-      DEPENDS ${LINT_TARGETS})
+        lint
+        ALL
+        DEPENDS ${LINT_TARGETS})
 
 # any time we're calling python, we need to do it through the shell to rely on
 # the shell's location selection, which is where things like pyenv and virtualenvs
@@ -109,25 +111,25 @@ set(SHELL_FOR_PYTHON "/bin/sh" CACHE STRING "shell to use for calling python (su
 # can override the path in the cmake cache
 message(CHECK_START "Finding opentrons_hardware python package")
 find_path(OPENTRONS_HARDWARE_PATH
-    opentrons_hardware.cmakefind
-    DOC "The location of the opentrons_hardware package containing definitions for canbus header generation"
-    PATHS ${CMAKE_SOURCE_DIR}/../opentrons $ENV{HOME}/opentrons /opentrons
-    PATH_SUFFIXES hardware/opentrons_hardware
-    NO_DEFAULT_PATH)
+        opentrons_hardware.cmakefind
+        DOC "The location of the opentrons_hardware package containing definitions for canbus header generation"
+        PATHS ${CMAKE_SOURCE_DIR}/../opentrons $ENV{HOME}/opentrons /opentrons
+        PATH_SUFFIXES hardware/opentrons_hardware
+        NO_DEFAULT_PATH)
 
 if (NOT OPENTRONS_HARDWARE_PATH)
     message(CHECK_FAIL "not found. You will not be able to generate updated CANbus constant "
-                "headers, but otherwise everything will work. If you want to be able to generate headers, "
-                "check out the opentrons monorepo as a sibling to this directory or set the cache variable "
-                "OPENTRONS_HARDARE_PATH (using a CMake cache editor or by passing "
-                "-DOPENTRONS_HARDWARE_PATH=/path/to/opentrons_hardware the next time you configure)")
-else()
+            "headers, but otherwise everything will work. If you want to be able to generate headers, "
+            "check out the opentrons monorepo as a sibling to this directory or set the cache variable "
+            "OPENTRONS_HARDARE_PATH (using a CMake cache editor or by passing "
+            "-DOPENTRONS_HARDWARE_PATH=/path/to/opentrons_hardware the next time you configure)")
+else ()
     message(CHECK_PASS
-        "${OPENTRONS_HARDWARE_PATH}. Update CANbus headers by running cmake --build --preset=<any> --target update-headers")
-endif()
+            "${OPENTRONS_HARDWARE_PATH}. Update CANbus headers by running cmake --build --preset=<any> --target update-headers")
+endif ()
 
 add_custom_target(update-headers
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    VERBATIM
-    COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++"
-    COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        VERBATIM
+        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++"
+        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
