@@ -15,7 +15,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: Opentrons/opentrons-emulation
-          path: opentrons-emulation
           ref: main
 
       - name: Debug Time
@@ -23,8 +22,9 @@ jobs:
         shell: bash
 
       - name: Substitute current sha into yaml
-        uses: ./opentrons-emulation/.github/actions/yaml-sub
+        uses: Opentrons/opentrons-emulation@main
         with:
+          command: yaml-sub
           substitutions: >-
             [
               ["otie", "source-location", "${{ github.sha }}"]
