@@ -2,6 +2,7 @@
 
 #include "can/core/ids.hpp"
 #include "gantry/core/axis_type.h"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tmc2130_config.hpp"
 
 namespace utils {
@@ -15,4 +16,9 @@ auto driver_config_by_axis(enum GantryAxisType which)
 
 auto driver_config() -> tmc2130::TMC2130DriverConfig;
 
+auto linear_motion_sys_config_by_axis(enum GantryAxisType which)
+    -> lms::LinearMotionSystemConfig<lms::BeltConfig>;
+
+auto linear_motion_system_config()
+    -> lms::LinearMotionSystemConfig<lms::BeltConfig>;
 }  // namespace utils

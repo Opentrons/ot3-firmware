@@ -36,10 +36,9 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 static motor_class::Motor motor{
     spi_comms,
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
-        .mech_config =
-            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+        .mech_config = lms::BeltConfig{.pulley_diameter = 12.7},
         .steps_per_rev = 200,
-        .microstep = 16},
+        .microstep = 32},
     motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,

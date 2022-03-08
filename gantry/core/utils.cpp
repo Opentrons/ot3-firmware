@@ -30,7 +30,7 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
                                            .hstrt = 0x5,
                                            .hend = 0x3,
                                            .tbl = 0x2,
-                                           .mres = 0x4},
+                                           .mres = 0x3},
                               .coolconf = {.sgt = 0x6}},
                 .current_config = {
                     .r_sense = 0.1,
@@ -48,7 +48,7 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
                                            .hstrt = 0x5,
                                            .hend = 0x3,
                                            .tbl = 0x2,
-                                           .mres = 0x4},
+                                           .mres = 0x3},
                               .coolconf = {.sgt = 0x6}},
                 .current_config = {
                     .r_sense = 0.1,
@@ -60,4 +60,28 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
 
 auto utils::driver_config() -> tmc2130::TMC2130DriverConfig {
     return driver_config_by_axis(get_axis_type());
+}
+
+auto utils::linear_motion_sys_config_by_axis(enum GantryAxisType which)
+    -> lms::LinearMotionSystemConfig<lms::BeltConfig> {
+    switch (which) {
+        case GantryAxisType::gantry_x:
+            return lms::LinearMotionSystemConfig<lms::BeltConfig>{
+                .mech_config = lms::BeltConfig{.pulley_diameter = 12.7},
+                .steps_per_rev = 200,
+                .microstep = 32,
+            };
+        case GantryAxisType::gantry_y:
+            return lms::LinearMotionSystemConfig<lms::BeltConfig>{
+                .mech_config = lms::BeltConfig{.pulley_diameter = 12.7254},
+                .steps_per_rev = 200,
+                .microstep = 32,
+            };
+    }
+    std::abort();
+}
+
+auto utils::linear_motion_system_config()
+    -> lms::LinearMotionSystemConfig<lms::BeltConfig> {
+    return linear_motion_sys_config_by_axis(get_axis_type());
 }
