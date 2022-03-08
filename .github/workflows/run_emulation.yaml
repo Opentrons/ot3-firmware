@@ -1,19 +1,54 @@
-on: [pull_request, push]
+on: [ pull_request, push ]
 
 jobs:
   ot3-emulator:
     runs-on: "ubuntu-20.04"
     name: OT-3 Emulator
     steps:
-      - name: Setup SocketCan
-        run: |
-          sudo apt-get update
-          sudo apt-get install linux-modules-extra-$(uname -r)
-          sudo modprobe vcan
-      - name: Checkout firmware repo
-        uses: actions/checkout@v2
-      - name: Run OT-3 Emulator
-        uses: Opentrons/opentrons-emulation@v1.3
+
+      - name: Checkout opentrons-emulation repo
+        uses: actions/checkout@v3
         with:
-          ot3-firmware-commit-id: ${{ github.sha }}
-          modules-commit-id: latest
+          repository: Opentrons/opentrons-emulation
+          ref: main
+
+      - name: Checkout ot3-firmware repo
+        uses: actions/checkout@v3
+        with:
+          path: ot3-firmware
+
+      - name: Substitute current sha into yaml
+        id: sub-step
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          command: yaml-sub
+          substitutions: >-
+            [
+              ["otie", "source-location", "${{ github.sha }}"]
+            ]
+          input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ci/ot3_only.yaml
+          output-file-location: ${{ github.workspace }}/output.yaml
+
+      - name: Build Emulator
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          command: setup
+          input-file: ${{ github.workspace }}/output.yaml
+
+      - name: Run Emulation
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          command: run
+          input-file: ${{ github.workspace }}/output.yaml
+
+      - name: Give it some time to start up
+        run: sleep 10s
+
+      - name: Test Emulation
+        run: "curl --request GET --header 'opentrons-version: *' http://localhost:31950/modules"
+
+      - name: Teardown Emulation
+        uses: Opentrons/opentrons-emulation@main
+        with:
+          input-file: ${{ github.workspace }}/output.yaml
+          command: teardown

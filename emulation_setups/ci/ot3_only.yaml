@@ -1,0 +1,25 @@
+######################
+# System Description #
+######################
+
+# This system builds a single OT3
+
+########################
+# Required Source Code #
+########################
+
+# All source code is pulled from the latest version in Github
+
+system-unique-id: ot3-only
+robot:
+  id: otie
+  hardware: ot3
+  source-type: remote
+  # Need to replace source-location below with latest ot3-firmware-sha using yaml-sub Github Action
+  source-location: latest
+  robot-server-source-type: remote
+  robot-server-source-location: latest
+  can-server-source-type: remote
+  can-server-source-location: latest
+  emulation-level: hardware
+  exposed-port: 31950
