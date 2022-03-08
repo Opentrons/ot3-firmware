@@ -36,8 +36,6 @@ const uint8_t NO_GROUP = 0xff;
 enum class AckMessageId : uint8_t {
     complete_without_condition = 0x1,
     stopped_by_condition = 0x2,
-    timeout = 0x3,
-    position_error = 0x4
 };
 
 struct Ack {
