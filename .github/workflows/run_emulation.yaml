@@ -26,7 +26,7 @@ jobs:
             [
               ["otie", "source-location", "${{ github.sha }}"]
             ]
-          input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ot3_only.yaml
+          input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ci/ot3_only.yaml
           output-file-location: ${{ github.workspace }}/output.yaml
 
       - name: Build Emulator
