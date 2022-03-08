@@ -10,7 +10,7 @@ add_executable(
         test_main.cpp
 )
 
-target_include_directories(gantry PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(gripper PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(gripper
         PROPERTIES
         CXX_STANDARD 20
