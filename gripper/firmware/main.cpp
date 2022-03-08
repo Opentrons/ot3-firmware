@@ -22,8 +22,8 @@ auto main() -> int {
     interfaces::initialize();
 
     gripper_tasks::start_tasks(interfaces::get_can_bus(),
-                               interfaces::get_motor().motion_controller,
-                               interfaces::get_motor().driver);
+                               interfaces::get_z_motor().motion_controller,
+                               interfaces::get_z_motor().driver);
 
     vTaskStartScheduler();
 }

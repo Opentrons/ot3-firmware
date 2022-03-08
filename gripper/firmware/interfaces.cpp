@@ -112,7 +112,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 /**
  * The motor struct.
  */
-static motor_class::Motor motor{
+static motor_class::Motor z_motor{
     spi_comms,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
@@ -160,6 +160,6 @@ auto interfaces::get_motor_hardware_iface()
     return motor_hardware_iface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
-    return motor;
+auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
+    return z_motor;
 }
