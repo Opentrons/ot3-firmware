@@ -140,7 +140,7 @@ extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
 void interfaces::initialize() {
     // Initialize SPI
-    if (initialize_spi(&hspi2) != HAL_OK) {
+    if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
 

@@ -7,7 +7,7 @@
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 
 static auto tasks = gripper_tasks::AllTask{};
-static auto queues = gripper_tasks::QueueClient{utils::get_node_id()};
+static auto queues = gripper_tasks::QueueClient{can_ids::NodeId::gripper};
 
 static auto mc_task_builder =
     motion_controller_task_starter::TaskStarter<lms::BeltConfig, 512,

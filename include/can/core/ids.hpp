@@ -82,13 +82,15 @@ enum class NodeId {
     gantry_x = 0x30,
     gantry_y = 0x40,
     head = 0x50,
-    head_l = 0x51,
     head_r = 0x52,
+    head_l = 0x51,
+    gripper = 0x20,
     pipette_left_bootloader = 0x6f,
     pipette_right_bootloader = 0x7f,
     gantry_x_bootloader = 0x3f,
     gantry_y_bootloader = 0x4f,
     head_bootloader = 0x5f,
+    gripper_bootloader = 0x2f
 };
 
 /** Common error codes. */

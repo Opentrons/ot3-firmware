@@ -17,7 +17,7 @@
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
-    ();
+    utility_gpio_init();
 
     app_update_clear_flags();
 

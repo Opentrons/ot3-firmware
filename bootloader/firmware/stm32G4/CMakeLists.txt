@@ -119,6 +119,15 @@ target_compile_definitions(bootloader-gantry-y PUBLIC node_id_gantry_y)
 
 target_stm32G4(bootloader-gantry-y)
 
+add_executable(bootloader-gripper
+        ${BOOTLOADER_FW_LINTABLE_SRCS}
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+
+target_compile_definitions(bootloader-gripper PUBLIC node_id_gripper)
+
+target_stm32G4(bootloader-gripper)
+
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)
 

@@ -1,5 +1,3 @@
-#include "gripper/core/can_task.hpp"
-
 #include "can/core/can_bus.hpp"
 #include "can/core/can_writer_task.hpp"
 #include "can/core/dispatch.hpp"
@@ -10,14 +8,13 @@
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.hpp"
+#include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
 
 using namespace can_dispatch;
 
 static auto& queue_client = gripper_tasks::get_queues();
-
-static auto my_node_id = utils::get_node_id();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
@@ -74,7 +71,7 @@ auto can_task::start_reader(can_bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask& {
     LOG("Starting the CAN reader task\n");
 
-    canbus.setup_node_id_filter(my_node_id);
+    canbus.setup_node_id_filter(can_ids::NodeId::gripper);
 
     reader_task_control.start(5, "can reader task", &canbus);
 
