@@ -8,6 +8,7 @@ include(AddBuildAndTestTarget)
 add_executable(
         gripper
         test_main.cpp
+        test_linear_motion_config.cpp
 )
 
 target_include_directories(gripper PUBLIC ${CMAKE_SOURCE_DIR}/include)
