@@ -1,7 +1,5 @@
 #include "motor_hardware.h"
 
-#include "gantry/core/axis_type.h"
-
 TIM_HandleTypeDef htim7;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {

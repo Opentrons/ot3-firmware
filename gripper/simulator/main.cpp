@@ -1,14 +1,14 @@
 #include "FreeRTOS.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gripper/core/interfaces.hpp"
+#include "gripper/core/tasks.hpp"
 #include "task.h"
 
 int main() {
     interfaces::initialize();
 
-    gantry_tasks::start_tasks(interfaces::get_can_bus(),
-                              interfaces::get_motor().motion_controller,
-                              interfaces::get_motor().driver);
+    gripper_tasks::start_tasks(interfaces::get_can_bus(),
+                               interfaces::get_motor().motion_controller,
+                               interfaces::get_motor().driver);
 
     vTaskStartScheduler();
 }

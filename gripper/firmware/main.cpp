@@ -1,6 +1,4 @@
 #include <array>
-#include <cstdio>
-#include <cstring>
 
 // clang-format off
 #include "FreeRTOS.h"

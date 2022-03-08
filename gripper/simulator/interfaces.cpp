@@ -1,10 +1,9 @@
-#include "gantry/core/interfaces.hpp"
+#include "gripper/core/interfaces.hpp"
 
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/simulation/spi.hpp"
-#include "gantry/core/tasks.hpp"
-#include "gantry/core/utils.hpp"
+#include "gripper/core/tasks.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
