@@ -114,10 +114,12 @@ class MotorInterruptHandler {
                 return true;
             }
             if (!can_step()) {
-                // Assuming we can rely on duration being unnecessarily large for a home move:
+                // Assuming we can rely on duration being unnecessarily large
+                // for a home move:
                 if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch) {
-                    finish_current_move(AckMessageId::complete_without_condition);
+                    finish_current_move(
+                        AckMessageId::complete_without_condition);
                     return false;
                 }
                 finish_current_move();
