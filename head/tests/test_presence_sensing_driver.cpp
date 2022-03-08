@@ -1,3 +1,5 @@
+#include <tuple>
+
 #include "catch2/catch.hpp"
 #include "common/core/tool_detection.hpp"
 #include "head/core/presence_sensing_driver.hpp"
@@ -18,27 +20,51 @@ SCENARIO("get_tool called on presence sensing driver") {
         */
 
         WHEN("get_tool func is called and raw ADC readings are within bounds") {
-            static auto adc_comms = adc::MockADC(2332, 3548, 666);
+            auto adc_comms = adc::MockADC(1855, 2850, 666);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
-            auto tools = attached_tools::AttachedTools(
-                ps.get_readings(), tool_detection::lookup_table());
-
+            attached_tools::AttachedTools tools;
+            bool updated;
+            std::tie(updated, tools) = ps.update_tools();
             THEN("Tools mapped to voltage reading") {
+                REQUIRE(updated);
                 REQUIRE(tools.gripper == can_ids::ToolType::gripper);
                 REQUIRE(tools.a_motor == can_ids::ToolType::pipette_multi_chan);
                 REQUIRE(tools.z_motor == can_ids::ToolType::pipette_384_chan);
+                AND_WHEN("Tools switch to invalid voltages") {
+                    adc_comms.get_z_channel().mock_set_reading_by_voltage(3300);
+                    std::tie(updated, tools) = ps.update_tools();
+                    THEN("The invalid reading is ignored") {
+                        REQUIRE(!updated);
+                        REQUIRE(tools.z_motor ==
+                                can_ids::ToolType::pipette_384_chan);
+                    }
+                }
             }
         }
         WHEN("get_tool func is called and raw ADC readings are out of bounds") {
-            static auto adc_comms = adc::MockADC(9999, 9999, 9999);
+            auto adc_comms = adc::MockADC(5000, 4000, 3400);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
-            auto tools = attached_tools::AttachedTools(
-                ps.get_readings(), tool_detection::lookup_table());
-
-            THEN("Tools mapped to voltage reading") {
+            attached_tools::AttachedTools tools;
+            bool updated;
+            std::tie(updated, tools) = ps.update_tools();
+            THEN("Tools remain invalid mapped to voltage reading") {
+                REQUIRE(!updated);
                 REQUIRE(tools.gripper == can_ids::ToolType::undefined_tool);
                 REQUIRE(tools.a_motor == can_ids::ToolType::undefined_tool);
                 REQUIRE(tools.z_motor == can_ids::ToolType::undefined_tool);
+                AND_WHEN("tools switch to valid voltages") {
+                    adc_comms.get_a_channel().mock_set_reading_by_voltage(2850);
+                    std::tie(updated, tools) = ps.update_tools();
+                    THEN("the valid tool is read out") {
+                        REQUIRE(updated);
+                        REQUIRE(tools.a_motor ==
+                                can_ids::ToolType::pipette_multi_chan);
+                        REQUIRE(tools.z_motor ==
+                                can_ids::ToolType::undefined_tool);
+                        REQUIRE(tools.gripper ==
+                                can_ids::ToolType::undefined_tool);
+                    }
+                }
             }
         }
         WHEN(
@@ -46,10 +72,12 @@ SCENARIO("get_tool called on presence sensing driver") {
             "attached") {
             static auto adc_comms = adc::MockADC(2, 20, 20);
             auto ps = presence_sensing_driver::PresenceSensingDriver(adc_comms);
-            auto tools = attached_tools::AttachedTools(
-                ps.get_readings(), tool_detection::lookup_table());
+            attached_tools::AttachedTools tools;
+            bool updated;
+            std::tie(updated, tools) = ps.update_tools();
 
             THEN("Tools mapped to voltage reading") {
+                REQUIRE(updated);
                 REQUIRE(tools.gripper == can_ids::ToolType::nothing_attached);
                 REQUIRE(tools.a_motor == can_ids::ToolType::nothing_attached);
                 REQUIRE(tools.z_motor == can_ids::ToolType::nothing_attached);

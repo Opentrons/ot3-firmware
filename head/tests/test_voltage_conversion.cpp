@@ -4,7 +4,10 @@
 
 SCENARIO("Raw ADC readings to voltage conversions") {
     GIVEN("Raw readings and an ADC instance") {
-        static auto adc_comms = adc::MockADC{666, 333, 999};
+        auto adc_comms = adc::MockADC{666, 333, 999};
+        adc_comms.get_z_channel().mock_set_reading(666);
+        adc_comms.get_a_channel().mock_set_reading(333);
+        adc_comms.get_gripper_channel().mock_set_reading(999);
         WHEN("get_readings function is called") {
             auto voltage_readings = adc_comms.get_voltages();
 

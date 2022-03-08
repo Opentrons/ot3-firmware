@@ -16,7 +16,7 @@ auto ADCChannel::get_reading() -> uint16_t {
 ADC::ADC(ADC_HandleTypeDef* ADC_intf_instance1,
          ADC_HandleTypeDef* ADC_intf_instance2)
     : a_channel(ADC_intf_instance2, ADC_CHANNEL_12),
-      z_channel(ADC_intf_instance2, ADC_CHANNEL_12),
+      z_channel(ADC_intf_instance2, ADC_CHANNEL_11),
       gripper_channel(ADC_intf_instance1, ADC_CHANNEL_12) {
     adc_setup(ADC_intf_instance1, ADC_intf_instance2);
 }

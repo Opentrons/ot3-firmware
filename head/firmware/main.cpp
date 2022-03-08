@@ -13,6 +13,7 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
+#include "head/firmware/adc.h"
 #include "motor_hardware.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
@@ -198,7 +199,7 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_right.run_interrupt();
 }
 
-static auto ADC_comms = adc::ADC(&adc1, &adc2);
+static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
 
 static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
 
