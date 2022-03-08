@@ -11,7 +11,9 @@ CANNodeId get_node_id(void) {
     return can_nodeid_gantry_x_bootloader;
 #elif defined node_id_gantry_y
     return can_nodeid_gantry_y_bootloader;
+#elif defined node_id_gripper
+    return can_nodeid_gripper_bootloader;
 #else
-    #error "No node id"
+#error "No node id"
 #endif
 }

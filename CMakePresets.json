@@ -1,75 +1,81 @@
 {
-    "version": 2,
-    "cmakeMinimumRequired": {
-      "major": 3,
-      "minor": 20,
-      "patch": 0
-    },
-    "configurePresets": [
-      {
-        "name": "configuration-ok",
-        "hidden": true,
-        "environment": {
-          "PRESET_IN_USE": "1"
-        }
-      },
-      {
-        "name": "cross",
-        "displayName": "STM32 G4 OT-3 cross-compilation",
-        "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
-        "generator": "Unix Makefiles",
-        "binaryDir": "${sourceDir}/build-cross",
-        "cacheVariables": {
-          "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-          "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
-          "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
-          "ARM_ARCH_TYPE": "cortex-m4"
-        },
-        "inherits": "configuration-ok"
-      },
-      {
-        "name": "cross-pipettes",
-        "displayName": "STM32 L5 OT-3 cross-compilation",
-        "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
-        "generator": "Unix Makefiles",
-        "binaryDir": "${sourceDir}/build-cross-pipettes",
-        "cacheVariables": {
-          "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-          "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
-          "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
-          "ARM_ARCH_TYPE": "cortex-m33"
-        },
-        "inherits": "configuration-ok"
-      },
-      {
-        "name": "host",
-        "displayName": "STM32 OT-3 host compilation for tests",
-        "description": "Build libraries and test executables for OT-3 systems that use STM32",
-        "generator": "Unix Makefiles",
-        "binaryDir": "${sourceDir}/build-host",
-        "cacheVariables": {
-          "CMAKE_FIND_APPBUNDLE": "NEVER",
-          "CMAKE_EXPORT_COMPILE_COMMANDS": true
-        },
-        "inherits": "configuration-ok"
-      },
-      {
-        "name": "host-gcc10",
-        "inherits": ["host", "configuration-ok"],
-        "displayName": "STM32 module host builds forcing g++",
-        "cacheVariables": {
-          "CMAKE_C_COMPILER": "gcc-10",
-          "CMAKE_CXX_COMPILER": "g++-10"
-        }
-      },
-      {
-        "name": "host-gcc10-python",
-        "inherits": ["host-gcc10", "configuration-ok"],
-        "displayName": "STM32 firmware host builds with gcc10 and python"
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "configuration-ok",
+      "hidden": true,
+      "environment": {
+        "PRESET_IN_USE": "1"
       }
-    ],
+    },
+    {
+      "name": "cross",
+      "displayName": "STM32 G4 OT-3 cross-compilation",
+      "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-cross",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_FIND_APPBUNDLE": "NEVER",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
+        "ARM_ARCH_TYPE": "cortex-m4"
+      },
+      "inherits": "configuration-ok"
+    },
+    {
+      "name": "cross-pipettes",
+      "displayName": "STM32 L5 OT-3 cross-compilation",
+      "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-cross-pipettes",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_FIND_APPBUNDLE": "NEVER",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
+        "ARM_ARCH_TYPE": "cortex-m33"
+      },
+      "inherits": "configuration-ok"
+    },
+    {
+      "name": "host",
+      "displayName": "STM32 OT-3 host compilation for tests",
+      "description": "Build libraries and test executables for OT-3 systems that use STM32",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-host",
+      "cacheVariables": {
+        "CMAKE_FIND_APPBUNDLE": "NEVER",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      },
+      "inherits": "configuration-ok"
+    },
+    {
+      "name": "host-gcc10",
+      "inherits": [
+        "host",
+        "configuration-ok"
+      ],
+      "displayName": "STM32 module host builds forcing g++",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc-10",
+        "CMAKE_CXX_COMPILER": "g++-10"
+      }
+    },
+    {
+      "name": "host-gcc10-python",
+      "inherits": [
+        "host-gcc10",
+        "configuration-ok"
+      ],
+      "displayName": "STM32 firmware host builds with gcc10 and python"
+    }
+  ],
   "buildPresets": [
     {
       "name": "pipettes",
@@ -77,7 +83,19 @@
       "description": "Build the pipettes cross binary",
       "configurePreset": "cross-pipettes",
       "jobs": 4,
-      "targets": ["pipettes"]
+      "targets": [
+        "pipettes"
+      ]
+    },
+    {
+      "name": "gripper",
+      "displayName": "gripper binary",
+      "description": "Build the gripper cross binary",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": [
+        "gripper"
+      ]
     },
     {
       "name": "gantry",
@@ -85,7 +103,10 @@
       "description": "build the gantry binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry-x", "gantry-y"]
+      "targets": [
+        "gantry-x",
+        "gantry-y"
+      ]
     },
     {
       "name": "gantry-x",
@@ -93,7 +114,9 @@
       "description": "build the x axis binary target",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry-x"]
+      "targets": [
+        "gantry-x"
+      ]
     },
     {
       "name": "gantry-y",
@@ -101,7 +124,9 @@
       "description": "build the y axis binary target",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["gantry-y"]
+      "targets": [
+        "gantry-y"
+      ]
     },
     {
       "name": "head",
@@ -109,7 +134,9 @@
       "description": "build the head binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["head"]
+      "targets": [
+        "head"
+      ]
     },
     {
       "name": "tests",
@@ -117,7 +144,9 @@
       "description": "build and run all tests",
       "configurePreset": "host",
       "jobs": 4,
-      "targets": ["build-and-test"]
+      "targets": [
+        "build-and-test"
+      ]
     },
     {
       "name": "bootloader",
@@ -125,7 +154,12 @@
       "description": "build the bootloader binary targets",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": ["bootloader-head", "bootloader-gantry-x", "bootloader-gantry-y"]
+      "targets": [
+        "bootloader-head",
+        "bootloader-gantry-x",
+        "bootloader-gantry-y",
+        "bootloader-gripper"
+      ]
     },
     {
       "name": "bootloader-pipettes",
@@ -133,7 +167,9 @@
       "description": "build the pipettes bootloader binary targets",
       "configurePreset": "cross-pipettes",
       "jobs": 4,
-      "targets": ["bootloader-pipettes"]
+      "targets": [
+        "bootloader-pipettes"
+      ]
     },
     {
       "name": "simulators",
@@ -141,7 +177,14 @@
       "description": "build the simulators",
       "configurePreset": "host",
       "jobs": 4,
-      "targets": ["bootloader-simulator","head-simulator", "gantry-x-simulator", "gantry-y-simulator", "pipettes-simulator"]
+      "targets": [
+        "bootloader-simulator",
+        "head-simulator",
+        "gantry-x-simulator",
+        "gantry-y-simulator",
+        "pipettes-simulator",
+        "gripper-simulator"
+      ]
     },
     {
       "name": "simulators-gcc10",
@@ -149,7 +192,14 @@
       "description": "build the simulators using gcc10 (osx)",
       "configurePreset": "host-gcc10",
       "jobs": 4,
-      "targets": ["bootloader-simulator","head-simulator", "gantry-x-simulator", "gantry-y-simulator", "pipettes-simulator"]
+      "targets": [
+        "bootloader-simulator",
+        "head-simulator",
+        "gantry-x-simulator",
+        "gantry-y-simulator",
+        "pipettes-simulator",
+        "gripper-simulator"
+      ]
     }
   ]
 }
