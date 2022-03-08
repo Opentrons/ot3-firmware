@@ -114,9 +114,8 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
  */
 static motor_class::Motor motor{
     spi_comms,
-    lms::LinearMotionSystemConfig<lms::BeltConfig>{
-        .mech_config =
-            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 20},
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
         .microstep = 16},
     motor_hardware_iface,
