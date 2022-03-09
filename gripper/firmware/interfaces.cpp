@@ -160,6 +160,6 @@ auto interfaces::get_motor_hardware_iface()
     return motor_hardware_iface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
+auto interfaces::get_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return motor;
 }

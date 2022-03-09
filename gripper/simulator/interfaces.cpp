@@ -30,21 +30,45 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
 /**
+ * Motor driver configuration.
+ */
+static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
+    .registers =
+        {
+            .gconfig = {.en_pwm_mode = 1},
+            .ihold_irun = {.hold_current = 0x2,
+                .run_current = 0x19,
+                .hold_current_delay = 0x7},
+            .tpowerdown = {},
+            .tcoolthrs = {.threshold = 0},
+            .thigh = {.threshold = 0xFFFFF},
+            .chopconf = {.toff = 0x5,
+                .hstrt = 0x5,
+                .hend = 0x3,
+                .tbl = 0x2,
+                .mres = 0x4},
+            .coolconf = {.sgt = 0x6},
+        },
+    .current_config = {
+        .r_sense = 0.1,
+        .v_sf = 0.325,
+    }};
+
+/**
  * The motor struct.
  */
 static motor_class::Motor motor{
     spi_comms,
-    lms::LinearMotionSystemConfig<lms::BeltConfig>{
-        .mech_config =
-            lms::BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 10},
+    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
         .microstep = 16},
     motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
-                                      .max_velocity = 2,
-                                      .min_acceleration = 1,
-                                      .max_acceleration = 2},
-    utils::driver_config(),
+        .max_velocity = 2,
+        .min_acceleration = 1,
+        .max_acceleration = 2},
+    MotorDriverConfigurations,
     motor_queue};
 
 /**
@@ -67,6 +91,6 @@ auto interfaces::get_motor_hardware_iface()
     return motor_interface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
+auto interfaces::get_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return motor;
 }

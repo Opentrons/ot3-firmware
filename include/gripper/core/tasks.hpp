@@ -15,7 +15,7 @@ namespace gripper_tasks {
  */
 void start_tasks(
     can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::BeltConfig>& motion_controller,
+    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
     motor_driver::MotorDriver& motor_driver);
 
 /**
@@ -55,7 +55,7 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
         motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, lms::BeltConfig,
+        freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
         QueueClient>* motion_controller{nullptr};
     move_status_reporter_task::MoveStatusReporterTask<
         freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*

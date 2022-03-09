@@ -10,7 +10,7 @@ static auto tasks = gripper_tasks::AllTask{};
 static auto queues = gripper_tasks::QueueClient{can_ids::NodeId::gripper};
 
 static auto mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::BeltConfig, 512,
+    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
                                                 gripper_tasks::QueueClient>{};
 static auto motor_driver_task_builder =
     motor_driver_task_starter::TaskStarter<512, gripper_tasks::QueueClient>{};
@@ -26,7 +26,7 @@ static auto move_status_task_builder =
  */
 void gripper_tasks::start_tasks(
     can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::BeltConfig>& motion_controller,
+    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
     motor_driver::MotorDriver& motor_driver) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
