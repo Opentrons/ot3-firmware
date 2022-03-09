@@ -26,7 +26,8 @@ static auto move_status_task_builder =
  */
 void gripper_tasks::start_tasks(
     can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
+    motion_controller::MotionController<lms::LeadScrewConfig>&
+        motion_controller,
     motor_driver::MotorDriver& motor_driver) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);

@@ -13,10 +13,10 @@ namespace gripper_tasks {
 /**
  * Start gripper tasks.
  */
-void start_tasks(
-    can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
-    motor_driver::MotorDriver& motor_driver);
+void start_tasks(can_bus::CanBus& can_bus,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     motion_controller,
+                 motor_driver::MotorDriver& motor_driver);
 
 /**
  * Access to all the message queues in the system.
