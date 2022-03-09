@@ -35,6 +35,6 @@ auto get_motor_hardware_iface() -> motor_hardware::MotorHardwareIface &;
  *
  * @return The motor.
  */
-auto get_motor() -> motor_class::Motor<lms::BeltConfig> &;
+auto get_motor() -> motor_class::Motor<lms::LeadScrewConfig> &;
 
 }  // namespace interfaces
