@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include "FreeRTOS.h"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"

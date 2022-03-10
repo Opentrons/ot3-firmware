@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include "FreeRTOS.h"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"

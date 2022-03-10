@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.hpp"

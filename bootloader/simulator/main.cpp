@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include <cstring>
 
 #include "FreeRTOS.h"

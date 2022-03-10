@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include <cstdlib>
 #include <cstring>
 
