@@ -25,7 +25,7 @@ class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     MotorHardwareIface& hardware_iface,
+                     StepperMotorHardwareIface& hardware_iface,
                      MotionConstraints constraints, GenericQueue& queue)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
@@ -94,7 +94,7 @@ class MotionController {
 
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
-    MotorHardwareIface& hardware;
+    StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};

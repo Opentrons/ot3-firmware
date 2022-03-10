@@ -47,9 +47,9 @@ class MotorInterruptHandler {
     using GenericQueue = QueueImpl<Move>;
 
     MotorInterruptHandler() = delete;
-    MotorInterruptHandler(GenericQueue& incoming_queue,
-                          StatusClient& outgoing_queue,
-                          motor_hardware::MotorHardwareIface& hardware_iface)
+    MotorInterruptHandler(
+        GenericQueue& incoming_queue, StatusClient& outgoing_queue,
+        motor_hardware::StepperMotorHardwareIface& hardware_iface)
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface) {}
@@ -248,7 +248,7 @@ class MotorInterruptHandler {
     q31_31 position_tracker = 0x0;  // in steps
     GenericQueue& queue;
     StatusClient& status_queue_client;
-    motor_hardware::MotorHardwareIface& hardware;
+    motor_hardware::StepperMotorHardwareIface& hardware;
     Move buffered_move = Move{};
 };
 }  // namespace motor_handler

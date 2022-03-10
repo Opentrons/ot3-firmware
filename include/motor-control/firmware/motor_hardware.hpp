@@ -6,12 +6,6 @@
 
 namespace motor_hardware {
 
-struct PinConfig {
-    void* port;
-    uint16_t pin;
-    uint8_t active_setting;
-};
-
 struct HardwareConfig {
     PinConfig direction;
     PinConfig step;
@@ -20,7 +14,7 @@ struct HardwareConfig {
     PinConfig led;
 };
 
-class MotorHardware : public MotorHardwareIface {
+class MotorHardware : public StepperMotorHardwareIface {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;

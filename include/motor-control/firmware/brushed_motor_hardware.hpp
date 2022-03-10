@@ -2,15 +2,13 @@
 
 #include <cstdint>
 
-#include "motor-control/core/brushed_motor_hardware_interface.hpp"
+#include "motor-control/core/motor_hardware_interface.hpp"
 
-namespace brushed_motor_hardware {
+namespace motor_hardware {
 
-struct PinConfig {
-    void* port;
-    uint16_t pin;
-    uint8_t active_setting;
-};
+constexpr float VOLTAGE_REFERENCE = 3.3;
+constexpr int DAC_DATA_LENGTH = 12;
+constexpr int DAC_DATA_MULTIPLIER = (2 ^ DAC_DATA_LENGTH) - 1;
 
 struct DacConfig {
     void* dac_handle;
@@ -25,11 +23,7 @@ struct BrushedHardwareConfig {
     PinConfig limit_switch;
 };
 
-constexpr float VOLTAGE_REFERENCE = 3.3;
-constexpr int DAC_DATA_LENGTH = 12;
-constexpr int DAC_DATA_MULTIPLIER = (2 ^ DAC_DATA_LENGTH) - 1;
-
-class BrushedMotorHardware : public MotorHardwareIface {
+class BrushedMotorHardware : public BrushedMotorHardwareIface {
   public:
     ~BrushedMotorHardware() final = default;
     BrushedMotorHardware() = delete;
@@ -41,6 +35,8 @@ class BrushedMotorHardware : public MotorHardwareIface {
         -> BrushedMotorHardware& = default;
     BrushedMotorHardware(BrushedMotorHardware&&) = default;
     auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = default;
+    void positive_direction() final;
+    void negative_direction() final;
     void activate_motor() final;
     void deactivate_motor() final;
     auto check_limit_switch() -> bool final;
@@ -53,4 +49,4 @@ class BrushedMotorHardware : public MotorHardwareIface {
     DacConfig dac;
 };
 
-};  // namespace brushed_motor_hardware
+};  // namespace motor_hardware
