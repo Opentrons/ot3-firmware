@@ -96,7 +96,14 @@ static auto node_from_env(const char* env) -> can_ids::NodeId {
     }
 }
 
+void signal_handler(int signum) {
+    LOG("Interrupt signal (%d) received.\n", signum);
+    exit(signum);
+}
+
 int main() {
+    signal(SIGINT, signal_handler);
+
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c_comms,
                                 node_from_env(std::getenv("MOUNT")));

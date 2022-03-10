@@ -1,5 +1,6 @@
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
+#include "common/core/logging.hpp"
 #include "common/simulation/spi.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
@@ -103,7 +104,14 @@ static auto adc_comms = adc::SimADC{};
 static auto presence_sense_driver =
     presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
+void signal_handler(int signum) {
+    LOG("Interrupt signal (%d) received.\n", signum);
+    exit(signum);
+}
+
 int main() {
+    signal(SIGINT, signal_handler);
+
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
                             motor_right.driver, presence_sense_driver);

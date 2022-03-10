@@ -57,7 +57,14 @@ void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
     }
 }
 
+void signal_handler(int signum) {
+    LOG("Interrupt signal (%d) received.\n", signum);
+    exit(signum);
+}
+
 int main() {
+    signal(SIGINT, signal_handler);
+
     canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);
 

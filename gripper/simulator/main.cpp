@@ -3,7 +3,14 @@
 #include "gripper/core/tasks.hpp"
 #include "task.h"
 
+void signal_handler(int signum) {
+    LOG("Interrupt signal (%d) received.\n", signum);
+    exit(signum);
+}
+
 int main() {
+    signal(SIGINT, signal_handler);
+
     interfaces::initialize();
 
     gripper_tasks::start_tasks(interfaces::get_can_bus(),
