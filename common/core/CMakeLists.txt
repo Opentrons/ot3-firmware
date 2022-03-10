@@ -10,7 +10,7 @@ target_link_libraries(common-core PUBLIC can-core)
 
 set_target_properties(common-core
         PROPERTIES CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE)
+                   CXX_STANDARD_REQUIRED TRUE)
 
 target_compile_options(common-core
         PRIVATE

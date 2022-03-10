@@ -1,5 +1,7 @@
 #include "head/core/can_task.hpp"
 
+#include <span>
+
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
@@ -11,6 +13,7 @@
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
+#include "common/core/version.h"
 #include "head/core/tasks.hpp"
 
 static auto& right_queues = head_tasks::get_right_queues();
@@ -65,8 +68,9 @@ static auto can_move_group_handler_left =
     move_group_handler::MoveGroupHandler(left_queues);
 
 /** Handler of system messages. */
-static auto system_message_handler =
-    system_handler::SystemMessageHandler(common_queues, 0);
+static auto system_message_handler = system_handler::SystemMessageHandler(
+    common_queues, version_get()->version,
+    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha)));
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 

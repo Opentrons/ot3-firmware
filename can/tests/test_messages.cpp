@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
@@ -66,18 +68,49 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a device info response message") {
-        auto message = DeviceInfoResponse{.version = 0x00220033};
-        auto arr = std::array<uint8_t, 4>{0, 0, 0, 0};
+        auto message =
+            DeviceInfoResponse{.version = 0x00220033, .shortsha = "abcdef0"};
+        auto arr =
+            std::array<uint8_t, 13>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};
-        WHEN("serialized") {
-            auto size = message.serialize(arr.begin(), arr.end());
-            THEN("it is written into the buffer correctly") {
+        WHEN("serialized into a buffer too small for its values") {
+            auto size = message.serialize(arr.begin(), arr.begin() + 6);
+            THEN("it is written into the buffer to its end") {
                 REQUIRE(body.data()[0] == 0x00);
                 REQUIRE(body.data()[1] == 0x22);
                 REQUIRE(body.data()[2] == 0x00);
                 REQUIRE(body.data()[3] == 0x33);
+                REQUIRE(body.data()[4] == 'a');
+                REQUIRE(body.data()[5] == 'b');
             }
-            THEN("size must be returned") { REQUIRE(size == 4); }
+            THEN("it does not write past the end of the buffer") {
+                for (uint32_t i = 6; i < arr.size(); i++) {
+                    REQUIRE(body.data()[i] == 0);
+                }
+            }
+            THEN("size must be returned") { REQUIRE(size == 6); }
+        }
+        WHEN("serialized into a buffer larger than needed") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is fully written into the buffer") {
+                REQUIRE(body.data()[0] == 0x00);
+                REQUIRE(body.data()[1] == 0x22);
+                REQUIRE(body.data()[2] == 0x00);
+                REQUIRE(body.data()[3] == 0x33);
+                REQUIRE(body.data()[4] == 'a');
+                REQUIRE(body.data()[5] == 'b');
+
+                REQUIRE(body.data()[6] == 'c');
+                REQUIRE(body.data()[7] == 'd');
+                REQUIRE(body.data()[8] == 'e');
+                REQUIRE(body.data()[9] == 'f');
+                REQUIRE(body.data()[10] == '0');
+                REQUIRE(body.data()[11] == '\0');
+            }
+            THEN("it does not write past the end of the buffer") {
+                REQUIRE(body.data()[12] == 0);
+            }
+            THEN("size must be returned") { REQUIRE(size == 12); }
         }
     }
 }

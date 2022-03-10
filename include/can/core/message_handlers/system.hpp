@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -24,8 +26,13 @@ class SystemMessageHandler {
      * @param writer A message writer for sending the response
      * @param version The firmware version on this device
      */
-    SystemMessageHandler(CanClient &writer, uint32_t version)
-        : writer(writer), response{.version = version} {}
+    SystemMessageHandler(CanClient &writer, uint32_t version,
+                         std::span<const char> version_sha)
+        : writer(writer), response{.version = version} {
+        std::copy_n(version_sha.begin(),
+                    std::min(version_sha.size(), response.shortsha.size()),
+                    response.shortsha.begin());
+    }
     SystemMessageHandler(const SystemMessageHandler &) = delete;
     SystemMessageHandler(const SystemMessageHandler &&) = delete;
     auto operator=(const SystemMessageHandler &)
