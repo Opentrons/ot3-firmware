@@ -222,9 +222,3 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef* hdac) {
 }
 
 void initialize_dac() { MX_DAC1_Init(); }
-
-HAL_StatusTypeDef start_dac() { return HAL_DAC_Start(&hdac1, DAC_CHANNEL_1); }
-
-HAL_StatusTypeDef set_dac_value(uint32_t val) {
-    return HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, val);
-}

@@ -25,3 +25,9 @@ bool BrushedMotorHardware::check_limit_switch() {
                                         pins.limit_switch.pin,
                                         pins.limit_switch.active_setting);
 }
+bool BrushedMotorHardware::start_digital_analog_converter() {
+    return motor_hardware_start_dac(dac.dac_handle, dac.channel);
+}
+bool BrushedMotorHardware::stop_digital_analog_converter() {
+    return motor_hardware_stop_dac(dac.dac_handle, dac.channel);
+}

@@ -12,6 +12,12 @@ struct PinConfig {
     uint8_t active_setting;
 };
 
+struct DacConfig {
+    void* dac_handle;
+    uint32_t channel;
+    uint32_t data_algn;
+};
+
 struct HardwareConfig {
     PinConfig pwm_1;
     PinConfig pwm_2;
@@ -23,8 +29,8 @@ class BrushedMotorHardware : public MotorHardwareIface {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;
-    MotorHardware(const HardwareConfig& config, void* dac_handle)
-        : pins(config), dac_handle(dac_handle) {}
+    MotorHardware(const HardwareConfig& config, const DacConfig& dac_config)
+        : pins(config), dac(dac_config) {}
     MotorHardware(const MotorHardware&) = default;
     auto operator=(const MotorHardware&) -> MotorHardware& = default;
     MotorHardware(MotorHardware&&) = default;
@@ -33,14 +39,14 @@ class BrushedMotorHardware : public MotorHardwareIface {
     void negative_direction() final;
     void activate_motor() final;
     void deactivate_motor() final;
-    void set_vref() final;
-    void stop_dac_interrupt() final;
     auto check_limit_switch() -> bool final;
-    void set_LED(bool status) final;
+    auto start_digital_analog_converter() -> bool final;
+    auto stop_digital_analog_converter() -> bool final;
+    void set_vref() final;
 
   private:
     HardwareConfig pins;
-    void* dac_handle;
+    void* dac;
 };
 
 };  // namespace brushed_motor_hardware

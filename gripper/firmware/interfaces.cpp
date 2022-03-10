@@ -152,10 +152,17 @@ struct brushed_motor_hardware::HardwareConfig brushed_motor_pins {
 };
 
 /**
+ * Brushed motor dac configuration.
+ */
+struct brushed_motor_hardware::DacConfig dac_config {
+    .dac_handle = &hdac1, .channel = DAC_CHANNEL_1,
+    .data_algn = DAC_ALIGN_12B_R,
+};
+/**
  * The brushed motor hardware interface.
  */
 static brushed_motor_hardware::BrushedMotorHardware
-    brushed_motor_hardware_iface(brushed_motor_pins);
+    brushed_motor_hardware_iface(brushed_motor_pins, dac_config);
 
 void interfaces::initialize() {
     // Initialize SPI
