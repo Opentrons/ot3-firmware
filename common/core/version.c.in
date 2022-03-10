@@ -1,0 +1,10 @@
+#include "common/core/version.h"
+
+const static struct version _version = {
+    .version = ${GIT_VERSION},
+    .sha = "${GIT_SHORTSHA}"
+};
+
+const struct version* version_get() {
+    return &_version;
+}
