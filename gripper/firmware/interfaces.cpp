@@ -9,6 +9,7 @@
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -137,6 +138,25 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
+/**
+ * Brushed motor pin configuration.
+ */
+struct brushed_motor_hardware::HardwareConfig brushed_motor_pins {
+    .pwm_1 = {.port = GPIOC, .pin = GPIO_PIN_0, .active_setting = GPIO_PIN_SET},
+    .pwm_2 = {.port = GPIOA, .pin = GPIO_PIN_6, .active_setting = GPIO_PIN_SET},
+    .enable = {.port = GPIOC,
+               .pin = GPIO_PIN_11,
+               .active_setting = GPIO_PIN_SET},
+    .limit_switch = {
+        .port = GPIOC, .pin = GPIO_PIN_2, .active_setting = GPIO_PIN_set},
+};
+
+/**
+ * The brushed motor hardware interface.
+ */
+static brushed_motor_hardware::BrushedMotorHardware
+    brushed_motor_hardware_iface(brushed_motor_pins);
+
 void interfaces::initialize() {
     // Initialize SPI
     if (initialize_spi() != HAL_OK) {
@@ -168,4 +188,9 @@ auto interfaces::get_motor_hardware_iface()
 
 auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return z_motor;
+}
+
+auto interfaces::get_gripper_motor_hardware_iface()
+    -> motor_hardware::MotorHardwareIface& {
+    return brushed_motor_hardware_iface;
 }
