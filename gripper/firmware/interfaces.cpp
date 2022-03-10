@@ -145,6 +145,12 @@ void interfaces::initialize() {
 
     initialize_timer(call_motor_handler);
 
+    // Initialize DAC
+    initialize_dac();
+    if (start_dac() != HAL_OK) {
+        Error_Handler();
+    }
+
     // Start the can bus
     can_start();
 

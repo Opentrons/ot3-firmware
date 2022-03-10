@@ -1,6 +1,7 @@
 #include "motor_hardware.h"
 
 TIM_HandleTypeDef htim7;
+DAC_HandleTypeDef hdac1;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -92,8 +93,6 @@ HAL_StatusTypeDef initialize_spi() {
     return HAL_SPI_Init(&hspi2);
 }
 
-TIM_HandleTypeDef htim7;
-
 static motor_interrupt_callback timer_callback = NULL;
 
 /**
@@ -158,4 +157,74 @@ void initialize_timer(motor_interrupt_callback callback) {
     timer_callback = callback;
     MX_GPIO_Init();
     MX_TIM7_Init();
+}
+
+/**
+ * @brief DAC1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_DAC1_Init(void) {
+    DAC_ChannelConfTypeDef sConfig = {0};
+    hdac1.Instance = DAC1;
+    if (HAL_DAC_Init(&hdac1) != HAL_OK) {
+        Error_Handler();
+    }
+    //    sConfig.DAC_HighFrequency =
+    //    DAC_HIGH_FREQUENCY_INTERFACE_MODE_AUTOMATIC;
+    //    sConfig.DAC_DMADoubleDataMode = DISABLE;
+    //    sConfig.DAC_SignedFormat = DISABLE;
+    //    sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
+    //    sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+    //    sConfig.DAC_Trigger2 = DAC_TRIGGER_NONE;
+    //    sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+    //    sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_INTERNAL;
+    //    sConfig.DAC_UserTrimming = DAC_TRIMMING_FACTORY;
+    //    if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+    //    {
+    //        Error_Handler();
+    //    }
+}
+
+/**
+ * @brief DAC MSP Initialization
+ * This function configures the hardware resources used in this example
+ * @param hdac: DAC handle pointer
+ * @retval None
+ */
+void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac) {
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if (hdac->Instance == DAC1) {
+        /* Peripheral clock enable */
+        __HAL_RCC_DAC1_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /**DAC1 GPIO Configuration
+        PA4     ------> DAC1_OUT1
+        */
+        GPIO_InitStruct.Pin = GPIO_PIN_4;
+        GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+}
+
+/**
+ * @brief DAC MSP De-Initialization
+ * This function freeze the hardware resources used in this example
+ * @param hdac: DAC handle pointer
+ * @retval None
+ */
+void HAL_DAC_MspDeInit(DAC_HandleTypeDef* hdac) {
+    if (hdac->Instance == DAC1) {
+        __HAL_RCC_DAC1_CLK_DISABLE();
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
+    }
+}
+
+void initialize_dac() { MX_DAC1_Init(); }
+
+HAL_StatusTypeDef start_dac() { return HAL_DAC_Start(&hdac1, DAC_CHANNEL_1); }
+
+HAL_StatusTypeDef set_dac_value(uint32_t val) {
+    return HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, val);
 }

@@ -20,6 +20,7 @@ class MotorHardwareIface {
     virtual void stop_timer_interrupt() = 0;
     virtual auto check_limit_switch() -> bool = 0;
     virtual void set_LED(bool status) = 0;
+    virtual void set_vref() = 0;
 };
 
 };  // namespace motor_hardware
