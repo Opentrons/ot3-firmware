@@ -22,7 +22,7 @@ class MotorHardwareIface {
     virtual void set_LED(bool status) = 0;
     virtual auto start_digital_analog_converter() -> bool = 0;
     virtual auto stop_digital_analog_converter() -> bool = 0;
-    virtual void set_vref() = 0;
+    virtual auto set_reference_voltage(float val) -> bool = 0;
 };
 
 };  // namespace motor_hardware

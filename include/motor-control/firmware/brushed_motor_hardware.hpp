@@ -25,6 +25,10 @@ struct HardwareConfig {
     PinConfig limit_switch;
 };
 
+constexpr float VOLTAGE_REFERENCE = 3.3;
+constexpr int DAC_DATA_LENGTH = 12;
+constexpr int DAC_DATA_MULTIPLIER = 2 ^ DAC_DATA_LENGTH - 1;
+
 class BrushedMotorHardware : public MotorHardwareIface {
   public:
     ~MotorHardware() final = default;
@@ -42,7 +46,7 @@ class BrushedMotorHardware : public MotorHardwareIface {
     auto check_limit_switch() -> bool final;
     auto start_digital_analog_converter() -> bool final;
     auto stop_digital_analog_converter() -> bool final;
-    void set_vref() final;
+    auto set_reference_voltage(float val) -> bool final;
 
   private:
     HardwareConfig pins;
