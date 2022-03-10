@@ -47,6 +47,10 @@ bool motor_hardware_start_dac(void* hdac, uint32_t channel) {
     return HAL_DAC_Start(hdac, channel) == HAL_OK;
 }
 
+bool motor_hardware_stop_dac(void* hdac, uint32_t channel) {
+    return HAL_DAC_Stop(hdac, channel) == HAL_OK;
+}
+
 bool motor_hardware_set_dac_value(void* hdac, uint32_t channel,
                                   uint32_t data_algn, uint32_t val) {
     return HAL_DAC_SetValue(hdac, channel, data_algn, val) == HAL_OK;

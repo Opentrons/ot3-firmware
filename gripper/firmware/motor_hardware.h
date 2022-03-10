@@ -12,8 +12,6 @@ extern "C" {
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim7;
 extern DAC_HandleTypeDef hdac1;
-extern uint32_t DAC_CHANNEL_1;
-extern uint32_t DAC_ALIGN_12B_R;
 
 typedef void (*motor_interrupt_callback)();
 

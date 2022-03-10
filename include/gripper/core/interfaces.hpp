@@ -4,6 +4,7 @@
 #include "common/core/spi.hpp"
 #include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/firmware/brushed_motor_hardware.hpp"
 
 namespace interfaces {
 
@@ -35,6 +36,6 @@ auto get_motor_hardware_iface() -> motor_hardware::MotorHardwareIface &;
  *
  * @return The motor.
  */
-auto get_motor() -> motor_class::Motor<lms::BeltConfig> &;
+auto get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig> &;
 
 }  // namespace interfaces

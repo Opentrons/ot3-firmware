@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/brushed_motor_hardware_interface.hpp"
 
 namespace brushed_motor_hardware {
 
@@ -18,7 +18,7 @@ struct DacConfig {
     uint32_t data_algn;
 };
 
-struct HardwareConfig {
+struct BrushedHardwareConfig {
     PinConfig pwm_1;
     PinConfig pwm_2;
     PinConfig enable;
@@ -27,30 +27,30 @@ struct HardwareConfig {
 
 constexpr float VOLTAGE_REFERENCE = 3.3;
 constexpr int DAC_DATA_LENGTH = 12;
-constexpr int DAC_DATA_MULTIPLIER = 2 ^ DAC_DATA_LENGTH - 1;
+constexpr int DAC_DATA_MULTIPLIER = (2 ^ DAC_DATA_LENGTH) - 1;
 
 class BrushedMotorHardware : public MotorHardwareIface {
   public:
-    ~MotorHardware() final = default;
-    MotorHardware() = delete;
-    MotorHardware(const HardwareConfig& config, const DacConfig& dac_config)
+    ~BrushedMotorHardware() final = default;
+    BrushedMotorHardware() = delete;
+    BrushedMotorHardware(const BrushedHardwareConfig& config,
+                         const DacConfig& dac_config)
         : pins(config), dac(dac_config) {}
-    MotorHardware(const MotorHardware&) = default;
-    auto operator=(const MotorHardware&) -> MotorHardware& = default;
-    MotorHardware(MotorHardware&&) = default;
-    auto operator=(MotorHardware&&) -> MotorHardware& = default;
-    void positive_direction() final;
-    void negative_direction() final;
+    BrushedMotorHardware(const BrushedMotorHardware&) = default;
+    auto operator=(const BrushedMotorHardware&)
+        -> BrushedMotorHardware& = default;
+    BrushedMotorHardware(BrushedMotorHardware&&) = default;
+    auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = default;
     void activate_motor() final;
     void deactivate_motor() final;
     auto check_limit_switch() -> bool final;
-    auto start_digital_analog_converter() -> bool final;
-    auto stop_digital_analog_converter() -> bool final;
-    auto set_reference_voltage(float val) -> bool final;
+    auto start_digital_analog_converter() -> bool;
+    auto stop_digital_analog_converter() -> bool;
+    auto set_reference_voltage(float val) -> bool;
 
   private:
-    HardwareConfig pins;
-    void* dac;
+    BrushedHardwareConfig pins;
+    DacConfig dac;
 };
 
 };  // namespace brushed_motor_hardware

@@ -165,11 +165,11 @@ void initialize_timer(motor_interrupt_callback callback) {
  * @retval None
  */
 static void MX_DAC1_Init(void) {
-    DAC_ChannelConfTypeDef sConfig = {0};
     hdac1.Instance = DAC1;
     if (HAL_DAC_Init(&hdac1) != HAL_OK) {
         Error_Handler();
     }
+    //    DAC_ChannelConfTypeDef sConfig = {0};
     //    sConfig.DAC_HighFrequency =
     //    DAC_HIGH_FREQUENCY_INTERFACE_MODE_AUTOMATIC;
     //    sConfig.DAC_DMADoubleDataMode = DISABLE;

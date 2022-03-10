@@ -4,14 +4,6 @@
 
 using namespace brushed_motor_hardware;
 
-void BrushedMotorHardware::positive_direction() {
-    motor_hardware_set_pin(pins.direction.port, pins.direction.pin,
-                           pins.direction.active_setting);
-}
-void BrushedMotorHardware::negative_direction() {
-    motor_hardware_reset_pin(pins.direction.port, pins.direction.pin,
-                             pins.direction.active_setting);
-}
 void BrushedMotorHardware::activate_motor() {
     motor_hardware_set_pin(pins.enable.port, pins.enable.pin,
                            pins.enable.active_setting);
