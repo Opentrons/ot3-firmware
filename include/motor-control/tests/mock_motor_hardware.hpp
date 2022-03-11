@@ -4,7 +4,7 @@
 
 namespace test_mocks {
 
-class MockMotorHardware : public motor_hardware::MotorHardwareIface {
+class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
   public:
     ~MockMotorHardware() final = default;
     MockMotorHardware() = default;

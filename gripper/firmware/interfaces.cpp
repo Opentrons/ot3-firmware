@@ -143,13 +143,30 @@ extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
  * Brushed motor pin configuration.
  */
 struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
-    .pwm_1 = {.port = GPIOC, .pin = GPIO_PIN_0, .active_setting = GPIO_PIN_SET},
-    .pwm_2 = {.port = GPIOA, .pin = GPIO_PIN_6, .active_setting = GPIO_PIN_SET},
-    .enable = {.port = GPIOC,
-               .pin = GPIO_PIN_11,
-               .active_setting = GPIO_PIN_SET},
-    .limit_switch = {
-        .port = GPIOC, .pin = GPIO_PIN_2, .active_setting = GPIO_PIN_SET},
+    .pwm_1 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_0,
+            .active_setting = GPIO_PIN_SET},
+    .pwm_2 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_6,
+            .active_setting = GPIO_PIN_SET},
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_11,
+            .active_setting = GPIO_PIN_SET},
+    .limit_switch =
+        {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_2,
+        .active_setting = GPIO_PIN_SET},
 };
 
 /**

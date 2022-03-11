@@ -26,10 +26,10 @@ concept MotorMechanicalConfig = requires {
 
 template <MotorMechanicalConfig MEConfig>
 struct LinearMotionSystemConfig {
-    MEConfig mech_config;
-    float steps_per_rev;
-    float microstep;
-    float gear_ratio = 1.0;
+    MEConfig mech_config{};
+    float steps_per_rev{};
+    float microstep{};
+    float gear_ratio{1.0};
     [[nodiscard]] constexpr auto get_steps_per_mm() const -> float {
         return (steps_per_rev * microstep * gear_ratio) /
                (mech_config.get_mm_per_rev());
