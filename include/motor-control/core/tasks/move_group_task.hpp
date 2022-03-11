@@ -53,7 +53,7 @@ class MoveGroupMessageHandler {
     void handle(std::monostate m) { static_cast<void>(m); }
 
     void handle(const can_messages::AddLinearMoveRequest& m) {
-        LOG("Received add liner move request: groupid=%d, seqid=%d\n",
+        LOG("Received add linear move request: groupid=%d, seqid=%d\n",
             m.group_id, m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
