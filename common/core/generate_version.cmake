@@ -19,9 +19,14 @@ if ((NOT DEFINED GIT_VERSION_RAW) OR (GIT_VERSION_RAW STREQUAL ""))
   execute_process(
   COMMAND git rev-parse --short HEAD
   OUTPUT_VARIABLE GIT_SHORTSHA_RAW
-  COMMAND_ERROR_IS_FATAL ANY
+  ERROR_QUIET
   )
-  string(STRIP ${GIT_SHORTSHA_RAW} GIT_SHORTSHA)
+  # we may not be in a git environment
+  if (NOT GIT_SHORTSHA_RAW)
+    set(GIT_SHORTSHA "no-hash")
+  else()
+    string(STRIP ${GIT_SHORTSHA_RAW} GIT_SHORTSHA)
+  endif()
 
   set(GIT_VERSION "0")
   set(BUILD_IS_EXACT_COMMIT "0")
