@@ -66,7 +66,8 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
                                              uint32_t buff_len) -> bool {
     LOG("Sending: arbitration %X dlc %d\n", arb_id, buff_len);
 
-    auto sigblock = boost::asio::detail::posix_signal_blocker{};
+    // Critical section block
+    auto lock = synchronization::Lock(critical_section);
 
     auto out_arb_id = htonl(arb_id);
     auto out_buff_len = htonl(buff_len);
@@ -75,7 +76,6 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
     if (buff_len > 0) {
         socket.send(boost::asio::const_buffer(buff, buff_len));
     }
-
     return true;
 }
 
@@ -92,7 +92,9 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
         nanosleep(&tspec, nullptr);
     }
 
-    auto sigblock = boost::asio::detail::posix_signal_blocker{};
+    // Critical section block
+    auto lock = synchronization::Lock(critical_section);
+
     if (boost::asio::read(socket,
                           boost::asio::buffer(&arb_id, sizeof(arb_id))) <
         sizeof(arb_id))
