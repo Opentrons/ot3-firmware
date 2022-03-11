@@ -14,8 +14,20 @@ extern "C" {
 // The size of a git-describe short sha with a nul terminator to avoid
 // fooling anybody
 #define VERSION_SHORTSHA_SIZE 8
+
+// Flags that can apply to a build:
+enum version_flags {
+   // Build was from a fully committed working tree (e.g. git describe does
+   // not say -dirty)
+   VERSION_BUILD_IS_EXACT_COMMIT=0x1,
+   // Build was from a commit that is pointed directly to by a version tag
+   VERSION_BUILD_IS_EXACT_VERSION=0x2,
+   // Build was from automated builds and likely distributed, not a dev
+   VERSION_BUILD_IS_FROM_CI=0x4
+};
 struct version {
     uint32_t version;
+    uint32_t flags;
     char sha[VERSION_SHORTSHA_SIZE];
 };
 
