@@ -69,7 +69,7 @@ SCENARIO("message serializing works") {
 
     GIVEN("a device info response message") {
         auto message =
-            DeviceInfoResponse{.version = 0x00220033, .shortsha = "abcdef0"};
+            DeviceInfoResponse{.version = 0x00220033, .shortsha{"abcdef0"}};
         auto arr =
             std::array<uint8_t, 13>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};
