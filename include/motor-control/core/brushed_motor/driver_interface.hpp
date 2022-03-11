@@ -4,7 +4,7 @@ namespace brushed_motor_driver {
 
 constexpr float VOLTAGE_REFERENCE = 3.3;
 constexpr int DAC_DATA_LENGTH = 12;
-constexpr int DAC_DATA_MULTIPLIER = (2 ^ DAC_DATA_LENGTH) - 1;
+constexpr int DAC_DATA_MULTIPLIER = 2 << (DAC_DATA_LENGTH - 1);
 
 class BrushedMotorDriverIface {
   public:

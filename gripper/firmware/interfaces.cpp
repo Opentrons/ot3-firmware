@@ -169,7 +169,7 @@ static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
  * The brushed motor driver hardware interface.
  */
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
-    dac_config);
+    dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5});
 
 void interfaces::initialize() {
     // Initialize SPI

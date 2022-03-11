@@ -18,5 +18,5 @@ bool BrushedMotorDriver::set_reference_voltage(float val) {
 
 void BrushedMotorDriver::setup() {
     start_digital_analog_converter();
-    set_reference_voltage(1.5);
+    set_reference_voltage(conf.vref);
 }

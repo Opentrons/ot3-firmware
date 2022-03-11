@@ -12,11 +12,17 @@ struct DacConfig {
     uint32_t data_algn;
 };
 
+struct DriverConfig {
+    float vref;
+};
+
 class BrushedMotorDriver : public BrushedMotorDriverIface {
   public:
     ~BrushedMotorDriver() final = default;
     BrushedMotorDriver() = delete;
-    BrushedMotorDriver(const DacConfig& dac_config) : dac(dac_config) {}
+    BrushedMotorDriver(const DacConfig& dac_config,
+                       const DriverConfig& driver_config)
+        : dac(dac_config), conf(driver_config) {}
     BrushedMotorDriver(const BrushedMotorDriver&) = default;
     auto operator=(const BrushedMotorDriver&) -> BrushedMotorDriver& = default;
     BrushedMotorDriver(BrushedMotorDriver&&) = default;
@@ -29,6 +35,7 @@ class BrushedMotorDriver : public BrushedMotorDriverIface {
 
   private:
     DacConfig dac;
+    DriverConfig conf;
 };
 
 };  // namespace brushed_motor_driver
