@@ -4,11 +4,9 @@ add_library(common-simulation STATIC
         app_update.cpp
         logging.cpp)
 
-target_link_libraries(common-simulation PUBLIC can-core)
+target_link_libraries(common-simulation PUBLIC can-core Boost::boost)
 
-if(NOT DEFINED ENV{DISABLE_LOGGING})
-    target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
-endif()
+target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
 
 set_target_properties(common-simulation
         PROPERTIES CXX_STANDARD 20
@@ -28,11 +26,3 @@ target_compile_options(common-simulation
         -Wctor-dtor-privacy
         -fno-rtti
         )
-
-
-# Logging module requires FreeRTOS, which means it cannot be compiled into "common-simulation" shared lib.
-function(target_enable_logging TARGET)
-    if(NOT DEFINED ENV{DISABLE_LOGGING})
-        target_compile_definitions(${TARGET} PUBLIC ENABLE_LOGGING)
-    endif()
-endfunction()

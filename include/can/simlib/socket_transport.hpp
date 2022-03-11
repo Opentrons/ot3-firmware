@@ -1,13 +1,13 @@
 #pragma once
 
+#include <time.h>
+
 #include <algorithm>
 #include <boost/asio.hpp>
 
-#include "FreeRTOS.h"
 #include "can/core/message_core.hpp"
 #include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
-#include "task.h"
 #include "transport.hpp"
 
 namespace socket_transport {
@@ -64,10 +64,9 @@ template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
                                              const uint8_t *buff,
                                              uint32_t buff_len) -> bool {
-    // Critical section block
-    auto lock = synchronization::Lock(critical_section);
-
     LOG("Sending: arbitration %X dlc %d\n", arb_id, buff_len);
+
+    auto sigblock = boost::asio::detail::posix_signal_blocker{};
 
     auto out_arb_id = htonl(arb_id);
     auto out_buff_len = htonl(buff_len);
@@ -83,13 +82,17 @@ auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
                                             uint32_t &buff_len) -> bool {
-    // TODO (2021-12-08, Amit): This is required for FreeRTOS to have time to
-    //  process message. Need to find a better solution.
-    vTaskDelay(1);
+    struct timespec tspec;
+    tspec.tv_sec = 0;
+    tspec.tv_nsec = 1 * 1000000;  // milliseconds
 
-    // Critical section block
-    auto lock = synchronization::Lock(critical_section);
+    // Wait for data to be available for blocking read.
+    while (!socket.available()) {
+        // FreeRTOS recommends use of nanosleep in their posix port docs
+        nanosleep(&tspec, nullptr);
+    }
 
+    auto sigblock = boost::asio::detail::posix_signal_blocker{};
     if (boost::asio::read(socket,
                           boost::asio::buffer(&arb_id, sizeof(arb_id))) <
         sizeof(arb_id))

@@ -40,7 +40,7 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(pipettes-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
-target_enable_logging(pipettes-simulator)
+target_compile_definitions(pipettes-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(pipettes-simulator)
 

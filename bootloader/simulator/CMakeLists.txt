@@ -41,7 +41,7 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(bootloader-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
-target_enable_logging(bootloader-simulator)
+target_compile_definitions(bootloader-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(bootloader-simulator)
 

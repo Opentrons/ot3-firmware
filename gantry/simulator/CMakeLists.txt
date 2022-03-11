@@ -47,8 +47,8 @@ if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(gantry-y-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
-target_enable_logging(gantry-x-simulator)
-target_enable_logging(gantry-y-simulator)
+target_compile_definitions(gantry-x-simulator PUBLIC ENABLE_LOGGING)
+target_compile_definitions(gantry-y-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(gantry-x-simulator)
 target_can_simlib(gantry-y-simulator)
