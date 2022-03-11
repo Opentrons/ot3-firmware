@@ -10,8 +10,8 @@ add_library(bootloader-core
         update_state.c
         pipette_node_id.c
         ${CMAKE_BINARY_DIR}/common/core/version.c
-         )
-
+        )
+add_dependencies(bootloader-core generate_version)
 target_include_directories(bootloader-core
         PUBLIC
         ${CMAKE_BINARY_DIR}/include
