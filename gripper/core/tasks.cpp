@@ -33,7 +33,6 @@ void gripper_tasks::start_tasks(
         motion_controller,
     motor_driver::MotorDriver& motor_driver,
     brushed_motor_driver::BrushedMotorDriverIface& brushed_motor_driver) {
-
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, motion_controller, queues);

@@ -161,8 +161,7 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_11,
             .active_setting = GPIO_PIN_SET},
-    .limit_switch =
-        {
+    .limit_switch = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOC,
         .pin = GPIO_PIN_2,
@@ -226,5 +225,4 @@ auto interfaces::get_brushed_motor_hardware_iface()
 auto interfaces::get_brushed_motor_driver_hardware_iface()
     -> brushed_motor_driver::BrushedMotorDriverIface& {
     return brushed_motor_driver_iface;
-
 }
