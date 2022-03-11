@@ -106,20 +106,13 @@ class MotorInterruptHandler {
         }
         if (has_active_move) {
             if (buffered_move.stop_condition ==
-                MoveStopCondition::limit_switch) {
-                if (homing_stopped()) {
-                    return false;
-                }
+                MoveStopCondition::limit_switch && homing_stopped()) {
+                return false;
             }
             if (can_step() && tick()) {
                 return true;
             }
             if (!can_step()) {
-                if (buffered_move.stop_condition ==
-                    MoveStopCondition::limit_switch) {
-                    finish_current_move();
-                    return false;
-                }
                 finish_current_move();
                 if (has_messages()) {
                     update_move();
