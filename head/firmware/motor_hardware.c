@@ -334,12 +334,9 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
 void initialize_timer(motor_interrupt_callback callback) {
     motor_callback = callback;
     MX_GPIO_Init();
-    /*TIM2 Initialization Function*/
-    MX_TIM2_Init();
-    /*TIM3 Initialization Function*/
-    MX_TIM3_Init();
+    MX_TIM2_Init();  /*TIM2 Initialization Function*/
+    MX_TIM3_Init();/*TIM3 Initialization Function*/
     MX_TIM7_Init();
-
-    HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
-    HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL); // Start Encoder mode Interrupt for timer2
+    HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL); // Start Encoder mode Interrupt for timer3
 }
