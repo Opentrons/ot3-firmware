@@ -80,7 +80,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(version, body, limit);
-        iter = bit_utils::int_to_bytes(flags, body, limit);
+        iter = bit_utils::int_to_bytes(flags, iter, limit);
         iter =
             std::copy_n(&shortsha[0],
                         std::min(limit - iter,
