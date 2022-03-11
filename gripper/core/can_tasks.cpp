@@ -1,3 +1,5 @@
+#include <span>
+
 #include "can/core/can_bus.hpp"
 #include "can/core/can_writer_task.hpp"
 #include "can/core/dispatch.hpp"
@@ -8,6 +10,7 @@
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.hpp"
+#include "common/core/version.h"
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
@@ -28,8 +31,9 @@ static auto can_motion_handler =
     motion_message_handler::MotionHandler{queue_client};
 
 /** Handler of system messages. */
-static auto system_message_handler =
-    system_handler::SystemMessageHandler{queue_client, 0};
+static auto system_message_handler = system_handler::SystemMessageHandler{
+    queue_client, version_get()->version, version_get()->flags,
+    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
 

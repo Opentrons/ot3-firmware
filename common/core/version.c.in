@@ -1,0 +1,12 @@
+#include "common/core/version.h"
+
+const static struct version _version = {
+    .version = ${GIT_VERSION},
+    .sha = "${GIT_SHORTSHA}",
+    .flags = ${BUILD_IS_FROM_CI} | ${BUILD_IS_EXACT_VERSION} | ${BUILD_IS_EXACT_COMMIT},
+};
+
+// must be weak to allow bootloader tests to override
+const struct version* __attribute__((weak)) version_get() {
+    return &_version;
+}

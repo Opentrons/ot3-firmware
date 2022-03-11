@@ -5,7 +5,6 @@
 #include "FreeRTOS.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
-#include "bootloader/core/version.h"
 #include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.hpp"
@@ -13,9 +12,6 @@
 
 /** The simulator's bootloader */
 CANNodeId get_node_id(void) { return can_nodeid_pipette_left_bootloader; }
-
-/** The simulator's version */
-uint32_t get_version(void) { return 0xDEADBEEF; }
 
 /**
  * The CAN bus.
