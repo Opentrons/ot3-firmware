@@ -25,6 +25,7 @@ class BrushedMotorDriver : public BrushedMotorDriverIface {
     auto start_digital_analog_converter() -> bool final;
     auto stop_digital_analog_converter() -> bool final;
     auto set_reference_voltage(float val) -> bool final;
+    void setup() final;
 
   private:
     DacConfig dac;

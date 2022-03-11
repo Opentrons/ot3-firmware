@@ -15,3 +15,8 @@ bool BrushedMotorDriver::set_reference_voltage(float val) {
     return motor_hardware_set_dac_value(dac.dac_handle, dac.channel,
                                         dac.data_algn, vref_val);
 }
+
+void BrushedMotorDriver::setup() {
+    start_digital_analog_converter();
+    set_reference_voltage(1.5);
+}
