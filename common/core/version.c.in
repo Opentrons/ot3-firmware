@@ -2,7 +2,8 @@
 
 const static struct version _version = {
     .version = ${GIT_VERSION},
-    .sha = "${GIT_SHORTSHA}"
+    .sha = "${GIT_SHORTSHA}",
+    .flags = ${BUILD_IS_FROM_CI} | ${BUILD_IS_EXACT_VERSION} | ${BUILD_IS_EXACT_COMMIT},
 };
 
 const struct version* version_get() {

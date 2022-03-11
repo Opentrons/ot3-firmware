@@ -69,7 +69,7 @@ static auto can_move_group_handler_left =
 
 /** Handler of system messages. */
 static auto system_message_handler = system_handler::SystemMessageHandler(
-    common_queues, version_get()->version,
+    common_queues, version_get()->version, version_get()->flags,
     std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha)));
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};

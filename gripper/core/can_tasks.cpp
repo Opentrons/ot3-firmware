@@ -32,7 +32,7 @@ static auto can_motion_handler =
 
 /** Handler of system messages. */
 static auto system_message_handler = system_handler::SystemMessageHandler{
-    queue_client, version_get()->version,
+    queue_client, version_get()->version, version_get()->flags,
     std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};

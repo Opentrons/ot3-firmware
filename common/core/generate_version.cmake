@@ -10,29 +10,59 @@
 
 
 execute_process(
-  COMMAND git rev-parse --short HEAD
-  OUTPUT_VARIABLE GIT_SHORTSHA_RAW
-  COMMAND_ERROR_IS_FATAL ANY
-  )
-execute_process(
-  COMMAND git describe --tags --abbrev=0 --match=v*
+  COMMAND git describe --dirty --long --tags --match=v*
   OUTPUT_VARIABLE GIT_VERSION_RAW
   ERROR_QUIET
   )
 if ((NOT DEFINED GIT_VERSION_RAW) OR (GIT_VERSION_RAW STREQUAL ""))
-  message(STATUS "No version found from git tag, using 0")
+  message(STATUS "No version found from git tag, using version 0, not-version, dirty")
+  execute_process(
+  COMMAND git rev-parse --short HEAD
+  OUTPUT_VARIABLE GIT_SHORTSHA_RAW
+  COMMAND_ERROR_IS_FATAL ANY
+  )
+  string(STRIP ${GIT_SHORTSHA_RAW} GIT_SHORTSHA)
+
   set(GIT_VERSION "0")
+  set(BUILD_IS_EXACT_COMMIT "0")
+  set(BUILD_IS_EXACT_VERSION "0")
 else()
-  string(SUBSTRING ${GIT_VERSION_RAW} 1 -1 GIT_VERSION)
+  # Pull out
+  # - the numerical element of the latest tag as the version (match 1)
+  # - the number of commits since that tag (match 2)
+  # - the sha (match 3)
+  # - whether there are uncommitted files (match 4)
+  #                    tag (1)  since (2)   sha (3)   uncommitted (4)
+  string(REGEX MATCH "v([0-9]+)-([0-9]*)-g([a-f0-9]+)-?(dirty)?" DESCRIBE_MATCH ${GIT_VERSION_RAW})
+  set(GIT_VERSION ${CMAKE_MATCH_1})
+  set(GIT_SHORTSHA ${CMAKE_MATCH_3})
+  if (CMAKE_MATCH_2) # commits-since-tag
+    set(BUILD_IS_EXACT_VERSION "0")
+  else()
+    set(BUILD_IS_EXACT_VERSION "VERSION_BUILD_IS_EXACT_VERSION")
+  endif()
+  if (CMAKE_MATCH_4)  # dirty
+    set(BUILD_IS_EXACT_COMMIT "0")
+  else()
+    set(BUILD_IS_EXACT_COMMIT "VERSION_BUILD_IS_EXACT_COMMIT")
+  endif()
+endif()
+
+if ($ENV{CI})
+  set(BUILD_IS_FROM_CI "VERSION_BUILD_IS_FROM_CI")
+else()
+  set(BUILD_IS_FROM_CI "0")
 endif()
 
 if (NOT GENERATE_VERSION_TARGET_DIR)
   message(FATAL_ERROR "No target directory set to generate version")
 else()
-  message(STATUS "Generating ${GENERATE_VERSION_TARGET_DIR}/version.c with version ${GIT_VERSION} and sha ${GIT_SHORTSHA}")
+  message(STATUS
+    "Generating ${GENERATE_VERSION_TARGET_DIR}/version.c with \n"
+    "    version ${GIT_VERSION}\n"
+    "    sha ${GIT_SHORTSHA}\n"
+    "    flags ${BUILD_IS_FROM_CI}|${BUILD_IS_EXACT_VERSION}|${BUILD_IS_EXACT_COMMIT}")
 endif()
-
-string(STRIP ${GIT_SHORTSHA_RAW} GIT_SHORTSHA)
 
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/version.c.in ${GENERATE_VERSION_TARGET_DIR}/version.c)
