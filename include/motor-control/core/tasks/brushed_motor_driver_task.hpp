@@ -72,7 +72,7 @@ class MotorDriverTask {
         brushed_motor_driver::BrushedMotorDriverIface* driver,
         CanClient* can_client) {
         // Set up the motor driver.
-        driver->setup();
+        //        driver->setup();
 
         auto handler = MotorDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};
