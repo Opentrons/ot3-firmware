@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility>
-
 namespace synchronization {
 
 template <typename S>
