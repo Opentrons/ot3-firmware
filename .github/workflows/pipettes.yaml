@@ -41,6 +41,9 @@ on:
       - "pipettes@*"
   workflow_dispatch:
 
+env:
+  ci: 1
+
 defaults:
   run:
     shell: bash
