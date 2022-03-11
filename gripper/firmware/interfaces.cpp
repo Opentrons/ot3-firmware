@@ -226,4 +226,5 @@ auto interfaces::get_brushed_motor_hardware_iface()
 auto interfaces::get_brushed_motor_driver_hardware_iface()
     -> brushed_motor_driver::BrushedMotorDriverIface& {
     return brushed_motor_driver_iface;
+
 }

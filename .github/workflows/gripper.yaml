@@ -1,17 +1,18 @@
-name: "Pipettes build/test"
+name: "Gripper build/test"
 on:
   pull_request:
     paths:
-      - "pipettes/**"
+      - "gripper/**"
       - "common/**"
       - "can/**"
       - "motor-control/**"
       - "include/**"
+      - "!include/pipettes/**"
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
       - "CMakeLists.txt"
-      - "pipettes/CMakeLists.txt"
+      - "gripper/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
@@ -19,26 +20,27 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "pipettes/**"
+      - "gripper/**"
       - "common/**"
       - "can/**"
       - "motor-control/**"
       - "include/**"
+      - "!include/pipettes/**"
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
       - "CMakeLists.txt"
-      - "pipettes/CMakeLists.txt"
+      - "gripper/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/pipettes.yaml"
+      - ".github/workflows/head.yaml"
     paths_ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
     tags:
-      - "pipettes@*"
+      - "gripper@*"
   workflow_dispatch:
 
 env:
@@ -62,13 +64,13 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=cross-pipettes .
+        run: cmake --preset=cross .
       - name: "Format"
-        run: cmake --build ./build-cross-pipettes --target pipettes-format-ci
+        run: cmake --build ./build-cross --target gripper-format-ci
       - name: "Build"
-        run: cmake --build ./build-cross-pipettes --target pipettes
+        run: cmake --build ./build-cross --target gripper
       - name: "Lint"
-        run: cmake --build ./build-cross-pipettes --target pipettes-lint
+        run: cmake --build ./build-cross --target gripper-lint
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -87,7 +89,6 @@ jobs:
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
       - name: 'Build and test'
-        run: cmake --build ./build-host --target pipettes-build-and-test
+        run: cmake --build ./build-host --target gripper-build-and-test
       - name: 'Build simulator'
-        run: cmake --build ./build-host --target pipettes-simulator
-
+        run: cmake --build ./build-host --target gripper-simulator

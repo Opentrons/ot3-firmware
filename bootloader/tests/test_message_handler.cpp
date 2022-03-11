@@ -4,15 +4,17 @@
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
 #include "bootloader/core/updater.h"
-#include "bootloader/core/version.h"
 #include "catch2/catch.hpp"
 #include "common/core/app_update.h"
+#include "common/core/version.h"
 
 /** Stub out get node id. */
 CANNodeId get_node_id(void) { return can_nodeid_pipette_left_bootloader; }
 
-/** Stub out get version. */
-uint32_t get_version(void) { return 0xDEADBEEF; }
+version version_stub = {
+    .version = 0xdeadbeef, .flags = 0xc0ffeebb, .sha = "abcdef0"};
+
+extern "C" const version* version_get() { return &version_stub; }
 
 /** Stub fw update functions.*/
 
@@ -63,11 +65,23 @@ SCENARIO("device info") {
                         can_messageid_device_info_response);
             }
             THEN("it populates response body") {
-                REQUIRE(response.size == 4);
+                REQUIRE(response.size == 16);
                 REQUIRE(response.data[0] == 0xDE);
                 REQUIRE(response.data[1] == 0xAD);
                 REQUIRE(response.data[2] == 0xBE);
                 REQUIRE(response.data[3] == 0xEF);
+                REQUIRE(response.data[4] == 0xC0);
+                REQUIRE(response.data[5] == 0xFF);
+                REQUIRE(response.data[6] == 0xEE);
+                REQUIRE(response.data[7] == 0xBB);
+                REQUIRE(response.data[8] == 'a');
+                REQUIRE(response.data[9] == 'b');
+                REQUIRE(response.data[10] == 'c');
+                REQUIRE(response.data[11] == 'd');
+                REQUIRE(response.data[12] == 'e');
+                REQUIRE(response.data[13] == 'f');
+                REQUIRE(response.data[14] == '0');
+                REQUIRE(response.data[15] == 0);
             }
         }
     }

@@ -6,10 +6,9 @@ using namespace lms;
 TEST_CASE("Linear motion system using a belt") {
     GIVEN("OT2 X,Y gantry config") {
         struct LinearMotionSystemConfig<BeltConfig> linearConfig {
-            .mech_config =
-                BeltConfig{.belt_pitch = 2, .pulley_tooth_count = 20},
-            .steps_per_rev = 200, .microstep = 16,
+            .mech_config = BeltConfig{.pulley_diameter = 12.7},
+            .steps_per_rev = 200, .microstep = 32,
         };
-        REQUIRE(linearConfig.get_steps_per_mm() == 80);
+        REQUIRE(linearConfig.get_steps_per_mm() == 160.40813f);
     }
 }

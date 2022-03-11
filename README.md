@@ -146,6 +146,8 @@ For more information on interacting with simulation see [this readme](https://gi
 
 Each simulator is an executable binary using the pattern `build-host/{PROJ}/simulator/{PROJ}-simulator`
 
+The script `run_simulators.sh` will run all the simulators.
+
 ### Environment Variables
 
 The simulators can be customized using environment variables.

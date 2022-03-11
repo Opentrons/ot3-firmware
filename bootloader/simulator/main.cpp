@@ -1,9 +1,10 @@
+#include <signal.h>
+
 #include <cstring>
 
 #include "FreeRTOS.h"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
-#include "bootloader/core/version.h"
 #include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.hpp"
@@ -11,9 +12,6 @@
 
 /** The simulator's bootloader */
 CANNodeId get_node_id(void) { return can_nodeid_pipette_left_bootloader; }
-
-/** The simulator's version */
-uint32_t get_version(void) { return 0xDEADBEEF; }
 
 /**
  * The CAN bus.
@@ -57,7 +55,14 @@ void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
     }
 }
 
+void signal_handler(int signum) {
+    LOG("Interrupt signal (%d) received.\n", signum);
+    exit(signum);
+}
+
 int main() {
+    signal(SIGINT, signal_handler);
+
     canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);
 

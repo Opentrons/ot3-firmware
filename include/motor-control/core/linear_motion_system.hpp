@@ -1,14 +1,14 @@
 #pragma once
 
 #include <concepts>
+#include <numbers>
 
 namespace lms {
 
 struct BeltConfig {
-    float belt_pitch;          // mm/count
-    float pulley_tooth_count;  // count/rev
+    float pulley_diameter;  // mm
     [[nodiscard]] constexpr auto get_mm_per_rev() const -> float {
-        return belt_pitch * pulley_tooth_count;
+        return static_cast<float>(pulley_diameter * std::numbers::pi);
     }
 };
 

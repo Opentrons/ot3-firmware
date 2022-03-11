@@ -1,5 +1,7 @@
 #include "pipettes/core/can_task.hpp"
 
+#include <span>
+
 #include "can/core/dispatch.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/ids.hpp"
@@ -10,6 +12,7 @@
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
+#include "common/core/version.h"
 #include "pipettes/core/message_handlers/eeprom.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/core/message_handlers/sensors.hpp"
@@ -31,8 +34,9 @@ static auto can_move_group_handler =
 static auto eeprom_handler =
     eeprom_message_handler::EEPromHandler{queue_client};
 
-static auto system_message_handler =
-    system_handler::SystemMessageHandler{queue_client, 0};
+static auto system_message_handler = system_handler::SystemMessageHandler{
+    queue_client, version_get()->version, version_get()->flags,
+    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 
 static auto sensor_handler =
     sensor_message_handler::SensorHandler{queue_client};

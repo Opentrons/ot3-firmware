@@ -1,10 +1,12 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <span>
 
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/version.h"
 #include "parse.hpp"
 
 namespace can_messages {
@@ -72,10 +74,19 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
      * well-known-id
      */
     uint32_t version;
+    uint32_t flags;
+    std::array<char, VERSION_SHORTSHA_SIZE> shortsha;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(version, body, limit);
+        iter = bit_utils::int_to_bytes(flags, iter, limit);
+        iter =
+            std::copy_n(&shortsha[0],
+                        std::min(limit - iter,
+                                 static_cast<ptrdiff_t>(VERSION_SHORTSHA_SIZE)),
+                        iter);
+
         return iter - body;
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;

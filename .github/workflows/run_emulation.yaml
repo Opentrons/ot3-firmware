@@ -1,5 +1,8 @@
 on: [ pull_request, push ]
 
+env:
+  ci: 1
+
 jobs:
   ot3-emulator:
     runs-on: "ubuntu-20.04"

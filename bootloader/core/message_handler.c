@@ -1,13 +1,14 @@
+#include <stddef.h> // offsetof
+#include <string.h> // memcpy
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/ids.h"
 #include "bootloader/core/node_id.h"
-#include "bootloader/core/version.h"
 #include "bootloader/core/messages.h"
 #include "bootloader/core/util.h"
 #include "bootloader/core/updater.h"
 #include "bootloader/core/update_state.h"
 #include "common/core/app_update.h"
-
+#include "common/core/version.h"
 
 /** Handle a device info request message. */
 static HandleMessageReturn handle_device_info_request(const Message* request, Message* response);
@@ -73,8 +74,11 @@ HandleMessageReturn handle_device_info_request(const Message* request, Message* 
     response->arbitration_id.parts.message_id = can_messageid_device_info_response;
     response->arbitration_id.parts.node_id = can_nodeid_host;
     response->arbitration_id.parts.originating_node_id = get_node_id();
-    response->size = 4;
-    write_uint32(response->data, get_version());
+    const struct version *vstruct = version_get();
+    response->size = sizeof(*vstruct);
+    write_uint32(response->data, vstruct->version);
+    write_uint32(response->data + offsetof(struct version, flags), vstruct->flags);
+    memcpy(response->data + offsetof(struct version, sha), &vstruct->sha[0], sizeof(vstruct->sha));
     return handle_message_has_response;
 }
 
