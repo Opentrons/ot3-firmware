@@ -38,4 +38,11 @@ auto get_motor_hardware_iface() -> motor_hardware::MotorHardwareIface &;
  */
 auto get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig> &;
 
+/**
+ * Get the motor hardware interface
+ * @return the motor hardware interface
+ */
+auto get_brushed_motor_hardware_iface()
+    -> motor_hardware::BrushedMotorHardwareIface &;
+
 }  // namespace interfaces

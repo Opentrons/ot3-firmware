@@ -32,11 +32,6 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void set_LED(bool status) = 0;
 };
 
-class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
-  public:
-    virtual auto start_digital_analog_converter() -> bool = 0;
-    virtual auto stop_digital_analog_converter() -> bool = 0;
-    virtual auto set_reference_voltage(float val) -> bool = 0;
-};
+class BrushedMotorHardwareIface : virtual public MotorHardwareIface {};
 
 };  // namespace motor_hardware

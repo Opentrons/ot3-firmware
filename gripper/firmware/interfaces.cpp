@@ -9,6 +9,7 @@
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
 #include "motor-control/firmware/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
@@ -154,7 +155,7 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
 /**
  * Brushed motor dac configuration.
  */
-struct motor_hardware::DacConfig dac_config {
+struct brushed_motor_driver::DacConfig dac_config {
     .dac_handle = &hdac1, .channel = DAC_CHANNEL_1,
     .data_algn = DAC_ALIGN_12B_R,
 };
@@ -162,7 +163,13 @@ struct motor_hardware::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins, dac_config);
+    brushed_motor_pins);
+
+/**
+ * The brushed motor driver hardware interface.
+ */
+static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
+    dac_config);
 
 void interfaces::initialize() {
     // Initialize SPI
@@ -192,4 +199,9 @@ auto interfaces::get_motor_hardware_iface()
 
 auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return z_motor;
+}
+
+auto interfaces::get_brushed_motor_hardware_iface()
+    -> motor_hardware::BrushedMotorHardwareIface& {
+    return brushed_motor_hardware_iface;
 }
