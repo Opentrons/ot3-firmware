@@ -6,6 +6,7 @@ const static struct version _version = {
     .flags = ${BUILD_IS_FROM_CI} | ${BUILD_IS_EXACT_VERSION} | ${BUILD_IS_EXACT_COMMIT},
 };
 
-const struct version* version_get() {
+// must be weak to allow bootloader tests to override
+const struct version* __attribute__((weak)) version_get() {
     return &_version;
 }

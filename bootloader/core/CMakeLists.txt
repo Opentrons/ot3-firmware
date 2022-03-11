@@ -9,6 +9,7 @@ add_library(bootloader-core
         message_handler.c
         update_state.c
         pipette_node_id.c
+        ${CMAKE_BINARY_DIR}/common/core/version.c
          )
 
 target_include_directories(bootloader-core
