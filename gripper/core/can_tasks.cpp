@@ -26,6 +26,8 @@ static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler{queue_client};
 static auto can_motion_handler =
     motion_message_handler::MotionHandler{queue_client};
+static auto can_brushed_motor_handler =
+    motor_message_handler::BrushedMotorHandler{queue_client};
 
 /** Handler of system messages. */
 static auto system_message_handler =
@@ -42,11 +44,14 @@ static auto motion_group_dispatch_target =
 static auto motion_dispatch_target =
     can_task::MotionControllerDispatchTarget{can_motion_handler};
 
+static auto brushed_motor_dispatch_target =
+    can_task::BrushedMotorDispatchTarget{can_brushed_motor_handler};
+
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_task::GripperDispatcherType(
     [](auto _) -> bool { return true; }, motor_dispatch_target,
     motion_group_dispatch_target, motion_dispatch_target,
-    system_dispatch_target);
+    system_dispatch_target, brushed_motor_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_can_dispatch::FreeRTOSCanBufferControl<

@@ -11,7 +11,7 @@
 
 namespace brushed_motor_driver_task {
 
-using TaskMessage = motor_control_task_messages::MotorDriverTaskMessage;
+using TaskMessage = motor_control_task_messages::BrushedMotorDriverTaskMessage;
 
 /**
  * The handler of brushed motor driver messages
@@ -42,8 +42,7 @@ class MotorDriverMessageHandler {
 
     void handle(const can_messages::SetupRequest& m) {
         LOG("Received motor setup request\n");
-        driver.start_digital_analog_converter();
-        driver.set_reference_voltage(1.5);
+        driver.setup();
     }
 
     brushed_motor_driver::BrushedMotorDriverIface& driver;
@@ -69,8 +68,9 @@ class MotorDriverTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(motor_driver::MotorDriver* driver,
-                                 CanClient* can_client) {
+    [[noreturn]] void operator()(
+        brushed_motor_driver::BrushedMotorDriverIface* driver,
+        CanClient* can_client) {
         // Set up the motor driver.
         driver->setup();
 
@@ -95,7 +95,7 @@ class MotorDriverTask {
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_motor_driver_queue(m)};
+    {client.send_brushed_motor_driver_queue(m)};
 };
 
 }  // namespace brushed_motor_driver_task

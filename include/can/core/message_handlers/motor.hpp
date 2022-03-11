@@ -1,6 +1,7 @@
 #pragma once
 
 #include "can/core/messages.hpp"
+#include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 
 namespace motor_message_handler {
@@ -26,6 +27,29 @@ class MotorHandler {
 
   private:
     MotorDriverTaskClient &motor_client;
+};
+
+template <brushed_motor_driver_task::TaskClient BrushedMotorDriverTaskClient>
+class BrushedMotorHandler {
+  public:
+    using MessageType = std::variant<std::monostate, SetupRequest>;
+
+    BrushedMotorHandler(BrushedMotorDriverTaskClient &motor_client)
+        : motor_client{motor_client} {}
+    BrushedMotorHandler(const BrushedMotorHandler &) = delete;
+    BrushedMotorHandler(const BrushedMotorHandler &&) = delete;
+    auto operator=(const BrushedMotorHandler &)
+        -> BrushedMotorHandler & = delete;
+    auto operator=(const BrushedMotorHandler &&)
+        -> BrushedMotorHandler && = delete;
+    ~BrushedMotorHandler() = default;
+
+    void handle(MessageType &m) {
+        motor_client.send_brushed_motor_driver_queue(m);
+    }
+
+  private:
+    BrushedMotorDriverTaskClient &motor_client;
 };
 
 }  // namespace motor_message_handler
