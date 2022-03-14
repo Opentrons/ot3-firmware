@@ -168,6 +168,9 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
+        if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            position_tracker = 0x7FFFFFFFFFFFFFFF;
+        }
         // (TODO: lc) We should check the direction (and set respectively)
         // the direction pin for the motor once a move is being pulled off the
         // queue stack. We'll probably want to think about moving the hardware
