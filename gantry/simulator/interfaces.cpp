@@ -7,7 +7,6 @@
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
-#include "motor-control/simulation/home_request_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 
 
