@@ -111,11 +111,12 @@ void signal_handler(int signum) {
     exit(signum);
 }
 
-
 int main() {
     signal(SIGINT, signal_handler);
 
-    LOG_INIT("HEAD", []() -> const char * {return pcTaskGetName(xTaskGetCurrentTaskHandle());});
+    LOG_INIT("HEAD", []() -> const char* {
+        return pcTaskGetName(xTaskGetCurrentTaskHandle());
+    });
 
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,

@@ -63,7 +63,9 @@ void signal_handler(int signum) {
 int main() {
     signal(SIGINT, signal_handler);
 
-    LOG_INIT("BOOTLOADER", []() -> const char * {return pcTaskGetName(xTaskGetCurrentTaskHandle());});
+    LOG_INIT("BOOTLOADER", []() -> const char* {
+        return pcTaskGetName(xTaskGetCurrentTaskHandle());
+    });
 
     canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);

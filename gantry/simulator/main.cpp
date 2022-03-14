@@ -1,6 +1,7 @@
 #include <signal.h>
 
 #include "FreeRTOS.h"
+#include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
 #include "task.h"
@@ -13,7 +14,11 @@ void signal_handler(int signum) {
 int main() {
     signal(SIGINT, signal_handler);
 
-    LOG_INIT(get_axis_type() == GantryAxisType.gantry_x ? "GANTRY-X" : "GANTRY-Y", []() -> const char * {return pcTaskGetName(xTaskGetCurrentTaskHandle());});
+    LOG_INIT(
+        get_axis_type() == GantryAxisType::gantry_x ? "GANTRY-X" : "GANTRY-Y",
+        []() -> const char* {
+            return pcTaskGetName(xTaskGetCurrentTaskHandle());
+        });
 
     interfaces::initialize();
 
