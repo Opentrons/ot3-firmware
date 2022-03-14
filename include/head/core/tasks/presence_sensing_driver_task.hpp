@@ -10,13 +10,11 @@
 #include "head/core/adc.hpp"
 #include "head/core/attached_tools.hpp"
 #include "head/core/presence_sensing_driver.hpp"
+#include "head/core/tasks/messages.hpp"
 
 namespace presence_sensing_driver_task {
 
-using TaskMessage =
-    std::variant<std::monostate,
-                 can_messages::ReadPresenceSensingVoltageRequest,
-                 can_messages::AttachedToolsRequest>;
+using TaskMessage = presence_sensing_driver_task_messages::TaskMessage;
 
 /**
  * The handler of Presence Sensing messages
@@ -59,6 +57,18 @@ class PresenceSensingDriverMessageHandler {
     }
 
     void visit(can_messages::AttachedToolsRequest& m) {
+        auto tools = driver.update_tools();
+        auto new_tools = tools.second;
+        can_client.send_can_message(
+            can_ids::NodeId::host,
+            can_messages::PushToolsDetectedNotification{
+                .z_motor = (new_tools.z_motor),
+                .a_motor = (new_tools.a_motor),
+                .gripper = (new_tools.gripper),
+            });
+    }
+
+    void visit(presence_sensing_driver_task_messages::PollForChange& m) {
         attached_tools::AttachedTools new_tools;
         bool updated = false;
         std::tie(updated, new_tools) = driver.update_tools();
@@ -113,7 +123,7 @@ class PresenceSensingDriverTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
     void notifier_callback() {
-        auto msg = TaskMessage(can_messages::AttachedToolsRequest());
+        auto msg = TaskMessage(presence_sensing_driver_task_messages::PollForChange());
         this->queue.try_write(msg);
     }
 
