@@ -22,9 +22,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32g4xx_it.h"
 
-#include "stm32g4xx_hal.h"
-
+#include "FreeRTOSConfig.h"
 #include "can/firmware/hal_can.h"
+#include "stm32g4xx_hal.h"
 
 /** @addtogroup STM32G4xx_HAL_Examples
  * @{
@@ -46,7 +46,6 @@
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 extern TIM_HandleTypeDef htim7;
-
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -138,12 +137,18 @@ void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
-void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(can_get_device_handle()); }
-
+void FDCAN1_IT0_IRQHandler(void) {
+    HAL_FDCAN_IRQHandler(can_get_device_handle());
+}
 
 /**
  * @brief This function handles TIM7 global interrupt.
  */
 void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
 
+extern void xPortSysTickHandler(void);
+void SysTick_Handler(void) {
+    HAL_IncTick();
+    xPortSysTickHandler();
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
