@@ -13,8 +13,18 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
-    bool check_limit_switch() final { return false; }
+    bool check_limit_switch() final {
+        if (limit_switch_status) {
+            limit_switch_status = false;
+            return true;
+        }
+        return false;
+    }
     void set_LED(bool status) final {}
+    void trigger_limit_switch() { limit_switch_status = true; }
+
+  private:
+    bool limit_switch_status = false;
 };
 
 }  // namespace sim_motor_hardware_iface

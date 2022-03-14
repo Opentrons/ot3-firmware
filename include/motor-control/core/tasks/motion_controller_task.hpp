@@ -83,7 +83,7 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can_messages::HomeRequest& m) {
-        LOG("Received home request: velocity=%d, "
+        LOG("Motion Controller Received home request: velocity=%d, "
             "groupid=%d, seqid=%d\n",
             m.velocity, m.group_id, m.seq_id);
         controller.move(m);

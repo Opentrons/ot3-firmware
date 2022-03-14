@@ -49,6 +49,8 @@ enum class MessageId {
     read_motor_driver_register_request = 0x31,
     read_motor_driver_register_response = 0x32,
     write_motor_current_request = 0x33,
+    read_motor_current_request = 0x34,
+    read_motor_current_response = 0x35,
     read_presence_sensing_voltage_request = 0x600,
     read_presence_sensing_voltage_response = 0x601,
     attached_tools_request = 0x700,
@@ -90,7 +92,7 @@ enum class NodeId {
     gantry_x_bootloader = 0x3f,
     gantry_y_bootloader = 0x4f,
     head_bootloader = 0x5f,
-    gripper_bootloader = 0x2f
+    gripper_bootloader = 0x2f,
 };
 
 /** Common error codes. */

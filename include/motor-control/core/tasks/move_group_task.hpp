@@ -59,7 +59,7 @@ class MoveGroupMessageHandler {
     }
 
     void handle(const can_messages::HomeRequest& m) {
-        LOG("Received home request: groupid=%d, seqid=%d\n", m.group_id,
+        LOG("Move Group Received home request: groupid=%d, seqid=%d\n", m.group_id,
             m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }

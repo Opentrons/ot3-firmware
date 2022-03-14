@@ -7,7 +7,9 @@
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
+#include "motor-control/simulation/home_request_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+
 
 /**
  * The CAN bus.
@@ -54,7 +56,8 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gantry_tasks::get_queues(), motor_interface);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
-                                                      motor_interrupt);
+                                                      motor_interrupt, motor_interface);
+
 
 void interfaces::initialize() {}
 
