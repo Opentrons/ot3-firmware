@@ -13,6 +13,8 @@ void signal_handler(int signum) {
 int main() {
     signal(SIGINT, signal_handler);
 
+    LOG_INIT("GRIPPER", []() -> const char * {return pcTaskGetName(xTaskGetCurrentTaskHandle());});
+
     interfaces::initialize();
 
     gripper_tasks::start_tasks(

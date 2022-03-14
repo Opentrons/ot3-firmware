@@ -13,6 +13,8 @@ void signal_handler(int signum) {
 int main() {
     signal(SIGINT, signal_handler);
 
+    LOG_INIT(get_axis_type() == GantryAxisType.gantry_x ? "GANTRY-X" : "GANTRY-Y", []() -> const char * {return pcTaskGetName(xTaskGetCurrentTaskHandle());});
+
     interfaces::initialize();
 
     gantry_tasks::start_tasks(interfaces::get_can_bus(),

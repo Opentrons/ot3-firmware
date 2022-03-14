@@ -106,6 +106,8 @@ void signal_handler(int signum) {
 int main() {
     signal(SIGINT, signal_handler);
 
+    LOG_INIT("PIPETTE", []() -> const char * {return pcTaskGetName(xTaskGetCurrentTaskHandle());});
+
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c_comms,
                                 node_from_env(std::getenv("MOUNT")));
