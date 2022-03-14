@@ -105,7 +105,7 @@ add_custom_command(OUTPUT gripper.hex
         COMMAND ${CROSS_OBJCOPY} ARGS gripper "-Oihex" gripper.hex
         DEPENDS gripper
         VERBATIM)
-add_custom_target(gripper.hex ALL
+add_custom_target(gripper-hex ALL
         DEPENDS gripper.hex)
 
 add_custom_command(OUTPUT gripper.bin

@@ -15,9 +15,10 @@ int main() {
 
     interfaces::initialize();
 
-    gripper_tasks::start_tasks(interfaces::get_can_bus(),
-                               interfaces::get_motor().motion_controller,
-                               interfaces::get_motor().driver);
+    gripper_tasks::start_tasks(
+        interfaces::get_can_bus(), interfaces::get_z_motor().motion_controller,
+        interfaces::get_z_motor().driver,
+        interfaces::get_brushed_motor_driver_hardware_iface());
 
     vTaskStartScheduler();
 }

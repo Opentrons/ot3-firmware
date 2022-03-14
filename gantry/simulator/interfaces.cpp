@@ -63,7 +63,7 @@ auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 auto interfaces::get_spi() -> spi::SpiDeviceBase& { return spi_comms; }
 
 auto interfaces::get_motor_hardware_iface()
-    -> motor_hardware::MotorHardwareIface& {
+    -> motor_hardware::StepperMotorHardwareIface& {
     return motor_interface;
 }
 

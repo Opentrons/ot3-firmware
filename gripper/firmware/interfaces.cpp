@@ -9,6 +9,8 @@
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/motion_controller.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
+#include "motor-control/firmware/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -112,7 +114,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 /**
  * The motor struct.
  */
-static motor_class::Motor motor{
+static motor_class::Motor z_motor{
     spi_comms,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
@@ -137,6 +139,54 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
+/**
+ * Brushed motor pin configuration.
+ */
+struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
+    .pwm_1 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_0,
+            .active_setting = GPIO_PIN_SET},
+    .pwm_2 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_6,
+            .active_setting = GPIO_PIN_SET},
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_11,
+            .active_setting = GPIO_PIN_SET},
+    .limit_switch = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_2,
+        .active_setting = GPIO_PIN_SET},
+};
+
+/**
+ * Brushed motor dac configuration.
+ */
+struct brushed_motor_driver::DacConfig dac_config {
+    .dac_handle = &hdac1, .channel = DAC_CHANNEL_1,
+    .data_algn = DAC_ALIGN_12B_R,
+};
+/**
+ * The brushed motor hardware interface.
+ */
+static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
+    brushed_motor_pins);
+
+/**
+ * The brushed motor driver hardware interface.
+ */
+static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
+    dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5});
+
 void interfaces::initialize() {
     // Initialize SPI
     if (initialize_spi() != HAL_OK) {
@@ -144,6 +194,9 @@ void interfaces::initialize() {
     }
 
     initialize_timer(call_motor_handler);
+
+    // Initialize DAC
+    initialize_dac();
 
     // Start the can bus
     can_start();
@@ -160,6 +213,16 @@ auto interfaces::get_motor_hardware_iface()
     return motor_hardware_iface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
-    return motor;
+auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
+    return z_motor;
+}
+
+auto interfaces::get_brushed_motor_hardware_iface()
+    -> motor_hardware::BrushedMotorHardwareIface& {
+    return brushed_motor_hardware_iface;
+}
+
+auto interfaces::get_brushed_motor_driver_hardware_iface()
+    -> brushed_motor_driver::BrushedMotorDriverIface& {
+    return brushed_motor_driver_iface;
 }

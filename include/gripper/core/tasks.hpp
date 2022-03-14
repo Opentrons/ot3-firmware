@@ -3,6 +3,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -13,10 +14,12 @@ namespace gripper_tasks {
 /**
  * Start gripper tasks.
  */
-void start_tasks(can_bus::CanBus& can_bus,
-                 motion_controller::MotionController<lms::LeadScrewConfig>&
-                     motion_controller,
-                 motor_driver::MotorDriver& motor_driver);
+void start_tasks(
+    can_bus::CanBus& can_bus,
+    motion_controller::MotionController<lms::LeadScrewConfig>&
+        motion_controller,
+    motor_driver::MotorDriver& motor_driver,
+    brushed_motor_driver::BrushedMotorDriverIface& brushed_motor_driver);
 
 /**
  * Access to all the message queues in the system.
@@ -34,6 +37,9 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_brushed_motor_driver_queue(
+        const brushed_motor_driver_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -43,6 +49,8 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>* move_status_report_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
 };
 
 /**
@@ -63,6 +71,9 @@ struct AllTask {
     move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
                                    QueueClient, QueueClient>* move_group{
         nullptr};
+    brushed_motor_driver_task::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
+        brushed_motor_driver{nullptr};
 };
 
 /**

@@ -28,7 +28,7 @@ auto get_spi() -> spi::SpiDeviceBase &;
  * Get the motor hardware interface
  * @return the motor hardware interface
  */
-auto get_motor_hardware_iface() -> motor_hardware::MotorHardwareIface &;
+auto get_motor_hardware_iface() -> motor_hardware::StepperMotorHardwareIface &;
 
 /**
  * Access to the global motor.

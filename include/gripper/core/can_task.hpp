@@ -36,11 +36,14 @@ using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     system_handler::SystemMessageHandler<gripper_tasks::QueueClient>,
     can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
     can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
+using BrushedMotorDispatchTarget = can_dispatch::DispatchParseTarget<
+    motor_message_handler::BrushedMotorHandler<gripper_tasks::QueueClient>,
+    can_messages::SetupRequest>;
 
 using GripperDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
                              MotionControllerDispatchTarget,
-                             SystemDispatchTarget>;
+                             SystemDispatchTarget, BrushedMotorDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =

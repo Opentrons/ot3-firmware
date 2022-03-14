@@ -38,7 +38,7 @@ struct Motor {
      */
     Motor(spi::SpiDeviceBase& spi,
           lms::LinearMotionSystemConfig<MEConfig> lms_config,
-          motor_hardware::MotorHardwareIface& hardware_iface,
+          motor_hardware::StepperMotorHardwareIface& hardware_iface,
           MotionConstraints constraints,
           tmc2130::TMC2130DriverConfig driver_config, GenericQueue& queue)
 

@@ -6,6 +6,7 @@
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
+#include "motor-control/simulation/sim_motor_driver_hardware_iface.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 
 /**
@@ -80,6 +81,12 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt);
 
+/**
+ * Brushed motor components
+ */
+static auto brushed_motor_driver_iface =
+    sim_brushed_motor_hardware_iface::SimBrushedMotorDriverIface();
+
 void interfaces::initialize() {}
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
@@ -91,6 +98,11 @@ auto interfaces::get_motor_hardware_iface()
     return motor_interface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
+auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return motor;
+}
+
+auto interfaces::get_brushed_motor_driver_hardware_iface()
+    -> brushed_motor_driver::BrushedMotorDriverIface& {
+    return brushed_motor_driver_iface;
 }
