@@ -41,7 +41,7 @@ class MotorDriverMessageHandler {
     void handle(std::monostate m) { static_cast<void>(m); }
 
     void handle(const can_messages::SetupRequest& m) {
-        LOG("Received motor setup request\n");
+        LOG("Received motor setup request");
         driver.setup();
     }
 
