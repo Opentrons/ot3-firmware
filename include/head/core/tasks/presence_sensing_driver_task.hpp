@@ -48,6 +48,9 @@ class PresenceSensingDriverMessageHandler {
     void visit(can_messages::ReadPresenceSensingVoltageRequest& m) {
         auto voltage_read = driver.get_readings();
 
+        LOG("Received read presence sensing voltage request: z=%d, a=%d, gripper=%d",
+            voltage_read.z_motor, voltage_read.a_motor, voltage_read.gripper);
+
         can_messages::ReadPresenceSensingVoltageResponse resp{
             .z_motor = voltage_read.z_motor,
             .a_motor = voltage_read.a_motor,
@@ -57,6 +60,7 @@ class PresenceSensingDriverMessageHandler {
     }
 
     void visit(can_messages::AttachedToolsRequest& m) {
+        LOG("Received attached tools request");
         auto tools = driver.update_tools();
         auto new_tools = tools.second;
         can_client.send_can_message(
