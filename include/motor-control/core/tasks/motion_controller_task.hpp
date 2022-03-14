@@ -40,17 +40,17 @@ class MotionControllerMessageHandler {
     void handle(std::monostate m) { static_cast<void>(m); }
 
     void handle(const can_messages::StopRequest& m) {
-        LOG("Received stop request\n");
+        LOG("Received stop request");
         controller.stop();
     }
 
     void handle(const can_messages::EnableMotorRequest& m) {
-        LOG("Received enable motor request\n");
+        LOG("Received enable motor request");
         controller.enable_motor();
     }
 
     void handle(const can_messages::DisableMotorRequest& m) {
-        LOG("Received disable motor request\n");
+        LOG("Received disable motor request");
         controller.disable_motor();
     }
 
@@ -62,13 +62,13 @@ class MotionControllerMessageHandler {
             .min_acceleration = constraints.min_acceleration,
             .max_acceleration = constraints.max_acceleration,
         };
-        LOG("Received get motion constraints request\n");
+        LOG("Received get motion constraints request");
         can_client.send_can_message(can_ids::NodeId::host, response_msg);
     }
 
     void handle(const can_messages::SetMotionConstraints& m) {
         LOG("Received set motion constraints: minvel=%d, maxvel=%d, minacc=%d, "
-            "maxacc=%d\n",
+            "maxacc=%d",
             m.min_velocity, m.max_velocity, m.min_acceleration,
             m.max_acceleration);
         controller.set_motion_constraints(m);
@@ -76,7 +76,7 @@ class MotionControllerMessageHandler {
 
     void handle(const can_messages::AddLinearMoveRequest& m) {
         LOG("Received add linear move request: velocity=%d, acceleration=%d, "
-            "groupid=%d, seqid=%d, duration=%d, stopcondition=%d\n",
+            "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
         controller.move(m);
@@ -91,7 +91,7 @@ class MotionControllerMessageHandler {
 
     void handle(const can_messages::ReadLimitSwitchRequest& m) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
-        LOG("Received read limit switch: limit_switch=%d\n", response);
+        LOG("Received read limit switch: limit_switch=%d", response);
         can_messages::ReadLimitSwitchResponse msg{{}, response};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }

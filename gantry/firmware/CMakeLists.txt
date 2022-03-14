@@ -219,7 +219,7 @@ add_custom_target(gantry-debug-y
 # Targets to create full image hex file containing both bootloader and application
 add_custom_command(
         OUTPUT gantry-x-image.hex
-        DEPENDS gantry-x-hex bootloader-gantry-x-hex
+        DEPENDS gantry-x-hex bootloader-gantry-x-hex gantry-x.hex $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex
         COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-x-image.hex $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex gantry-x.hex
         VERBATIM)
 add_custom_target(gantry-x-image-hex ALL
@@ -227,7 +227,7 @@ add_custom_target(gantry-x-image-hex ALL
 
 add_custom_command(
         OUTPUT gantry-y-image.hex
-        DEPENDS gantry-y-hex bootloader-gantry-y-hex
+        DEPENDS gantry-y-hex bootloader-gantry-y-hex gantry-y.hex $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex
         COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-y-image.hex $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex gantry-y.hex
         VERBATIM)
 add_custom_target(gantry-y-image-hex ALL

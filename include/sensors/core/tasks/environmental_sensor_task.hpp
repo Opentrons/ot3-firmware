@@ -62,13 +62,12 @@ class EnvironmentSensorMessageHandler {
     void visit(can_messages::SetSensorThresholdRequest &m) {}
 
     void visit(can_messages::WriteToSensorRequest &m) {
-        LOG("Received request to write data %d to %d sensor\n", m.data,
-            m.sensor);
+        LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(m.data, ADDRESS);
     }
 
     void visit(can_messages::ReadFromSensorRequest &m) {
-        LOG("Received request to read from %d sensor\n", m.sensor);
+        LOG("Received request to read from %d sensor", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
             writer.write(HUMIDITY_REGISTER, ADDRESS);
             writer.read(

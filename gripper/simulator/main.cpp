@@ -6,12 +6,16 @@
 #include "task.h"
 
 void signal_handler(int signum) {
-    LOG("Interrupt signal (%d) received.\n", signum);
+    LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
 }
 
 int main() {
     signal(SIGINT, signal_handler);
+
+    LOG_INIT("GRIPPER", []() -> const char* {
+        return pcTaskGetName(xTaskGetCurrentTaskHandle());
+    });
 
     interfaces::initialize();
 

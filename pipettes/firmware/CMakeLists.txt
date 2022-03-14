@@ -155,7 +155,7 @@ add_custom_target(pipettes-debug
 # Targets to create full image hex file containing both bootloader and application
 add_custom_command(
         OUTPUT pipettes-image.hex
-        DEPENDS pipettes-hex bootloader-pipettes-hex
+        DEPENDS pipettes-hex bootloader-pipettes-hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex pipettes.hex
         COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py pipettes-image.hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex pipettes.hex
         VERBATIM)
 add_custom_target(pipettes-image-hex ALL

@@ -39,29 +39,33 @@ void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
     auto handle_message_return = handle_message(&message, &response);
     switch (handle_message_return) {
         case handle_message_ok:
-            LOG("Message ok. No response\n");
+            LOG("Message ok. No response");
             break;
         case handle_message_has_response:
-            LOG("Message ok. Has response\n");
+            LOG("Message ok. Has response");
             canbus.send(response.arbitration_id.id, response.data,
                         static_cast<CanFDMessageLength>(response.size));
             break;
         case handle_message_error:
-            LOG("Message error.\n");
+            LOG("Message error.");
             break;
         default:
-            LOG("Unknown return.\n");
+            LOG("Unknown return.");
             break;
     }
 }
 
 void signal_handler(int signum) {
-    LOG("Interrupt signal (%d) received.\n", signum);
+    LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
 }
 
 int main() {
     signal(SIGINT, signal_handler);
+
+    LOG_INIT("BOOTLOADER", []() -> const char* {
+        return pcTaskGetName(xTaskGetCurrentTaskHandle());
+    });
 
     canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);
