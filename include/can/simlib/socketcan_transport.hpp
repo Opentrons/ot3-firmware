@@ -11,7 +11,7 @@
 
 #include <cstring>
 
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
 
@@ -88,6 +88,7 @@ auto SocketCanTransport<CriticalSection>::write(uint32_t arb_id,
     frame.len = buff_len;
     ::memcpy(frame.data, cbuff, buff_len);
     LOG("Writing: arb_id %X dlc %d\n", arb_id, buff_len);
+    auto lock = synchronization::Lock(critical_section);
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
 

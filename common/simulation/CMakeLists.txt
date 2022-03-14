@@ -1,6 +1,10 @@
-add_library(common-simulation STATIC spi.cpp i2c_sim.cpp app_update.cpp)
+add_library(common-simulation STATIC
+        spi.cpp
+        i2c_sim.cpp
+        app_update.cpp
+        logging.cpp)
 
-target_link_libraries(common-simulation PUBLIC can-core)
+target_link_libraries(common-simulation PUBLIC can-core Boost::boost pthread)
 
 target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
 

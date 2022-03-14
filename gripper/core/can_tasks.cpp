@@ -9,7 +9,7 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/core/version.h"
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"

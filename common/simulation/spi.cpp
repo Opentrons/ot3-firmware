@@ -1,7 +1,7 @@
 #include "common/simulation/spi.hpp"
 
 #include "common/core/bit_utils.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 
 bool sim_spi::SimSpiDeviceBase::transmit_receive(
     const spi::SpiDeviceBase::BufferType& transmit,

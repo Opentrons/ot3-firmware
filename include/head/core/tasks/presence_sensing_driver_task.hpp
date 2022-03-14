@@ -6,7 +6,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "head/core/adc.hpp"
 #include "head/core/attached_tools.hpp"
 #include "head/core/presence_sensing_driver.hpp"

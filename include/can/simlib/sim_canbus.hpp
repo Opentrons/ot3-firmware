@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <boost/asio.hpp>
 #include <memory>
 #include <vector>
 
@@ -9,7 +10,7 @@
 #include "can/simlib/filter.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 
 namespace sim_canbus {
 
@@ -77,7 +78,12 @@ class SimCANBus : public CanBus {
             while (true) {
                 if (!bus->transport->open()) {
                     LOG("Failed to connect.\n");
-                    vTaskDelay(2000);
+
+                    auto sigblock = boost::asio::detail::posix_signal_blocker{};
+                    struct timespec tspec;
+                    tspec.tv_sec = 2;
+                    tspec.tv_nsec = 0;
+                    nanosleep(&tspec, nullptr);
                     continue;
                 }
 

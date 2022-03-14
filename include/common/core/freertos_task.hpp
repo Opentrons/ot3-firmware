@@ -4,7 +4,7 @@
 #include <tuple>
 
 #include "FreeRTOS.h"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "task.h"
 
 namespace freertos_task {
