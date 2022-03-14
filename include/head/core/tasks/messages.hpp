@@ -4,14 +4,14 @@
 
 namespace presence_sensing_driver_task_messages {
 
-struct PollForChange {
-
-};
+/**
+ * A message sent to check for new tool.
+ */
+struct CheckForToolChange {};
 
 using TaskMessage =
     std::variant<std::monostate,
                  can_messages::ReadPresenceSensingVoltageRequest,
-                 can_messages::AttachedToolsRequest,
-                 PollForChange>;
+                 can_messages::AttachedToolsRequest, CheckForToolChange>;
 
 }  // namespace presence_sensing_driver_task_messages
