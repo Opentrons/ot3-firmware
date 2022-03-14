@@ -42,12 +42,12 @@ class MotorDriverMessageHandler {
     void handle(std::monostate m) { static_cast<void>(m); }
 
     void handle(const can_messages::SetupRequest& m) {
-        LOG("Received motor setup request\n");
+        LOG("Received motor setup request");
         driver.setup();
     }
 
     void handle(const can_messages::WriteMotorDriverRegister& m) {
-        LOG("Received write motor driver request: addr=%d, data=%d\n",
+        LOG("Received write motor driver request: addr=%d, data=%d",
             m.reg_address, m.data);
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
@@ -56,7 +56,7 @@ class MotorDriverMessageHandler {
     }
 
     void handle(const can_messages::ReadMotorDriverRegister& m) {
-        LOG("Received read motor driver request: addr=%d\n", m.reg_address);
+        LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
@@ -71,7 +71,7 @@ class MotorDriverMessageHandler {
 
     void handle(const can_messages::WriteMotorCurrentRequest& m) {
         LOG("Received write motor current request: hold_current=%d, "
-            "run_current=%d\n",
+            "run_current=%d",
             m.hold_current, m.run_current);
 
         if (m.hold_current != 0U) {

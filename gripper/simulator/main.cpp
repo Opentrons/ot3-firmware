@@ -6,7 +6,7 @@
 #include "task.h"
 
 void signal_handler(int signum) {
-    LOG("Interrupt signal (%d) received.\n", signum);
+    LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
 }
 

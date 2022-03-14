@@ -58,12 +58,12 @@ class EEPromMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(can_messages::WriteToEEPromRequest &m) {
-        LOG("Received request to write serial number: %d\n", m.serial_number);
+        LOG("Received request to write serial number: %d", m.serial_number);
         writer.write(m.serial_number, DEVICE_ADDRESS);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
-        LOG("Received request to read serial number\n");
+        LOG("Received request to read serial number");
         writer.read(
             DEVICE_ADDRESS, [this]() { handler.send_to_can(); },
             [this](auto message_a) { handler.handle_data(message_a); });

@@ -52,7 +52,7 @@ class FreeRTOSTask {
         auto instance =
             static_cast<FreeRTOSTask<StackDepth, EntryPoint, TaskArgs...>*>(
                 instance_data->first);
-        LOG("Entering task: %s\n", pcTaskGetName(instance->handle));
+        LOG("Entering task: %s", pcTaskGetName(instance->handle));
         // Call the entry point with the argument
         std::apply(instance->entry_point, instance_data->second);
     }

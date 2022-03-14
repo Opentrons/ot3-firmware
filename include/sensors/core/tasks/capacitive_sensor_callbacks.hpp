@@ -48,12 +48,12 @@ struct ReadCapacitanceCallback {
             {}, SensorType::capacitive, capacitance};
         can_client.send_can_message(can_ids::NodeId::host, message);
         if (capacitance > zero_threshold || capacitance < -zero_threshold) {
-            LOG("Capacitance %d exceeds zero threshold %d \n", capacitance,
+            LOG("Capacitance %d exceeds zero threshold %d ", capacitance,
                 zero_threshold);
             auto capdac = update_capdac(capacitance, current_offset);
             // convert back to pF
             current_offset = get_offset_pf(capdac);
-            LOG("Setting offset to %d \n", static_cast<int>(current_offset));
+            LOG("Setting offset to %d ", static_cast<int>(current_offset));
             uint16_t update = CONFIGURATION_MEASUREMENT |
                               POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL |
                               capdac;

@@ -107,7 +107,7 @@ static auto presence_sense_driver =
     presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
 void signal_handler(int signum) {
-    LOG("Interrupt signal (%d) received.\n", signum);
+    LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
 }
 

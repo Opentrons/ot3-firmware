@@ -14,7 +14,7 @@ bool sim_spi::SimSpiDeviceBase::transmit_receive(
     iter = bit_utils::bytes_to_int(iter, transmit.end(), control);
     iter = bit_utils::bytes_to_int(iter, transmit.end(), data);
 
-    LOG("transmit_receive: control=%d, data=%d\n", control, data);
+    LOG("transmit_receive: control=%d, data=%d", control, data);
 
     constexpr uint8_t write_mask =
         static_cast<uint8_t>(spi::SpiDeviceBase::Mode::WRITE);

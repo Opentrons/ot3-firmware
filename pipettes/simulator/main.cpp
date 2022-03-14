@@ -83,23 +83,23 @@ static motor_class::Motor pipette_motor{
 
 static auto node_from_env(const char* env) -> can_ids::NodeId {
     if (!env) {
-        LOG("On left mount by default\n");
+        LOG("On left mount by default");
         return can_ids::NodeId::pipette_left;
     }
     if (strncmp(env, "left", strlen("left")) == 0) {
-        LOG("On left mount from env var\n");
+        LOG("On left mount from env var");
         return can_ids::NodeId::pipette_left;
     } else if (strncmp(env, "right", strlen("right")) == 0) {
-        LOG("On right mount from env var\n");
+        LOG("On right mount from env var");
         return can_ids::NodeId::pipette_right;
     } else {
-        LOG("On left mount from invalid env var\n");
+        LOG("On left mount from invalid env var");
         return can_ids::NodeId::pipette_left;
     }
 }
 
 void signal_handler(int signum) {
-    LOG("Interrupt signal (%d) received.\n", signum);
+    LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
 }
 

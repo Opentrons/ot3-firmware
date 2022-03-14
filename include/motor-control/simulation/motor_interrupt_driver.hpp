@@ -33,12 +33,12 @@ class MotorInterruptDriver {
                 auto move = motor_messages::Move{};
                 if (queue.peek(&move, queue.max_delay)) {
                     LOG("Enabling motor interrupt handler for group %d, seq "
-                        "%d, duration %ld\n",
+                        "%d, duration %ld",
                         move.group_id, move.seq_id, move.duration);
                     do {
                         handler.run_interrupt();
                     } while (handler.has_active_move);
-                    LOG("Move completed. Stopping interrupt simulation..\n");
+                    LOG("Move completed. Stopping interrupt simulation..");
                 }
             }
         }

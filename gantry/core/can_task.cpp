@@ -77,7 +77,7 @@ auto static writer_task_control =
  */
 auto can_task::start_reader(can_bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask& {
-    LOG("Starting the CAN reader task\n");
+    LOG("Starting the CAN reader task");
 
     canbus.setup_node_id_filter(my_node_id);
 
@@ -93,7 +93,7 @@ auto can_task::start_reader(can_bus::CanBus& canbus)
  */
 auto can_task::start_writer(can_bus::CanBus& canbus)
     -> can_task::CanMessageWriterTask& {
-    LOG("Starting the CAN writer task\n");
+    LOG("Starting the CAN writer task");
 
     writer_task_control.start(5, "can writer task", &canbus);
     return writer_task;

@@ -53,19 +53,19 @@ class MoveGroupMessageHandler {
     void handle(std::monostate m) { static_cast<void>(m); }
 
     void handle(const can_messages::AddLinearMoveRequest& m) {
-        LOG("Received add linear move request: groupid=%d, seqid=%d\n",
+        LOG("Received add linear move request: groupid=%d, seqid=%d",
             m.group_id, m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
     void handle(const can_messages::HomeRequest& m) {
-        LOG("Received home request: groupid=%d, seqid=%d\n", m.group_id,
+        LOG("Received home request: groupid=%d, seqid=%d", m.group_id,
             m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
     void handle(const can_messages::GetMoveGroupRequest& m) {
-        LOG("Received get move group request: groupid=%d\n", m.group_id);
+        LOG("Received get move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
         auto response = can_messages::GetMoveGroupResponse{
             .group_id = m.group_id,
@@ -75,14 +75,14 @@ class MoveGroupMessageHandler {
     }
 
     void handle(const can_messages::ClearAllMoveGroupsRequest& m) {
-        LOG("Received clear move groups request\n");
+        LOG("Received clear move groups request");
         for (auto& group : move_groups) {
             group.clear();
         }
     }
 
     void handle(const can_messages::ExecuteMoveGroupRequest& m) {
-        LOG("Received execute move group request: groupid=%d\n", m.group_id);
+        LOG("Received execute move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
         for (std::size_t i = 0; i < max_moves_per_group; i++) {
             auto move = group.get_move(i);
