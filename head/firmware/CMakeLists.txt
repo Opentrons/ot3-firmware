@@ -150,7 +150,7 @@ add_custom_target(head-debug
 # Targets to create full image hex file containing both bootloader and application
 add_custom_command(
         OUTPUT head-image.hex
-        DEPENDS head-hex bootloader-head-hex
+        DEPENDS head-hex bootloader-head-hex head.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
         COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py head-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex head.hex
         VERBATIM)
 add_custom_target(head-image-hex ALL
