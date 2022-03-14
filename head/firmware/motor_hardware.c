@@ -183,8 +183,9 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOF_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+
 
     /*Configure GPIO pin : LD2_Pin */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -216,12 +217,13 @@ void MX_TIM2_Init(void){
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim2.Init.Period = 4.294967295E9;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
     sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
     sConfig.IC1Filter = 0;
+
     sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
@@ -254,16 +256,13 @@ void MX_TIM3_Init(void){
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
     __HAL_RCC_TIM3_CLK_ENABLE();
-    /* USER CODE BEGIN TIM3_Init 1 */
-
-    /* USER CODE END TIM3_Init 1 */
     htim3.Instance = TIM3;
     htim3.Init.Prescaler = 0;
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim3.Init.Period = 65535;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+    sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
     sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -337,6 +336,4 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM2_Init();  /*TIM2 Initialization Function*/
     MX_TIM3_Init();/*TIM3 Initialization Function*/
     MX_TIM7_Init();
-    HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL); // Start Encoder mode Interrupt for timer2
-    HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL); // Start Encoder mode Interrupt for timer3
 }
