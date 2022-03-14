@@ -154,7 +154,7 @@ add_custom_target(gripper-debug
 # Targets to create full image hex file containing both bootloader and application
 add_custom_command(
         OUTPUT gripper-image.hex
-        DEPENDS gripper-hex bootloader-gripper-hex
+        DEPENDS gripper-hex bootloader-gripper-hex gripper.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex
         COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gripper-image.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex gripper.hex
         VERBATIM)
 add_custom_target(gripper-image-hex ALL
