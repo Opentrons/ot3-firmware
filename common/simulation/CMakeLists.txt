@@ -4,7 +4,7 @@ add_library(common-simulation STATIC
         app_update.cpp
         logging.cpp)
 
-target_link_libraries(common-simulation PUBLIC can-core Boost::boost pthread)
+target_link_libraries(common-simulation PUBLIC can-core Boost::boost Boost::date_time pthread)
 
 target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
 
