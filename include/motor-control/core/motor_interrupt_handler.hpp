@@ -129,6 +129,7 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             finish_current_move(AckMessageId::stopped_by_condition);
+            position_tracker = 0;
             return true;
         }
         return false;
@@ -168,7 +169,7 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
-        if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+        if (has_active_move && buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
         }
         // (TODO: lc) We should check the direction (and set respectively)
