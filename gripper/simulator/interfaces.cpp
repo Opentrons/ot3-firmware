@@ -79,7 +79,8 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gripper_tasks::get_queues(), motor_interface);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
-                                                      motor_interrupt);
+                                                      motor_interrupt,
+                                                      motor_interface);
 
 /**
  * Brushed motor components

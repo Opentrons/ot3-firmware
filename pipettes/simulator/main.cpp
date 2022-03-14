@@ -35,7 +35,7 @@ static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, pipettes_tasks::get_queues(), plunger_hw);
 
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
-    motor_queue, plunger_interrupt);
+    motor_queue, plunger_interrupt, plunger_hw);
 
 // microstepping is currently set to 32 μsteps.
 static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
