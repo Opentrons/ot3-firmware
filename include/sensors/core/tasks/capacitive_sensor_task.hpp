@@ -60,7 +60,7 @@ class CapacitiveMessageHandler {
          * may occur on the capacitve sensor.
          *
          */
-        LOG("Received request to read from %d sensor\n", m.sensor);
+        LOG("Received request to read from %d sensor", m.sensor);
         capdac_offset = capacitance_handler.get_offset();
         if (bool(m.offset_reading)) {
             auto message = can_messages::ReadFromSensorResponse{
@@ -81,13 +81,12 @@ class CapacitiveMessageHandler {
     }
 
     void visit(can_messages::WriteToSensorRequest &m) {
-        LOG("Received request to write data %d to %d sensor\n", m.data,
-            m.sensor);
+        LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(m.data, ADDRESS);
     }
 
     void visit(can_messages::BaselineSensorRequest &m) {
-        LOG("Received request to read from %d sensor\n", m.sensor);
+        LOG("Received request to read from %d sensor", m.sensor);
         capdac_offset = capacitance_handler.get_offset();
         capacitance_handler.reset();
         capacitance_handler.set_number_of_reads(m.sample_rate);
@@ -101,7 +100,7 @@ class CapacitiveMessageHandler {
     }
 
     void visit(can_messages::SetSensorThresholdRequest &m) {
-        LOG("Received request to set threshold to %d from %d sensor\n",
+        LOG("Received request to set threshold to %d from %d sensor",
             m.threshold, m.sensor);
         zero_threshold = m.threshold;
         auto message = can_messages::SensorThresholdResponse{

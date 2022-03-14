@@ -47,7 +47,7 @@ auto SocketCanTransport<CriticalSection>::open() -> bool {
     int s = 0;
     constexpr int use_canfd = 1;
 
-    LOG("Trying to connect to %s\n", address.c_str());
+    LOG("Trying to connect to %s", address.c_str());
 
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) == -1) {
         return false;
@@ -68,7 +68,7 @@ auto SocketCanTransport<CriticalSection>::open() -> bool {
     if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         return false;
     }
-    LOG("Connected to %s\n", address.c_str());
+    LOG("Connected to %s", address.c_str());
     handle = s;
     return true;
 }
@@ -87,7 +87,7 @@ auto SocketCanTransport<CriticalSection>::write(uint32_t arb_id,
     frame.can_id = arb_id | (1 << 31);
     frame.len = buff_len;
     ::memcpy(frame.data, cbuff, buff_len);
-    LOG("Writing: arb_id %X dlc %d\n", arb_id, buff_len);
+    LOG("Writing: arb_id %X dlc %d", arb_id, buff_len);
     auto lock = synchronization::Lock(critical_section);
     return ::write(handle, &frame, sizeof(struct can_frame)) > 0;
 }
@@ -109,11 +109,11 @@ auto SocketCanTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
         buff_len = frame.len;
         ::memcpy(buff, frame.data, buff_len);
 
-        LOG("Read: arb_id %X dlc %d\n", arb_id, buff_len);
+        LOG("Read: arb_id %X dlc %d", arb_id, buff_len);
 
         return true;
     } else {
-        LOG("Read failed: %d\n", errno);
+        LOG("Read failed: %d", errno);
     }
     return false;
 }

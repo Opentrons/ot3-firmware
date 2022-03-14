@@ -41,7 +41,7 @@ class SocketTransport : public can_transport::BusTransportBase {
 
 template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::open() -> bool {
-    LOG("Creating connection to %s:%d\n", host.c_str(), port);
+    LOG("Creating connection to %s:%d", host.c_str(), port);
 
     tcp::resolver resolver(context);
     try {
@@ -51,7 +51,7 @@ auto SocketTransport<CriticalSection>::open() -> bool {
         return false;
     }
 
-    LOG("Connected to %s:%d\n", host.c_str(), port);
+    LOG("Connected to %s:%d", host.c_str(), port);
     return true;
 }
 
@@ -64,7 +64,7 @@ template <synchronization::LockableProtocol CriticalSection>
 auto SocketTransport<CriticalSection>::write(uint32_t arb_id,
                                              const uint8_t *buff,
                                              uint32_t buff_len) -> bool {
-    LOG("Sending: arbitration %X dlc %d\n", arb_id, buff_len);
+    LOG("Sending: arbitration %X dlc %d", arb_id, buff_len);
 
     // Critical section block
     auto lock = synchronization::Lock(critical_section);
@@ -109,7 +109,7 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     buff_len = std::min(static_cast<uint32_t>(message_core::MaxMessageSize),
                         ntohl(buff_len));
 
-    LOG("Read: arbitration %X dlc %d\n", arb_id, buff_len);
+    LOG("Read: arbitration %X dlc %d", arb_id, buff_len);
     if (buff_len > 0) {
         if (boost::asio::read(socket, boost::asio::buffer(buff, buff_len)) <
             buff_len)

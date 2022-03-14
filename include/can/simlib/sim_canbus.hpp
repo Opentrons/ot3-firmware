@@ -77,7 +77,7 @@ class SimCANBus : public CanBus {
         void operator()(SimCANBus* bus) {
             while (true) {
                 if (!bus->transport->open()) {
-                    LOG("Failed to connect.\n");
+                    LOG("Failed to connect.");
 
                     auto sigblock = boost::asio::detail::posix_signal_blocker{};
                     struct timespec tspec;
@@ -100,7 +100,7 @@ class SimCANBus : public CanBus {
 
                 if (!bus->transport->read(arb_id, read_buffer.data(),
                                           read_length)) {
-                    LOG("Disconnected.\n");
+                    LOG("Disconnected.");
                     break;
                 }
 
@@ -116,7 +116,7 @@ class SimCANBus : public CanBus {
                             read_buffer.begin(), read_length);
                     }
                 } else {
-                    LOG("Message with arb_id %X and length %d is rejected\n",
+                    LOG("Message with arb_id %X and length %d is rejected",
                         arb_id, read_length);
                 }
             }

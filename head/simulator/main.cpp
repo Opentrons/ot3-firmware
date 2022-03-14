@@ -107,12 +107,16 @@ static auto presence_sense_driver =
     presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
 void signal_handler(int signum) {
-    LOG("Interrupt signal (%d) received.\n", signum);
+    LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
 }
 
 int main() {
     signal(SIGINT, signal_handler);
+
+    LOG_INIT("HEAD", []() -> const char* {
+        return pcTaskGetName(xTaskGetCurrentTaskHandle());
+    });
 
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
                             motor_left.driver, motor_right.motion_controller,
