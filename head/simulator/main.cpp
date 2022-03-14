@@ -115,8 +115,9 @@ void signal_handler(int signum) {
  *
  * @return
  */
-const char * get_task_name() { return pcTaskGetName(xTaskGetCurrentTaskHandle()); }
-
+const char* get_task_name() {
+    return pcTaskGetName(xTaskGetCurrentTaskHandle());
+}
 
 int main() {
     signal(SIGINT, signal_handler);

@@ -81,8 +81,7 @@ class CapacitiveMessageHandler {
     }
 
     void visit(can_messages::WriteToSensorRequest &m) {
-        LOG("Received request to write data %d to %d sensor", m.data,
-            m.sensor);
+        LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(m.data, ADDRESS);
     }
 
