@@ -106,7 +106,8 @@ class MotorInterruptHandler {
         }
         if (has_active_move) {
             if (buffered_move.stop_condition ==
-                MoveStopCondition::limit_switch && homing_stopped()) {
+                    MoveStopCondition::limit_switch &&
+                homing_stopped()) {
                 return false;
             }
             if (can_step() && tick()) {
@@ -169,7 +170,8 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
-        if (has_active_move && buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+        if (has_active_move &&
+            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
         }
         // (TODO: lc) We should check the direction (and set respectively)
