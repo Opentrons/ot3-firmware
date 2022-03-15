@@ -3,7 +3,6 @@ if (${CMAKE_CROSSCOMPILING})
 else()
     add_subdirectory(tests)
     add_subdirectory(simlib)
-    add_subdirectory(simulator)
 endif()
 
 add_subdirectory(core)
