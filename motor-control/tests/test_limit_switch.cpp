@@ -39,8 +39,7 @@ TEST_CASE("Move with stop condition == limit switch") {
         WHEN("the limit switch has been triggered") {
             test_objs.hw.set_mock_lim_sw(true);
             REQUIRE(!test_objs.handler.pulse());
-            (test_objs.handler.get_current_position() ==
-             0x7FFFFFFFFFFFFFFF);
+            (test_objs.handler.get_current_position() == 0x7FFFFFFFFFFFFFFF);
             CHECK(!test_objs.handler.pulse());
             CHECK(!test_objs.handler.pulse());
             CHECK(!test_objs.handler.pulse());
