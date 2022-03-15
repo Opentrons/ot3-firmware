@@ -5,7 +5,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-#include <stdbool.h>
 void motor_encoder_set_pin(void* port, uint16_t pin, uint8_t active_setting);
 void motor_encoder_reset_pin(void* port, uint16_t pin, uint8_t active_setting);
 void motor_encoder_start_timer(void* tim_handle);

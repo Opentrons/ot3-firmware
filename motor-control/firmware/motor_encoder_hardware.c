@@ -29,10 +29,7 @@ void motor_encoder_reset_pin(void* port, uint16_t pin, uint8_t active_setting) {
     HAL_GPIO_WritePin(port, pin, invert_gpio_value(active_setting));
 }
 
-
-// Needs to look something like this
-// HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL)
-// Starts the encoder timer with interrupt
+// Starts the encoder timer as interrupt
 Void motor_encoder_start_timer(void* htim, uint32_t Channel)
 {
     HAL_TIM_Encoder_Start_IT(htim, Channel);
@@ -46,10 +43,6 @@ void motor_encoder_stop_timer(void* htim, uint32_t Channel)
 // obtain the count of the motor motor encoder
 uint32_t motor_encoder_get_count(void *htim, uint32_t Channel)
 {
-    // uint32_t counter = 0;
-    // unint16_t count = 0;
-    //counter = HAL_TIM_Read_CapturedValue(htim, Channel);
     HAL_TIM_IC_CaptureCallback(*htim, uint32_t Channel);
-    //count = (uint16_t)counter;
 
 }
