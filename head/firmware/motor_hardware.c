@@ -215,7 +215,7 @@ void MX_TIM2_Init(void){
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 4.294967295E9;
+    htim2.Init.Period = UINT32_MAX;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
@@ -259,7 +259,7 @@ void MX_TIM3_Init(void){
     htim3.Instance = TIM3;
     htim3.Init.Prescaler = 0;
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 65535;
+    htim3.Init.Period = UINT16_MAX;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
@@ -334,6 +334,6 @@ void initialize_timer(motor_interrupt_callback callback) {
     motor_callback = callback;
     MX_GPIO_Init();
     MX_TIM2_Init();  /*TIM2 Initialization Function*/
-    MX_TIM3_Init();/*TIM3 Initialization Function*/
+    MX_TIM3_Init(); /*TIM3 Initialization Function*/
     MX_TIM7_Init();
 }
