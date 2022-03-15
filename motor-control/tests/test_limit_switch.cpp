@@ -44,11 +44,14 @@ TEST_CASE("Move with stop condition == limit switch") {
             CHECK(!test_objs.handler.pulse());
             THEN(
                 "the move should be stopped with ack id = stopped by "
-                "condition") {
+                "condition, and the position reset to 0") {
+                REQUIRE(test_objs.handler.get_current_position() ==
+                        0x7FFFFFFFFFFFFFFF);
                 REQUIRE(!test_objs.handler.pulse());
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
                 Ack read_ack = test_objs.reporter.messages.back();
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
+                REQUIRE(test_objs.handler.get_current_position() == 0x0);
             }
         }
     }
@@ -67,6 +70,8 @@ TEST_CASE("Move with stop condition == limit switch, case 2") {
         CHECK(!test_objs.handler.pulse());
         WHEN("the move is finished") {
             THEN("the move should have ack_id complete_without_condition") {
+                REQUIRE(test_objs.handler.get_current_position() ==
+                        0x7FFFFFFFFFFFFFFF);
                 REQUIRE(!test_objs.handler.pulse());
                 REQUIRE(test_objs.handler.pulse());
                 REQUIRE(!test_objs.handler.pulse());
@@ -91,6 +96,7 @@ TEST_CASE("Move with stop condition != limit switch") {
         test_objs.hw.set_mock_lim_sw(true);
         CHECK(!test_objs.handler.pulse());
         WHEN("the move is finished") {
+            REQUIRE(test_objs.handler.get_current_position() != 0x7FFFFFFFFFFFFFFF);
             REQUIRE(!test_objs.handler.pulse());
             REQUIRE(test_objs.handler.pulse());
             REQUIRE(!test_objs.handler.pulse());

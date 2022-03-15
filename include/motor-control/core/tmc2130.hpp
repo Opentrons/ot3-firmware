@@ -15,6 +15,9 @@
 #include "tmc2130_config.hpp"
 #include "tmc2130_registers.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
 namespace tmc2130 {
 
 using namespace std::numbers;
@@ -370,3 +373,4 @@ class TMC2130 {
 };
 
 }  // namespace tmc2130
+#pragma GCC diagnostic pop
