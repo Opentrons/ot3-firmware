@@ -106,20 +106,14 @@ class MotorInterruptHandler {
         }
         if (has_active_move) {
             if (buffered_move.stop_condition ==
-                MoveStopCondition::limit_switch) {
-                if (homing_stopped()) {
-                    return false;
-                }
+                    MoveStopCondition::limit_switch &&
+                homing_stopped()) {
+                return false;
             }
             if (can_step() && tick()) {
                 return true;
             }
             if (!can_step()) {
-                if (buffered_move.stop_condition ==
-                    MoveStopCondition::limit_switch) {
-                    finish_current_move();
-                    return false;
-                }
                 finish_current_move();
                 if (has_messages()) {
                     update_move();
@@ -136,6 +130,7 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             finish_current_move(AckMessageId::stopped_by_condition);
+            position_tracker = 0;
             return true;
         }
         return false;
@@ -175,6 +170,10 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
+        if (has_active_move &&
+            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            position_tracker = 0x7FFFFFFFFFFFFFFF;
+        }
         // (TODO: lc) We should check the direction (and set respectively)
         // the direction pin for the motor once a move is being pulled off the
         // queue stack. We'll probably want to think about moving the hardware
