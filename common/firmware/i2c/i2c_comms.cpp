@@ -14,7 +14,6 @@ using namespace i2c;
  *
  *
  */
-I2C::I2C() {}
 
 auto I2C::central_transmit(uint8_t* data, uint16_t size, uint16_t dev_address,
                            uint32_t timeout) -> bool {

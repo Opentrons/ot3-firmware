@@ -9,7 +9,7 @@ namespace i2c {
 
 class I2C : public I2CDeviceBase {
   public:
-    explicit I2C();
+    explicit I2C() = default;
     ~I2C() final = default;
     I2C(const I2C &) = delete;
     I2C(const I2C &&) = delete;
