@@ -9,7 +9,7 @@ namespace i2c {
 
 class I2C : public I2CDeviceBase {
   public:
-    I2C(HAL_I2C_HANDLE handle);
+    explicit I2C();
     ~I2C() final = default;
     I2C(const I2C &) = delete;
     I2C(const I2C &&) = delete;
@@ -36,7 +36,9 @@ class I2C : public I2CDeviceBase {
      */
     auto wait_during_poll(uint16_t delay) -> void final;
 
+    auto set_handler(HAL_I2C_HANDLE i2c_handle) -> void;
+
   private:
-    HAL_I2C_HANDLE handle;
+    HAL_I2C_HANDLE handle = nullptr;
 };
 }  // namespace i2c
