@@ -45,6 +45,7 @@ spi::SPI_interface SPI_intf = {
 };
 static spi::Spi spi_comms(SPI_intf);
 static auto i2c_comms = i2c::I2C();
+static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
     .direction =
@@ -132,7 +133,6 @@ auto main() -> int {
     adc_init();
     auto id = pipette_mounts::detect_id();
 
-    I2CHandlerStruct i2chandler_struct{};
     i2c_setup(&i2chandler_struct, SINGLE_CHANNEL);
     i2c_comms.set_handler(i2chandler_struct.i2c1);
 
