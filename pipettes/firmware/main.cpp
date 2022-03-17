@@ -44,6 +44,8 @@ spi::SPI_interface SPI_intf = {
     .pin = GPIO_PIN_6,
 };
 static spi::Spi spi_comms(SPI_intf);
+static auto i2c_comms = i2c::I2C();
+static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
     .direction =
@@ -131,12 +133,8 @@ auto main() -> int {
     adc_init();
     auto id = pipette_mounts::detect_id();
 
-    // TODO(lc 01/04/2021): We should move this setup to another object
-    // responsible for sensor control.
-    auto i2chandler_struct = I2CHandlerStruct{};
     i2c_setup(&i2chandler_struct, SINGLE_CHANNEL);
-
-    auto i2c_comms = i2c::I2C{i2chandler_struct.i2c1};
+    i2c_comms.set_handle(i2chandler_struct.i2c1);
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
