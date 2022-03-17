@@ -134,7 +134,7 @@ auto main() -> int {
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct, SINGLE_CHANNEL);
-    i2c_comms.set_handler(i2chandler_struct.i2c1);
+    i2c_comms.set_handle(i2chandler_struct.i2c1);
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();

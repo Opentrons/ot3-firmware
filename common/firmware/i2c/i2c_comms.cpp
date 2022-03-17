@@ -27,6 +27,6 @@ auto I2C::central_receive(uint8_t* data, uint16_t size, uint16_t dev_address,
 
 auto I2C::wait_during_poll(uint16_t delay) -> void { vTaskDelay(delay); }
 
-auto I2C::set_handler(HAL_I2C_HANDLE i2c_handle) -> void {
+auto I2C::set_handle(HAL_I2C_HANDLE i2c_handle) -> void {
     handle = i2c_handle;
 }
