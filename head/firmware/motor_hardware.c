@@ -5,6 +5,8 @@
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+uint32_t pulse_counter;
+uint16_t pulse_count;
 
 motor_interrupt_callback motor_callback = NULL;
 
@@ -173,32 +175,19 @@ HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi) {
     return HAL_SPI_Init(hspi);
 }
 
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
 
-void MX_GPIO_Init(void) {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOF_CLK_ENABLE();
+void Encoder_GPIO_Init(void)
+{
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
-
-    /*Configure GPIO pin : LD2_Pin */
+    __GPIOA_CLK_ENABLE();
+    __GPIOD_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    // EN CHANNELA A Axis PIN Configure
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    // EN CHAN A&B A Axis PIN Configure
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     // EN CHANNELB A AXIS PIN Configure
@@ -211,25 +200,51 @@ void MX_GPIO_Init(void) {
     GPIO_InitStruct.Pin = GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // EN CHANNELA Z AXIS PIN Configure
+    // EN CHAN A&B Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     // EN CHANNELB Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     // EN CHANNELI Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+}
+
+/**
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+
+void MX_GPIO_Init(void) {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /*Configure GPIO pin : LD2_Pin */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 void MX_TIM2_Init(void){
@@ -244,7 +259,7 @@ void MX_TIM2_Init(void){
     htim2.Init.Period = UINT32_MAX;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
     sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -274,6 +289,9 @@ void MX_TIM2_Init(void){
     {
     Error_Handler();
     }
+    HAL_NVIC_SetPriority(TIM3_IRQn, 4, 0);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+    HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
 void MX_TIM3_Init(void){
@@ -288,7 +306,7 @@ void MX_TIM3_Init(void){
     htim3.Init.Period = UINT16_MAX;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI1;
+    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
     sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
@@ -317,6 +335,9 @@ void MX_TIM3_Init(void){
     {
     Error_Handler();
     }
+    HAL_NVIC_SetPriority(TIM3_IRQn, 4, 0);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+    HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 }
 
 void MX_TIM7_Init(void) {
@@ -356,11 +377,44 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
+void start_encoder_interrupt(TIM_HandleTypeDef *htim){
+    HAL_TIM_Encoder_Start_IT(htim, TIM_CHANNEL_ALL);
+}
+
+void stop_encoder_interrupt(TIM_HandleTypeDef *htim){
+    HAL_TIM_Encoder_Stop_IT(htim, TIM_CHANNEL_ALL);
+}
+
+uint16_t encoder_count(TIM_HandleTypeDef *htim){
+    if (htim == &htim2){
+        uint32_t pulse_count = __HAL_TIM_GET_COUNTER(&htim2);
+        pulse_count = (uint16_t)pulse_counter;
+    }
+    else if(htim == &htim3){
+        uint32_t pulse_count = __HAL_TIM_GET_COUNTER(&htim3);
+        pulse_count = (uint16_t)pulse_counter;
+    }
+    return pulse_count;
+}
+
+void reset_encoder_counter(TIM_HandleTypeDef *htim){
+    if (htim == &htim2){
+        __HAL_TIM_SET_COUNTER(&htim2, 0);
+        pulse_count = encoder_count(&htim2);
+    }
+    else if(htim == &htim3){
+        __HAL_TIM_SET_COUNTER(&htim3, 0);
+        pulse_count = encoder_count(&htim3);
+
+    }
+    return pulse_count;
+}
+
 void initialize_timer(motor_interrupt_callback callback) {
     motor_callback = callback;
     MX_GPIO_Init();
-    MX_TIM2_Init(); 
+    Encoder_GPIO_Init();
+    MX_TIM2_Init();
     MX_TIM3_Init();
     MX_TIM7_Init();
-
 }
