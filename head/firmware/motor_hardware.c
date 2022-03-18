@@ -175,48 +175,47 @@ HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi) {
 }
 
 
-void Encoder_GPIO_Init(void)
-{
+void Encoder_GPIO_Init(void){
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    // EN CHAN A&B A Axis PIN Configure
+    // ENC CHAN A&B A Axis PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // EN CHANNELB A AXIS PIN Configure
+    // ENC CHANNELB A AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // EN CHANNELI A AXIS PIN Configure
+    // ENC CHANNELI A AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // EN CHAN A&B Z AXIS PIN Configure
+    // ENC CHANNELA Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // EN CHANNELB Z AXIS PIN Configure
+    // ENC CHANNELB Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // EN CHANNELI Z AXIS PIN Configure
+    // ENC CHANNELI Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
