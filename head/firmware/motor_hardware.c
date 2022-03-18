@@ -5,8 +5,7 @@
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
-uint32_t pulse_counter;
-uint16_t pulse_count;
+uint32_t enc_pulse_counter;
 
 motor_interrupt_callback motor_callback = NULL;
 
@@ -385,29 +384,25 @@ void stop_encoder_interrupt(TIM_HandleTypeDef *htim){
     HAL_TIM_Encoder_Stop_IT(htim, TIM_CHANNEL_ALL);
 }
 
-uint16_t encoder_count(TIM_HandleTypeDef *htim){
+uint16_t encoder_pulse_count(TIM_HandleTypeDef *htim){
     if (htim == &htim2){
-        uint32_t pulse_count = __HAL_TIM_GET_COUNTER(&htim2);
-        pulse_count = (uint16_t)pulse_counter;
+        enc_pulse_counter = __HAL_TIM_GET_COUNTER(&htim2);
     }
     else if(htim == &htim3){
-        uint32_t pulse_count = __HAL_TIM_GET_COUNTER(&htim3);
-        pulse_count = (uint16_t)pulse_counter;
+        enc_pulse_counter = __HAL_TIM_GET_COUNTER(&htim3);
     }
-    return pulse_count;
+    return enc_pulse_counter;
 }
 
 void reset_encoder_counter(TIM_HandleTypeDef *htim){
     if (htim == &htim2){
         __HAL_TIM_SET_COUNTER(&htim2, 0);
-        pulse_count = encoder_count(&htim2);
+        enc_pulse_counter = encoder_pulse_count(&htim2);
     }
     else if(htim == &htim3){
         __HAL_TIM_SET_COUNTER(&htim3, 0);
-        pulse_count = encoder_count(&htim3);
-
+        enc_pulse_counter = encoder_pulse_count(&htim3);
     }
-    return pulse_count;
 }
 
 void initialize_timer(motor_interrupt_callback callback) {
