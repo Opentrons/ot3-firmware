@@ -42,7 +42,7 @@ class CapacitiveMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        uint16_t configuration_data =
+        uint32_t configuration_data =
             CONFIGURATION_MEASUREMENT << 8 | DEVICE_CONFIGURATION;
         writer.write(configuration_data, ADDRESS);
         configuration_data = FDC_CONFIGURATION << 8 | SAMPLE_RATE;
@@ -64,9 +64,8 @@ class CapacitiveMessageHandler {
         capdac_offset = capacitance_handler.get_offset();
         if (bool(m.offset_reading)) {
             auto message = can_messages::ReadFromSensorResponse{
-                {},
-                SensorType::capacitive,
-                static_cast<uint32_t>(capdac_offset)};
+                .sensor = SensorType::capacitive,
+                .sensor_data = static_cast<int32_t>(capdac_offset)};
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
             capacitance_handler.reset();
@@ -104,14 +103,14 @@ class CapacitiveMessageHandler {
             m.threshold, m.sensor);
         zero_threshold = m.threshold;
         auto message = can_messages::SensorThresholdResponse{
-            {}, SensorType::capacitive, zero_threshold};
+            .sensor = SensorType::capacitive, .threshold = zero_threshold};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     InternalCallback internal_callback{};
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
     // 3 pF
-    uint32_t zero_threshold = 0x3;
+    int32_t zero_threshold = 0x3;
     // 0 pF
     float capdac_offset = 0x0;
     static constexpr uint16_t DELAY = 20;

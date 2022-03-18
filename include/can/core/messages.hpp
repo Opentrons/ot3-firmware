@@ -507,19 +507,15 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
 struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
     uint8_t sensor = 0;
     uint8_t sample_rate = 1;
-    uint8_t offset_update = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BaselineSensorRequest {
         uint8_t sensor = 0;
         uint8_t sample_rate = 0;
-        uint8_t offset_update = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, sample_rate);
-        body = bit_utils::bytes_to_int(body, limit, offset_update);
         return BaselineSensorRequest{.sensor = sensor,
-                                     .sample_rate = sample_rate,
-                                     .offset_update = offset_update};
+                                     .sample_rate = sample_rate};
     }
 
     auto operator==(const BaselineSensorRequest& other) const -> bool = default;
@@ -527,13 +523,13 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
     can_ids::SensorType sensor{};
-    uint32_t sensor_data = 0;
+    int32_t sensor_data = 0;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
-        iter = bit_utils::int_to_bytes(sensor_data, body, limit);
+        iter = bit_utils::int_to_bytes(sensor_data, iter, limit);
         return iter - body;
     }
     auto operator==(const ReadFromSensorResponse& other) const
@@ -543,12 +539,12 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 struct SetSensorThresholdRequest
     : BaseMessage<MessageId::set_sensor_threshold_request> {
     uint8_t sensor;
-    uint32_t threshold;
+    int32_t threshold;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSensorThresholdRequest {
         uint8_t sensor = 0;
-        uint8_t threshold = 0;
+        int32_t threshold = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, threshold);
         return SetSensorThresholdRequest{.sensor = sensor,
@@ -562,13 +558,13 @@ struct SetSensorThresholdRequest
 struct SensorThresholdResponse
     : BaseMessage<MessageId::set_sensor_threshold_response> {
     can_ids::SensorType sensor{};
-    uint32_t threshold = 0;
+    int32_t threshold = 0;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
-        iter = bit_utils::int_to_bytes(threshold, body, limit);
+        iter = bit_utils::int_to_bytes(threshold, iter, limit);
         return iter - body;
     }
     auto operator==(const SensorThresholdResponse& other) const
