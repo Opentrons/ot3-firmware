@@ -287,8 +287,6 @@ void MX_TIM2_Init(void){
     {
     Error_Handler();
     }
-    HAL_NVIC_SetPriority(TIM3_IRQn, 4, 0);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
@@ -333,8 +331,6 @@ void MX_TIM3_Init(void){
     {
     Error_Handler();
     }
-    HAL_NVIC_SetPriority(TIM3_IRQn, 4, 0);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 }
 
@@ -375,7 +371,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-uint16_t encoder_pulse_count(TIM_HandleTypeDef *htim){
+uint32_t encoder_pulse_count(TIM_HandleTypeDef *htim){
     if (htim == &htim2){
         enc_pulse_counter = __HAL_TIM_GET_COUNTER(&htim2);
     }
