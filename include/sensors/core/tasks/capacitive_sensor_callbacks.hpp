@@ -22,7 +22,7 @@ template <message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
-                            uint32_t threshold, float current_offset)
+                            int32_t threshold, float current_offset)
         : can_client{can_client},
           i2c_writer{i2c_writer},
           current_offset{current_offset},
@@ -42,12 +42,12 @@ struct ReadCapacitanceCallback {
     }
 
     void send_to_can() {
-        uint32_t capacitance =
+        int32_t capacitance =
             convert_capacitance(measurement, number_of_reads, current_offset);
         auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::capacitive, capacitance};
+            .sensor = SensorType::capacitive, .sensor_data = capacitance};
         can_client.send_can_message(can_ids::NodeId::host, message);
-        if (capacitance > zero_threshold || capacitance < -zero_threshold) {
+        if (capacitance > zero_threshold || capacitance < zero_threshold) {
             LOG("Capacitance %d exceeds zero threshold %d ", capacitance,
                 zero_threshold);
             auto capdac = update_capdac(capacitance, current_offset);
@@ -76,8 +76,8 @@ struct ReadCapacitanceCallback {
     CanClient &can_client;
     I2CQueueWriter &i2c_writer;
     float current_offset;
-    uint32_t zero_threshold;
-    uint32_t measurement = 0;
+    int32_t zero_threshold;
+    int32_t measurement = 0;
     uint16_t number_of_reads = 1;
 };
 

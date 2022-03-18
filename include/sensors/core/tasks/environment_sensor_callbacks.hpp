@@ -20,18 +20,20 @@ struct HumidityReadingCallback {
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
         humidity = convert(data, SensorType::humidity);
+        LOG("Handling data data received %d", humidity);
     }
 
     void send_to_can() {
+        LOG("Sending humidity data %d", humidity);
         auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::humidity, humidity};
+            .sensor = SensorType::humidity, .sensor_data = humidity};
         can_client.send_can_message(can_ids::NodeId::host, message);
         humidity = 0;
     }
 
   private:
     CanClient &can_client;
-    uint32_t humidity = 0;
+    int32_t humidity = 0;
 };
 
 template <message_writer_task::TaskClient CanClient>
@@ -45,18 +47,19 @@ struct TemperatureReadingCallback {
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
         temperature = convert(data, SensorType::temperature);
+        LOG("Handling temperature data received %d", temperature);
     }
 
     void send_to_can() {
         auto message = can_messages::ReadFromSensorResponse{
-            {}, SensorType::temperature, temperature};
+            .sensor = SensorType::temperature, .sensor_data = temperature};
         can_client.send_can_message(can_ids::NodeId::host, message);
         temperature = 0;
     }
 
   private:
     CanClient &can_client;
-    uint32_t temperature = 0;
+    int32_t temperature = 0;
 };
 
 // TODO (lc: 02-24-2022 pull into its own shared file)
