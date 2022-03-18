@@ -375,14 +375,6 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-void start_encoder_interrupt(TIM_HandleTypeDef *htim){
-    HAL_TIM_Encoder_Start_IT(htim, TIM_CHANNEL_ALL);
-}
-
-void stop_encoder_interrupt(TIM_HandleTypeDef *htim){
-    HAL_TIM_Encoder_Stop_IT(htim, TIM_CHANNEL_ALL);
-}
-
 uint16_t encoder_pulse_count(TIM_HandleTypeDef *htim){
     if (htim == &htim2){
         enc_pulse_counter = __HAL_TIM_GET_COUNTER(&htim2);
