@@ -4,9 +4,15 @@
 
 using namespace motor_hardware;
 
-void BrushedMotorHardware::positive_direction() {}
+void BrushedMotorHardware::positive_direction() {
+    motor_hardware_start_pwm();
+    motor_hardware_stop_pwm();
+}
 
-void BrushedMotorHardware::negative_direction() {}
+void BrushedMotorHardware::negative_direction() {
+    motor_hardware_start_pwm();
+    motor_hardware_stop_pwm();
+}
 
 void BrushedMotorHardware::activate_motor() {
     motor_hardware_set_pin(pins.enable.port, pins.enable.pin,

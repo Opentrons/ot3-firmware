@@ -45,6 +45,8 @@
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim3;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -116,14 +118,6 @@ void DebugMon_Handler(void) {}
 /******************************************************************************/
 
 /**
- * @brief  This function handles PPP interrupt request.
- * @param  None
- * @retval None
- */
-/*void PPP_IRQHandler(void)
-{
-}*/
-/**
  * @brief This function handles DMA1 channel2 global interrupt.
  */
 void DMA1_Channel2_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_rx); }
@@ -139,6 +133,17 @@ void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 void FDCAN1_IT0_IRQHandler(void) {
     HAL_FDCAN_IRQHandler(can_get_device_handle());
 }
+
+/**
+ * @brief This function handles TIM1 update interrupt and TIM16 global
+ * interrupt.
+ */
+void TIM1_UP_TIM16_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
+
+/**
+ * @brief This function handles TIM3 global interrupt.
+ */
+void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
 /**
  * @brief This function handles TIM7 global interrupt.

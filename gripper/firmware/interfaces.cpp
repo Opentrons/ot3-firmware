@@ -198,6 +198,9 @@ void interfaces::initialize() {
     // Initialize DAC
     initialize_dac();
 
+    // Initialize PWM timers
+    initialize_pwm();
+
     // Start the can bus
     can_start();
 
