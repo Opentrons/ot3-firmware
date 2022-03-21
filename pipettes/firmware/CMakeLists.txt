@@ -78,7 +78,7 @@ elseif(ENV{PIPETTE_TYPE} STREQUAL "ninety-six")
 elseif(ENV{PIPETTE_TYPE} STREQUAL "three-eighty-four")
     target_pipettes_core_384(pipettes)
 else ()
-    message("No pipette type provided. Falling back to single channel.")
+    message(STATUS "No pipette type provided. Falling back to single channel.")
     target_pipettes_core_single(pipettes)
 endif ()
 

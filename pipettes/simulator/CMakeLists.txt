@@ -49,16 +49,16 @@ target_ot_motor_control(pipettes-simulator)
 
 
 if(ENV{PIPETTE_TYPE} STREQUAL "single")
-    target_pipettes_core_single(pipettes)
+    target_pipettes_core_single(pipettes-simulator)
 elseif(ENV{PIPETTE_TYPE} STREQUAL "multi")
-    target_pipettes_core_multi(pipettes)
+    target_pipettes_core_multi(pipettes-simulator)
 elseif(ENV{PIPETTE_TYPE} STREQUAL "ninety-six")
-    target_pipettes_core_96(pipettes)
+    target_pipettes_core_96(pipettes-simulator)
 elseif(ENV{PIPETTE_TYPE} STREQUAL "three-eighty-four")
-    target_pipettes_core_384(pipettes)
+    target_pipettes_core_384(pipettes-simulator)
 else ()
-    message("No pipette type provided. Falling back to single channel.")
-    target_pipettes_core_single(pipettes)
+    message(STATUS "No pipette type provided. Falling back to single channel.")
+    target_pipettes_core_single(pipettes-simulator)
 endif ()
 
 
