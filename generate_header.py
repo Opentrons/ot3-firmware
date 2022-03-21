@@ -37,8 +37,8 @@ class block:
 def generate_file_comment(output: io.StringIO) -> None:
     """Generate the header file comment."""
     output.write("/********************************************\n")
-    output.write("* This is a generated file. Do not modify.  *\n")
-    output.write("********************************************/\n")
+    output.write(" * This is a generated file. Do not modify.  *\n")
+    output.write(" ********************************************/\n")
     output.write("#pragma once\n\n")
 
 
@@ -90,7 +90,7 @@ def write_enum_c(e: Type[Enum], output: io.StringIO, prefix: str) -> None:
     ):
         for i in e:
             name = "_".join(("can", e.__name__, i.name)).lower()
-            output.write(f"  {name} = 0x{i.value:x},\n")
+            output.write(f"    {name} = 0x{i.value:x},\n")
 
 
 def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: ModuleType) -> None:
@@ -102,7 +102,7 @@ def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: Mod
         terminate=f"}} {prefix}{arbitration_id.ArbitrationIdParts.__name__};\n\n",
     ):
         for i in arbitration_id.ArbitrationIdParts._fields_:
-            output.write(f"  unsigned int {i[0]}: {i[2]};\n")
+            output.write(f"    unsigned int {i[0]}: {i[2]};\n")
 
 
 class Languge(str, Enum):
