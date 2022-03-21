@@ -26,13 +26,6 @@ HAL_I2C_HANDLE MX_I2C3_Init();
 int data_ready();
 void enable_eeprom();
 void disable_eeprom();
-int tip_present();
-typedef enum Type { MULTI_CHANNEL, SINGLE_CHANNEL } PipetteType;
-typedef struct HandlerStruct {
-    HAL_I2C_HANDLE i2c1;
-    HAL_I2C_HANDLE i2c3;
-} I2CHandlerStruct;
-void i2c_setup(I2CHandlerStruct* temp_struct, PipetteType pipette_type);
 
 
 #ifdef __cplusplus

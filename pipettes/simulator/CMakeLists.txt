@@ -36,17 +36,32 @@ add_executable(
         ${PIPETTES_SIMULATOR_SRC}
 )
 
+
 if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(pipettes-simulator PUBLIC USE_SOCKETCAN)
 endif()
 
 target_compile_definitions(pipettes-simulator PUBLIC ENABLE_LOGGING)
 
+
 target_can_simlib(pipettes-simulator)
-
-target_pipettes_core(pipettes-simulator)
-
 target_ot_motor_control(pipettes-simulator)
+
+
+if(ENV{PIPETTE_TYPE} STREQUAL "single")
+    target_pipettes_core_single(pipettes)
+elseif(ENV{PIPETTE_TYPE} STREQUAL "multi")
+    target_pipettes_core_multi(pipettes)
+elseif(ENV{PIPETTE_TYPE} STREQUAL "ninety-six")
+    target_pipettes_core_96(pipettes)
+elseif(ENV{PIPETTE_TYPE} STREQUAL "three-eighty-four")
+    target_pipettes_core_384(pipettes)
+else ()
+    message("No pipette type provided. Falling back to single channel.")
+    target_pipettes_core_single(pipettes)
+endif ()
+
+
 
 target_link_libraries(pipettes-simulator PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost)
 

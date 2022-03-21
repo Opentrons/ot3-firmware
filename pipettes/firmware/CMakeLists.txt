@@ -40,8 +40,6 @@ add_executable(pipettes
         ${PIPETTE_FW_LINTABLE_SRCS}
         ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
-target_pipettes_core(pipettes)
-
 target_ot_motor_control(pipettes)
 
 target_link_libraries(pipettes
@@ -70,6 +68,19 @@ target_compile_options(pipettes
         $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+
+if(ENV{PIPETTE_TYPE} STREQUAL "single")
+    target_pipettes_core_single(pipettes)
+elseif(ENV{PIPETTE_TYPE} STREQUAL "multi")
+    target_pipettes_core_multi(pipettes)
+elseif(ENV{PIPETTE_TYPE} STREQUAL "ninety-six")
+    target_pipettes_core_96(pipettes)
+elseif(ENV{PIPETTE_TYPE} STREQUAL "three-eighty-four")
+    target_pipettes_core_384(pipettes)
+else ()
+    message("No pipette type provided. Falling back to single channel.")
+    target_pipettes_core_single(pipettes)
+endif ()
 
 target_include_directories(STM32L5xx_Drivers_Pipettes
         PUBLIC .)
