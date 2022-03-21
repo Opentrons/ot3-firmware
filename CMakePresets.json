@@ -84,44 +84,35 @@
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "pipettes"
+        "pipettes-single",
+        "pipettes-multi",
+        "pipettes-96",
+        "pipettes-384"
       ]
     },
     {
       "name": "pipettes-single",
       "inherits": "pipettes",
       "displayName": "pipettes single binary",
-      "description": "Build the single channel pipettes cross binary",
-      "environment": {
-        "PIPETTE_TYPE": "single"
-      }
+      "description": "Build the single channel pipettes cross binary"
     },
     {
       "name": "pipettes-multi",
       "inherits": "pipettes",
       "displayName": "pipettes multi binary",
-      "description": "Build the multi channel pipettes cross binary",
-      "environment": {
-        "PIPETTE_TYPE": "multi"
-      }
+      "description": "Build the multi channel pipettes cross binary"
     },
     {
       "name": "pipettes-96",
       "inherits": "pipettes",
       "displayName": "pipettes 96 channel binary",
-      "description": "Build the 96 channel pipettes cross binary",
-      "environment": {
-        "PIPETTE_TYPE": "ninety-six"
-      }
+      "description": "Build the 96 channel pipettes cross binary"
     },
     {
       "name": "pipettes-384",
       "inherits": "pipettes",
       "displayName": "pipettes 384 channel binary",
-      "description": "Build the 384 channel pipettes cross binary",
-      "environment": {
-        "PIPETTE_TYPE": "three-eighty-four"
-      }
+      "description": "Build the 384 channel pipettes cross binary"
     },
     {
       "name": "gripper",
@@ -218,45 +209,12 @@
         "head-simulator",
         "gantry-x-simulator",
         "gantry-y-simulator",
-        "pipettes-simulator",
+        "pipettes-single-simulator",
+        "pipettes-multi-simulator",
+        "pipettes-96-simulator",
+        "pipettes-384-simulator",
         "gripper-simulator"
       ]
-    },
-    {
-      "name": "simulators-single-pipette",
-      "inherits": "simulators",
-      "displayName": "simulators with single pipette",
-      "description": "build the simulators with a single pipette",
-      "environment": {
-        "PIPETTE_TYPE": "single"
-      }
-    },
-    {
-      "name": "simulators-multi-pipette",
-      "inherits": "simulators",
-      "displayName": "simulators with multi pipette",
-      "description": "build the simulators with a multi pipette",
-      "environment": {
-        "PIPETTE_TYPE": "multi"
-      }
-    },
-    {
-      "name": "simulators-96-pipette",
-      "inherits": "simulators",
-      "displayName": "simulators with 96 pipette",
-      "description": "build the simulators with a 96 pipette",
-      "environment": {
-        "PIPETTE_TYPE": "ninety-six"
-      }
-    },
-    {
-      "name": "simulators-384-pipette",
-      "inherits": "simulators",
-      "displayName": "simulators with 384 pipette",
-      "description": "build the simulators with a 384 pipette",
-      "environment": {
-        "PIPETTE_TYPE": "three-eighty-four"
-      }
     },
     {
       "name": "simulators-gcc10",
@@ -269,45 +227,12 @@
         "head-simulator",
         "gantry-x-simulator",
         "gantry-y-simulator",
-        "pipettes-simulator",
+        "pipettes-single-simulator",
+        "pipettes-multi-simulator",
+        "pipettes-96-simulator",
+        "pipettes-384-simulator",
         "gripper-simulator"
       ]
-    },
-    {
-      "name": "simulators-gcc10-single-pipette",
-      "inherits": "simulators-gcc10",
-      "displayName": "simulators with single pipette gcc10",
-      "description": "build the simulators using gcc10 with a single pipette",
-      "environment": {
-        "PIPETTE_TYPE": "single"
-      }
-    },
-    {
-      "name": "simulators-gcc10-multi-pipette",
-      "inherits": "simulators-gcc10",
-      "displayName": "simulators with multi pipette gcc10",
-      "description": "build the simulators using gcc10 with a multi pipette",
-      "environment": {
-        "PIPETTE_TYPE": "multi"
-      }
-    },
-    {
-      "name": "simulators-gcc10-96-pipette",
-      "inherits": "simulators-gcc10",
-      "displayName": "simulators with 96 pipette gcc10",
-      "description": "build the simulators using gcc10 with a 96 pipette",
-      "environment": {
-        "PIPETTE_TYPE": "ninety-six"
-      }
-    },
-    {
-      "name": "simulators-gcc10-384-pipette",
-      "inherits": "simulators-gcc10",
-      "displayName": "simulators with 384 pipette gcc10",
-      "description": "build the simulators using gcc10 with a 384 pipette",
-      "environment": {
-        "PIPETTE_TYPE": "three-eighty-four"
-      }
     }
   ]
 }
