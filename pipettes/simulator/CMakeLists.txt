@@ -5,10 +5,10 @@ find_package(FreeRTOS)
 include_directories(
         .
         ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+        ${CMAKE_BINARY_DIR}/generated/
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/include
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils
-
 )
 
 # Create the FreeRTOS source file list
@@ -26,40 +26,61 @@ list(APPEND FREERTOS_SOURCES "${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/Th
 # Create the freertos lib
 add_library(freertos-pipettes STATIC ${FREERTOS_SOURCES})
 
-set(PIPETTES_SIMULATOR_SRC
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        )
 
-add_executable(
-        pipettes-simulator
-        ${PIPETTES_SIMULATOR_SRC}
-)
+function(add_simulator_executable TARGET)
+    if(${TARGET} STREQUAL "pipettes-single-simulator")
+        set(PIPETTES_SIMULATOR_SRC
+                ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+                )
+    else()
+        set(PIPETTES_SIMULATOR_SRC
+                ${CMAKE_CURRENT_SOURCE_DIR}/main_multi_i2c.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+                )
+    endif()
+    add_executable(
+            ${TARGET}
+            ${PIPETTES_SIMULATOR_SRC}
+    )
 
-if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
-    target_compile_definitions(pipettes-simulator PUBLIC USE_SOCKETCAN)
-endif()
+    if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
+        target_compile_definitions(${TARGET} PUBLIC USE_SOCKETCAN)
+    endif()
 
-target_compile_definitions(pipettes-simulator PUBLIC ENABLE_LOGGING)
-
-target_can_simlib(pipettes-simulator)
-
-target_pipettes_core(pipettes-simulator)
-
-target_ot_motor_control(pipettes-simulator)
-
-target_link_libraries(pipettes-simulator PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost)
-
-
-# Set up the include directories
-target_include_directories(
-        pipettes-simulator
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    target_compile_definitions(${TARGET} PUBLIC ENABLE_LOGGING)
 
 
-set_target_properties(pipettes-simulator
-        PROPERTIES CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE
-        C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+    target_can_simlib(${TARGET})
+    target_ot_motor_control(${TARGET})
 
+    if(${TARGET} STREQUAL "pipettes-single-simulator")
+        target_pipettes_core_single(${TARGET})
+    elseif(${TARGET} STREQUAL "pipettes-multi-simulator")
+        target_pipettes_core_multi(${TARGET})
+    elseif(${TARGET} STREQUAL "pipettes-96-simulator")
+        target_pipettes_core_96(${TARGET})
+    elseif(${TARGET} STREQUAL "pipettes-384-simulator")
+        target_pipettes_core_384(${TARGET})
+    else ()
+        message(FATAL_ERROR "Invalid pipette target provided.")
+    endif ()
+
+    target_link_libraries(${TARGET} PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost)
+
+    # Set up the include directories
+    target_include_directories(
+            ${TARGET}
+            PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+    set_target_properties(${TARGET}
+            PROPERTIES CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED TRUE
+            C_STANDARD 11
+            C_STANDARD_REQUIRED TRUE)
+endfunction()
+
+add_simulator_executable(pipettes-single-simulator)
+add_simulator_executable(pipettes-multi-simulator)
+add_simulator_executable(pipettes-96-simulator)
+add_simulator_executable(pipettes-384-simulator)

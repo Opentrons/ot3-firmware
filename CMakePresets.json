@@ -84,8 +84,35 @@
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "pipettes"
+        "pipettes-single",
+        "pipettes-multi",
+        "pipettes-96",
+        "pipettes-384"
       ]
+    },
+    {
+      "name": "pipettes-single",
+      "inherits": "pipettes",
+      "displayName": "pipettes single binary",
+      "description": "Build the single channel pipettes cross binary"
+    },
+    {
+      "name": "pipettes-multi",
+      "inherits": "pipettes",
+      "displayName": "pipettes multi binary",
+      "description": "Build the multi channel pipettes cross binary"
+    },
+    {
+      "name": "pipettes-96",
+      "inherits": "pipettes",
+      "displayName": "pipettes 96 channel binary",
+      "description": "Build the 96 channel pipettes cross binary"
+    },
+    {
+      "name": "pipettes-384",
+      "inherits": "pipettes",
+      "displayName": "pipettes 384 channel binary",
+      "description": "Build the 384 channel pipettes cross binary"
     },
     {
       "name": "gripper",
@@ -182,7 +209,10 @@
         "head-simulator",
         "gantry-x-simulator",
         "gantry-y-simulator",
-        "pipettes-simulator",
+        "pipettes-single-simulator",
+        "pipettes-multi-simulator",
+        "pipettes-96-simulator",
+        "pipettes-384-simulator",
         "gripper-simulator"
       ]
     },
@@ -197,7 +227,10 @@
         "head-simulator",
         "gantry-x-simulator",
         "gantry-y-simulator",
-        "pipettes-simulator",
+        "pipettes-single-simulator",
+        "pipettes-multi-simulator",
+        "pipettes-96-simulator",
+        "pipettes-384-simulator",
         "gripper-simulator"
       ]
     }

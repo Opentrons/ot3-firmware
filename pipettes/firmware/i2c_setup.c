@@ -1,5 +1,5 @@
 #include "platform_specific_hal_conf.h"
-#include "common/firmware/i2c.h"
+#include "pipettes/firmware/i2c_setup.h"
 #include "common/firmware/errors.h"
 
 static I2C_HandleTypeDef hi2c;
@@ -167,7 +167,17 @@ void i2c_setup(I2CHandlerStruct* temp_struct, PipetteType pipette_type) {
     tip_sense_gpio_init();
     eeprom_write_gpio_init();
     switch (pipette_type) {
-        case MULTI_CHANNEL: {
+        case EIGHT_CHANNEL: {
+            HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
+            temp_struct->i2c1 = i2c1;
+            break;
+        }
+        case NINETY_SIX_CHANNEL: {
+            HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
+            temp_struct->i2c1 = i2c1;
+            break;
+        }
+        case THREE_EIGHTY_FOUR_CHANNEL: {
             HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
             temp_struct->i2c1 = i2c1;
             break;

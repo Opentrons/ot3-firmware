@@ -17,13 +17,23 @@
 namespace pipettes_tasks {
 
 /**
- * Start pipettes tasks.
+ * Start pipettes tasks with one i2c bus.
  */
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      motion_controller,
                  motor_driver::MotorDriver& motor_driver,
                  i2c::I2CDeviceBase& i2c, can_ids::NodeId id);
+
+/**
+ * Start pipettes tasks with two i2c buses.
+ */
+void start_tasks(can_bus::CanBus& can_bus,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     motion_controller,
+                 motor_driver::MotorDriver& motor_driver,
+                 i2c::I2CDeviceBase& i2c3_device,
+                 i2c::I2CDeviceBase& i2c1_device, can_ids::NodeId id);
 
 /**
  * Access to all the message queues in the system.
@@ -63,7 +73,9 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         sensor_task_utils::TaskMessage>* capacitive_sensor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c_task::TaskMessage>*
-        i2c_queue{nullptr};
+        i2c3_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c_task::TaskMessage>*
+        i2c1_queue{nullptr};
 };
 
 /**
@@ -85,7 +97,9 @@ struct AllTask {
                                    QueueClient, QueueClient>* move_group{
         nullptr};
 
-    i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>* i2c_task{
+    i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>* i2c3_task{
+        nullptr};
+    i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>* i2c1_task{
         nullptr};
     eeprom_task::EEPromTask<
         freertos_message_queue::FreeRTOSMessageQueue,
