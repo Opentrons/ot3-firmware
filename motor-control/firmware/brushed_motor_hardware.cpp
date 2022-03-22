@@ -5,13 +5,13 @@
 using namespace motor_hardware;
 
 void BrushedMotorHardware::positive_direction() {
-    motor_hardware_start_pwm();
-    motor_hardware_stop_pwm();
+    motor_hardware_start_pwm(pins.pwm_1.tim, pins.pwm_1.channel);
+    motor_hardware_stop_pwm(pins.pwm_2.tim, pins.pwm_2.channel);
 }
 
 void BrushedMotorHardware::negative_direction() {
-    motor_hardware_start_pwm();
-    motor_hardware_stop_pwm();
+    motor_hardware_stop_pwm(pins.pwm_1.tim, pins.pwm_1.channel);
+    motor_hardware_start_pwm(pins.pwm_2.tim, pins.pwm_2.channel);
 }
 
 void BrushedMotorHardware::activate_motor() {

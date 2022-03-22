@@ -155,4 +155,9 @@ void SysTick_Handler(void) {
     HAL_IncTick();
     xPortSysTickHandler();
 }
+
+/**
+ * @brief This function handles EXTI line[15:10] interrupts.
+ */
+void EXTI15_10_IRQHandler(void) { HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13); }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
