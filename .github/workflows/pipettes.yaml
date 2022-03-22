@@ -64,7 +64,7 @@ jobs:
       - name: "Configure"
         run: cmake --preset=cross-pipettes .
       - name: "Format"
-        run: cmake --build ./build-cross-pipettes --target pipettes-single-format-ci
+        run: cmake --build ./build-cross-pipettes --target pipettes-format-ci
       - name: "Build"
         run: cmake --build ./build-cross-pipettes --target pipettes
       - name: "Lint Single Channel"
