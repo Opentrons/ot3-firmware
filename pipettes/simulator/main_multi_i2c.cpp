@@ -50,6 +50,7 @@ std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {capsensor.ADDRESS, capsensor}};
 
 static auto i2c3_comms = sim_i2c::SimI2C{sensor_map};
+static auto i2c1_comms = sim_i2c::SimI2C{sensor_map};
 
 static motor_class::Motor pipette_motor{
     spi_comms,
@@ -96,7 +97,7 @@ int main() {
     });
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c3_comms,
+                                pipette_motor.driver, i2c3_comms, i2c1_comms,
                                 node_from_env(std::getenv("MOUNT")));
 
     vTaskStartScheduler();

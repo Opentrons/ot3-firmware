@@ -5,6 +5,7 @@ find_package(FreeRTOS)
 include_directories(
         .
         ${CMAKE_CURRENT_SOURCE_DIR}/../../include
+        ${CMAKE_BINARY_DIR}/generated/
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/include
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix
         ${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils
@@ -25,12 +26,19 @@ list(APPEND FREERTOS_SOURCES "${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/Th
 # Create the freertos lib
 add_library(freertos-pipettes STATIC ${FREERTOS_SOURCES})
 
-set(PIPETTES_SIMULATOR_SRC
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        )
 
 function(add_simulator_executable TARGET)
+    if(${TARGET} STREQUAL "pipettes-single-simulator")
+        set(PIPETTES_SIMULATOR_SRC
+                ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+                )
+    else()
+        set(PIPETTES_SIMULATOR_SRC
+                ${CMAKE_CURRENT_SOURCE_DIR}/main_multi_i2c.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+                )
+    endif()
     add_executable(
             ${TARGET}
             ${PIPETTES_SIMULATOR_SRC}
@@ -46,18 +54,16 @@ function(add_simulator_executable TARGET)
     target_can_simlib(${TARGET})
     target_ot_motor_control(${TARGET})
 
-
-    if(${TARGET} STREQUAL "pipettes-single")
+    if(${TARGET} STREQUAL "pipettes-single-simulator")
         target_pipettes_core_single(${TARGET})
-    elseif(${TARGET} STREQUAL "pipettes-multi")
+    elseif(${TARGET} STREQUAL "pipettes-multi-simulator")
         target_pipettes_core_multi(${TARGET})
-    elseif(${TARGET} STREQUAL "pipettes-96")
+    elseif(${TARGET} STREQUAL "pipettes-96-simulator")
         target_pipettes_core_96(${TARGET})
-    elseif(${TARGET} STREQUAL "pipettes-384")
+    elseif(${TARGET} STREQUAL "pipettes-384-simulator")
         target_pipettes_core_384(${TARGET})
     else ()
-        message(STATUS "Falling back to single channel pipette.")
-        target_pipettes_core_single(${TARGET})
+        message(FATAL_ERROR "Invalid pipette target provided.")
     endif ()
 
     target_link_libraries(${TARGET} PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost)
@@ -74,7 +80,7 @@ function(add_simulator_executable TARGET)
             C_STANDARD_REQUIRED TRUE)
 endfunction()
 
-add_simulator_executable(pipettes-single)
-add_simulator_executable(pipettes-multi)
-add_simulator_executable(pipettes-96)
-add_simulator_executable(pipettes-384)
+add_simulator_executable(pipettes-single-simulator)
+add_simulator_executable(pipettes-multi-simulator)
+add_simulator_executable(pipettes-96-simulator)
+add_simulator_executable(pipettes-384-simulator)

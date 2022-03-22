@@ -54,8 +54,8 @@ void pipettes_tasks::start_tasks(
 
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus, id);
-    auto& i2c_task = i2c_task_builder.start(5, i2c_device);
-    i2c_task_client.set_queue(&i2c_task.get_queue());
+    auto& i2c3_task = i2c_task_builder.start(5, i2c_device);
+    i2c_task_client.set_queue(&i2c3_task.get_queue());
 
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
@@ -76,7 +76,7 @@ void pipettes_tasks::start_tasks(
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task = &capacitive_sensor_task;
-    tasks.i2c_task = &i2c_task;
+    tasks.i2c3_task = &i2c3_task;
 
     queues.motion_queue = &motion.get_queue();
     queues.motor_queue = &motor.get_queue();
@@ -87,7 +87,7 @@ void pipettes_tasks::start_tasks(
     queues.environment_sensor_queue = &environment_sensor_task.get_queue();
     queues.capacitive_sensor_queue = &capacitive_sensor_task.get_queue();
 
-    queues.i2c_queue = &i2c_task.get_queue();
+    queues.i2c3_queue = &i2c3_task.get_queue();
 }
 
 pipettes_tasks::QueueClient::QueueClient()

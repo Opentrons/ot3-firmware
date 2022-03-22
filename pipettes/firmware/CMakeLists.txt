@@ -12,7 +12,6 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
     ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
@@ -96,16 +95,19 @@ function(add_pipettes_executable TARGET)
             $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
     if(${TARGET} STREQUAL "pipettes-single")
+        target_sources(${TARGET} PUBLIC main.cpp)
         target_pipettes_core_single(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-multi")
+        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp)
         target_pipettes_core_multi(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-96")
+        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp)
         target_pipettes_core_96(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-384")
+        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp)
         target_pipettes_core_384(${TARGET})
     else ()
-        message(STATUS "Falling back to single channel pipette.")
-        target_pipettes_core_single(${TARGET})
+        message(FATAL_ERROR "Invalid pipette target provided.")
     endif ()
 
     # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in

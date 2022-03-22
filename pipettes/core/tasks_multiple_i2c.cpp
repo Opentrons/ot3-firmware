@@ -1,5 +1,3 @@
-#include "pipettes/core/tasks_multiple_i2c.hpp"
-
 #include "can/core/ids.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
@@ -7,6 +5,7 @@
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
+#include "pipettes/core/tasks.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
 #include "pipettes/core/tasks/i2c_task_starter.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
@@ -14,7 +13,7 @@
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
-static auto i2c_task_client =
+static auto i2c1_task_client =
     i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto i2c3_task_client =
     i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();

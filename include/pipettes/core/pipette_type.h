@@ -18,6 +18,7 @@ typedef enum Type {
  */
 PipetteType get_pipette_type();
 
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
