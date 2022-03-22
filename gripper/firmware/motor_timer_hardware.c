@@ -132,7 +132,7 @@ static void MX_TIM3_Init(void) {
         Error_Handler();
     }
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 2000;
+    sConfigOC.Pulse = 3600;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) !=
@@ -204,14 +204,33 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
     }
 }
 
+/**
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+void MX_GPIO_Init(void) {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                  &GPIO_InitStruct);
+}
+
 void initialize_timer(motor_interrupt_callback callback) {
     timer_callback = callback;
     MX_GPIO_Init();
-    MX_TIM7_Init();
-}
-
-void initialize_pwm() {
     MX_TIM1_Init();
     MX_TIM3_Init();
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+    MX_TIM7_Init();
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 }
