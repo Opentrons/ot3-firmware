@@ -16,6 +16,8 @@ using namespace can_messages;
 enum class PipetteName {
     P1000_SINGLE = 0,
     P1000_MULTI = 1,
+    P1000_96 = 2,
+    P1000_384 = 3,
 };
 
 struct PipetteInfo {
@@ -23,6 +25,11 @@ struct PipetteInfo {
     uint16_t model;
     std::array<char, 12> serial;
 };
+
+// These are implemented in pipette-type-specific source files in core
+// e.g. pipettes/core/pipette_type_single.cpp
+PipetteName get_name();
+uint16_t get_model();
 
 /**
  * A HandlesMessages implementing class that will respond to system messages.
@@ -39,8 +46,8 @@ class PipetteInfoMessageHandler {
      */
     explicit PipetteInfoMessageHandler(CanClient &writer)
         : PipetteInfoMessageHandler(
-              writer, PipetteInfo{.name = PipetteName::P1000_SINGLE,
-                                  .model = 0,
+              writer, PipetteInfo{.name = get_name(),
+                                  .model = get_model(),
                                   .serial = std::array{'2', '0', '2', '2', '0',
                                                        '3', '2', '1', 'A', '0',
                                                        '5', '\0'}}) {}
