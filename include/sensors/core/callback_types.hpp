@@ -1,8 +1,10 @@
 #pragma once
 
 #include <functional>
+#include "common/core/i2c.hpp"
 
 namespace sensor_callbacks {
+using namespace i2c;
 /*
  * Generic types for callbacks used in sensor types.
  *
@@ -22,8 +24,6 @@ namespace sensor_callbacks {
  * TODO (lc 02-27-2022): We should think about how to genericise these
  * concepts to take in any number of buffers, but not required at the moment.
  */
-// Max sized buffer for data we'll ever need is ~40 bits.
-using MaxMessageBuffer = std::array<uint8_t, 5>;
 
 // Types representing the possible callback signatures
 using SendToCanFunctionTypeDef = std::function<void()>;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/core/logging.h"
 #include "can/core/ids.hpp"
 // TODO (lc 02-16-2022) We should refactor the fixed point
 // helper functions such that they live in a shared location.

@@ -30,14 +30,20 @@ struct ReadCapacitanceCallback {
 
     void handle_data(const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
                      const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
-        uint16_t msb_data = 0x0;
-        uint16_t lsb_data = 0x0;
+        uint32_t msb_data = 0x0;
+        uint32_t lsb_data = 0x0;
         const auto *MSB_iter = MSB_buffer.cbegin();
+        LOG("MSB buffer: %d, %d, %d, %d, %d",
+            static_cast<int>(MSB_buffer[0]), static_cast<int>(MSB_buffer[1]),
+            static_cast<int>(MSB_buffer[2]), static_cast<int>(MSB_buffer[3]),
+            static_cast<int>(MSB_buffer[4]));
         MSB_iter =
             bit_utils::bytes_to_int(MSB_iter, MSB_buffer.cend(), msb_data);
+        LOG("FROM MSB REGISTER is %d", static_cast<int>(msb_data));
         const auto *LSB_iter = LSB_buffer.cbegin();
         LSB_iter =
             bit_utils::bytes_to_int(LSB_iter, LSB_buffer.cend(), lsb_data);
+        LOG("FROM LSB REGISTER is %d", static_cast<int>(lsb_data));
         measurement += (msb_data << MSB_SHIFT | lsb_data);
     }
 
