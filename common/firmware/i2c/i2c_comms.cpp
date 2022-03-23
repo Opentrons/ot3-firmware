@@ -15,14 +15,14 @@ using namespace i2c;
  *
  */
 
-auto I2C::central_transmit(uint8_t* data, uint16_t size, uint16_t dev_address,
+auto I2C::central_transmit(MaxMessageBuffer& buffer, uint16_t dev_address,
                            uint32_t timeout) -> bool {
-    return hal_i2c_master_transmit(handle, dev_address, data, size, timeout);
+    return hal_i2c_master_transmit(handle, dev_address, buffer.data(), buffer.size(), timeout);
 }
 
-auto I2C::central_receive(uint8_t* data, uint16_t size, uint16_t dev_address,
+auto I2C::central_receive(MaxMessageBuffer& buffer, uint16_t dev_address,
                           uint32_t timeout) -> bool {
-    return hal_i2c_master_receive(handle, dev_address, data, size, timeout);
+    return hal_i2c_master_receive(handle, dev_address, buffer.data(), buffer.size(), timeout);
 }
 
 auto I2C::wait_during_poll(uint16_t delay) -> void { vTaskDelay(delay); }

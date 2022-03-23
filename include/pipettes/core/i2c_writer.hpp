@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <variant>
 
+#include "common/core/logging.h"
 #include "common/core/bit_utils.hpp"
 #include "common/core/buffer_type.hpp"
 #include "common/core/message_queue.hpp"
@@ -38,6 +39,7 @@ class I2CWriter {
         buffering(max_buffer, data);
         pipette_messages::WriteToI2C write_msg{.address = device_address,
                                                .buffer = max_buffer};
+        LOG("Data received in bytes: %d and as int:", sizeof(data), static_cast<int>(data));
         queue->try_write(write_msg);
     }
 

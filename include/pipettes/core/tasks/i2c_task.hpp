@@ -26,12 +26,12 @@ class I2CMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(WriteToI2C &m) {
-        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address,
+        i2c_device.central_transmit(m.buffer, m.address,
                                     TIMEOUT);
     }
 
     void visit(ReadFromI2C &m) {
-        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
+        i2c_device.central_receive(m.buffer, m.address,
                                    TIMEOUT);
         m.handle_buffer(m.buffer);
         m.client_callback();
@@ -44,10 +44,8 @@ class I2CMessageHandler {
         // TODO (lc, 03-01-2022): put in timer interrupt
         auto empty_array = m.buffer;
         for (int i = 0; i < m.polling; i++) {
-            i2c_device.central_transmit(m.buffer.data(), m.buffer.size(),
-                                        m.address, TIMEOUT);
-            i2c_device.central_receive(m.buffer.data(), m.buffer.size(),
-                                       m.address, TIMEOUT);
+            i2c_device.central_transmit(m.buffer, m.address, TIMEOUT);
+            i2c_device.central_receive(m.buffer, m.address, TIMEOUT);
             m.handle_buffer(m.buffer);
             m.buffer = empty_array;
             i2c_device.wait_during_poll(m.delay_ms);
@@ -63,17 +61,13 @@ class I2CMessageHandler {
         auto empty_array_reg_1 = m.register_buffer_1;
         auto empty_array_reg_2 = m.register_buffer_2;
         for (int i = 0; i < m.polling; i++) {
-            i2c_device.central_transmit(m.register_buffer_1.data(),
-                                        m.register_buffer_1.size(), m.address,
+            i2c_device.central_transmit(m.register_buffer_1, m.address,
                                         TIMEOUT);
-            i2c_device.central_receive(m.register_buffer_1.data(),
-                                       m.register_buffer_1.size(), m.address,
+            i2c_device.central_receive(m.register_buffer_1, m.address,
                                        TIMEOUT);
-            i2c_device.central_transmit(m.register_buffer_2.data(),
-                                        m.register_buffer_2.size(), m.address,
+            i2c_device.central_transmit(m.register_buffer_2, m.address,
                                         TIMEOUT);
-            i2c_device.central_receive(m.register_buffer_2.data(),
-                                       m.register_buffer_2.size(), m.address,
+            i2c_device.central_receive(m.register_buffer_2, m.address,
                                        TIMEOUT);
             m.handle_buffer(m.register_buffer_1, m.register_buffer_2);
             m.register_buffer_1 = empty_array_reg_1;
