@@ -122,7 +122,7 @@ function(add_pipettes_executable TARGET)
             NO_DEFAULT_PATH
             REQUIRED)
     add_custom_command(OUTPUT ${TARGET}.hex
-            COMMAND ${CROSS_OBJCOPY} ARGS pipettes "-Oihex" pipettes.hex
+            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Oihex" ${TARGET}.hex
             DEPENDS ${TARGET}
             VERBATIM)
     add_custom_target(${TARGET}-hex ALL

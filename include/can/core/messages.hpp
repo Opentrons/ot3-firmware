@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <span>
@@ -571,16 +572,37 @@ struct SensorThresholdResponse
         -> bool = default;
 };
 
+using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
+
+struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
+    uint16_t name;
+    uint16_t model;
+    std::array<char, 12> serial{};
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(name, body, limit);
+        iter = bit_utils::int_to_bytes(model, iter, limit);
+        iter = std::copy_n(serial.cbegin(),
+                           std::min(static_cast<size_t>(serial.size()),
+                                    static_cast<size_t>(limit - iter)),
+                           iter);
+        return iter - body;
+    }
+
+    auto operator==(const PipetteInfoResponse& other) const -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
 
-using ResponseMessageType =
-    std::variant<HeartbeatResponse, DeviceInfoResponse,
-                 GetMotionConstraintsResponse, GetMoveGroupResponse,
-                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-                 SensorThresholdResponse, TaskInfoResponse>;
+using ResponseMessageType = std::variant<
+    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
+    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
+    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
+    PushToolsDetectedNotification, ReadLimitSwitchResponse,
+    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+    SensorThresholdResponse, TaskInfoResponse, PipetteInfoResponse>;
+
 }  // namespace can_messages
