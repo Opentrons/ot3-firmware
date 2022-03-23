@@ -38,15 +38,16 @@ class EnvironmentSensorMessageHandler {
             ADDRESS, [this]() { internal_handler.send_to_can(); },
             [this](auto message_a) { internal_handler.handle_data(message_a); },
             DEVICE_ID_REGISTER);
-        // We should send a message that the sensor is in a ready state,
-        // not sure if we should have a separate can message to do that
+        // We should send a message that the sensor is in a ready
+        // state,
+        // not sure if we should have a separate can message to do
+        // that
         // holding off for this PR.
-        uint16_t configuration_data = DRDY_CONFIG << 8 | SAMPLE_RATE;
+        uint16_t configuration_data = DRDY_CONFIG | SAMPLE_RATE;
         writer.write(configuration_data, ADDRESS);
-        configuration_data = INTERRUPT_REGISTER << 8 | SET_DATARDY;
+        configuration_data = INTERRUPT_REGISTER | SET_DATARDY;
         writer.write(configuration_data, ADDRESS);
-        configuration_data =
-            MEASURE_REGISTER << 8 | BEGIN_MEASUREMENT_RECORDING;
+        configuration_data = MEASURE_REGISTER | BEGIN_MEASUREMENT_RECORDING;
         writer.write(configuration_data, ADDRESS);
     }
 

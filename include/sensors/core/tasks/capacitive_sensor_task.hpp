@@ -42,10 +42,12 @@ class CapacitiveMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
+
+        // MSB mode
         uint32_t configuration_data =
-            CONFIGURATION_MEASUREMENT << 8 | DEVICE_CONFIGURATION;
+            CONFIGURATION_MEASUREMENT | (MSB_DEVICE_CONFIGURATION << 8);
         writer.write(configuration_data, ADDRESS);
-        configuration_data = FDC_CONFIGURATION << 8 | SAMPLE_RATE;
+        configuration_data = FDC_CONFIGURATION | (MSB_SAMPLE_RATE << 8);
         writer.write(configuration_data, ADDRESS);
     }
 

@@ -15,6 +15,29 @@
 
 namespace hdc2080_utils {
 
+enum class Registers : uint8_t {
+    TEMPERATURE_LOW = 0x00,
+    TEMPERATURE_HIGH = 0x01,
+    HUMIDITY_LOW = 0x02,
+    HUMIDITY_HIGH = 0x03,
+    INTERRUPT_DRDY = 0x04,
+    TEMPERATURE_MAX = 0x05,
+    HUMIDITY_MAX = 0x06,
+    INTERRUPT_ENABLE = 0x07,
+    TEMP_OFFSET_ADJUST = 0x08,
+    HUM_OFFSET_ADJUST = 0x09,
+    TEMP_THR_L = 0x0A,
+    TEMP_THR_H = 0x0B,
+    RH_THR_L = 0x0C,
+    RH_THR_H = 0x0D,
+    RESET_INTERRUPT = 0x0E,
+    MEASUREMENT_CONFIGURATION = 0x0F,
+    MANUFACTURER_ID_LOW = 0xFC,
+    MANUFACTURER_ID_HIGH = 0xFD,
+    DEVICE_ID_LOW = 0xFE,
+    DEVICE_ID_HIGH = 0xFF,
+};
+
 // constants
 constexpr float TEMP_CONST_MULTIPLIER = 165.0;
 constexpr float TEMP_CONST = 40.5;
@@ -27,9 +50,9 @@ constexpr uint16_t ADDRESS = 0x41 << 1;
 constexpr uint16_t DEVICE_ID = 0x07D0;
 
 // Registers to read from or write to
-constexpr uint8_t INTERRUPT_REGISTER = 0x07;
-constexpr uint8_t DRDY_CONFIG = 0x0E;
-constexpr uint8_t MEASURE_REGISTER = 0x0F;
+constexpr uint16_t INTERRUPT_REGISTER = 0x0700;
+constexpr uint16_t DRDY_CONFIG = 0x0E00;
+constexpr uint16_t MEASURE_REGISTER = 0x0F00;
 constexpr uint8_t DEVICE_ID_REGISTER = 0xFE;
 // Low configurations for both temperature and humidity
 // this records the status when a reading goes below

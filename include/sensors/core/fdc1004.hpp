@@ -21,12 +21,38 @@
 
 namespace fdc1004_utils {
 
+enum class Registers : uint8_t {
+    MEAS1_MSB = 0x00,
+    MEAS1_LSB = 0x01,
+    MEAS2_MSB = 0x02,
+    MEAS2_LSB = 0x03,
+    MEAS3_MSB = 0x04,
+    MEAS3_LSB = 0x05,
+    MEAS4_MSB = 0x06,
+    MEAS4_LSB = 0x07,
+    CONF_MEAS1 = 0x08,
+    CONF_MEAS2 = 0x09,
+    CONF_MEAS3 = 0x0A,
+    CONF_MEAS4 = 0x0B,
+    FDC_CONF = 0x0C,
+    OFFSET_CAL_CIN1 = 0x0D,
+    OFFSET_CAL_CIN2 = 0x0E,
+    OFFSET_CAL_CIN3 = 0x0F,
+    OFFSET_CAL_CIN4 = 0x10,
+    GAIN_CAL_CIN1 = 0x11,
+    GAIN_CAL_CIN2 = 0x12,
+    GAIN_CAL_CIN3 = 0x13,
+    GAIN_CAL_CIN4 = 0x14,
+    MANUFACTURE_ID = 0xFE,
+    DEVICE_ID = 0xFF,
+};
+
 // Capacitance Sensor Address and Registers
 constexpr uint16_t ADDRESS = 0x50 << 1;
 constexpr uint8_t MSB_MEASUREMENT_1 = 0x00;
 constexpr uint8_t LSB_MEASUREMENT_1 = 0x01;
-constexpr uint8_t CONFIGURATION_MEASUREMENT = 0x08;
-constexpr uint8_t FDC_CONFIGURATION = 0x0C;
+constexpr uint32_t CONFIGURATION_MEASUREMENT = 0x08000000;
+constexpr uint32_t FDC_CONFIGURATION = 0x0C000000;
 constexpr uint8_t DEVICE_ID_REGISTER = 0xFF;
 
 // CHA
@@ -34,14 +60,18 @@ constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
 // CHB
 constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
 // configurations
+// need to make this configurable
+constexpr uint16_t MSB_DEVICE_CONFIGURATION = 0x9 << 8 | 0x80;
 constexpr uint16_t DEVICE_CONFIGURATION =
     0x0 << 13 |                             // CHA = CIN1 (U.FL Connector)
     0x4 << 10;                              // CHB = CAPDAC
+constexpr uint16_t MSB_SAMPLE_RATE = 0x10 << 8;
 constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
                                  1 << 8 |   // Repeat enabled
                                  1 << 7;    // Measurement 1 enabled
 
 constexpr uint16_t DEVICE_ID = 0x1004;
+constexpr uint16_t WRITE = 0xFFFF;
 
 // Constants
 constexpr int MAX_CAPDAC_RESOLUTION = 5;
