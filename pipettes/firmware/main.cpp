@@ -44,7 +44,7 @@ spi::SPI_interface SPI_intf = {
     .pin = GPIO_PIN_6,
 };
 static spi::Spi spi_comms(SPI_intf);
-static auto i2c_comms = i2c::I2C();
+static auto i2c1_comms = i2c_comms::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
@@ -134,7 +134,7 @@ auto main() -> int {
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct, SINGLE_CHANNEL);
-    i2c_comms.set_handle(i2chandler_struct.i2c3);
+    i2c1_comms.set_handle(i2chandler_struct.i2c3);
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -147,7 +147,7 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms, id);
+                                pipette_motor.driver, i2c1_comms, id);
 
     iWatchdog.start(6);
 

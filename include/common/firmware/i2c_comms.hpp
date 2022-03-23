@@ -5,9 +5,9 @@
 #include "common/core/i2c.hpp"
 #include "common/firmware/i2c.h"
 
-namespace i2c {
+namespace i2c_comms {
 
-class I2C : public I2CDeviceBase {
+class I2C : public i2c::I2CDeviceBase {
   public:
     explicit I2C() = default;
     ~I2C() final = default;
@@ -20,14 +20,14 @@ class I2C : public I2CDeviceBase {
      * Transmit data.
      * @return True if succeeded
      */
-    auto central_transmit(MaxMessageBuffer& buffer, uint16_t dev_address,
+    auto central_transmit(i2c::MaxMessageBuffer& buffer, uint16_t dev_address,
                           uint32_t timeout) -> bool final;
 
     /**
      * Receive data
      * @return True if succeeded
      */
-    auto central_receive(MaxMessageBuffer& buffer, uint16_t dev_address,
+    auto central_receive(i2c::MaxMessageBuffer& buffer, uint16_t dev_address,
                          uint32_t timeout) -> bool final;
 
     /**
