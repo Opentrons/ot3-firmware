@@ -10,6 +10,8 @@ extern "C" {
 #endif  // __cplusplus
 
 extern SPI_HandleTypeDef hspi2;
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim7;
 extern DAC_HandleTypeDef hdac1;
 

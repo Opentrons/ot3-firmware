@@ -6,9 +6,14 @@
 
 namespace motor_hardware {
 
+struct PwmConfig {
+    void* tim;
+    uint32_t channel;
+};
+
 struct BrushedHardwareConfig {
-    PinConfig pwm_1;
-    PinConfig pwm_2;
+    PwmConfig pwm_1;
+    PwmConfig pwm_2;
     PinConfig enable;
     PinConfig limit_switch;
 };

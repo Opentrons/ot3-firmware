@@ -146,23 +146,19 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
     .pwm_1 =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_0,
-            .active_setting = GPIO_PIN_SET},
+            .tim = &htim1,
+            .channel = TIM_CHANNEL_1},
     .pwm_2 =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_6,
-            .active_setting = GPIO_PIN_SET},
+            .tim = &htim3,
+            .channel = TIM_CHANNEL_1},
     .enable =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
             .pin = GPIO_PIN_11,
             .active_setting = GPIO_PIN_SET},
-    .limit_switch = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .limit_switch = {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOC,
         .pin = GPIO_PIN_2,
         .active_setting = GPIO_PIN_SET},
