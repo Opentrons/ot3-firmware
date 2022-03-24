@@ -8,6 +8,7 @@
 #include "common/core/logging.h"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/utils.hpp"
 
 namespace brushed_motor_driver_task {
 
@@ -43,6 +44,12 @@ class MotorDriverMessageHandler {
     void handle(const can_messages::SetupRequest& m) {
         LOG("Received motor setup request");
         driver.setup();
+    }
+
+    void handle(const can_messages::SetBrushedMotorVrefRequest& m) {
+        auto val = fixed_point_to_float(m.v_ref, 15);
+        LOG("Received set motor vref request,  vref=%f", val);
+        driver.set_reference_voltage(val);
     }
 
     brushed_motor_driver::BrushedMotorDriverIface& driver;

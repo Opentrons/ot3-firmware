@@ -571,6 +571,21 @@ struct SensorThresholdResponse
         -> bool = default;
 };
 
+struct SetBrushedMotorVrefRequest
+    : BaseMessage<MessageId::set_brushed_motor_vref_request> {
+    uint32_t v_ref;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetBrushedMotorVrefRequest {
+        uint32_t v_ref = 0;
+        body = bit_utils::bytes_to_int(body, limit, v_ref);
+        return SetBrushedMotorVrefRequest{.v_ref = v_ref};
+    }
+
+    auto operator==(const SetBrushedMotorVrefRequest& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */

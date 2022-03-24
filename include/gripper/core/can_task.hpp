@@ -38,7 +38,7 @@ using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
 using BrushedMotorDispatchTarget = can_dispatch::DispatchParseTarget<
     motor_message_handler::BrushedMotorHandler<gripper_tasks::QueueClient>,
-    can_messages::SetupRequest>;
+    can_messages::SetupRequest, can_messages::SetBrushedMotorVrefRequest>;
 
 using GripperDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
