@@ -193,10 +193,8 @@ class MotorInterruptHandler {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
-                .current_position = static_cast<uint32_t>(
-                    position_tracker >>
-                    31),  // TODO (AA 2021-11-10): convert
-                          // this value to mm instead of steps
+                .current_position_steps =
+                    static_cast<uint32_t>(position_tracker >> 31),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(

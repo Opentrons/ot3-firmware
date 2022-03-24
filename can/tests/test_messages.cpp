@@ -48,7 +48,7 @@ SCENARIO("message serializing works") {
     GIVEN("a MoveCompleted message") {
         auto message = MoveCompleted{.group_id = 1,
                                      .seq_id = 2,
-                                     .current_position = 0x3456789a,
+                                     .current_position_um = 0x3456789a,
                                      .ack_id = 1};
         auto arr = std::array<uint8_t, 8>{};
         auto body = std::span{arr};
