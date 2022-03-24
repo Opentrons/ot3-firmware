@@ -90,8 +90,8 @@ class EnvironmentSensorMessageHandler {
 
     InternalCallback internal_handler{};
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
-    uint8_t HUMIDITY_REGISTER = LSB_HUMIDITY_REGISTER;
-    uint8_t TEMPERATURE_REGISTER = LSB_TEMPERATURE_REGISTER;
+    uint8_t HUMIDITY_REGISTER = MSB_HUMIDITY_REGISTER;
+    uint8_t TEMPERATURE_REGISTER = MSB_TEMPERATURE_REGISTER;
 
     I2CQueueWriter &writer;
     CanClient &can_client;
