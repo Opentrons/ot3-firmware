@@ -94,25 +94,37 @@
       "name": "pipettes-single",
       "inherits": "pipettes",
       "displayName": "pipettes single binary",
-      "description": "Build the single channel pipettes cross binary"
+      "description": "Build the single channel pipettes cross binary",
+      "targets": [
+        "pipettes-single"
+      ]
     },
     {
       "name": "pipettes-multi",
       "inherits": "pipettes",
       "displayName": "pipettes multi binary",
-      "description": "Build the multi channel pipettes cross binary"
+      "description": "Build the multi channel pipettes cross binary",
+      "targets": [
+        "pipettes-multi"
+      ]
     },
     {
       "name": "pipettes-96",
       "inherits": "pipettes",
       "displayName": "pipettes 96 channel binary",
-      "description": "Build the 96 channel pipettes cross binary"
+      "description": "Build the 96 channel pipettes cross binary",
+      "targets": [
+        "pipettes-96"
+      ]
     },
     {
       "name": "pipettes-384",
       "inherits": "pipettes",
       "displayName": "pipettes 384 channel binary",
-      "description": "Build the 384 channel pipettes cross binary"
+      "description": "Build the 384 channel pipettes cross binary",
+      "targets": [
+        "pipettes-384"
+      ]
     },
     {
       "name": "gripper",
