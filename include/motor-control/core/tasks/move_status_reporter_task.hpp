@@ -5,6 +5,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 
 namespace move_status_reporter_task {
@@ -14,10 +15,14 @@ using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
 /**
  * The handler of move status messages
  */
-template <message_writer_task::TaskClient CanClient>
+template <message_writer_task::TaskClient CanClient,
+          lms::MotorMechanicalConfig LmsConfig>
 class MoveStatusMessageHandler {
   public:
-    MoveStatusMessageHandler(CanClient& can_client) : can_client{can_client} {}
+    MoveStatusMessageHandler(
+        CanClient& can_client,
+        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config)
+        : can_client{can_client}, lms_config(lms_config) {}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
     MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
     auto operator=(const MoveStatusMessageHandler& c) = delete;
@@ -39,13 +44,15 @@ class MoveStatusMessageHandler {
 
   private:
     CanClient& can_client;
+    const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient,
+          lms::MotorMechanicalConfig LmsConfig>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveStatusReporterTask {
   public:
@@ -60,8 +67,10 @@ class MoveStatusReporterTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(CanClient* can_client) {
-        auto handler = MoveStatusMessageHandler{*can_client};
+    [[noreturn]] void operator()(
+        CanClient* can_client,
+        const lms::LinearMotionSystemConfig<LmsConfig>* config) {
+        auto handler = MoveStatusMessageHandler{*can_client, *config};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

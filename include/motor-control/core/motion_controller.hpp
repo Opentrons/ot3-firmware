@@ -41,6 +41,11 @@ class MotionController {
 
     ~MotionController() = default;
 
+    [[nodiscard]] auto get_mechanical_config() const
+        -> const lms::LinearMotionSystemConfig<MEConfig>& {
+        return linear_motion_sys_config;
+    }
+
     void move(const can_messages::AddLinearMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
