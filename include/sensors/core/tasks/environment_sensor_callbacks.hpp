@@ -15,11 +15,15 @@ struct HumidityReadingCallback {
   public:
     HumidityReadingCallback(CanClient &can_client) : can_client{can_client} {}
 
-    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
-        uint32_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        LOG("humidity Data received from buffer %d", data);
+    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer_lsb, const sensor_callbacks::MaxMessageBuffer &buffer_msb) {
+        uint8_t lsb = 0x0;
+        uint8_t msb = 0x0;
+        const auto *lsbiter = buffer_lsb.cbegin();
+        lsbiter = bit_utils::bytes_to_int(lsbiter, buffer_lsb.cend(), lsb);
+        const auto *msbiter = buffer_msb.cbegin();
+        msbiter = bit_utils::bytes_to_int(msbiter, buffer_msb.cend(), msb);
+        LOG("humidity Data received from buffer %d %d", lsb, msb);
+        uint16_t data = static_cast<uint16_t>(msb) << 8 | lsb;
         humidity = convert(data, SensorType::humidity);
         LOG("Handling data data received %d", humidity);
     }
@@ -43,11 +47,15 @@ struct TemperatureReadingCallback {
     TemperatureReadingCallback(CanClient &can_client)
         : can_client{can_client} {}
 
-    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
-        uint32_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        LOG("temperature Data received from buffer %d", data);
+    void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer_lsb, const sensor_callbacks::MaxMessageBuffer &buffer_msb) {
+        uint8_t lsb = 0x0;
+        uint8_t msb = 0x0;
+        const auto *lsbiter = buffer_lsb.cbegin();
+        lsbiter = bit_utils::bytes_to_int(lsbiter, buffer_lsb.cend(), lsb);
+        const auto *msbiter = buffer_msb.cbegin();
+        msbiter = bit_utils::bytes_to_int(msbiter, buffer_msb.cend(), msb);
+        LOG("temperature Data received from buffer %d %d", lsb, msb);
+        uint16_t data = static_cast<uint16_t>(msb) << 8 | lsb;
         temperature = convert(data, SensorType::temperature);
         LOG("Handling temperature data received %d", temperature);
     }

@@ -70,21 +70,37 @@ class EnvironmentSensorMessageHandler {
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
-            writer.write(HUMIDITY_REGISTER, ADDRESS);
-            writer.read(
-                ADDRESS, [this]() { humidity_handler.send_to_can(); },
-                [this](auto message_a) {
-                    humidity_handler.handle_data(message_a);
-                },
-                HUMIDITY_REGISTER);
+            writer.multi_register_poll(
+                 ADDRESS,
+                 1, 20,
+                 [this]() { humidity_handler.send_to_can(); },
+                 [this](auto message_a, auto message_b) {
+                   humidity_handler.handle_data(message_a, message_b);
+                 },
+                 LSB_HUMIDITY_REGISTER, MSB_HUMIDITY_REGISTER);
+//            writer.write(HUMIDITY_REGISTER, ADDRESS);
+//            writer.read(
+//                ADDRESS, [this]() { humidity_handler.send_to_can(); },
+//                [this](auto message_a) {
+//                    humidity_handler.handle_data(message_a);
+//                },
+//                HUMIDITY_REGISTER);
         } else {
-            writer.write(TEMPERATURE_REGISTER, ADDRESS);
-            writer.read(
-                ADDRESS, [this]() { temperature_handler.send_to_can(); },
-                [this](auto message_a) {
-                    temperature_handler.handle_data(message_a);
+            writer.multi_register_poll(
+                ADDRESS,
+                1, DELAY,
+                [this]() { temperature_handler.send_to_can(); },
+                [this](auto message_a, auto message_b) {
+                  temperature_handler.handle_data(message_a, message_b);
                 },
-                TEMPERATURE_REGISTER);
+                LSB_TEMPERATURE_REGISTER, MSB_TEMPERATURE_REGISTER);
+//            writer.write(TEMPERATURE_REGISTER, ADDRESS);
+//            writer.read(
+//                ADDRESS, [this]() { temperature_handler.send_to_can(); },
+//                [this](auto message_a) {
+//                    temperature_handler.handle_data(message_a);
+//                },
+//                TEMPERATURE_REGISTER);
         }
     }
 
@@ -92,6 +108,7 @@ class EnvironmentSensorMessageHandler {
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
     uint8_t HUMIDITY_REGISTER = MSB_HUMIDITY_REGISTER;
     uint8_t TEMPERATURE_REGISTER = MSB_TEMPERATURE_REGISTER;
+    static constexpr uint16_t DELAY = 20;
 
     I2CQueueWriter &writer;
     CanClient &can_client;
