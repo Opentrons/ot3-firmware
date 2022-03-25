@@ -129,8 +129,8 @@ class MotorInterruptHandler {
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
-            finish_current_move(AckMessageId::stopped_by_condition);
             position_tracker = 0;
+            finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
         return false;
