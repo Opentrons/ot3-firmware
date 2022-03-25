@@ -22,6 +22,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     }
     void set_LED(bool status) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
+    bool check_sync_in() final {return true;}
 
   private:
     bool limit_switch_status = false;
