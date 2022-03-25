@@ -12,6 +12,8 @@ struct HardwareConfig {
     PinConfig enable;
     PinConfig limit_switch;
     PinConfig led;
+    PinConfig sync_in;
+    PinConfig sync_out;
 };
 
 class MotorHardware : public StepperMotorHardwareIface {
@@ -34,6 +36,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void stop_timer_interrupt() final;
     auto check_limit_switch() -> bool final;
     void set_LED(bool status) final;
+    auto check_sync_in() -> bool final;
 
   private:
     HardwareConfig pins;
