@@ -48,7 +48,7 @@ class MotorDriverMessageHandler {
 
     void handle(const can_messages::SetBrushedMotorVrefRequest& m) {
         auto val = fixed_point_to_float(m.v_ref, 15);
-        LOG("Received set motor vref request,  vref=%f", val);
+        LOG("Received set motor reference voltage request,  vref=%f", val);
         driver.set_reference_voltage(val);
     }
 

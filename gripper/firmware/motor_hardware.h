@@ -23,6 +23,8 @@ void initialize_timer(motor_interrupt_callback callback);
 
 void initialize_dac();
 
+void update_pwm(uint32_t freq, uint32_t duty_cycle);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

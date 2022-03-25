@@ -4,6 +4,9 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim7;
 
+TIM_OC_InitTypeDef htim1_sConfigOC = {0};
+TIM_OC_InitTypeDef htim3_sConfigOC = {0};
+
 static motor_interrupt_callback timer_callback = NULL;
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
@@ -41,13 +44,14 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
 static void MX_TIM1_Init(void) {
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_OC_InitTypeDef sConfigOC = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
     htim1.Instance = TIM1;
-    htim1.Init.Prescaler = 500;
+    /* Set counter clock frequency to 100 MHz */
+    htim1.Init.Prescaler = __HAL_TIM_CALC_PSC(170000000, 100000000);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = 40;
+    htim1.Init.Period =
+        __HAL_TIM_CALC_PERIOD(170000000, htim1.Init.Prescaler, 32000);
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim1.Init.RepetitionCounter = 0;
     htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -68,14 +72,15 @@ static void MX_TIM1_Init(void) {
         HAL_OK) {
         Error_Handler();
     }
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 36;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
-    sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) !=
+    htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    /* Set duty cycle at 85% */
+    htim1_sConfigOC.Pulse = htim1.Init.Period * (85 / 100);
+    htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    htim1_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    htim1_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+    htim1_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+    if (HAL_TIM_PWM_ConfigChannel(&htim1, &htim1_sConfigOC, TIM_CHANNEL_1) !=
         HAL_OK) {
         Error_Handler();
     }
@@ -107,12 +112,13 @@ static void MX_TIM1_Init(void) {
 static void MX_TIM3_Init(void) {
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_OC_InitTypeDef sConfigOC = {0};
 
     htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 5000;
+    /* Set counter clock frequency to 100 MHz */
+    htim3.Init.Prescaler = __HAL_TIM_CALC_PSC(170000000, 100000000);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 400;
+    htim3.Init.Period =
+        __HAL_TIM_CALC_PERIOD(170000000, htim3.Init.Prescaler, 32000);
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
@@ -131,11 +137,12 @@ static void MX_TIM3_Init(void) {
         HAL_OK) {
         Error_Handler();
     }
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 360;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) !=
+    htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    /* Set duty cycle at 85% */
+    htim3_sConfigOC.Pulse = htim1.Init.Period * (85 / 100);
+    htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    if (HAL_TIM_PWM_ConfigChannel(&htim3, &htim3_sConfigOC, TIM_CHANNEL_1) !=
         HAL_OK) {
         Error_Handler();
     }
@@ -231,4 +238,16 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM1_Init();
     MX_TIM3_Init();
     MX_TIM7_Init();
+}
+
+void update_pwm(uint32_t freq, uint32_t duty_cycle) {
+    htim1.Instance->ARR =
+        __HAL_TIM_CALC_PERIOD(170000000, htim1.Init.Prescaler, freq);
+
+    htim1.Instance->CCR1 = htim1.Init.Period * (duty_cycle / 100);
+
+    htim3.Instance->ARR =
+        __HAL_TIM_CALC_PERIOD(170000000, htim3.Init.Prescaler, freq);
+
+    htim3.Instance->CCR1 = htim3.Init.Period * (duty_cycle / 100);
 }
