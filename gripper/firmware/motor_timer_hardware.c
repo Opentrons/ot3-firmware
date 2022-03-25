@@ -240,7 +240,7 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM7_Init();
 }
 
-void update_pwm(uint32_t freq, uint32_t duty_cycle) {
+void update_pwm(uint8_t freq, uint8_t duty_cycle) {
     htim1.Instance->ARR =
         __HAL_TIM_CALC_PERIOD(170000000, htim1.Init.Prescaler, freq);
 

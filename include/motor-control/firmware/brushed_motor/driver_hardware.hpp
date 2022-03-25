@@ -34,9 +34,8 @@ class BrushedMotorDriver : public BrushedMotorDriverIface {
     auto stop_digital_analog_converter() -> bool final;
     auto set_reference_voltage(float val) -> bool final;
     void setup() final;
-    auto update_pwm_settings(uint8_t period, float duty_cycle) -> bool final {
-        callback(100, 10);
-        return true;
+    void update_pwm_settings(uint8_t freq, uint8_t duty_cycle) final {
+        callback(freq, duty_cycle);
     }
 
   private:

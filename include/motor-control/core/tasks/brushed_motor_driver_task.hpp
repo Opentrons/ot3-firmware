@@ -52,6 +52,12 @@ class MotorDriverMessageHandler {
         driver.set_reference_voltage(val);
     }
 
+    void handle(const can_messages::SetBrushedMotorPwmRequest& m) {
+        LOG("Received set motor PWM request, freq=%d, duty_cycle=%d", m.freq,
+            m.val);
+        driver.update_pwm_settings(m.freq, m.duty_cycle);
+    }
+
     brushed_motor_driver::BrushedMotorDriverIface& driver;
     CanClient& can_client;
 };

@@ -586,6 +586,25 @@ struct SetBrushedMotorVrefRequest
         -> bool = default;
 };
 
+struct SetBrushedMotorPwmRequest
+    : BaseMessage<MessageId::set_brushed_motor_pwm_request> {
+    uint8_t freq;
+    uint8_t duty_cycle;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetBrushedMotorPwmRequest {
+        uint8_t freq = 0;
+        uint8_t duty_cycle = 0;
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+        return SetBrushedMotorPwmRequest{.freq = freq,
+                                         .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const SetBrushedMotorPwmRequest& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
