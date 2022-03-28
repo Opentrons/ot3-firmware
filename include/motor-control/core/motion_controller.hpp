@@ -72,6 +72,8 @@ class MotionController {
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
+    auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
+
     void enable_motor() {
         hardware.start_timer_interrupt();
         hardware.activate_motor();

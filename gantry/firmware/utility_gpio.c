@@ -37,6 +37,9 @@ void sync_drive_gpio_init() {
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
+
+#include "platform_specific_hal_conf.h"
+
 /**
  * @brief Limit Switch GPIO Initialization Function
  * @param None
