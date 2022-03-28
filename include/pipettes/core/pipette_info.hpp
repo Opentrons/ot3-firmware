@@ -8,6 +8,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "motor-control/core/motor_hardware_interface.hpp"
 
 namespace pipette_info {
 using namespace can_ids;
@@ -26,10 +27,19 @@ struct PipetteInfo {
     std::array<char, 12> serial;
 };
 
+struct config {
+    PinConfig sync_in;
+    PinConfig led_drive;
+    PinConfig limit_switch;
+};
+
 // These are implemented in pipette-type-specific source files in core
 // e.g. pipettes/core/pipette_type_single.cpp
 PipetteName get_name();
 uint16_t get_model();
+uint8_t spi_pins_b();
+uint8_t spi_pins_c();
+uint8_t spi_pins_d();
 
 /**
  * A HandlesMessages implementing class that will respond to system messages.

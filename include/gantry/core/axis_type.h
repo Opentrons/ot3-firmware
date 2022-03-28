@@ -12,6 +12,8 @@ enum GantryAxisType {
     gantry_y,
 };
 
+uint8_t get_sync_pin();
+
 /**
  * Get this gantry's axis type
  *
