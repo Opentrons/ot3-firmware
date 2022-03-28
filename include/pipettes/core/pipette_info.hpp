@@ -9,6 +9,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "common/firmware/platform_specific_conf.h"
 
 namespace pipette_info {
 using namespace can_ids;

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "common/firmware/platform_specific_conf.h"
 
 #pragma once
 
