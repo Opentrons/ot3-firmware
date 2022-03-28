@@ -1,7 +1,8 @@
+#include <stdint>
+
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "platform_specific_hal_conf.h"
-#include <stdint>
 
 extern "C" auto get_pipette_type() -> PipetteType { return NINETY_SIX_CHANNEL; }
 

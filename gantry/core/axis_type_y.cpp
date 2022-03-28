@@ -1,7 +1,7 @@
-#include "gantry/core/axis_type.h"
-#include "platform_specific_hal_conf.h"
 #include <stdint>
 
+#include "gantry/core/axis_type.h"
+#include "platform_specific_hal_conf.h"
 
 /**
  * Get the node id for this gantries axis type
