@@ -1,4 +1,4 @@
-#include <stdint>
+#include <stdint.h>
 
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/pipette_type.h"
