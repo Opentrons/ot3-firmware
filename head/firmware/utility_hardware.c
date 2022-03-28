@@ -38,7 +38,20 @@ void limit_switch_gpio_init() {
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
+void sync_drive_gpio_init() {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /*Configure GPIO pin : PA8:sync in*/
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_8;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
 void utility_gpio_init() {
     limit_switch_gpio_init();
     LED_drive_gpio_init();
+    sync_drive_gpio_init();
 }

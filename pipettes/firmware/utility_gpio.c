@@ -7,7 +7,7 @@
  * @param None
  * @retval None
  */
-void limit_switch_gpio_init() {
+void limit_switch_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
 
@@ -24,7 +24,7 @@ void limit_switch_gpio_init() {
  * @param None
  * @retval None
  */
-void LED_drive_gpio_init() {
+void LED_drive_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     if (gpio_pins.led_drive.port == GPIOC) {
         __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -37,7 +37,7 @@ void LED_drive_gpio_init() {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = gpio_pins.led_drive.pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(gpio_pins.led_drive.port, &GPIO_InitStruct);
 }
@@ -52,7 +52,6 @@ void sync_drive_gpio_init() {
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(gpio_pins.sync_in.port, &GPIO_InitStruct);
-
 
 void utility_gpio_init(void) {
     limit_switch_gpio_init();
