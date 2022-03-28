@@ -21,7 +21,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
     bool check_limit_switch() final { return mock_lim_sw_value; }
-    bool check_sync_in() final {return true;}
+    bool check_sync_in() final { return true; }
     void set_LED(bool status) final {}
     void set_mock_lim_sw(bool value) { mock_lim_sw_value = value; }
     void set_finished_ack_id(uint8_t id) { finished_move_id = id; }

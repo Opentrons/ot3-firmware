@@ -13,7 +13,6 @@ struct HardwareConfig {
     PinConfig limit_switch;
     PinConfig led;
     PinConfig sync_in;
-    PinConfig sync_out;
 };
 
 class MotorHardware : public StepperMotorHardwareIface {

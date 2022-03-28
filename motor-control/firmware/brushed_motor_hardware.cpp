@@ -29,6 +29,6 @@ bool BrushedMotorHardware::check_limit_switch() {
 }
 
 bool BrushedMotorHardware::check_sync_in() {
-    return motor_hardwrae_get_pin_value(pins.sync_in.port, pins.sync_in.pin,
+    return motor_hardware_get_pin_value(pins.sync_in.port, pins.sync_in.pin,
                                         pins.sync_in.active_setting);
 }

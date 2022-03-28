@@ -16,6 +16,7 @@ struct BrushedHardwareConfig {
     PwmConfig pwm_2;
     PinConfig enable;
     PinConfig limit_switch;
+    PinConfig sync_in;
 };
 
 class BrushedMotorHardware : public BrushedMotorHardwareIface {

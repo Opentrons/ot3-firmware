@@ -97,17 +97,11 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .port = GPIOB,
             .pin = GPIO_PIN_6,
             .active_setting = GPIO_PIN_RESET},
-    .sync_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_SET},
-    .sync_out = {
+    .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
-        .pin = GPIO_PIN_9,
-        .active_setting = GPIO_PIN_RESET}
+        .pin = GPIO_PIN_8,
+        .active_setting = GPIO_PIN_SET}
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_right {
@@ -141,17 +135,11 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOB,
             .pin = GPIO_PIN_6,
             .active_setting = GPIO_PIN_RESET},
-    .sync_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_SET},
-    .sync_out = {
+    .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
-        .pin = GPIO_PIN_9,
-        .active_setting = GPIO_PIN_RESET}
+        .pin = GPIO_PIN_8,
+        .active_setting = GPIO_PIN_SET}
 };
 
 static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{

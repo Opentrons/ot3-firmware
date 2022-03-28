@@ -69,16 +69,10 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOB,
             .pin = GPIO_PIN_11,
             .active_setting = GPIO_PIN_RESET},
-    .sync_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_RESET},
-    .sync_out = {
+    .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
-        .pin = GPIO_PIN_6,
+        .pin = GPIO_PIN_7,
         .active_setting = GPIO_PIN_RESET}
 };
 
