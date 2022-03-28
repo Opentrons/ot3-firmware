@@ -54,6 +54,9 @@ class SensorHandler {
             case can_ids::SensorType::capacitive: {
                 client.send_capacitive_sensor_queue(m);
             }
+            case can_ids::SensorType::pressure: {
+                client.send_pressure_sensor_queue(m);
+            }
             default:
                 break;
         }
