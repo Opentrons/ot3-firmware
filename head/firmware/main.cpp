@@ -139,7 +139,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
         .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_SET}
+        .active_setting = GPIO_PIN_RESET}
 };
 
 static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
