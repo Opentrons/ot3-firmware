@@ -1,6 +1,5 @@
 
 #include "gantry/core/axis_type.h"
-#include "platform_specific_hal_conf.h"
 
 /**
  * Get this gantry's axis type

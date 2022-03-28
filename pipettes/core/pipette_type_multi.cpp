@@ -1,8 +1,5 @@
-#include <stdint.h>
-
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/pipette_type.h"
-#include "platform_specific_hal_conf.h"
 
 extern "C" auto get_pipette_type() -> PipetteType { return EIGHT_CHANNEL; }
 
