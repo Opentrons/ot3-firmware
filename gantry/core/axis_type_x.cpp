@@ -1,6 +1,6 @@
 #include "gantry/core/axis_type.h"
 #include "platform_specific_hal_conf.h"
-#include "common/core/freertos_task.hpp"
+#include <stdint>
 
 /**
  * Get this gantry's axis type
