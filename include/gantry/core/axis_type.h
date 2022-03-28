@@ -1,3 +1,5 @@
+#include <stdint>
+
 #pragma once
 
 #ifdef __cplusplus

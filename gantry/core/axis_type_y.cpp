@@ -1,4 +1,3 @@
-#include <stdint>
 
 #include "gantry/core/axis_type.h"
 #include "platform_specific_hal_conf.h"
