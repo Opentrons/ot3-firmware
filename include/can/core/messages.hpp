@@ -605,6 +605,10 @@ struct SetBrushedMotorPwmRequest
         -> bool = default;
 };
 
+using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
+
+using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
+
 /**
  * A variant of all message types we might send..
  */
