@@ -88,10 +88,8 @@ struct motion_controller::HardwareConfig plunger_pins {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_RESET},
-}
-}
-;
+        .active_setting = GPIO_PIN_RESET}
+};
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
 static motor_handler::MotorInterruptHandler plunger_interrupt(

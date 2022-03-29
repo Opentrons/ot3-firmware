@@ -1,0 +1,15 @@
+#include "platform_specific_hal_conf.h"
+
+typedef struct {
+    void* port;
+    uint16_t pin;
+}PipetteHardwarePin;
+
+typedef enum {
+    pipette_hardware_device_limit_switch,
+    pipette_hardware_device_LED_drive,
+    pipette_hardware_device_sync_in
+}PipetteHardwareDevice;
+
+uint16_t pipette_hardware_spi_pins();
+PipetteHardwarePin pipette_hardware_get_gpio(PipetteHardwareDevice device);

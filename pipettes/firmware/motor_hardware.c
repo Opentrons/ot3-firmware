@@ -1,7 +1,7 @@
 #include "motor_hardware.h"
 #include "common/firmware/errors.h"
 #include "stm32l5xx_hal.h"
-#include "pipettes/core/pipette_info.hpp"
+#include "hardware_config.h"
 
 
 TIM_HandleTypeDef htim7;
@@ -22,7 +22,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
          Enable
          PC8  ---> Enable Pin
         */
-        GPIO_InitStruct.Pin = spi_pins_b();
+        GPIO_InitStruct.Pin = pipette_hardware_spi_pins(GPIOB);
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -30,7 +30,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Enable/Chip Select/Dir/Step pin
-        GPIO_InitStruct.Pin = spi_pins_c();
+        GPIO_InitStruct.Pin = pipette_hardware_spi_pins(GPIOC);
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -74,8 +74,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
          Enable
          PC8  ---> Enable Pin
         */
-        HAL_GPIO_DeInit(GPIOB, spi_pins_b());
-        HAL_GPIO_DeInit(GPIOC, spi_pins_c());
+        HAL_GPIO_DeInit(GPIOB, pipette_hardware_spi_pins(GPIOB));
+        HAL_GPIO_DeInit(GPIOC, pipette_hardware_spi_pins(GPIOC));
     }
 }
 
