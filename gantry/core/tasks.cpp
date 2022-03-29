@@ -19,8 +19,8 @@ static auto move_group_task_builder =
     move_group_task_starter::TaskStarter<512, gantry_tasks::QueueClient,
                                          gantry_tasks::QueueClient>{};
 static auto move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<512,
-                                                   gantry_tasks::QueueClient>{};
+    move_status_reporter_task_starter::TaskStarter<
+        512, gantry_tasks::QueueClient, lms::BeltConfig>{};
 
 /**
  * Start gantry tasks.
@@ -34,7 +34,8 @@ void gantry_tasks::start_tasks(
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
-    auto& move_status_reporter = move_status_task_builder.start(5, queues);
+    auto& move_status_reporter = move_status_task_builder.start(
+        5, queues, motion_controller.get_mechanical_config());
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
