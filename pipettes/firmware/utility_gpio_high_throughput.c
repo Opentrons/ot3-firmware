@@ -1,6 +1,9 @@
 #include "common/firmware/utility_gpio.h"
 #include "platform_specific_hal_conf.h"
 
+/**
+ * Utility GPIO configurations for high throughput pipettes
+ * */
 
 /**
  * @brief Limit Switch GPIO Initialization Function
@@ -41,10 +44,16 @@ void sync_drive_gpio_init() {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    /*Configure GPIO pin : PB5:sync in*/
+    /*Configure GPIO pin : PB4:sync in*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* Configure GPIO pin: PB5:sync out */
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }

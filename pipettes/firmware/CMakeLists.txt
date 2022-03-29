@@ -27,7 +27,6 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
@@ -96,16 +95,16 @@ function(add_pipettes_executable TARGET)
             $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
     if(${TARGET} STREQUAL "pipettes-single")
-        target_sources(${TARGET} PUBLIC main.cpp)
+        target_sources(${TARGET} PUBLIC main.cpp utility_gpio_low_throughput.c)
         target_pipettes_core_single(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-multi")
-        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp)
+        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp utility_gpio_low_throughput.c)
         target_pipettes_core_multi(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-96")
-        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp)
+        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp utility_gpio_high_throughput.c)
         target_pipettes_core_96(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-384")
-        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp)
+        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp utility_gpio_high_throughput.c)
         target_pipettes_core_384(${TARGET})
     else ()
         message(FATAL_ERROR "Invalid pipette target provided.")
