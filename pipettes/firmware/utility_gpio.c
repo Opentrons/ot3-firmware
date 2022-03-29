@@ -47,6 +47,7 @@ void sync_drive_gpio_init() {
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
 
 void utility_gpio_init(void) {
     limit_switch_gpio_init();
