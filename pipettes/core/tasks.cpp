@@ -11,6 +11,7 @@
 #include "pipettes/core/tasks/i2c_task_starter.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
 #include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
+#include "sensors/core/tasks/pressure_sensor_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -36,6 +37,9 @@ static auto environment_sensor_task_builder =
 static auto capacitive_sensor_task_builder =
     capacitive_sensor_task_starter::TaskStarter<512,
                                                 pipettes_tasks::QueueClient>{};
+static auto pressure_sensor_task_builder =
+    pressure_sensor_task_starter::TaskStarter<512,
+                                              pipettes_tasks::QueueClient>{};
 
 static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
 
@@ -68,6 +72,8 @@ void pipettes_tasks::start_tasks(
         environment_sensor_task_builder.start(5, i2c_task_client, queues);
     auto& capacitive_sensor_task =
         capacitive_sensor_task_builder.start(5, i2c_task_client, queues);
+    auto& pressure_sensor_task =
+        pressure_sensor_task_builder.start(5, i2c_task_client, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
@@ -77,6 +83,7 @@ void pipettes_tasks::start_tasks(
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task = &capacitive_sensor_task;
+    tasks.pressure_sensor_task = &pressure_sensor_task;
     tasks.i2c3_task = &i2c3_task;
 
     queues.motion_queue = &motion.get_queue();
@@ -87,6 +94,7 @@ void pipettes_tasks::start_tasks(
     queues.eeprom_queue = &eeprom_task.get_queue();
     queues.environment_sensor_queue = &environment_sensor_task.get_queue();
     queues.capacitive_sensor_queue = &capacitive_sensor_task.get_queue();
+    queues.pressure_sensor_queue = &pressure_sensor_task.get_queue();
 
     queues.i2c3_queue = &i2c3_task.get_queue();
 }
