@@ -43,7 +43,7 @@ enum class AckMessageId : uint8_t {
 struct Ack {
     uint8_t group_id;
     uint8_t seq_id;
-    uint32_t current_position;
+    uint32_t current_position_steps;
     AckMessageId ack_id;
 };
 

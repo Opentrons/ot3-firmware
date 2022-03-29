@@ -9,6 +9,11 @@ TEST_CASE("Linear motion system using a leadscrew") {
             .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
             .steps_per_rev = 200, .microstep = 32,
         };
-        REQUIRE(linearConfig.get_steps_per_mm() == 3200);
+        THEN("the steps/mm calculation should match the known value") {
+            REQUIRE(linearConfig.get_steps_per_mm() == 3200);
+        }
+        THEN("the um/step calculation should match the known value") {
+            REQUIRE(linearConfig.get_um_per_step() == 0.3125);
+        }
     }
 }

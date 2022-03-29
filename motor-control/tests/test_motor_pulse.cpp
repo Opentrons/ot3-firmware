@@ -300,7 +300,7 @@ TEST_CASE("Finishing a move") {
             auto msg = test_objs.reporter.messages[0];
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
-            REQUIRE(msg.current_position == 100);
+            REQUIRE(msg.current_position_steps == 100);
         }
     }
 }

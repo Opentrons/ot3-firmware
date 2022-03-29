@@ -5,7 +5,9 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/utils.hpp"
 
 namespace move_status_reporter_task {
 
@@ -14,10 +16,17 @@ using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
 /**
  * The handler of move status messages
  */
-template <message_writer_task::TaskClient CanClient>
+template <message_writer_task::TaskClient CanClient,
+          lms::MotorMechanicalConfig LmsConfig>
 class MoveStatusMessageHandler {
   public:
-    MoveStatusMessageHandler(CanClient& can_client) : can_client{can_client} {}
+    MoveStatusMessageHandler(
+        CanClient& can_client,
+        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config)
+        : can_client{can_client},
+          lms_config(lms_config),
+          um_per_step(convert_to_fixed_point_64_bit(
+              lms_config.get_um_per_step(), 31)) {}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
     MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
     auto operator=(const MoveStatusMessageHandler& c) = delete;
@@ -32,20 +41,24 @@ class MoveStatusMessageHandler {
         can_messages::MoveCompleted msg = {
             .group_id = message.group_id,
             .seq_id = message.seq_id,
-            .current_position = message.current_position,
+            .current_position_um = fixed_point_multiply(
+                um_per_step, message.current_position_steps),
             .ack_id = static_cast<uint8_t>(message.ack_id)};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }
 
   private:
     CanClient& can_client;
+    const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
+    sq31_31 um_per_step;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient,
+          lms::MotorMechanicalConfig LmsConfig>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveStatusReporterTask {
   public:
@@ -60,8 +73,10 @@ class MoveStatusReporterTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(CanClient* can_client) {
-        auto handler = MoveStatusMessageHandler{*can_client};
+    [[noreturn]] void operator()(
+        CanClient* can_client,
+        const lms::LinearMotionSystemConfig<LmsConfig>* config) {
+        auto handler = MoveStatusMessageHandler{*can_client, *config};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
