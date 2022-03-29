@@ -50,7 +50,7 @@ enum class MessageId {
     read_motor_driver_register_response = 0x32,
     write_motor_current_request = 0x33,
     read_motor_current_request = 0x34,
-    read_motor_current_response = 0x35,
+    rwoead_motor_current_response = 0x35,
     set_brushed_motor_vref_request = 0x40,
     set_brushed_motor_pwm_request = 0x41,
     read_presence_sensing_voltage_request = 0x600,

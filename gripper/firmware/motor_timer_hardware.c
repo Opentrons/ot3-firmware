@@ -9,6 +9,16 @@ TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 
 static motor_interrupt_callback timer_callback = NULL;
 
+uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
+    return (dividend + (divisor / 2)) / divisor;
+}
+
+uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
+    return timer_clk_freq >= counter_clk_freq
+               ? round_closest(timer_clk_freq, counter_clk_freq) - 1U
+               : 0U;
+}
+
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (htim->Instance == TIM1) {
@@ -48,13 +58,12 @@ static void MX_TIM1_Init(void) {
 
     htim1.Instance = TIM1;
     /* Set counter clock frequency to 100 MHz */
-    htim1.Init.Prescaler = __HAL_TIM_CALC_PSC(170000000, 100000000);
+    htim1.Init.Prescaler = calc_prescaler(17000000, 320000);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period =
-        __HAL_TIM_CALC_PERIOD(170000000, htim1.Init.Prescaler, 32000);
+    htim1.Init.Period = 100 - 1;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim1.Init.RepetitionCounter = 0;
-    htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
     if (HAL_TIM_Base_Init(&htim1) != HAL_OK) {
         Error_Handler();
     }
@@ -74,7 +83,7 @@ static void MX_TIM1_Init(void) {
     }
     htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
     /* Set duty cycle at 85% */
-    htim1_sConfigOC.Pulse = htim1.Init.Period * (85 / 100);
+    htim1_sConfigOC.Pulse = 85;
     htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
     htim1_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -114,13 +123,12 @@ static void MX_TIM3_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim3.Instance = TIM3;
-    /* Set counter clock frequency to 100 MHz */
-    htim3.Init.Prescaler = __HAL_TIM_CALC_PSC(170000000, 100000000);
+    /* Set counter clock frequency to 320 kHz */
+    htim3.Init.Prescaler = calc_prescaler(17000000, 320000);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period =
-        __HAL_TIM_CALC_PERIOD(170000000, htim3.Init.Prescaler, 32000);
+    htim3.Init.Period = 100 - 1;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
     if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
         Error_Handler();
     }
@@ -139,7 +147,7 @@ static void MX_TIM3_Init(void) {
     }
     htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
     /* Set duty cycle at 85% */
-    htim3_sConfigOC.Pulse = htim1.Init.Period * (85 / 100);
+    htim3_sConfigOC.Pulse = 85;  // round_closest(htim3.Init.Period, 2);
     htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     if (HAL_TIM_PWM_ConfigChannel(&htim3, &htim3_sConfigOC, TIM_CHANNEL_1) !=
@@ -238,16 +246,20 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM1_Init();
     MX_TIM3_Init();
     MX_TIM7_Init();
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 }
 
-void update_pwm(uint8_t freq, uint8_t duty_cycle) {
-    htim1.Instance->ARR =
-        __HAL_TIM_CALC_PERIOD(170000000, htim1.Init.Prescaler, freq);
+void update_pwm(uint32_t freq, uint32_t duty_cycle) {
+    htim1.Instance->PSC = calc_prescaler(17000000, freq * 10);
+    if (duty_cycle < htim1.Init.Period) {
+        htim1.Instance->CCR1 = duty_cycle;
+    }
+    htim1.Instance->EGR = TIM_EGR_UG;
 
-    htim1.Instance->CCR1 = htim1.Init.Period * (duty_cycle / 100);
-
-    htim3.Instance->ARR =
-        __HAL_TIM_CALC_PERIOD(170000000, htim3.Init.Prescaler, freq);
-
-    htim3.Instance->CCR1 = htim3.Init.Period * (duty_cycle / 100);
+    htim3.Instance->PSC = calc_prescaler(17000000, freq * 10);
+    if (duty_cycle < htim3.Init.Period) {
+        htim3.Instance->CCR1 = duty_cycle;
+    }
+    htim3.Instance->EGR = TIM_EGR_UG;
 }

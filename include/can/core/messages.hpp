@@ -588,13 +588,13 @@ struct SetBrushedMotorVrefRequest
 
 struct SetBrushedMotorPwmRequest
     : BaseMessage<MessageId::set_brushed_motor_pwm_request> {
-    uint8_t freq;
-    uint8_t duty_cycle;
+    uint32_t freq;
+    uint32_t duty_cycle;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetBrushedMotorPwmRequest {
-        uint8_t freq = 0;
-        uint8_t duty_cycle = 0;
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
         body = bit_utils::bytes_to_int(body, limit, freq);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
         return SetBrushedMotorPwmRequest{.freq = freq,

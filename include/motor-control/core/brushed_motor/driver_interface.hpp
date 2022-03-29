@@ -23,7 +23,7 @@ class BrushedMotorDriverIface {
     virtual auto stop_digital_analog_converter() -> bool = 0;
     virtual auto set_reference_voltage(float val) -> bool = 0;
     virtual void setup() = 0;
-    virtual void update_pwm_settings(uint8_t freq, uint8_t duty_cycle) = 0;
+    virtual void update_pwm_settings(uint32_t freq, uint32_t duty_cycle) = 0;
 };
 
 }  // namespace brushed_motor_driver
