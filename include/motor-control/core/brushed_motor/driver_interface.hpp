@@ -24,8 +24,6 @@ class BrushedMotorDriverIface {
     virtual auto set_reference_voltage(float val) -> bool = 0;
     virtual void setup() = 0;
     virtual void update_pwm_settings(uint32_t freq, uint32_t duty_cycle) = 0;
-    virtual void grip() = 0;  // TODO: refactor to motor hardware interface
-    virtual void home() = 0;  // TODO: refactor to motor hardware interface
 };
 
 }  // namespace brushed_motor_driver

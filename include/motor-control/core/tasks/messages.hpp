@@ -31,4 +31,8 @@ using BrushedMotorDriverTaskMessage =
                  can_messages::SetBrushedMotorVrefRequest,
                  can_messages::SetBrushedMotorPwmRequest>;
 
+using BrushedMotionControllerTaskMessage =
+    std::variant<std::monostate, can_messages::GripperHomeRequest,
+                 can_messages::GripperGripRequest>;
+
 }  // namespace motor_control_task_messages
