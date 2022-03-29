@@ -59,6 +59,7 @@ find_program(ARM_GDB
 
 find_package(Clang)
 
+add_custom_target(pipettes)
 
 function(add_pipettes_executable TARGET)
     add_executable(${TARGET}
@@ -185,6 +186,8 @@ function(add_pipettes_executable TARGET)
             VERBATIM
             COMMENT "Flashing board"
             DEPENDS ${TARGET}-image-hex)
+
+    add_dependencies(pipettes ${TARGET})
 endfunction()
 
 add_pipettes_executable(pipettes-single)
