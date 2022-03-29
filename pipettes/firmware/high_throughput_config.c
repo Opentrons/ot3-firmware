@@ -17,6 +17,9 @@ PipetteHardwarePin pipette_hardware_get_gpio(PipetteHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_4;
             return pinout;
+        case pipette_hardware_device_sync_out:
+            pinout.port = GPIOB;
+            pinout.pin = GPIO_PIN_5;
         default: return pinout;
     }
 }
