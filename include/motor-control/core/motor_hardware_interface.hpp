@@ -32,6 +32,9 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void set_LED(bool status) = 0;
 };
 
-class BrushedMotorHardwareIface : virtual public MotorHardwareIface {};
-
+class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
+  public:
+    virtual void grip() = 0;
+    virtual void home() = 0;
+};
 };  // namespace motor_hardware

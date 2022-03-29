@@ -27,3 +27,11 @@ bool BrushedMotorHardware::check_limit_switch() {
                                         pins.limit_switch.pin,
                                         pins.limit_switch.active_setting);
 }
+
+void BrushedMotorHardware::grip() {
+    positive_direction();
+}
+
+void BrushedMotorHardware::home() {
+    negative_direction();
+}

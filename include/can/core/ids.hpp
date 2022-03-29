@@ -53,7 +53,7 @@ enum class MessageId {
     read_motor_current_response = 0x35,
     set_brushed_motor_vref_request = 0x40,
     set_brushed_motor_pwm_request = 0x41,
-    grippe_grip_request = 0x42,
+    gripper_grip_request = 0x42,
     gripper_home_request = 0x43,
     read_presence_sensing_voltage_request = 0x600,
     read_presence_sensing_voltage_response = 0x601,
