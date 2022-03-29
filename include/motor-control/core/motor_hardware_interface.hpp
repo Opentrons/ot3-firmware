@@ -22,6 +22,7 @@ class MotorHardwareIface {
     virtual void deactivate_motor() = 0;
     virtual auto check_limit_switch() -> bool = 0;
     virtual auto check_sync_in() -> bool = 0;
+    virtual uint32_t get_encoder_pulses() = 0;
 };
 
 class StepperMotorHardwareIface : virtual public MotorHardwareIface {

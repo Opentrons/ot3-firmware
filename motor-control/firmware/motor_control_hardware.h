@@ -20,6 +20,7 @@ bool motor_hardware_set_dac_value(void* dac_handle, uint32_t channel,
                                   uint32_t data_algn, uint32_t val);
 bool motor_hardware_start_pwm(void* tim_handle, uint32_t channel);
 bool motor_hardware_stop_pwm(void* tim_handle, uint32_t channel);
+uint32_t motor_hardware_encoder_pulse_count(void* encoder_handle);
 
 #ifdef __cplusplus
 }  // extern "C"

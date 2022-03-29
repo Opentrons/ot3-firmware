@@ -19,8 +19,8 @@ class MotorHardware : public StepperMotorHardwareIface {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;
-    MotorHardware(const HardwareConfig& config, void* timer_handle)
-        : pins(config), tim_handle(timer_handle) {}
+    MotorHardware(const HardwareConfig& config, void* timer_handle, void* encoder_handle)
+        : pins(config), tim_handle(timer_handle) , enc_handle(encoder_handle){}
     MotorHardware(const MotorHardware&) = default;
     auto operator=(const MotorHardware&) -> MotorHardware& = default;
     MotorHardware(MotorHardware&&) = default;
@@ -36,10 +36,12 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto check_limit_switch() -> bool final;
     void set_LED(bool status) final;
     auto check_sync_in() -> bool final;
+    uint32_t get_encoder_pulses() final;
 
   private:
     HardwareConfig pins;
     void* tim_handle;
+    void* enc_handle;
 };
 
 };  // namespace motor_hardware

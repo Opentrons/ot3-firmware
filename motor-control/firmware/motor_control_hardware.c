@@ -63,3 +63,8 @@ bool motor_hardware_start_pwm(void* htim, uint32_t channel) {
 bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
     return HAL_TIM_PWM_Stop(htim, channel) == HAL_OK;
 }
+
+uint32_t motor_hardware_encoder_pulse_count(void *enc_htim){
+    uint32_t pulses = __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)enc_htim);
+    return pulses;
+}

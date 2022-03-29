@@ -56,3 +56,7 @@ void MotorHardware::set_LED(bool status) {
                                  pins.led.active_setting);
     }
 }
+
+uint32_t MotorHardware::get_encoder_pulses() {
+    return motor_hardware_encoder_pulse_count(enc_handle);
+}
