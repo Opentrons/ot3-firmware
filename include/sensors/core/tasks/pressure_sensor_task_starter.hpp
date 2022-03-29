@@ -12,14 +12,13 @@ template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
 class TaskStarter {
   public:
     using I2CWriterType =
-    i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>;
+        i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>;
     using PressureTaskType = pressure_sensor_task::PressureSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue, I2CWriterType, CanClient>;
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         sensor_task_utils::TaskMessage>;
-    using TaskType =
-    freertos_task::FreeRTOSTask<StackDepth, PressureTaskType,
-        I2CWriterType, CanClient>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, PressureTaskType,
+                                                 I2CWriterType, CanClient>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;
@@ -29,7 +28,7 @@ class TaskStarter {
     ~TaskStarter() = default;
 
     auto start(uint32_t priority, I2CWriterType& writer, CanClient& can_client)
-    -> PressureTaskType& {
+        -> PressureTaskType& {
         task.start(priority, "pressure", &writer, &can_client);
         return task_entry;
     }

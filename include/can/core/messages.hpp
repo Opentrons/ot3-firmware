@@ -475,15 +475,19 @@ struct FirmwareUpdateStatusResponse
 struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
     uint8_t sensor = 0;
     uint8_t offset_reading = 0;
+    uint8_t reg_address = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> ReadFromSensorRequest {
         uint8_t sensor = 0;
         uint8_t offset_reading = 0;
+        uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, offset_reading);
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
         return ReadFromSensorRequest{.sensor = sensor,
-                                     .offset_reading = offset_reading};
+                                     .offset_reading = offset_reading,
+                                     .reg_address = reg_address};
     }
 
     auto operator==(const ReadFromSensorRequest& other) const -> bool = default;
@@ -492,14 +496,18 @@ struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
 struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
     uint8_t sensor;
     uint16_t data;
+    uint8_t reg_address = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToSensorRequest {
         uint8_t sensor = 0;
         uint16_t data = 0;
+        uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, data);
-        return WriteToSensorRequest{.sensor = sensor, .data = data};
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        return WriteToSensorRequest{
+            .sensor = sensor, .data = data, .reg_address = reg_address};
     }
 
     auto operator==(const WriteToSensorRequest& other) const -> bool = default;
@@ -508,15 +516,19 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
 struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
     uint8_t sensor = 0;
     uint8_t sample_rate = 1;
+    uint8_t reg_address = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BaselineSensorRequest {
         uint8_t sensor = 0;
         uint8_t sample_rate = 0;
+        uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, sample_rate);
+        body = bit_utils::bytes_to_int(body, limit, sample_rate);
         return BaselineSensorRequest{.sensor = sensor,
-                                     .sample_rate = sample_rate};
+                                     .sample_rate = sample_rate,
+                                     .reg_address = reg_address};
     }
 
     auto operator==(const BaselineSensorRequest& other) const -> bool = default;

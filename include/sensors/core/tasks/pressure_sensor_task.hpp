@@ -1,30 +1,26 @@
 #pragma once
 
+#include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
-#include "common/core/logging.hpp"
+#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "sensors/core/tasks/pressure_sensor_callbacks.hpp"
+#include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace pressure_sensor_task {
-
-using namespace pressure_sensor_callbacks;
 
 template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
 class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
                                     CanClient &can_client)
-        : writer{i2c_writer},
-          can_client{can_client},
-          capacitance_callback{can_client, CAPDAC_OFFSET},
-          capdac_callback{can_client, CAPDAC_OFFSET} {}
+        : driver{i2c_writer, can_client}, can_client{can_client} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
-    -> PressureMessageHandler & = delete;
+        -> PressureMessageHandler & = delete;
     auto operator=(const PressureMessageHandler &&)
-    -> PressureMessageHandler && = delete;
+        -> PressureMessageHandler && = delete;
     ~PressureMessageHandler() = default;
 
     void handle_message(sensor_task_utils::TaskMessage &m) {
@@ -32,9 +28,12 @@ class PressureMessageHandler {
     }
 
     void initialize() {
-        writer.write(RESET_REGISTER, ADDRESS);
-        vTaskDelay(10);
-        writer.write(ACTIVE_MEASUREMENT_M4, ADDRESS);
+        driver.write_config();
+        if (driver.initialized()) {
+            LOG("Driver initialized successfully")
+        } else {
+            LOG("Driver not initialized successfully")
+        }
     }
 
   private:
@@ -42,47 +41,56 @@ class PressureMessageHandler {
 
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
-        if (bool(m.offset_reading)) {
-
+        if (m.reg_address &
+            mmr920C04_registers::is_valid_address(m.reg_address)) {
+            driver.write(mmr920C04_registers::Registers(m.reg_address), 0x0);
+            driver.read(mmr920C04_registers::Registers(m.reg_address));
         } else {
-
+            driver.write(mmr920C04_registers::Registers::PRESSURE_READ, 0x0);
+            driver.read(mmr920C04_registers::Registers::PRESSURE_READ);
         }
     }
 
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor\n", m.data,
             m.sensor);
-        writer.write(m.data, ADDRESS);
+        if (mmr920C04_registers::is_valid_address(m.reg_address)) {
+            driver.write(mmr920C04_registers::Registers(m.reg_address), m.data);
+        }
     }
 
     void visit(can_messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
+        // poll a specific register, or default to a pressure read.
+        if (mmr920C04_registers::is_valid_address(m.reg_address)) {
+            driver.poll_read(m.reg_address, m.sample_rate, DELAY);
+        } else {
+            driver.poll_read(mmr920C04_registers::Registers::PRESSURE_READ,
+                             m.sample_rate, DELAY);
+        }
     }
 
     void visit(can_messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
-        THRESHOLD = m.threshold;
+        driver.set_threshold(m.threshold);
         auto message = can_messages::SensorThresholdResponse{
-            {}, SensorType::pressure, THRESHOLD};
-        can_client.send_can_message(can_ids::NodeId::host, message);
+            {}, driver.get_sensor_id(), driver.get_threshold()};
+        can_client.send_can_message(driver.get_host_id(), message);
     }
 
-    InternalCallback internal_callback{};
-    uint32_t THRESHOLD = 0x8;
     uint16_t DELAY = 20;
-    I2CQueueWriter &writer;
+    mmr920C04::MMR92C04<I2CQueueWriter, CanClient> driver;
     CanClient &can_client;
-    ReadPressureCallback<CanClient> pressure_handler;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl, class I2CQueueWriter,
-    message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
-    sensor_task_utils::TaskMessage>
+                      sensor_task_utils::TaskMessage>
 class PressureSensorTask {
   public:
     using QueueType = QueueImpl<sensor_task_utils::TaskMessage>;
