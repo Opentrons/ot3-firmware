@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "can/core/ids.hpp"
+#include "can/core/messages.hpp"
 #include "sensors/core/mmr920C04_registers.hpp"
 #include "sensors/core/sensors.hpp"
 
@@ -38,14 +39,14 @@ class MMR92C04 {
     }
 
     auto write(Registers reg, uint32_t command_data) -> void {
-        writer.write(command_data, ADDRESS, reg);
+        writer.write(command_data, ADDRESS, static_cast<uint8_t>(reg));
     }
 
     auto read(Registers reg) -> void {
         writer.read(
             ADDRESS, [this, reg]() { send_to_can(this, reg); },
             [this, reg](auto message_a) { handle_data(message_a, this, reg); },
-            reg);
+            static_cast<uint8_t>(reg));
     }
 
     auto poll_read(Registers reg, uint16_t number_reads, uint16_t delay)
@@ -54,7 +55,7 @@ class MMR92C04 {
             ADDRESS, number_reads, delay,
             [this, reg]() { send_to_can(this, reg); },
             [this, reg](auto message_a) { handle_data(message_a, this, reg); },
-            reg);
+            static_cast<uint8_t>(reg));
     }
 
     auto write_config() -> bool {
@@ -108,25 +109,34 @@ class MMR92C04 {
         return false;
     }
 
-    auto read_pressure(Pressure reg) -> bool {
-        if (read_register(reg)) {
-            _registers.pressure = reg;
+    auto read_pressure(uint32_t data) -> bool {
+        if (data) {
+            _registers.pressure.reading = data;
             return true;
         }
         return false;
     }
 
-    auto read_pressure_low_pass(LowPassPressure reg) -> bool {
-        if (read_register(reg)) {
-            _registers.low_pass_pressure = reg;
+    auto read_pressure_low_pass(uint32_t data) -> bool {
+        if (data) {
+            _registers.low_pass_pressure.reading = data;
             return true;
         }
         return false;
     }
 
-    auto read_temperature(Temperature reg) -> bool {
-        if (read_register(reg)) {
-            _registers.temperature = reg;
+    auto read_temperature(uint32_t data) -> bool {
+        if (data) {
+            _registers.temperature.reading = data;
+            return true;
+        }
+        return false;
+    }
+
+
+    auto read_status(uint32_t data) -> bool {
+        if (data) {
+            _registers.status.reading = data & Status::value_mask;
             return true;
         }
         return false;
@@ -163,6 +173,13 @@ class MMR92C04 {
         can_client.send_can_message(get_host_id(), message);
     }
 
+    auto send_threshold() -> void {
+        auto message = can_messages::SensorThresholdResponse{
+            .sensor = get_sensor_id(),
+            .threshold = get_threshold()};
+        can_client.send_can_message(get_host_id(), message);
+    }
+
     // callbacks
     static auto handle_data(const sensor_callbacks::MaxMessageBuffer &buffer,
                             MMR92C04 *instance, Registers reg) -> void {
@@ -171,18 +188,24 @@ class MMR92C04 {
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
         switch (reg) {
             case Registers::PRESSURE_READ:
-                instance->read_pressure(instance->get_register_map()->pressure);
+                instance->read_pressure(data);
                 break;
             case Registers::LOW_PASS_PRESSURE_READ:
-                instance->read_pressure_low_pass(
-                    instance->get_register_map()->low_pass_pressure);
+                instance->read_pressure_low_pass(data);
                 break;
             case Registers::TEMPERATURE_READ:
-                instance->read_temperature(
-                    instance->get_register_map()->temperature);
+                instance->read_temperature(data);
                 break;
             case Registers::STATUS:
-                instance->read_status(instance->get_register_map()->status);
+                instance->read_status(data);
+                break;
+            case Registers::RESET:
+            case Registers::IDLE:
+            case Registers::MEASURE_MODE_1:
+            case Registers::MEASURE_MODE_2:
+            case Registers::MEASURE_MODE_3:
+            case Registers::MEASURE_MODE_4:
+            case Registers::MACRAM_WRITE:
                 break;
         }
     }
@@ -200,6 +223,14 @@ class MMR92C04 {
                 break;
             case Registers::STATUS:
                 instance->send_status();
+                break;
+            case Registers::RESET:
+            case Registers::IDLE:
+            case Registers::MEASURE_MODE_1:
+            case Registers::MEASURE_MODE_2:
+            case Registers::MEASURE_MODE_3:
+            case Registers::MEASURE_MODE_4:
+            case Registers::MACRAM_WRITE:
                 break;
         }
     }
@@ -219,25 +250,10 @@ class MMR92C04 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         auto value = *reinterpret_cast<RegisterSerializedTypeA *>(&reg);
         value &= Reg::value_mask;
-        return write(Reg::address, value);
+        write(Reg::address, value);
+        return true;
     }
 
-    template <MMR920C04Register Reg>
-    requires ReadableRegister<Reg>
-    auto read_register() -> std::optional<Reg> {
-        using RT = std::optional<RegisterSerializedType>;
-        using RG = std::optional<Reg>;
-
-        uint32_t data{0};
-        auto ret = RT(read(Reg::address, data));
-        if (!ret.has_value()) {
-            return RG();
-        }
-        // Ignore the typical linter warning because we're only using
-        // this on __packed structures that mimic hardware registers
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return RG(*reinterpret_cast<Reg *>(&ret.value()));
-    }
 };
 
 }  // namespace mmr920C04

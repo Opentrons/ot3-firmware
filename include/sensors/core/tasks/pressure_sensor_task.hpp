@@ -14,7 +14,7 @@ class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
                                     CanClient &can_client)
-        : driver{i2c_writer, can_client}, can_client{can_client} {}
+        : driver{i2c_writer, can_client} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -41,13 +41,12 @@ class PressureMessageHandler {
 
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
-        if (m.reg_address &
-            mmr920C04_registers::is_valid_address(m.reg_address)) {
-            driver.write(mmr920C04_registers::Registers(m.reg_address), 0x0);
-            driver.read(mmr920C04_registers::Registers(m.reg_address));
-        } else {
+        if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
             driver.write(mmr920C04_registers::Registers::PRESSURE_READ, 0x0);
             driver.read(mmr920C04_registers::Registers::PRESSURE_READ);
+        } else {
+            driver.write(mmr920C04_registers::Registers::TEMPERATURE_READ, 0x0);
+            driver.read(mmr920C04_registers::Registers::TEMPERATURE_READ);
         }
     }
 
@@ -62,10 +61,13 @@ class PressureMessageHandler {
     void visit(can_messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
-        if (mmr920C04_registers::is_valid_address(m.reg_address)) {
-            driver.poll_read(m.reg_address, m.sample_rate, DELAY);
+        if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
+            driver.poll_read(
+                mmr920C04_registers::Registers::LOW_PASS_PRESSURE_READ,
+                m.sample_rate,
+                DELAY);
         } else {
-            driver.poll_read(mmr920C04_registers::Registers::PRESSURE_READ,
+            driver.poll_read(mmr920C04_registers::Registers::TEMPERATURE_READ,
                              m.sample_rate, DELAY);
         }
     }
@@ -74,14 +76,11 @@ class PressureMessageHandler {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
         driver.set_threshold(m.threshold);
-        auto message = can_messages::SensorThresholdResponse{
-            {}, driver.get_sensor_id(), driver.get_threshold()};
-        can_client.send_can_message(driver.get_host_id(), message);
+        driver.send_threshold();
     }
 
     uint16_t DELAY = 20;
     mmr920C04::MMR92C04<I2CQueueWriter, CanClient> driver;
-    CanClient &can_client;
 };
 
 /**
