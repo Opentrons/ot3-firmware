@@ -246,8 +246,6 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM1_Init();
     MX_TIM3_Init();
     MX_TIM7_Init();
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 }
 
 void update_pwm(uint32_t freq, uint32_t duty_cycle) {
