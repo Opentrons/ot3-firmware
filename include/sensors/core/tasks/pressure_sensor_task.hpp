@@ -42,11 +42,9 @@ class PressureMessageHandler {
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
-            driver.write(mmr920C04_registers::Registers::PRESSURE_READ, 0x0);
-            driver.read(mmr920C04_registers::Registers::PRESSURE_READ);
+            driver.get_pressure();
         } else {
-            driver.write(mmr920C04_registers::Registers::TEMPERATURE_READ, 0x0);
-            driver.read(mmr920C04_registers::Registers::TEMPERATURE_READ);
+            driver.get_temperature();
         }
     }
 
@@ -62,12 +60,9 @@ class PressureMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
-            driver.poll_read(
-                mmr920C04_registers::Registers::LOW_PASS_PRESSURE_READ,
-                m.sample_rate, DELAY);
+            driver.get_pressure(true, m.sample_rate);
         } else {
-            driver.poll_read(mmr920C04_registers::Registers::TEMPERATURE_READ,
-                             m.sample_rate, DELAY);
+            driver.get_temperature(true, m.sample_rate);
         }
     }
 
@@ -78,7 +73,6 @@ class PressureMessageHandler {
         driver.send_threshold();
     }
 
-    uint16_t DELAY = 20;
     mmr920C04::MMR92C04<I2CQueueWriter, CanClient> driver;
 };
 

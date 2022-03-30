@@ -17,6 +17,9 @@
  *
  * The register structs below are pre-built with the command message
  * required to get the information from the sensor.
+ *
+ * The command bits (C7->C0) are another way of stating the 'register' address.
+ * Leaving them alone for now.
  */
 namespace mmr920C04_registers {
 constexpr uint16_t ADDRESS = 0x67 << 1;
@@ -182,7 +185,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
     uint32_t C5 : 1 = 0;
     uint32_t C4 : 1 = 0;
     uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 1;
+    uint32_t C2 : 1 = 0;
     uint32_t C1 : 1 = 0;
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
@@ -247,8 +250,8 @@ struct __attribute__((packed, __may_alias__)) Temperature {
     uint32_t C5 : 1 = 0;
     uint32_t C4 : 1 = 0;
     uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 1;
-    uint32_t C1 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 1;
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
 

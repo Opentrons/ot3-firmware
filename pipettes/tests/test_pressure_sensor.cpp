@@ -24,7 +24,7 @@ SCENARIO("read pressure sensor values") {
     auto sensor =
         pressure_sensor_task::PressureMessageHandler{writer, queue_client};
     constexpr uint8_t pressure_id = 0x4;
-//    constexpr uint8_t pressure_temperature_id = 0x5;
+    constexpr uint8_t pressure_temperature_id = 0x5;
 
     GIVEN("a request to take a single read of the pressure sensor") {
         auto single_read = sensor_task_utils::TaskMessage(
@@ -51,6 +51,35 @@ SCENARIO("read pressure sensor values") {
                     REQUIRE(read_message.address == mmr920C04_registers::ADDRESS);
                     REQUIRE(read_message.buffer[0] ==
                             static_cast<uint8_t>(mmr920C04_registers::Registers::PRESSURE_READ));
+                }
+            }
+        }
+    }
+    GIVEN("a request to take a single read of the temperature sensor") {
+        auto single_read = sensor_task_utils::TaskMessage(
+            can_messages::ReadFromSensorRequest({}, pressure_temperature_id));
+        sensor.handle_message(single_read);
+        WHEN("the handler function receives the message") {
+            THEN("the i2c queue is populated with a write and read command") {
+                REQUIRE(i2c_queue.get_size() == 2);
+            }
+            AND_WHEN("we read the messages from the queue") {
+                i2c_queue.try_read(&empty_msg);
+                auto read_message =
+                    std::get<i2c_writer::ReadFromI2C>(
+                        empty_msg);
+                i2c_queue.try_read(&empty_msg);
+                auto write_message =
+                    std::get<i2c_writer::WriteToI2C>(
+                        empty_msg);
+
+                THEN("The write and read command addresses are correct") {
+                    REQUIRE(write_message.address == mmr920C04_registers::ADDRESS);
+                    REQUIRE(write_message.buffer[0] ==
+                            static_cast<uint8_t>(mmr920C04_registers::Registers::TEMPERATURE_READ));
+                    REQUIRE(read_message.address == mmr920C04_registers::ADDRESS);
+                    REQUIRE(read_message.buffer[0] ==
+                            static_cast<uint8_t>(mmr920C04_registers::Registers::TEMPERATURE_READ));
                 }
             }
         }

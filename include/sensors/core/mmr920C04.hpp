@@ -50,10 +50,10 @@ class MMR92C04 {
             static_cast<uint8_t>(reg));
     }
 
-    auto poll_read(Registers reg, uint16_t number_reads, uint16_t delay)
+    auto poll_read(Registers reg, uint16_t number_reads)
         -> void {
         writer.single_register_poll(
-            ADDRESS, number_reads, delay,
+            ADDRESS, number_reads, DELAY,
             [this, reg]() { send_to_can(this, reg); },
             [this, reg](auto message_a) { handle_data(message_a, this, reg); },
             static_cast<uint8_t>(reg));
@@ -100,6 +100,40 @@ class MMR92C04 {
             return true;
         }
         return false;
+    }
+
+    auto get_pressure(bool poll = false, uint16_t sample_rate = 0) -> void {
+        if (poll) {
+            poll_read(Registers::PRESSURE_READ,
+                      sample_rate);
+        } else {
+            write(Registers::PRESSURE_READ, 0x0);
+            read(Registers::PRESSURE_READ);
+        }
+
+
+    }
+
+    auto get_pressure_low_pass(bool poll = false, uint16_t sample_rate = 0) -> void {
+        if (poll) {
+            poll_read(Registers::LOW_PASS_PRESSURE_READ,
+                      sample_rate);
+        } else {
+            write(Registers::LOW_PASS_PRESSURE_READ, 0x0);
+            read(Registers::LOW_PASS_PRESSURE_READ);
+        }
+
+    }
+
+    auto get_temperature(bool poll = false, uint16_t sample_rate = 0) -> void {
+        if (poll) {
+            poll_read(Registers::TEMPERATURE_READ,
+                      sample_rate);
+        } else {
+            write(Registers::TEMPERATURE_READ, 0x0);
+            read(Registers::TEMPERATURE_READ);
+        }
+
     }
 
     auto reset(Reset reg) -> bool {
@@ -239,18 +273,14 @@ class MMR92C04 {
     MMR920C04RegisterMap _registers{};
     bool _initialized = false;
     int32_t threshold = 0x8;
+    uint16_t DELAY = 20;
     I2CQueueWriter &writer;
     CanClient &can_client;
 
     template <MMR920C04Register Reg>
     requires WritableRegister<Reg>
     auto set_register(Reg reg) -> bool {
-        // Ignore the typical linter warning because we're only using
-        // this on __packed structures that mimic hardware registers
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        auto value = *reinterpret_cast<RegisterSerializedTypeA *>(&reg);
-        value &= Reg::value_mask;
-        write(Reg::address, value);
+        write(Reg::address, 0x0);
         return true;
     }
 };
