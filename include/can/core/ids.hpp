@@ -135,4 +135,3 @@ enum class SensorType {
 };
 
 }  // namespace can_ids
-

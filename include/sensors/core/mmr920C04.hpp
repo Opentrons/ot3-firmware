@@ -4,6 +4,7 @@
 
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/logging.h"
 #include "sensors/core/mmr920C04_registers.hpp"
 #include "sensors/core/sensors.hpp"
 
@@ -110,6 +111,7 @@ class MMR92C04 {
     }
 
     auto read_pressure(uint32_t data) -> bool {
+        LOG("Updated pressure reading is %d", data);
         if (data) {
             _registers.pressure.reading = data;
             return true;

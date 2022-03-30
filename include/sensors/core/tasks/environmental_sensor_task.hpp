@@ -33,7 +33,7 @@ class EnvironmentSensorMessageHandler {
     ~EnvironmentSensorMessageHandler() = default;
 
     void initialize() {
-        writer.write(DEVICE_ID_REGISTER, ADDRESS);
+        writer.write(0x0, ADDRESS, DEVICE_ID_REGISTER);
         writer.read(
             ADDRESS, [this]() { internal_handler.send_to_can(); },
             [this](auto message_a) { internal_handler.handle_data(message_a); },
@@ -41,13 +41,9 @@ class EnvironmentSensorMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        uint16_t configuration_data = DRDY_CONFIG << 8 | SAMPLE_RATE;
-        writer.write(configuration_data, ADDRESS);
-        configuration_data = INTERRUPT_REGISTER << 8 | SET_DATARDY;
-        writer.write(configuration_data, ADDRESS);
-        configuration_data =
-            MEASURE_REGISTER << 8 | BEGIN_MEASUREMENT_RECORDING;
-        writer.write(configuration_data, ADDRESS);
+        writer.write(SAMPLE_RATE, ADDRESS, DRDY_CONFIG);
+        writer.write(SET_DATARDY, ADDRESS, INTERRUPT_REGISTER);
+        writer.write(BEGIN_MEASUREMENT_RECORDING, ADDRESS, MEASURE_REGISTER);
     }
 
     void handle_message(sensor_task_utils::TaskMessage &m) {
@@ -69,7 +65,7 @@ class EnvironmentSensorMessageHandler {
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
-            writer.write(HUMIDITY_REGISTER, ADDRESS);
+            writer.write(0x0, ADDRESS, HUMIDITY_REGISTER);
             writer.read(
                 ADDRESS, [this]() { humidity_handler.send_to_can(); },
                 [this](auto message_a) {
@@ -77,7 +73,7 @@ class EnvironmentSensorMessageHandler {
                 },
                 HUMIDITY_REGISTER);
         } else {
-            writer.write(TEMPERATURE_REGISTER, ADDRESS);
+            writer.write(0x0, ADDRESS, TEMPERATURE_REGISTER);
             writer.read(
                 ADDRESS, [this]() { temperature_handler.send_to_can(); },
                 [this](auto message_a) {
