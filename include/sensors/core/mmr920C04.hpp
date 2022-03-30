@@ -50,8 +50,7 @@ class MMR92C04 {
             static_cast<uint8_t>(reg));
     }
 
-    auto poll_read(Registers reg, uint16_t number_reads)
-        -> void {
+    auto poll_read(Registers reg, uint16_t number_reads) -> void {
         writer.single_register_poll(
             ADDRESS, number_reads, DELAY,
             [this, reg]() { send_to_can(this, reg); },
@@ -104,36 +103,30 @@ class MMR92C04 {
 
     auto get_pressure(bool poll = false, uint16_t sample_rate = 0) -> void {
         if (poll) {
-            poll_read(Registers::PRESSURE_READ,
-                      sample_rate);
+            poll_read(Registers::PRESSURE_READ, sample_rate);
         } else {
             write(Registers::PRESSURE_READ, 0x0);
             read(Registers::PRESSURE_READ);
         }
-
-
     }
 
-    auto get_pressure_low_pass(bool poll = false, uint16_t sample_rate = 0) -> void {
+    auto get_pressure_low_pass(bool poll = false, uint16_t sample_rate = 0)
+        -> void {
         if (poll) {
-            poll_read(Registers::LOW_PASS_PRESSURE_READ,
-                      sample_rate);
+            poll_read(Registers::LOW_PASS_PRESSURE_READ, sample_rate);
         } else {
             write(Registers::LOW_PASS_PRESSURE_READ, 0x0);
             read(Registers::LOW_PASS_PRESSURE_READ);
         }
-
     }
 
     auto get_temperature(bool poll = false, uint16_t sample_rate = 0) -> void {
         if (poll) {
-            poll_read(Registers::TEMPERATURE_READ,
-                      sample_rate);
+            poll_read(Registers::TEMPERATURE_READ, sample_rate);
         } else {
             write(Registers::TEMPERATURE_READ, 0x0);
             read(Registers::TEMPERATURE_READ);
         }
-
     }
 
     auto reset(Reset reg) -> bool {
