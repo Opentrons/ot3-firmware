@@ -13,6 +13,7 @@ add_executable(motor-control
         test_fixed_point_utils.cpp
         test_motor_driver.cpp
         test_limit_switch.cpp
+        test_move_status_handling.cpp
 )
 
 target_ot_motor_control(motor-control)
@@ -31,7 +32,7 @@ target_compile_options(motor-control
         -Wsign-promo
         -Wextra-semi
         -Wctor-dtor-privacy)
-target_link_libraries(motor-control PUBLIC Catch2::Catch2 common-simulation)
+target_link_libraries(motor-control PUBLIC Catch2::Catch2 common-simulation motor-utils)
 
 catch_discover_tests(motor-control)
 add_build_and_test_target(motor-control)

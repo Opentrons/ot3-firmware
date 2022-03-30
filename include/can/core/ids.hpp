@@ -25,6 +25,8 @@ enum class MessageId {
     device_info_response = 0x303,
     task_info_request = 0x304,
     task_info_response = 0x305,
+    pipette_info_request = 0x306,
+    pipette_info_response = 0x307,
     stop_request = 0x0,
     get_status_request = 0x1,
     get_status_response = 0x5,
@@ -77,6 +79,8 @@ enum class MessageId {
     read_sensor_response = 0x85,
     set_sensor_threshold_request = 0x86,
     set_sensor_threshold_response = 0x87,
+    sensor_diagnostic_request = 0x88,
+    sensor_diagnostic_response = 0x89,
 };
 
 /** Can bus arbitration id node id. */
@@ -88,8 +92,8 @@ enum class NodeId {
     gantry_x = 0x30,
     gantry_y = 0x40,
     head = 0x50,
-    head_r = 0x52,
     head_l = 0x51,
+    head_r = 0x52,
     gripper = 0x20,
     pipette_left_bootloader = 0x6f,
     pipette_right_bootloader = 0x7f,
@@ -126,6 +130,7 @@ enum class SensorType {
     capacitive = 0x1,
     humidity = 0x2,
     temperature = 0x3,
+    pressure = 0x4,
 };
 
 }  // namespace can_ids

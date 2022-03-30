@@ -21,7 +21,7 @@ static auto move_group_task_builder =
                                          gripper_tasks::QueueClient>{};
 static auto move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<
-        512, gripper_tasks::QueueClient>{};
+        512, gripper_tasks::QueueClient, lms::LeadScrewConfig>{};
 static auto brushed_motor_driver_task_builder =
     brushed_motor_driver_task_starter::TaskStarter<
         512, gripper_tasks::QueueClient>{};
@@ -43,7 +43,8 @@ void gripper_tasks::start_tasks(
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
-    auto& move_status_reporter = move_status_task_builder.start(5, queues);
+    auto& move_status_reporter = move_status_task_builder.start(
+        5, queues, motion_controller.get_mechanical_config());
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, brushed_motor_driver, queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(

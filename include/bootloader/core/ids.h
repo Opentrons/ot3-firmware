@@ -23,6 +23,8 @@ typedef enum {
     can_messageid_device_info_response = 0x303,
     can_messageid_task_info_request = 0x304,
     can_messageid_task_info_response = 0x305,
+    can_messageid_pipette_info_request = 0x306,
+    can_messageid_pipette_info_response = 0x307,
     can_messageid_stop_request = 0x0,
     can_messageid_get_status_request = 0x1,
     can_messageid_get_status_response = 0x5,
@@ -46,6 +48,9 @@ typedef enum {
     can_messageid_write_motor_driver_register_request = 0x30,
     can_messageid_read_motor_driver_register_request = 0x31,
     can_messageid_read_motor_driver_register_response = 0x32,
+    can_messageid_write_motor_current_request = 0x33,
+    can_messageid_read_motor_current_request = 0x34,
+    can_messageid_read_motor_current_response = 0x35,
     can_messageid_read_presence_sensing_voltage_request = 0x600,
     can_messageid_read_presence_sensing_voltage_response = 0x601,
     can_messageid_attached_tools_request = 0x700,
@@ -68,6 +73,8 @@ typedef enum {
     can_messageid_read_sensor_response = 0x85,
     can_messageid_set_sensor_threshold_request = 0x86,
     can_messageid_set_sensor_threshold_response = 0x87,
+    can_messageid_sensor_diagnostic_request = 0x88,
+    can_messageid_sensor_diagnostic_response = 0x89,
 } CANMessageId;
 
 /** Can bus arbitration id node id. */
@@ -113,9 +120,10 @@ typedef enum {
 
 /** A bit field of the arbitration id parts. */
 typedef struct {
-    unsigned int function_code : 4;
-    unsigned int node_id : 7;
-    unsigned int originating_node_id : 7;
-    unsigned int message_id : 11;
-    unsigned int padding : 3;
+    unsigned int function_code: 4;
+    unsigned int node_id: 7;
+    unsigned int originating_node_id: 7;
+    unsigned int message_id: 11;
+    unsigned int padding: 3;
 } CANArbitrationIdParts;
+

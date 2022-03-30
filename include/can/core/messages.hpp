@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <span>
@@ -266,14 +267,14 @@ using ClearAllMoveGroupsRequest =
 struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
-    uint32_t current_position;
+    uint32_t current_position_um;
     uint8_t ack_id;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         iter = bit_utils::int_to_bytes(seq_id, iter, limit);
-        iter = bit_utils::int_to_bytes(current_position, iter, limit);
+        iter = bit_utils::int_to_bytes(current_position_um, iter, limit);
         iter = bit_utils::int_to_bytes(ack_id, iter, limit);
         return iter - body;
     }
@@ -609,6 +610,64 @@ using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
 
 using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
 
+struct SensorDiagnosticRequest
+    : BaseMessage<MessageId::sensor_diagnostic_request> {
+    uint8_t sensor;
+    uint8_t reg_address;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SensorDiagnosticRequest {
+        uint8_t sensor = 0;
+        uint8_t reg_address = 0;
+        body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        return SensorDiagnosticRequest{.sensor = sensor,
+                                       .reg_address = reg_address};
+    }
+
+    auto operator==(const SensorDiagnosticRequest& other) const
+        -> bool = default;
+};
+
+struct SensorDiagnosticResponse
+    : BaseMessage<MessageId::sensor_diagnostic_response> {
+    can_ids::SensorType sensor;
+    uint8_t reg_address;
+    uint32_t data;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(reg_address, iter, limit);
+        iter = bit_utils::int_to_bytes(data, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const SensorDiagnosticResponse& other) const
+        -> bool = default;
+};
+
+using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
+
+struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
+    uint16_t name;
+    uint16_t model;
+    std::array<char, 12> serial{};
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(name, body, limit);
+        iter = bit_utils::int_to_bytes(model, iter, limit);
+        iter = std::copy_n(serial.cbegin(),
+                           std::min(static_cast<size_t>(serial.size()),
+                                    static_cast<size_t>(limit - iter)),
+                           iter);
+        return iter - body;
+    }
+
+    auto operator==(const PipetteInfoResponse& other) const -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -620,5 +679,7 @@ using ResponseMessageType =
                  MoveCompleted, ReadPresenceSensingVoltageResponse,
                  PushToolsDetectedNotification, ReadLimitSwitchResponse,
                  ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-                 SensorThresholdResponse, TaskInfoResponse>;
+                 SensorThresholdResponse, SensorDiagnosticResponse,
+                 TaskInfoResponse, PipetteInfoResponse>;
+
 }  // namespace can_messages

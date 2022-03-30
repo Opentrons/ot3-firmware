@@ -34,6 +34,10 @@ struct LinearMotionSystemConfig {
         return (steps_per_rev * microstep * gear_ratio) /
                (mech_config.get_mm_per_rev());
     }
+    [[nodiscard]] constexpr auto get_um_per_step() const -> float {
+        return (mech_config.get_mm_per_rev()) /
+               (steps_per_rev * microstep * gear_ratio) * 1000;
+    }
 };
 
 }  // namespace lms

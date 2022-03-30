@@ -38,4 +38,8 @@ void BrushedMotorHardware::home() {
     motor_hardware_set_pin(pins.enable.port, pins.enable.pin,
                            pins.enable.active_setting);
     negative_direction();
+
+bool BrushedMotorHardware::check_sync_in() {
+    return motor_hardware_get_pin_value(pins.sync_in.port, pins.sync_in.pin,
+                                        pins.sync_in.active_setting);
 }
