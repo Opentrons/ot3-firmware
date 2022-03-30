@@ -44,7 +44,8 @@ template <brushed_motion_controller_task::TaskClient BrushedMotionTaskClient>
 class BrushedMotionHandler {
   public:
     using MessageType =
-        std::variant<std::monostate, GripperGripRequest, GripperHomeRequest>;
+        std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
+                     GripperGripRequest, GripperHomeRequest>;
 
     BrushedMotionHandler(BrushedMotionTaskClient &motion_client)
         : motion_client{motion_client} {}

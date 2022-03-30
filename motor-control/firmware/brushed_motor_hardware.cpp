@@ -21,7 +21,11 @@ void BrushedMotorHardware::activate_motor() {
 void BrushedMotorHardware::deactivate_motor() {
     motor_hardware_reset_pin(pins.enable.port, pins.enable.pin,
                              pins.enable.active_setting);
+
+    motor_hardware_stop_pwm(pins.pwm_1.tim, pins.pwm_1.channel);
+    motor_hardware_stop_pwm(pins.pwm_2.tim, pins.pwm_2.channel);
 }
+
 bool BrushedMotorHardware::check_limit_switch() {
     return motor_hardware_get_pin_value(pins.limit_switch.port,
                                         pins.limit_switch.pin,
@@ -29,14 +33,12 @@ bool BrushedMotorHardware::check_limit_switch() {
 }
 
 void BrushedMotorHardware::grip() {
-    motor_hardware_set_pin(pins.enable.port, pins.enable.pin,
-                           pins.enable.active_setting);
+    activate_motor();
     positive_direction();
 }
 
 void BrushedMotorHardware::home() {
-    motor_hardware_set_pin(pins.enable.port, pins.enable.pin,
-                           pins.enable.active_setting);
+    activate_motor();
     negative_direction();
 }
 
