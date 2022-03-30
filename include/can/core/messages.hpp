@@ -572,6 +572,41 @@ struct SensorThresholdResponse
         -> bool = default;
 };
 
+struct SensorDiagnosticRequest : BaseMessage<MessageId::sensor_diagnostic_request> {
+    uint8_t sensor;
+    uint8_t reg_address;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SensorDiagnosticRequest {
+        uint8_t sensor = 0;
+        int32_t reg_address = 0;
+        body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        return SensorDiagnosticRequest{.sensor = sensor,
+            .reg_address = reg_address};
+    }
+
+    auto operator==(const SensorDiagnosticRequest& other) const
+    -> bool = default;
+};
+
+struct SensorDiagnosticResponse: BaseMessage<MessageId::sensor_diagnostic_response> {
+    can_ids::SensorType sensor;
+    uint8_t reg_address;
+    uint32_t data;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(reg_address, iter, limit);
+        iter = bit_utils::int_to_bytes(data, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const SensorDiagnosticResponse& other) const
+    -> bool = default;
+};
+
 using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
 
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
@@ -603,6 +638,7 @@ using ResponseMessageType = std::variant<
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
     ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-    SensorThresholdResponse, TaskInfoResponse, PipetteInfoResponse>;
+    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
+    PipetteInfoResponse>;
 
 }  // namespace can_messages
