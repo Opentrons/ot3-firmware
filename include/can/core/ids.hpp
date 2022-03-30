@@ -131,6 +131,8 @@ enum class SensorType {
     humidity = 0x2,
     temperature = 0x3,
     pressure = 0x4,
+    pressure_temperature = 0x5,
 };
 
 }  // namespace can_ids
+

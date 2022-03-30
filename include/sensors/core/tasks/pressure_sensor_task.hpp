@@ -30,9 +30,9 @@ class PressureMessageHandler {
     void initialize() {
         driver.write_config();
         if (driver.initialized()) {
-            LOG("Driver initialized successfully")
+            LOG("Driver initialized successfully");
         } else {
-            LOG("Driver not initialized successfully")
+            LOG("Driver not initialized successfully");
         }
     }
 
