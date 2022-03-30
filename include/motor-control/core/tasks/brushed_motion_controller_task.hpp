@@ -43,9 +43,9 @@ class MotionControllerMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can_messages::GripperGripRequest) { motor.grip(); }
+    void handle(const can_messages::GripperGripRequest& m) { motor.grip(); }
 
-    void handle(const can_messages::GripperHomeRequest) { motor.home(); }
+    void handle(const can_messages::GripperHomeRequest& m) { motor.home(); }
 
     motor_hardware::BrushedMotorHardwareIface& motor;
     CanClient& can_client;
