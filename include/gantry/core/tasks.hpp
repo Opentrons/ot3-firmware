@@ -58,8 +58,8 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue, lms::BeltConfig,
         QueueClient>* motion_controller{nullptr};
     move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
-        move_status_reporter{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue, QueueClient,
+        lms::BeltConfig>* move_status_reporter{nullptr};
     move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
                                    QueueClient, QueueClient>* move_group{
         nullptr};
