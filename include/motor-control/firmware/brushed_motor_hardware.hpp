@@ -34,6 +34,8 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void activate_motor() final;
     void deactivate_motor() final;
     auto check_limit_switch() -> bool final;
+    void grip() final;
+    void home() final;
     auto check_sync_in() -> bool final;
 
   private:

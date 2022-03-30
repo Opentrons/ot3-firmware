@@ -12,6 +12,7 @@ class SimBrushedMotorDriverIface : public BrushedMotorDriverIface {
     bool stop_digital_analog_converter() final { return true; }
     bool set_reference_voltage(float val) final { return true; }
     void setup() final {}
+    void update_pwm_settings(uint32_t freq, uint32_t duty_cycle) final {}
 };
 
 }  // namespace sim_brushed_motor_hardware_iface

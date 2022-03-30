@@ -572,6 +572,44 @@ struct SensorThresholdResponse
         -> bool = default;
 };
 
+struct SetBrushedMotorVrefRequest
+    : BaseMessage<MessageId::set_brushed_motor_vref_request> {
+    uint32_t v_ref;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetBrushedMotorVrefRequest {
+        uint32_t v_ref = 0;
+        body = bit_utils::bytes_to_int(body, limit, v_ref);
+        return SetBrushedMotorVrefRequest{.v_ref = v_ref};
+    }
+
+    auto operator==(const SetBrushedMotorVrefRequest& other) const
+        -> bool = default;
+};
+
+struct SetBrushedMotorPwmRequest
+    : BaseMessage<MessageId::set_brushed_motor_pwm_request> {
+    uint32_t freq;
+    uint32_t duty_cycle;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetBrushedMotorPwmRequest {
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+        return SetBrushedMotorPwmRequest{.freq = freq,
+                                         .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const SetBrushedMotorPwmRequest& other) const
+        -> bool = default;
+};
+
+using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
+
+using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
+
 struct SensorDiagnosticRequest
     : BaseMessage<MessageId::sensor_diagnostic_request> {
     uint8_t sensor;
