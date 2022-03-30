@@ -83,7 +83,7 @@ static void MX_TIM1_Init(void) {
     }
     htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
     /* Set duty cycle at 85% */
-    htim1_sConfigOC.Pulse = 85;
+    htim1_sConfigOC.Pulse = 65;
     htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
     htim1_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -147,7 +147,7 @@ static void MX_TIM3_Init(void) {
     }
     htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
     /* Set duty cycle at 85% */
-    htim3_sConfigOC.Pulse = 85;  // round_closest(htim3.Init.Period, 2);
+    htim3_sConfigOC.Pulse = 65;  // round_closest(htim3.Init.Period, 2);
     htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     if (HAL_TIM_PWM_ConfigChannel(&htim3, &htim3_sConfigOC, TIM_CHANNEL_1) !=
