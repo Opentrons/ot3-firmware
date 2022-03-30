@@ -43,8 +43,8 @@ class SimBrushedMotorHardwareIface
         }
         return false;
     }
-    void grip() final {};
-    void home() final {};
+    void grip() final{};
+    void home() final{};
 
   private:
     bool limit_switch_status = false;
