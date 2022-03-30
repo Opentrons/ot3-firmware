@@ -572,7 +572,8 @@ struct SensorThresholdResponse
         -> bool = default;
 };
 
-struct SensorDiagnosticRequest : BaseMessage<MessageId::sensor_diagnostic_request> {
+struct SensorDiagnosticRequest
+    : BaseMessage<MessageId::sensor_diagnostic_request> {
     uint8_t sensor;
     uint8_t reg_address;
 
@@ -583,14 +584,15 @@ struct SensorDiagnosticRequest : BaseMessage<MessageId::sensor_diagnostic_reques
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, reg_address);
         return SensorDiagnosticRequest{.sensor = sensor,
-            .reg_address = reg_address};
+                                       .reg_address = reg_address};
     }
 
     auto operator==(const SensorDiagnosticRequest& other) const
-    -> bool = default;
+        -> bool = default;
 };
 
-struct SensorDiagnosticResponse: BaseMessage<MessageId::sensor_diagnostic_response> {
+struct SensorDiagnosticResponse
+    : BaseMessage<MessageId::sensor_diagnostic_response> {
     can_ids::SensorType sensor;
     uint8_t reg_address;
     uint32_t data;
@@ -604,7 +606,7 @@ struct SensorDiagnosticResponse: BaseMessage<MessageId::sensor_diagnostic_respon
         return iter - body;
     }
     auto operator==(const SensorDiagnosticResponse& other) const
-    -> bool = default;
+        -> bool = default;
 };
 
 using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
@@ -632,13 +634,14 @@ struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
  * A variant of all message types we might send..
  */
 
-using ResponseMessageType = std::variant<
-    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
-    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
-    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
-    PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
-    PipetteInfoResponse>;
+using ResponseMessageType =
+    std::variant<HeartbeatResponse, DeviceInfoResponse,
+                 GetMotionConstraintsResponse, GetMoveGroupResponse,
+                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
+                 MoveCompleted, ReadPresenceSensingVoltageResponse,
+                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
+                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+                 SensorThresholdResponse, SensorDiagnosticResponse,
+                 TaskInfoResponse, PipetteInfoResponse>;
 
 }  // namespace can_messages
