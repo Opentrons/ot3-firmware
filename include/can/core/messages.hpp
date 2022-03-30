@@ -580,7 +580,7 @@ struct SensorDiagnosticRequest
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SensorDiagnosticRequest {
         uint8_t sensor = 0;
-        int32_t reg_address = 0;
+        uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, reg_address);
         return SensorDiagnosticRequest{.sensor = sensor,
