@@ -45,6 +45,7 @@ class SimBrushedMotorHardwareIface
     }
     void grip() final{};
     void home() final{};
+    bool check_sync_in() final { return true; }
 
   private:
     bool limit_switch_status = false;
