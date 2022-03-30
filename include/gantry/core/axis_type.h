@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include "common/firmware/platform_specific_conf.h"
 
 #pragma once
 
@@ -14,8 +13,6 @@ enum GantryAxisType {
     gantry_x,
     gantry_y,
 };
-
-uint8_t get_sync_pin();
 
 /**
  * Get this gantry's axis type

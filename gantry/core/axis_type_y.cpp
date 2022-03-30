@@ -7,5 +7,3 @@
  * @return A node id
  */
 extern "C" auto get_axis_type() -> GantryAxisType { return gantry_y; }
-
-auto get_sync_pin() -> uint8_t { return GPIO_PIN_5; }

@@ -1,4 +1,3 @@
-#include "platform_specific_hal_conf.h"
 #include "hardware_config.h"
 #include "stm32l5xx_hal_gpio.h"
 
