@@ -133,7 +133,6 @@ class MMR92C04 {
         return false;
     }
 
-
     auto read_status(uint32_t data) -> bool {
         if (data) {
             _registers.status.reading = data & Status::value_mask;
@@ -175,8 +174,7 @@ class MMR92C04 {
 
     auto send_threshold() -> void {
         auto message = can_messages::SensorThresholdResponse{
-            .sensor = get_sensor_id(),
-            .threshold = get_threshold()};
+            .sensor = get_sensor_id(), .threshold = get_threshold()};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -253,7 +251,6 @@ class MMR92C04 {
         write(Reg::address, value);
         return true;
     }
-
 };
 
 }  // namespace mmr920C04

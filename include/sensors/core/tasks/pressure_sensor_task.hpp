@@ -64,8 +64,7 @@ class PressureMessageHandler {
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
             driver.poll_read(
                 mmr920C04_registers::Registers::LOW_PASS_PRESSURE_READ,
-                m.sample_rate,
-                DELAY);
+                m.sample_rate, DELAY);
         } else {
             driver.poll_read(mmr920C04_registers::Registers::TEMPERATURE_READ,
                              m.sample_rate, DELAY);
