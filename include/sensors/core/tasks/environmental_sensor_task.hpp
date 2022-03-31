@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -33,17 +35,22 @@ class EnvironmentSensorMessageHandler {
     ~EnvironmentSensorMessageHandler() = default;
 
     void initialize() {
-        writer.write(ADDRESS, DEVICE_ID_REGISTER, 0x0);
-        writer.read(
-            ADDRESS, [this]() { internal_handler.send_to_can(); },
-            [this](auto message_a) { internal_handler.handle_data(message_a); },
-            DEVICE_ID_REGISTER);
+        writer.transact(
+            ADDRESS, DEVICE_ID_REGISTER,
+            [this]() { internal_handler.send_to_can(); },
+            [this](auto message_a) {
+                internal_handler.handle_data(message_a);
+            });
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        writer.write(SAMPLE_RATE, ADDRESS, DRDY_CONFIG);
-        writer.write(SET_DATARDY, ADDRESS, INTERRUPT_REGISTER);
-        writer.write(BEGIN_MEASUREMENT_RECORDING, ADDRESS, MEASURE_REGISTER);
+        std::array configuration{DRDY_CONFIG, SAMPLE_RATE};
+        writer.write(ADDRESS, configuration);
+        configuration = std::array{INTERRUPT_REGISTER, SET_DATARDY};
+        writer.write(ADDRESS, configuration);
+        configuration =
+            std::array{MEASURE_REGISTER, BEGIN_MEASUREMENT_RECORDING};
+        writer.write(ADDRESS, configuration);
     }
 
     void handle_message(sensor_task_utils::TaskMessage &m) {
@@ -59,27 +66,27 @@ class EnvironmentSensorMessageHandler {
 
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
-        writer.write(m.data, ADDRESS);
+        std::array buf{static_cast<uint8_t>(m.data >> 8),
+                       static_cast<uint8_t>(m.data & 0xff)};
+        writer.write(ADDRESS, buf);
     }
 
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
-            writer.write(ADDRESS, HUMIDITY_REGISTER, 0x0);
-            writer.read(
-                ADDRESS, [this]() { humidity_handler.send_to_can(); },
+            writer.transact(
+                ADDRESS, HUMIDITY_REGISTER,
+                [this]() { humidity_handler.send_to_can(); },
                 [this](auto message_a) {
                     humidity_handler.handle_data(message_a);
-                },
-                HUMIDITY_REGISTER);
+                });
         } else {
-            writer.write(ADDRESS, TEMPERATURE_REGISTER, 0x0);
-            writer.read(
-                ADDRESS, [this]() { temperature_handler.send_to_can(); },
+            writer.transact(
+                ADDRESS, TEMPERATURE_REGISTER,
+                [this]() { temperature_handler.send_to_can(); },
                 [this](auto message_a) {
                     temperature_handler.handle_data(message_a);
-                },
-                TEMPERATURE_REGISTER);
+                });
         }
     }
 

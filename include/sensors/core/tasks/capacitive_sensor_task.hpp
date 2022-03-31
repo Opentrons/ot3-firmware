@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
@@ -35,18 +37,22 @@ class CapacitiveMessageHandler {
     }
 
     void initialize() {
-        writer.write(ADDRESS, DEVICE_ID_REGISTER, 0x0);
-        writer.read(
-            ADDRESS, [this]() { internal_callback.send_to_can(); },
+        writer.transact(
+            ADDRESS, DEVICE_ID_REGISTER,
+            [this]() { internal_callback.send_to_can(); },
             [this](auto message_a) {
                 internal_callback.handle_data(message_a);
-            },
-            DEVICE_ID_REGISTER);
+            });
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        writer.write(ADDRESS, CONFIGURATION_MEASUREMENT, DEVICE_CONFIGURATION);
-        writer.write(ADDRESS, FDC_CONFIGURATION, SAMPLE_RATE);
+        std::array configuration{CONFIGURATION_MEASUREMENT,
+                                 DEVICE_CONFIGURATION_MSB,
+                                 DEVICE_CONFIGURATION_LSB};
+        writer.write(ADDRESS, configuration);
+        std::array fdc_configuration{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
+                                     SAMPLE_RATE_LSB};
+        writer.write(ADDRESS, fdc_configuration);
     }
 
   private:
@@ -70,18 +76,19 @@ class CapacitiveMessageHandler {
         } else {
             capacitance_handler.reset();
             poller.multi_register_poll(
-                ADDRESS, 1, DELAY,
+                ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, 1, DELAY,
                 [this]() { capacitance_handler.send_to_can(); },
                 [this](auto message_a, auto message_b) {
                     capacitance_handler.handle_data(message_a, message_b);
-                },
-                MSB_MEASUREMENT_1, LSB_MEASUREMENT_1);
+                });
         }
     }
 
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
-        writer.write(m.data, ADDRESS);
+        std::array data{static_cast<uint8_t>(m.data >> 8),
+                        static_cast<uint8_t>(m.data & 0xff)};
+        writer.write(ADDRESS, data);
     }
 
     void visit(can_messages::BaselineSensorRequest &m) {
@@ -90,12 +97,11 @@ class CapacitiveMessageHandler {
         capacitance_handler.reset();
         capacitance_handler.set_number_of_reads(m.sample_rate);
         poller.multi_register_poll(
-            ADDRESS, m.sample_rate, DELAY,
+            ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, m.sample_rate, DELAY,
             [this]() { capacitance_handler.send_to_can(); },
             [this](auto message_a, auto message_b) {
                 capacitance_handler.handle_data(message_a, message_b);
-            },
-            MSB_MEASUREMENT_1, LSB_MEASUREMENT_1);
+            });
     }
 
     void visit(can_messages::SetSensorThresholdRequest &m) {

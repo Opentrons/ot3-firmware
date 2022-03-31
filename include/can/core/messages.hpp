@@ -715,15 +715,13 @@ struct BindSensorOutputResponse
  * A variant of all message types we might send..
  */
 
-using ResponseMessageType =
-    std::variant<HeartbeatResponse, DeviceInfoResponse,
-                 GetMotionConstraintsResponse, GetMoveGroupResponse,
-                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-                 SensorThresholdResponse, SensorDiagnosticResponse,
-                 TaskInfoResponse, PipetteInfoResponse,
-                 BindSensorOutputResponse>;
+using ResponseMessageType = std::variant<
+    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
+    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
+    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
+    PushToolsDetectedNotification, ReadLimitSwitchResponse,
+    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
+    PipetteInfoResponse, BindSensorOutputResponse>;
 
 }  // namespace can_messages
