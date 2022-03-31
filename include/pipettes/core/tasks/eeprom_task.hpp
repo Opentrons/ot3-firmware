@@ -59,7 +59,9 @@ class EEPromMessageHandler {
 
     void visit(can_messages::WriteToEEPromRequest &m) {
         LOG("Received request to write serial number: %d", m.serial_number);
-        writer.write(m.serial_number, DEVICE_ADDRESS);
+        std::array serial_buf{static_cast<uint8_t>(m.serial_number >> 8),
+                              static_cast<uint8_t>(m.serial_number & 0xff)};
+        writer.write(DEVICE_ADDRESS, serial_buf);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {

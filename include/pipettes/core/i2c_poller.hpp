@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cstdint>
-#include <variant>
-#include <ranges>
-#include <array>
 #include <algorithm>
+#include <array>
+#include <cstdint>
+#include <ranges>
+#include <variant>
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/buffer_type.hpp"
@@ -55,10 +55,8 @@ class I2CPoller {
      * register on the i2c bus.
      */
     template <std::ranges::range DataBuf>
-    void single_register_poll(uint16_t device_address,
-                              const DataBuf& data,
-                              uint16_t number_reads,
-                              uint16_t delay,
+    void single_register_poll(uint16_t device_address, const DataBuf& data,
+                              uint16_t number_reads, uint16_t delay,
                               SendToCanFunctionTypeDef client_callback,
                               SingleBufferTypeDef handle_callback) {
         MaxMessageBuffer buffer{data};
@@ -71,16 +69,14 @@ class I2CPoller {
             .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);
     }
-    void single_register_poll(uint16_t device_address,
-                              uint8_t data,
-                              uint16_t number_reads,
-                              uint16_t delay,
+    void single_register_poll(uint16_t device_address, uint8_t data,
+                              uint16_t number_reads, uint16_t delay,
                               SendToCanFunctionTypeDef client_callback,
                               SingleBufferTypeDef handle_callback) {
         std::array buf{data};
-        single_register_poll(device_address, data, number_reads, delay, client_callback, handle_callback);
+        single_register_poll(device_address, data, number_reads, delay,
+                             client_callback, handle_callback);
     }
-
 
     /**
      * Multi Register Poll.
@@ -109,20 +105,18 @@ class I2CPoller {
      */
     template <std::ranges::range DataBuf>
     void multi_register_poll(
-        uint16_t device_address, DataBuf register_1_data, DataBuf register_2_data,
-        uint16_t number_reads, uint16_t delay,
+        uint16_t device_address, DataBuf register_1_data,
+        DataBuf register_2_data, uint16_t number_reads, uint16_t delay,
         sensor_callbacks::SendToCanFunctionTypeDef client_callback,
         sensor_callbacks::MultiBufferTypeDef handle_callback) {
         MaxMessageBuffer register_1_buffer;
-        std::copy_n(
-            register_1_data.cbegin(),
-            std::min(register_1_data.size(), register_1_buffer.size()),
-            register_1_buffer.begin());
+        std::copy_n(register_1_data.cbegin(),
+                    std::min(register_1_data.size(), register_1_buffer.size()),
+                    register_1_buffer.begin());
         MaxMessageBuffer register_2_buffer;
-        std::copy_n(
-            register_2_data.cbegin(),
-            std::min(register_2_data.size(), register_2_buffer.size()),
-            register_2_buffer.begin());
+        std::copy_n(register_2_data.cbegin(),
+                    std::min(register_2_data.size(), register_2_buffer.size()),
+                    register_2_buffer.begin());
 
         pipette_messages::MultiRegisterPollReadFromI2C read_msg{
             .address = device_address,
@@ -135,13 +129,14 @@ class I2CPoller {
         queue->try_write(read_msg);
     }
     void multi_register_poll(
-        uint16_t device_address, uint8_t register_1_data, uint8_t register_2_data,
-        uint16_t number_reads, uint16_t delay,
+        uint16_t device_address, uint8_t register_1_data,
+        uint8_t register_2_data, uint16_t number_reads, uint16_t delay,
         sensor_callbacks::SendToCanFunctionTypeDef client_callback,
         sensor_callbacks::MultiBufferTypeDef handle_callback) {
         std::array buf_1{register_1_data};
         std::array buf_2{register_2_data};
-        return multi_register_poll(device_address, buf_1, buf_2, number_reads, delay, client_callback, handle_callback);
+        return multi_register_poll(device_address, buf_1, buf_2, number_reads,
+                                   delay, client_callback, handle_callback);
     }
 
     /**
@@ -171,23 +166,20 @@ class I2CPoller {
      * A poll function automatically initiates a read/write to the specified
      * register on the i2c bus.
      */
-    template<std::ranges::range DataBuf>
+    template <std::ranges::range DataBuf>
     void continuous_multi_register_poll(
-        uint16_t device_address,
-        const DataBuf& register_1_data, const DataBuf& register_2_data,
-        uint16_t delay, uint32_t id,
+        uint16_t device_address, const DataBuf& register_1_data,
+        const DataBuf& register_2_data, uint16_t delay, uint32_t id,
         sensor_callbacks::MultiBufferTypeDef handle_callback) {
         MaxMessageBuffer buffer_1{register_1_data};
-        std::copy_n(
-            register_1_data.cbegin(),
-            std::min(buffer_1.size(), register_1_data.size()),
-            buffer_1.begin());
+        std::copy_n(register_1_data.cbegin(),
+                    std::min(buffer_1.size(), register_1_data.size()),
+                    buffer_1.begin());
 
         MaxMessageBuffer buffer_2{register_2_data};
-        std::copy_n(
-            register_2_data.cbegin(),
-            std::min(register_2_data.size(), buffer_2.size()),
-            buffer_2.begin());
+        std::copy_n(register_2_data.cbegin(),
+                    std::min(register_2_data.size(), buffer_2.size()),
+                    buffer_2.begin());
 
         pipette_messages::ConfigureMultiRegisterContinuousPolling read_msg{
             .poll_id = id,
@@ -200,9 +192,8 @@ class I2CPoller {
     }
 
     void continuous_multi_register_poll(
-        uint16_t device_address,
-        uint8_t register_1_data, uint8_t register_2_data,
-        uint16_t delay, uint32_t id,
+        uint16_t device_address, uint8_t register_1_data,
+        uint8_t register_2_data, uint16_t delay, uint32_t id,
         sensor_callbacks::MultiBufferTypeDef handle_callback) {
         std::array buf_1{register_1_data};
         std::array buf_2{register_2_data};
@@ -231,10 +222,8 @@ class I2CPoller {
      */
     template <std::ranges::range DataBuf>
     void continuous_single_register_poll(
-        uint16_t device_address,
-        const DataBuf& data,
-        uint16_t delay, uint32_t id,
-        sensor_callbacks::SingleBufferTypeDef handle_callback) {
+        uint16_t device_address, const DataBuf& data, uint16_t delay,
+        uint32_t id, sensor_callbacks::SingleBufferTypeDef handle_callback) {
         MaxMessageBuffer buffer{data};
         pipette_messages::ConfigureSingleRegisterContinuousPolling read_msg{
             .poll_id = id,
@@ -245,12 +234,11 @@ class I2CPoller {
         queue->try_write(read_msg);
     }
     void continuous_single_register_poll(
-        uint16_t device_address,
-        uint8_t data,
-        uint16_t delay, uint32_t id,
+        uint16_t device_address, uint8_t data, uint16_t delay, uint32_t id,
         sensor_callbacks::SingleBufferTypeDef handle_callback) {
         std::array buf{data};
-        continuous_single_register_poll(device_address, buf, delay, id, handle_callback);
+        continuous_single_register_poll(device_address, buf, delay, id,
+                                        handle_callback);
     }
 
     void set_queue(QueueType* q) { queue = q; }

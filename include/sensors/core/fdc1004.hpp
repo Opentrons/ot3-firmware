@@ -35,12 +35,17 @@ constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
 constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
 // configurations
 constexpr uint16_t DEVICE_CONFIGURATION =
-    0x0 << 13 |                             // CHA = CIN1 (U.FL Connector)
-    0x4 << 10;                              // CHB = CAPDAC
+    0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
+    0x4 << 10;   // CHB = CAPDAC
+constexpr uint8_t DEVICE_CONFIGURATION_MSB =
+    static_cast<uint8_t>(DEVICE_CONFIGURATION >> 8);
+constexpr uint8_t DEVICE_CONFIGURATION_LSB =
+    static_cast<uint8_t>(DEVICE_CONFIGURATION & 0xff);
 constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
                                  1 << 8 |   // Repeat enabled
                                  1 << 7;    // Measurement 1 enabled
-
+constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
+constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
 constexpr uint16_t DEVICE_ID = 0x1004;
 
 // Constants

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
 #include <cstdint>
+#include <ranges>
 #include <variant>
 
 #include "common/core/bit_utils.hpp"
@@ -30,21 +33,37 @@ class I2CWriter {
     I2CWriter(I2CWriter&&) = delete;
     auto operator=(I2CWriter&&) -> I2CWriter& = delete;
 
+    /**
+     * A single write to the i2c bus.
+     *
+     * @param device_address: Device address on the i2c bus
+     * @param buf: prepared buffer for writing or int to serialize
+     * */
+    template <std::ranges::range DataBuffer>
+    void write(uint16_t device_address, const DataBuffer& buf) {
+        MaxMessageBuffer max_buffer;
+        std::copy_n(buf.cbegin(), std::min(buf.size(), max_buffer.size()),
+                    max_buffer.begin());
+        do_write(device_address, max_buffer);
+    }
+
     template <typename Data>
     requires std::is_integral_v<Data>
-    void write(Data data, uint16_t device_address) {
-        std::array<uint8_t, MAX_SIZE> max_buffer{};
-        buffering(max_buffer, data);
-        pipette_messages::WriteToI2C write_msg{.address = device_address,
-                                               .buffer = max_buffer};
-        queue->try_write(write_msg);
+    void write(uint16_t device_address, Data data) {
+        MaxMessageBuffer max_buffer;
+        static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
+                                                  max_buffer.end()));
+        do_write(device_address, max_buffer);
     }
 
     template <typename Data>
     requires std::is_integral_v<Data>
     void write(uint16_t device_address, uint8_t reg, Data data) {
         std::array<uint8_t, MAX_SIZE> max_buffer{};
-        buffering(max_buffer, data, reg);
+        auto iter = max_buffer.begin();
+        *iter++ = reg;
+        static_cast<void>(
+            bit_utils::int_to_bytes(data, iter, max_buffer.end()));
         pipette_messages::WriteToI2C write_msg{.address = device_address,
                                                .buffer = max_buffer};
         queue->try_write(write_msg);
@@ -58,15 +77,14 @@ class I2CWriter {
      * to the client queue.
      * @param handle_callback: the function that will handle any data
      * manipulation required for the specific task using the i2c bus. Takes in
-     * two buffers.
-     * @param reg: the register to read from, if relevant.
+     * a buffer containing the data.
      *
      * A poll function automatically initiates a read/write to the specified
      * register on the i2c bus.
      */
     void read(uint16_t device_address, SendToCanFunctionTypeDef client_callback,
-              SingleBufferTypeDef handle_callback, uint8_t reg = 0x0) {
-        std::array<uint8_t, MAX_SIZE> max_buffer{reg};
+              SingleBufferTypeDef handle_callback) {
+        MaxMessageBuffer max_buffer{};
         pipette_messages::ReadFromI2C read_msg{
             .address = device_address,
             .buffer = max_buffer,
@@ -75,45 +93,61 @@ class I2CWriter {
         queue->try_write(read_msg);
     }
 
-    void transact(uint16_t device_address,
+    /*
+     * A transaction on the i2c bus with writing and reading.
+     *
+     * @param device_address: device address on the i2c bus
+     * @param data: Data to write to the bus before reading. Can be a full
+     * buffer or a uint8_t.
+     * @param client_callback: the function that will write a CAN return message
+     * to the client queue.
+     * @param handle_callback: the funciton that will handle any data
+     * manipulation required for the specific task using the i2c bus. Takes in
+     * a buffer.
+     * @param reg: The register to read from.
+     */
+    template <std::ranges::range DataBuf>
+    void transact(uint16_t device_address, DataBuf buf,
                   SendToCanFunctionTypeDef client_callback,
-                  SingleBufferTypeDef handle_callback, uint8_t reg = 0x0) {
-        std::array<uint8_t, MAX_SIZE> max_buffer{reg};
+                  SingleBufferTypeDef handle_callback) {
+        MaxMessageBuffer max_buffer;
+        std::copy_n(buf.cbegin(), std::min(buf.size(), max_buffer.size()),
+                    max_buffer.begin());
+        do_transact(device_address, max_buffer, client_callback,
+                    handle_callback);
+    }
+    template <typename Data>
+    requires std::is_integral_v<Data>
+    void transact(uint16_t device_address, Data data,
+                  SendToCanFunctionTypeDef client_callback,
+                  SingleBufferTypeDef handle_callback) {
+        MaxMessageBuffer max_buffer;
+        static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
+                                                  max_buffer.end()));
+        do_transact(device_address, max_buffer, client_callback,
+                    handle_callback);
+    }
+
+    void set_queue(QueueType* q) { queue = q; }
+
+  private:
+    void do_transact(uint16_t address, const MaxMessageBuffer& buf,
+                     SendToCanFunctionTypeDef client_callback,
+                     SingleBufferTypeDef handle_callback) {
         pipette_messages::TransactWithI2C read_msg{
-            .address = device_address,
-            .buffer = max_buffer,
+            .address = address,
+            .buffer = buf,
             .client_callback = std::move(client_callback),
             .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);
     }
 
-    void set_queue(QueueType* q) { queue = q; }
-
-    template <GenericByteBuffer Buffer, typename Data>
-    requires std::is_integral_v<Data>
-    void debuffering(Buffer& buffer, Data& data) {
-        auto* iter = buffer.begin();
-        iter = bit_utils::bytes_to_int(iter, buffer.end(), data);
+    void do_write(uint16_t address, const MaxMessageBuffer& buf) {
+        pipette_messages::WriteToI2C write_msg{.address = address,
+                                               .buffer = buf};
+        queue->try_write(write_msg);
     }
-
-    template <GenericByteBuffer Buffer, typename Data>
-    requires std::is_integral_v<Data>
-    void buffering(Buffer& buffer, Data& data) {
-        auto* iter = buffer.begin();
-        iter = bit_utils::int_to_bytes(data, iter, buffer.end());
-    }
-
-    template <GenericByteBuffer Buffer, typename Data>
-    requires std::is_integral_v<Data>
-    void buffering(Buffer& buffer, Data& data, uint8_t reg) {
-        auto* iter = buffer.begin();
-        iter = bit_utils::int_to_bytes(reg, iter, buffer.end());
-        iter = bit_utils::int_to_bytes(data, iter, buffer.end());
-    }
-
-  private:
     QueueType* queue{nullptr};
-    static constexpr auto MAX_SIZE = 5;
 };
 
 }  // namespace i2c_writer

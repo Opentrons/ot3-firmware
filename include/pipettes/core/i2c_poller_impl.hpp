@@ -69,8 +69,7 @@ struct ContinuousPoll {
         -> std::function<void(void)> {
         return [this, message]() {
             this->writer.transact(
-                this->address, message.register_1_buffer,
-                []() {},
+                this->address, message.register_1_buffer, []() {},
                 [this, message](const MaxMessageBuffer& buffer) {
                     auto first_buf = buffer;
                     this->writer.transact(
@@ -131,9 +130,7 @@ struct LimitedPoll {
         -> std::function<void(void)> {
         return [this, message]() {
             this->writer.transact(
-                this->address,
-                message.buffer,
-                []() {},
+                this->address, message.buffer, []() {},
                 [this, message](const MaxMessageBuffer& buf) {
                     do_recursive_cb_single(this, message, buf);
                 });

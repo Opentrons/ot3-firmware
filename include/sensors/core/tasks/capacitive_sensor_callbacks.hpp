@@ -57,7 +57,7 @@ struct ReadCapacitanceCallback {
             uint16_t update = CONFIGURATION_MEASUREMENT |
                               POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL |
                               capdac;
-            i2c_writer.write(update, ADDRESS);
+            i2c_writer.write(ADDRESS, update);
         }
     }
 
