@@ -57,9 +57,10 @@ struct ContinuousPoll {
         -> std::function<void(void)> {
         return [this, message]() {
             this->writer.transact(
-                this->address, []() {},  // nothing for the client callback - we
-                                         // only handle individual samples
-                message.handle_buffer, message.register_addr);
+                this->address, message.buffer,
+                []() {},  // nothing for the client callback - we
+                // only handle individual samples
+                message.handle_buffer);
         };
     }
 
@@ -68,18 +69,17 @@ struct ContinuousPoll {
         -> std::function<void(void)> {
         return [this, message]() {
             this->writer.transact(
-                this->address, []() {},
+                this->address, message.register_1_buffer,
+                []() {},
                 [this, message](const MaxMessageBuffer& buffer) {
                     auto first_buf = buffer;
                     this->writer.transact(
-                        this->address, []() {},
+                        this->address, message.register_2_buffer, []() {},
                         [first_buf,
                          message](const MaxMessageBuffer& second_buf) {
                             message.handle_buffer(first_buf, second_buf);
-                        },
-                        message.register_2_addr);
-                },
-                message.register_1_addr);
+                        });
+                });
         };
     }
 };
@@ -131,11 +131,12 @@ struct LimitedPoll {
         -> std::function<void(void)> {
         return [this, message]() {
             this->writer.transact(
-                this->address, []() {},
+                this->address,
+                message.buffer,
+                []() {},
                 [this, message](const MaxMessageBuffer& buf) {
                     do_recursive_cb_single(this, message, buf);
-                },
-                message.register_addr);
+                });
         };
     }
 
@@ -159,18 +160,16 @@ struct LimitedPoll {
         -> std::function<void(void)> {
         return [this, message]() {
             this->writer.transact(
-                this->address, []() {},
+                this->address, message.register_1_buffer, []() {},
                 [this, message](const MaxMessageBuffer& first_buffer) {
                     this->writer.transact(
-                        this->address, []() {},
+                        this->address, message.register_2_buffer, []() {},
                         [this, message,
                          first_buffer](const MaxMessageBuffer& second_buffer) {
                             do_recursive_cb_multi(this, message, first_buffer,
                                                   second_buffer);
-                        },
-                        message.register_2_addr);
-                },
-                message.register_1_addr);
+                        });
+                });
         };
     }
 };

@@ -23,7 +23,8 @@ namespace sensor_callbacks {
  * concepts to take in any number of buffers, but not required at the moment.
  */
 // Max sized buffer for data we'll ever need is ~40 bits.
-using MaxMessageBuffer = std::array<uint8_t, 5>;
+static constexpr uint32_t MAX_MESSAGE_BUFFER_SIZE = 5;
+using MaxMessageBuffer = std::array<uint8_t, MAX_MESSAGE_BUFFER_SIZE>;
 
 // Types representing the possible callback signatures
 using SendToCanFunctionTypeDef = std::function<void()>;

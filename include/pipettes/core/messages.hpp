@@ -48,7 +48,7 @@ struct SingleRegisterPollReadFromI2C {
     uint16_t address;
     int polling;
     int delay_ms;
-    uint8_t register_addr;
+    sensor_callbacks::MaxMessageBuffer buffer;
     sensor_callbacks::SendToCanFunctionTypeDef client_callback;
     sensor_callbacks::SingleBufferTypeDef handle_buffer;
 };
@@ -66,8 +66,8 @@ struct MultiRegisterPollReadFromI2C {
     uint16_t address;
     int polling;
     int delay_ms;
-    uint8_t register_1_addr;
-    uint8_t register_2_addr;
+    sensor_callbacks::MaxMessageBuffer register_1_buffer;
+    sensor_callbacks::MaxMessageBuffer register_2_buffer;
     sensor_callbacks::SendToCanFunctionTypeDef client_callback;
     sensor_callbacks::MultiBufferTypeDef handle_buffer;
 };
@@ -92,7 +92,7 @@ struct ConfigureSingleRegisterContinuousPolling {
     uint32_t poll_id;
     uint16_t address;
     int delay_ms;
-    uint8_t register_addr;
+    sensor_callbacks::MaxMessageBuffer buffer;
     sensor_callbacks::SingleBufferTypeDef handle_buffer;
 };
 
@@ -116,8 +116,8 @@ struct ConfigureMultiRegisterContinuousPolling {
     uint32_t poll_id;
     uint16_t address;
     int delay_ms;
-    uint8_t register_1_addr;
-    uint8_t register_2_addr;
+    sensor_callbacks::MaxMessageBuffer register_1_buffer;
+    sensor_callbacks::MaxMessageBuffer register_2_buffer;
     sensor_callbacks::MultiBufferTypeDef handle_buffer;
 };
 
