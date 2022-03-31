@@ -188,17 +188,16 @@ class MotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
-        uint32_t pulses = get_encoder_pulses();
         pulses = get_encoder_pulses();
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
-                .current_position = pulses,
-                // .current_position = static_cast<uint32_t>(
-                //     position_tracker >>
-                //     31),  // TODO (AA 2021-11-10): convert
+                .current_position = static_cast<uint32_t>(
+                    position_tracker >>
+                    31),  // TODO (AA 2021-11-10): convert
                           // this value to mm instead of steps
+                .encoder_position = pulses,
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -249,6 +248,7 @@ class MotorInterruptHandler {
 
   private:
     uint64_t tick_count = 0x0;
+    uint32_t pulses = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;  // in steps

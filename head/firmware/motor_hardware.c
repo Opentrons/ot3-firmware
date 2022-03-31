@@ -200,7 +200,7 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -208,7 +208,7 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 }
@@ -276,6 +276,15 @@ void TIM2_Encoder_Init(void){
     {
     Error_Handler();
     }
+    /* Reset counter */
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+    /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_IT(&htim2,TIM_IT_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim2);
+    /* Enable encoder interface */
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
@@ -322,6 +331,16 @@ void TIM3_Encoder_Init(void){
     {
     Error_Handler();
     }
+
+    /* Reset counter */
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+
+    /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_IT(&htim3,TIM_IT_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim3,TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim3);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 }
