@@ -15,8 +15,7 @@ using namespace pipette_messages;
 using namespace sensor_callbacks;
 
 using TaskMessage =
-    std::variant<std::monostate, WriteToI2C, ReadFromI2C,
-                 SingleRegisterPollReadFromI2C, MultiRegisterPollReadFromI2C>;
+    std::variant<std::monostate, WriteToI2C, ReadFromI2C, TransactWithI2C>;
 
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
@@ -99,11 +98,12 @@ class I2CWriter {
                               SendToCanFunctionTypeDef client_callback,
                               SingleBufferTypeDef handle_callback,
                               uint8_t reg = 0x0) {
+    void transact(uint16_t device_address,
+                  SendToCanFunctionTypeDef client_callback,
+                  SingleBufferTypeDef handle_callback, uint8_t reg = 0x0) {
         std::array<uint8_t, MAX_SIZE> max_buffer{reg};
-        pipette_messages::SingleRegisterPollReadFromI2C read_msg{
+        pipette_messages::TransactWithI2C read_msg{
             .address = device_address,
-            .polling = number_reads,
-            .delay_ms = delay,
             .buffer = max_buffer,
             .client_callback = std::move(client_callback),
             .handle_buffer = std::move(handle_callback)};
