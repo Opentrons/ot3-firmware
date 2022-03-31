@@ -3,13 +3,11 @@
 #include <functional>
 
 #include "FreeRTOS.h"
+#include "task.h"
 #include "timers.h"
 
 namespace freertos_timer {
 
-// pdMS_TO_TICKS converts milliseconds to ticks. This can only be used for
-// FreeRTOS tick rates less than 1000 Hz.
-template <TickType_t timer_period = pdMS_TO_TICKS(1)>
 class FreeRTOSTimer {
   public:
     /*
@@ -18,10 +16,10 @@ class FreeRTOSTimer {
      * same priority or higher priority than 6 for execution.
      */
     using Callback = std::function<void()>;
-    FreeRTOSTimer(const char* name, Callback callback)
+    FreeRTOSTimer(const char* name, Callback&& callback, uint32_t period_ms)
         : callback{std::move(callback)} {
-        timer = xTimerCreateStatic(name, timer_period, auto_reload, this,
-                                   timer_callback, &timer_buffer);
+        timer = xTimerCreateStatic(name, pdMS_TO_TICKS(period_ms), auto_reload,
+                                   this, timer_callback, &timer_buffer);
     }
     auto operator=(FreeRTOSTimer&) -> FreeRTOSTimer& = delete;
     auto operator=(FreeRTOSTimer&&) -> FreeRTOSTimer&& = delete;
@@ -29,9 +27,28 @@ class FreeRTOSTimer {
     FreeRTOSTimer(FreeRTOSTimer&&) = delete;
     ~FreeRTOSTimer() { xTimerDelete(timer, 0); }
 
-    void start() { xTimerStart(timer, 0); }
+    bool is_running() { return (xTimerIsTimerActive(timer) == pdTRUE); }
 
-    void stop() { xTimerStop(timer, 0); }
+    void update_callback(Callback&& new_callback) {
+        callback = std::move(callback);
+    }
+
+    void update_period(uint32_t period_ms) {
+        // Update the period of the timer and suppress the freertos behavior
+        // that if the timer is currently stopped, changing its period activates
+        // it.
+        auto is_active = xTimerIsTimerActive(timer);
+        TickType_t blocking_ticks = is_active ? 1 : 0;
+        xTimerChangePeriod(timer, pdMS_TO_TICKS(period_ms), blocking_ticks);
+        if (!is_active) {
+            stop();
+            vTaskDelay(1);
+        }
+    }
+
+    void start() { xTimerStart(timer, 1); }
+
+    void stop() { xTimerStop(timer, 1); }
 
   private:
     TimerHandle_t timer{};
@@ -41,7 +58,7 @@ class FreeRTOSTimer {
 
     static void timer_callback(TimerHandle_t xTimer) {
         auto* timer_id = pvTimerGetTimerID(xTimer);
-        auto instance = static_cast<FreeRTOSTimer<timer_period>*>(timer_id);
+        auto instance = static_cast<FreeRTOSTimer*>(timer_id);
         instance->callback();
     }
 };
