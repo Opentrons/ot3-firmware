@@ -5,8 +5,10 @@
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
+#include "pipettes/core/i2c_poller.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
+#include "pipettes/core/tasks/i2c_poll_task_starter.hpp"
 #include "pipettes/core/tasks/i2c_task_starter.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
 #include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
@@ -44,6 +46,11 @@ static auto pressure_sensor_task_builder =
                                               pipettes_tasks::QueueClient>{};
 
 static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
+static auto i2c_poll_task_builder = i2c_poll_task_starter::TaskStarter<512>{};
+static auto i2c1_poll_client =
+    i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>{};
+static auto i2c3_poll_client =
+    i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
 /**
  * Start pipettes tasks.
@@ -65,6 +72,11 @@ void pipettes_tasks::start_tasks(
     auto& i2c1_task = i2c_task_builder.start(5, i2c1_device);
     i2c1_task_client.set_queue(&i2c1_task.get_queue());
 
+    auto& i2c3_poller_task = i2c_poll_task_builder.start(5, i2c3_task_client);
+    auto& i2c1_poller_task = i2c_poll_task_builder.start(5, i2c1_task_client);
+    i2c1_poll_client.set_queue(&i2c1_poller_task.get_queue());
+    i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
+
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
@@ -74,10 +86,10 @@ void pipettes_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, i2c3_task_client, queues);
     auto& environment_sensor_task =
         environment_sensor_task_builder.start(5, i2c3_task_client, queues);
-    auto& capacitive_sensor_task =
-        capacitive_sensor_task_builder.start(5, i2c3_task_client, queues);
     auto& pressure_sensor_task =
         pressure_sensor_task_builder.start(5, i2c3_task_client, queues);
+    auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
+        5, i2c3_task_client, i2c3_poll_client, queues);
 
     // TODO (lc: 03-21-2022, add necessary sensor tasks for secondary i2c bus
     tasks.can_writer = &can_writer;

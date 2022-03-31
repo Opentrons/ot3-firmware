@@ -10,6 +10,7 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "pipettes/core/i2c_writer.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
+#include "pipettes/core/tasks/i2c_poll_task.hpp"
 #include "pipettes/core/tasks/i2c_task.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
@@ -81,6 +82,10 @@ struct QueueClient : can_message_writer::MessageWriter {
         i2c3_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c_task::TaskMessage>*
         i2c1_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c_poller_task::TaskMessage>*
+        i2c3_poller_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c_poller_task::TaskMessage>*
+        i2c1_poller_queue{nullptr};
 };
 
 /**
@@ -106,6 +111,12 @@ struct AllTask {
         nullptr};
     i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>* i2c1_task{
         nullptr};
+    i2c_poller_task::I2CPollingTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* i2c3_poller_task{
+        nullptr};
+    i2c_poller_task::I2CPollingTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* i2c1_poller_task{
+        nullptr};
     eeprom_task::EEPromTask<
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
@@ -117,6 +128,7 @@ struct AllTask {
     capacitive_sensor_task::CapacitiveSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
+        i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>,
         QueueClient>* capacitive_sensor_task{nullptr};
     pressure_sensor_task::PressureSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue,
