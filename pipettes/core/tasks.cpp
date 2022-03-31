@@ -8,6 +8,7 @@
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
+#include "pipettes/core/tasks/i2c_poll_task_starter.hpp"
 #include "pipettes/core/tasks/i2c_task_starter.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
 #include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
@@ -43,6 +44,10 @@ static auto pressure_sensor_task_builder =
 
 static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
 
+static auto i2c_poll_task_builder = i2c_poll_task_starter::TaskStarter<512>{};
+static auto i2c_poll_client =
+    i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>{};
+
 /**
  * Start pipettes tasks.
  */
@@ -60,7 +65,8 @@ void pipettes_tasks::start_tasks(
     can_task::start_reader(can_bus, id);
     auto& i2c3_task = i2c_task_builder.start(5, i2c_device);
     i2c_task_client.set_queue(&i2c3_task.get_queue());
-
+    auto& i2c3_poller = i2c_poll_task_builder.start(5, i2c_task_client);
+    i2c_poll_client.set_queue(&i2c3_poller.get_queue());
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
@@ -70,10 +76,10 @@ void pipettes_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, i2c_task_client, queues);
     auto& environment_sensor_task =
         environment_sensor_task_builder.start(5, i2c_task_client, queues);
-    auto& capacitive_sensor_task =
-        capacitive_sensor_task_builder.start(5, i2c_task_client, queues);
     auto& pressure_sensor_task =
         pressure_sensor_task_builder.start(5, i2c_task_client, queues);
+    auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
+        5, i2c_task_client, i2c_poll_client, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

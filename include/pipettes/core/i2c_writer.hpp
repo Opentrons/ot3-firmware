@@ -70,34 +70,11 @@ class I2CWriter {
         pipette_messages::ReadFromI2C read_msg{
             .address = device_address,
             .buffer = max_buffer,
-            .client_callback = std::move(client_callback),
-            .handle_buffer = std::move(handle_callback)};
+            .client_callback = client_callback,
+            .handle_buffer = handle_callback};
         queue->try_write(read_msg);
     }
 
-    /**
-     * Single Register Poll.
-     *
-     * This function will poll the results of a single register.
-     *
-     * @param device_address: device address on the i2c bus
-     * @param number_reads: how many data points to take from the sensor
-     * @param delay: the frequency to send the read/writes to the register
-     * provided.
-     * @param client_callback: the function that will write a CAN return message
-     * to the client queue.
-     * @param single_callback: the function that will handle any data
-     * manipulation required for the specific task using the i2c bus.
-     * @param reg: the register to read from, if relevant.
-     *
-     * A poll function automatically initiates a read/write to the specified
-     * register on the i2c bus.
-     */
-    void single_register_poll(uint16_t device_address, uint16_t number_reads,
-                              uint16_t delay,
-                              SendToCanFunctionTypeDef client_callback,
-                              SingleBufferTypeDef handle_callback,
-                              uint8_t reg = 0x0) {
     void transact(uint16_t device_address,
                   SendToCanFunctionTypeDef client_callback,
                   SingleBufferTypeDef handle_callback, uint8_t reg = 0x0) {
@@ -105,48 +82,6 @@ class I2CWriter {
         pipette_messages::TransactWithI2C read_msg{
             .address = device_address,
             .buffer = max_buffer,
-            .client_callback = std::move(client_callback),
-            .handle_buffer = std::move(handle_callback)};
-        queue->try_write(read_msg);
-    }
-
-    /**
-     * Multi Register Poll.
-     *
-     * This function will poll the results of two registers. Typically this is
-     * relevant when data is stored in two separate registers.
-     *
-     * @param device_address: device address on the i2c bus
-     * @param number_reads: how many data points to take from the sensor
-     * @param delay: the frequency to send the read/writes to the register
-     * provided.
-     * @param client_callback: the function that will write a CAN return message
-     * to the client queue.
-     * @param multi_callback: the function that will handle any data
-     * manipulation required for the specific task using the i2c bus. Takes in
-     * two buffers.
-     * @param register_1: the register to read from, if relevant.
-     * @param register_2: the register to read from, if relevant.
-     *
-     * Registers will be written to/read from in the order they are listed. This
-     * means that `register_1` will always be read from before `register_2`.
-     *
-     * A poll function automatically initiates a read/write to the specified
-     * register on the i2c bus.
-     */
-    void multi_register_poll(
-        uint16_t device_address, uint16_t number_reads, uint16_t delay,
-        sensor_callbacks::SendToCanFunctionTypeDef client_callback,
-        sensor_callbacks::MultiBufferTypeDef handle_callback,
-        uint8_t register_1 = 0x0, uint8_t register_2 = 0x0) {
-        std::array<uint8_t, MAX_SIZE> buffer_1{register_1};
-        std::array<uint8_t, MAX_SIZE> buffer_2{register_2};
-        pipette_messages::MultiRegisterPollReadFromI2C read_msg{
-            .address = device_address,
-            .polling = number_reads,
-            .delay_ms = delay,
-            .register_buffer_1 = buffer_1,
-            .register_buffer_2 = buffer_2,
             .client_callback = std::move(client_callback),
             .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);

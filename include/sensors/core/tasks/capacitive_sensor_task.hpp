@@ -10,12 +10,15 @@ namespace capacitive_sensor_task {
 
 using namespace capacitance_callbacks;
 
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
+template <class I2CQueueWriter, class I2CPoller,
+          message_writer_task::TaskClient CanClient>
 class CapacitiveMessageHandler {
   public:
     explicit CapacitiveMessageHandler(I2CQueueWriter &i2c_writer,
+                                      I2CPoller &i2c_poller,
                                       CanClient &can_client)
         : writer{i2c_writer},
+          poller{i2c_poller},
           can_client{can_client},
           capacitance_handler{can_client, writer, zero_threshold,
                               capdac_offset} {}
@@ -66,7 +69,7 @@ class CapacitiveMessageHandler {
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
             capacitance_handler.reset();
-            writer.multi_register_poll(
+            poller.multi_register_poll(
                 ADDRESS, 1, DELAY,
                 [this]() { capacitance_handler.send_to_can(); },
                 [this](auto message_a, auto message_b) {
@@ -86,7 +89,7 @@ class CapacitiveMessageHandler {
         capdac_offset = capacitance_handler.get_offset();
         capacitance_handler.reset();
         capacitance_handler.set_number_of_reads(m.sample_rate);
-        writer.multi_register_poll(
+        poller.multi_register_poll(
             ADDRESS, m.sample_rate, DELAY,
             [this]() { capacitance_handler.send_to_can(); },
             [this](auto message_a, auto message_b) {
@@ -112,6 +115,7 @@ class CapacitiveMessageHandler {
     float capdac_offset = 0x0;
     static constexpr uint16_t DELAY = 20;
     I2CQueueWriter &writer;
+    I2CPoller &poller;
     CanClient &can_client;
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
 };
@@ -120,7 +124,7 @@ class CapacitiveMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl, class I2CQueueWriter,
-          message_writer_task::TaskClient CanClient>
+          class I2CPoller, message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
                       sensor_task_utils::TaskMessage>
 class CapacitiveSensorTask {
@@ -136,9 +140,9 @@ class CapacitiveSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer,
+    [[noreturn]] void operator()(I2CQueueWriter *writer, I2CPoller *poller,
                                  CanClient *can_client) {
-        auto handler = CapacitiveMessageHandler{*writer, *can_client};
+        auto handler = CapacitiveMessageHandler{*writer, *poller, *can_client};
         handler.initialize();
         sensor_task_utils::TaskMessage message{};
         for (;;) {
