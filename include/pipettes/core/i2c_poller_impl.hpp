@@ -1,0 +1,244 @@
+#pragma once
+
+#include <array>
+#include <cstdint>
+#include <type_traits>
+#include <variant>
+
+#include "common/core/freertos_timer.hpp"
+#include "pipettes/core/i2c_writer.hpp"
+#include "pipettes/core/messages.hpp"
+#include "sensors/core/callback_types.hpp"
+
+namespace i2c_poller_impl {
+using namespace pipette_messages;
+using namespace sensor_callbacks;
+
+template <typename Message>
+concept ContinuousPollMessage =
+    std::is_same_v<Message, ConfigureSingleRegisterContinuousPolling> ||
+    std::is_same_v<Message, ConfigureMultiRegisterContinuousPolling>;
+
+template <typename Message>
+concept LimitedPollMessage =
+    std::is_same_v<Message, SingleRegisterPollReadFromI2C> ||
+    std::is_same_v<Message, MultiRegisterPollReadFromI2C>;
+
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
+                      i2c_writer::TaskMessage>
+struct ContinuousPoll {
+    using I2CWriterType = i2c_writer::I2CWriter<QueueImpl>;
+    ContinuousPoll(I2CWriterType& writer)
+        : address(0),
+          timer(
+              "i2c cts poller", []() {}, 1),
+          writer(writer) {}
+    uint16_t address;
+    freertos_timer::FreeRTOSTimer timer;
+    I2CWriterType& writer;
+    uint32_t poll_id = 0;
+
+    template <ContinuousPollMessage Message>
+    auto handle_message(const Message& message) -> void {
+        address = message.address;
+        poll_id = message.poll_id;
+        timer.stop();
+        if (message.delay_ms != 0) {
+            timer.update_callback(provide_callback(message));
+            timer.update_period(message.delay_ms);
+            timer.start();
+        }
+    }
+
+  private:
+    auto provide_callback(
+        const ConfigureSingleRegisterContinuousPolling& message)
+        -> std::function<void(void)> {
+        return [this, message]() {
+            this->writer.transact(
+                this->address, []() {},  // nothing for the client callback - we
+                                         // only handle individual samples
+                message.handle_buffer, message.register_addr);
+        };
+    }
+
+    auto provide_callback(
+        const ConfigureMultiRegisterContinuousPolling& message)
+        -> std::function<void(void)> {
+        return [this, message]() {
+            this->writer.transact(
+                this->address, []() {},
+                [this, message](const MaxMessageBuffer& buffer) {
+                    auto first_buf = buffer;
+                    this->writer.transact(
+                        this->address, []() {},
+                        [first_buf,
+                         message](const MaxMessageBuffer& second_buf) {
+                            message.handle_buffer(first_buf, second_buf);
+                        },
+                        message.register_2_addr);
+                },
+                message.register_1_addr);
+        };
+    }
+};
+
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
+                      i2c_writer::TaskMessage>
+struct LimitedPoll {
+    using I2CWriterType = i2c_writer::I2CWriter<QueueImpl>;
+    explicit LimitedPoll(I2CWriterType& writer)
+        : address(0),
+          timer(
+              "i2c limited poller", []() {}, 1),
+          writer(writer) {}
+    uint16_t address;
+    freertos_timer::FreeRTOSTimer timer;
+    I2CWriterType& writer;
+
+    template <LimitedPollMessage Message>
+    auto handle_message(const Message& message) -> void {
+        address = message.address;
+        timer.stop();
+        if (message.delay_ms != 0) {
+            timer.update_callback(provide_callback(message));
+            timer.update_period(message.delay_ms);
+            timer.start();
+        }
+    }
+
+  private:
+    static auto do_recursive_cb_single(
+        LimitedPoll<QueueImpl>* slf,
+        const SingleRegisterPollReadFromI2C& message,
+        const MaxMessageBuffer& buffer) -> void {
+        auto local_message = message;
+        local_message.handle_buffer(buffer);
+        local_message.polling--;
+        if (local_message.polling == 0) {
+            // base case: no more polls, call the final callback
+            local_message.client_callback();
+            slf->timer.stop();
+        } else {
+            // recurse to change the timer callback to the new message with the
+            // new polling
+            slf->timer.update_callback(slf->provide_callback(local_message));
+        }
+    }
+    auto provide_callback(const SingleRegisterPollReadFromI2C& message)
+        -> std::function<void(void)> {
+        return [this, message]() {
+            this->writer.transact(
+                this->address, []() {},
+                [this, message](const MaxMessageBuffer& buf) {
+                    do_recursive_cb_single(this, message, buf);
+                },
+                message.register_addr);
+        };
+    }
+
+    static auto do_recursive_cb_multi(
+        LimitedPoll<QueueImpl>* slf,
+        const MultiRegisterPollReadFromI2C& message,
+        const MaxMessageBuffer& first_buffer,
+        const MaxMessageBuffer& second_buffer) -> void {
+        auto local_message = message;
+        local_message.polling--;
+        local_message.handle_buffer(first_buffer, second_buffer);
+        if (local_message.polling == 0) {
+            // base case
+            local_message.client_callback();
+            slf->timer.stop();
+        } else {
+            slf->timer.update_callback(slf->provide_callback(local_message));
+        }
+    }
+    auto provide_callback(const MultiRegisterPollReadFromI2C& message)
+        -> std::function<void(void)> {
+        return [this, message]() {
+            this->writer.transact(
+                this->address, []() {},
+                [this, message](const MaxMessageBuffer& first_buffer) {
+                    this->writer.transact(
+                        this->address, []() {},
+                        [this, message,
+                         first_buffer](const MaxMessageBuffer& second_buffer) {
+                            do_recursive_cb_multi(this, message, first_buffer,
+                                                  second_buffer);
+                        },
+                        message.register_2_addr);
+                },
+                message.register_1_addr);
+        };
+    }
+};
+
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
+                      i2c_writer::TaskMessage>
+struct ContinuousPollManager {
+    static constexpr uint32_t MAX_CONTINUOUS_POLLS = 5;
+    using PollType = ContinuousPoll<QueueImpl>;
+    using Polls = std::array<PollType, MAX_CONTINUOUS_POLLS>;
+    Polls polls;
+    explicit ContinuousPollManager(PollType::I2CWriterType& writer)
+        : polls{PollType(writer), PollType(writer), PollType(writer),
+                PollType(writer), PollType(writer)} {}
+
+    auto get_poller(uint16_t address, uint32_t id) -> PollType* {
+        PollType* first_empty = nullptr;
+        for (auto& poll : polls) {
+            if ((poll.address == address) && (poll.poll_id == id)) {
+                return &poll;
+            }
+            if (poll.address == 0 && !first_empty) {
+                first_empty = &poll;
+            }
+        }
+        return first_empty;
+    }
+
+    template <ContinuousPollMessage Message>
+    auto add_or_update(Message& message) -> void {
+        auto maybe_poller = get_poller(message.address, message.poll_id);
+        if (!maybe_poller) {
+            return;
+        } else {
+            maybe_poller->handle_message(message);
+        }
+    }
+};
+
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
+                      i2c_writer::TaskMessage>
+struct LimitedPollManager {
+    static constexpr uint32_t MAX_LIMITED_POLLS = 5;
+    using PollType = LimitedPoll<QueueImpl>;
+    using Polls = std::array<PollType, MAX_LIMITED_POLLS>;
+    Polls polls{};
+    explicit LimitedPollManager(PollType::I2CWriterType& writer)
+        : polls{PollType(writer), PollType(writer), PollType(writer),
+                PollType(writer), PollType(writer)} {}
+
+    auto get_poll_slot() -> PollType* {
+        for (auto& poll : polls) {
+            if (!poll.timer.is_running()) {
+                return &poll;
+            }
+        }
+        return nullptr;
+    }
+    template <LimitedPollMessage Message>
+    auto add(Message& message) -> void {
+        auto maybe_poller = get_poll_slot();
+        if (!maybe_poller) {
+            return;
+        } else {
+            maybe_poller->handle_message(message);
+        }
+    }
+};
+};  // namespace i2c_poller_impl
