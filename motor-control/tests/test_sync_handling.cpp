@@ -21,21 +21,21 @@ struct HandlerContainer {
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
 
-sq0_31 convert_velocity_to(float f) {
+sq0_31 convert_velocity_to_f(float f) {
     return sq0_31(f * static_cast<float>(1LL << TO_RADIX));
 }
 
 TEST_CASE("Move with stop condition == cap sensor") {
     HandlerContainer test_objs{};
-    Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to(.5),
-                     .acceleration = 0,
-                     .group_id = 1,
-                     .seq_id = 0,
-                     .stop_condition = MoveStopCondition::cap_sensor};
+    Move msg10 = Move{.duration = 2,
+                      .velocity = convert_velocity_to_f(.5),
+                      .acceleration = 0,
+                      .group_id = 1,
+                      .seq_id = 0,
+                      .stop_condition = MoveStopCondition::cap_sensor};
 
     GIVEN("the move is in progress") {
-        test_objs.queue.try_write_isr(msg1);
+        test_objs.queue.try_write_isr(msg10);
         WHEN("the move is loaded") {
             CHECK(!test_objs.handler.pulse());
 
@@ -63,22 +63,20 @@ TEST_CASE("Move with stop condition == cap sensor") {
 TEST_CASE("Move with stop condition == cap sensor, case 2") {
     HandlerContainer test_objs{};
     Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to(.5),
+                     .velocity = convert_velocity_to_f(.5),
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
                      .stop_condition = MoveStopCondition::cap_sensor};
-    GIVEN("the limit switch has not been triggered") {
+    GIVEN("the sync line has not been set") {
         test_objs.queue.try_write_isr(msg1);
         test_objs.hw.set_mock_sync_line(false);
         WHEN("the move is loaded") {
             CHECK(!test_objs.handler.pulse());
-
-            // test handling for position
-
             AND_WHEN("the move is finished") {
                 THEN("the move should have ack_id complete_without_condition") {
                     REQUIRE(!test_objs.handler.pulse());
+                    REQUIRE(test_objs.handler.pulse());
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
@@ -94,7 +92,7 @@ TEST_CASE("Move with stop condition != cap sensor") {
     HandlerContainer test_objs{};
     test_objs.handler.set_current_position(0x0);
     Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to(.5),
+                     .velocity = convert_velocity_to_f(.5),
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
