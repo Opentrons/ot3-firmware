@@ -59,7 +59,7 @@ class I2CWriter {
     template <typename Data>
     requires std::is_integral_v<Data>
     void write(uint16_t device_address, uint8_t reg, Data data) {
-        std::array<uint8_t, MAX_SIZE> max_buffer{};
+        MaxMessageBuffer max_buffer{};
         auto iter = max_buffer.begin();
         *iter++ = reg;
         static_cast<void>(
@@ -116,6 +116,7 @@ class I2CWriter {
         do_transact(device_address, max_buffer, client_callback,
                     handle_callback);
     }
+
     template <typename Data>
     requires std::is_integral_v<Data>
     void transact(uint16_t device_address, Data data,
