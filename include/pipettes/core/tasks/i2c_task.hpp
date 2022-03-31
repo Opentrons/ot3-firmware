@@ -83,6 +83,12 @@ class I2CMessageHandler {
             // https://github.com/Opentrons/ot3-firmware/pull/261#discussion_r816862421
             i2c_device.wait_during_poll(m.delay_ms);
         }
+    void visit(TransactWithI2C &m) {
+        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address,
+                                    TIMEOUT);
+        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
+                                   TIMEOUT);
+        m.handle_buffer(m.buffer);
         m.client_callback();
     }
 
