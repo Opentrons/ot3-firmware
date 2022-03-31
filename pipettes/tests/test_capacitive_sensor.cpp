@@ -4,25 +4,32 @@
 #include "common/tests/mock_queue_client.hpp"
 #include "motor-control/core/utils.hpp"
 #include "pipettes/core/i2c_writer.hpp"
+#include "pipettes/core/i2c_poller.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
+#include "pipettes/core/messages.hpp"
 
 SCENARIO("read capacitance sensor values") {
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
+    test_mocks::MockMessageQueue<i2c_poller::TaskMessage> poller_queue{};
+
     test_mocks::MockMessageQueue<mock_message_writer::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>
         capacitive_queue{};
 
     i2c_writer::TaskMessage empty_msg{};
+    i2c_poller::TaskMessage empty_poll_msg{};
     auto queue_client =
         mock_client::QueueClient{.capacitive_sensor_queue = &capacitive_queue};
     auto writer = i2c_writer::I2CWriter<test_mocks::MockMessageQueue>{};
+    auto poller = i2c_poller::I2CPoller<test_mocks::MockMessageQueue>{};
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
+    poller.set_queue(&poller_queue);
 
     auto sensor =
-        capacitive_sensor_task::CapacitiveMessageHandler{writer, queue_client};
+        capacitive_sensor_task::CapacitiveMessageHandler{writer, poller, queue_client};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a request to take a single read of the capacitive sensor") {
@@ -31,19 +38,19 @@ SCENARIO("read capacitance sensor values") {
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 1);
+                REQUIRE(poller_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
-                i2c_queue.try_read(&empty_msg);
+                poller_queue.try_read(&empty_poll_msg);
                 auto read_message =
-                    std::get<i2c_writer::MultiRegisterPollReadFromI2C>(
-                        empty_msg);
+                    std::get<pipette_messages::MultiRegisterPollReadFromI2C>(
+                        empty_poll_msg);
 
                 THEN("The write and read command addresses are correct") {
                     REQUIRE(read_message.address == fdc1004_utils::ADDRESS);
-                    REQUIRE(read_message.register_buffer_1[0] ==
+                    REQUIRE(read_message.register_1_buffer[0] ==
                             fdc1004_utils::MSB_MEASUREMENT_1);
-                    REQUIRE(read_message.register_buffer_2[0] ==
+                    REQUIRE(read_message.register_2_buffer[0] ==
                             fdc1004_utils::LSB_MEASUREMENT_1);
                 }
             }
@@ -56,19 +63,19 @@ SCENARIO("read capacitance sensor values") {
         sensor.handle_message(multi_read);
         WHEN("the handler function receives the message in LSB mode") {
             THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 1);
+                REQUIRE(poller_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
-                i2c_queue.try_read(&empty_msg);
+                poller_queue.try_read(&empty_poll_msg);
                 auto read_message =
-                    std::get<i2c_writer::MultiRegisterPollReadFromI2C>(
-                        empty_msg);
+                    std::get<pipette_messages::MultiRegisterPollReadFromI2C>(
+                        empty_poll_msg);
 
                 THEN("The write and read command addresses are correct") {
                     REQUIRE(read_message.address == fdc1004_utils::ADDRESS);
-                    REQUIRE(read_message.register_buffer_1[0] ==
+                    REQUIRE(read_message.register_1_buffer[0] ==
                             fdc1004_utils::MSB_MEASUREMENT_1);
-                    REQUIRE(read_message.register_buffer_2[0] ==
+                    REQUIRE(read_message.register_2_buffer[0] ==
                             fdc1004_utils::LSB_MEASUREMENT_1);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);
@@ -102,9 +109,9 @@ SCENARIO("read capacitance sensor values") {
             sensor.handle_message(multi_read);
             std::array<uint8_t, 5> buffer_a = {200, 80, 0, 0, 0};
             std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
-            i2c_queue.try_read(&empty_msg);
+            poller_queue.try_read(&empty_poll_msg);
             auto read_message =
-                std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);
+                std::get<pipette_messages::MultiRegisterPollReadFromI2C>(empty_poll_msg);
             for (int i = 0; i < NUM_READS; i++) {
                 read_message.handle_buffer(buffer_a, buffer_b);
             }

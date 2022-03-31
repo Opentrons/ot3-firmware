@@ -245,7 +245,6 @@ class I2CPoller {
 
   private:
     QueueType* queue{nullptr};
-    static constexpr auto MAX_SIZE = 5;
 };
 
 };  // namespace i2c_poller

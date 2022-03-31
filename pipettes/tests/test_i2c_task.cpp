@@ -33,7 +33,6 @@ SCENARIO("read and write data to the i2c task") {
 
     auto i2c = i2c_task::I2CMessageHandler{sim_i2c};
     auto single_update = mock_callbacks::UpdateCallback{};
-    auto multi_update = mock_callbacks::MultiUpdateCallback{};
 
     GIVEN("write command") {
         std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
@@ -62,59 +61,32 @@ SCENARIO("read and write data to the i2c task") {
             ADDRESS, [&single_update]() { single_update.send_to_can(); },
             [&single_update](auto message_a) {
                 single_update.handle_data(message_a);
-            },
-            0x2);
+            });
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
         REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP[2]);
     }
-    GIVEN("poll one register command") {
-        constexpr int NUM_READS = 10;
-        constexpr int DELAY_MS = 1;
+    GIVEN("transact command") {
         single_update.reset();
-
-        writer.single_register_poll(
-            ADDRESS, NUM_READS, DELAY_MS,
-            [&single_update]() { single_update.send_to_can(); },
-            [&single_update](auto message_a) {
-                single_update.handle_data(message_a);
-            },
-            0x2);
+        std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
+        uint32_t write_data = 0x2010200;
+        writer.transact(ADDRESS, write_data,
+                        [&single_update]() { single_update.send_to_can(); },
+                        [&single_update](auto message_a) {
+                            single_update.handle_data(message_a);
+                                }
+                        );
         i2c_queue.try_read(&empty_msg);
-        auto read_msg =
-            std::get<i2c_writer::SingleRegisterPollReadFromI2C>(empty_msg);
+        auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
         i2c.handle_message(converted_msg);
-        uint8_t expected_accumulated_data =
-            fakesensor.REGISTER_MAP[2] * NUM_READS;
-        REQUIRE(single_update.update_value == expected_accumulated_data);
-    }
+        sim_i2c.central_receive(five_byte_arr.data(), five_byte_arr.size(),
+                                ADDRESS, 1);
+        REQUIRE(five_byte_arr[3] == 2);
 
-    GIVEN("poll two registers command") {
-        constexpr int NUM_READS = 10;
-        constexpr int DELAY_MS = 1;
+        REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP[2]);
 
-        writer.multi_register_poll(
-            ADDRESS, NUM_READS, DELAY_MS,
-            [&multi_update]() { multi_update.send_to_can(); },
-            [&multi_update](auto message_a, auto message_b) {
-                multi_update.handle_data(message_a, message_b);
-            },
-            0x2, 0x5);
-        i2c_queue.try_read(&empty_msg);
-        auto read_msg =
-            std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);
-        auto converted_msg = i2c_writer::TaskMessage(read_msg);
-        i2c.handle_message(converted_msg);
-        uint8_t expected_accumulated_data_reg_a =
-            fakesensor.REGISTER_MAP[2] * NUM_READS;
-        uint8_t expected_accumulated_data_reg_b =
-            fakesensor.REGISTER_MAP[5] * NUM_READS;
-        REQUIRE(multi_update.register_a_value ==
-                expected_accumulated_data_reg_a);
-        REQUIRE(multi_update.register_b_value ==
-                expected_accumulated_data_reg_b);
     }
 }
