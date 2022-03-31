@@ -8,14 +8,17 @@ PipetteHardwarePin pipette_hardware_get_gpio(PipetteHardwareDevice device) {
         case pipette_hardware_device_limit_switch:
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_5;
+            return pinout;
         case pipette_hardware_device_LED_drive:
             pinout.port = GPIOA;
             pinout.pin = GPIO_PIN_8;
+            return pinout;
         case pipette_hardware_device_sync_in:
             pinout.port = GPIOC;
             pinout.pin = GPIO_PIN_2;
+            return pinout;
+        default: return pinout;
     }
-    return pinout;
 }
 
 
