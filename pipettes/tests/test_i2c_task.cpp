@@ -72,12 +72,12 @@ SCENARIO("read and write data to the i2c task") {
         single_update.reset();
         std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
         uint32_t write_data = 0x2010200;
-        writer.transact(ADDRESS, write_data,
-                        [&single_update]() { single_update.send_to_can(); },
-                        [&single_update](auto message_a) {
-                            single_update.handle_data(message_a);
-                                }
-                        );
+        writer.transact(
+            ADDRESS, write_data,
+            [&single_update]() { single_update.send_to_can(); },
+            [&single_update](auto message_a) {
+                single_update.handle_data(message_a);
+            });
         i2c_queue.try_read(&empty_msg);
         auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(read_msg);
@@ -87,6 +87,5 @@ SCENARIO("read and write data to the i2c task") {
         REQUIRE(five_byte_arr[3] == 2);
 
         REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP[2]);
-
     }
 }
