@@ -46,13 +46,11 @@ class CapacitiveMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        std::array configuration{CONFIGURATION_MEASUREMENT,
-                                 DEVICE_CONFIGURATION_MSB,
-                                 DEVICE_CONFIGURATION_LSB};
-        writer.write(ADDRESS, configuration);
-        std::array fdc_configuration{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
-                                     SAMPLE_RATE_LSB};
-        writer.write(ADDRESS, fdc_configuration);
+        uint32_t configuration_data =
+            CONFIGURATION_MEASUREMENT << 8 | DEVICE_CONFIGURATION;
+        writer.write(ADDRESS, configuration_data);
+        configuration_data = FDC_CONFIGURATION << 8 | SAMPLE_RATE;
+        writer.write(ADDRESS, configuration_data);
     }
 
   private:
@@ -86,9 +84,7 @@ class CapacitiveMessageHandler {
 
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
-        std::array data{static_cast<uint8_t>(m.data >> 8),
-                        static_cast<uint8_t>(m.data & 0xff)};
-        writer.write(ADDRESS, data);
+        writer.write(ADDRESS, m.data);
     }
 
     void visit(can_messages::BaselineSensorRequest &m) {

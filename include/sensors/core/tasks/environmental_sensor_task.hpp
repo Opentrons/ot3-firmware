@@ -44,13 +44,13 @@ class EnvironmentSensorMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        std::array configuration{DRDY_CONFIG, SAMPLE_RATE};
-        writer.write(ADDRESS, configuration);
-        configuration = std::array{INTERRUPT_REGISTER, SET_DATARDY};
-        writer.write(ADDRESS, configuration);
-        configuration =
-            std::array{MEASURE_REGISTER, BEGIN_MEASUREMENT_RECORDING};
-        writer.write(ADDRESS, configuration);
+        uint16_t configuration_data = DRDY_CONFIG << 8 | SAMPLE_RATE;
+        writer.write(ADDRESS, configuration_data);
+        configuration_data = INTERRUPT_REGISTER << 8 | SET_DATARDY;
+        writer.write(ADDRESS, configuration_data);
+        configuration_data =
+            MEASURE_REGISTER << 8 | BEGIN_MEASUREMENT_RECORDING;
+        writer.write(ADDRESS, configuration_data);
     }
 
     void handle_message(sensor_task_utils::TaskMessage &m) {
@@ -66,9 +66,7 @@ class EnvironmentSensorMessageHandler {
 
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
-        std::array buf{static_cast<uint8_t>(m.data >> 8),
-                       static_cast<uint8_t>(m.data & 0xff)};
-        writer.write(ADDRESS, buf);
+        writer.write(ADDRESS, m.data);
     }
 
     void visit(can_messages::ReadFromSensorRequest &m) {

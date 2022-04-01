@@ -37,7 +37,7 @@ SCENARIO("read capacitance sensor values") {
             can_messages::ReadFromSensorRequest({}, capacitive_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a write and read command") {
+            THEN("the i2c poller queue is populated with a poll request") {
                 REQUIRE(poller_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
@@ -62,7 +62,7 @@ SCENARIO("read capacitance sensor values") {
             can_messages::BaselineSensorRequest({}, capacitive_id, NUM_READS));
         sensor.handle_message(multi_read);
         WHEN("the handler function receives the message in LSB mode") {
-            THEN("the i2c queue is populated with a write and read command") {
+            THEN("the poller queue is populated with a poll request") {
                 REQUIRE(poller_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
