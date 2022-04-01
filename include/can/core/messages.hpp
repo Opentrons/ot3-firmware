@@ -492,7 +492,7 @@ struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
 struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
     uint8_t sensor;
     uint16_t data;
-    uint8_t reg_address = 0;
+    uint8_t reg_address;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToSensorRequest {
