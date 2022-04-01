@@ -2,6 +2,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "common/core/freertos_timer.hpp"
 #include "common/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -112,11 +113,11 @@ struct AllTask {
     i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>* i2c1_task{
         nullptr};
     i2c_poller_task::I2CPollingTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* i2c3_poller_task{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue,
+        freertos_timer::FreeRTOSTimer>* i2c3_poller_task{nullptr};
     i2c_poller_task::I2CPollingTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* i2c1_poller_task{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue,
+        freertos_timer::FreeRTOSTimer>* i2c1_poller_task{nullptr};
     eeprom_task::EEPromTask<
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,

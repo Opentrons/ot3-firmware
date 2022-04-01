@@ -2,6 +2,7 @@
 
 #include "can/core/can_writer_task.hpp"
 #include "common/core/i2c.hpp"
+#include "common/core/timer.hpp"
 #include "pipettes/core/i2c_poller.hpp"
 #include "pipettes/core/i2c_poller_impl.hpp"
 #include "pipettes/core/i2c_writer.hpp"
@@ -12,7 +13,7 @@ using namespace i2c_poller_impl;
 
 using TaskMessage = i2c_poller::TaskMessage;
 
-template <template <class> class QueueImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage> &&
     MessageQueue<QueueImpl<i2c_poller::TaskMessage>, i2c_poller::TaskMessage>
@@ -59,8 +60,13 @@ class I2CPollingMessageHandler {
     }
 
     I2CWriterType &i2c_writer;
-    ContinuousPollManager<QueueImpl> continuous_polls;
-    LimitedPollManager<QueueImpl> limited_polls;
+
+  public:
+    // these are public to make testing easier
+    ContinuousPollManager<QueueImpl, TimerImpl> continuous_polls;
+    LimitedPollManager<QueueImpl, TimerImpl> limited_polls;
+
+  private:
     // Default timeout should be 60 seconds
     // freertos expects this time to be in milliseconds
     static constexpr auto TIMEOUT = 60000;
@@ -69,7 +75,7 @@ class I2CPollingMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl>
 requires MessageQueue<QueueImpl<i2c_poller::TaskMessage>,
                       i2c_poller::TaskMessage> &&
     MessageQueue<QueueImpl<i2c_writer::TaskMessage>, i2c_writer::TaskMessage>
@@ -88,7 +94,7 @@ class I2CPollingTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(I2CWriterType *writer) {
-        auto handler = I2CPollingMessageHandler{*writer};
+        auto handler = I2CPollingMessageHandler<QueueImpl, TimerImpl>{*writer};
         // Figure out task messages for I2C queue
         i2c_poller::TaskMessage message{};
         for (;;) {
