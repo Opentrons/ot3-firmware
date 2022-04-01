@@ -60,3 +60,7 @@ void MotorHardware::set_LED(bool status) {
 uint32_t MotorHardware::get_encoder_pulses() {
     return motor_hardware_encoder_pulse_count(enc_handle);
 }
+
+void MotorHardware::reset_encoder_pulses(){
+    motor_hardware_reset_encoder_count(enc_handle);
+}

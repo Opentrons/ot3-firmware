@@ -131,6 +131,7 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             finish_current_move(AckMessageId::stopped_by_condition);
             position_tracker = 0;
+            pulses = get_encoder_pulses();
             return true;
         }
         return false;
@@ -210,6 +211,10 @@ class MotorInterruptHandler {
     return hardware.get_encoder_pulses();
     }
 
+    void reset_encoder_pulses(){
+        hardware.reset_encoder_pulses();
+        pulses = get_encoder_pulses();
+    }
     void reset() {
         /*
          * Reset the position and all queued moves to the motor interrupt
