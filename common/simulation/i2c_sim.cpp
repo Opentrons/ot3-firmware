@@ -17,6 +17,8 @@ auto sim_i2c::SimI2C::central_transmit(uint8_t *data, uint16_t size,
         iter = bit_utils::bytes_to_int(iter, data + size, store_in_register);
         LOG("Storing %d in register %d", store_in_register, reg);
         sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
+    } else {
+        next_register_map[dev_address] = reg;
     }
     return true;
 }
@@ -24,12 +26,23 @@ auto sim_i2c::SimI2C::central_transmit(uint8_t *data, uint16_t size,
 auto sim_i2c::SimI2C::central_receive(uint8_t *data, uint16_t size,
                                       uint16_t dev_address, uint32_t timeout)
     -> bool {
-    uint8_t reg = data[0];
-    auto data_from_reg = sensor_map[dev_address].REGISTER_MAP[reg];
-    LOG("Grabbing data %d from register %d", data_from_reg, reg);
+    auto next_reg = next_register_map[dev_address];
+    // This will raise if the register value is bad - helpful for forcing
+    // tests to fail
+    auto data_from_reg = sensor_map[dev_address].REGISTER_MAP.at(next_reg);
     auto *iter = data;
     iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
+    next_register_map[dev_address] = 0;
     return true;
 }
 
 auto sim_i2c::SimI2C::wait_during_poll(uint16_t delay) -> void {}
+
+auto sim_i2c::SimI2C::build_next_register_map(const SensorMap &sm)
+    -> NextRegisterMap {
+    NextRegisterMap to_ret{};
+    for (auto &[addr, sensor] : sm) {
+        to_ret.insert({addr, sensor.REGISTER_MAP.cbegin()->first});
+    }
+    return to_ret;
+}
