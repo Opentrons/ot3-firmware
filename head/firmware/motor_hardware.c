@@ -175,12 +175,17 @@ HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi) {
 
 
 void Encoder_GPIO_Init(void){
+    /* Peripheral clock enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
+    /**Encoder A Axis GPIO Configuration
+    PA0     ------> CHANNEL A
+    PA1     ------> CHANNEL B
+    PA15    ------> CHANNEL I
+    */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    // ENC CHAN A&B A Axis PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -188,7 +193,6 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // ENC CHANNELI A AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -196,6 +200,11 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /**Encoder Z Axis GPIO Configuration
+    PA6     ------> CHANNEL A
+    PA7     ------> CHANNEL B
+    PD2    ------> CHANNEL I
+    */
     // ENC CHANNELA Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -236,7 +245,7 @@ void MX_GPIO_Init(void) {
 }
 
 
-void TIM2_Encoder_Init(void){
+void TIM2_EncoderZL_Init(void){
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
@@ -290,8 +299,7 @@ void TIM2_Encoder_Init(void){
 }
 
 
-void TIM3_Encoder_Init(void){
-
+void TIM3_EncoderZR_Init(void){
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
@@ -331,10 +339,8 @@ void TIM3_Encoder_Init(void){
     {
     Error_Handler();
     }
-
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim3, 0);
-
     /* Clear interrupt flag bit */
     __HAL_TIM_CLEAR_IT(&htim3,TIM_IT_UPDATE);
     /* The update event of the enable timer is interrupted */
@@ -386,8 +392,8 @@ void initialize_timer(motor_interrupt_callback callback) {
     motor_callback = callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
-    TIM2_Encoder_Init();
-    TIM3_Encoder_Init();
+    TIM2_EncoderZL_Init();
+    TIM3_EncoderZR_Init();
     MX_TIM7_Init();
 
 }
