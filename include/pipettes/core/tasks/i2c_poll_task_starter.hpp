@@ -3,6 +3,7 @@
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
+#include "common/core/freertos_timer.hpp"
 #include "pipettes/core/i2c_poller.hpp"
 #include "pipettes/core/i2c_writer.hpp"
 #include "pipettes/core/tasks/i2c_poll_task.hpp"
@@ -13,7 +14,8 @@ template <uint32_t StackDepth>
 class TaskStarter {
   public:
     using PollTaskType = i2c_poller_task::I2CPollingTask<
-        freertos_message_queue::FreeRTOSMessageQueue>;
+        freertos_message_queue::FreeRTOSMessageQueue,
+        freertos_timer::FreeRTOSTimer>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<i2c_poller::TaskMessage>;
     using I2CWriterType =

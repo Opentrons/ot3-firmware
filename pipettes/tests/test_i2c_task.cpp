@@ -18,9 +18,8 @@ class FakeSensor : public sensor_simulator::SensorType {
     }
 };
 
-auto fakesensor = FakeSensor{};
-
 SCENARIO("read and write data to the i2c task") {
+    auto fakesensor = FakeSensor{};
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
     i2c_writer::TaskMessage empty_msg{};
     auto writer = i2c_writer::I2CWriter<test_mocks::MockMessageQueue>{};

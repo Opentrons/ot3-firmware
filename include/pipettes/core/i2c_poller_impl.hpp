@@ -5,7 +5,8 @@
 #include <type_traits>
 #include <variant>
 
-#include "common/core/freertos_timer.hpp"
+#include "common/core/logging.h"
+#include "common/core/timer.hpp"
 #include "pipettes/core/i2c_writer.hpp"
 #include "pipettes/core/messages.hpp"
 #include "sensors/core/callback_types.hpp"
@@ -24,7 +25,7 @@ concept LimitedPollMessage =
     std::is_same_v<Message, SingleRegisterPollReadFromI2C> ||
     std::is_same_v<Message, MultiRegisterPollReadFromI2C>;
 
-template <template <class> class QueueImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage>
 struct ContinuousPoll {
@@ -35,7 +36,7 @@ struct ContinuousPoll {
               "i2c cts poller", []() {}, 1),
           writer(writer) {}
     uint16_t address;
-    freertos_timer::FreeRTOSTimer timer;
+    TimerImpl timer;
     I2CWriterType& writer;
     uint32_t poll_id = 0;
 
@@ -45,9 +46,15 @@ struct ContinuousPoll {
         poll_id = message.poll_id;
         timer.stop();
         if (message.delay_ms != 0) {
+            LOG("Beginning or altering continuous poll of %#04x id %d @ %d ms",
+                address, poll_id, message.delay_ms);
             timer.update_callback(provide_callback(message));
             timer.update_period(message.delay_ms);
             timer.start();
+        } else {
+            timer.stop();
+            address = 0;
+            poll_id = 0;
         }
     }
 
@@ -83,7 +90,7 @@ struct ContinuousPoll {
     }
 };
 
-template <template <class> class QueueImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage>
 struct LimitedPoll {
@@ -94,23 +101,29 @@ struct LimitedPoll {
               "i2c limited poller", []() {}, 1),
           writer(writer) {}
     uint16_t address;
-    freertos_timer::FreeRTOSTimer timer;
+    TimerImpl timer;
     I2CWriterType& writer;
 
     template <LimitedPollMessage Message>
-    auto handle_message(const Message& message) -> void {
-        address = message.address;
+    auto handle_message(Message& message) -> void {
         timer.stop();
-        if (message.delay_ms != 0) {
+        if (message.delay_ms != 0 || message.polling == 0) {
+            LOG("adding poll of %#04x @ %d ms for %d samples", message.address,
+                message.delay_ms, message.polling);
+            address = message.address;
             timer.update_callback(provide_callback(message));
             timer.update_period(message.delay_ms);
             timer.start();
+        } else {
+            address = 0;
+            LOG("stopping limited poll of %#04x because delay is 0",
+                message.address);
         }
     }
 
   private:
     static auto do_recursive_cb_single(
-        LimitedPoll<QueueImpl>* slf,
+        LimitedPoll<QueueImpl, TimerImpl>* slf,
         const SingleRegisterPollReadFromI2C& message,
         const MaxMessageBuffer& buffer) -> void {
         auto local_message = message;
@@ -120,6 +133,10 @@ struct LimitedPoll {
             // base case: no more polls, call the final callback
             local_message.client_callback();
             slf->timer.stop();
+            slf->address = 0;
+            LOG("stopping limited poll of %$04x because all samples have been "
+                "taken",
+                message.address);
         } else {
             // recurse to change the timer callback to the new message with the
             // new polling
@@ -128,17 +145,17 @@ struct LimitedPoll {
     }
     auto provide_callback(const SingleRegisterPollReadFromI2C& message)
         -> std::function<void(void)> {
-        return [this, message]() {
+        return ([this, message]() {
             this->writer.transact(
                 this->address, message.buffer, []() {},
                 [this, message](const MaxMessageBuffer& buf) {
                     do_recursive_cb_single(this, message, buf);
                 });
-        };
+        });
     }
 
     static auto do_recursive_cb_multi(
-        LimitedPoll<QueueImpl>* slf,
+        LimitedPoll<QueueImpl, TimerImpl>* slf,
         const MultiRegisterPollReadFromI2C& message,
         const MaxMessageBuffer& first_buffer,
         const MaxMessageBuffer& second_buffer) -> void {
@@ -149,6 +166,11 @@ struct LimitedPoll {
             // base case
             local_message.client_callback();
             slf->timer.stop();
+            slf->address = 0;
+            LOG("stopping limited poll of %$04x because all samples have been "
+                "taken",
+                message.address);
+
         } else {
             slf->timer.update_callback(slf->provide_callback(local_message));
         }
@@ -171,12 +193,12 @@ struct LimitedPoll {
     }
 };
 
-template <template <class> class QueueImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage>
 struct ContinuousPollManager {
     static constexpr uint32_t MAX_CONTINUOUS_POLLS = 5;
-    using PollType = ContinuousPoll<QueueImpl>;
+    using PollType = ContinuousPoll<QueueImpl, TimerImpl>;
     using Polls = std::array<PollType, MAX_CONTINUOUS_POLLS>;
     Polls polls;
     explicit ContinuousPollManager(PollType::I2CWriterType& writer)
@@ -200,6 +222,8 @@ struct ContinuousPollManager {
     auto add_or_update(Message& message) -> void {
         auto maybe_poller = get_poller(message.address, message.poll_id);
         if (!maybe_poller) {
+            LOG("Could not add continuous poller for address %#04x id %d",
+                message.address, message.poll_id);
             return;
         } else {
             maybe_poller->handle_message(message);
@@ -207,12 +231,12 @@ struct ContinuousPollManager {
     }
 };
 
-template <template <class> class QueueImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage>
 struct LimitedPollManager {
     static constexpr uint32_t MAX_LIMITED_POLLS = 5;
-    using PollType = LimitedPoll<QueueImpl>;
+    using PollType = LimitedPoll<QueueImpl, TimerImpl>;
     using Polls = std::array<PollType, MAX_LIMITED_POLLS>;
     Polls polls{};
     explicit LimitedPollManager(PollType::I2CWriterType& writer)
@@ -229,8 +253,11 @@ struct LimitedPollManager {
     }
     template <LimitedPollMessage Message>
     auto add(Message& message) -> void {
-        auto maybe_poller = get_poll_slot();
+        auto* maybe_poller = get_poll_slot();
         if (!maybe_poller) {
+            LOG("Could not add limited poller for addr %#04x @ %d ms (no "
+                "slots)",
+                message.address, message.delay_ms);
             return;
         } else {
             maybe_poller->handle_message(message);
