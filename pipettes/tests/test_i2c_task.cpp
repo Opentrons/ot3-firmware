@@ -4,6 +4,7 @@
 #include "catch2/catch.hpp"
 #include "common/simulation/i2c_sim.hpp"
 #include "common/tests/mock_message_queue.hpp"
+#include "pipettes/core/messages.hpp"
 #include "pipettes/core/tasks/i2c_task.hpp"
 #include "sensors/simulation/sensors.hpp"
 #include "sensors/tests/callbacks.hpp"
@@ -41,9 +42,9 @@ SCENARIO("read and write data to the i2c task") {
 
         // make a copy of the two byte array before it's manipulated by
         // the i2c writer.
-        writer.write(ADDRESS, reg, write_data);
+        writer.write(ADDRESS, write_data);
         i2c_queue.try_read(&empty_msg);
-        auto write_msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
+        auto write_msg = std::get<pipette_messages::WriteToI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(write_msg);
         i2c.handle_message(converted_msg);
 
@@ -57,35 +58,26 @@ SCENARIO("read and write data to the i2c task") {
     }
     GIVEN("read command") {
         single_update.reset();
+        writer.write(ADDRESS, 0x02000000);
         writer.read(
             ADDRESS, [&single_update]() { single_update.send_to_can(); },
             [&single_update](auto message_a) {
                 single_update.handle_data(message_a);
             });
         i2c_queue.try_read(&empty_msg);
-        auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
-        auto converted_msg = i2c_writer::TaskMessage(read_msg);
-        i2c.handle_message(converted_msg);
-        REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP[2]);
+        i2c.handle_message(empty_msg);
+        REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP.at(2));
     }
     GIVEN("transact command") {
         single_update.reset();
-        std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
-        uint32_t write_data = 0x2010200;
         writer.transact(
-            ADDRESS, write_data,
+            ADDRESS, 0x02000000,
             [&single_update]() { single_update.send_to_can(); },
             [&single_update](auto message_a) {
                 single_update.handle_data(message_a);
             });
         i2c_queue.try_read(&empty_msg);
-        auto read_msg = std::get<i2c_writer::ReadFromI2C>(empty_msg);
-        auto converted_msg = i2c_writer::TaskMessage(read_msg);
-        i2c.handle_message(converted_msg);
-        sim_i2c.central_receive(five_byte_arr.data(), five_byte_arr.size(),
-                                ADDRESS, 1);
-        REQUIRE(five_byte_arr[3] == 2);
-
+        i2c.handle_message(empty_msg);
         REQUIRE(single_update.update_value == fakesensor.REGISTER_MAP[2]);
     }
 }
