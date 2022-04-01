@@ -1,4 +1,5 @@
 #include <array>
+
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "pipettes/core/i2c_writer.hpp"
@@ -19,7 +20,6 @@ SCENARIO("Test the i2c command queue writer") {
         WHEN("we write a uint8_t") {
             writer.write(ADDRESS, static_cast<uint8_t>(0x05));
             THEN("the queue has our message and it is serialized") {
-
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
                 auto msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
@@ -33,8 +33,8 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
                 auto msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
-                std::array compare{
-                    u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f), u8(0)};
+                std::array compare{u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f),
+                                   u8(0)};
                 REQUIRE(msg.buffer == compare);
             }
         }
@@ -49,8 +49,8 @@ SCENARIO("Test the i2c command queue writer") {
             }
         }
         WHEN("we write a five byte buffer") {
-            writer.write(ADDRESS, std::array{
-                u8(0x01), u8(0x02), u8(0x03), u8(0x04), u8(0x05)});
+            writer.write(ADDRESS, std::array{u8(0x01), u8(0x02), u8(0x03),
+                                             u8(0x04), u8(0x05)});
             THEN("the queue has our message") {
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
@@ -60,9 +60,8 @@ SCENARIO("Test the i2c command queue writer") {
             }
         }
         WHEN("we try and write a six byte buffer (too big)") {
-            writer.write(
-                ADDRESS,
-                std::array{u8(0x01), u8(0x02), u8(0x03), u8(0x04), u8(0x05), u8(0x06)});
+            writer.write(ADDRESS, std::array{u8(0x01), u8(0x02), u8(0x03),
+                                             u8(0x04), u8(0x05), u8(0x06)});
             THEN("the queue has our message") {
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
@@ -110,7 +109,8 @@ SCENARIO("Test the i2c command queue writer") {
         // test add to int and add to buffer
         WHEN("we transact a uint8_t") {
             auto callback = mock_callbacks::EmptyCallback{};
-            writer.transact(ADDRESS, static_cast<uint8_t>(0x05), callback, callback);
+            writer.transact(ADDRESS, static_cast<uint8_t>(0x05), callback,
+                            callback);
             THEN("the queue has our message and it is serialized") {
                 i2c_writer::TaskMessage empty_msg{};
                 REQUIRE(queue.get_size() == 1);
@@ -122,13 +122,15 @@ SCENARIO("Test the i2c command queue writer") {
         }
         WHEN("we write a uint32_t") {
             auto callback = mock_callbacks::EmptyCallback{};
-            writer.transact(ADDRESS, static_cast<uint32_t>(0xd34db33f), callback, callback);
+            writer.transact(ADDRESS, static_cast<uint32_t>(0xd34db33f),
+                            callback, callback);
             THEN("the queue has our message and it is serialized") {
                 i2c_writer::TaskMessage empty_msg{};
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
                 auto msg = std::get<i2c_writer::TransactWithI2C>(empty_msg);
-                std::array compare{u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f), u8(0)};
+                std::array compare{u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f),
+                                   u8(0)};
                 REQUIRE(msg.buffer == compare);
             }
         }
@@ -146,7 +148,10 @@ SCENARIO("Test the i2c command queue writer") {
         }
         WHEN("we write a five byte buffer") {
             auto callback = mock_callbacks::EmptyCallback{};
-            writer.transact(ADDRESS, std::array{u8(0x01), u8(0x02), u8(0x03), u8(0x04), u8(0x05)}, callback, callback);
+            writer.transact(
+                ADDRESS,
+                std::array{u8(0x01), u8(0x02), u8(0x03), u8(0x04), u8(0x05)},
+                callback, callback);
             THEN("the queue has our message") {
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
@@ -157,7 +162,10 @@ SCENARIO("Test the i2c command queue writer") {
         }
         WHEN("we try and write a six byte buffer (too big)") {
             auto callback = mock_callbacks::EmptyCallback{};
-            writer.transact(ADDRESS, std::array{u8(0x01), u8(0x02), u8(0x03), u8(0x04), u8(0x05), u8(0x06)}, callback, callback);
+            writer.transact(ADDRESS,
+                            std::array{u8(0x01), u8(0x02), u8(0x03), u8(0x04),
+                                       u8(0x05), u8(0x06)},
+                            callback, callback);
             THEN("the queue has our message") {
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);

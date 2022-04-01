@@ -3,12 +3,12 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "motor-control/core/utils.hpp"
-#include "pipettes/core/i2c_writer.hpp"
 #include "pipettes/core/i2c_poller.hpp"
+#include "pipettes/core/i2c_writer.hpp"
+#include "pipettes/core/messages.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-#include "pipettes/core/messages.hpp"
 
 SCENARIO("read capacitance sensor values") {
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
@@ -28,8 +28,8 @@ SCENARIO("read capacitance sensor values") {
     writer.set_queue(&i2c_queue);
     poller.set_queue(&poller_queue);
 
-    auto sensor =
-        capacitive_sensor_task::CapacitiveMessageHandler{writer, poller, queue_client};
+    auto sensor = capacitive_sensor_task::CapacitiveMessageHandler{
+        writer, poller, queue_client};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a request to take a single read of the capacitive sensor") {
@@ -111,7 +111,8 @@ SCENARIO("read capacitance sensor values") {
             std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
             poller_queue.try_read(&empty_poll_msg);
             auto read_message =
-                std::get<pipette_messages::MultiRegisterPollReadFromI2C>(empty_poll_msg);
+                std::get<pipette_messages::MultiRegisterPollReadFromI2C>(
+                    empty_poll_msg);
             for (int i = 0; i < NUM_READS; i++) {
                 read_message.handle_buffer(buffer_a, buffer_b);
             }

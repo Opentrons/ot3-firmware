@@ -41,7 +41,7 @@ class I2CWriter {
      * */
     template <std::ranges::range DataBuffer>
     void write(uint16_t device_address, const DataBuffer& buf) {
-        MaxMessageBuffer max_buffer;
+        MaxMessageBuffer max_buffer{};
         std::copy_n(buf.cbegin(), std::min(buf.size(), max_buffer.size()),
                     max_buffer.begin());
         do_write(device_address, max_buffer);
@@ -50,7 +50,7 @@ class I2CWriter {
     template <typename Data>
     requires std::is_integral_v<Data>
     void write(uint16_t device_address, Data data) {
-        MaxMessageBuffer max_buffer;
+        MaxMessageBuffer max_buffer{};
         static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
                                                   max_buffer.end()));
         do_write(device_address, max_buffer);
@@ -110,7 +110,7 @@ class I2CWriter {
     void transact(uint16_t device_address, DataBuf buf,
                   SendToCanFunctionTypeDef client_callback,
                   SingleBufferTypeDef handle_callback) {
-        MaxMessageBuffer max_buffer;
+        MaxMessageBuffer max_buffer{};
         std::copy_n(buf.cbegin(), std::min(buf.size(), max_buffer.size()),
                     max_buffer.begin());
         do_transact(device_address, max_buffer, client_callback,
@@ -122,7 +122,7 @@ class I2CWriter {
     void transact(uint16_t device_address, Data data,
                   SendToCanFunctionTypeDef client_callback,
                   SingleBufferTypeDef handle_callback) {
-        MaxMessageBuffer max_buffer;
+        MaxMessageBuffer max_buffer{};
         static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
                                                   max_buffer.end()));
         do_transact(device_address, max_buffer, client_callback,
@@ -142,7 +142,6 @@ class I2CWriter {
             .handle_buffer = std::move(handle_callback)};
         queue->try_write(read_msg);
     }
-
     void do_write(uint16_t address, const MaxMessageBuffer& buf) {
         pipette_messages::WriteToI2C write_msg{.address = address,
                                                .buffer = buf};
