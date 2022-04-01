@@ -8,11 +8,19 @@
 #include "sensors/core/mmr920C04_registers.hpp"
 #include "sensors/core/sensors.hpp"
 
-namespace mmr920C04 {
+namespace pressure {
 
 using namespace can_ids;
 using namespace mmr920C04_registers;
 using namespace sensors_registers;
+
+/**
+ * Pressure sensor driver class. It takes in a i2c writer queue and
+ * can client queue so that it can handle sensor readings internally.
+ *
+ * @tparam I2CQueueWriter
+ * @tparam CanClient
+ */
 
 template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
 class MMR92C04 {
@@ -33,10 +41,10 @@ class MMR92C04 {
 
     auto get_host_id() -> NodeId { return NodeId::host; }
 
-    auto get_threshold() -> int32_t { return threshold; }
+    auto get_threshold() -> int32_t { return threshold_cmH20; }
 
     auto set_threshold(int32_t new_threshold) -> void {
-        threshold = new_threshold;
+        threshold_cmH20 = new_threshold;
     }
 
     auto write(Registers reg, uint32_t command_data) -> void {
@@ -62,61 +70,47 @@ class MMR92C04 {
         if (!reset(_registers.reset)) {
             return false;
         }
-        if (!set_measure_mode4(_registers.measure_mode_4)) {
+        if (!set_measure_mode(Registers::MEASURE_MODE_4)) {
             return false;
         }
         _initialized = true;
         return true;
     }
 
-    auto set_measure_mode1(MeasureMode1 reg) -> bool {
-        if (set_register(reg)) {
-            _registers.measure_mode_1 = reg;
-            return true;
+    auto set_measure_mode(Registers reg) -> bool {
+        switch (reg) {
+            case Registers::MEASURE_MODE_1:
+                if (set_register(_registers.measure_mode_1)) {
+                    return true;
+                }
+                return false;
+            case Registers::MEASURE_MODE_2:
+                if (set_register(_registers.measure_mode_2)) {
+                    return true;
+                }
+                return false;
+            case Registers::MEASURE_MODE_3:
+                if (set_register(_registers.measure_mode_3)) {
+                    return true;
+                }
+                return false;
+            case Registers::MEASURE_MODE_4:
+                if (set_register(_registers.measure_mode_4)) {
+                    return true;
+                }
+                return false;
+            default:
+                return false;
         }
-        return false;
     }
 
-    auto set_measure_mode2(MeasureMode2 reg) -> bool {
-        if (set_register(reg)) {
-            _registers.measure_mode_2 = reg;
-            return true;
-        }
-        return false;
-    }
-
-    auto set_measure_mode3(MeasureMode3 reg) -> bool {
-        if (set_register(reg)) {
-            _registers.measure_mode_3 = reg;
-            return true;
-        }
-        return false;
-    }
-
-    auto set_measure_mode4(MeasureMode4 reg) -> bool {
-        if (set_register(reg)) {
-            _registers.measure_mode_4 = reg;
-            return true;
-        }
-        return false;
-    }
-
-    auto get_pressure(bool poll = false, uint16_t sample_rate = 0) -> void {
+    auto get_pressure(Registers reg, bool poll = false,
+                      uint16_t sample_rate = 0) -> void {
         if (poll) {
-            poll_read(Registers::PRESSURE_READ, sample_rate);
+            poll_read(reg, sample_rate);
         } else {
-            write(Registers::PRESSURE_READ, 0x0);
-            read(Registers::PRESSURE_READ);
-        }
-    }
-
-    auto get_pressure_low_pass(bool poll = false, uint16_t sample_rate = 0)
-        -> void {
-        if (poll) {
-            poll_read(Registers::LOW_PASS_PRESSURE_READ, sample_rate);
-        } else {
-            write(Registers::LOW_PASS_PRESSURE_READ, 0x0);
-            read(Registers::LOW_PASS_PRESSURE_READ);
+            write(reg, 0x0);
+            read(reg);
         }
     }
 
@@ -265,7 +259,7 @@ class MMR92C04 {
   private:
     MMR920C04RegisterMap _registers{};
     bool _initialized = false;
-    int32_t threshold = 0x8;
+    int32_t threshold_cmH20 = 0x8;
     uint16_t DELAY = 20;
     I2CQueueWriter &writer;
     CanClient &can_client;
@@ -278,4 +272,4 @@ class MMR92C04 {
     }
 };
 
-}  // namespace mmr920C04
+}  // namespace pressure

@@ -42,7 +42,7 @@ class PressureMessageHandler {
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
-            driver.get_pressure();
+            driver.get_pressure(mmr920C04_registers::Registers::PRESSURE_READ);
         } else {
             driver.get_temperature();
         }
@@ -60,7 +60,8 @@ class PressureMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
-            driver.get_pressure(true, m.sample_rate);
+            driver.get_pressure(mmr920C04_registers::Registers::PRESSURE_READ,
+                                true, m.sample_rate);
         } else {
             driver.get_temperature(true, m.sample_rate);
         }
@@ -73,7 +74,7 @@ class PressureMessageHandler {
         driver.send_threshold();
     }
 
-    mmr920C04::MMR92C04<I2CQueueWriter, CanClient> driver;
+    pressure::MMR92C04<I2CQueueWriter, CanClient> driver;
 };
 
 /**

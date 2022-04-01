@@ -37,20 +37,22 @@ SCENARIO("read pressure sensor values") {
             AND_WHEN("we read the messages from the queue") {
                 i2c_queue.try_read(&empty_msg);
                 auto read_message =
-                    std::get<i2c_writer::ReadFromI2C>(
-                        empty_msg);
+                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
                 i2c_queue.try_read(&empty_msg);
                 auto write_message =
-                    std::get<i2c_writer::WriteToI2C>(
-                        empty_msg);
+                    std::get<i2c_writer::WriteToI2C>(empty_msg);
 
                 THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address == mmr920C04_registers::ADDRESS);
+                    REQUIRE(write_message.address ==
+                            mmr920C04_registers::ADDRESS);
                     REQUIRE(write_message.buffer[0] ==
-                            static_cast<uint8_t>(mmr920C04_registers::Registers::PRESSURE_READ));
-                    REQUIRE(read_message.address == mmr920C04_registers::ADDRESS);
+                            static_cast<uint8_t>(
+                                mmr920C04_registers::Registers::PRESSURE_READ));
+                    REQUIRE(read_message.address ==
+                            mmr920C04_registers::ADDRESS);
                     REQUIRE(read_message.buffer[0] ==
-                            static_cast<uint8_t>(mmr920C04_registers::Registers::PRESSURE_READ));
+                            static_cast<uint8_t>(
+                                mmr920C04_registers::Registers::PRESSURE_READ));
                 }
             }
         }
@@ -66,20 +68,24 @@ SCENARIO("read pressure sensor values") {
             AND_WHEN("we read the messages from the queue") {
                 i2c_queue.try_read(&empty_msg);
                 auto read_message =
-                    std::get<i2c_writer::ReadFromI2C>(
-                        empty_msg);
+                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
                 i2c_queue.try_read(&empty_msg);
                 auto write_message =
-                    std::get<i2c_writer::WriteToI2C>(
-                        empty_msg);
+                    std::get<i2c_writer::WriteToI2C>(empty_msg);
 
                 THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address == mmr920C04_registers::ADDRESS);
-                    REQUIRE(write_message.buffer[0] ==
-                            static_cast<uint8_t>(mmr920C04_registers::Registers::TEMPERATURE_READ));
-                    REQUIRE(read_message.address == mmr920C04_registers::ADDRESS);
-                    REQUIRE(read_message.buffer[0] ==
-                            static_cast<uint8_t>(mmr920C04_registers::Registers::TEMPERATURE_READ));
+                    REQUIRE(write_message.address ==
+                            mmr920C04_registers::ADDRESS);
+                    REQUIRE(
+                        write_message.buffer[0] ==
+                        static_cast<uint8_t>(
+                            mmr920C04_registers::Registers::TEMPERATURE_READ));
+                    REQUIRE(read_message.address ==
+                            mmr920C04_registers::ADDRESS);
+                    REQUIRE(
+                        read_message.buffer[0] ==
+                        static_cast<uint8_t>(
+                            mmr920C04_registers::Registers::TEMPERATURE_READ));
                 }
             }
         }
@@ -100,7 +106,8 @@ SCENARIO("read pressure sensor values") {
                         empty_msg);
 
                 THEN("The write and read command addresses are correct") {
-                    REQUIRE(read_message.address == mmr920C04_registers::ADDRESS);
+                    REQUIRE(read_message.address ==
+                            mmr920C04_registers::ADDRESS);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);
                 }

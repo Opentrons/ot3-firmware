@@ -34,6 +34,8 @@ class I2CWriter {
     template <typename Data>
     requires std::is_integral_v<Data>
     void write(Data data, uint16_t device_address, uint8_t reg = 0x0) {
+        // TODO do not make register default once all of the sensor
+        // drivers have been refactored.
         std::array<uint8_t, MAX_SIZE> max_buffer{};
         buffering(max_buffer, data, reg);
         pipette_messages::WriteToI2C write_msg{.address = device_address,
