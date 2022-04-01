@@ -46,9 +46,15 @@ struct ContinuousPoll {
         poll_id = message.poll_id;
         timer.stop();
         if (message.delay_ms != 0) {
+            LOG("Beginning or altering continuous poll of %$04x id %d @ %d ms",
+                address, poll_id, message.delay_ms);
             timer.update_callback(provide_callback(message));
             timer.update_period(message.delay_ms);
             timer.start();
+        } else {
+            timer.stop();
+            address = 0;
+            poll_id = 0;
         }
     }
 
@@ -216,6 +222,8 @@ struct ContinuousPollManager {
     auto add_or_update(Message& message) -> void {
         auto maybe_poller = get_poller(message.address, message.poll_id);
         if (!maybe_poller) {
+            LOG("Could not add continuous poller for address %#04x id %d",
+                message.address, message.poll_id);
             return;
         } else {
             maybe_poller->handle_message(message);
