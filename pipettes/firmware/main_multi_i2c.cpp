@@ -10,6 +10,7 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
+#include "common/firmware/gpio.hpp"
 #include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
@@ -25,6 +26,7 @@
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -109,6 +111,11 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
+static sensor_hardware::SensorHardware pins_for_sensor_multi(gpio::PinConfig{
+    .port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
+static sensor_hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
+    .port = GPIOB, .pin = GPIO_PIN_5, .active_setting = GPIO_PIN_RESET});
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -131,9 +138,12 @@ auto main() -> int {
 
     can_start();
 
-    pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms3, i2c_comms1,
-                                id);
+    pipettes_tasks::start_tasks(
+        can_bus_1, pipette_motor.motion_controller, pipette_motor.driver,
+        i2c_comms3, i2c_comms1,
+        ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
+                                              : pins_for_sensor_multi),
+        id);
 
     iWatchdog.start(6);
 
