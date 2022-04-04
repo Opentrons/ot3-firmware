@@ -2,7 +2,7 @@
 find_package(FreeRTOS)
 
 # Set up the include directories
-include_directories(
+set(PIPETTE_SIM_INCLUDE
         .
         ${CMAKE_CURRENT_SOURCE_DIR}/../../include
         ${CMAKE_BINARY_DIR}/generated/
@@ -25,7 +25,7 @@ list(APPEND FREERTOS_SOURCES "${FreeRTOS_SOURCE_DIR}/FreeRTOS/Source/portable/Th
 
 # Create the freertos lib
 add_library(freertos-pipettes STATIC ${FREERTOS_SOURCES})
-
+target_include_directories(freertos-pipettes PUBLIC ${PIPETTE_SIM_INCLUDE})
 
 function(add_simulator_executable TARGET)
     if(${TARGET} STREQUAL "pipettes-single-simulator")
@@ -42,7 +42,8 @@ function(add_simulator_executable TARGET)
     add_executable(
             ${TARGET}
             ${PIPETTES_SIMULATOR_SRC}
-    )
+            )
+    target_include_directories(${TARGET} PUBLIC ${PIPETTE_SIM_INCLUDE})
 
     if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
         target_compile_definitions(${TARGET} PUBLIC USE_SOCKETCAN)
