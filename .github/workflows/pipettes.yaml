@@ -64,13 +64,13 @@ jobs:
       - name: "Configure"
         run: cmake --preset=cross-pipettes .
       - name: "Format"
-        run: cmake --build ./build-cross-pipettes --target pipettes-format-ci
+        run: cmake --build --preset=pipettes --target pipettes-format-ci
       - name: "Build"
-        run: cmake --build ./build-cross-pipettes --target pipettes
+        run: cmake --build --preset=pipettes --target pipettes
       - name: "Lint Single Channel"
-        run: cmake --build ./build-cross-pipettes --target pipettes-single-lint
+        run: cmake --build --preset=pipettes --target pipettes-single-lint
       - name: "Lint Multi Channel"
-        run: cmake --build ./build-cross-pipettes --target pipettes-multi-lint
+        run: cmake --build --preset=pipettes --target pipettes-multi-lint
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

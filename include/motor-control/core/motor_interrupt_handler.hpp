@@ -129,8 +129,8 @@ class MotorInterruptHandler {
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
-            finish_current_move(AckMessageId::stopped_by_condition);
             position_tracker = 0;
+            finish_current_move(AckMessageId::stopped_by_condition);
             reset_encoder_pulses();
             return true;
         }
@@ -194,10 +194,8 @@ class MotorInterruptHandler {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
-                .current_position = static_cast<uint32_t>(
-                    position_tracker >>
-                    31),  // TODO (AA 2021-11-10): convert
-                          // this value to mm instead of steps
+                .current_position_steps =
+                    static_cast<uint32_t>(position_tracker >> 31),
                 .encoder_position = pulses,
                 .ack_id = ack_msg_id,
             };

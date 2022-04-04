@@ -88,6 +88,9 @@ static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
 static auto brushed_motor_driver_iface =
     sim_brushed_motor_hardware_iface::SimBrushedMotorDriverIface();
 
+static auto brushed_motor_hardware_iface =
+    sim_motor_hardware_iface::SimBrushedMotorHardwareIface();
+
 void interfaces::initialize() {}
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
@@ -106,4 +109,9 @@ auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
 auto interfaces::get_brushed_motor_driver_hardware_iface()
     -> brushed_motor_driver::BrushedMotorDriverIface& {
     return brushed_motor_driver_iface;
+}
+
+auto interfaces::get_brushed_motor_hardware_iface()
+    -> motor_hardware::BrushedMotorHardwareIface& {
+    return brushed_motor_hardware_iface;
 }

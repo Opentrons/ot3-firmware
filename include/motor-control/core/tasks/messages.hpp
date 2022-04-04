@@ -27,6 +27,14 @@ using MoveGroupTaskMessage =
 using MoveStatusReporterTaskMessage = motor_messages::Ack;
 
 using BrushedMotorDriverTaskMessage =
-    std::variant<std::monostate, can_messages::SetupRequest>;
+    std::variant<std::monostate, can_messages::SetupRequest,
+                 can_messages::SetBrushedMotorVrefRequest,
+                 can_messages::SetBrushedMotorPwmRequest>;
+
+using BrushedMotionControllerTaskMessage =
+    std::variant<std::monostate, can_messages::DisableMotorRequest,
+                 can_messages::EnableMotorRequest,
+                 can_messages::GripperHomeRequest,
+                 can_messages::GripperGripRequest>;
 
 }  // namespace motor_control_task_messages

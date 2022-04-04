@@ -99,7 +99,7 @@ static motor_class::Motor motor_left{
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_right(
     motor_queue_right, motor_interrupt_right, motor_interface_right);
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
-    motor_queue_left, motor_interrupt_left, motor_interface_right);
+    motor_queue_left, motor_interrupt_left, motor_interface_left);
 
 static auto adc_comms = adc::SimADC{};
 

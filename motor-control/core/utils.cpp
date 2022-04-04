@@ -29,3 +29,8 @@ sq0_31 fixed_point_multiply(sq31_31 a, sq0_31 b) {
 float fixed_point_to_float(uint32_t data, int to_radix) {
     return (1.0 * static_cast<float>(data)) / static_cast<float>(2 << to_radix);
 }
+
+uint32_t fixed_point_multiply(sq31_31 a, uint32_t b) {
+    uint64_t result = a * static_cast<uint64_t>(b);
+    return static_cast<uint32_t>((result >> 31) & 0xFFFFFFFF);
+}
