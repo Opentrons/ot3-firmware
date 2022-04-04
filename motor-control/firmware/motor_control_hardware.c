@@ -76,5 +76,7 @@ uint32_t motor_hardware_encoder_pulse_count(void *enc_htim){
 }
 
 void motor_hardware_reset_encoder_count(void *enc_htim){
-    __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
+    if (enc_htim != NULL){
+        __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
+    }
 }
