@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 
 namespace motor_hardware {
@@ -14,9 +15,9 @@ struct PwmConfig {
 struct BrushedHardwareConfig {
     PwmConfig pwm_1;
     PwmConfig pwm_2;
-    PinConfig enable;
-    PinConfig limit_switch;
-    PinConfig sync_in;
+    gpio::PinConfig enable;
+    gpio::PinConfig limit_switch;
+    gpio::PinConfig sync_in;
 };
 
 class BrushedMotorHardware : public BrushedMotorHardwareIface {

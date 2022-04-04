@@ -2,17 +2,18 @@
 
 #include <cstdint>
 
+#include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 
 namespace motor_hardware {
 
 struct HardwareConfig {
-    PinConfig direction;
-    PinConfig step;
-    PinConfig enable;
-    PinConfig limit_switch;
-    PinConfig led;
-    PinConfig sync_in;
+    gpio::PinConfig direction;
+    gpio::PinConfig step;
+    gpio::PinConfig enable;
+    gpio::PinConfig limit_switch;
+    gpio::PinConfig led;
+    gpio::PinConfig sync_in;
 };
 
 class MotorHardware : public StepperMotorHardwareIface {
