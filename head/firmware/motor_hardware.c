@@ -275,7 +275,7 @@ void TIM2_EncoderZL_Init(void){
     {
     Error_Handler();
     }
-    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_NONINVERTED;
+    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_INVERTED;
     sEncoderIndexConfig.Prescaler = TIM_ENCODERINDEX_PRESCALER_DIV1;
     sEncoderIndexConfig.Filter = 0;
     sEncoderIndexConfig.FirstIndexEnable = ENABLE;
@@ -291,9 +291,6 @@ void TIM2_EncoderZL_Init(void){
     __HAL_TIM_CLEAR_IT(&htim2,TIM_IT_UPDATE);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
-    /* Set update event request source as: counter overflow */
-    __HAL_TIM_URS_ENABLE(&htim2);
-    /* Enable encoder interface */
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
@@ -329,7 +326,7 @@ void TIM3_EncoderZR_Init(void){
     {
     Error_Handler();
     }
-    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_NONINVERTED;
+    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_INVERTED;
     sEncoderIndexConfig.Prescaler = TIM_ENCODERINDEX_PRESCALER_DIV1;
     sEncoderIndexConfig.Filter = 0;
     sEncoderIndexConfig.FirstIndexEnable = ENABLE;
@@ -345,8 +342,6 @@ void TIM3_EncoderZR_Init(void){
     __HAL_TIM_CLEAR_IT(&htim3,TIM_IT_UPDATE);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim3,TIM_IT_UPDATE);
-    /* Set update event request source as: counter overflow */
-    __HAL_TIM_URS_ENABLE(&htim3);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 }
