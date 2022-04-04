@@ -46,7 +46,7 @@ struct ContinuousPoll {
         poll_id = message.poll_id;
         timer.stop();
         if (message.delay_ms != 0) {
-            LOG("Beginning or altering continuous poll of %$04x id %d @ %d ms",
+            LOG("Beginning or altering continuous poll of %#04x id %d @ %d ms",
                 address, poll_id, message.delay_ms);
             timer.update_callback(provide_callback(message));
             timer.update_period(message.delay_ms);

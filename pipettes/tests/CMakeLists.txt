@@ -10,6 +10,7 @@ add_executable(
         test_eeprom_task.cpp
         test_i2c_writer.cpp
         test_i2c_poll_task.cpp
+        test_i2c_poller.cpp
         test_i2c_task.cpp
         test_mount_detection.cpp
         test_environment_sensor.cpp
