@@ -6,6 +6,7 @@
 #include "common/core/logging.h"
 #include "sensors/core/callback_types.hpp"
 #include "sensors/core/fdc1004.hpp"
+#include "sensors/core/sensor_hardware_interface.hpp"
 
 namespace capacitance_callbacks {
 using namespace fdc1004_utils;
@@ -22,23 +23,39 @@ template <message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
+                            sensor_hardware::SensorHardwareBase &hardware,
                             int32_t threshold, float current_offset)
         : can_client{can_client},
           i2c_writer{i2c_writer},
+          hardware{hardware},
           current_offset{current_offset},
           zero_threshold{threshold} {}
 
-    void handle_data(const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
-                     const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
-        uint16_t msb_data = 0x0;
-        uint16_t lsb_data = 0x0;
-        const auto *MSB_iter = MSB_buffer.cbegin();
-        MSB_iter =
-            bit_utils::bytes_to_int(MSB_iter, MSB_buffer.cend(), msb_data);
-        const auto *LSB_iter = LSB_buffer.cbegin();
-        LSB_iter =
-            bit_utils::bytes_to_int(LSB_iter, LSB_buffer.cend(), lsb_data);
-        measurement += convert_reads(msb_data, lsb_data);
+    void handle_data_ongoing(
+        const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
+        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
+        auto cap_raw_val = capacitance_from_buffers(MSB_buffer, LSB_buffer);
+        auto cap_val = convert_capacitance(cap_raw_val, 1, current_offset);
+        if (bind_sync) {
+            if (cap_val > zero_threshold) {
+                hardware.set_sync();
+            } else {
+                hardware.reset_sync();
+            }
+        }
+        if (echoing) {
+            can_client.send_can_message(
+                can_ids::NodeId::host,
+                can_messages::ReadFromSensorResponse{
+                    .sensor = can_ids::SensorType::capacitive,
+                    .sensor_data = cap_val});
+        }
+    }
+
+    void handle_data_limited(
+        const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
+        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
+        measurement += capacitance_from_buffers(MSB_buffer, LSB_buffer);
     }
 
     void send_to_can() {
@@ -61,7 +78,7 @@ struct ReadCapacitanceCallback {
         }
     }
 
-    void reset() {
+    void reset_limited() {
         number_of_reads = 1;
         measurement = 0;
     }
@@ -72,13 +89,34 @@ struct ReadCapacitanceCallback {
 
     auto get_offset() -> float { return current_offset; }
 
+    void set_echoing(bool should_echo) { echoing = should_echo; }
+
+    void set_bind_sync(bool should_bind) { bind_sync = should_bind; }
+
   private:
+    uint32_t capacitance_from_buffers(
+        const sensor_callbacks::MaxMessageBuffer &MSB_buffer,
+        const sensor_callbacks::MaxMessageBuffer &LSB_buffer) {
+        uint16_t msb_data = 0x0;
+        uint16_t lsb_data = 0x0;
+        const auto *MSB_iter = MSB_buffer.cbegin();
+        MSB_iter =
+            bit_utils::bytes_to_int(MSB_iter, MSB_buffer.cend(), msb_data);
+        const auto *LSB_iter = LSB_buffer.cbegin();
+        LSB_iter =
+            bit_utils::bytes_to_int(LSB_iter, LSB_buffer.cend(), lsb_data);
+        return convert_reads(msb_data, lsb_data);
+    }
+
     CanClient &can_client;
     I2CQueueWriter &i2c_writer;
+    sensor_hardware::SensorHardwareBase &hardware;
     float current_offset;
     int32_t zero_threshold;
     int32_t measurement = 0;
     uint16_t number_of_reads = 1;
+    bool echoing = false;
+    bool bind_sync = false;
 };
 
 // This struct should be used when the message handler

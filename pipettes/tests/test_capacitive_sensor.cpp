@@ -138,3 +138,97 @@ SCENARIO("read capacitance sensor values") {
         }
     }
 }
+
+SCENARIO("capacitance callback tests") {
+    test_mocks::MockSensorHardware mock_hw{};
+    test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
+    test_mocks::MockMessageQueue<i2c_poller::TaskMessage> poller_queue{};
+
+    test_mocks::MockMessageQueue<mock_message_writer::TaskMessage> can_queue{};
+
+    auto queue_client = mock_client::QueueClient{};
+    auto writer = i2c_writer::I2CWriter<test_mocks::MockMessageQueue>{};
+    queue_client.set_queue(&can_queue);
+    writer.set_queue(&i2c_queue);
+    capacitance_callbacks::ReadCapacitanceCallback callback_host(
+        queue_client, writer, mock_hw, 1, 0);
+
+    mock_message_writer::TaskMessage empty_msg{};
+
+    GIVEN("a callback instance that is echoing and not bound") {
+        callback_host.set_echoing(true);
+        callback_host.set_bind_sync(false);
+
+        WHEN("it receives data under its threshold") {
+            std::array<uint8_t, 5> buffer_a = {0, 0, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_b = {0, 0, 0, 0, 0};
+
+            callback_host.handle_data_ongoing(buffer_a, buffer_b);
+
+            THEN("it should forward the converted data via can") {
+                REQUIRE(can_queue.has_message());
+            }
+            THEN("it should not touch the sync line") {
+                REQUIRE(mock_hw.get_sync_state_mock() == false);
+                REQUIRE(mock_hw.get_sync_set_calls() == 0);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 0);
+            }
+        }
+        WHEN("it receives data over its threshold") {
+            std::array<uint8_t, 5> buffer_a = {200, 80, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
+
+            callback_host.handle_data_ongoing(buffer_a, buffer_b);
+
+            THEN("it should forward the converted data via can") {
+                can_queue.try_read(&empty_msg);
+                auto sent = std::get<can_messages::ReadFromSensorResponse>(
+                    empty_msg.message);
+                REQUIRE(sent.sensor == can_ids::SensorType::capacitive);
+                // we're just checking that the data is faithfully represented,
+                // don't really care what it is
+                REQUIRE(sent.sensor_data == 210044480);
+            }
+            THEN("it should not touch the sync line") {
+                REQUIRE(mock_hw.get_sync_state_mock() == false);
+                REQUIRE(mock_hw.get_sync_set_calls() == 0);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 0);
+            }
+        }
+    }
+    GIVEN("a callback instance that is bound and not echoing") {
+        callback_host.set_echoing(false);
+        callback_host.set_bind_sync(true);
+
+        WHEN("it receives data under its threshold") {
+            std::array<uint8_t, 5> buffer_a = {0, 0, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_b = {0, 0, 0, 0, 0};
+
+            callback_host.handle_data_ongoing(buffer_a, buffer_b);
+
+            THEN("it should not send can messages") {
+                REQUIRE(!can_queue.has_message());
+            }
+            THEN("it should deassert the sync line") {
+                REQUIRE(mock_hw.get_sync_state_mock() == false);
+                REQUIRE(mock_hw.get_sync_set_calls() == 0);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 1);
+            }
+        }
+        WHEN("it receives data over its threshold") {
+            std::array<uint8_t, 5> buffer_a = {200, 80, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
+
+            callback_host.handle_data_ongoing(buffer_a, buffer_b);
+
+            THEN("it should not send can messages") {
+                REQUIRE(!can_queue.has_message());
+            }
+            THEN("it should assert the sync line") {
+                REQUIRE(mock_hw.get_sync_state_mock() == true);
+                REQUIRE(mock_hw.get_sync_set_calls() == 1);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 0);
+            }
+        }
+    }
+}

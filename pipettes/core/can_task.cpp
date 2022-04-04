@@ -80,7 +80,8 @@ static auto system_dispatch_target = can_dispatch::DispatchParseTarget<
 static auto sensor_dispatch_target = can_dispatch::DispatchParseTarget<
     decltype(sensor_handler), can_messages::ReadFromSensorRequest,
     can_messages::WriteToSensorRequest, can_messages::BaselineSensorRequest,
-    can_messages::SetSensorThresholdRequest>{sensor_handler};
+    can_messages::SetSensorThresholdRequest,
+    can_messages::BindSensorOutputRequest>{sensor_handler};
 
 static auto pipette_info_target =
     can_dispatch::DispatchParseTarget<decltype(pipette_info_handler),
