@@ -27,7 +27,7 @@ class FreeRTOSTimer {
     FreeRTOSTimer(FreeRTOSTimer&&) = delete;
     ~FreeRTOSTimer() { xTimerDelete(timer, 0); }
 
-    bool is_running() { return (xTimerIsTimerActive(timer) == pdTRUE); }
+    auto is_running() -> bool { return (xTimerIsTimerActive(timer) == pdTRUE); }
 
     void update_callback(Callback&& new_callback) {
         callback = std::move(callback);
@@ -37,7 +37,7 @@ class FreeRTOSTimer {
         // Update the period of the timer and suppress the freertos behavior
         // that if the timer is currently stopped, changing its period activates
         // it.
-        auto is_active = xTimerIsTimerActive(timer);
+        auto is_active = is_running();
         TickType_t blocking_ticks = is_active ? 1 : 0;
         xTimerChangePeriod(timer, pdMS_TO_TICKS(period_ms), blocking_ticks);
         if (!is_active) {
@@ -58,7 +58,7 @@ class FreeRTOSTimer {
 
     static void timer_callback(TimerHandle_t xTimer) {
         auto* timer_id = pvTimerGetTimerID(xTimer);
-        auto instance = static_cast<FreeRTOSTimer*>(timer_id);
+        auto* instance = static_cast<FreeRTOSTimer*>(timer_id);
         instance->callback();
     }
 };

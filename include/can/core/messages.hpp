@@ -681,7 +681,8 @@ struct BindSensorOutputRequest
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BindSensorOutputRequest {
-        uint8_t _sensor, _binding;
+        uint8_t _sensor = 0;
+        uint8_t _binding = 0;
         body = bit_utils::bytes_to_int(body, limit, _sensor);
         body = bit_utils::bytes_to_int(body, limit, _binding);
         return BindSensorOutputRequest{
