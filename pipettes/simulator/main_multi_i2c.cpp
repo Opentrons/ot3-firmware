@@ -20,6 +20,7 @@
 #include "pipettes/core/tasks.hpp"
 #include "sensors/simulation/eeprom.hpp"
 #include "sensors/simulation/fdc1004.hpp"
+#include "sensors/simulation/hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
 #include "sensors/simulation/sensors.hpp"
@@ -54,6 +55,8 @@ std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
 
 static auto i2c3_comms = sim_i2c::SimI2C{sensor_map};
 static auto i2c1_comms = sim_i2c::SimI2C{sensor_map};
+
+static sensor_hardware::SimulatedSensorHardware fake_sensor_hw{};
 
 static motor_class::Motor pipette_motor{
     spi_comms,
@@ -101,6 +104,7 @@ int main() {
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c3_comms, i2c1_comms,
+                                fake_sensor_hw,
                                 node_from_env(std::getenv("MOUNT")));
 
     vTaskStartScheduler();

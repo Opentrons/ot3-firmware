@@ -64,6 +64,11 @@ inline auto convert_capacitance(uint32_t capacitance, uint16_t read_count,
     return convert_to_fixed_point(converted_capacitance, 15);
 }
 
+inline auto convert_reads(uint16_t msb, uint16_t lsb) -> uint32_t {
+    return (static_cast<uint32_t>(msb) << MSB_SHIFT) |
+           static_cast<uint32_t>(lsb);
+}
+
 inline auto update_capdac(uint16_t capacitance, float current_offset)
     -> uint16_t {
     /**

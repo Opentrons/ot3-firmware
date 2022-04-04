@@ -38,7 +38,7 @@ struct ReadCapacitanceCallback {
         const auto *LSB_iter = LSB_buffer.cbegin();
         LSB_iter =
             bit_utils::bytes_to_int(LSB_iter, LSB_buffer.cend(), lsb_data);
-        measurement += (msb_data << MSB_SHIFT | lsb_data);
+        measurement += convert_reads(msb_data, lsb_data);
     }
 
     void send_to_can() {

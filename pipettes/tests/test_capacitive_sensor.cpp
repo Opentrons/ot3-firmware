@@ -9,8 +9,10 @@
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
+#include "sensors/tests/mock_hardware.hpp"
 
 SCENARIO("read capacitance sensor values") {
+    test_mocks::MockSensorHardware mock_hw{};
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c_poller::TaskMessage> poller_queue{};
 
@@ -29,7 +31,7 @@ SCENARIO("read capacitance sensor values") {
     poller.set_queue(&poller_queue);
 
     auto sensor = capacitive_sensor_task::CapacitiveMessageHandler{
-        writer, poller, queue_client};
+        writer, poller, mock_hw, queue_client};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a request to take a single read of the capacitive sensor") {

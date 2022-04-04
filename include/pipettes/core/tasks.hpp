@@ -13,6 +13,7 @@
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "pipettes/core/tasks/i2c_poll_task.hpp"
 #include "pipettes/core/tasks/i2c_task.hpp"
+#include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
@@ -26,7 +27,9 @@ void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      motion_controller,
                  motor_driver::MotorDriver& motor_driver,
-                 i2c::I2CDeviceBase& i2c, can_ids::NodeId id);
+                 i2c::I2CDeviceBase& i2c,
+                 sensor_hardware::SensorHardwareBase& sensor_hardware,
+                 can_ids::NodeId id);
 
 /**
  * Start pipettes tasks with two i2c buses.
@@ -36,7 +39,9 @@ void start_tasks(can_bus::CanBus& can_bus,
                      motion_controller,
                  motor_driver::MotorDriver& motor_driver,
                  i2c::I2CDeviceBase& i2c3_device,
-                 i2c::I2CDeviceBase& i2c1_device, can_ids::NodeId id);
+                 i2c::I2CDeviceBase& i2c1_device,
+                 sensor_hardware::SensorHardwareBase& sensor_hardware,
+                 can_ids::NodeId id);
 
 /**
  * Access to all the message queues in the system.

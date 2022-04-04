@@ -5,22 +5,26 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_callbacks.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace capacitive_sensor_task {
 
 using namespace capacitance_callbacks;
+using namespace sensor_hardware;
 
-template <class I2CQueueWriter, class I2CPoller,
+template <class I2CQueueWriter, class I2CQueuePoller,
           message_writer_task::TaskClient CanClient>
 class CapacitiveMessageHandler {
   public:
     explicit CapacitiveMessageHandler(I2CQueueWriter &i2c_writer,
-                                      I2CPoller &i2c_poller,
+                                      I2CQueuePoller &i2c_poller,
+                                      SensorHardwareBase &hardware,
                                       CanClient &can_client)
         : writer{i2c_writer},
           poller{i2c_poller},
+          hardware{hardware},
           can_client{can_client},
           capacitance_handler{can_client, writer, zero_threshold,
                               capdac_offset} {}
@@ -117,16 +121,18 @@ class CapacitiveMessageHandler {
     float capdac_offset = 0x0;
     static constexpr uint16_t DELAY = 20;
     I2CQueueWriter &writer;
-    I2CPoller &poller;
+    I2CQueuePoller &poller;
+    SensorHardwareBase &hardware;
     CanClient &can_client;
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
+    uint32_t sensor_bindings = 0;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl, class I2CQueueWriter,
-          class I2CPoller, message_writer_task::TaskClient CanClient>
+          class I2CQueuePoller, message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
                       sensor_task_utils::TaskMessage>
 class CapacitiveSensorTask {
@@ -142,9 +148,11 @@ class CapacitiveSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer, I2CPoller *poller,
+    [[noreturn]] void operator()(I2CQueueWriter *writer, I2CQueuePoller *poller,
+                                 SensorHardwareBase *hardware,
                                  CanClient *can_client) {
-        auto handler = CapacitiveMessageHandler{*writer, *poller, *can_client};
+        auto handler =
+            CapacitiveMessageHandler{*writer, *poller, *hardware, *can_client};
         handler.initialize();
         sensor_task_utils::TaskMessage message{};
         for (;;) {

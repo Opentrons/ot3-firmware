@@ -56,7 +56,7 @@ void pipettes_tasks::start_tasks(
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
     motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c_device,
-    can_ids::NodeId id) {
+    sensor_hardware::SensorHardwareBase& sensor_hardware, can_ids::NodeId id) {
     queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
@@ -79,7 +79,7 @@ void pipettes_tasks::start_tasks(
     auto& pressure_sensor_task =
         pressure_sensor_task_builder.start(5, i2c_task_client, queues);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, i2c_task_client, i2c_poll_client, queues);
+        5, i2c_task_client, i2c_poll_client, sensor_hardware, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
