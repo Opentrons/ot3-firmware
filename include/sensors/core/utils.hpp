@@ -8,7 +8,8 @@ using TaskMessage =
     std::variant<std::monostate, can_messages::ReadFromSensorRequest,
                  can_messages::WriteToSensorRequest,
                  can_messages::BaselineSensorRequest,
-                 can_messages::SetSensorThresholdRequest>;
+                 can_messages::SetSensorThresholdRequest,
+                 can_messages::BindSensorOutputRequest>;
 
 /**
  * Concept describing a class that can message this task.

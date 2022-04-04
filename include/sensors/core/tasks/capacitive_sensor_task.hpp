@@ -2,6 +2,8 @@
 
 #include <array>
 
+#include "can/core/ids.hpp"
+#include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
@@ -26,7 +28,7 @@ class CapacitiveMessageHandler {
           poller{i2c_poller},
           hardware{hardware},
           can_client{can_client},
-          capacitance_handler{can_client, writer, zero_threshold,
+          capacitance_handler{can_client, writer, hardware, zero_threshold,
                               capdac_offset} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
@@ -76,12 +78,13 @@ class CapacitiveMessageHandler {
                 .sensor_data = static_cast<int32_t>(capdac_offset)};
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
-            capacitance_handler.reset();
+            capacitance_handler.reset_limited();
             poller.multi_register_poll(
                 ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, 1, DELAY,
                 [this]() { capacitance_handler.send_to_can(); },
-                [this](auto message_a, auto message_b) {
-                    capacitance_handler.handle_data(message_a, message_b);
+                [this](auto &message_a, auto &message_b) {
+                    capacitance_handler.handle_data_limited(message_a,
+                                                            message_b);
                 });
         }
     }
@@ -94,13 +97,13 @@ class CapacitiveMessageHandler {
     void visit(can_messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
         capdac_offset = capacitance_handler.get_offset();
-        capacitance_handler.reset();
+        capacitance_handler.reset_limited();
         capacitance_handler.set_number_of_reads(m.sample_rate);
         poller.multi_register_poll(
             ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, m.sample_rate, DELAY,
             [this]() { capacitance_handler.send_to_can(); },
-            [this](auto message_a, auto message_b) {
-                capacitance_handler.handle_data(message_a, message_b);
+            [this](auto &message_a, auto &message_b) {
+                capacitance_handler.handle_data_limited(message_a, message_b);
             });
     }
 
@@ -111,6 +114,21 @@ class CapacitiveMessageHandler {
         auto message = can_messages::SensorThresholdResponse{
             .sensor = SensorType::capacitive, .threshold = zero_threshold};
         can_client.send_can_message(can_ids::NodeId::host, message);
+    }
+
+    void visit(can_messages::BindSensorOutputRequest &m) {
+        capacitance_handler.set_echoing(
+            m.binding &
+            static_cast<uint8_t>(can_ids::SensorOutputBinding::report));
+        capacitance_handler.set_echoing(
+            m.binding &
+            static_cast<uint8_t>(can_ids::SensorOutputBinding::sync));
+
+        poller.continuous_multi_register_poll(
+            ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, DELAY,
+            ONGOING_POLL_ID, [this](const auto &buf1, const auto &buf2) {
+                capacitance_handler.handle_data_ongoing(buf1, buf2);
+            });
     }
 
     InternalCallback internal_callback{};
@@ -126,6 +144,8 @@ class CapacitiveMessageHandler {
     CanClient &can_client;
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
     uint32_t sensor_bindings = 0;
+    // capaciofour?
+    static constexpr uint32_t ONGOING_POLL_ID = 0xc4b4c104;
 };
 
 /**

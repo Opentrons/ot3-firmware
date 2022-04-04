@@ -41,6 +41,10 @@ class SensorHandler {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
+    void visit(can_messages::BindSensorOutputRequest &m) {
+        send_to_queue(can_ids::SensorType(m.sensor), m);
+    }
+
     void send_to_queue(can_ids::SensorType type,
                        sensor_task_utils::TaskMessage m) {
         switch (type) {

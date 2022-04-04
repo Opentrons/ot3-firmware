@@ -88,6 +88,10 @@ class EnvironmentSensorMessageHandler {
         }
     }
 
+    void visit(can_messages::BindSensorOutputRequest &m) {
+        /* Not implemented for this task yet */
+    }
+
     InternalCallback internal_handler{};
     sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
     uint8_t HUMIDITY_REGISTER = LSB_HUMIDITY_REGISTER;
