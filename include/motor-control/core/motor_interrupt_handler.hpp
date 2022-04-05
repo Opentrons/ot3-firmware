@@ -108,7 +108,6 @@ class MotorInterruptHandler {
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 homing_stopped()) {
-                reset_encoder_pulses();
                 return false;
             }
             if (can_step() && tick()) {
@@ -132,6 +131,7 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             finish_current_move(AckMessageId::stopped_by_condition);
+            reset_encoder_pulses();
             return true;
         }
         return false;
