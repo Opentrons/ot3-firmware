@@ -139,6 +139,7 @@ struct AllTask {
     pressure_sensor_task::PressureSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue,
         i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>,
+        i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>,
         QueueClient>* pressure_sensor_task{nullptr};
 };
 

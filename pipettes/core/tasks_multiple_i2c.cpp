@@ -87,8 +87,8 @@ void pipettes_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, i2c3_task_client, queues);
     auto& environment_sensor_task =
         environment_sensor_task_builder.start(5, i2c3_task_client, queues);
-    auto& pressure_sensor_task =
-        pressure_sensor_task_builder.start(5, i2c3_task_client, queues);
+    auto& pressure_sensor_task = pressure_sensor_task_builder.start(
+        5, i2c3_task_client, i2c3_poll_client, queues);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
         5, i2c3_task_client, i2c3_poll_client, sensor_hardware, queues);
 

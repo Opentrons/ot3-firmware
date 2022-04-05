@@ -9,12 +9,14 @@
 
 namespace pressure_sensor_task {
 
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
+template <class I2CQueueWriter, class I2CQueuePoller,
+          message_writer_task::TaskClient CanClient>
 class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
+                                    I2CQueuePoller &i2c_poller,
                                     CanClient &can_client)
-        : driver{i2c_writer, can_client} {}
+        : driver{i2c_writer, i2c_poller, can_client} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -74,14 +76,19 @@ class PressureMessageHandler {
         driver.send_threshold();
     }
 
-    pressure_driver::MMR92C04<I2CQueueWriter, CanClient> driver;
+    void visit(can_messages::BindSensorOutputRequest &m) {
+        LOG("received bind request but not implemented");
+        static_cast<void>(m);
+    }
+
+    pressure_driver::MMR92C04<I2CQueueWriter, I2CQueuePoller, CanClient> driver;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl, class I2CQueueWriter,
-          message_writer_task::TaskClient CanClient>
+          class I2CQueuePoller, message_writer_task::TaskClient CanClient>
 requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
                       sensor_task_utils::TaskMessage>
 class PressureSensorTask {
@@ -97,9 +104,9 @@ class PressureSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer,
+    [[noreturn]] void operator()(I2CQueueWriter *writer, I2CQueuePoller *poller,
                                  CanClient *can_client) {
-        auto handler = PressureMessageHandler{*writer, *can_client};
+        auto handler = PressureMessageHandler{*writer, *poller, *can_client};
         handler.initialize();
         sensor_task_utils::TaskMessage message{};
         for (;;) {

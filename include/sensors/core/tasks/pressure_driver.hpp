@@ -22,11 +22,13 @@ using namespace sensors_registers;
  * @tparam CanClient
  */
 
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
+template <class I2CQueueWriter, class I2CQueuePoller,
+          message_writer_task::TaskClient CanClient>
 class MMR92C04 {
   public:
-    MMR92C04(I2CQueueWriter &writer, CanClient &can_client)
-        : writer(writer), can_client(can_client) {}
+    MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
+             CanClient &can_client)
+        : writer(writer), poller(poller), can_client(can_client) {}
 
     /**
      * @brief Check if the MMR92C04 has been initialized.
@@ -54,16 +56,14 @@ class MMR92C04 {
     auto read(Registers reg) -> void {
         writer.read(
             ADDRESS, [this, reg]() { send_to_can(this, reg); },
-            [this, reg](auto message_a) { handle_data(message_a, this, reg); },
-            static_cast<uint8_t>(reg));
+            [this, reg](auto message_a) { handle_data(message_a, this, reg); });
     }
 
     auto poll_read(Registers reg, uint16_t number_reads) -> void {
-        writer.single_register_poll(
-            ADDRESS, number_reads, DELAY,
+        poller.single_register_poll(
+            ADDRESS, static_cast<uint8_t>(reg), number_reads, DELAY,
             [this, reg]() { send_to_can(this, reg); },
-            [this, reg](auto message_a) { handle_data(message_a, this, reg); },
-            static_cast<uint8_t>(reg));
+            [this, reg](auto message_a) { handle_data(message_a, this, reg); });
     }
 
     auto write_config() -> bool {
@@ -262,6 +262,7 @@ class MMR92C04 {
     int32_t threshold_cmH20 = 0x8;
     const uint16_t DELAY = 20;
     I2CQueueWriter &writer;
+    I2CQueuePoller &poller;
     CanClient &can_client;
 
     template <MMR920C04Register Reg>

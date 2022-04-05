@@ -2,6 +2,7 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/i2c_poller.hpp"
 #include "pipettes/core/i2c_writer.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"

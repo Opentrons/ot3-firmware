@@ -37,11 +37,10 @@ SCENARIO("read and write data to the i2c task") {
     GIVEN("write command") {
         std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
         uint16_t write_data = 0x0122;
-        uint8_t reg = 0x2;
 
         // make a copy of the two byte array before it's manipulated by
         // the i2c writer.
-        writer.write(ADDRESS, write_data);
+        writer.write(ADDRESS, 0x2, write_data);
         i2c_queue.try_read(&empty_msg);
         auto write_msg = std::get<pipette_messages::WriteToI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(write_msg);
