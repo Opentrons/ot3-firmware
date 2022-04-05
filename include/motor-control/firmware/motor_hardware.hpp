@@ -19,8 +19,9 @@ class MotorHardware : public StepperMotorHardwareIface {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;
-    MotorHardware(const HardwareConfig& config, void* timer_handle, void* encoder_handle)
-        : pins(config), tim_handle(timer_handle) , enc_handle(encoder_handle){}
+    MotorHardware(const HardwareConfig& config, void* timer_handle,
+                  void* encoder_handle)
+        : pins(config), tim_handle(timer_handle), enc_handle(encoder_handle) {}
     MotorHardware(const MotorHardware&) = default;
     auto operator=(const MotorHardware&) -> MotorHardware& = default;
     MotorHardware(MotorHardware&&) = default;

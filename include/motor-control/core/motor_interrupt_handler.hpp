@@ -206,13 +206,9 @@ class MotorInterruptHandler {
         set_buffered_move(Move{});
     }
 
-    auto get_encoder_pulses() {
-    return hardware.get_encoder_pulses();
-    }
+    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
 
-    void reset_encoder_pulses(){
-        hardware.reset_encoder_pulses();
-    }
+    void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
     void reset() {
         /*
          * Reset the position and all queued moves to the motor interrupt
