@@ -63,14 +63,18 @@ bool motor_hardware_start_pwm(void* htim, uint32_t channel) {
 bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
     return HAL_TIM_PWM_Stop(htim, channel) == HAL_OK;
 }
-
+/*
+* On the current prototype there are no encoders on XY axes, to handle that
+* this NULL condition was made to return a zero value for pulse counts.
+* Note: Eventually we can remove these if statements when we get encoders on XY Axes
+*/
 uint32_t motor_hardware_encoder_pulse_count(void *enc_htim){
     uint32_t pulses;
-    if (enc_htim == NULL){
-        pulses = 0;
-    }
-    else{
+    if (enc_htim != NULL){
         pulses = __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)enc_htim);
+    }
+    else {
+        pulses = 0;
     }
     return pulses;
 }
