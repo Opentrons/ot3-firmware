@@ -32,7 +32,7 @@ class CapacitiveMessageHandler {
     }
 
     void initialize() {
-        writer.write(DEVICE_ID_REGISTER, ADDRESS);
+        writer.write(ADDRESS, DEVICE_ID_REGISTER, 0x0);
         writer.read(
             ADDRESS, [this]() { internal_callback.send_to_can(); },
             [this](auto message_a) {
@@ -42,11 +42,8 @@ class CapacitiveMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        uint32_t configuration_data =
-            CONFIGURATION_MEASUREMENT << 8 | DEVICE_CONFIGURATION;
-        writer.write(configuration_data, ADDRESS);
-        configuration_data = FDC_CONFIGURATION << 8 | SAMPLE_RATE;
-        writer.write(configuration_data, ADDRESS);
+        writer.write(ADDRESS, CONFIGURATION_MEASUREMENT, DEVICE_CONFIGURATION);
+        writer.write(ADDRESS, FDC_CONFIGURATION, SAMPLE_RATE);
     }
 
   private:
