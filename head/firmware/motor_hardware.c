@@ -180,7 +180,7 @@ void Encoder_GPIO_Init(void){
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
     __GPIOD_CLK_ENABLE();
-    /**Encoder A Axis GPIO Configuration
+    /* Encoder A Axis GPIO Configuration
     PA0     ------> CHANNEL A
     PA1     ------> CHANNEL B
     PA15    ------> CHANNEL I
@@ -200,7 +200,7 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /**Encoder Z Axis GPIO Configuration
+    /* Encoder Z Axis GPIO Configuration
     PA6     ------> CHANNEL A
     PA7     ------> CHANNEL B
     PD2    ------> CHANNEL I
@@ -287,10 +287,6 @@ void TIM2_EncoderZL_Init(void){
     }
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim3, 0);
-    /* Clear interrupt flag bit */
-    __HAL_TIM_CLEAR_IT(&htim2,TIM_IT_UPDATE);
-    /* The update event of the enable timer is interrupted */
-    __HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
@@ -338,10 +334,6 @@ void TIM3_EncoderZR_Init(void){
     }
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim3, 0);
-    /* Clear interrupt flag bit */
-    __HAL_TIM_CLEAR_IT(&htim3,TIM_IT_UPDATE);
-    /* The update event of the enable timer is interrupted */
-    __HAL_TIM_ENABLE_IT(&htim3,TIM_IT_UPDATE);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 }
