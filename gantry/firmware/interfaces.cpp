@@ -9,8 +9,8 @@
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
-#include "motor-control/core/motion_controller.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)

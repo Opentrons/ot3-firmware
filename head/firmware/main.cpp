@@ -27,10 +27,10 @@
 #include "head/core/tasks.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/motor.hpp"
-#include "motor-control/core/motor_driver_config.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
-#include "motor-control/core/tmc2130_registers.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
 #include "motor-control/firmware/motor_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
