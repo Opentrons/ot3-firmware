@@ -36,7 +36,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto check_limit_switch() -> bool final;
     void set_LED(bool status) final;
     auto check_sync_in() -> bool final;
-    uint32_t get_encoder_pulses() final;
+    auto get_encoder_pulses() final;
     void reset_encoder_pulses() final;
 
   private:

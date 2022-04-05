@@ -206,7 +206,7 @@ class MotorInterruptHandler {
         set_buffered_move(Move{});
     }
 
-    uint32_t get_encoder_pulses() {
+    auto get_encoder_pulses() {
     return hardware.get_encoder_pulses();
     }
 
