@@ -3,6 +3,7 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "motor-control/core/utils.hpp"
+#include "pipettes/core/i2c_poller.hpp"
 #include "pipettes/core/i2c_writer.hpp"
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
@@ -10,19 +11,23 @@
 
 SCENARIO("read pressure sensor values") {
     test_mocks::MockMessageQueue<i2c_writer::TaskMessage> i2c_queue{};
+    test_mocks::MockMessageQueue<i2c_poller::TaskMessage> i2c_poll_queue{};
     test_mocks::MockMessageQueue<mock_message_writer::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>
         pressure_queue{};
 
     i2c_writer::TaskMessage empty_msg{};
+    i2c_poller::TaskMessage empty_poll_msg{};
     auto queue_client =
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     auto writer = i2c_writer::I2CWriter<test_mocks::MockMessageQueue>{};
+    auto poller = i2c_poller::I2CPoller<test_mocks::MockMessageQueue>{};
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
+    poller.set_queue(&i2c_poll_queue);
 
-    auto sensor =
-        pressure_sensor_task::PressureMessageHandler{writer, queue_client};
+    auto sensor = pressure_sensor_task::PressureMessageHandler{writer, poller,
+                                                               queue_client};
     constexpr uint8_t pressure_id = 0x4;
     constexpr uint8_t pressure_temperature_id = 0x5;
 
@@ -31,24 +36,17 @@ SCENARIO("read pressure sensor values") {
             can_messages::ReadFromSensorRequest({}, pressure_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 2);
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
                 i2c_queue.try_read(&empty_msg);
-                auto read_message =
-                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
-                i2c_queue.try_read(&empty_msg);
-                auto write_message =
-                    std::get<i2c_writer::WriteToI2C>(empty_msg);
+                auto transact_message =
+                    std::get<i2c_writer::TransactWithI2C>(empty_msg);
 
-                THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address == mmr920C04::ADDRESS);
-                    REQUIRE(write_message.buffer[0] ==
-                            static_cast<uint8_t>(
-                                mmr920C04::Registers::PRESSURE_READ));
-                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
-                    REQUIRE(read_message.buffer[0] ==
+                THEN("The command addresses are correct") {
+                    REQUIRE(transact_message.address == mmr920C04::ADDRESS);
+                    REQUIRE(transact_message.buffer[0] ==
                             static_cast<uint8_t>(
                                 mmr920C04::Registers::PRESSURE_READ));
                 }
@@ -60,24 +58,17 @@ SCENARIO("read pressure sensor values") {
             can_messages::ReadFromSensorRequest({}, pressure_temperature_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 2);
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
             }
-            AND_WHEN("we read the messages from the queue") {
+            AND_WHEN("we read the message from the queue") {
                 i2c_queue.try_read(&empty_msg);
-                auto read_message =
-                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
-                i2c_queue.try_read(&empty_msg);
-                auto write_message =
-                    std::get<i2c_writer::WriteToI2C>(empty_msg);
+                auto transact_message =
+                    std::get<i2c_writer::TransactWithI2C>(empty_msg);
 
-                THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address == mmr920C04::ADDRESS);
-                    REQUIRE(write_message.buffer[0] ==
-                            static_cast<uint8_t>(
-                                mmr920C04::Registers::TEMPERATURE_READ));
-                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
-                    REQUIRE(read_message.buffer[0] ==
+                THEN("The command addresses are correct") {
+                    REQUIRE(transact_message.address == mmr920C04::ADDRESS);
+                    REQUIRE(transact_message.buffer[0] ==
                             static_cast<uint8_t>(
                                 mmr920C04::Registers::TEMPERATURE_READ));
                 }
@@ -91,13 +82,13 @@ SCENARIO("read pressure sensor values") {
         sensor.handle_message(multi_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 1);
+                REQUIRE(i2c_poll_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
-                i2c_queue.try_read(&empty_msg);
+                i2c_poll_queue.try_read(&empty_poll_msg);
                 auto read_message =
-                    std::get<i2c_writer::SingleRegisterPollReadFromI2C>(
-                        empty_msg);
+                    std::get<i2c_poller::SingleRegisterPollReadFromI2C>(
+                        empty_poll_msg);
 
                 THEN("The write and read command addresses are correct") {
                     REQUIRE(read_message.address == mmr920C04::ADDRESS);

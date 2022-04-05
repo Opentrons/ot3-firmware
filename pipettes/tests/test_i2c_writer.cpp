@@ -76,7 +76,8 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(queue.get_size() == 1);
                 queue.try_read(&empty_msg);
                 auto msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
-                std::array compare{u8(0x23), u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f)};
+                std::array compare{u8(0x23), u8(0xd3), u8(0x4d), u8(0xb3),
+                                   u8(0x3f)};
                 REQUIRE(msg.buffer == compare);
             }
         }
