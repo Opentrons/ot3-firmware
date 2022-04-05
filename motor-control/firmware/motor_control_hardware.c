@@ -66,6 +66,7 @@ bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
 /*
 * On the current prototype there are no encoders on XY axes, to handle that
 * this NULL condition was made to return a zero value for pulse counts.
+*
 * Note: Eventually we can remove these if statements when we get encoders on XY Axes
 */
 uint32_t motor_hardware_encoder_pulse_count(void *enc_htim){
