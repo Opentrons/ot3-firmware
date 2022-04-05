@@ -291,6 +291,7 @@ TEST_CASE("Finishing a move") {
         test_objs.handler.set_buffered_move(move);
         uint64_t set_position = static_cast<uint64_t>(100) << 31;
         test_objs.handler.set_current_position(set_position);
+        test_objs.handler.sim_set_encoder_pulses(200);
         test_objs.handler.finish_current_move();
 
         THEN(
@@ -301,6 +302,7 @@ TEST_CASE("Finishing a move") {
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position_steps == 100);
+            REQUIRE(msg.encoder_position == 200);
         }
     }
 }

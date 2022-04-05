@@ -49,8 +49,9 @@ SCENARIO("message serializing works") {
         auto message = MoveCompleted{.group_id = 1,
                                      .seq_id = 2,
                                      .current_position_um = 0x3456789a,
+                                     .encoder_position = 0x05803931,
                                      .ack_id = 1};
-        auto arr = std::array<uint8_t, 8>{};
+        auto arr = std::array<uint8_t, 11>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
@@ -61,9 +62,13 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[3] == 0x56);
                 REQUIRE(body.data()[4] == 0x78);
                 REQUIRE(body.data()[5] == 0x9a);
-                REQUIRE(body.data()[6] == 1);
+                REQUIRE(body.data()[6] == 0x05);
+                REQUIRE(body.data()[7] == 0x80);
+                REQUIRE(body.data()[8] == 0x39);
+                REQUIRE(body.data()[9] == 0x31);
+                REQUIRE(body.data()[10] == 1);
             }
-            THEN("size must be returned") { REQUIRE(size == 7); }
+            THEN("size must be returned") { REQUIRE(size == 11); }
         }
     }
 
