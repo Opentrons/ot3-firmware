@@ -36,23 +36,19 @@ SCENARIO("read pressure sensor values") {
             can_messages::ReadFromSensorRequest({}, pressure_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 2);
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
                 i2c_queue.try_read(&empty_msg);
-                auto read_message =
-                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
-                i2c_queue.try_read(&empty_msg);
-                auto write_message =
-                    std::get<i2c_writer::WriteToI2C>(empty_msg);
+                auto transact_message =
+                    std::get<i2c_writer::TransactWithI2C>(empty_msg);
 
-                THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address == mmr920C04::ADDRESS);
-                    REQUIRE(write_message.buffer[0] ==
+                THEN("The command addresses are correct") {
+                    REQUIRE(transact_message.address == mmr920C04::ADDRESS);
+                    REQUIRE(transact_message.buffer[0] ==
                             static_cast<uint8_t>(
                                 mmr920C04::Registers::PRESSURE_READ));
-                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
                 }
             }
         }
@@ -62,23 +58,19 @@ SCENARIO("read pressure sensor values") {
             can_messages::ReadFromSensorRequest({}, pressure_temperature_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_queue.get_size() == 2);
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
             }
-            AND_WHEN("we read the messages from the queue") {
+            AND_WHEN("we read the message from the queue") {
                 i2c_queue.try_read(&empty_msg);
-                auto read_message =
-                    std::get<i2c_writer::ReadFromI2C>(empty_msg);
-                i2c_queue.try_read(&empty_msg);
-                auto write_message =
-                    std::get<i2c_writer::WriteToI2C>(empty_msg);
+                auto transact_message =
+                    std::get<i2c_writer::TransactWithI2C>(empty_msg);
 
-                THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address == mmr920C04::ADDRESS);
-                    REQUIRE(write_message.buffer[0] ==
+                THEN("The command addresses are correct") {
+                    REQUIRE(transact_message.address == mmr920C04::ADDRESS);
+                    REQUIRE(transact_message.buffer[0] ==
                             static_cast<uint8_t>(
                                 mmr920C04::Registers::TEMPERATURE_READ));
-                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
                 }
             }
         }

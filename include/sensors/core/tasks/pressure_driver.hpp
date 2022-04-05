@@ -53,9 +53,10 @@ class MMR92C04 {
         writer.write(ADDRESS, static_cast<uint8_t>(reg), command_data);
     }
 
-    auto read(Registers reg) -> void {
-        writer.read(
-            ADDRESS, [this, reg]() { send_to_can(this, reg); },
+    auto transact(Registers reg) -> void {
+        writer.transact(
+            ADDRESS, static_cast<uint8_t>(reg),
+            [this, reg]() { send_to_can(this, reg); },
             [this, reg](auto message_a) { handle_data(message_a, this, reg); });
     }
 
@@ -109,8 +110,7 @@ class MMR92C04 {
         if (poll) {
             poll_read(reg, sample_rate);
         } else {
-            write(reg, 0x0);
-            read(reg);
+            transact(reg);
         }
     }
 
@@ -118,8 +118,7 @@ class MMR92C04 {
         if (poll) {
             poll_read(Registers::TEMPERATURE_READ, sample_rate);
         } else {
-            write(Registers::TEMPERATURE_READ, 0x0);
-            read(Registers::TEMPERATURE_READ);
+            transact(Registers::TEMPERATURE_READ);
         }
     }
 
