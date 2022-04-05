@@ -73,7 +73,7 @@ struct motion_controller::HardwareConfig motor_pins {
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
+static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7, NULL);
 
 /**
  * Motor driver configuration.
