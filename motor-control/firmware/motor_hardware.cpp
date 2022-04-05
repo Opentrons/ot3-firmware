@@ -1,4 +1,4 @@
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
 #include "motor_control_hardware.h"
 

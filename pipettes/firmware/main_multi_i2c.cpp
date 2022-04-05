@@ -20,7 +20,7 @@
 #include "motor-control/core/stepper_motor/motor_driver_config.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/pipette_type.h"

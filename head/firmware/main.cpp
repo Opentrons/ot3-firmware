@@ -31,7 +31,7 @@
 #include "motor-control/core/stepper_motor/motor_driver_config.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 

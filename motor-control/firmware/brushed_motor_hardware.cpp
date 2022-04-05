@@ -1,4 +1,4 @@
-#include "motor-control/firmware/brushed_motor_hardware.hpp"
+#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 
 #include "motor_control_hardware.h"
 
