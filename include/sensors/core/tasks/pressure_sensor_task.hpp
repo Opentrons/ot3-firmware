@@ -4,7 +4,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "sensors/core/mmr920C04.hpp"
+#include "pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace pressure_sensor_task {
@@ -42,7 +42,7 @@ class PressureMessageHandler {
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
-            driver.get_pressure(mmr920C04_registers::Registers::PRESSURE_READ);
+            driver.get_pressure(mmr920C04::Registers::PRESSURE_READ);
         } else {
             driver.get_temperature();
         }
@@ -51,8 +51,8 @@ class PressureMessageHandler {
     void visit(can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor\n", m.data,
             m.sensor);
-        if (mmr920C04_registers::is_valid_address(m.reg_address)) {
-            driver.write(mmr920C04_registers::Registers(m.reg_address), m.data);
+        if (mmr920C04::is_valid_address(m.reg_address)) {
+            driver.write(mmr920C04::Registers(m.reg_address), m.data);
         }
     }
 
@@ -60,8 +60,8 @@ class PressureMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
-            driver.get_pressure(mmr920C04_registers::Registers::PRESSURE_READ,
-                                true, m.sample_rate);
+            driver.get_pressure(mmr920C04::Registers::PRESSURE_READ, true,
+                                m.sample_rate);
         } else {
             driver.get_temperature(true, m.sample_rate);
         }
@@ -74,7 +74,7 @@ class PressureMessageHandler {
         driver.send_threshold();
     }
 
-    pressure::MMR92C04<I2CQueueWriter, CanClient> driver;
+    pressure_driver::MMR92C04<I2CQueueWriter, CanClient> driver;
 };
 
 /**

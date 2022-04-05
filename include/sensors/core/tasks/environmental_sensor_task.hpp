@@ -33,7 +33,7 @@ class EnvironmentSensorMessageHandler {
     ~EnvironmentSensorMessageHandler() = default;
 
     void initialize() {
-        writer.write(0x0, ADDRESS, DEVICE_ID_REGISTER);
+        writer.write(ADDRESS, DEVICE_ID_REGISTER, 0x0);
         writer.read(
             ADDRESS, [this]() { internal_handler.send_to_can(); },
             [this](auto message_a) { internal_handler.handle_data(message_a); },
@@ -65,7 +65,7 @@ class EnvironmentSensorMessageHandler {
     void visit(can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
         if (SensorType(m.sensor) == SensorType::humidity) {
-            writer.write(0x0, ADDRESS, HUMIDITY_REGISTER);
+            writer.write(ADDRESS, HUMIDITY_REGISTER, 0x0);
             writer.read(
                 ADDRESS, [this]() { humidity_handler.send_to_can(); },
                 [this](auto message_a) {
@@ -73,7 +73,7 @@ class EnvironmentSensorMessageHandler {
                 },
                 HUMIDITY_REGISTER);
         } else {
-            writer.write(0x0, ADDRESS, TEMPERATURE_REGISTER);
+            writer.write(ADDRESS, TEMPERATURE_REGISTER, 0x0);
             writer.read(
                 ADDRESS, [this]() { temperature_handler.send_to_can(); },
                 [this](auto message_a) {

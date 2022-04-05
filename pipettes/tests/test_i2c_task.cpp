@@ -42,7 +42,7 @@ SCENARIO("read and write data to the i2c task") {
 
         // make a copy of the two byte array before it's manipulated by
         // the i2c writer.
-        writer.write(write_data, ADDRESS, reg);
+        writer.write(ADDRESS, reg, write_data);
         i2c_queue.try_read(&empty_msg);
         auto write_msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(write_msg);

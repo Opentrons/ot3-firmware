@@ -4,7 +4,7 @@
 #include "common/tests/mock_queue_client.hpp"
 #include "motor-control/core/utils.hpp"
 #include "pipettes/core/i2c_writer.hpp"
-#include "sensors/core/mmr920C04_registers.hpp"
+#include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 
@@ -43,16 +43,14 @@ SCENARIO("read pressure sensor values") {
                     std::get<i2c_writer::WriteToI2C>(empty_msg);
 
                 THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address ==
-                            mmr920C04_registers::ADDRESS);
+                    REQUIRE(write_message.address == mmr920C04::ADDRESS);
                     REQUIRE(write_message.buffer[0] ==
                             static_cast<uint8_t>(
-                                mmr920C04_registers::Registers::PRESSURE_READ));
-                    REQUIRE(read_message.address ==
-                            mmr920C04_registers::ADDRESS);
+                                mmr920C04::Registers::PRESSURE_READ));
+                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
                     REQUIRE(read_message.buffer[0] ==
                             static_cast<uint8_t>(
-                                mmr920C04_registers::Registers::PRESSURE_READ));
+                                mmr920C04::Registers::PRESSURE_READ));
                 }
             }
         }
@@ -74,18 +72,14 @@ SCENARIO("read pressure sensor values") {
                     std::get<i2c_writer::WriteToI2C>(empty_msg);
 
                 THEN("The write and read command addresses are correct") {
-                    REQUIRE(write_message.address ==
-                            mmr920C04_registers::ADDRESS);
-                    REQUIRE(
-                        write_message.buffer[0] ==
-                        static_cast<uint8_t>(
-                            mmr920C04_registers::Registers::TEMPERATURE_READ));
-                    REQUIRE(read_message.address ==
-                            mmr920C04_registers::ADDRESS);
-                    REQUIRE(
-                        read_message.buffer[0] ==
-                        static_cast<uint8_t>(
-                            mmr920C04_registers::Registers::TEMPERATURE_READ));
+                    REQUIRE(write_message.address == mmr920C04::ADDRESS);
+                    REQUIRE(write_message.buffer[0] ==
+                            static_cast<uint8_t>(
+                                mmr920C04::Registers::TEMPERATURE_READ));
+                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
+                    REQUIRE(read_message.buffer[0] ==
+                            static_cast<uint8_t>(
+                                mmr920C04::Registers::TEMPERATURE_READ));
                 }
             }
         }
@@ -106,8 +100,7 @@ SCENARIO("read pressure sensor values") {
                         empty_msg);
 
                 THEN("The write and read command addresses are correct") {
-                    REQUIRE(read_message.address ==
-                            mmr920C04_registers::ADDRESS);
+                    REQUIRE(read_message.address == mmr920C04::ADDRESS);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);
                 }

@@ -1,275 +1,313 @@
 #pragma once
-
-#include <optional>
-
-#include "can/core/ids.hpp"
-#include "can/core/messages.hpp"
-#include "common/core/logging.h"
-#include "sensors/core/mmr920C04_registers.hpp"
-#include "sensors/core/sensors.hpp"
-
-namespace pressure {
-
-using namespace can_ids;
-using namespace mmr920C04_registers;
-using namespace sensors_registers;
-
-/**
- * Pressure sensor driver class. It takes in a i2c writer queue and
- * can client queue so that it can handle sensor readings internally.
+/*
+ * MMR920C04 Pressure Sensor
  *
- * @tparam I2CQueueWriter
- * @tparam CanClient
+ * Datasheet:
+ * https://nmbtc.com/wp-content/uploads/2021/03/mmr920_leaflet_e_rev1.pdf
+ * (Search in our google drive for a more comprehensive datasheet).
+ *
+ * Pressure measurement is a total of 24 bits long.
+ *
+ * Filter coefficient equation:
+ *
+ * Fco = 2^27 * e^(-2pi & freq * tcondition)
+ *
+ * There are four pressure effective resolution modes which determines
+ * tcondition in the filter coefficient equation.
+ *
+ * The register structs below are pre-built with the command message
+ * required to get the information from the sensor.
+ *
+ * The command bits (C7->C0) are another way of stating the 'register' address.
+ * Leaving them alone for now.
  */
+namespace mmr920C04 {
+constexpr uint16_t ADDRESS = 0x67 << 1;
 
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
-class MMR92C04 {
-  public:
-    MMR92C04(I2CQueueWriter &writer, CanClient &can_client)
-        : writer(writer), can_client(can_client) {}
+enum class SensorStatus : uint8_t {
+    SHUTDOWN = 0x0,
+    IDLE = 0xE5,
+    ACTIVE = 0xED,
+    UNKNOWN = 0xFF
+};
 
-    /**
-     * @brief Check if the MMR92C04 has been initialized.
-     * @return true if the config registers have been written at least once,
-     * false otherwise.
-     */
-    [[nodiscard]] auto initialized() const -> bool { return _initialized; }
+enum class Registers : uint8_t {
+    RESET = 0x72,
+    IDLE = 0x94,
+    MEASURE_MODE_1 = 0xA0,
+    MEASURE_MODE_2 = 0xA2,
+    MEASURE_MODE_3 = 0xA4,
+    MEASURE_MODE_4 = 0xA6,
+    PRESSURE_READ = 0xC0,
+    LOW_PASS_PRESSURE_READ = 0xC4,
+    TEMPERATURE_READ = 0xC2,
+    STATUS = 0x80,
+    MACRAM_WRITE = 0xE4
+};
 
-    auto register_map() -> MMR920C04RegisterMap & { return _registers; }
-
-    auto get_sensor_id() -> SensorType { return SensorType::pressure; }
-
-    auto get_host_id() -> NodeId { return NodeId::host; }
-
-    auto get_threshold() -> int32_t { return threshold_cmH20; }
-
-    auto set_threshold(int32_t new_threshold) -> void {
-        threshold_cmH20 = new_threshold;
-    }
-
-    auto write(Registers reg, uint32_t command_data) -> void {
-        writer.write(command_data, ADDRESS, static_cast<uint8_t>(reg));
-    }
-
-    auto read(Registers reg) -> void {
-        writer.read(
-            ADDRESS, [this, reg]() { send_to_can(this, reg); },
-            [this, reg](auto message_a) { handle_data(message_a, this, reg); },
-            static_cast<uint8_t>(reg));
-    }
-
-    auto poll_read(Registers reg, uint16_t number_reads) -> void {
-        writer.single_register_poll(
-            ADDRESS, number_reads, DELAY,
-            [this, reg]() { send_to_can(this, reg); },
-            [this, reg](auto message_a) { handle_data(message_a, this, reg); },
-            static_cast<uint8_t>(reg));
-    }
-
-    auto write_config() -> bool {
-        if (!reset(_registers.reset)) {
-            return false;
-        }
-        if (!set_measure_mode(Registers::MEASURE_MODE_4)) {
-            return false;
-        }
-        _initialized = true;
-        return true;
-    }
-
-    auto set_measure_mode(Registers reg) -> bool {
-        switch (reg) {
-            case Registers::MEASURE_MODE_1:
-                if (set_register(_registers.measure_mode_1)) {
-                    return true;
-                }
-                return false;
-            case Registers::MEASURE_MODE_2:
-                if (set_register(_registers.measure_mode_2)) {
-                    return true;
-                }
-                return false;
-            case Registers::MEASURE_MODE_3:
-                if (set_register(_registers.measure_mode_3)) {
-                    return true;
-                }
-                return false;
-            case Registers::MEASURE_MODE_4:
-                if (set_register(_registers.measure_mode_4)) {
-                    return true;
-                }
-                return false;
-            default:
-                return false;
-        }
-    }
-
-    auto get_pressure(Registers reg, bool poll = false,
-                      uint16_t sample_rate = 0) -> void {
-        if (poll) {
-            poll_read(reg, sample_rate);
-        } else {
-            write(reg, 0x0);
-            read(reg);
-        }
-    }
-
-    auto get_temperature(bool poll = false, uint16_t sample_rate = 0) -> void {
-        if (poll) {
-            poll_read(Registers::TEMPERATURE_READ, sample_rate);
-        } else {
-            write(Registers::TEMPERATURE_READ, 0x0);
-            read(Registers::TEMPERATURE_READ);
-        }
-    }
-
-    auto reset(Reset reg) -> bool {
-        if (set_register(reg)) {
-            _registers.reset = reg;
+static auto is_valid_address(const uint8_t add) -> bool {
+    switch (static_cast<Registers>(add)) {
+        case Registers::RESET:
+        case Registers::IDLE:
+        case Registers::MEASURE_MODE_1:
+        case Registers::MEASURE_MODE_2:
+        case Registers::MEASURE_MODE_3:
+        case Registers::MEASURE_MODE_4:
+        case Registers::PRESSURE_READ:
+        case Registers::LOW_PASS_PRESSURE_READ:
+        case Registers::TEMPERATURE_READ:
+        case Registers::STATUS:
+        case Registers::MACRAM_WRITE:
             return true;
-        }
-        return false;
     }
+    return false;
+}
 
-    auto read_pressure(uint32_t data) -> bool {
-        LOG("Updated pressure reading is %d", data);
-        if (data) {
-            _registers.pressure.reading = data;
-            return true;
-        }
-        return false;
-    }
+/** Template concept to constrain what structures encapsulate registers.*/
+template <typename Reg>
+concept MMR920C04Register = requires(Reg& r, uint32_t value) {
+    // Struct has a valid register address
+    std::same_as<decltype(Reg::address), Registers&>;
+    // Struct has an integer with the total number of bits in a register.
+    // This is used to mask the value before writing it to the sensor.
+    std::integral<decltype(Reg::value_mask)>;
+};
 
-    auto read_pressure_low_pass(uint32_t data) -> bool {
-        if (data) {
-            _registers.low_pass_pressure.reading = data;
-            return true;
-        }
-        return false;
-    }
+struct __attribute__((packed, __may_alias__)) Reset {
+    static constexpr Registers address = Registers::RESET;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    auto read_temperature(uint32_t data) -> bool {
-        if (data) {
-            _registers.temperature.reading = data;
-            return true;
-        }
-        return false;
-    }
+    uint8_t C7 : 1 = 0;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 1;
+    uint8_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 1;
+    uint32_t C0 : 1 = 0;
+};
 
-    auto read_status(uint32_t data) -> bool {
-        if (data) {
-            _registers.status.reading = data & Status::value_mask;
-            return true;
-        }
-        return false;
-    }
+struct __attribute__((packed, __may_alias__)) Idle {
+    static constexpr Registers address = Registers::IDLE;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    auto send_pressure() -> void {
-        auto pressure = Pressure::to_pressure(_registers.pressure.reading);
-        auto message = can_messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(), .sensor_data = pressure};
-        can_client.send_can_message(get_host_id(), message);
-    }
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 1;
+    uint8_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 1;
+    uint32_t C1 : 1 = 0;
+    uint32_t C0 : 1 = 0;
+};
 
-    auto send_pressure_low_pass() -> void {
-        auto pressure =
-            LowPassPressure::to_pressure(_registers.low_pass_pressure.reading);
-        auto message = can_messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(), .sensor_data = pressure};
-        can_client.send_can_message(get_host_id(), message);
-    }
+struct __attribute__((packed, __may_alias__)) MeasureMode1 {
+    static constexpr Registers address = Registers::MEASURE_MODE_1;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    auto send_temperature() -> void {
-        auto temperature =
-            Temperature::to_temperature(_registers.low_pass_pressure.reading);
-        auto message = can_messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(), .sensor_data = temperature};
-        can_client.send_can_message(get_host_id(), message);
-    }
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 0;
+    uint32_t C0 : 1 = 0;
+};
 
-    auto send_status() -> void {
-        auto status = Status::to_status(_registers.status.reading);
-        auto message = can_messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(),
-            .sensor_data = static_cast<int32_t>(status)};
-        can_client.send_can_message(get_host_id(), message);
-    }
+struct __attribute__((packed, __may_alias__)) MeasureMode2 {
+    static constexpr Registers address = Registers::MEASURE_MODE_2;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    auto send_threshold() -> void {
-        auto message = can_messages::SensorThresholdResponse{
-            .sensor = get_sensor_id(), .threshold = get_threshold()};
-        can_client.send_can_message(get_host_id(), message);
-    }
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 1;
+    uint32_t C0 : 1 = 0;
+};
 
-    // callbacks
-    static auto handle_data(const sensor_callbacks::MaxMessageBuffer &buffer,
-                            MMR92C04 *instance, Registers reg) -> void {
-        uint32_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        switch (reg) {
-            case Registers::PRESSURE_READ:
-                instance->read_pressure(data);
-                break;
-            case Registers::LOW_PASS_PRESSURE_READ:
-                instance->read_pressure_low_pass(data);
-                break;
-            case Registers::TEMPERATURE_READ:
-                instance->read_temperature(data);
-                break;
-            case Registers::STATUS:
-                instance->read_status(data);
-                break;
-            case Registers::RESET:
-            case Registers::IDLE:
-            case Registers::MEASURE_MODE_1:
-            case Registers::MEASURE_MODE_2:
-            case Registers::MEASURE_MODE_3:
-            case Registers::MEASURE_MODE_4:
-            case Registers::MACRAM_WRITE:
-                break;
-        }
-    }
+struct __attribute__((packed, __may_alias__)) MeasureMode3 {
+    static constexpr Registers address = Registers::MEASURE_MODE_3;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    static auto send_to_can(MMR92C04 *instance, Registers reg) {
-        switch (reg) {
-            case Registers::PRESSURE_READ:
-                instance->send_pressure();
-                break;
-            case Registers::LOW_PASS_PRESSURE_READ:
-                instance->send_pressure_low_pass();
-                break;
-            case Registers::TEMPERATURE_READ:
-                instance->send_temperature();
-                break;
-            case Registers::STATUS:
-                instance->send_status();
-                break;
-            case Registers::RESET:
-            case Registers::IDLE:
-            case Registers::MEASURE_MODE_1:
-            case Registers::MEASURE_MODE_2:
-            case Registers::MEASURE_MODE_3:
-            case Registers::MEASURE_MODE_4:
-            case Registers::MACRAM_WRITE:
-                break;
-        }
-    }
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 1;
+    uint32_t C1 : 1 = 0;
+    uint32_t C0 : 1 = 0;
+};
 
-  private:
-    MMR920C04RegisterMap _registers{};
-    bool _initialized = false;
-    int32_t threshold_cmH20 = 0x8;
-    uint16_t DELAY = 20;
-    I2CQueueWriter &writer;
-    CanClient &can_client;
+struct __attribute__((packed, __may_alias__)) MeasureMode4 {
+    static constexpr Registers address = Registers::MEASURE_MODE_4;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    template <MMR920C04Register Reg>
-    requires WritableRegister<Reg>
-    auto set_register(Reg reg) -> bool {
-        write(Reg::address, 0x0);
-        return true;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 1;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) Pressure {
+    static constexpr Registers address = Registers::PRESSURE_READ;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
+
+    // Pascals per 1 cmH20
+    static constexpr float CMH20_TO_PASCALS = 98.0665;
+    static constexpr float PA_PER_COUNT =
+        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+
+    uint32_t C7 : 1 = 1;
+    uint32_t C6 : 1 = 1;
+    uint32_t C5 : 1 = 0;
+    uint32_t C4 : 1 = 0;
+    uint32_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 0;
+    uint32_t C0 : 1 = 0;
+    uint32_t reading : 24 = 0;
+
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
+        // Sign extend pressure result
+        if (reg & 0x00800000)
+            reg |= 0xFF000000;
+        else
+            reg &= 0x007FFFFF;
+
+        float pressure = static_cast<float>(reg) * PA_PER_COUNT;
+        return convert_to_fixed_point(pressure, 15);
     }
 };
 
-}  // namespace pressure
+struct __attribute__((packed, __may_alias__)) LowPassPressure {
+    static constexpr Registers address = Registers::LOW_PASS_PRESSURE_READ;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint32_t value_mask = (1 << 8) - 1;
+
+    // Pascals per 1 cmH20
+    static constexpr float CMH20_TO_PASCALS = 98.0665;
+    static constexpr float PA_PER_COUNT =
+        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+
+    uint32_t C7 : 1 = 1;
+    uint32_t C6 : 1 = 1;
+    uint32_t C5 : 1 = 0;
+    uint32_t C4 : 1 = 0;
+    uint32_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 1;
+    uint32_t C1 : 1 = 0;
+    uint32_t C0 : 1 = 0;
+    uint32_t reading : 24 = 0;
+
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
+        // Sign extend pressure result
+        if (reg & 0x00800000)
+            reg |= 0xFF000000;
+        else
+            reg &= 0x007FFFFF;
+
+        float pressure = static_cast<float>(reg) * PA_PER_COUNT;
+        return convert_to_fixed_point(pressure, 15);
+    }
+};
+
+struct __attribute__((packed, __may_alias__)) Temperature {
+    static constexpr Registers address = Registers::TEMPERATURE_READ;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint32_t value_mask = (1 << 24) - 1;
+
+    static constexpr uint32_t MAX_SIZE = (2 << 7);
+
+    static constexpr float CONVERT_TO_CELSIUS = 0.0078125;
+
+    uint32_t C7 : 1 = 1;
+    uint32_t C6 : 1 = 1;
+    uint32_t C5 : 1 = 0;
+    uint32_t C4 : 1 = 0;
+    uint32_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 1;
+    uint32_t C0 : 1 = 0;
+    uint32_t reading : 24 = 0;
+
+    [[nodiscard]] static auto to_temperature(uint32_t reg) -> sq14_15 {
+        float temperature =
+            CONVERT_TO_CELSIUS * (static_cast<float>(reg) / MAX_SIZE);
+        return convert_to_fixed_point(temperature, 15);
+    }
+};
+
+struct __attribute__((packed, __may_alias__)) Status {
+    static constexpr Registers address = Registers::STATUS;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
+
+    uint32_t C7 : 1 = 1;
+    uint32_t C6 : 1 = 0;
+    uint32_t C5 : 1 = 0;
+    uint32_t C4 : 1 = 0;
+    uint32_t C3 : 1 = 0;
+    uint32_t C2 : 1 = 0;
+    uint32_t C1 : 1 = 0;
+    uint32_t C0 : 1 = 0;
+    uint32_t reading : 8 = 0;
+
+    [[nodiscard]] static auto to_status(uint8_t reg) -> SensorStatus {
+        switch (static_cast<SensorStatus>(reg)) {
+            case SensorStatus::IDLE:
+                return SensorStatus::IDLE;
+            case SensorStatus::ACTIVE:
+                return SensorStatus::ACTIVE;
+            case SensorStatus::SHUTDOWN:
+                return SensorStatus::SHUTDOWN;
+            default:
+                return SensorStatus::UNKNOWN;
+        }
+    }
+};
+
+struct MMR920C04RegisterMap {
+    Reset reset = {};
+    Idle idle = {};
+    MeasureMode1 measure_mode_1 = {};
+    MeasureMode2 measure_mode_2 = {};
+    MeasureMode3 measure_mode_3 = {};
+    MeasureMode4 measure_mode_4 = {};
+    Pressure pressure = {};
+    LowPassPressure low_pass_pressure = {};
+    Temperature temperature = {};
+    Status status = {};
+};
+
+// Registers are all 32 bits
+using RegisterSerializedType = uint32_t;
+// Type definition to allow type aliasing for pointer dereferencing
+using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
+
+}  // namespace mmr920C04
