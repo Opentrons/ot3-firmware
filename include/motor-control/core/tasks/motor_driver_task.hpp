@@ -6,10 +6,10 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
-#include "motor-control/core/motor_driver.hpp"
-#include "motor-control/core/motor_driver_config.hpp"
+#include "motor-control/core/stepper_motor/motor_driver.hpp"
+#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
 #include "motor-control/core/tasks/messages.hpp"
-#include "motor-control/core/tmc2130_registers.hpp"
 
 namespace motor_driver_task {
 

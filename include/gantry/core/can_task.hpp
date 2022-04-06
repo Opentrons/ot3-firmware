@@ -8,7 +8,7 @@
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "gantry/core/tasks.hpp"
-#include "motor-control/core/motor.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
 
 namespace can_bus {
 class CanBus;

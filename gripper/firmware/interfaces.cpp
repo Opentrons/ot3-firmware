@@ -7,11 +7,11 @@
 #include "common/firmware/spi_comms.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
-#include "motor-control/core/motion_controller.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
-#include "motor-control/firmware/brushed_motor_hardware.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"

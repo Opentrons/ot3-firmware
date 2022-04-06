@@ -2,8 +2,8 @@
 
 #include "can/core/can_bus.hpp"
 #include "common/core/spi.hpp"
-#include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
 
 namespace interfaces {
 
