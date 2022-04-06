@@ -26,10 +26,9 @@ auto sim_i2c::SimI2C::central_transmit(uint8_t *data, uint16_t size,
 auto sim_i2c::SimI2C::central_receive(uint8_t *data, uint16_t size,
                                       uint16_t dev_address, uint32_t timeout)
     -> bool {
-    auto next_reg = next_register_map[dev_address];
     // This will raise if the register value is bad - helpful for forcing
     // tests to fail
-    auto data_from_reg = sensor_map[dev_address].REGISTER_MAP.at(next_reg);
+    auto data_from_reg = sensor_map[dev_address].REGISTER_MAP.cbegin()->first;
     auto *iter = data;
     iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
     next_register_map[dev_address] = 0;

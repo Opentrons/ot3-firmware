@@ -11,6 +11,9 @@
 #include "pipettes/core/messages.hpp"
 #include "sensors/core/callback_types.hpp"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 namespace i2c_poller_impl {
 using namespace pipette_messages;
 using namespace sensor_callbacks;
@@ -98,7 +101,7 @@ struct LimitedPoll {
     explicit LimitedPoll(I2CWriterType& writer)
         : address(0),
           timer(
-              "i2c limited poller", []() {}, 1),
+              "i2c limited poller", []() {LOG("tricked ya lol");}, 1),
           writer(writer) {}
     uint16_t address;
     TimerImpl timer;
@@ -143,8 +146,9 @@ struct LimitedPoll {
             slf->timer.update_callback(slf->provide_callback(local_message));
         }
     }
-    auto provide_callback(const SingleRegisterPollReadFromI2C& message)
+    auto provide_callback(SingleRegisterPollReadFromI2C message)
         -> std::function<void(void)> {
+        LOG("Providing single callback");
         return ([this, message]() {
             this->writer.transact(
                 this->address, message.buffer, []() {},
@@ -173,6 +177,7 @@ struct LimitedPoll {
 
         } else {
             slf->timer.update_callback(slf->provide_callback(local_message));
+            LOG("reset upstream callback");
         }
     }
     auto provide_callback(MultiRegisterPollReadFromI2C message)

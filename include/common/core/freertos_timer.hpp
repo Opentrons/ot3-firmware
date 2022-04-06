@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxxabi.h>
 #include <functional>
 
 #include "FreeRTOS.h"
@@ -25,30 +26,35 @@ class FreeRTOSTimer {
     auto operator=(FreeRTOSTimer&&) -> FreeRTOSTimer&& = delete;
     FreeRTOSTimer(FreeRTOSTimer&) = delete;
     FreeRTOSTimer(FreeRTOSTimer&&) = delete;
-    ~FreeRTOSTimer() { xTimerDelete(timer, 0); }
+        ~FreeRTOSTimer() {
+            xTimerDelete(timer, 0); }
 
-    auto is_running() -> bool { return (xTimerIsTimerActive(timer) == pdTRUE); }
+        auto is_running() -> bool {
+            return (xTimerIsTimerActive(timer) != pdFALSE);
 
-    void update_callback(Callback&& new_callback) {
-        callback = std::move(callback);
+        }
+    void update_callback(const Callback& new_callback) {
+        taskENTER_CRITICAL();
+        callback = new_callback;
+        taskEXIT_CRITICAL();
     }
 
     void update_period(uint32_t period_ms) {
         // Update the period of the timer and suppress the freertos behavior
         // that if the timer is currently stopped, changing its period activates
         // it.
-        auto is_active = is_running();
-        TickType_t blocking_ticks = is_active ? 1 : 0;
-        xTimerChangePeriod(timer, pdMS_TO_TICKS(period_ms), blocking_ticks);
-        if (!is_active) {
-            stop();
-            vTaskDelay(1);
-        }
+        auto res = xTimerChangePeriod(timer, pdMS_TO_TICKS(period_ms), 0);
+
     }
 
-    void start() { xTimerStart(timer, 1); }
+    void start() {
+        auto res = xTimerStart(timer, 0);
+    }
 
-    void stop() { xTimerStop(timer, 1); }
+    void stop() {
+        auto res = xTimerStop(timer, 0);
+    }
+
 
   private:
     TimerHandle_t timer{};
@@ -59,7 +65,14 @@ class FreeRTOSTimer {
     static void timer_callback(TimerHandle_t xTimer) {
         auto* timer_id = pvTimerGetTimerID(xTimer);
         auto* instance = static_cast<FreeRTOSTimer*>(timer_id);
-        instance->callback();
+        int demangle_error = 0;
+        auto name = instance->callback.target_type().name();
+        auto demangled = abi::__cxa_demangle(name, 0, 0, &demangle_error);
+        LOG("timer %p callback, instance @ %p; loaded is %s <%s>", xTimer, instance, demangled, name);
+        if (instance->callback) {
+            LOG("timer %p callback I WANT TO BE FREE", xTimer);
+            instance->callback();
+        }
     }
 };
 
