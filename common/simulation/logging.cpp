@@ -29,7 +29,7 @@ void log_message(const char* format, ...) {
     va_list argp;
     va_start(argp, format);
 
-    char buff[256];
+    char buff[1024];
 
     auto sigblock = boost::asio::detail::posix_signal_blocker{};
     vsnprintf(buff, sizeof(buff), format, argp);
