@@ -33,10 +33,10 @@ class TMC2130 {
     spi::SpiDeviceBase::BufferType rxBuffer{0};
 
     TMC2130() = delete;
-    TMC2130(const TMC2130DriverConfig& conf, spi::SpiDeviceBase& spi)
+    TMC2130(const TMC2130DriverConfig& conf, spi::SpiDeviceBase& queue)
         : _registers(conf.registers),
           _current_config(conf.current_config),
-          _spi_comms(spi),
+          _spi_queue(queue),
           _initialized(false) {}
 
     /**
@@ -61,13 +61,25 @@ class TMC2130 {
         return buffer;
     }
 
+    /**
+     * @brief Build a message to send over SPI
+     * @param[in] addr The address to write to
+     * @param[in] mode The mode to use, either WRITE or READ
+     * @param[in] val The contents to write to the address (0 if this is a read)
+     * @return An array with the contents of the message, or nothing if
+     * there was an error
+     */
+    static auto build_queue_message(txBuffer, rxBuffer) -> MessageT {
+        return SpiTransact{txBuffer, rxBuffer, callback};
+    }
+
     auto read(Registers addr, uint32_t command_data) -> uint32_t {
         auto txBuffer =
             build_message(addr, spi::SpiDeviceBase::Mode::READ, command_data);
         // A read requires two transmissions. The second returns the data in the
         // register from the first transmission.
-        _spi_comms.transmit_receive(txBuffer, rxBuffer);
-        _spi_comms.transmit_receive(txBuffer, rxBuffer);
+        _spi_queue.write(build_queue_message(txBuffer, rxBuffer));
+        _spi_queue.write(build_queue_message(txBuffer, rxBuffer));
 
         // Extract data bytes after the address.
         uint32_t response = 0;
@@ -318,6 +330,12 @@ class TMC2130 {
         return _registers;
     }
 
+    //callback
+    static auto handle_data(const sensor_callbacks::MaxMessageBuffer &buffer,
+                            TMC2130 *instance) {
+
+    }
+
   private:
     /**
      * @brief Set a register on the TMC2130
@@ -368,7 +386,7 @@ class TMC2130 {
 
     TMC2130RegisterMap _registers = {};
     TMC2130MotorCurrentConfig _current_config = {};
-    spi::SpiDeviceBase& _spi_comms;
+    spi::SpiDeviceBase& _spi_queue;
     bool _initialized;
 };
 

@@ -14,11 +14,10 @@ using namespace motor_driver_config;
  */
 class MotorDriver {
   public:
-    spi::SpiDeviceBase::BufferType rxBuffer{0};
 
-    explicit MotorDriver(spi::SpiDeviceBase& spi,
+    explicit MotorDriver(spi::SpiDeviceBase& spi_queue,
                          tmc2130::TMC2130DriverConfig conf)
-        : tmc2130{conf, spi} {}
+        : tmc2130{conf, spi_queue} {}
 
     void setup() { tmc2130.write_config(); }
 
