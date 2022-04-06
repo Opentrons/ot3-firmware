@@ -21,7 +21,7 @@ std::array<StackType_t, configMINIMAL_STACK_SIZE>
 StaticTask_t
     timer_task_tcb;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-std::array<StackType_t, configMINIMAL_STACK_SIZE>
+std::array<StackType_t, configMINIMAL_STACK_SIZE * 2>
     timer_task_stack;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // This is a callback defined in a C file so it has to be linked as such

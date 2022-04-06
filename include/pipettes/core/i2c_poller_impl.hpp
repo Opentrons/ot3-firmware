@@ -33,7 +33,7 @@ struct ContinuousPoll {
     ContinuousPoll(I2CWriterType& writer)
         : address(0),
           timer(
-              "i2c cts poller", []() {}, 1),
+              "i2c cts poller", []() {}, 100),
           writer(writer) {}
     uint16_t address;
     TimerImpl timer;
