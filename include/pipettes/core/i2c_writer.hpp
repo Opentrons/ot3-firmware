@@ -108,8 +108,8 @@ class I2CWriter {
      */
     template <std::ranges::range DataBuf>
     void transact(uint16_t device_address, DataBuf buf,
-                  SendToCanFunctionTypeDef client_callback,
-                  SingleBufferTypeDef handle_callback) {
+                  const SendToCanFunctionTypeDef& client_callback,
+                  const SingleBufferTypeDef& handle_callback) {
         MaxMessageBuffer max_buffer{};
         std::copy_n(buf.cbegin(), std::min(buf.size(), max_buffer.size()),
                     max_buffer.begin());
@@ -120,8 +120,8 @@ class I2CWriter {
     template <typename Data>
     requires std::is_integral_v<Data>
     void transact(uint16_t device_address, Data data,
-                  SendToCanFunctionTypeDef client_callback,
-                  SingleBufferTypeDef handle_callback) {
+                  const SendToCanFunctionTypeDef& client_callback,
+                  const SingleBufferTypeDef& handle_callback) {
         MaxMessageBuffer max_buffer{};
         static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
                                                   max_buffer.end()));
@@ -133,13 +133,13 @@ class I2CWriter {
 
   private:
     void do_transact(uint16_t address, const MaxMessageBuffer& buf,
-                     SendToCanFunctionTypeDef client_callback,
-                     SingleBufferTypeDef handle_callback) {
+                     const SendToCanFunctionTypeDef& client_callback,
+                     const SingleBufferTypeDef& handle_callback) {
         pipette_messages::TransactWithI2C read_msg{
             .address = address,
             .buffer = buf,
-            .client_callback = std::move(client_callback),
-            .handle_buffer = std::move(handle_callback)};
+            .client_callback = client_callback,
+            .handle_buffer = handle_callback};
         queue->try_write(read_msg);
     }
     void do_write(uint16_t address, const MaxMessageBuffer& buf) {

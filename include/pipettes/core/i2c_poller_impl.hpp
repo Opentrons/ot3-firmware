@@ -175,20 +175,24 @@ struct LimitedPoll {
             slf->timer.update_callback(slf->provide_callback(local_message));
         }
     }
-    auto provide_callback(const MultiRegisterPollReadFromI2C& message)
+    auto provide_callback(MultiRegisterPollReadFromI2C message)
         -> std::function<void(void)> {
-        return [this, message]() {
-            this->writer.transact(
-                this->address, message.register_1_buffer, []() {},
-                [this, message](const MaxMessageBuffer& first_buffer) {
-                    this->writer.transact(
-                        this->address, message.register_2_buffer, []() {},
-                        [this, message,
-                         first_buffer](const MaxMessageBuffer& second_buffer) {
-                            do_recursive_cb_multi(this, message, first_buffer,
-                                                  second_buffer);
-                        });
+        LOG("providing multi callback with this=%p", this);
+        auto second_stage = std::function<void(const MaxMessageBuffer&)>([=, this](const MaxMessageBuffer& first_buffer) {
+            LOG("second stage mrprfi2c callback NOW with this=%p", this);
+            writer.transact(
+                address, message.register_2_buffer, []() {},
+                [=, this](const MaxMessageBuffer& second_buffer) {
+                    LOG("third state mrprfi2c callback NOW with this=%p", this);
+                    do_recursive_cb_multi(this, message, first_buffer,
+                                          second_buffer);
                 });
+        });
+        return [=, this]() {
+            LOG("first stage mrprfi2c callback NOW with this=%p", this);
+            writer.transact(
+                address, message.register_1_buffer, []() {},
+                second_stage);
         };
     }
 };

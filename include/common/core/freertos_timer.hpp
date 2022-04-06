@@ -16,8 +16,8 @@ class FreeRTOSTimer {
      * same priority or higher priority than 6 for execution.
      */
     using Callback = std::function<void()>;
-    FreeRTOSTimer(const char* name, Callback&& callback, uint32_t period_ms)
-        : callback{std::move(callback)} {
+    FreeRTOSTimer(const char* name, const Callback& callback, uint32_t period_ms)
+        : callback{callback} {
         timer = xTimerCreateStatic(name, pdMS_TO_TICKS(period_ms), auto_reload,
                                    this, timer_callback, &timer_buffer);
     }
