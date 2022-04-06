@@ -247,7 +247,6 @@ class MotorInterruptHandler {
 
   private:
     uint64_t tick_count = 0x0;
-    // uint32_t pulses = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;  // in steps
