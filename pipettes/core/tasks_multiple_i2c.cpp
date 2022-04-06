@@ -46,7 +46,7 @@ static auto pressure_sensor_task_builder =
                                               pipettes_tasks::QueueClient>{};
 
 static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
-static auto i2c_poll_task_builder = i2c_poll_task_starter::TaskStarter<512>{};
+static auto i2c_poll_task_builder = i2c_poll_task_starter::TaskStarter<1024>{};
 static auto i2c1_poll_client =
     i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>{};
 static auto i2c3_poll_client =
@@ -104,6 +104,8 @@ void pipettes_tasks::start_tasks(
     tasks.pressure_sensor_task = &pressure_sensor_task;
     tasks.i2c3_task = &i2c3_task;
     tasks.i2c1_task = &i2c1_task;
+    tasks.i2c3_poller_task = &i2c3_poller_task;
+    tasks.i2c1_poller_task = &i2c1_poller_task;
 
     queues.motion_queue = &motion.get_queue();
     queues.motor_queue = &motor.get_queue();
@@ -117,6 +119,8 @@ void pipettes_tasks::start_tasks(
 
     queues.i2c3_queue = &i2c3_task.get_queue();
     queues.i2c1_queue = &i2c1_task.get_queue();
+    queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
+    queues.i2c1_poller_queue = &i2c1_poller_task.get_queue();
 }
 
 pipettes_tasks::QueueClient::QueueClient()
