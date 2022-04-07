@@ -30,7 +30,6 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     uint32_t get_encoder_pulses() { return test_pulses; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
 
-
   private:
     bool mock_lim_sw_value = false;
     uint8_t finished_move_id = 0x0;
