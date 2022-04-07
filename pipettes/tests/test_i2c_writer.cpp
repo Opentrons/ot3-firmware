@@ -67,13 +67,15 @@ SCENARIO("Test the i2c command queue writer") {
         }
     }
 
-    std::array<uint8_t, 2> two_byte_arr{};
+    std::array<uint8_t, 3> three_byte_arr{};
     std::array<uint8_t, 5> four_byte_arr{};
+    constexpr uint8_t reg = 0x1;
     GIVEN("an integer") {
         // test add to int and add to buffer
-        writer.buffering(two_byte_arr, two_byte_data);
+        writer.buffering(three_byte_arr, two_byte_data, reg);
         THEN("turn it into a byte array") {
-            REQUIRE(two_byte_arr[1] == two_byte_data);
+            REQUIRE(three_byte_arr[0] == reg);
+            REQUIRE(three_byte_arr[2] == two_byte_data);
         }
     }
     GIVEN("a byte buffer of data") {

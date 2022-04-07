@@ -3,7 +3,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 
 namespace motion_controller_task_starter {

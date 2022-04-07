@@ -12,8 +12,8 @@
 #include "common/core/logging.h"
 #include "common/simulation/i2c_sim.hpp"
 #include "common/simulation/spi.hpp"
-#include "motor-control/core/motor.hpp"
-#include "motor-control/core/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/configs.hpp"
@@ -21,6 +21,7 @@
 #include "sensors/simulation/eeprom.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/hdc2080.hpp"
+#include "sensors/simulation/mmr920C04.hpp"
 #include "sensors/simulation/sensors.hpp"
 #include "task.h"
 
@@ -44,10 +45,12 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
 static auto eeprom = eeprom_simulator::EEProm{};
+static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
 std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {hdcsensor.ADDRESS, hdcsensor},
     {eeprom.ADDRESS, eeprom},
-    {capsensor.ADDRESS, capsensor}};
+    {capsensor.ADDRESS, capsensor},
+    {pressuresensor.ADDRESS, pressuresensor}};
 
 static auto i2c3_comms = sim_i2c::SimI2C{sensor_map};
 static auto i2c1_comms = sim_i2c::SimI2C{sensor_map};

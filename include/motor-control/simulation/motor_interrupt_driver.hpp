@@ -3,8 +3,8 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
-#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 
 namespace motor_interrupt_driver {

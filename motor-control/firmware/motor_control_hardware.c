@@ -2,7 +2,7 @@
  * A C file to act as a middle layer to HAL related functions for GPIO.
  */
 
-#include "motor_control_hardware.h"
+#include "motor-control/firmware/motor_control_hardware.h"
 
 #include "FreeRTOS.h"
 #include "platform_specific_hal_conf.h"

@@ -41,6 +41,16 @@ class I2CWriter {
         queue->try_write(write_msg);
     }
 
+    template <typename Data>
+    requires std::is_integral_v<Data>
+    void write(uint16_t device_address, uint8_t reg, Data data) {
+        std::array<uint8_t, MAX_SIZE> max_buffer{};
+        buffering(max_buffer, data, reg);
+        pipette_messages::WriteToI2C write_msg{.address = device_address,
+                                               .buffer = max_buffer};
+        queue->try_write(write_msg);
+    }
+
     /**
      * A single read to the i2c bus.
      *
@@ -155,6 +165,14 @@ class I2CWriter {
     requires std::is_integral_v<Data>
     void buffering(Buffer& buffer, Data& data) {
         auto* iter = buffer.begin();
+        iter = bit_utils::int_to_bytes(data, iter, buffer.end());
+    }
+
+    template <GenericByteBuffer Buffer, typename Data>
+    requires std::is_integral_v<Data>
+    void buffering(Buffer& buffer, Data& data, uint8_t reg) {
+        auto* iter = buffer.begin();
+        iter = bit_utils::int_to_bytes(reg, iter, buffer.end());
         iter = bit_utils::int_to_bytes(data, iter, buffer.end());
     }
 

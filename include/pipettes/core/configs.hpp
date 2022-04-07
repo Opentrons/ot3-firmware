@@ -1,7 +1,7 @@
 #pragma once
 
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/tmc2130_config.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_config.hpp"
 #include "pipettes/core/pipette_type.h"
 
 namespace configs {

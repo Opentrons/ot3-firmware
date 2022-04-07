@@ -4,7 +4,7 @@
 #include "can/simlib/transport.hpp"
 #include "common/simulation/spi.hpp"
 #include "gripper/core/tasks.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_driver_hardware_iface.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
