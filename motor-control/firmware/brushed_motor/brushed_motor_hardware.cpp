@@ -46,3 +46,12 @@ bool BrushedMotorHardware::check_sync_in() {
     return motor_hardware_get_pin_value(pins.sync_in.port, pins.sync_in.pin,
                                         pins.sync_in.active_setting);
 }
+
+
+uint32_t BrushedMotorHardware::get_encoder_pulses() {
+    return motor_hardware_encoder_pulse_count(enc_handle);
+}
+
+void BrushedMotorHardware::reset_encoder_pulses() {
+    motor_hardware_reset_encoder_count(enc_handle);
+}

@@ -176,7 +176,7 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins);
+    brushed_motor_pins, nullptr);
 
 /**
  * The brushed motor driver hardware interface.
