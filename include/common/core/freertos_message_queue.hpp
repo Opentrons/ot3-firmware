@@ -42,6 +42,24 @@ class FreeRTOSMessageQueue {
         return try_write(message, 0);
     }
 
+    template <typename OtherMessage>
+    requires ConvertibleMessage<Message, OtherMessage>
+    auto try_write(const OtherMessage& om) -> bool { return try_write(om, 0); }
+
+    template <typename OtherMessage, typename TimeoutType>
+    requires ConvertibleMessage<Message, OtherMessage> &&
+        std::is_integral_v<TimeoutType>
+    auto try_write(const OtherMessage& om, TimeoutType timeout_ticks) -> bool {
+        Message our_message(om);
+        return try_write(message, timeout_ticks);
+    }
+
+    static auto try_write_static(void* slf, const auto& om) -> bool {
+        auto instance =
+            reinterpret_cast<FreeRTOSMessageQueue<Message, max_delay>>(slf);
+        instance->try_write(om);
+    }
+
     template <typename TimeoutType>
     requires std::is_integral_v<TimeoutType>
     auto try_read(Message* message, TimeoutType timeout_ticks) -> bool {

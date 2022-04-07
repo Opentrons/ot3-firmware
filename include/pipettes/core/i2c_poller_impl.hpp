@@ -7,261 +7,262 @@
 
 #include "common/core/logging.h"
 #include "common/core/timer.hpp"
-#include "pipettes/core/i2c_writer.hpp"
-#include "pipettes/core/messages.hpp"
-#include "sensors/core/callback_types.hpp"
+#include "i2c/core/messages.hpp"
+#include "i2c/core/writer.hpp"
 
-namespace i2c_poller_impl {
-using namespace pipette_messages;
-using namespace sensor_callbacks;
+namespace i2c {
+namespace poller_impl {
+using namespace messages;
 
-template <typename Message>
-concept ContinuousPollMessage =
-    std::is_same_v<Message, ConfigureSingleRegisterContinuousPolling> ||
-    std::is_same_v<Message, ConfigureMultiRegisterContinuousPolling>;
-
-template <typename Message>
-concept LimitedPollMessage =
-    std::is_same_v<Message, SingleRegisterPollReadFromI2C> ||
-    std::is_same_v<Message, MultiRegisterPollReadFromI2C>;
-
-template <template <class> class QueueImpl, timer::Timer TimerImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl,
+          I2CResponseQueue OwnResponderQueue>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage>
 struct ContinuousPoll {
     using I2CWriterType = i2c_writer::I2CWriter<QueueImpl>;
+
+    template <typename Message>
+    concept OwnMessage =
+        std::is_same_v<Message, ConfigureSingleRegisterContinuousPolling> ||
+        std::is_same_v<Message, ConfigureMultiRegisterContinuousPolling>;
+
     ContinuousPoll(I2CWriterType& writer)
-        : address(0),
+        : transactions{{0, 0, 0, {}}, {0, 0, 0, {}}},
+          next_transaction(transactions.cbegin()),
+          id{.token = 0, .is_completed_poll = false},
           timer(
-              "i2c cts poller", []() {}, 100),
+              "i2c cts poller", [this]() -> void { do_next_transaction(); },
+              100),
           writer(writer) {}
-    uint16_t address;
+    std::array<Transaction, 2> transactions;
+    decltype(transactions.cbegin()) current_transaction;
+    TransactionIdentifier id;
+    OwnResponderQueue& own_queue;
+
     TimerImpl timer;
     I2CWriterType& writer;
-    uint32_t poll_id = 0;
 
-    template <ContinuousPollMessage Message>
+    template <OwnMessage Message>
     auto handle_message(const Message& message) -> void {
-        address = message.address;
         poll_id = message.poll_id;
         timer.stop();
+        update_own_txns(message);
         if (message.delay_ms != 0) {
             LOG("Beginning or altering continuous poll of %#04x id %d @ %d ms",
-                address, poll_id, message.delay_ms);
-            timer.update_callback(provide_callback(message));
+                transactions[0].address, poll_id, message.delay_ms);
+            current_transaction = transactions.cbegin();
             timer.update_period(message.delay_ms);
             timer.start();
         } else {
             timer.stop();
-            address = 0;
             poll_id = 0;
         }
     }
 
   private:
-    auto provide_callback(
-        const ConfigureSingleRegisterContinuousPolling& message)
-        -> std::function<void(void)> {
-        return [this, message]() {
-            this->writer.transact(
-                this->address, message.buffer,
-                []() {},  // nothing for the client callback - we
-                // only handle individual samples
-                message.handle_buffer);
-        };
+    void do_next_transaction() {
+        writer.transact(*current_transaction, id, own_queue);
+    }
+    void update_own_txns(const ConfigureSingleRegisterContinuousPolling& msg) {
+        if (msg.delay_ms) {
+            transactions[0] = msg.transaction;
+        } else {
+            transactions[0].address = 0;
+        }
+        transactions[1].address = 0;
+    }
+    void update_own_txn(const ConfigureMultiRegisterContinuousPolling& msg) {
+        if (msg.delay_ms) {
+            transactions[0] = msg.first;
+            transactions[1] = msg.second;
+        } else {
+            transactions[0].address = 0;
+            transactions[1].address = 0;
+        }
     }
 
-    auto provide_callback(
-        const ConfigureMultiRegisterContinuousPolling& message)
-        -> std::function<void(void)> {
-        return [this, message]() {
-            this->writer.transact(
-                this->address, message.register_1_buffer, []() {},
-                [this, message](const MaxMessageBuffer& buffer) {
-                    auto first_buf = buffer;
-                    this->writer.transact(
-                        this->address, message.register_2_buffer, []() {},
-                        [first_buf,
-                         message](const MaxMessageBuffer& second_buf) {
-                            message.handle_buffer(first_buf, second_buf);
-                        });
-                });
-        };
+    auto get_next_transaction() -> decltype(next_transaction) {
+        if (current_transaction == transactions.cbegin() &&
+            transactions[1].address) {
+            // this was the first transaction of a multi-transaction poll
+            return current_transaction + 1;
+        } else if (current_transaction == (transactions.cbegin()++)) {
+            // this was the last transaction of a multi-transaction poll
+            return transactions.cbegin();
+        } else {
+            // this was the only transaction of a one-transaction poll
+            return current_transaction;
+        }
     }
 };
 
-template <template <class> class QueueImpl, timer::Timer TimerImpl>
+template <template <class> class QueueImpl, timer::Timer TimerImpl,
+          I2CResponseQueue OwnResponderQueue>
 requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
                       i2c_writer::TaskMessage>
 struct LimitedPoll {
+    template <typename Message>
+    concept OwnMessage =
+        std::is_same_v<Message, SingleRegisterPollReadFromI2C> ||
+        std::is_same_v<Message, MultiRegisterPollReadFromI2C>;
+
     using I2CWriterType = i2c_writer::I2CWriter<QueueImpl>;
-    explicit LimitedPoll(I2CWriterType& writer)
-        : address(0),
+    LimitedPoll(I2CWriterType& writer, OwnResponderQueue& own_queue)
+        : transactions{{0, 0, 0, {}}, {0, 0, 0, {}}},
+          next_transaction(transactions.cbegin()),
+          id{.token = 0, .is_completed_poll = false},
+          remaining_polls(0),
           timer(
-              "i2c limited poller", []() {}, 1),
-          writer(writer) {}
-    uint16_t address;
+              "i2c limited poller", [this]() -> void { do_next_transaction(); },
+              1),
+          writer(writer),
+          own_queue(own_queue) {}
+    std::array<Transaction, 2> transactions;
+    decltype(transactions.cbegin()) current_transaction;
+    TransactionIdentifier id;
+    std::size_t remaining_polls;
+    ResponseWriter response;
     TimerImpl timer;
     I2CWriterType& writer;
+    OwnResponderQueue& own_queue;
 
-    template <LimitedPollMessage Message>
-    auto handle_message(Message& message) -> void {
+    template <OwnMessage Message>
+    auto handle_message(const Message& message) -> void {
         timer.stop();
-        if (message.delay_ms != 0 || message.polling == 0) {
-            LOG("adding poll of %#04x @ %d ms for %d samples", message.address,
-                message.delay_ms, message.polling);
-            address = message.address;
-            timer.update_callback(provide_callback(message));
-            timer.update_period(message.delay_ms);
-            timer.start();
-        } else {
-            address = 0;
-            LOG("stopping limited poll of %#04x because delay is 0",
-                message.address);
+        if (message.delay_ms == 0 || message.polling == 0) {
+            LOG("stopping limited poll because delay is 0",
+                transactions[0].address);
+            remaining_polls = 0;
+            id.token = 0;
         }
+        LOG("adding poll of %#04x @ %d ms for %d samples",
+            transactions[0].address, message.delay_ms, message.polling);
+        update_own_txn(message);
+        next_transaction = transactions.cbegin();
+        id = message.id;
+        timer.update_period(message.delay_ms);
+        timer.start();
+    }
+
+    auto handle_response(const TransactionResponse& m) -> void {
+        response.write(m);
     }
 
   private:
-    static auto do_recursive_cb_single(
-        LimitedPoll<QueueImpl, TimerImpl>* slf,
-        const SingleRegisterPollReadFromI2C& message,
-        const MaxMessageBuffer& buffer) -> void {
-        auto local_message = message;
-        local_message.handle_buffer(buffer);
-        local_message.polling--;
-        if (local_message.polling == 0) {
-            // base case: no more polls, call the final callback
-            local_message.client_callback();
-            slf->timer.stop();
-            slf->address = 0;
-            LOG("stopping limited poll of %$04x because all samples have been "
-                "taken",
-                message.address);
+    auto get_next_transaction() -> decltype(next_transaction) {
+        if (current_transaction == transactions.cbegin() &&
+            transactions[1].address) {
+            // this was the first transaction of a multi-transaction poll
+            return current_transaction + 1;
+        } else if (current_transaction == (transactions.cbegin()++)) {
+            // this was the last transaction of a multi-transaction poll
+            return transactions.cbegin();
         } else {
-            // recurse to change the timer callback to the new message with the
-            // new polling
-            slf->timer.update_callback(slf->provide_callback(local_message));
+            // this was the only transaction of a one-transaction poll
+            return current_transaction;
         }
     }
-    auto provide_callback(const SingleRegisterPollReadFromI2C& message)
-        -> std::function<void(void)> {
-        return ([this, message]() {
-            this->writer.transact(
-                this->address, message.buffer, []() {},
-                [this, message](const MaxMessageBuffer& buf) {
-                    do_recursive_cb_single(this, message, buf);
-                });
-        });
-    }
 
-    static auto do_recursive_cb_multi(
-        LimitedPoll<QueueImpl, TimerImpl>* slf,
-        const MultiRegisterPollReadFromI2C& message,
-        const MaxMessageBuffer& first_buffer,
-        const MaxMessageBuffer& second_buffer) -> void {
-        auto local_message = message;
-        local_message.polling--;
-        local_message.handle_buffer(first_buffer, second_buffer);
-        if (local_message.polling == 0) {
-            // base case
-            local_message.client_callback();
-            slf->timer.stop();
-            slf->address = 0;
-            LOG("stopping limited poll of %$04x because all samples have been "
-                "taken",
-                message.address);
-
+    auto get_polls_left_after_this() -> std::size_t {
+        auto next = get_next_transaction();
+        if (next == current) {
+            // this is a one-transaction poll
+            return remaining_polls - 1;
+        } else if (next < current) {
+            // we are about to finish the second transaction
+            return remaining_polls - 1;
         } else {
-            slf->timer.update_callback(slf->provide_callback(local_message));
+            // we have a transaction left
+            return remaining_polls;
         }
     }
-    auto provide_callback(const MultiRegisterPollReadFromI2C& message)
-        -> std::function<void(void)> {
-        return [this, message]() {
-            this->writer.transact(
-                this->address, message.register_1_buffer, []() {},
-                [this, message](const MaxMessageBuffer& first_buffer) {
-                    this->writer.transact(
-                        this->address, message.register_2_buffer, []() {},
-                        [this, message,
-                         first_buffer](const MaxMessageBuffer& second_buffer) {
-                            do_recursive_cb_multi(this, message, first_buffer,
-                                                  second_buffer);
-                        });
-                });
-        };
+
+    void do_next_transaction() {
+        if (remaining_polls = get_polls_left_after_this() == 0) {
+            id.is_completed_poll = true;
+        }
+        writer.transact(*current_transaction, id, own_queue);
+        current_transaction = get_next_transaction();
+        if (remaining_polls == 0) {
+            timer.stop();
+        }
+    }
+
+    void update_own_txns(const SingleRegisterPollRead& msg) {
+        transactions[0] = msg.first;
+        transactions[1].address = 0;
+    }
+    void update_own_txn(const MultiRegisterPollRead& msg) {
+        transactions[0] = msg.first;
+        transactions[1] = msg.second;
     }
 };
 
-template <template <class> class QueueImpl, timer::Timer TimerImpl>
-requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
-                      i2c_writer::TaskMessage>
-struct ContinuousPollManager {
-    static constexpr uint32_t MAX_CONTINUOUS_POLLS = 5;
-    using PollType = ContinuousPoll<QueueImpl, TimerImpl>;
-    using Polls = std::array<PollType, MAX_CONTINUOUS_POLLS>;
-    Polls polls;
-    explicit ContinuousPollManager(PollType::I2CWriterType& writer)
-        : polls{PollType(writer), PollType(writer), PollType(writer),
-                PollType(writer), PollType(writer)} {}
+template <typename<class> class WhichPoller, template <class> class QueueImpl,
+          timer::Timer TimerImpl, I2CResponseQueue OwnQueue>
+concept PollType = std::is_same_v<
+    WhichPoller<QueueImpl<writer::TaskMessage>, TimerImpl, OwnQueue>,
+    ContinuousPoll<QueueImpl<writer::TaskMessage>, TimerImpl, OwnQueue>> ||
+    std::is_same_v<
+        WhichPoller<QueueImpl<writer::TaskMessage>, TimerImpl, OwnQueue>,
+        LimitedPoll<QueueImpl<writer::TaskMessage>, TimerImpl, OwnQueue>>;
 
-    auto get_poller(uint16_t address, uint32_t id) -> PollType* {
+template <template <class> class QueueImpl, timer::Timer TimerImpl,
+          I2CResponseQueue OwnQueue, template <class> class Poll>
+requires MessageQueue<QueueImpl<writer::TaskMessage>, writer::TaskMessage> &&
+    PollType<Poll, QueueImpl, TimerImpl, OwnQueue>
+struct PollManager {
+    static constexpr uint32_t MAX_POLLS = 5;
+    using PollType = Poll<QueueImpl, TimerImpl>;
+    using Polls = std::array<PollType, MAX_POLLS>;
+    Polls polls;
+    explicit PollManager(PollType::I2CWriterType& writer, OwnQueue& own_queue)
+        : polls{PollType(writer, own_queue), PollType(writer, own_queue),
+                PollType(writer, own_queue), PollType(writer, own_queue),
+                PollType(writer, own_queue)} {}
+
+    auto get_poller(Transaction id, or_empty = true) -> PollType* {
         PollType* first_empty = nullptr;
         for (auto& poll : polls) {
-            if ((poll.address == address) && (poll.poll_id == id)) {
+            if (id == poll.id) {
                 return &poll;
             }
-            if (poll.address == 0 && !first_empty) {
+            if (!first_empty) {
                 first_empty = &poll;
             }
         }
-        return first_empty;
+        return or_empty ? first_empty : nullptr;
     }
 
-    template <ContinuousPollMessage Message>
-    auto add_or_update(Message& message) -> void {
-        auto maybe_poller = get_poller(message.address, message.poll_id);
+    template <PollType::OwnMessage Message>
+    auto add_or_update(const Message& message) -> void {
+        auto maybe_poller = get_poller(message.id);
         if (!maybe_poller) {
-            LOG("Could not add continuous poller for address %#04x id %d",
-                message.address, message.poll_id);
+            LOG("Could not add poller for address %#04x id %d",
+                message.first.address, message.poll_id);
             return;
         } else {
             maybe_poller->handle_message(message);
         }
     }
-};
 
-template <template <class> class QueueImpl, timer::Timer TimerImpl>
-requires MessageQueue<QueueImpl<i2c_writer::TaskMessage>,
-                      i2c_writer::TaskMessage>
-struct LimitedPollManager {
-    static constexpr uint32_t MAX_LIMITED_POLLS = 5;
-    using PollType = LimitedPoll<QueueImpl, TimerImpl>;
-    using Polls = std::array<PollType, MAX_LIMITED_POLLS>;
-    Polls polls{};
-    explicit LimitedPollManager(PollType::I2CWriterType& writer)
-        : polls{PollType(writer), PollType(writer), PollType(writer),
-                PollType(writer), PollType(writer)} {}
-
-    auto get_poll_slot() -> PollType* {
-        for (auto& poll : polls) {
-            if (!poll.timer.is_running()) {
-                return &poll;
-            }
-        }
-        return nullptr;
-    }
-    template <LimitedPollMessage Message>
-    auto add(Message& message) -> void {
-        auto* maybe_poller = get_poll_slot();
-        if (!maybe_poller) {
-            LOG("Could not add limited poller for addr %#04x @ %d ms (no "
-                "slots)",
-                message.address, message.delay_ms);
-            return;
-        } else {
-            maybe_poller->handle_message(message);
+    auto handle_response(const TransactionResponse& message) -> void {
+        auto maybe_poller = get_poller(message.id, false);
+        if (maybe_poller) {
+            maybe_poller->handle_response(message);
         }
     }
 };
-};  // namespace i2c_poller_impl
+
+template <template <class> class QueueImpl, timer::Timer TimerImpl,
+          I2CResponseQueue OwnQueue>
+using ContinuousPollManager =
+    PollManager<QueueImpl, TimerImpl, OwnQueue, ContinuousPoll>;
+
+template <template <class> class QueueImpl, timer::Timer TimerImpl,
+          I2CResponseQueue OwnQueue>
+using LimitedPollManager =
+    PollManager<QueueImpl, TimerImpl, OwnQueue, LimitedPoll>;
+
+};  // namespace poller_impl
+};  // namespace i2c

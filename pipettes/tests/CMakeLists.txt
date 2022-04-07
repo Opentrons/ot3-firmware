@@ -8,10 +8,6 @@ add_executable(
         pipettes
         test_main.cpp
         test_eeprom_task.cpp
-        test_i2c_writer.cpp
-        test_i2c_poll_task.cpp
-        test_i2c_poller.cpp
-        test_i2c_task.cpp
         test_mount_detection.cpp
         test_environment_sensor.cpp
         test_capacitive_sensor.cpp
@@ -35,7 +31,7 @@ target_compile_options(pipettes
         -Wctor-dtor-privacy)
 
 target_link_libraries(pipettes Catch2::Catch2 common-simulation common-core motor-utils)
-
+target_i2c_simlib(pipettes)
 
 catch_discover_tests(pipettes)
 add_build_and_test_target(pipettes)

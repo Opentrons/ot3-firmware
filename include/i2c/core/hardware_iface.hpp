@@ -4,6 +4,7 @@
 
 namespace i2c {
 
+namespace hardware {
 /**
  * Abstract i2c device.
  */
@@ -31,12 +32,8 @@ class I2CDeviceBase {
     virtual auto central_receive(uint8_t* data, uint16_t size,
                                  uint16_t dev_address, uint32_t timeout)
         -> bool = 0;
-
-    /**
-     * Abstract delay function
-     * @return Nothing.
-     */
-    virtual auto wait_during_poll(uint16_t delay) -> void = 0;
 };
 
-}  // namespace i2c
+};  // namespace hardware
+
+};  // namespace i2c

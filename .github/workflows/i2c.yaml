@@ -1,18 +1,11 @@
-name: "Pipettes build/test"
+name: "i2c build/test"
 on:
   pull_request:
     paths:
-      - "pipettes/**"
-      - "common/**"
-      - "can/**"
-      - "motor-control/**"
-      - "include/**"
-      - "!include/gantry/**"
-      - "!include/head/**"
       - "i2c/**"
+      - "include/i2c/**"
       - "cmake/*"
       - "CMakeLists.txt"
-      - "pipettes/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
@@ -20,27 +13,21 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "pipettes/**"
-      - "common/**"
-      - "can/**"
       - "i2c/**"
-      - "motor-control/**"
-      - "include/**"
-      - "!include/gantry/**"
-      - "!include/head/**"
+      - "include/i2c/**"
+      - "include/common/**"
       - "cmake/*"
       - "CMakeLists.txt"
-      - "pipettes/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/pipettes.yaml"
+      - ".github/workflows/i2c.yaml"
     paths_ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
     tags:
-      - "pipettes@*"
+      - "i2c@*"
   workflow_dispatch:
 
 env:
@@ -64,15 +51,9 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=cross-pipettes .
+        run: cmake --preset=cross .
       - name: "Format"
-        run: cmake --build --preset=pipettes --target pipettes-format-ci
-      - name: "Build"
-        run: cmake --build --preset=pipettes --target pipettes
-      - name: "Lint Single Channel"
-        run: cmake --build --preset=pipettes --target pipettes-single-lint
-      - name: "Lint Multi Channel"
-        run: cmake --build --preset=pipettes --target pipettes-multi-lint
+        run: cmake --build ./build-cross --target i2c-format-ci
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -91,13 +72,4 @@ jobs:
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
       - name: 'Build and test'
-        run: cmake --build ./build-host --target pipettes-build-and-test
-      - name: 'Build single simulator'
-        run: cmake --build ./build-host --target pipettes-single-simulator
-      - name: 'Build multi simulator'
-        run: cmake --build ./build-host --target pipettes-multi-simulator
-      - name: 'Build 96 simulator'
-        run: cmake --build ./build-host --target pipettes-96-simulator
-      - name: 'Build 384 simulator'
-        run: cmake --build ./build-host --target pipettes-384-simulator
-
+        run: cmake --build ./build-host --target i2c-build-and-test

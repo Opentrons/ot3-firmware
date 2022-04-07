@@ -3,19 +3,21 @@
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/i2c.hpp"
-#include "pipettes/core/i2c_writer.hpp"
+#include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/tasks/i2c_task.hpp"
+#include "i2c/core/writer.hpp"
 
-namespace i2c_task_starter {
+namespace i2c {
 
+namespace task_starters {
 template <uint32_t StackDepth>
 class TaskStarter {
   public:
-    using I2CBaseType = i2c::I2CDeviceBase;
+    using I2CBaseType = hardware::I2CDeviceBase;
     using I2CTaskType =
-        i2c_task::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>;
+        tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>;
     using QueueType =
-        freertos_message_queue::FreeRTOSMessageQueue<i2c_writer::TaskMessage>;
+        freertos_message_queue::FreeRTOSMessageQueue<writer::TaskMessage>;
     using TaskType =
         freertos_task::FreeRTOSTask<StackDepth, I2CTaskType, I2CBaseType>;
 
@@ -26,7 +28,8 @@ class TaskStarter {
     auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    auto start(uint32_t priority, i2c::I2CDeviceBase& driver) -> I2CTaskType& {
+    auto start(uint32_t priority, hardware::I2CDeviceBase& driver)
+        -> I2CTaskType& {
         task.start(priority, "i2c", &driver);
         return task_entry;
     }
@@ -36,5 +39,5 @@ class TaskStarter {
     I2CTaskType task_entry;
     TaskType task;
 };
-
-}  // namespace i2c_task_starter
+};  // namespace task_starters
+}  // namespace i2c

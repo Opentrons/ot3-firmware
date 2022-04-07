@@ -1,17 +1,18 @@
 #pragma once
 
 #include "can/core/can_writer_task.hpp"
-#include "common/core/i2c.hpp"
-#include "pipettes/core/i2c_writer.hpp"
-#include "pipettes/core/messages.hpp"
+#include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/messages.hpp"
+#include "i2c/core/writer.hpp"
 
-namespace i2c_task {
+namespace i2c {
 
-using namespace i2c_writer;
+namespace tasks {
+using namespace messages;
 
 class I2CMessageHandler {
   public:
-    I2CMessageHandler(i2c::I2CDeviceBase &i2c_device)
+    I2CMessageHandler(hardware::I2CDeviceBase &i2c_device)
         : i2c_device{i2c_device} {}
     I2CMessageHandler(const I2CMessageHandler &) = delete;
     I2CMessageHandler(const I2CMessageHandler &&) = delete;
@@ -19,35 +20,35 @@ class I2CMessageHandler {
     auto operator=(const I2CMessageHandler &&) -> I2CMessageHandler && = delete;
     ~I2CMessageHandler() = default;
 
-    void handle_message(TaskMessage &m) {
+    void handle_message(writer::TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
   private:
     void visit(std::monostate &m) {}
 
-    void visit(WriteToI2C &m) {
-        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address,
-                                    TIMEOUT);
+    void visit(Transact &m) {
+        messages::MaxMessageBuffer read_buf{};
+        if (m.transaction.bytes_to_write) {
+            i2c_device.central_transmit(
+                m.transaction.write_buffer.data(),
+                std::min(m.transaction.bytes_to_write,
+                         m.transaction.write_buffer.size()),
+                m.transaction.address, TIMEOUT);
+        }
+        if (m.transaction.bytes_to_read) {
+            i2c_device.central_receive(
+                read_buf.data(),
+                std::min(m.transaction.bytes_to_read, read_buf.size()),
+                m.transaction.address, TIMEOUT);
+        }
+        m.response_writer.write(
+            TransactionResponse{.id = m.id,
+                                .bytes_read = m.transaction.bytes_to_read,
+                                .read_buffer = read_buf});
     }
 
-    void visit(ReadFromI2C &m) {
-        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
-                                   TIMEOUT);
-        m.handle_buffer(m.buffer);
-        m.client_callback();
-    }
-
-    void visit(TransactWithI2C &m) {
-        i2c_device.central_transmit(m.buffer.data(), m.buffer.size(), m.address,
-                                    TIMEOUT);
-        i2c_device.central_receive(m.buffer.data(), m.buffer.size(), m.address,
-                                   TIMEOUT);
-        m.handle_buffer(m.buffer);
-        m.client_callback();
-    }
-
-    i2c::I2CDeviceBase &i2c_device;
+    i2c::hardware::I2CDeviceBase &i2c_device;
 
     // Default timeout should be 60 seconds
     // freertos expects this time to be in milliseconds
@@ -58,10 +59,10 @@ class I2CMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<writer::TaskMessage>, writer::TaskMessage>
 class I2CTask {
   public:
-    using QueueType = QueueImpl<TaskMessage>;
+    using QueueType = QueueImpl<writer::TaskMessage>;
     I2CTask(QueueType &queue) : queue{queue} {}
     I2CTask(const I2CTask &c) = delete;
     I2CTask(const I2CTask &&c) = delete;
@@ -72,10 +73,10 @@ class I2CTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(i2c::I2CDeviceBase *driver) {
+    [[noreturn]] void operator()(i2c::hardware::I2CDeviceBase *driver) {
         auto handler = I2CMessageHandler{*driver};
         // Figure out task messages for I2C queue
-        TaskMessage message{};
+        writer::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
@@ -88,5 +89,6 @@ class I2CTask {
   private:
     QueueType &queue;
 };
+};  // namespace tasks
 
-}  // namespace i2c_task
+}  // namespace i2c
