@@ -23,7 +23,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
   public:
     ~BrushedMotorHardware() final = default;
     BrushedMotorHardware() = delete;
-    BrushedMotorHardware(const BrushedHardwareConfig& config, void* encoder_handle) : pins(config), enc_handle(encoder_handle) {}
+    BrushedMotorHardware(const BrushedHardwareConfig& config,
+                         void* encoder_handle)
+        : pins(config), enc_handle(encoder_handle) {}
     BrushedMotorHardware(const BrushedMotorHardware&) = default;
     auto operator=(const BrushedMotorHardware&)
         -> BrushedMotorHardware& = default;

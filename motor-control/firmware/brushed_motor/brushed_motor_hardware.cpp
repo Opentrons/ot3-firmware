@@ -47,7 +47,6 @@ bool BrushedMotorHardware::check_sync_in() {
                                         pins.sync_in.active_setting);
 }
 
-
 uint32_t BrushedMotorHardware::get_encoder_pulses() {
     return motor_hardware_encoder_pulse_count(enc_handle);
 }
