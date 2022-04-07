@@ -50,11 +50,13 @@ class SimBrushedMotorHardwareIface
     void grip() final{};
     void home() final{};
     bool check_sync_in() final { return true; }
-    void reset_encoder_pulses() final {}
+    void reset_encoder_pulses() final {test_pulses = 0;}
     uint32_t get_encoder_pulses() { return 0; }
+    void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
 
   private:
     bool limit_switch_status = false;
+    uint32_t test_pulses = 0;
 };
 
 }  // namespace sim_motor_hardware_iface
