@@ -55,6 +55,8 @@ TEST_CASE("Move with stop condition == limit switch") {
                     Ack read_ack = test_objs.reporter.messages.back();
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::stopped_by_condition);
+                    REQUIRE(read_ack.encoder_position == 0);
+                    REQUIRE(read_ack.current_position_steps == 0);
                 }
                 THEN("position should be reset") {
                     REQUIRE(test_objs.handler.get_current_position() == 0);

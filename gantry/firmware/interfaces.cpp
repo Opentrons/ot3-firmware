@@ -118,7 +118,8 @@ struct motion_controller::HardwareConfig motor_pins_y {
  * The motor hardware interface.
  */
 static motor_hardware::MotorHardware motor_hardware_iface(
-    (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7);
+    (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
+    nullptr);
 
 /**
  * The can bus.

@@ -131,6 +131,7 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             finish_current_move(AckMessageId::stopped_by_condition);
+            reset_encoder_pulses();
             return true;
         }
         return false;
@@ -188,13 +189,15 @@ class MotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
-
+        uint32_t pulses = 0x0;
+        pulses = get_encoder_pulses();
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
+                .encoder_position = pulses,
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -203,6 +206,9 @@ class MotorInterruptHandler {
         set_buffered_move(Move{});
     }
 
+    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
+
+    void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
     void reset() {
         /*
          * Reset the position and all queued moves to the motor interrupt

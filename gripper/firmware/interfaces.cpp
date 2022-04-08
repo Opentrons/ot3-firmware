@@ -73,7 +73,8 @@ struct motion_controller::HardwareConfig motor_pins {
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
+static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
+                                                          nullptr);
 
 /**
  * Motor driver configuration.
@@ -175,7 +176,7 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins);
+    brushed_motor_pins, nullptr);
 
 /**
  * The brushed motor driver hardware interface.

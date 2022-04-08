@@ -26,10 +26,14 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void set_mock_lim_sw(bool value) { mock_lim_sw_value = value; }
     void set_finished_ack_id(uint8_t id) { finished_move_id = id; }
     uint8_t get_finished_ack_id() { return finished_move_id; }
+    void reset_encoder_pulses() final { test_pulses = 0; }
+    uint32_t get_encoder_pulses() final { return test_pulses; }
+    void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
 
   private:
     bool mock_lim_sw_value = false;
     uint8_t finished_move_id = 0x0;
+    uint32_t test_pulses = 0x0;
 };
 
 };  // namespace test_mocks

@@ -85,7 +85,7 @@ struct motion_controller::HardwareConfig plunger_pins {
         .active_setting = GPIO_PIN_RESET},
 };
 
-static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
+static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, nullptr);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, pipettes_tasks::get_queues(), plunger_hw);
 

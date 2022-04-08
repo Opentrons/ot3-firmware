@@ -268,6 +268,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
     uint32_t current_position_um;
+    uint32_t encoder_position;
     uint8_t ack_id;
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -275,6 +276,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
         auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         iter = bit_utils::int_to_bytes(seq_id, iter, limit);
         iter = bit_utils::int_to_bytes(current_position_um, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
         iter = bit_utils::int_to_bytes(ack_id, iter, limit);
         return iter - body;
     }
