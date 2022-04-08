@@ -1,6 +1,6 @@
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
-#include "motor_control_hardware.h"
+#include "motor-control/firmware/motor_control_hardware.h"
 
 using namespace motor_hardware;
 
@@ -55,4 +55,12 @@ void MotorHardware::set_LED(bool status) {
         motor_hardware_reset_pin(pins.led.port, pins.led.pin,
                                  pins.led.active_setting);
     }
+}
+
+uint32_t MotorHardware::get_encoder_pulses() {
+    return motor_hardware_encoder_pulse_count(enc_handle);
+}
+
+void MotorHardware::reset_encoder_pulses() {
+    motor_hardware_reset_encoder_count(enc_handle);
 }

@@ -268,6 +268,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
     uint32_t current_position_um;
+    uint32_t encoder_position;
     uint8_t ack_id;
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -275,6 +276,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
         auto iter = bit_utils::int_to_bytes(group_id, body, limit);
         iter = bit_utils::int_to_bytes(seq_id, iter, limit);
         iter = bit_utils::int_to_bytes(current_position_um, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
         iter = bit_utils::int_to_bytes(ack_id, iter, limit);
         return iter - body;
     }
@@ -492,14 +494,18 @@ struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
 struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
     uint8_t sensor;
     uint16_t data;
+    uint8_t reg_address;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToSensorRequest {
         uint8_t sensor = 0;
         uint16_t data = 0;
+        uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, data);
-        return WriteToSensorRequest{.sensor = sensor, .data = data};
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        return WriteToSensorRequest{
+            .sensor = sensor, .data = data, .reg_address = reg_address};
     }
 
     auto operator==(const WriteToSensorRequest& other) const -> bool = default;
@@ -571,6 +577,44 @@ struct SensorThresholdResponse
     auto operator==(const SensorThresholdResponse& other) const
         -> bool = default;
 };
+
+struct SetBrushedMotorVrefRequest
+    : BaseMessage<MessageId::set_brushed_motor_vref_request> {
+    uint32_t v_ref;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetBrushedMotorVrefRequest {
+        uint32_t v_ref = 0;
+        body = bit_utils::bytes_to_int(body, limit, v_ref);
+        return SetBrushedMotorVrefRequest{.v_ref = v_ref};
+    }
+
+    auto operator==(const SetBrushedMotorVrefRequest& other) const
+        -> bool = default;
+};
+
+struct SetBrushedMotorPwmRequest
+    : BaseMessage<MessageId::set_brushed_motor_pwm_request> {
+    uint32_t freq;
+    uint32_t duty_cycle;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetBrushedMotorPwmRequest {
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+        return SetBrushedMotorPwmRequest{.freq = freq,
+                                         .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const SetBrushedMotorPwmRequest& other) const
+        -> bool = default;
+};
+
+using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
+
+using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
 
 struct SensorDiagnosticRequest
     : BaseMessage<MessageId::sensor_diagnostic_request> {

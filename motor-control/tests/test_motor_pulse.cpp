@@ -1,6 +1,6 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
 
@@ -290,7 +290,9 @@ TEST_CASE("Finishing a move") {
         auto move = Move{.group_id = 1, .seq_id = 2};
         test_objs.handler.set_buffered_move(move);
         uint64_t set_position = static_cast<uint64_t>(100) << 31;
+        uint32_t set_encoder_position = static_cast<uint32_t>(200);
         test_objs.handler.set_current_position(set_position);
+        test_objs.hw.sim_set_encoder_pulses(set_encoder_position);
         test_objs.handler.finish_current_move();
 
         THEN(
@@ -301,6 +303,7 @@ TEST_CASE("Finishing a move") {
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position_steps == 100);
+            REQUIRE(msg.encoder_position == 200);
         }
     }
 }

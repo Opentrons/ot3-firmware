@@ -15,12 +15,12 @@
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/motor.hpp"
-#include "motor-control/core/motor_driver_config.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/tmc2130_registers.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/pipette_type.h"
@@ -85,7 +85,7 @@ struct motion_controller::HardwareConfig plunger_pins {
         .active_setting = GPIO_PIN_RESET},
 };
 
-static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7);
+static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, nullptr);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, pipettes_tasks::get_queues(), plunger_hw);
 

@@ -3,9 +3,9 @@
 #include "can/core/can_bus.hpp"
 #include "common/core/spi.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
-#include "motor-control/core/motor.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
-#include "motor-control/firmware/brushed_motor_hardware.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 
 namespace interfaces {
 

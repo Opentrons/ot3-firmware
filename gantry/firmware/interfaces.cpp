@@ -9,9 +9,9 @@
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
-#include "motor-control/core/motion_controller.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -118,7 +118,8 @@ struct motion_controller::HardwareConfig motor_pins_y {
  * The motor hardware interface.
  */
 static motor_hardware::MotorHardware motor_hardware_iface(
-    (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7);
+    (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
+    nullptr);
 
 /**
  * The can bus.

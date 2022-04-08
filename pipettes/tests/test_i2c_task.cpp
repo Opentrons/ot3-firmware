@@ -1,3 +1,4 @@
+#include <iostream>
 #include <map>
 
 #include "catch2/catch.hpp"
@@ -36,11 +37,12 @@ SCENARIO("read and write data to the i2c task") {
 
     GIVEN("write command") {
         std::array<uint8_t, 5> five_byte_arr{0x2, 0x0, 0x0, 0x0, 0x0};
-        uint32_t write_data = 0x2010200;
+        uint16_t write_data = 0x0122;
+        uint8_t reg = 0x2;
 
         // make a copy of the two byte array before it's manipulated by
         // the i2c writer.
-        writer.write(write_data, ADDRESS);
+        writer.write(ADDRESS, reg, write_data);
         i2c_queue.try_read(&empty_msg);
         auto write_msg = std::get<i2c_writer::WriteToI2C>(empty_msg);
         auto converted_msg = i2c_writer::TaskMessage(write_msg);
@@ -48,7 +50,11 @@ SCENARIO("read and write data to the i2c task") {
 
         sim_i2c.central_receive(five_byte_arr.data(), five_byte_arr.size(),
                                 ADDRESS, 1);
-        REQUIRE(five_byte_arr[3] == 2);
+        REQUIRE(five_byte_arr[0] == 0);
+        REQUIRE(five_byte_arr[1] == 0);
+        REQUIRE(five_byte_arr[2] == 0x01);
+        REQUIRE(five_byte_arr[3] == 0x22);
+        REQUIRE(five_byte_arr[4] == 0);
     }
     GIVEN("read command") {
         single_update.reset();

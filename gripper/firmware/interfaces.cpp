@@ -7,11 +7,11 @@
 #include "common/firmware/spi_comms.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
-#include "motor-control/core/motion_controller.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
-#include "motor-control/firmware/brushed_motor_hardware.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -73,7 +73,8 @@ struct motion_controller::HardwareConfig motor_pins {
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7);
+static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
+                                                          nullptr);
 
 /**
  * Motor driver configuration.
@@ -175,13 +176,13 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins);
+    brushed_motor_pins, nullptr);
 
 /**
  * The brushed motor driver hardware interface.
  */
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
-    dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5});
+    dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5}, update_pwm);
 
 void interfaces::initialize() {
     // Initialize SPI

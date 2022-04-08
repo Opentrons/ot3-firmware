@@ -3,6 +3,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/tasks/brushed_motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
@@ -19,7 +20,8 @@ void start_tasks(
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
     motor_driver::MotorDriver& motor_driver,
-    brushed_motor_driver::BrushedMotorDriverIface& brushed_motor_driver);
+    brushed_motor_driver::BrushedMotorDriverIface& brushed_motor_driver,
+    motor_hardware::BrushedMotorHardwareIface& brushed_motion_controller);
 
 /**
  * Access to all the message queues in the system.
@@ -40,6 +42,9 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_brushed_motor_driver_queue(
         const brushed_motor_driver_task::TaskMessage& m);
 
+    void send_brushed_motion_controller_queue(
+        const brushed_motion_controller_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -51,6 +56,9 @@ struct QueueClient : can_message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
+        nullptr};
 };
 
 /**
@@ -74,6 +82,9 @@ struct AllTask {
     brushed_motor_driver_task::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
         brushed_motor_driver{nullptr};
+    brushed_motion_controller_task::MotionControllerTask<
+        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
+        brushed_motion_controller{nullptr};
 };
 
 /**

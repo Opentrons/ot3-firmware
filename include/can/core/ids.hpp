@@ -53,6 +53,10 @@ enum class MessageId {
     write_motor_current_request = 0x33,
     read_motor_current_request = 0x34,
     read_motor_current_response = 0x35,
+    set_brushed_motor_vref_request = 0x40,
+    set_brushed_motor_pwm_request = 0x41,
+    gripper_grip_request = 0x42,
+    gripper_home_request = 0x43,
     read_presence_sensing_voltage_request = 0x600,
     read_presence_sensing_voltage_response = 0x601,
     attached_tools_request = 0x700,
@@ -127,6 +131,7 @@ enum class SensorType {
     humidity = 0x2,
     temperature = 0x3,
     pressure = 0x4,
+    pressure_temperature = 0x5,
 };
 
 }  // namespace can_ids

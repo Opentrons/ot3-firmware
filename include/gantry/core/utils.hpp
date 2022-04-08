@@ -3,7 +3,7 @@
 #include "can/core/ids.hpp"
 #include "gantry/core/axis_type.h"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/tmc2130_config.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_config.hpp"
 
 namespace utils {
 

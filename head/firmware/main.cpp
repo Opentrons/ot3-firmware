@@ -27,11 +27,11 @@
 #include "head/core/tasks.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/motor.hpp"
-#include "motor-control/core/motor_driver_config.hpp"
-#include "motor-control/core/motor_interrupt_handler.hpp"
-#include "motor-control/core/tmc2130_registers.hpp"
-#include "motor-control/firmware/motor_hardware.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -169,7 +169,7 @@ static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
  */
 
 static motor_hardware::MotorHardware motor_hardware_right(
-    pin_configurations_right, &htim7);
+    pin_configurations_right, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right);
 
@@ -188,7 +188,7 @@ static motor_class::Motor motor_right{
     motor_queue_right};
 
 static motor_hardware::MotorHardware motor_hardware_left(
-    pin_configurations_left, &htim7);
+    pin_configurations_left, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left);
 

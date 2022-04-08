@@ -1,5 +1,5 @@
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
-#include "motor_control_hardware.h"
+#include "motor-control/firmware/motor_control_hardware.h"
 
 using namespace brushed_motor_driver;
 

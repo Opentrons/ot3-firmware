@@ -6,7 +6,7 @@
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 
 namespace motion_controller_task {

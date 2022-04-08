@@ -4,11 +4,11 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/spi.hpp"
-#include "linear_motion_system.hpp"
 #include "motion_controller.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/motor_messages.hpp"
 #include "motor_driver.hpp"
 #include "motor_driver_config.hpp"
-#include "motor_messages.hpp"
 #include "tmc2130.hpp"
 
 namespace motor_hardware {

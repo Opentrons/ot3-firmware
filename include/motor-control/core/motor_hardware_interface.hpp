@@ -22,6 +22,8 @@ class MotorHardwareIface {
     virtual void deactivate_motor() = 0;
     virtual auto check_limit_switch() -> bool = 0;
     virtual auto check_sync_in() -> bool = 0;
+    virtual auto get_encoder_pulses() -> uint32_t = 0;
+    virtual void reset_encoder_pulses() = 0;
 };
 
 class StepperMotorHardwareIface : virtual public MotorHardwareIface {
@@ -33,6 +35,9 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void set_LED(bool status) = 0;
 };
 
-class BrushedMotorHardwareIface : virtual public MotorHardwareIface {};
-
+class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
+  public:
+    virtual void grip() = 0;
+    virtual void home() = 0;
+};
 };  // namespace motor_hardware
