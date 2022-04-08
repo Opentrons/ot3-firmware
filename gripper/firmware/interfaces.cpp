@@ -194,6 +194,8 @@ void interfaces::initialize() {
 
     // Initialize DAC
     initialize_dac();
+    // Initialize Encoder
+    initialize_enc();
 
     // Start the can bus
     can_start();

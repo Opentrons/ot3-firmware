@@ -150,7 +150,7 @@ void Encoder_GPIO_Init(void){
     PA5    ------> CHANNEL I
     */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -207,9 +207,16 @@ void TIM2_EncoderG_Init(void){
     }
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim2, 0);
+        /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_IT(&htim2,TIM_IT_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim2,TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim2);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
 
-void initialize_dac() { MX_DAC1_Init(); Encoder_GPIO_Init(); TIM2_EncoderG_Init();}
+void initialize_dac() { MX_DAC1_Init();}
+void initialize_enc() {Encoder_GPIO_Init(); TIM2_EncoderG_Init();}

@@ -24,6 +24,7 @@ HAL_StatusTypeDef initialize_spi();
 void initialize_timer(motor_interrupt_callback callback);
 
 void initialize_dac();
+void initialize_enc();
 
 void update_pwm(uint32_t freq, uint32_t duty_cycle);
 
