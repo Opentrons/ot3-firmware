@@ -17,6 +17,5 @@ class HDC2080 : public sensor_simulator::SensorType {
                         {hdc2080_utils::MSB_TEMPERATURE_REGISTER, 50000},
                         {hdc2080_utils::MSB_HUMIDITY_REGISTER, 40000}};
     }
-
   };
 };  // namespace hdc2080_simulator
