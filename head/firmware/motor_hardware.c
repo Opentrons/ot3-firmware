@@ -286,7 +286,7 @@ void TIM2_EncoderZL_Init(void){
     Error_Handler();
     }
     /* Reset counter */
-    __HAL_TIM_SET_COUNTER(&htim3, 0);
+    __HAL_TIM_SET_COUNTER(&htim2, 0);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
