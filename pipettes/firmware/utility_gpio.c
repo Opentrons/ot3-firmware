@@ -1,7 +1,6 @@
 #include "common/firmware/utility_gpio.h"
 #include "platform_specific_hal_conf.h"
-
-
+#include "hardware_config.h"
 /**
  * @brief Limit Switch GPIO Initialization Function
  * @param None
@@ -10,13 +9,15 @@
 void limit_switch_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
+    PipetteHardwarePin hardware = pipette_hardware_get_gpio(
+            pipette_hardware_device_limit_switch);
 
-    /*Configure GPIO pin : PC2 */
+    /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Pin = hardware.pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 }
 
 /**
@@ -25,28 +26,39 @@ void limit_switch_gpio_init(void) {
  * @retval None
  */
 void LED_drive_gpio_init(void) {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    PipetteHardwarePin hardware =
+        pipette_hardware_get_gpio(
+            pipette_hardware_device_LED_drive);
 
-    /*Configure GPIO pin : PB11 */
+    /* GPIO Ports Clock Enable */
+    if (hardware.port == GPIOC) {
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+    }
+    else if (hardware.port == GPIOA) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+    }
+
+    /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Pin = hardware.pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 }
 
 void sync_drive_gpio_init() {
+    PipetteHardwarePin hardware =
+        pipette_hardware_get_gpio(pipette_hardware_device_sync_in);
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    /*Configure GPIO pin : PB5:sync in*/
+    /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Pin = hardware.pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 }
 
 void utility_gpio_init(void) {

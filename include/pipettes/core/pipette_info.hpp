@@ -8,6 +8,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "motor-control/core/motor_hardware_interface.hpp"
 
 namespace pipette_info {
 using namespace can_ids;

@@ -78,11 +78,17 @@ struct motion_controller::HardwareConfig plunger_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led = {
+    .led =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_RESET},
+    .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
+        .port = GPIOB,
         .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_RESET},
+        .active_setting = GPIO_PIN_RESET}
 };
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, nullptr);
