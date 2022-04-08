@@ -211,4 +211,4 @@ void TIM2_EncoderG_Init(void){
 }
 
 
-void initialize_dac() { MX_DAC1_Init(); Encoder_GPIO_init();}
+void initialize_dac() { MX_DAC1_Init(); Encoder_GPIO_init(); TIM2_EncoderG_Init();}
