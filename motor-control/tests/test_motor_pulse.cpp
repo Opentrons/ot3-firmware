@@ -290,8 +290,9 @@ TEST_CASE("Finishing a move") {
         auto move = Move{.group_id = 1, .seq_id = 2};
         test_objs.handler.set_buffered_move(move);
         uint64_t set_position = static_cast<uint64_t>(100) << 31;
+        uint32_t set_encoder_position = static_cast<uint32_t>(200);
         test_objs.handler.set_current_position(set_position);
-        test_objs.handler.sim_set_encoder_pulses(200);
+        test_objs.hw.sim_set_encoder_pulses(set_encoder_position);
         test_objs.handler.finish_current_move();
 
         THEN(
