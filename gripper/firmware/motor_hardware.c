@@ -1,6 +1,7 @@
 #include "motor_hardware.h"
 
 DAC_HandleTypeDef hdac1;
+TIM_HandleTypeDef htim2;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -211,4 +212,4 @@ void TIM2_EncoderG_Init(void){
 }
 
 
-void initialize_dac() { MX_DAC1_Init(); Encoder_GPIO_init(); TIM2_EncoderG_Init();}
+void initialize_dac() { MX_DAC1_Init(); Encoder_GPIO_Init(); TIM2_EncoderG_Init();}
