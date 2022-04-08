@@ -51,7 +51,7 @@ SCENARIO("message serializing works") {
                                      .current_position_um = 0x3456789a,
                                      .encoder_position = 0x05803931,
                                      .ack_id = 1};
-        auto arr = std::array<uint8_t, 11>{};
+        auto arr = std::array<uint8_t, 12>{};
         auto body = std::span{arr};
         WHEN("serialized") {
             auto size = message.serialize(arr.begin(), arr.end());
