@@ -33,122 +33,11 @@ class TMC2130 {
     spi::SpiDeviceBase::BufferType rxBuffer{0};
 
     TMC2130() = delete;
-    TMC2130(const TMC2130DriverConfig& conf, spi::SpiDeviceBase& queue)
+    TMC2130(const TMC2130DriverConfig& conf, SpiTransactManager& spi_manager)
         : _registers(conf.registers),
           _current_config(conf.current_config),
-          _spi_queue(queue),
+          _spi_manager(spi_manager),
           _initialized(false) {}
-
-    /**
-     * @brief Build a message to send over SPI
-     * @param[in] addr The address to write to
-     * @param[in] mode The mode to use, either WRITE or READ
-     * @param[in] val The contents to write to the address (0 if this is a read)
-     * @return An array with the contents of the message, or nothing if
-     * there was an error
-     */
-    static auto build_message(Registers addr, spi::SpiDeviceBase::Mode mode,
-                              RegisterSerializedType val) -> MessageT {
-        MessageT buffer = {0};
-        auto* iter = buffer.begin();
-        auto addr_byte = static_cast<uint8_t>(addr);
-        addr_byte |= static_cast<uint8_t>(mode);
-        iter = bit_utils::int_to_bytes(addr_byte, iter, buffer.end());
-        iter = bit_utils::int_to_bytes(val, iter, buffer.end());
-        if (iter != buffer.end()) {
-            return MessageT();
-        }
-        return buffer;
-    }
-
-    /**
-     * @brief Build a message to send over SPI
-     * @param[in] addr The address to write to
-     * @param[in] mode The mode to use, either WRITE or READ
-     * @param[in] val The contents to write to the address (0 if this is a read)
-     * @return An array with the contents of the message, or nothing if
-     * there was an error
-     */
-    static auto build_queue_message(txBuffer, rxBuffer) -> MessageT {
-        return SpiTransact{txBuffer, rxBuffer, callback};
-    }
-
-    auto read(Registers addr, uint32_t command_data) -> uint32_t {
-        auto txBuffer =
-            build_message(addr, spi::SpiDeviceBase::Mode::READ, command_data);
-        // A read requires two transmissions. The second returns the data in the
-        // register from the first transmission.
-        _spi_queue.write(build_queue_message(txBuffer, rxBuffer));
-        _spi_queue.write(build_queue_message(txBuffer, rxBuffer));
-
-        // Extract data bytes after the address.
-        uint32_t response = 0;
-        const auto* iter = rxBuffer.cbegin();                      // NOLINT
-        iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(),  // NOLINT
-                                       response);
-        return response;
-    }
-
-    auto write(Registers addr, uint32_t command_data) -> bool {
-        auto txBuffer =
-            build_message(addr, spi::SpiDeviceBase::Mode::WRITE, command_data);
-        auto response = _spi_comms.transmit_receive(txBuffer, rxBuffer);
-        return response;
-    }
-
-    auto write_config() -> bool {
-        if (!set_gconf(_registers.gconfig)) {
-            return false;
-        }
-        if (!set_current_control(_registers.ihold_irun)) {
-            return false;
-        }
-        if (!set_power_down_delay(
-                PowerDownDelay::reg_to_seconds(_registers.tpowerdown.time))) {
-            return false;
-        }
-        if (!set_cool_threshold(_registers.tcoolthrs)) {
-            return false;
-        }
-        if (!set_thigh(_registers.thigh)) {
-            return false;
-        }
-        if (!set_chop_config(_registers.chopconf)) {
-            return false;
-        }
-        if (!set_cool_config(_registers.coolconf)) {
-            return false;
-        }
-        _initialized = true;
-        return true;
-    }
-
-    auto write_config(const TMC2130RegisterMap& registers) -> bool {
-        if (!set_gconf(registers.gconfig)) {
-            return false;
-        }
-        if (!set_current_control(registers.ihold_irun)) {
-            return false;
-        }
-        if (!set_power_down_delay(
-                PowerDownDelay::reg_to_seconds(registers.tpowerdown.time))) {
-            return false;
-        }
-        if (!set_cool_threshold(registers.tcoolthrs)) {
-            return false;
-        }
-        if (!set_thigh(registers.thigh)) {
-            return false;
-        }
-        if (!set_chop_config(registers.chopconf)) {
-            return false;
-        }
-        if (!set_cool_config(registers.coolconf)) {
-            return false;
-        }
-        _initialized = true;
-        return true;
-    }
 
     [[nodiscard]] auto convert_to_tmc2130_current_value(uint32_t c) const
         -> uint32_t {
@@ -171,6 +60,8 @@ class TMC2130 {
      * false otherwise.
      */
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
+
+    auto set_initialized(bool initialized) -> void { _initialized = initialized; }
 
     // FUNCTIONS TO SET INDIVIDUAL REGISTERS
 
@@ -330,12 +221,6 @@ class TMC2130 {
         return _registers;
     }
 
-    //callback
-    static auto handle_data(const sensor_callbacks::MaxMessageBuffer &buffer,
-                            TMC2130 *instance) {
-
-    }
-
   private:
     /**
      * @brief Set a register on the TMC2130
@@ -369,7 +254,7 @@ class TMC2130 {
      */
     template <TMC2130Register Reg>
     requires ReadableRegister<Reg>
-    auto read_register() -> std::optional<Reg> {
+    auto update_register(bool success, buffer) -> std::optional<Reg> {
         using RT = std::optional<RegisterSerializedType>;
         using RG = std::optional<Reg>;
 
@@ -386,7 +271,6 @@ class TMC2130 {
 
     TMC2130RegisterMap _registers = {};
     TMC2130MotorCurrentConfig _current_config = {};
-    spi::SpiDeviceBase& _spi_queue;
     bool _initialized;
 };
 

@@ -8,9 +8,10 @@
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "spi/core/spi_task.hpp"
 
 namespace gripper_tasks {
 
@@ -19,7 +20,8 @@ namespace gripper_tasks {
  */
 void start_tasks(can_bus::CanBus& can_bus,
                  motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-                 brushed_motor::BrushedMotor& grip_motor);
+                 brushed_motor::BrushedMotor& grip_motor,
+                 spi::SpiDeviceBase& spi_device);
 
 /**
  * Access to all the message queues in the system.
@@ -57,6 +59,8 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi_task::TaskMessage>*
+        spi_queue{nullptr};
 };
 
 /**
@@ -81,6 +85,8 @@ struct AllTask {
     brushed_motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         brushed_motion_controller{nullptr};
+    spi_task::SpiTask<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
+        nullptr};
 };
 
 /**

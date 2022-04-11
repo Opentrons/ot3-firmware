@@ -3,11 +3,13 @@
 #include "common/core/freertos_task.hpp"
 #include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
+
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+
 
 static auto head_tasks_col = head_tasks::HeadTasks{};
 static auto head_queues = head_tasks::HeadQueueClient{};

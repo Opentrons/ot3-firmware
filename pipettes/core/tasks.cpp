@@ -9,9 +9,10 @@
 #include "i2c/core/tasks/i2c_task.hpp"
 #include "i2c/core/writer.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"

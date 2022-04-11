@@ -2,10 +2,12 @@
 
 #include "gantry/core/can_task.hpp"
 #include "gantry/core/utils.hpp"
+
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+
 
 static auto tasks = gantry_tasks::AllTask{};
 static auto queues = gantry_tasks::QueueClient{utils::get_node_id()};

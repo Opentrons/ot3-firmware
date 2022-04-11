@@ -2,12 +2,14 @@
 
 #include "common/core/freertos_task.hpp"
 #include "gripper/core/can_task.hpp"
+
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+
 
 static auto tasks = gripper_tasks::AllTask{};
 static auto queues = gripper_tasks::QueueClient{can_ids::NodeId::gripper};

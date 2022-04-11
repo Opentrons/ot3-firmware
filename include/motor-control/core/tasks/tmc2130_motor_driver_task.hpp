@@ -110,12 +110,12 @@ class MotorDriverMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class TMC2130MotorDriverTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
+
     TMC2130MotorDriverTask(QueueType& queue) : queue{queue} {}
     TMC2130MotorDriverTask(const TMC2130MotorDriverTask& c) = delete;
     TMC2130MotorDriverTask(const TMC2130MotorDriverTask&& c) = delete;
@@ -126,6 +126,7 @@ class TMC2130MotorDriverTask {
     /**
      * Task entry point.
      */
+    template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(motor_driver::MotorDriver* driver,
                                  CanClient* can_client) {
 

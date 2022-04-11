@@ -2,7 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 
 namespace motor_message_handler {
 
