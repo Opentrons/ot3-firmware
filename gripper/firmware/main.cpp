@@ -6,11 +6,20 @@
 #include "system_stm32g4xx.h"
 // clang-format on
 
+#include "can/firmware/hal_can.h"
+#include "can/firmware/hal_can_bus.hpp"
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
+#include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
+
+static auto iWatchdog = iwdg::IndependentWatchDog{};
+/**
+ * The can bus.
+ */
+static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
 
 auto main() -> int {
     HardwareInit();
@@ -19,13 +28,18 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    interfaces::initialize();
+    z_motor_iface::initialize();
+    grip_motor_iface::initialize();
+
+    can_start();
 
     gripper_tasks::start_tasks(
-        interfaces::get_can_bus(), interfaces::get_z_motor().motion_controller,
-        interfaces::get_z_motor().driver,
-        interfaces::get_brushed_motor_driver_hardware_iface(),
-        interfaces::get_brushed_motor_hardware_iface());
+        canbus, z_motor_iface::get_z_motor().motion_controller,
+        z_motor_iface::get_z_motor().driver,
+        grip_motor_iface::get_motor_driver_hardware_iface(),
+        grip_motor_iface::get_motor_hardware_iface());
+
+    iWatchdog.start(6);
 
     vTaskStartScheduler();
 }

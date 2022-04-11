@@ -1,25 +1,16 @@
-#include "gripper/core/interfaces.hpp"
-
-#include "can/firmware/hal_can.h"
-#include "can/firmware/hal_can_bus.hpp"
-#include "common/core/freertos_message_queue.hpp"
-#include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
+#include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
-#include "gripper/core/tasks.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
-#include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
-
-static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 /**
  * The SPI configuration.
@@ -103,11 +94,6 @@ static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
     }};
 
 /**
- * The can bus.
- */
-static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
-
-/**
  * The pending move queue
  */
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
@@ -141,88 +127,24 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
-/**
- * Brushed motor pin configuration.
- */
-struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
-    .pwm_1 =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .tim = &htim1,
-            .channel = TIM_CHANNEL_1},
-    .pwm_2 =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .tim = &htim3,
-            .channel = TIM_CHANNEL_1},
-    .enable =
-        {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_11,
-            .active_setting = GPIO_PIN_SET},
-    .limit_switch = {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_2,
-        .active_setting = GPIO_PIN_SET},
-};
 
-/**
- * Brushed motor dac configuration.
- */
-struct brushed_motor_driver::DacConfig dac_config {
-    .dac_handle = &hdac1, .channel = DAC_CHANNEL_1,
-    .data_algn = DAC_ALIGN_12B_R,
-};
-/**
- * The brushed motor hardware interface.
- */
-static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins, &htim2);
-
-/**
- * The brushed motor driver hardware interface.
- */
-static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
-    dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5}, update_pwm);
-
-void interfaces::initialize() {
-    // Initialize SPI
+void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
 
     initialize_timer(call_motor_handler);
 
-    // Initialize DAC
-    initialize_dac();
     // Initialize Encoder
     initialize_enc();
 
-    // Start the can bus
-    can_start();
-
-    iWatchdog.start(6);
 }
 
-auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
-
-auto interfaces::get_spi() -> spi::SpiDeviceBase& { return spi_comms; }
-
-auto interfaces::get_motor_hardware_iface()
+auto z_motor_iface::get_motor_hardware_iface()
     -> motor_hardware::MotorHardwareIface& {
     return motor_hardware_iface;
 }
 
-auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
+auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return z_motor;
-}
-
-auto interfaces::get_brushed_motor_hardware_iface()
-    -> motor_hardware::BrushedMotorHardwareIface& {
-    return brushed_motor_hardware_iface;
-}
-
-auto interfaces::get_brushed_motor_driver_hardware_iface()
-    -> brushed_motor_driver::BrushedMotorDriverIface& {
-    return brushed_motor_driver_iface;
 }
