@@ -19,7 +19,8 @@
  * reads of the MSB and LSB registers to get the data.
  */
 
-namespace fdc1004_utils {
+namespace sensors {
+namespace fdc1004 {
 
 // Capacitance Sensor Address and Registers
 constexpr uint16_t ADDRESS = 0x50 << 1;
@@ -88,5 +89,5 @@ inline auto update_capdac(uint16_t capacitance, float current_offset)
 inline auto get_offset_pf(uint16_t unitless_capdac) -> float {
     return static_cast<float>(unitless_capdac) * CAPDAC_OFFSET;
 }
-
-}  // namespace fdc1004_utils
+};  // namespace fdc1004
+};  // namespace sensors

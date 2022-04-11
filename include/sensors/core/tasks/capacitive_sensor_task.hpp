@@ -11,23 +11,25 @@
 #include "sensors/core/tasks/capacitive_sensor_callbacks.hpp"
 #include "sensors/core/utils.hpp"
 
-namespace capacitive_sensor_task {
+namespace sensors {
+namespace tasks {
 
-using namespace capacitance_callbacks;
-using namespace sensor_hardware;
+using namespace hardware;
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient, class OwnQueue>
 class CapacitiveMessageHandler {
   public:
     explicit CapacitiveMessageHandler(I2CQueueWriter &i2c_writer,
                                       I2CQueuePoller &i2c_poller,
                                       SensorHardwareBase &hardware,
-                                      CanClient &can_client)
+                                      CanClient &can_client,
+                                      OwnQueue &own_queue)
         : writer{i2c_writer},
           poller{i2c_poller},
           hardware{hardware},
           can_client{can_client},
+          own_queue{own_queue},
           capacitance_handler{can_client, writer, hardware, zero_threshold,
                               capdac_offset} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
@@ -38,17 +40,15 @@ class CapacitiveMessageHandler {
         -> CapacitiveMessageHandler && = delete;
     ~CapacitiveMessageHandler() = default;
 
-    void handle_message(sensor_task_utils::TaskMessage &m) {
+    void handle_message(utils::TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
     void initialize() {
-        writer.transact(
-            ADDRESS, DEVICE_ID_REGISTER,
-            [this]() { internal_callback.send_to_can(); },
-            [this](auto message_a) {
-                internal_callback.handle_data(message_a);
-            });
+        std::array reg_buf{static_cast<uint8_t>(DEVICE_ID_REGISTER)};
+        writer.transact(ADDRESS, reg_buf, 4,
+                        utils::build_id(ADDRESS, DEVICE_ID_REGISTER, false),
+                        own_queue);
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -61,6 +61,18 @@ class CapacitiveMessageHandler {
 
   private:
     void visit(std::monostate &m) {}
+
+    void visit(i2c::messages::TransactionResponse &m) {
+        if (utils::reg_from_id<uint8_t>(m.id.token) != MSB_MEASUREMENT_1) {
+            return;
+        }
+        if (utils::tag_in_token(m.id.token,
+                                utils::ResponseTag::POLL_IS_CONTINUOUS)) {
+            capacitance_handler.handle_ongoing_response(m);
+        } else {
+            capacitance_handler.handle_baseline_response(m);
+        }
+    }
 
     void visit(can_messages::ReadFromSensorRequest &m) {
         /**
@@ -79,13 +91,10 @@ class CapacitiveMessageHandler {
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
             capacitance_handler.reset_limited();
+            capacitance_handler.set_number_of_reads(1);
             poller.multi_register_poll(
-                ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, 1, DELAY,
-                [this]() { capacitance_handler.send_to_can(); },
-                [this](auto &message_a, auto &message_b) {
-                    capacitance_handler.handle_data_limited(message_a,
-                                                            message_b);
-                });
+                ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, 1, DELAY,
+                own_queue, utils::build_id(ADDRESS, MSB_MEASUREMENT_1, true));
         }
     }
 
@@ -99,18 +108,20 @@ class CapacitiveMessageHandler {
         capdac_offset = capacitance_handler.get_offset();
         capacitance_handler.reset_limited();
         capacitance_handler.set_number_of_reads(m.sample_rate);
+        std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
+                        utils::ResponseTag::IS_BASELINE};
         poller.multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, m.sample_rate, DELAY,
-            [this]() { capacitance_handler.send_to_can(); },
-            [this](auto &message_a, auto &message_b) {
-                capacitance_handler.handle_data_limited(message_a, message_b);
-            });
+            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, m.sample_rate,
+            DELAY, own_queue,
+            utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
+                            utils::byte_from_tags(tags)));
     }
 
     void visit(can_messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor",
             m.threshold, m.sensor);
         zero_threshold = m.threshold;
+
         auto message = can_messages::SensorThresholdResponse{
             .sensor = SensorType::capacitive, .threshold = zero_threshold};
         can_client.send_can_message(can_ids::NodeId::host, message);
@@ -123,16 +134,16 @@ class CapacitiveMessageHandler {
         capacitance_handler.set_echoing(
             m.binding &
             static_cast<uint8_t>(can_ids::SensorOutputBinding::sync));
-
+        std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
+                        utils::ResponseTag::POLL_IS_CONTINUOUS};
         poller.continuous_multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, LSB_MEASUREMENT_1, DELAY,
-            ONGOING_POLL_ID, [this](const auto &buf1, const auto &buf2) {
-                capacitance_handler.handle_data_ongoing(buf1, buf2);
-            });
+            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, DELAY,
+            own_queue,
+            utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
+                            utils::byte_from_tags(tags)));
     }
 
-    InternalCallback internal_callback{};
-    sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
+    utils::BitMode mode = utils::BitMode::MSB;
     // 3 pF
     int32_t zero_threshold = 0x3;
     // 0 pF
@@ -142,10 +153,9 @@ class CapacitiveMessageHandler {
     I2CQueuePoller &poller;
     SensorHardwareBase &hardware;
     CanClient &can_client;
+    OwnQueue &own_queue;
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
     uint32_t sensor_bindings = 0;
-    // capaciofour?
-    static constexpr uint32_t ONGOING_POLL_ID = 0xc4b4c104;
 };
 
 /**
@@ -153,11 +163,10 @@ class CapacitiveMessageHandler {
  */
 template <template <class> class QueueImpl, class I2CQueueWriter,
           class I2CQueuePoller, message_writer_task::TaskClient CanClient>
-requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
-                      sensor_task_utils::TaskMessage>
+requires MessageQueue<QueueImpl<utils::TaskMessage>, utils::TaskMessage>
 class CapacitiveSensorTask {
   public:
-    using QueueType = QueueImpl<sensor_task_utils::TaskMessage>;
+    using QueueType = QueueImpl<utils::TaskMessage>;
     CapacitiveSensorTask(QueueType &queue) : queue{queue} {}
     CapacitiveSensorTask(const CapacitiveSensorTask &c) = delete;
     CapacitiveSensorTask(const CapacitiveSensorTask &&c) = delete;
@@ -174,7 +183,7 @@ class CapacitiveSensorTask {
         auto handler =
             CapacitiveMessageHandler{*writer, *poller, *hardware, *can_client};
         handler.initialize();
-        sensor_task_utils::TaskMessage message{};
+        utils::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
@@ -187,5 +196,5 @@ class CapacitiveSensorTask {
   private:
     QueueType &queue;
 };
-
-}  // namespace capacitive_sensor_task
+}  // namespace tasks
+}  // namespace sensors

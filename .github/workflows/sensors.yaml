@@ -3,10 +3,15 @@ on:
   pull_request:
     paths:
       - "i2c/**"
+      - "include/motor-control/core/**"
+      - "motor-control/core/**"
       - "include/i2c/**"
-      - "cmake/*"
-      - "include/common/**"
       - "common/**"
+      - "include/common/**"
+      - "include/sensors/**"
+      - "common/**"
+      - "include/can/**"
+      - "cmake/*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
@@ -15,22 +20,27 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
+      - "include/motor-control/core/**"
+      - "motor-control/core/**"
       - "i2c/**"
       - "include/i2c/**"
-      - "include/common/**"
       - "common/**"
+      - "include/common/**"
+      - "include/sensors/**"
+      - "common/**"
+      - "include/can/**"
       - "cmake/*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/i2c.yaml"
+      - ".github/workflows/sensors.yaml"
     paths_ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
     tags:
-      - "i2c@*"
+      - "sensors@*"
   workflow_dispatch:
 
 env:
@@ -56,7 +66,7 @@ jobs:
       - name: "Configure"
         run: cmake --preset=cross .
       - name: "Format"
-        run: cmake --build ./build-cross --target i2c-format-ci
+        run: cmake --build ./build-cross --target sensors-format-ci
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -75,4 +85,4 @@ jobs:
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
       - name: 'Build and test'
-        run: cmake --build ./build-host --target i2c-build-and-test
+        run: cmake --build ./build-host --target sensors-build-and-test

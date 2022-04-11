@@ -5,19 +5,20 @@ include(Catch)
 include(AddBuildAndTestTarget)
 
 add_executable(
-        pipettes
+        sensors
         test_main.cpp
-        test_eeprom_task.cpp
-        test_mount_detection.cpp
+        test_capacitive_sensor.cpp
+        test_environment_sensor.cpp
+        test_pressure_sensor.cpp
 )
 
-target_include_directories(pipettes PUBLIC ${CMAKE_SOURCE_DIR}/include)
-set_target_properties(pipettes
+target_include_directories(sensors PUBLIC ${CMAKE_SOURCE_DIR}/include)
+set_target_properties(sensors
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(pipettes
+target_compile_options(sensors
         PUBLIC
         -Wall
         -Werror
@@ -27,8 +28,8 @@ target_compile_options(pipettes
         -Wextra-semi
         -Wctor-dtor-privacy)
 
-target_link_libraries(pipettes Catch2::Catch2 common-simulation common-core motor-utils)
-target_i2c_simlib(pipettes)
+target_link_libraries(sensors Catch2::Catch2 common-simulation common-core motor-utils)
+target_i2c_simlib(sensors)
 
-catch_discover_tests(pipettes)
-add_build_and_test_target(pipettes)
+catch_discover_tests(sensors)
+add_build_and_test_target(sensors)

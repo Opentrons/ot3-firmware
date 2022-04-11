@@ -1,6 +1,7 @@
 #pragma once
 
-namespace sensor_hardware {
+namespace sensors {
+namespace hardware {
 
 /** abstract sensor hardware device for a sync line */
 class SensorHardwareBase {
@@ -15,4 +16,5 @@ class SensorHardwareBase {
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
 };
-};  // namespace sensor_hardware
+};  // namespace hardware
+};  // namespace sensors

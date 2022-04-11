@@ -2,7 +2,7 @@
 
 #include "sensors/core/sensor_hardware_interface.hpp"
 namespace test_mocks {
-class MockSensorHardware : public sensor_hardware::SensorHardwareBase {
+class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
     auto set_sync() -> void override {
         sync_state = true;

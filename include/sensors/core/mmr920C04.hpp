@@ -21,6 +21,7 @@
  * The command bits (C7->C0) are another way of stating the 'register' address.
  * Leaving them alone for now.
  */
+namespace sensors {
 namespace mmr920C04 {
 constexpr uint16_t ADDRESS = 0x67 << 1;
 
@@ -309,5 +310,5 @@ struct MMR920C04RegisterMap {
 using RegisterSerializedType = uint32_t;
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
-
-}  // namespace mmr920C04
+};  // namespace mmr920C04
+};  // namespace sensors

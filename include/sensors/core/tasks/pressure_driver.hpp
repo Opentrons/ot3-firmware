@@ -5,14 +5,17 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
+#include "i2c/core/messages.hpp"
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/sensors.hpp"
 
-namespace pressure_driver {
+namespace sensors {
+
+namespace tasks {
 
 using namespace can_ids;
 using namespace mmr920C04;
-using namespace sensors_registers;
+using namespace registers;
 
 /**
  * Pressure sensor driver class. It takes in a i2c writer queue and
@@ -23,12 +26,15 @@ using namespace sensors_registers;
  */
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient, class OwnQueue>
 class MMR92C04 {
   public:
     MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
-             CanClient &can_client)
-        : writer(writer), poller(poller), can_client(can_client) {}
+             CanClient &can_client, OwnQueue &own_queue)
+        : writer(writer),
+          poller(poller),
+          can_client(can_client),
+          own_queue(own_queue) {}
 
     /**
      * @brief Check if the MMR92C04 has been initialized.
@@ -54,17 +60,18 @@ class MMR92C04 {
     }
 
     auto transact(Registers reg) -> void {
-        writer.transact(
-            ADDRESS, static_cast<uint8_t>(reg),
-            [this, reg]() { send_to_can(this, reg); },
-            [this, reg](auto message_a) { handle_data(message_a, this, reg); });
+        std::array reg_buf{static_cast<uint8_t>(reg)};
+        writer.transact(ADDRESS, reg_buf, 4, own_queue,
+                        utils::build_id(ADDRESS, static_cast<uint8_t>(reg)));
     }
 
     auto poll_read(Registers reg, uint16_t number_reads) -> void {
+        std::array reg_buf{static_cast<uint8_t>(reg)};
         poller.single_register_poll(
-            ADDRESS, static_cast<uint8_t>(reg), number_reads, DELAY,
-            [this, reg]() { send_to_can(this, reg); },
-            [this, reg](auto message_a) { handle_data(message_a, this, reg); });
+            ADDRESS, reg_buf, 4, number_reads, DELAY, own_queue,
+            utils::build_id(
+                ADDRESS, static_cast<uint8_t>(reg),
+                utils::byte_from_tag(utils::ResponseTag::IS_PART_OF_POLL)));
     }
 
     auto write_config() -> bool {
@@ -200,49 +207,27 @@ class MMR92C04 {
         can_client.send_can_message(get_host_id(), message);
     }
 
-    // callbacks
-    static auto handle_data(const sensor_callbacks::MaxMessageBuffer &buffer,
-                            MMR92C04 *instance, Registers reg) -> void {
+    auto handle_response(const i2c::messages::TransactionResponse &tm) {
         uint32_t data = 0x0;
-        const auto *iter = buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
-        switch (reg) {
-            case Registers::PRESSURE_READ:
-                instance->read_pressure(data);
-                break;
-            case Registers::LOW_PASS_PRESSURE_READ:
-                instance->read_pressure_low_pass(data);
-                break;
-            case Registers::TEMPERATURE_READ:
-                instance->read_temperature(data);
-                break;
-            case Registers::STATUS:
-                instance->read_status(data);
-                break;
-            case Registers::RESET:
-            case Registers::IDLE:
-            case Registers::MEASURE_MODE_1:
-            case Registers::MEASURE_MODE_2:
-            case Registers::MEASURE_MODE_3:
-            case Registers::MEASURE_MODE_4:
-            case Registers::MACRAM_WRITE:
-                break;
-        }
-    }
+        const auto *iter = tm.read_buffer.cbegin();
+        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
 
-    static auto send_to_can(MMR92C04 *instance, Registers reg) {
-        switch (reg) {
+        switch (utils::reg_from_id<Registers>(tm.id.token)) {
             case Registers::PRESSURE_READ:
-                instance->send_pressure();
+                read_pressure(data);
+                send_pressure();
                 break;
             case Registers::LOW_PASS_PRESSURE_READ:
-                instance->send_pressure_low_pass();
+                read_pressure_low_pass(data);
+                send_pressure_low_pass();
                 break;
             case Registers::TEMPERATURE_READ:
-                instance->send_temperature();
+                read_temperature(data);
+                send_temperature();
                 break;
             case Registers::STATUS:
-                instance->send_status();
+                read_status(data);
+                send_status();
                 break;
             case Registers::RESET:
             case Registers::IDLE:
@@ -263,6 +248,7 @@ class MMR92C04 {
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
     CanClient &can_client;
+    OwnQueue &own_queue;
 
     template <MMR920C04Register Reg>
     requires WritableRegister<Reg>
@@ -271,5 +257,5 @@ class MMR92C04 {
         return true;
     }
 };
-
-}  // namespace pressure_driver
+};  // namespace tasks
+};  // namespace sensors
