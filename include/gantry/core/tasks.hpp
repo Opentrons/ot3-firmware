@@ -7,7 +7,7 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
-#include "spi/core/spi_task.hpp"
+#include "spi/core/tasks/spi_task.hpp"
 
 namespace gantry_tasks {
 

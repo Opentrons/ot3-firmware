@@ -3,10 +3,11 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/spi.hpp"
-#include "spi/core/spi_task.hpp"
+#include "spi_task.hpp"
 
-namespace spi_task_starter {
+namespace spi {
 
+namespace task_starters {
 template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
 class TaskStarter {
   public:
@@ -36,5 +37,6 @@ class TaskStarter {
     SPITaskType task_entry;
     TaskType task;
 };
+} // namespace task_starters
 
-}  // namespace spi_task_starter
+}  // namespace spi

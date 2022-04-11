@@ -12,7 +12,7 @@
 #include <optional>
 
 #include "common/core/bit_utils.hpp"
-#include "tmc2130_config.hpp"
+#include "spi/core/writer.hpp"
 #include "tmc2130_registers.hpp"
 
 #pragma GCC diagnostic push
@@ -20,9 +20,10 @@
 
 namespace tmc2130 {
 
-using namespace std::numbers;
+namespace driver {
 
-// using namespace tmc2130_registers;
+using namespace std::numbers;
+using namespace spi::writer;
 
 class TMC2130 {
   public:
@@ -33,14 +34,49 @@ class TMC2130 {
     spi::SpiDeviceBase::BufferType rxBuffer{0};
 
     TMC2130() = delete;
-    TMC2130(const TMC2130DriverConfig& conf, SpiTransactManager& spi_manager)
+    TMC2130(const configs::TMC2130DriverConfig& conf, Writer& spi_manager)
         : _registers(conf.registers),
           _current_config(conf.current_config),
           _spi_manager(spi_manager),
           _initialized(false) {}
 
+    auto read(Registers addr, uint32_t command_data) -> uint32_t {
+        _spi_manager.read(addr, command_data);
+    }
+
+    auto write(Registers addr, uint32_t command_data) -> bool {
+        _spi_manager.write(addr, command_data);
+    }
+
+    auto write_config() -> bool {
+        if (!set_gconf(_registers.gconfig)) {
+            return false;
+        }
+        if (!set_current_control(_registers.ihold_irun)) {
+            return false;
+        }
+        if (!set_power_down_delay(
+            PowerDownDelay::reg_to_seconds(_registers.tpowerdown.time))) {
+            return false;
+        }
+        if (!set_cool_threshold(_registers.tcoolthrs)) {
+            return false;
+        }
+        if (!set_thigh(_registers.thigh)) {
+            return false;
+        }
+        if (!set_chop_config(_registers.chopconf)) {
+            return false;
+        }
+        if (!set_cool_config(_registers.coolconf)) {
+            return false;
+        }
+        _initialized = true;
+        return true;
+    }
+
     [[nodiscard]] auto convert_to_tmc2130_current_value(uint32_t c) const
-        -> uint32_t {
+    -> uint32_t {
         constexpr const float SMALL_R = 0.02;
         constexpr auto SQRT_TWO = sqrt2;
         auto FLOAT_CONSTANT = static_cast<float>(
@@ -61,7 +97,20 @@ class TMC2130 {
      */
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
-    auto set_initialized(bool initialized) -> void { _initialized = initialized; }
+    auto handle_spi_response(m) -> std::optional<ReadRegisters> {
+        switch(m.id) {
+            case Registers::GCONF:
+                return get_gconf(data);
+            case Registers::GSTAT:
+                return get_gstatus(data);
+            case Registers::CHOPCONF:
+                return get_chop_config(data);
+            case Registers::DRVSTATUS:
+                return get_driver_status(data);
+            case default:
+                break;
+        }
+    }
 
     // FUNCTIONS TO SET INDIVIDUAL REGISTERS
 
@@ -104,7 +153,7 @@ class TMC2130 {
      */
     auto set_power_down_delay(double time) -> bool {
         PowerDownDelay temp_reg = {.time =
-                                       PowerDownDelay::seconds_to_reg(time)};
+        PowerDownDelay::seconds_to_reg(time)};
         if (set_register(temp_reg)) {
             _registers.tpowerdown = temp_reg;
             return true;
@@ -269,10 +318,14 @@ class TMC2130 {
         return RG(*reinterpret_cast<Reg*>(&ret.value()));
     }
 
-    TMC2130RegisterMap _registers = {};
+    configs::TMC2130RegisterMap _registers = {};
     TMC2130MotorCurrentConfig _current_config = {};
+    Writer& _spi_manager;
     bool _initialized;
 };
+
+
+} // namespace driver
 
 }  // namespace tmc2130
 #pragma GCC diagnostic pop

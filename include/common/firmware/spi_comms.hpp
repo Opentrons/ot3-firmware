@@ -10,6 +10,9 @@
 #pragma GCC diagnostic pop
 
 namespace spi {
+
+namespace hardware {
+
 struct SPI_interface {
     SPI_HandleTypeDef* SPI_handle;
     GPIO_TypeDef* GPIO_handle;
@@ -27,4 +30,7 @@ class Spi : public SpiDeviceBase {
     static constexpr uint32_t TIMEOUT = 0xFFFF;
     SPI_interface SPI_intf;
 };
-}  // namespace spi
+
+} // namespace hardware
+
+} // namespace spi

@@ -4,8 +4,9 @@
 
 #include "common/core/spi.hpp"
 
-namespace sim_spi {
+namespace spi {
 
+namespace hardware {
 /**
  * Implementation of SpiDeviceBase protocol for simulation purposes.
  */
@@ -35,4 +36,6 @@ class SimSpiDeviceBase : public spi::SpiDeviceBase {
     uint8_t status{0};
 };
 
-}  // namespace sim_spi
+} // namespace hardware
+
+} // namespace spi

@@ -26,9 +26,9 @@ using namespace spi;
  * Public Functions
  */
 
-Spi::Spi(SPI_interface SPI_intf_instance) : SPI_intf(SPI_intf_instance) {}
+hardware::Spi(SPI_interface SPI_intf_instance) : SPI_intf(SPI_intf_instance) {}
 
-auto Spi::transmit_receive(const BufferType& transmit, BufferType& receive)
+auto hardware::Spi::transmit_receive(const BufferType& transmit, BufferType& receive)
     -> bool {
     Reset_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
     auto response = hal_transmit_receive(

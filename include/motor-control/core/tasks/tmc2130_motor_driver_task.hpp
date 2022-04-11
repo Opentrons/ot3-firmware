@@ -8,8 +8,10 @@
 #include "common/core/logging.h"
 #include "motor-control/core/stepper_motor/motor_driver.hpp"
 #include "motor-control/core/stepper_motor/motor_driver_config.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_config.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "spi/core/messages.hpp"
 
 namespace motor_driver_task {
 
@@ -43,8 +45,8 @@ class MotorDriverMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const spi_messages::SpiTransactResponse& m) {
-        auto data = driver.update_register(m.success, m.reg, m.rxBuffer);
+    void handle(const spi::messages::TransactResponse& m) {
+        auto data = driver.handle_spi_response(m.success, m.id, m.rxBuffer);
         if (m.send_to_can) {
             can_messages::ReadMotorDriverRegisterResponse response_msg{
                 .reg_address = m.reg_address,
@@ -56,15 +58,7 @@ class MotorDriverMessageHandler {
 
     void handle(const can_messages::SetupRequest& m) {
         LOG("Received motor setup request");
-        _spi_manager.write(tmc2130::Registers::GCONF, driver.set_register(_registers.gconfig));
-        _spi_manager.write(tmc2130::Registers::IHOLD_IRUN, driver.set_register(_registers.ihold_irun));
-        _spi_manager.write(tmc2130::Registers::TPOWERDOWN, driver.set_power_down_delay(_registers.tpowerdown));
-        _spi_manager.write(tmc2130::Registers::TCOOLTHRS, driver.set_cool_threshold(_registers.tcoolthrs));
-        _spi_manager.write(tmc2130::Registers::THIGH, driver.set_thigh(_registers.thigh));
-        _spi_manager.write(tmc2130::Registers::CHOPCONF, driver.set_chop_config(_registers.chopconf));
-        _spi_manager.write(tmc2130::Registers::COOLCONF, driver.set_cool_config(_registers.coolconf));
-        driver.set_initialized(_initialized);
-
+        driver.write_config();
     }
 
     void handle(const can_messages::WriteMotorDriverRegister& m) {
@@ -72,7 +66,7 @@ class MotorDriverMessageHandler {
             m.reg_address, m.data);
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
-            _spi_manager.write(tmc2130::Registers(m.reg_address), m.data);
+            driver.write(tmc2130::Registers(m.reg_address), m.data);
         }
     }
 
@@ -81,7 +75,7 @@ class MotorDriverMessageHandler {
         uint32_t data = 0;
         if (motor_driver_config::DriverRegisters::is_valid_address(
                 m.reg_address)) {
-            _spi_manager.read(tmc2130::Registers(m.reg_address), data);
+            driver.read(tmc2130::Registers(m.reg_address), data);
         }
     }
 
@@ -98,7 +92,7 @@ class MotorDriverMessageHandler {
             driver.get_register_map().ihold_irun.run_current =
                 driver.convert_to_tmc2130_current_value(m.run_current);
         }
-        _spi_manager.write(tmc2130::Registers::IHOLD_IRUN, driver.get_current_settings());
+        driver.write(tmc2130::Registers::IHOLD_IRUN, driver.get_current_settings());
     }
 
     tmc2130::TMC2130& driver;

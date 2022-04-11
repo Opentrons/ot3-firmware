@@ -11,6 +11,8 @@
 
 namespace tmc2130 {
 
+namespace registers {
+
 // Register mapping
 
 enum class Registers : uint8_t {
@@ -415,5 +417,21 @@ struct TMC2130RegisterMap {
 using RegisterSerializedType = uint32_t;
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
+
+} // namespace registers
+
+namespace configs {
+// R sense and VSF configuration
+struct TMC2130MotorCurrentConfig {
+    float r_sense;
+    float v_sf;
+};
+
+struct TMC2130DriverConfig {
+    registers::TMC2130RegisterMap registers;
+    TMC2130MotorCurrentConfig current_config;
+};
+
+} // namespace configs
 
 }  // namespace tmc2130
