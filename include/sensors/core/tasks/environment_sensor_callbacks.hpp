@@ -16,7 +16,7 @@ struct HumidityReadingCallback {
     HumidityReadingCallback(CanClient &can_client) : can_client{can_client} {}
 
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
-        uint32_t data = 0x0;
+        uint16_t data = 0x0;
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
         humidity = convert(data, SensorType::humidity);
@@ -43,7 +43,7 @@ struct TemperatureReadingCallback {
         : can_client{can_client} {}
 
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
-        uint32_t data = 0x0;
+        uint16_t data = 0x0;
         const auto *iter = buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
         temperature = convert(data, SensorType::temperature);
@@ -69,7 +69,7 @@ struct InternalCallback {
     std::array<uint16_t, 1> storage{};
 
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
-        uint32_t data = 0x0;
+        uint16_t data = 0x0;
         const auto *iter = buffer.cbegin();
         // NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores)
         iter = bit_utils::bytes_to_int(iter, buffer.cend(), data);
