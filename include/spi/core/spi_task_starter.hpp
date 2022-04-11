@@ -3,7 +3,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/spi.hpp"
-#include "motor-control/core/tasks/spi_task.hpp"
+#include "spi/core/spi_task.hpp"
 
 namespace spi_task_starter {
 

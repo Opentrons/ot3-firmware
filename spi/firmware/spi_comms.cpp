@@ -1,7 +1,7 @@
 #include "common/firmware/spi_comms.hpp"
 
 #include "platform_specific_hal_conf.h"
-#include "spi.h"
+#include "spi/firmware/spi.h"
 
 using namespace spi;
 

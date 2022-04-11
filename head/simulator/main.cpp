@@ -3,7 +3,6 @@
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.h"
-#include "common/simulation/spi.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
 #include "head/simulation/adc.hpp"
@@ -12,6 +11,7 @@
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+#include "spi/simulation/spi.hpp"
 #include "task.h"
 
 /**

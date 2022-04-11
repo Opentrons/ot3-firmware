@@ -1,7 +1,7 @@
 #include <array>
 
 #include "catch2/catch.hpp"
-#include "common/simulation/spi.hpp"
+#include "spi/simulation/spi.hpp"
 
 SCENARIO("build_command works") {
     auto arr = spi::SpiDeviceBase::BufferType{};

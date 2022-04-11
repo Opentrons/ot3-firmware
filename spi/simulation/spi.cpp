@@ -1,4 +1,4 @@
-#include "common/simulation/spi.hpp"
+#include "spi/simulation/spi.hpp"
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"

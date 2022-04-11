@@ -39,14 +39,14 @@ class SpiMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const spi_messages::ReadRequest& m) {
+    void handle(const spi_messages::TaskMessage& m) {
         LOG("Received SPI read request");
-        driver.setup();
-    }
-
-    void handle(const spi_messages::WriteRequest& m) {
-        LOG("Received a SPI write request")
-
+        auto success = driver.transmit_receive(m.txData, m.rxData);
+        m.queue->try_write(SpiTransactResponse{
+            m.rxData,
+            success,
+            m.require_response
+        });
     }
 
     spi::SpiDeviceBase& driver;

@@ -2,12 +2,12 @@
 
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
-#include "common/simulation/spi.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+#include "spi/simulation/spi.hpp"
 
 /**
  * The CAN bus.

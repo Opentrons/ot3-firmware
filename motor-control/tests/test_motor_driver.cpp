@@ -1,8 +1,8 @@
 #include "catch2/catch.hpp"
-#include "common/simulation/spi.hpp"
 #include "motor-control/core/stepper_motor/motor_driver.hpp"
 #include "motor-control/core/stepper_motor/motor_driver_config.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
+#include "spi/simulation/spi.hpp"
 
 using namespace motor_driver_config;
 

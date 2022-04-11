@@ -10,7 +10,6 @@
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
-#include "common/simulation/spi.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
@@ -24,6 +23,7 @@
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
 #include "sensors/simulation/sensors.hpp"
+#include "spi/simulation/spi.hpp"
 #include "task.h"
 
 static auto PIPETTE_TYPE = get_pipette_type();
