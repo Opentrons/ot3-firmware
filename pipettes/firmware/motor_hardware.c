@@ -136,6 +136,5 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
 
 void initialize_timer(motor_interrupt_callback callback) {
     plunger_callback = callback;
-    MX_GPIO_Init();
     MX_TIM7_Init();
 }
