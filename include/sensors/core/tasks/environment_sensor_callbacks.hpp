@@ -33,7 +33,7 @@ struct HumidityReadingCallback {
 
   private:
     CanClient &can_client;
-    int16_t humidity = 0;
+    int32_t humidity = 0;
 };
 
 template <message_writer_task::TaskClient CanClient>
@@ -59,7 +59,7 @@ struct TemperatureReadingCallback {
 
   private:
     CanClient &can_client;
-    int16_t temperature = 0;
+    int32_t temperature = 0;
 };
 
 // TODO (lc: 02-24-2022 pull into its own shared file)
