@@ -9,7 +9,6 @@ using namespace i2c::hardware;
 auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
                               uint16_t dev_address, uint32_t timeout) -> bool {
     uint8_t reg = data[0];
-    uint8_t write_bit = data[1];
     LOG("Received a register bit: %d", reg);
     last_transmitted = std::vector<uint8_t>(size);
     std::copy_n(data, size, last_transmitted.begin());
