@@ -42,7 +42,7 @@ struct ReadCapacitanceCallback {
     }
 
     void send_to_can() {
-        int32_t capacitance =
+        int16_t capacitance =
             convert_capacitance(measurement, number_of_reads, current_offset);
         LOG("Capacitance = %d ", capacitance);
         auto message = can_messages::ReadFromSensorResponse{
@@ -79,7 +79,7 @@ struct ReadCapacitanceCallback {
     float current_offset;
     int32_t zero_threshold;
     int32_t measurement = 0;
-    uint16_t number_of_reads = 1;
+    uint32_t number_of_reads = 1;
 };
 
 // This struct should be used when the message handler
