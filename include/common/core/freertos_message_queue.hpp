@@ -57,6 +57,7 @@ class FreeRTOSMessageQueue {
 
     static auto try_write_static(void* slf, const auto& om) -> bool {
         auto instance =
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             reinterpret_cast<FreeRTOSMessageQueue<Message, queue_size>*>(slf);
         return instance->try_write(om);
     }
