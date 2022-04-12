@@ -15,6 +15,7 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
+#include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
 #pragma GCC diagnostic pop
 
@@ -176,7 +177,7 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins, nullptr);
+    brushed_motor_pins, &htim2);
 
 /**
  * The brushed motor driver hardware interface.
@@ -194,6 +195,8 @@ void interfaces::initialize() {
 
     // Initialize DAC
     initialize_dac();
+    // Initialize Encoder
+    initialize_enc();
 
     // Start the can bus
     can_start();
