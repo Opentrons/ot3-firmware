@@ -24,8 +24,8 @@ struct UpdateCallback {
 
 struct MultiUpdateCallback {
   public:
-    uint16_t register_a_value;
-    uint16_t register_b_value;
+    uint8_t register_a_value;
+    uint8_t register_b_value;
 
     MultiUpdateCallback() : register_a_value(0), register_b_value(0) {}
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer_a,
