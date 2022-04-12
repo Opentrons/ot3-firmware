@@ -15,17 +15,13 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
     std::copy_n(data, size, last_transmitted.begin());
     transmit_count++;
     if (!sensor_map.empty()) {
-        if (write_bit == 1) {
-            LOG("Received a write bit");
-            uint16_t store_in_register = 0;
-            auto *iter = data + 1;
-            iter =
-                bit_utils::bytes_to_int(iter, data + size, store_in_register);
-            LOG("Storing %d in register %d", store_in_register, reg);
-            sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
-        } else {
-            next_register_map[dev_address] = reg;
-        }
+        uint16_t store_in_register = 0;
+        auto *iter = data + 1;
+        iter =
+            bit_utils::bytes_to_int(iter, data + size, store_in_register);
+        LOG("Storing %d in register %d", store_in_register, reg);
+        sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
+        next_register_map[dev_address] = reg;
     }
 
     return true;
