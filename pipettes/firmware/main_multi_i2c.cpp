@@ -30,6 +30,7 @@
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_hardware.h"
+#include "motor_encoder_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
@@ -86,7 +87,7 @@ struct motion_controller::HardwareConfig plunger_pins {
         .active_setting = GPIO_PIN_RESET},
 };
 
-static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, nullptr);
+static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, pipettes_tasks::get_queues(), plunger_hw);
 
@@ -115,6 +116,7 @@ auto main() -> int {
     MX_ICACHE_Init();
     utility_gpio_init();
     adc_init();
+    initialize_enc(PIPETTE_TYPE);
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct, PIPETTE_TYPE);
