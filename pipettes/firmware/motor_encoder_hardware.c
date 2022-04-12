@@ -8,7 +8,9 @@ TIM_HandleTypeDef htim2;
 void Encoder_GPIO_Init(PipetteType pipette_type){
     /* Peripheral clock enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
+    __GPIOC_CLK_ENABLE();
     __HAL_RCC_TIM2_CLK_ENABLE();
     /* Encoder P Axis GPIO Configuration
     PA0     ------> CHANNEL B ----> GPIO_PIN_0

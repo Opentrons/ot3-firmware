@@ -29,8 +29,8 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "motor_hardware.h"
 #include "motor_encoder_hardware.h"
+#include "motor_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
