@@ -33,11 +33,8 @@ auto main() -> int {
 
     can_start();
 
-    gripper_tasks::start_tasks(
-        canbus, z_motor_iface::get_z_motor().motion_controller,
-        z_motor_iface::get_z_motor().driver,
-        grip_motor_iface::get_motor_driver_hardware_iface(),
-        grip_motor_iface::get_motor_hardware_iface());
+    gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
+                               grip_motor_iface::get_grip_motor());
 
     iWatchdog.start(6);
 

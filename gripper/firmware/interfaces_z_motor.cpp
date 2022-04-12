@@ -140,11 +140,6 @@ void z_motor_iface::initialize() {
 
 }
 
-auto z_motor_iface::get_motor_hardware_iface()
-    -> motor_hardware::MotorHardwareIface& {
-    return motor_hardware_iface;
-}
-
 auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return z_motor;
 }

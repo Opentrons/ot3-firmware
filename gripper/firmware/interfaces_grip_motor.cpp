@@ -1,4 +1,5 @@
 #include "gripper/core/interfaces.hpp"
+#include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
 #pragma GCC diagnostic push
@@ -51,17 +52,24 @@ static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5}, update_pwm);
 
+static brushed_motor::BrushedMotor grip_motor(brushed_motor_hardware_iface,
+                                              brushed_motor_driver_iface);
+
 void grip_motor_iface::initialize() {
     // Initialize DAC
     initialize_dac();
 }
 
-auto grip_motor_iface::get_motor_hardware_iface()
-    -> motor_hardware::BrushedMotorHardwareIface& {
-    return brushed_motor_hardware_iface;
+auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
+    return grip_motor;
 }
 
-auto grip_motor_iface::get_motor_driver_hardware_iface()
-    -> brushed_motor_driver::BrushedMotorDriverIface& {
-    return brushed_motor_driver_iface;
-}
+// auto grip_motor_iface::get_motor_hardware_iface()
+//     -> motor_hardware::BrushedMotorHardwareIface& {
+//     return brushed_motor_hardware_iface;
+// }
+//
+// auto grip_motor_iface::get_motor_driver_hardware_iface()
+//     -> brushed_motor_driver::BrushedMotorDriverIface& {
+//     return brushed_motor_driver_iface;
+// }
