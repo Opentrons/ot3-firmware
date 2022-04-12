@@ -44,7 +44,11 @@ struct TuplesToVariants;
 
 template <class... TupleAContents, class... TupleBContents>
 struct TuplesToVariants<std::tuple<TupleAContents...>,
+<<<<<<< HEAD
                         std::tuple<TupleBContents...>> {
+=======
+    std::tuple<TupleBContents...>> {
+>>>>>>> Multi variant change
     using type = std::variant<TupleAContents..., TupleBContents...>;
 };
 
