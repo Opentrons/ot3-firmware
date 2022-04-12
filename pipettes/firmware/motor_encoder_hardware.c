@@ -15,7 +15,6 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
     /* Encoder P Axis GPIO Configuration
     PA0     ------> CHANNEL B ----> GPIO_PIN_0
     PA1     ------> CHANNEL A ----> GPIO_PIN_1
-    PA5    ------> CHANNEL I -----> GPIO_PIN_5
     */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
@@ -24,12 +23,13 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    /*
-    * The Index Pin is routed to different GPIO pins
+    /*Encoder P Axis Index Pin Configuration
+    PC3    ------> CHANNEL I -----> SINGLE_CHANNEL/EIGHT_CHANNEL
+    PA7    ------> CHANNEL I -----> NINETY_SIX_CHANNEL/THREE_EIGHTY_FOUR_CHANNEL
+    * The Encoder Index Pin is routed to different GPIO pins
     * depending on the pipette type.
     */
-    switch (pipette_type){
-        case NINETY_SIX_CHANNEL: {
+    if (pipette_type == NINETY_SIX_CHANNEL || pipette_type == THREE_EIGHTY_FOUR_CHANNEL){
             GPIO_InitStruct.Pin = GPIO_PIN_3;
             GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
             GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -37,15 +37,7 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
             GPIO_InitStruct.Alternate = GPIO_AF2_TIM2;
             HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
         }
-        case THREE_EIGHTY_FOUR_CHANNEL: {
-            GPIO_InitStruct.Pin = GPIO_PIN_3;
-            GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-            GPIO_InitStruct.Pull = GPIO_NOPULL;
-            GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-            GPIO_InitStruct.Alternate = GPIO_AF2_TIM2;
-            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-        }
-        case EIGHT_CHANNEL: {
+    else{
             GPIO_InitStruct.Pin = GPIO_PIN_7;
             GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
             GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -53,17 +45,6 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
             GPIO_InitStruct.Alternate = GPIO_AF2_TIM2;
             HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
         }
-        case SINGLE_CHANNEL:{
-            GPIO_InitStruct.Pin = GPIO_PIN_7;
-            GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-            GPIO_InitStruct.Pull = GPIO_NOPULL;
-            GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-            GPIO_InitStruct.Alternate = GPIO_AF2_TIM2;
-            HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-        }
-        default:
-            break;
-    }
 
 }
 /**
