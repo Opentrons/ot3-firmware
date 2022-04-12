@@ -35,12 +35,14 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
 
 add_executable(gantry-x
         ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS})
+        ${GANTRY_FW_NON_LINTABLE_SRCS}
+        ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_x_hardware_config.c)
 
 
 add_executable(gantry-y
         ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS})
+        ${GANTRY_FW_NON_LINTABLE_SRCS}
+        ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_y_hardware_config.c)
 
 target_gantry_core_x(gantry-x)
 target_gantry_core_y(gantry-y)

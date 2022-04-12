@@ -1,6 +1,8 @@
 #include "motor_hardware.h"
 #include "common/firmware/errors.h"
 #include "stm32l5xx_hal.h"
+#include "hardware_config.h"
+
 
 TIM_HandleTypeDef htim7;
 static motor_interrupt_callback plunger_callback = NULL;
@@ -20,7 +22,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
          Enable
          PC8  ---> Enable Pin
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+        GPIO_InitStruct.Pin = pipette_hardware_spi_pins(GPIOB);
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -28,7 +30,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Enable/Chip Select/Dir/Step pin
-        GPIO_InitStruct.Pin = GPIO_PIN_3 | GPIO_PIN_6 |GPIO_PIN_7 | GPIO_PIN_8;
+        GPIO_InitStruct.Pin = pipette_hardware_spi_pins(GPIOC);
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -72,9 +74,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
          Enable
          PC8  ---> Enable Pin
         */
-        HAL_GPIO_DeInit(GPIOB,
-                        GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
-        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8);
+        HAL_GPIO_DeInit(GPIOB, pipette_hardware_spi_pins(GPIOB));
+        HAL_GPIO_DeInit(GPIOC, pipette_hardware_spi_pins(GPIOC));
     }
 }
 
@@ -94,24 +95,6 @@ HAL_StatusTypeDef initialize_spi(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     motor_driver_CLK_gpio_init();
     return HAL_SPI_Init(&hspi2);
-}
-
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-void MX_GPIO_Init(void) {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-
-    /*Configure GPIO pin : PA0 which can be used as a timer */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 void MX_TIM7_Init(void) {
@@ -153,6 +136,5 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
 
 void initialize_timer(motor_interrupt_callback callback) {
     plunger_callback = callback;
-    MX_GPIO_Init();
     MX_TIM7_Init();
 }
