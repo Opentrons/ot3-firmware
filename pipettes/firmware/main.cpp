@@ -10,10 +10,10 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
-#include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
@@ -52,7 +52,7 @@ spi::SPI_interface SPI_intf = {
 };
 static spi::Spi spi_comms(SPI_intf);
 
-static auto i2c_comms3 = i2c::I2C();
+static auto i2c_comms3 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
@@ -116,7 +116,7 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-static sensor_hardware::SensorHardware pins_for_sensor(
+static sensors::hardware::SensorHardware pins_for_sensor(
     {.port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
 
 auto main() -> int {

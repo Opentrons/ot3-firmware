@@ -67,7 +67,7 @@ function(add_pipettes_executable TARGET)
     add_executable(${TARGET}
             ${PIPETTE_FW_LINTABLE_SRCS}
             ${PIPETTE_FW_NON_LINTABLE_SRCS})
-    target_i2c_firmware(TARGET)
+    target_i2c_firmware(${TARGET})
     target_ot_motor_control(${TARGET})
 
     target_link_libraries(${TARGET}

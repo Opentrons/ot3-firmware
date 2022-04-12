@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-using namespace i2c;
+using namespace i2c::hardware;
 
 /*
  * I2C wrapper class.
