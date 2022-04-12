@@ -530,7 +530,7 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
     can_ids::SensorType sensor{};
-    int32_t sensor_data = 0x10;
+    int32_t sensor_data = 0;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {

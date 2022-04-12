@@ -102,7 +102,7 @@ SCENARIO("read and write data to the i2c task") {
             [&multi_update](auto message_a, auto message_b) {
                 multi_update.handle_data(message_a, message_b);
             },
-            0x2, 0x6);
+            0x2, 0x5);
         i2c_queue.try_read(&empty_msg);
         auto read_msg =
             std::get<i2c_writer::MultiRegisterPollReadFromI2C>(empty_msg);

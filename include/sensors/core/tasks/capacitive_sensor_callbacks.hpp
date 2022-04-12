@@ -44,7 +44,6 @@ struct ReadCapacitanceCallback {
     void send_to_can() {
         int32_t capacitance =
             convert_capacitance(measurement, number_of_reads, current_offset);
-        LOG("Capacitance = %d ", capacitance);
         auto message = can_messages::ReadFromSensorResponse{
             .sensor = SensorType::capacitive, .sensor_data = capacitance};
         can_client.send_can_message(can_ids::NodeId::host, message);
