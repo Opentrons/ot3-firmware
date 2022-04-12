@@ -36,6 +36,7 @@
 /* External variables --------------------------------------------------------*/
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim7;
 /******************************************************************************/
 /*            Cortex-M33 Processor Exceptions Handlers                         */
@@ -134,11 +135,15 @@ void DMA1_Channel4_IRQHandler(void)
     HAL_DMA_IRQHandler(&hdma_spi1_tx);
 }
 
-
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
 void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(can_get_device_handle()); }
+
+/**
+ * @brief This function handles TIM2 global interrupt.
+ */
+void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
 /**
  * @brief This function handles TIM7 global interrupt.

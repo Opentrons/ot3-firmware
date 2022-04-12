@@ -54,6 +54,7 @@ void DMA2_Channel1_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void OCTOSPI1_IRQHandler(void);
 void FDCAN1_IT0_IRQHandler(void);
+void TIM2_IRQHandler(void);
 void TIM7_IRQHandler(void);
 
 #ifdef __cplusplus
