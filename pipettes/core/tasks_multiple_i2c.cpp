@@ -1,15 +1,16 @@
 #include "can/core/ids.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "i2c/core/poller.hpp"
+#include "i2c/core/tasks/i2c_poller_task_starter.hpp"
+#include "i2c/core/tasks/i2c_task_starter.hpp"
+#include "i2c/core/writer.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
-#include "pipettes/core/i2c_poller.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
-#include "pipettes/core/tasks/i2c_poll_task_starter.hpp"
-#include "pipettes/core/tasks/i2c_task_starter.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
 #include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
 #include "sensors/core/tasks/pressure_sensor_task_starter.hpp"
@@ -17,9 +18,9 @@
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
 static auto i2c1_task_client =
-    i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();
+    i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto i2c3_task_client =
-    i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>();
+    i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto mc_task_builder =
     motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
                                                 pipettes_tasks::QueueClient>{};
@@ -35,22 +36,23 @@ static auto eeprom_task_builder =
     eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
 
 static auto environment_sensor_task_builder =
-    environment_sensor_task_starter::TaskStarter<512,
-                                                 pipettes_tasks::QueueClient>{};
+    sensors::tasks::EnvironmentalSensorTaskStarter<
+        512, pipettes_tasks::QueueClient>{};
 static auto capacitive_sensor_task_builder =
-    capacitive_sensor_task_starter::TaskStarter<512,
+    sensors::tasks::CapacitiveSensorTaskStarter<512,
                                                 pipettes_tasks::QueueClient>{};
 
 static auto pressure_sensor_task_builder =
-    pressure_sensor_task_starter::TaskStarter<512,
+    sensors::tasks::PressureSensorTaskStarter<512,
                                               pipettes_tasks::QueueClient>{};
 
-static auto i2c_task_builder = i2c_task_starter::TaskStarter<512>{};
-static auto i2c_poll_task_builder = i2c_poll_task_starter::TaskStarter<1024>{};
+static auto i2c_task_builder = i2c::task_starters::I2CTaskStarter<512>{};
+static auto i2c_poll_task_builder =
+    i2c::task_starters::PollerTaskStarter<1024>{};
 static auto i2c1_poll_client =
-    i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>{};
+    i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 static auto i2c3_poll_client =
-    i2c_poller::I2CPoller<freertos_message_queue::FreeRTOSMessageQueue>{};
+    i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
 /**
  * Start pipettes tasks.
@@ -59,9 +61,11 @@ void pipettes_tasks::start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
-    motor_driver::MotorDriver& motor_driver, i2c::I2CDeviceBase& i2c3_device,
-    i2c::I2CDeviceBase& i2c1_device,
-    sensor_hardware::SensorHardwareBase& sensor_hardware, can_ids::NodeId id) {
+    motor_driver::MotorDriver& motor_driver,
+    i2c::hardware::I2CDeviceBase& i2c3_device,
+    i2c::hardware::I2CDeviceBase& i2c1_device,
+    sensors::hardware::SensorHardwareBase& sensor_hardware,
+    can_ids::NodeId id) {
     queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
@@ -154,17 +158,17 @@ void pipettes_tasks::QueueClient::send_eeprom_queue(
 }
 
 void pipettes_tasks::QueueClient::send_environment_sensor_queue(
-    const sensor_task_utils::TaskMessage& m) {
+    const sensors::utils::TaskMessage& m) {
     environment_sensor_queue->try_write(m);
 }
 
 void pipettes_tasks::QueueClient::send_capacitive_sensor_queue(
-    const sensor_task_utils::TaskMessage& m) {
+    const sensors::utils::TaskMessage& m) {
     capacitive_sensor_queue->try_write(m);
 }
 
 void pipettes_tasks::QueueClient::send_pressure_sensor_queue(
-    const sensor_task_utils::TaskMessage& m) {
+    const sensors::utils::TaskMessage& m) {
     pressure_sensor_queue->try_write(m);
 }
 

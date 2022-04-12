@@ -46,9 +46,8 @@ class CapacitiveMessageHandler {
 
     void initialize() {
         std::array reg_buf{static_cast<uint8_t>(DEVICE_ID_REGISTER)};
-        writer.transact(ADDRESS, reg_buf, 4,
-                        utils::build_id(ADDRESS, DEVICE_ID_REGISTER, false),
-                        own_queue);
+        writer.transact(ADDRESS, reg_buf, 4, own_queue,
+                        utils::build_id(ADDRESS, DEVICE_ID_REGISTER, false));
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -180,8 +179,8 @@ class CapacitiveSensorTask {
     [[noreturn]] void operator()(I2CQueueWriter *writer, I2CQueuePoller *poller,
                                  SensorHardwareBase *hardware,
                                  CanClient *can_client) {
-        auto handler =
-            CapacitiveMessageHandler{*writer, *poller, *hardware, *can_client};
+        auto handler = CapacitiveMessageHandler{*writer, *poller, *hardware,
+                                                *can_client, get_queue()};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

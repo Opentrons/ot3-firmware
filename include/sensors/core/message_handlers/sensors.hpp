@@ -17,7 +17,7 @@ class SensorHandler {
     auto operator=(const SensorHandler &&) -> SensorHandler && = delete;
     ~SensorHandler() = default;
 
-    void handle(const sensor_task_utils::CanMessage &m) {
+    void handle(const utils::CanMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
@@ -46,8 +46,7 @@ class SensorHandler {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
-    void send_to_queue(can_ids::SensorType type,
-                       const sensor_task_utils::CanMessage &m) {
+    void send_to_queue(can_ids::SensorType type, const utils::TaskMessage &m) {
         switch (type) {
             case can_ids::SensorType::temperature: {
                 client.send_environment_sensor_queue(m);

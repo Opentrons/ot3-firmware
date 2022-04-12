@@ -11,7 +11,7 @@ namespace i2c {
 
 namespace task_starters {
 template <uint32_t StackDepth>
-class TaskStarter {
+class I2CTaskStarter {
   public:
     using I2CBaseType = hardware::I2CDeviceBase;
     using I2CTaskType =
@@ -21,12 +21,12 @@ class TaskStarter {
     using TaskType =
         freertos_task::FreeRTOSTask<StackDepth, I2CTaskType, I2CBaseType>;
 
-    TaskStarter() : task_entry{queue}, task{task_entry} {}
-    TaskStarter(const TaskStarter& c) = delete;
-    TaskStarter(const TaskStarter&& c) = delete;
-    auto operator=(const TaskStarter& c) = delete;
-    auto operator=(const TaskStarter&& c) = delete;
-    ~TaskStarter() = default;
+    I2CTaskStarter() : task_entry{queue}, task{task_entry} {}
+    I2CTaskStarter(const I2CTaskStarter& c) = delete;
+    I2CTaskStarter(const I2CTaskStarter&& c) = delete;
+    auto operator=(const I2CTaskStarter& c) = delete;
+    auto operator=(const I2CTaskStarter&& c) = delete;
+    ~I2CTaskStarter() = default;
 
     auto start(uint32_t priority, hardware::I2CDeviceBase& driver)
         -> I2CTaskType& {

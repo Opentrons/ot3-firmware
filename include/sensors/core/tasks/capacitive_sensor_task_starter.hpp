@@ -12,7 +12,7 @@ namespace sensors {
 namespace tasks {
 
 template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
-class TaskStarter {
+class CapacitiveSensorTaskStarter {
   public:
     using I2CWriterType =
         i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
@@ -28,12 +28,12 @@ class TaskStarter {
                                     I2CWriterType, I2CPollerType,
                                     hardware::SensorHardwareBase, CanClient>;
 
-    TaskStarter() : task_entry{queue}, task{task_entry} {}
-    TaskStarter(const TaskStarter& c) = delete;
-    TaskStarter(const TaskStarter&& c) = delete;
-    auto operator=(const TaskStarter& c) = delete;
-    auto operator=(const TaskStarter&& c) = delete;
-    ~TaskStarter() = default;
+    CapacitiveSensorTaskStarter() : task_entry{queue}, task{task_entry} {}
+    CapacitiveSensorTaskStarter(const CapacitiveSensorTaskStarter& c) = delete;
+    CapacitiveSensorTaskStarter(const CapacitiveSensorTaskStarter&& c) = delete;
+    auto operator=(const CapacitiveSensorTaskStarter& c) = delete;
+    auto operator=(const CapacitiveSensorTaskStarter&& c) = delete;
+    ~CapacitiveSensorTaskStarter() = default;
 
     auto start(uint32_t priority, I2CWriterType& writer, I2CPollerType& poller,
                hardware::SensorHardwareBase& sensor_hardware,

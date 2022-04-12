@@ -6,14 +6,18 @@
 #include "common/core/buffer_type.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/message_utils.hpp"
 #include "i2c/core/messages.hpp"
 
 namespace eeprom_task {
 
-using TaskMessage =
-    std::variant<std::monostate, can_messages::WriteToEEPromRequest,
-                 can_messages::ReadFromEEPromRequest,
-                 i2c::messages::TransactionResponse>;
+using _CanMessageTuple = std::tuple<can_messages::WriteToEEPromRequest,
+                                    can_messages::ReadFromEEPromRequest>;
+using CanMessage = typename utils::TuplesToVariants<std::tuple<std::monostate>,
+                                                    _CanMessageTuple>::type;
+
+using TaskMessage = typename utils::VariantCat<
+    CanMessage, std::variant<i2c::messages::TransactionResponse>>::type;
 
 template <class I2CQueueWriter, message_writer_task::TaskClient CanClient,
           class OwnQueue>

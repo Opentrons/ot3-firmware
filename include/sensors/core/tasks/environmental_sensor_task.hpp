@@ -8,6 +8,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "sensors/core/hdc2080.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace sensors {

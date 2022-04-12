@@ -44,6 +44,8 @@ function(add_simulator_executable TARGET)
             ${PIPETTES_SIMULATOR_SRC}
             )
     target_include_directories(${TARGET} PUBLIC ${PIPETTE_SIM_INCLUDE})
+    target_i2c_simlib(${TARGET})
+
 
     if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
         target_compile_definitions(${TARGET} PUBLIC USE_SOCKETCAN)

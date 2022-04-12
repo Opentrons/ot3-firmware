@@ -13,25 +13,24 @@ namespace i2c {
 namespace task_starters {
 
 template <uint32_t StackDepth>
-class TaskStarter {
+class PollerTaskStarter {
   public:
     using PollerTaskType =
         tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
                              freertos_timer::FreeRTOSTimer>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<poller::TaskMessage>;
-    using I2CWriterType = i2c_writer::I2CWriter<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        freertos_message_queue::FreeRTOSMessageQueue<poller::TaskMessage>>;
+    using I2CWriterType =
+        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
     using TaskType =
         freertos_task::FreeRTOSTask<StackDepth, PollerTaskType, I2CWriterType>;
 
-    TaskStarter() : task_entry{queue}, task{task_entry} {}
-    TaskStarter(const TaskStarter& c) = delete;
-    TaskStarter(const TaskStarter&& c) = delete;
-    auto operator=(const TaskStarter& c) = delete;
-    auto operator=(const TaskStarter&& c) = delete;
-    ~TaskStarter() = default;
+    PollerTaskStarter() : task_entry{queue}, task{task_entry} {}
+    PollerTaskStarter(const PollerTaskStarter& c) = delete;
+    PollerTaskStarter(const PollerTaskStarter&& c) = delete;
+    auto operator=(const PollerTaskStarter& c) = delete;
+    auto operator=(const PollerTaskStarter&& c) = delete;
+    ~PollerTaskStarter() = default;
 
     auto start(uint32_t priority, I2CWriterType& writer) -> PollerTaskType& {
         task.start(priority, "i2c-poll", &writer);
