@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sensors/core/callback_types.hpp"
+#include "common/core/logging.h"
 
 namespace mock_callbacks {
 struct EmptyCallback {
@@ -14,7 +15,7 @@ struct UpdateCallback {
 
     UpdateCallback() : update_value(0) {}
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
-        update_value += buffer[3];
+        update_value += buffer[1];
     }
 
     void send_to_can() {}
@@ -30,8 +31,8 @@ struct MultiUpdateCallback {
     MultiUpdateCallback() : register_a_value(0), register_b_value(0) {}
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer_a,
                      const sensor_callbacks::MaxMessageBuffer &buffer_b) {
-        register_a_value += buffer_a[3];
-        register_b_value += buffer_b[3];
+        register_a_value += buffer_a[1];
+        register_b_value += buffer_b[1];
     }
 
     void send_to_can() {}

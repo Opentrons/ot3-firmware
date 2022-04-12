@@ -13,8 +13,12 @@ class FakeSensor : public sensor_simulator::SensorType {
     FakeSensor() {
         ADDRESS = 0x1;
         DEVICE_ID = 0x2;
-        REGISTER_MAP = {{0x2, 0x3}, {0x5, 0x4}};
+        REGISTER_MAP = {{register_1_addr, register_1_val}, {register_2_addr, register_2_val}};
     }
+    uint8_t register_1_addr = 0x2;
+    uint8_t register_2_addr = 0x5;
+    uint16_t register_1_val = 0x3;
+    uint16_t register_2_val = 0x4;
 };
 
 auto fakesensor = FakeSensor{};
@@ -50,10 +54,10 @@ SCENARIO("read and write data to the i2c task") {
 
         sim_i2c.central_receive(five_byte_arr.data(), five_byte_arr.size(),
                                 ADDRESS, 1);
-        REQUIRE(five_byte_arr[0] == 0);
-        REQUIRE(five_byte_arr[1] == 0);
-        REQUIRE(five_byte_arr[2] == 0x01);
-        REQUIRE(five_byte_arr[3] == 0x22);
+        REQUIRE(five_byte_arr[0] == 0x01);
+        REQUIRE(five_byte_arr[1] == 0x22);
+        REQUIRE(five_byte_arr[2] == 0);
+        REQUIRE(five_byte_arr[3] == 0);
         REQUIRE(five_byte_arr[4] == 0);
     }
     GIVEN("read command") {
