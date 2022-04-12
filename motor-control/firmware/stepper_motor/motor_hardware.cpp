@@ -1,6 +1,7 @@
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
-#include "motor-control/firmware/motor_control_hardware.h"
+
 #include "common/firmware/gpio.hpp"
+#include "motor-control/firmware/motor_control_hardware.h"
 
 using namespace motor_hardware;
 
