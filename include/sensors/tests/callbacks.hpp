@@ -10,7 +10,7 @@ struct EmptyCallback {
 
 struct UpdateCallback {
   public:
-    uint8_t update_value;
+    uint16_t update_value;
 
     UpdateCallback() : update_value(0) {}
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer) {
@@ -24,8 +24,8 @@ struct UpdateCallback {
 
 struct MultiUpdateCallback {
   public:
-    uint8_t register_a_value;
-    uint8_t register_b_value;
+    uint16_t register_a_value;
+    uint16_t register_b_value;
 
     MultiUpdateCallback() : register_a_value(0), register_b_value(0) {}
     void handle_data(const sensor_callbacks::MaxMessageBuffer &buffer_a,

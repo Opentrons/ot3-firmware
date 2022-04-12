@@ -63,7 +63,7 @@ SCENARIO("read temperature and humidity values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 15);
-                    float expected = 48.88916f;
+                    float expected = 65535.89062f;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }
@@ -106,7 +106,7 @@ SCENARIO("read temperature and humidity values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 15);
-                    float expected = 44.20312;
+                    float expected = 0.20312f;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }
