@@ -21,18 +21,7 @@
 namespace pipettes_tasks {
 
 /**
- * Start pipettes tasks with one i2c bus.
- */
-void start_tasks(can_bus::CanBus& can_bus,
-                 motion_controller::MotionController<lms::LeadScrewConfig>&
-                     motion_controller,
-                 motor_driver::MotorDriver& motor_driver,
-                 i2c::hardware::I2CDeviceBase& i2c,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware,
-                 can_ids::NodeId id);
-
-/**
- * Start pipettes tasks with two i2c buses.
+ * Start pipettes tasks.
  */
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&

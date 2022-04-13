@@ -63,16 +63,17 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
             // PIN PC0 is SCL
             // PIN PC1 is SDA
             // Secondary pressure sensor
-            __HAL_RCC_I2C3_CLK_ENABLE();
-            GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-            GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-            GPIO_InitStruct.Pull = GPIO_NOPULL;
-            GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-            GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
-            HAL_GPIO_Init(
-                GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-                &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-        }
+        __HAL_RCC_I2C3_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
+        HAL_GPIO_Init(
+            GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+            &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    }
 
     /*Configure data ready pin : PC9 */
     GPIO_InitStruct.Pin = GPIO_PIN_9;
@@ -161,28 +162,11 @@ void disable_eeprom() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
 }
 
-void i2c_setup(I2CHandlerStruct* temp_struct, PipetteType pipette_type) {
+void i2c_setup(I2CHandlerStruct* temp_struct) {
     HAL_I2C_HANDLE i2c3 = MX_I2C3_Init();
     temp_struct->i2c3 = i2c3;
     tip_sense_gpio_init();
     eeprom_write_gpio_init();
-    switch (pipette_type) {
-        case EIGHT_CHANNEL: {
-            HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
-            temp_struct->i2c1 = i2c1;
-            break;
-        }
-        case NINETY_SIX_CHANNEL: {
-            HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
-            temp_struct->i2c1 = i2c1;
-            break;
-        }
-        case THREE_EIGHTY_FOUR_CHANNEL: {
-            HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
-            temp_struct->i2c1 = i2c1;
-            break;
-        }
-        default:
-            break;
-    }
+    HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
+    temp_struct->i2c1 = i2c1;
 }

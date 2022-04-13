@@ -10,6 +10,7 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
+#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
@@ -53,6 +54,7 @@ spi::SPI_interface SPI_intf = {
 static spi::Spi spi_comms(SPI_intf);
 
 static auto i2c_comms3 = i2c::hardware::I2C();
+static auto i2c_comms1 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
@@ -80,17 +82,11 @@ struct motion_controller::HardwareConfig plunger_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_RESET},
-    .sync_in = {
+    .led = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
+        .port = GPIOA,
         .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET},
 };
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, &htim2);
@@ -116,8 +112,10 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-static sensors::hardware::SensorHardware pins_for_sensor(
-    {.port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
+static sensors::hardware::SensorHardware pins_for_sensor_lt(gpio::PinConfig{
+    .port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
+static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
+    .port = GPIOB, .pin = GPIO_PIN_5, .active_setting = GPIO_PIN_RESET});
 
 auto main() -> int {
     HardwareInit();
@@ -128,8 +126,9 @@ auto main() -> int {
     initialize_enc(PIPETTE_TYPE);
     auto id = pipette_mounts::detect_id();
 
-    i2c_setup(&i2chandler_struct, PIPETTE_TYPE);
+    i2c_setup(&i2chandler_struct);
     i2c_comms3.set_handle(i2chandler_struct.i2c3);
+    i2c_comms1.set_handle(i2chandler_struct.i2c1);
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -141,9 +140,12 @@ auto main() -> int {
 
     can_start();
 
-    pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms3,
-                                pins_for_sensor, id);
+    pipettes_tasks::start_tasks(
+        can_bus_1, pipette_motor.motion_controller, pipette_motor.driver,
+        i2c_comms3, i2c_comms1,
+        ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
+                                              : pins_for_sensor_lt),
+        id);
 
     iWatchdog.start(6);
 

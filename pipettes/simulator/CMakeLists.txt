@@ -35,7 +35,7 @@ function(add_simulator_executable TARGET)
                 )
     else()
         set(PIPETTES_SIMULATOR_SRC
-                ${CMAKE_CURRENT_SOURCE_DIR}/main_multi_i2c.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
                 )
     endif()
