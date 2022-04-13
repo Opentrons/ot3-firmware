@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sensors/core/callback_types.hpp"
 #include "common/core/logging.h"
+#include "sensors/core/callback_types.hpp"
 
 namespace mock_callbacks {
 struct EmptyCallback {

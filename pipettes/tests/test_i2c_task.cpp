@@ -13,7 +13,8 @@ class FakeSensor : public sensor_simulator::SensorType {
     FakeSensor() {
         ADDRESS = 0x1;
         DEVICE_ID = 0x2;
-        REGISTER_MAP = {{register_1_addr, register_1_val}, {register_2_addr, register_2_val}};
+        REGISTER_MAP = {{register_1_addr, register_1_val},
+                        {register_2_addr, register_2_val}};
     }
     uint8_t register_1_addr = 0x2;
     uint8_t register_2_addr = 0x5;
