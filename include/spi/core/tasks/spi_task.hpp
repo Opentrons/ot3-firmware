@@ -30,13 +30,13 @@ class MessageHandler {
      * @param message
      */
     void handle_message(const TaskMessage& message) {
-        std::visit([this](auto m) { this->handle(m); }, message);
+        std::visit([this](auto m) { this->visit(m); }, message);
     }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    void visit(std::monostate m) {}
 
-    void handle(spi::messages::Transact& m) {
+    void visit(spi::messages::Transact& m) {
         LOG("Received SPI read request");
         spi::utils::MaxMessageBuffer rxBuffer{};
         auto success =

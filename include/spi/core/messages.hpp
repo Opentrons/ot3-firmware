@@ -53,23 +53,22 @@ concept SpiResponseQueue =
 struct ResponseWriter {
     template <SpiResponseQueue OriginatingQueue>
     explicit ResponseWriter(OriginatingQueue& rq)
-        : queue_ref(reinterpret_cast<void*>(&rq)),
+        : queue_ref(static_cast<void*>(&rq)),
           writer(&OriginatingQueue::try_write_static) {}
-    ResponseWriter() : queue_ref(nullptr), writer(nullptr) {}
     ResponseWriter(const ResponseWriter& other) = default;
     auto operator=(const ResponseWriter& other) -> ResponseWriter& = default;
     ResponseWriter(ResponseWriter&& other) = default;
     auto operator=(ResponseWriter&& other) -> ResponseWriter& = default;
     ~ResponseWriter() = default;
-    void* queue_ref;
-    bool (*writer)(void*, const TransactResponse&);
+    void* queue_ref{nullptr};
+    bool (*writer)(void*, const TransactResponse&){nullptr};
 
-    auto write(const TransactResponse& response) -> bool {
-        if (writer && queue_ref) {
+    // NOLINTNEXTLINE(modernize-use-nodiscard)
+    auto write(const TransactResponse& response) const -> bool {
+        if (bool(writer) && bool(queue_ref)) {
             return writer(queue_ref, response);
-        } else {
-            return false;
         }
+        return false;
     }
 };
 

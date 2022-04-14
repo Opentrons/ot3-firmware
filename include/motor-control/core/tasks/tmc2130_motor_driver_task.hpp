@@ -16,18 +16,18 @@ namespace tmc2130 {
 
 namespace tasks {
 
-using _ResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using _CanMessageTuple = std::tuple<can_messages::ReadMotorDriverRegister,
+using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
+using CanMessageTuple = std::tuple<can_messages::ReadMotorDriverRegister,
                                     can_messages::SetupRequest,
                                     can_messages::WriteMotorDriverRegister,
                                     can_messages::WriteMotorCurrentRequest>;
 using CanMessage =
     typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-                                       _CanMessageTuple>::type;
+                                       CanMessageTuple>::type;
 using TaskMessage = typename ::utils::VariantCat<
     std::variant<std::monostate>,
-    typename ::utils::TuplesToVariants<_CanMessageTuple,
-                                       _ResponseMessage>::type>::type;
+    typename ::utils::TuplesToVariants<CanMessageTuple,
+                                       SpiResponseMessage>::type>::type;
 
 /**
  * The handler of motor driver messages

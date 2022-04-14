@@ -105,8 +105,7 @@ void head_tasks::start_tasks(
     left_tasks.tmc2130_driver = &left_tmc2130_driver;
     left_tasks.move_group = &left_move_group;
     left_tasks.move_status_reporter = &left_move_status_reporter;
-    left_tasks
-        .spi
+    left_tasks.spi_task = &spi3_task;
 
             // Assign left motor queue client message queue pointers
             left_queues.motion_queue = &left_motion.get_queue();
@@ -132,6 +131,7 @@ void head_tasks::start_tasks(
     right_tasks.tmc2130_driver = &right_tmc2130_driver;
     right_tasks.move_group = &right_move_group;
     right_tasks.move_status_reporter = &right_move_status_reporter;
+    right_tasks.spi_task = &spi2_task;
 
     // Assign right motor queue client message queue pointers
     right_queues.motion_queue = &right_motion.get_queue();

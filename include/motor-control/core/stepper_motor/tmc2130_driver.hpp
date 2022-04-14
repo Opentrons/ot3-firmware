@@ -46,13 +46,13 @@ class TMC2130 {
     ~TMC2130() = default;
 
     auto read(Registers addr, uint32_t command_data) -> void {
-        uint8_t converted_addr = static_cast<uint8_t>(addr);
+        auto converted_addr = static_cast<uint8_t>(addr);
         _spi_manager.read(converted_addr, command_data, _task_queue,
                           converted_addr);
     }
 
     auto write(Registers addr, uint32_t command_data) -> bool {
-        uint8_t converted_addr = static_cast<uint8_t>(addr);
+        auto converted_addr = static_cast<uint8_t>(addr);
         return _spi_manager.write(converted_addr, command_data, _task_queue,
                                   converted_addr);
     }
