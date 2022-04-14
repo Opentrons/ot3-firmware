@@ -1,43 +1,38 @@
 #pragma once
 
-#include "common/core/freertos_synchronization.hpp"
+#include "common/core/message_queue.hpp"
+#include "spi/core/utils.hpp"
 
 namespace spi {
 
 namespace messages {
 
-using std::size_t;
-static constexpr std::size_t MAX_BUFFER_SIZE = 5;
-using MaxMessageBuffer = std::array<uint8_t, MAX_BUFFER_SIZE>;
-
 /*
 ** Component struct for identifying a transaction. The primary identifier
-** is an arbitrary uint32_t - this should be set by the caller, and is
-** available for setting in i2c::writer::Writer - and an add on bool used
-** for chaining response messages through the poller.
-** The transaction index is used for multi-register reads; for these, the
+** is an arbitrary uint8_t (typically the register id) - this should be set by
+*the caller, and is
+** available for setting in spi::writer::Writer
 ** index is which transaction just completed.
 */
 struct TransactionIdentifier {
-    uint32_t token;
-    uint8_t transaction_index;
+    uint8_t token;
+    uint8_t command_type;
+    bool send_response;
 
     auto operator==(const TransactionIdentifier& other) const -> bool = default;
 };
 
-struct Transaction = {
-    MaxMessageBuffer txData;
-    MaxMessageBuffer rxData;
+struct Transaction {
+    spi::utils::MaxMessageBuffer txBuffer;
 
     auto operator==(const Transaction&) const -> bool = default;
 };
 
-struct TransactionResponse = {
+struct TransactResponse {
+    auto operator==(const TransactResponse&) const -> bool = default;
     TransactionIdentifier id;
-    size_t bytes_read;
-    MaxMessageBuffer read_buffer;
-
-    auto operator==(const TransactionResponse&) const -> bool = default;
+    spi::utils::MaxMessageBuffer rxBuffer;
+    bool success;
 };
 
 /*
@@ -46,7 +41,7 @@ struct TransactionResponse = {
 */
 template <typename MessageQueue>
 concept SpiResponseQueue =
-RespondableMessageQueue<MessageQueue, TransactionResponse>;
+    RespondableMessageQueue<MessageQueue, TransactResponse>;
 
 /*
 ** Holds a special tiny little closure for writing response values
@@ -67,9 +62,9 @@ struct ResponseWriter {
     auto operator=(ResponseWriter&& other) -> ResponseWriter& = default;
     ~ResponseWriter() = default;
     void* queue_ref;
-    bool (*writer)(void*, const TransactionResponse&);
+    bool (*writer)(void*, const TransactResponse&);
 
-    auto write(const TransactionResponse& response) -> bool {
+    auto write(const TransactResponse& response) -> bool {
         if (writer && queue_ref) {
             return writer(queue_ref, response);
         } else {
@@ -78,6 +73,12 @@ struct ResponseWriter {
     }
 };
 
-} // namespace messages
+struct Transact {
+    TransactionIdentifier id;
+    Transaction transaction;
+    ResponseWriter response_writer;
+};
 
-} // namespace spi
+}  // namespace messages
+
+}  // namespace spi

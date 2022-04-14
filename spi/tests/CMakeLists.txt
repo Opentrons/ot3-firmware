@@ -7,7 +7,9 @@ include(AddBuildAndTestTarget)
 add_executable(
         spi
         test_main.cpp
-        test_spi.cpp)
+        test_spi.cpp
+#        test_task.cpp
+        test_writer.cpp)
 
 target_include_directories(spi PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(spi
@@ -25,7 +27,7 @@ target_compile_options(spi
         -Wextra-semi
         -Wctor-dtor-privacy)
 
-target_i2c_simlib(spi)
+target_spi_simlib(spi)
 target_link_libraries(spi Catch2::Catch2 common-core common-simulation)
 
 

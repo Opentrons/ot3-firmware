@@ -1,9 +1,11 @@
-#include "common/firmware/spi_comms.hpp"
+#include "spi/firmware/spi_comms.hpp"
 
 #include "platform_specific_hal_conf.h"
+#include "spi/core/utils.hpp"
 #include "spi/firmware/spi.h"
 
-using namespace spi;
+using namespace spi::utils;
+using namespace spi::hardware;
 
 /*
  * SPI class and namespace.
@@ -26,15 +28,15 @@ using namespace spi;
  * Public Functions
  */
 
-hardware::Spi(SPI_interface SPI_intf_instance) : SPI_intf(SPI_intf_instance) {}
+Spi::Spi(SPI_interface SPI_intf_instance) : SPI_intf(SPI_intf_instance) {}
 
-auto hardware::Spi::transmit_receive(const BufferType& transmit, BufferType& receive)
-    -> bool {
+auto Spi::transmit_receive(const MaxMessageBuffer& transmit,
+                           MaxMessageBuffer& receive) -> bool {
     Reset_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
     auto response = hal_transmit_receive(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-        const_cast<uint8_t*>(transmit.data()), receive.data(),
-        spi::SpiDeviceBase::BufferSize, TIMEOUT, this->SPI_intf.SPI_handle);
+        const_cast<uint8_t*>(transmit.data()), receive.data(), MAX_BUFFER_SIZE,
+        TIMEOUT, this->SPI_intf.SPI_handle);
 
     Set_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
     return response == HAL_OK;

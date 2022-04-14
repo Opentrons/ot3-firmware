@@ -2,22 +2,22 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "common/core/spi.hpp"
-#include "spi_task.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/tasks/spi_task.hpp"
 
 namespace spi {
 
 namespace task_starters {
-template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
+template <uint32_t StackDepth>
 class TaskStarter {
   public:
-    using SPIBaseType = spi::SpiDeviceBase;
-    using SPITaskType = spi_task::SPITask<
-        freertos_message_queue::FreeRTOSMessageQueue>;
-    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
-        spi_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<StackDepth, SPITaskType,
-        SPIBaseType>;
+    using SpiBaseType = spi::hardware::SpiDeviceBase;
+    using SpiTaskType =
+        spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>;
+    using QueueType =
+        freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>;
+    using TaskType =
+        freertos_task::FreeRTOSTask<StackDepth, SpiTaskType, SpiBaseType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;
@@ -26,17 +26,16 @@ class TaskStarter {
     auto operator=(const TaskStarter&& c) = delete;
     ~TaskStarter() = default;
 
-    auto start(uint32_t priority, SPIBaseType& driver)
-    -> SPITaskType& {
+    auto start(uint32_t priority, SpiBaseType& driver) -> SpiTaskType& {
         task.start(priority, "spi", &driver);
         return task_entry;
     }
 
   private:
     QueueType queue{};
-    SPITaskType task_entry;
+    SpiTaskType task_entry;
     TaskType task;
 };
-} // namespace task_starters
+}  // namespace task_starters
 
 }  // namespace spi

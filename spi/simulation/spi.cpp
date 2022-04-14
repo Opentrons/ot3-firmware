@@ -3,9 +3,9 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 
-bool sim_spi::SimSpiDeviceBase::transmit_receive(
-    const spi::SpiDeviceBase::BufferType& transmit,
-    spi::SpiDeviceBase::BufferType& receive) {
+bool spi::hardware::SimSpiDeviceBase::transmit_receive(
+    const spi::utils::MaxMessageBuffer& transmit,
+    spi::utils::MaxMessageBuffer& receive) {
     uint8_t control = 0;
     uint32_t data = 0;
 
@@ -17,7 +17,7 @@ bool sim_spi::SimSpiDeviceBase::transmit_receive(
     LOG("transmit_receive: control=%d, data=%d", control, data);
 
     constexpr uint8_t write_mask =
-        static_cast<uint8_t>(spi::SpiDeviceBase::Mode::WRITE);
+        static_cast<uint8_t>(spi::hardware::Mode::WRITE);
 
     auto out_iter = receive.begin();
     // Write status byte into buffer.

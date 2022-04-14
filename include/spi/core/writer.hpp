@@ -1,16 +1,24 @@
+#pragma once
+
 #include <variant>
 
+#include "common/core/message_queue.hpp"
 #include "spi/core/messages.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/utils.hpp"
 
 namespace spi {
 
 namespace writer {
-using TaskMessage = std::variant<std::monostate, messages::Transact>;
+
+using namespace spi::messages;
+
+using TaskMessage = std::variant<std::monostate, Transact>;
 
 template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class Writer {
-  using QueueType = QueueImpl<TaskMessage>;
+    using QueueType = QueueImpl<TaskMessage>;
 
   public:
     Writer() = default;
@@ -20,71 +28,46 @@ class Writer {
     Writer(Writer&&) = delete;
     auto operator=(Writer&&) -> Writer& = delete;
 
-    template <messages::SpiResponseQueue RQType>
-    void read(uint16_t device_address, std::size_t read_bytes,
-              RQType& response_queue, uint32_t id = 0) {
-        messages::Transact message{
-            .transaction = {.address = device_address,
-                .bytes_to_read =
-                std::min(read_bytes, messages::MAX_BUFFER_SIZE),
-                .bytes_to_write = 0,
-                .write_buffer{}},
-            .id = {.token = id, .is_completed_poll = 0},
-            .response_writer = messages::ResponseWriter(response_queue)};
-        queue->try_write(message);
-    }
-};
-
-template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
-struct SpiTransactManager {
-  public:
-    SpiTransactManager() = default;
-    ~SpiTransactManager() = default;
-    SpiTransactManager(const SpiTransactManager&) = delete;
-    auto operator=(const SpiTransactManager&) -> SpiTransactManager& = delete;
-    SpiTransactManager(SpiTransactManager&&) = delete;
-    auto operator=(SpiTransactManager&&) -> SpiTransactManager& = delete;
-
     void set_queue(QueueType* q) { queue = q; }
 
-    auto write(Registers addr, uint32_t command_data, spi::SpiDeviceBase::BufferType rxBuffer) -> void {
+    template <SpiResponseQueue RQType>
+    auto read(uint8_t addr, uint32_t command_data, RQType& response_queue,
+              uint8_t id = 0) -> bool {
         auto txBuffer =
-            build_message(addr, spi::SpiDeviceBase::Mode::WRITE, command_data);
-        queue->write(SpiTransact{
-            txBuffer,
-            rxBuffer,
-            false
-        })
+            build_message(addr, spi::hardware::Mode::READ, command_data);
+        TransactionIdentifier _transaction_id{
+            .token = id,
+            .command_type = static_cast<uint8_t>(spi::hardware::Mode::READ),
+            .send_response = false};
+        Transact message{.id = _transaction_id,
+                         .transaction = {.txBuffer = txBuffer},
+                         .response_writer = ResponseWriter(response_queue)};
+        queue->try_write(message);
+
+        message.id.send_response = true;
+        queue->try_write(message);
+        return true;
     }
 
-    auto read(Registers addr, uint32_t command_data, spi::SpiDeviceBase::BufferType rxBuffer) {
-        // send two transact commands. One should be sending
+    template <SpiResponseQueue RQType>
+    auto write(uint8_t addr, uint32_t command_data, RQType& response_queue,
+               uint8_t id = 0) -> bool {
         auto txBuffer =
-            build_message(addr, spi::SpiDeviceBase::Mode::READ, command_data);
-        queue->write(SpiTransact{
-            txBuffer,
-            rxBuffer,
-            false
-        })
-        // second value should be sent to CAN.
-        queue->write(SpiTransact{
-            txBuffer,
-            rxBuffer,
-            true
-        })
-    }
-
-    auto get_lock() -> bool {
-        return _mutex.aquire();
-    }
-
-    auto release_lock() -> bool {
-        return _mutex.release();
+            build_message(addr, spi::hardware::Mode::WRITE, command_data);
+        TransactionIdentifier _transaction_id{
+            .token = id,
+            .command_type = static_cast<uint8_t>(spi::hardware::Mode::WRITE),
+            .send_response = false};
+        Transact message{.id = _transaction_id,
+                         .transaction = {.txBuffer = txBuffer},
+                         .response_writer = ResponseWriter(response_queue)};
+        queue->try_write(message);
+        return true;
     }
 
   private:
-    freertos_synchronization::FreeRTOSMutex _mutex{};
+    utils::MaxMessageBuffer rxBuffer{0};
+    QueueType* queue{nullptr};
 
     /**
      * @brief Build a message to send over SPI
@@ -94,21 +77,21 @@ struct SpiTransactManager {
      * @return An array with the contents of the message, or nothing if
      * there was an error
      */
-    static auto build_message(uint8_t addr, spi::SpiDeviceBase::Mode mode,
-                              uint32_t val) -> MessageT {
-        MessageT buffer = {0};
+    static auto build_message(uint8_t addr, spi::hardware::Mode mode,
+                              uint32_t val) -> utils::MaxMessageBuffer {
+        utils::MaxMessageBuffer buffer = {0};
         auto* iter = buffer.begin();
         auto addr_byte = addr;
         addr_byte |= static_cast<uint8_t>(mode);
         iter = bit_utils::int_to_bytes(addr_byte, iter, buffer.end());
         iter = bit_utils::int_to_bytes(val, iter, buffer.end());
         if (iter != buffer.end()) {
-            return MessageT();
+            return utils::MaxMessageBuffer();
         }
         return buffer;
     }
 };
 
-} // namespace writer
+}  // namespace writer
 
-} // namespace spi
+}  // namespace spi

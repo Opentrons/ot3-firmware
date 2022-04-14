@@ -1,7 +1,8 @@
 #pragma once
 #include <cstdint>
 
-#include "common/core/spi.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/utils.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -23,8 +24,8 @@ class Spi : public SpiDeviceBase {
   public:
     explicit Spi(SPI_interface SPI_int);
 
-    auto transmit_receive(const SpiDeviceBase::BufferType& transmit,
-                          SpiDeviceBase::BufferType& receive) -> bool final;
+    auto transmit_receive(const utils::MaxMessageBuffer& transmit,
+                          utils::MaxMessageBuffer& receive) -> bool final;
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;

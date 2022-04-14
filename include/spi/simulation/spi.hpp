@@ -2,7 +2,8 @@
 
 #include <map>
 
-#include "common/core/spi.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/utils.hpp"
 
 namespace spi {
 
@@ -10,7 +11,7 @@ namespace hardware {
 /**
  * Implementation of SpiDeviceBase protocol for simulation purposes.
  */
-class SimSpiDeviceBase : public spi::SpiDeviceBase {
+class SimSpiDeviceBase : public SpiDeviceBase {
   public:
     using RegisterMap = std::map<uint8_t, uint32_t>;
 
@@ -26,8 +27,8 @@ class SimSpiDeviceBase : public spi::SpiDeviceBase {
     SimSpiDeviceBase(const RegisterMap& register_map)
         : register_map{register_map} {}
 
-    bool transmit_receive(const spi::SpiDeviceBase::BufferType& transmit,
-                          spi::SpiDeviceBase::BufferType& receive) final;
+    bool transmit_receive(const spi::utils::MaxMessageBuffer& transmit,
+                          spi::utils::MaxMessageBuffer& receive) final;
 
   private:
     RegisterMap register_map;
@@ -36,6 +37,6 @@ class SimSpiDeviceBase : public spi::SpiDeviceBase {
     uint8_t status{0};
 };
 
-} // namespace hardware
+}  // namespace hardware
 
-} // namespace spi
+}  // namespace spi
