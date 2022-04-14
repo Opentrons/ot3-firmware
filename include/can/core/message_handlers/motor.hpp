@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "can/core/messages.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
@@ -8,12 +10,10 @@ namespace motor_message_handler {
 
 using namespace can_messages;
 
-template <motor_driver_task::TaskClient MotorDriverTaskClient>
+template <tmc2130::tasks::TaskClient MotorDriverTaskClient>
 class MotorHandler {
   public:
-    using MessageType =
-        std::variant<std::monostate, ReadMotorDriverRegister, SetupRequest,
-                     WriteMotorDriverRegister, WriteMotorCurrentRequest>;
+    using MessageType = tmc2130::tasks::CanMessage;
 
     MotorHandler(MotorDriverTaskClient &motor_client)
         : motor_client{motor_client} {}
@@ -23,7 +23,13 @@ class MotorHandler {
     auto operator=(const MotorHandler &&) -> MotorHandler && = delete;
     ~MotorHandler() = default;
 
-    void handle(MessageType &m) { motor_client.send_motor_driver_queue(m); }
+    void handle(MessageType &can_message) {
+        std::visit(
+            [this](auto m) -> void {
+                this->motor_client.send_motor_driver_queue(m);
+            },
+            can_message);
+    }
 
   private:
     MotorDriverTaskClient &motor_client;
