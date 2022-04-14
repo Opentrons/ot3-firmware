@@ -48,15 +48,17 @@ class CapacitiveMessageHandler {
 
     void initialize() {
         std::array reg_buf{static_cast<uint8_t>(DEVICE_ID_REGISTER)};
-        writer.transact(ADDRESS, reg_buf, 4, own_queue,
+        writer.transact(ADDRESS, reg_buf, 2, own_queue,
                         utils::build_id(ADDRESS, DEVICE_ID_REGISTER, false));
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        uint32_t configuration_data =
-            CONFIGURATION_MEASUREMENT << 8 | DEVICE_CONFIGURATION;
+        std::array configuration_data{CONFIGURATION_MEASUREMENT,
+                                      DEVICE_CONFIGURATION_MSB,
+                                      DEVICE_CONFIGURATION_LSB};
         writer.write(ADDRESS, configuration_data);
-        configuration_data = FDC_CONFIGURATION << 8 | SAMPLE_RATE;
+        configuration_data =
+            std::array{FDC_CONFIGURATION, SAMPLE_RATE_MSB, SAMPLE_RATE_LSB};
         writer.write(ADDRESS, configuration_data);
     }
 
