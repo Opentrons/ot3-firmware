@@ -74,6 +74,7 @@ void sync_drive_gpio_init() {
     sync_out_init.Mode = GPIO_MODE_OUTPUT_OD;
     sync_out_init.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(sync_out_hardware.port, &sync_out_init);
+    HAL_GPIO_WritePin(sync_out_hardware.port, sync_out_hardware.pin, GPIO_PIN_SET);
 }
 
 void utility_gpio_init() {

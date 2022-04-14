@@ -40,6 +40,13 @@ void sync_drive_gpio_init() {
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+
+    hardware = gantry_hardware_get_gpio(gantry_hardware_device_sync_out);
+    GPIO_InitStruct.Pin = hardware.pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(hardware.port, hardware.pin, GPIO_PIN_SET);
 }
 
 
