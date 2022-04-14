@@ -85,7 +85,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
 HAL_I2C_HANDLE MX_I2C1_Init()
 {
     hi2c.Instance = I2C1;
-    hi2c.Init.Timing = 0x00A03AC8;
+    hi2c.Init.Timing = 0x10C0ECFF;
     hi2c.Init.OwnAddress1 = 0;
     hi2c.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
     hi2c.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -117,7 +117,7 @@ HAL_I2C_HANDLE MX_I2C1_Init()
 HAL_I2C_HANDLE MX_I2C3_Init()
 {
     hi2c3.Instance = I2C3;
-    hi2c3.Init.Timing = 0x00A03AC8;
+    hi2c3.Init.Timing = 0x10C0ECFF;
     hi2c3.Init.OwnAddress1 = 0;
     hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
     hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
