@@ -2,6 +2,8 @@
 
 // TODO (lc 02-16-2022) We should refactor the fixed point
 // helper functions such that they live in a shared location.
+#include <limits>
+
 #include "motor-control/core/utils.hpp"
 
 /*
@@ -34,7 +36,9 @@ constexpr uint8_t DEVICE_ID_REGISTER = 0xFF;
 constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
 // CHB
 constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
-// configurations
+// configurations: our reads will be differential reads of
+// the U.FL connector on one channel and the internal
+// common-mode compensator, CAPDAC, on the other.
 constexpr uint16_t DEVICE_CONFIGURATION =
     0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
     0x4 << 10;   // CHB = CAPDAC
@@ -45,49 +49,102 @@ constexpr uint8_t DEVICE_CONFIGURATION_LSB =
 constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
                                  1 << 8 |   // Repeat enabled
                                  1 << 7;    // Measurement 1 enabled
+
 constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
 constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
 constexpr uint16_t DEVICE_ID = 0x1004;
 
-// Constants
-constexpr int MAX_CAPDAC_RESOLUTION = 5;
-constexpr int MSB_SHIFT = 16;
-constexpr float MAX_CAPDAC_OFFSET = 0x1F << MAX_CAPDAC_RESOLUTION;
-constexpr float MAX_MEASUREMENT = 524288.0;
-// single ended capdac offset measurement in pF
-constexpr float CAPDAC_OFFSET = 3.125;
+// Constants. The capdac is a synthetic comparison source intended to
+// eliminate common-mode values in the differential capacitance measurements.
+// The sensor has a narrow +-15pF measurement range, but that's on top
+// of the capdac - the capdac is "subtracted", more or less, before the
+// capacitance is read.
+constexpr float CAPDAC_PF_PER_LSB = 3.125;
+constexpr std::size_t CAPDAC_BITS = 5;
+constexpr uint8_t MAX_CAPDAC_RAW_VALUE = (1 << CAPDAC_BITS) - 1;
+constexpr float MAX_CAPDAC_PF =
+    static_cast<float>(MAX_CAPDAC_RAW_VALUE) * CAPDAC_PF_PER_LSB;
 
-inline auto convert_capacitance(uint32_t capacitance, uint16_t read_count,
-                                float current_offset) -> sq14_15 {
-    auto average =
-        static_cast<float>(capacitance) / static_cast<float>(read_count);
-    float converted_capacitance = average / MAX_MEASUREMENT + current_offset;
-    return convert_to_fixed_point(converted_capacitance, 15);
+// Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
+constexpr std::size_t CONVERSION_BITS = 24;
+constexpr float MAX_MEASUREMENT_PF = 15;
+constexpr float MAX_RAW_MEASUREMENT =
+    float(std::numeric_limits<int32_t>::max() >>
+          ((sizeof(int32_t) * 8) - CONVERSION_BITS));
+
+// Because we're doing big gantry moves, we'll probably have to handle
+// the parasitic capacitance of the system shifting around a lot. We'll
+// need to automatically reset our capdac to account for changing
+// gross-scale capacitance conditions, and we'll do it by bumping up
+// the capdac every time we get half way to either edge of our range.
+constexpr float CAPDAC_REZERO_THRESHOLD_PF = CAPDAC_PF_PER_LSB / 2;
+
+// Convert an accumulated raw reading, the number of reads that were
+// accumulated, and the current offset and turn it into a value in pF.
+inline auto convert_capacitance(int32_t capacitance_accumulated_raw,
+                                uint16_t read_count, float current_offset_pf)
+    -> float {
+    auto average = static_cast<float>(capacitance_accumulated_raw) /
+                   static_cast<float>(read_count);
+    float converted_capacitance =
+        (average / MAX_RAW_MEASUREMENT) * MAX_MEASUREMENT_PF;
+    LOG("Conversion: max raw %f mmt %f direct conversion %f offset %f",
+        MAX_RAW_MEASUREMENT, average, converted_capacitance, current_offset_pf);
+    return converted_capacitance + current_offset_pf;
 }
 
-inline auto convert_reads(uint16_t msb, uint16_t lsb) -> uint32_t {
-    return (static_cast<uint32_t>(msb) << MSB_SHIFT) |
-           static_cast<uint32_t>(lsb);
+// Take the two buffers and turn them into a 24 bit raw measurement.
+inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
+    // measurements are presented in a 16 bit most significant register
+    // and a 16 bit least significant register. Data is left-aligned;
+    // the most significant register has 16 valid bits, and the least
+    // significant register has 8 valid bits in the MSB.
+    // The data is also signed. That means that we first want to
+    // formulate it as a 32 bit unsigned int to use logical shifts;
+    // then take those 32 bits and interpret them as a signed 32 bit
+    // integer, and arithmetic right-shift back to 24 bits.
+
+    return (static_cast<int32_t>((static_cast<uint32_t>(msb) << 16) |
+                                 static_cast<uint32_t>(lsb)) >>
+            8);
 }
 
-inline auto update_capdac(uint16_t capacitance, float current_offset)
-    -> uint16_t {
-    /**
-     * CAPDAC is a unitless offset. To calculate the capacitive offset,
-     * you would multiply CAPDAC (unitless) * CAPDAC_OFFSET (pF)
-     */
-    float capdac =
-        (static_cast<float>(capacitance) + current_offset) / CAPDAC_OFFSET;
-    if (capdac > MAX_CAPDAC_OFFSET) {
-        capdac = MAX_CAPDAC_OFFSET;
+// Turn a capacitance value into the value to send to the capdac
+// control register to use that offset.
+inline auto get_capdac_raw(float offset_pf) -> uint8_t {
+    uint8_t capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
+    return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
+}
+
+// Check the current absolute reading (i.e. after the offset is applied)
+// and the offset that was applied and, if necessary, generate a new
+// appropriately-capped offset value that is ready for sending to the
+// sensor.
+inline auto update_offset(float capacitance_pf, float current_offset_pf)
+    -> float {
+    if (std::abs(capacitance_pf - current_offset_pf) <
+        CAPDAC_REZERO_THRESHOLD_PF) {
+        // we haven't gotten close enough to the edge of our range to
+        // rezero
+        return current_offset_pf;
     }
-    uint16_t new_capdac = static_cast<uint8_t>(capdac) << MAX_CAPDAC_RESOLUTION;
+    LOG("Capacitance %f needs rezeroing (%f-%f=%f)", capacitance_pf,
+        capacitance_pf, current_offset_pf, capacitance_pf - current_offset_pf);
 
-    return new_capdac;
+    // we're halfway to the edge of our range; let's try and rezero so
+    // that the current reading is in the center
+    uint8_t capdac = get_capdac_raw(capacitance_pf);
+
+    return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
 }
 
-inline auto get_offset_pf(uint16_t unitless_capdac) -> float {
-    return static_cast<float>(unitless_capdac) * CAPDAC_OFFSET;
+inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
+    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & 0x7));
 }
+
+inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
+    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & 0xff));
+}
+
 };  // namespace fdc1004
 };  // namespace sensors

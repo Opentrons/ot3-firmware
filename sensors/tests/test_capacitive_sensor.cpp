@@ -1,5 +1,6 @@
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
+#include "common/core/logging.h"
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "i2c/core/messages.hpp"
@@ -99,7 +100,7 @@ SCENARIO("read capacitance sensor values") {
         }
     }
     GIVEN("a request to take a baseline reading of the capacitance sensor") {
-        int NUM_READS = 30;
+        int NUM_READS = 2;
         auto multi_read = sensors::utils::TaskMessage(
             can_messages::BaselineSensorRequest({}, capacitive_id, NUM_READS));
         sensor.handle_message(multi_read);
@@ -127,31 +128,79 @@ SCENARIO("read capacitance sensor values") {
                     REQUIRE(read_message.polling == NUM_READS);
                 }
                 THEN(
-                    "using the callback with data returns the expected value") {
-                    std::array<uint8_t, 5> buffer_a = {2, 8, 0, 0, 0};
-                    std::array<uint8_t, 5> buffer_b = {1, 1, 0, 0, 0};
-                    sensors::utils::TaskMessage first_resp =
+                    "using the callback with +saturated data returns the "
+                    "expected value") {
+                    std::array<uint8_t, 5> buffer_a = {0x7f, 0xff, 0, 0, 0};
+                    std::array<uint8_t, 5> buffer_b = {0xff, 0, 0, 0, 0};
+                    std::array<sensors::utils::TaskMessage, 4> responses{
                         test_mocks::launder_response(
                             read_message, response_queue,
                             test_mocks::dummy_multi_response(read_message, 0,
-                                                             true, buffer_a));
-                    sensor.handle_message(first_resp);
-                    sensors::utils::TaskMessage second_resp =
+                                                             false, buffer_a)),
                         test_mocks::launder_response(
                             read_message, response_queue,
                             test_mocks::dummy_multi_response(read_message, 1,
-                                                             true, buffer_b));
-                    sensor.handle_message(second_resp);
+                                                             false, buffer_b)),
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 0,
+                                                             true, buffer_a)),
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 1,
+                                                             true, buffer_b))};
+                    for (auto& response : responses) {
+                        sensor.handle_message(response);
+                    }
+                    mock_message_writer::TaskMessage can_msg{};
 
+                    REQUIRE(can_queue.get_size() == 1);
+                    can_queue.try_read(&can_msg);
+                    auto response_msg =
+                        std::get<can_messages::ReadFromSensorResponse>(
+                            can_msg.message);
+                    float check_data = signed_fixed_point_to_float(
+                        response_msg.sensor_data, 15);
+                    float expected = 15;
+                    REQUIRE(check_data == Approx(expected).epsilon(1e-4));
+                    LOG("thing im testing is done");
+                }
+                THEN(
+                    "using the callback with -saturated data returns the "
+                    "expected value") {
+                    std::array<uint8_t, 5> buffer_a = {0x80, 0x00, 0, 0, 0};
+                    std::array<uint8_t, 5> buffer_b = {0x00, 0, 0, 0, 0};
+                    std::array<sensors::utils::TaskMessage, 4> responses{
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 0,
+                                                             false, buffer_a)),
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 1,
+                                                             false, buffer_b)),
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 0,
+                                                             true, buffer_a)),
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 1,
+                                                             true, buffer_b))};
+                    for (auto& response : responses) {
+                        sensor.handle_message(response);
+                    }
+
+                    REQUIRE(can_queue.get_size() == 1);
                     mock_message_writer::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =
                         std::get<can_messages::ReadFromSensorResponse>(
                             can_msg.message);
-                    float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 15);
-                    float expected = 1.08333;
+                    float check_data = signed_fixed_point_to_float(
+                        response_msg.sensor_data, 15);
+                    float expected = -15;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }
@@ -214,7 +263,7 @@ SCENARIO("capacitance callback tests") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     sensors::tasks::ReadCapacitanceCallback callback_host(queue_client, writer,
-                                                          mock_hw, 1, 0);
+                                                          mock_hw);
 
     mock_message_writer::TaskMessage empty_msg{};
 
@@ -254,8 +303,8 @@ SCENARIO("capacitance callback tests") {
             }
         }
         WHEN("it receives data over its threshold") {
-            std::array<uint8_t, 5> buffer_a = {200, 80, 0, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_a = {0x7f, 0xff, 0, 0};
+            std::array<uint8_t, 5> buffer_b = {0xff, 0, 0, 0, 0};
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{
@@ -283,7 +332,7 @@ SCENARIO("capacitance callback tests") {
                 REQUIRE(sent.sensor == can_ids::SensorType::capacitive);
                 // we're just checking that the data is faithfully represented,
                 // don't really care what it is
-                REQUIRE(sent.sensor_data == 210044480);
+                REQUIRE(sent.sensor_data == convert_to_fixed_point(15, 15));
             }
             THEN("it should not touch the sync line") {
                 REQUIRE(mock_hw.get_sync_state_mock() == false);
@@ -329,8 +378,8 @@ SCENARIO("capacitance callback tests") {
             }
         }
         WHEN("it receives data over its threshold") {
-            std::array<uint8_t, 5> buffer_a = {200, 80, 0, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_a = {0x7f, 0xff, 0, 0, 0};
+            std::array<uint8_t, 5> buffer_b = {0xff, 0, 0, 0, 0};
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{
@@ -347,7 +396,7 @@ SCENARIO("capacitance callback tests") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-
+            callback_host.set_threshold(10);
             callback_host.handle_ongoing_response(first);
             callback_host.handle_ongoing_response(second);
 

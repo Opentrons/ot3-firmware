@@ -32,8 +32,7 @@ class CapacitiveMessageHandler {
           hardware{hardware},
           can_client{can_client},
           own_queue{own_queue},
-          capacitance_handler{can_client, writer, hardware, zero_threshold,
-                              capdac_offset} {}
+          capacitance_handler{can_client, writer, hardware} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
     auto operator=(const CapacitiveMessageHandler &)
@@ -53,13 +52,7 @@ class CapacitiveMessageHandler {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        std::array configuration_data{CONFIGURATION_MEASUREMENT,
-                                      DEVICE_CONFIGURATION_MSB,
-                                      DEVICE_CONFIGURATION_LSB};
-        writer.write(ADDRESS, configuration_data);
-        configuration_data =
-            std::array{FDC_CONFIGURATION, SAMPLE_RATE_MSB, SAMPLE_RATE_LSB};
-        writer.write(ADDRESS, configuration_data);
+        capacitance_handler.initialize();
     }
 
   private:
@@ -86,11 +79,11 @@ class CapacitiveMessageHandler {
          *
          */
         LOG("Received request to read from %d sensor", m.sensor);
-        capdac_offset = capacitance_handler.get_offset();
         if (bool(m.offset_reading)) {
             auto message = can_messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
-                .sensor_data = static_cast<int32_t>(capdac_offset)};
+                .sensor_data = convert_to_fixed_point(
+                    capacitance_handler.get_offset(), 15)};
             can_client.send_can_message(can_ids::NodeId::host, message);
         } else {
             capacitance_handler.reset_limited();
@@ -108,7 +101,6 @@ class CapacitiveMessageHandler {
 
     void visit(can_messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
-        capdac_offset = capacitance_handler.get_offset();
         capacitance_handler.reset_limited();
         capacitance_handler.set_number_of_reads(m.sample_rate);
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
@@ -123,10 +115,12 @@ class CapacitiveMessageHandler {
     void visit(can_messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor",
             m.threshold, m.sensor);
-        zero_threshold = m.threshold;
-
+        capacitance_handler.set_threshold(
+            fixed_point_to_float(m.threshold, 15));
         auto message = can_messages::SensorThresholdResponse{
-            .sensor = SensorType::capacitive, .threshold = zero_threshold};
+            .sensor = SensorType::capacitive,
+            .threshold = convert_to_fixed_point(
+                capacitance_handler.get_threshold(), 15)};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
@@ -147,10 +141,6 @@ class CapacitiveMessageHandler {
     }
 
     utils::BitMode mode = utils::BitMode::MSB;
-    // 3 pF
-    int32_t zero_threshold = 0x3;
-    // 0 pF
-    float capdac_offset = 0x0;
     static constexpr uint16_t DELAY = 20;
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
@@ -158,7 +148,6 @@ class CapacitiveMessageHandler {
     CanClient &can_client;
     OwnQueue &own_queue;
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
-    uint32_t sensor_bindings = 0;
 };
 
 /**
