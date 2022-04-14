@@ -4,10 +4,13 @@
 #include "can/core/message_writer.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/tasks/spi_task.hpp"
 
 namespace head_tasks {
 
@@ -19,11 +22,12 @@ void start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         left_motion_controller,
-    motor_driver::MotorDriver& left_motor_driver,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
-    motor_driver::MotorDriver& right_motor_driver,
-    presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver);
+    presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
+    spi::hardware::SpiDeviceBase& spi2_device,
+    spi::hardware::SpiDeviceBase& spi3_device,
+    tmc2130::configs::TMC2130DriverConfig& configs);
 
 /**
  * The client for all head message queues not associated with a single motor.
@@ -61,7 +65,7 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
 
-    void send_motor_driver_queue(const motor_driver_task::TaskMessage& m);
+    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
 
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
@@ -70,13 +74,17 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motor_driver_task::TaskMessage>* motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+        motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
         move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>* move_status_report_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
+        spi2_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
+        spi3_queue{nullptr};
 };
 
 /**
@@ -84,8 +92,11 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
  * and one for the right.
  */
 struct MotorTasks {
-    motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
+    tmc2130::tasks::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue,
+        tmc2130::configs::TMC2130DriverConfig, MotorQueueClient,
+        spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>>*
+        tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
@@ -94,6 +105,11 @@ struct MotorTasks {
         nullptr};
     move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
+    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi2_task{
+        nullptr};
+    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi3_task{
+        nullptr};
+
 };
 
 /**

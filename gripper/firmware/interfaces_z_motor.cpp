@@ -1,9 +1,11 @@
-#include "common/firmware/spi_comms.hpp"
+
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
+
+#include "spi/firmware/spi_comms.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -15,7 +17,7 @@
 /**
  * The SPI configuration.
  */
-static spi::SPI_interface SPI_intf = {
+static spi::hardware::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
@@ -25,7 +27,7 @@ static spi::SPI_interface SPI_intf = {
 /**
  * The SPI interface.
  */
-static spi::Spi spi_comms(SPI_intf);
+static spi::hardware::Spi spi_comms(SPI_intf);
 
 /**
  * Motor pin configuration.
@@ -71,7 +73,7 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
 /**
  * Motor driver configuration.
  */
-static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
+static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -103,7 +105,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
  * The motor struct.
  */
 static motor_class::Motor z_motor{
-    spi_comms,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
@@ -113,7 +114,6 @@ static motor_class::Motor z_motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue};
 
 /**
@@ -136,8 +136,24 @@ void z_motor_iface::initialize() {
 
     // Initialize Encoder
     initialize_enc();
+
+    // Start the can bus
+    can_start();
+
+    iWatchdog.start(6);
+}
+
+auto z_motor_iface::get_can_bus() -> can_bus::CanBus& { return canbus; }
+
+auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {
+    return spi_comms;
 }
 
 auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return z_motor;
+}
+
+auto z_motor_iface::get_tmc2130_driver_configs()
+    -> tmc2130::configs::TMC2130DriverConfig& {
+    return MotorDriverConfigurations;
 }

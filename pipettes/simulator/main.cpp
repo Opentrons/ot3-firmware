@@ -12,7 +12,7 @@
 #include "common/core/logging.h"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/configs.hpp"

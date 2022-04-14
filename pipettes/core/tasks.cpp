@@ -25,11 +25,15 @@ static auto i2c1_task_client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto i2c3_task_client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
+
+static auto spi_task_client =
+    spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
+
 static auto mc_task_builder =
     freertos_task::TaskStarter<512,
                                motion_controller_task::MotionControllerTask>{};
-static auto motor_driver_task_builder =
-    freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
+static auto tmc2130_driver_task_builder =
+    freertos_task::TaskStarter<512, tmc2130::tasks::TMC2130MotorDriverTask>{};
 static auto move_group_task_builder =
     freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder = freertos_task::TaskStarter<
@@ -61,6 +65,8 @@ static auto i2c1_poll_client =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
+static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
+
 /**
  * Start pipettes tasks.
  */
@@ -68,17 +74,19 @@ void pipettes_tasks::start_tasks(
     can_bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         motion_controller,
-    motor_driver::MotorDriver& motor_driver,
     i2c::hardware::I2CDeviceBase& i2c3_device,
     i2c::hardware::I2CDeviceBase& i2c1_device,
     sensors::hardware::SensorHardwareBase& sensor_hardware,
-    can_ids::NodeId id) {
+    spi::hardware::SpiDeviceBase& spi_device,
+    tmc2130::configs::TMC2130DriverConfig& driver_configs, can_ids::NodeId id) {
+
     queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
 
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus, id);
+
     auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3_device);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
     auto& i2c1_task = i2c1_task_builder.start(5, "i2c1", i2c1_device);
@@ -93,12 +101,15 @@ void pipettes_tasks::start_tasks(
 
     auto& motion = mc_task_builder.start(5, "motion controller",
                                          motion_controller, queues);
-    auto& motor = motor_driver_task_builder.start(5, "motor driver",
-                                                  motor_driver, queues);
+    auto& tmc2130_driver = tmc2130_driver_task_builder.start(
+        5, driver_configs, queues, spi_task_client);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
+
+    auto& spi_task = spi_task_builder.start(5, spi_device);
+    spi_task_client.set_queue(&spi_task.get_queue());
 
     auto& eeprom_task =
         eeprom_task_builder.start(5, "eeprom", i2c3_task_client, queues);
@@ -113,7 +124,7 @@ void pipettes_tasks::start_tasks(
     // TODO (lc: 03-21-2022, add necessary sensor tasks for secondary i2c bus
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
-    tasks.motor_driver = &motor;
+    tasks.tmc2130_driver = &tmc2130_driver;
     tasks.move_group = &move_group;
     tasks.move_status_reporter = &move_status_reporter;
     tasks.eeprom_task = &eeprom_task;
@@ -124,9 +135,10 @@ void pipettes_tasks::start_tasks(
     tasks.i2c1_task = &i2c1_task;
     tasks.i2c3_poller_task = &i2c3_poller_task;
     tasks.i2c1_poller_task = &i2c1_poller_task;
+    tasks.spi_task = &spi_task;
 
     queues.motion_queue = &motion.get_queue();
-    queues.motor_queue = &motor.get_queue();
+    queues.tmc2130_driver_queue = &tmc2130_driver.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.set_queue(&can_writer.get_queue());
     queues.move_status_report_queue = &move_status_reporter.get_queue();
@@ -139,6 +151,7 @@ void pipettes_tasks::start_tasks(
     queues.i2c1_queue = &i2c1_task.get_queue();
     queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     queues.i2c1_poller_queue = &i2c1_poller_task.get_queue();
+    queues.spi_queue = &spi_task.get_queue();
 }
 
 pipettes_tasks::QueueClient::QueueClient()
@@ -152,8 +165,8 @@ void pipettes_tasks::QueueClient::send_motion_controller_queue(
 }
 
 void pipettes_tasks::QueueClient::send_motor_driver_queue(
-    const motor_driver_task::TaskMessage& m) {
-    motor_queue->try_write(m);
+    const tmc2130::tasks::TaskMessage& m) {
+    tmc2130_driver_queue->try_write(m);
 }
 
 void pipettes_tasks::QueueClient::send_move_group_queue(
