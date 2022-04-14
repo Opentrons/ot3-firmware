@@ -6,28 +6,40 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
-#include "motor-control/core/stepper_motor/motor_driver.hpp"
-#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
-#include "motor-control/core/stepper_motor/tmc2130_config.hpp"
-#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
+#include "common/core/message_utils.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "spi/core/messages.hpp"
 
-namespace motor_driver_task {
+namespace tmc2130 {
 
-using TaskMessage = motor_control_task_messages::MotorDriverTaskMessage;
+namespace tasks {
+
+using _ResponseMessage = std::tuple<spi::messages::TransactResponse>;
+using _CanMessageTuple = std::tuple<can_messages::ReadMotorDriverRegister,
+                                    can_messages::SetupRequest,
+                                    can_messages::WriteMotorDriverRegister,
+                                    can_messages::WriteMotorCurrentRequest>;
+using CanMessage =
+    typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
+                                       _CanMessageTuple>::type;
+using TaskMessage = typename ::utils::VariantCat<
+    std::variant<std::monostate>,
+    typename ::utils::TuplesToVariants<_CanMessageTuple,
+                                       _ResponseMessage>::type>::type;
 
 /**
  * The handler of motor driver messages
  */
-template <message_writer_task::TaskClient CanClient>
+template <class Writer, message_writer_task::TaskClient CanClient,
+          class TaskQueue>
 class MotorDriverMessageHandler {
   public:
-    MotorDriverMessageHandler(motor_driver::MotorDriver& driver,
-                              CanClient& can_client)
-        : driver{configs, writer}, can_client{can_client} {
-
-    }
+    MotorDriverMessageHandler(Writer& writer, CanClient& can_client,
+                              TaskQueue& task_queue,
+                              tmc2130::configs::TMC2130DriverConfig& configs)
+        : driver(writer, task_queue, configs), can_client(can_client) {}
     MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
     MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
     auto operator=(const MotorDriverMessageHandler& c) = delete;
@@ -43,16 +55,24 @@ class MotorDriverMessageHandler {
     }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    void handle(const std::monostate m) { static_cast<void>(m); }
 
     void handle(const spi::messages::TransactResponse& m) {
-        auto data = driver.handle_spi_response(m.success, m.id, m.rxBuffer);
-        if (m.send_to_can) {
-            can_messages::ReadMotorDriverRegisterResponse response_msg{
-                .reg_address = m.reg_address,
-                .data = data,
-            };
-            can_client.send_can_message(can_ids::NodeId::host, response_msg);
+        if (m.id.command_type ==
+            static_cast<uint8_t>(spi::hardware::Mode::WRITE)) {
+            driver.handle_spi_write(tmc2130::registers::Registers(m.id.token),
+                                    m.rxBuffer);
+        } else {
+            auto data = driver.handle_spi_read(
+                tmc2130::registers::Registers(m.id.token), m.rxBuffer);
+            if (m.id.send_response) {
+                can_messages::ReadMotorDriverRegisterResponse response_msg{
+                    .reg_address = m.id.token,
+                    .data = data,
+                };
+                can_client.send_can_message(can_ids::NodeId::host,
+                                            response_msg);
+            }
         }
     }
 
@@ -64,18 +84,16 @@ class MotorDriverMessageHandler {
     void handle(const can_messages::WriteMotorDriverRegister& m) {
         LOG("Received write motor driver request: addr=%d, data=%d",
             m.reg_address, m.data);
-        if (motor_driver_config::DriverRegisters::is_valid_address(
-                m.reg_address)) {
-            driver.write(tmc2130::Registers(m.reg_address), m.data);
+        if (tmc2130::registers::is_valid_address(m.reg_address)) {
+            driver.write(tmc2130::registers::Registers(m.reg_address), m.data);
         }
     }
 
     void handle(const can_messages::ReadMotorDriverRegister& m) {
         LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
-        if (motor_driver_config::DriverRegisters::is_valid_address(
-                m.reg_address)) {
-            driver.read(tmc2130::Registers(m.reg_address), data);
+        if (tmc2130::registers::is_valid_address(m.reg_address)) {
+            driver.read(tmc2130::registers::Registers(m.reg_address), data);
         }
     }
 
@@ -92,23 +110,27 @@ class MotorDriverMessageHandler {
             driver.get_register_map().ihold_irun.run_current =
                 driver.convert_to_tmc2130_current_value(m.run_current);
         }
-        driver.write(tmc2130::Registers::IHOLD_IRUN, driver.get_current_settings());
+        driver.set_current_control(driver.get_register_map().ihold_irun);
     }
 
-    tmc2130::TMC2130& driver;
-    SpiTransactManager& _spi_manager;
-    tmc2130::TMC2130DriverConfig configurations;
+    tmc2130::driver::TMC2130<Writer, TaskQueue> driver;
     CanClient& can_client;
 };
 
 /**
  * The task type.
  */
+<<<<<<< HEAD
 template <template <class> class QueueImpl>
+=======
+template <template <class> class QueueImpl, class MotorDriverConfigs,
+          message_writer_task::TaskClient CanClient, class SpiWriter>
+>>>>>>> more edits to the motor controller driver
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
-class TMC2130MotorDriverTask {
+class MotorDriverTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
+<<<<<<< HEAD
 
     TMC2130MotorDriverTask(QueueType& queue) : queue{queue} {}
     TMC2130MotorDriverTask(const TMC2130MotorDriverTask& c) = delete;
@@ -116,15 +138,30 @@ class TMC2130MotorDriverTask {
     auto operator=(const TMC2130MotorDriverTask& c) = delete;
     auto operator=(const TMC2130MotorDriverTask&& c) = delete;
     ~TMC2130MotorDriverTask() = default;
+=======
+    MotorDriverTask(QueueType& queue) : queue{queue} {}
+    MotorDriverTask(const MotorDriverTask& c) = delete;
+    MotorDriverTask(const MotorDriverTask&& c) = delete;
+    auto operator=(const MotorDriverTask& c) = delete;
+    auto operator=(const MotorDriverTask&& c) = delete;
+    ~MotorDriverTask() = default;
+>>>>>>> more edits to the motor controller driver
 
     /**
      * Task entry point.
      */
+<<<<<<< HEAD
     template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(motor_driver::MotorDriver* driver,
                                  CanClient* can_client) {
 
         auto handler = MotorDriverMessageHandler{*driver, *can_client};
+=======
+    [[noreturn]] void operator()(MotorDriverConfigs* configs,
+                                 CanClient* can_client, SpiWriter* writer) {
+        auto handler = MotorDriverMessageHandler(*writer, *can_client,
+                                                 get_queue(), *configs);
+>>>>>>> more edits to the motor controller driver
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -148,4 +185,6 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_motor_driver_queue(m)};
 };
 
-}  // namespace motor_driver_task
+}  // namespace tasks
+
+}  // namespace tmc2130
