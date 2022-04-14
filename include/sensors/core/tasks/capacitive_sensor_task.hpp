@@ -128,7 +128,7 @@ class CapacitiveMessageHandler {
         capacitance_handler.set_echoing(
             m.binding &
             static_cast<uint8_t>(can_ids::SensorOutputBinding::report));
-        capacitance_handler.set_echoing(
+        capacitance_handler.set_bind_sync(
             m.binding &
             static_cast<uint8_t>(can_ids::SensorOutputBinding::sync));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
