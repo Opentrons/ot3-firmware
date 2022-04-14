@@ -7,6 +7,11 @@
 #pragma once
 #include <concepts>
 
+template <typename Message1, typename Message2>
+concept ConvertibleMessage = requires(const Message2& m2) {
+    { Message1(m2) } -> std::same_as<Message1>;
+};
+
 template <class MQ, typename MessageType>
 concept MessageQueue = requires(MQ mq, MessageType mt, const MQ cmq,
                                 const MessageType cmt) {
@@ -30,4 +35,9 @@ concept MessageQueue = requires(MQ mq, MessageType mt, const MQ cmq,
     { cmq.has_message_isr() } -> std::same_as<bool>;
     // Defines the maximum wait time.
     { MQ::max_delay } -> std::convertible_to<int>;
+};
+
+template <class MQ, typename OtherMessageType>
+concept RespondableMessageQueue = requires(MQ mq, const OtherMessageType& om) {
+    { MQ::try_write_static(&mq, om) } -> std::same_as<bool>;
 };

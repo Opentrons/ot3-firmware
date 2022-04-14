@@ -48,17 +48,28 @@ void LED_drive_gpio_init(void) {
 }
 
 void sync_drive_gpio_init() {
-    PipetteHardwarePin hardware =
+    PipetteHardwarePin sync_in_hardware =
         pipette_hardware_get_gpio(pipette_hardware_device_sync_in);
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
     /*Configure GPIO pin*/
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = hardware.pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+    GPIO_InitTypeDef sync_in_init = {0};
+    sync_in_init.Pin = sync_in_hardware.pin;
+    sync_in_init.Mode = GPIO_MODE_INPUT;
+    sync_in_init.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(sync_in_hardware.port, &sync_in_init);
+
+    PipetteHardwarePin sync_out_hardware =
+        pipette_hardware_get_gpio(pipette_hardware_device_sync_out);
+
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    GPIO_InitTypeDef sync_out_init = {0};
+    sync_out_init.Pin = sync_out_hardware.pin;
+    sync_out_init.Mode = GPIO_MODE_OUTPUT_OD;
+    sync_out_init.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(sync_out_hardware.port, &sync_out_init);
 }
 
 void utility_gpio_init(void) {

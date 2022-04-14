@@ -19,7 +19,8 @@
  * reads of the MSB and LSB registers to get the data.
  */
 
-namespace fdc1004_utils {
+namespace sensors {
+namespace fdc1004 {
 
 // Capacitance Sensor Address and Registers
 constexpr uint16_t ADDRESS = 0x50 << 1;
@@ -35,12 +36,17 @@ constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
 constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
 // configurations
 constexpr uint16_t DEVICE_CONFIGURATION =
-    0x0 << 13 |                             // CHA = CIN1 (U.FL Connector)
-    0x4 << 10;                              // CHB = CAPDAC
+    0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
+    0x4 << 10;   // CHB = CAPDAC
+constexpr uint8_t DEVICE_CONFIGURATION_MSB =
+    static_cast<uint8_t>(DEVICE_CONFIGURATION >> 8);
+constexpr uint8_t DEVICE_CONFIGURATION_LSB =
+    static_cast<uint8_t>(DEVICE_CONFIGURATION & 0xff);
 constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
                                  1 << 8 |   // Repeat enabled
                                  1 << 7;    // Measurement 1 enabled
-
+constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
+constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
 constexpr uint16_t DEVICE_ID = 0x1004;
 
 // Constants
@@ -57,6 +63,11 @@ inline auto convert_capacitance(uint32_t capacitance, uint16_t read_count,
         static_cast<float>(capacitance) / static_cast<float>(read_count);
     float converted_capacitance = average / MAX_MEASUREMENT + current_offset;
     return convert_to_fixed_point(converted_capacitance, 15);
+}
+
+inline auto convert_reads(uint16_t msb, uint16_t lsb) -> uint32_t {
+    return (static_cast<uint32_t>(msb) << MSB_SHIFT) |
+           static_cast<uint32_t>(lsb);
 }
 
 inline auto update_capdac(uint16_t capacitance, float current_offset)
@@ -78,5 +89,5 @@ inline auto update_capdac(uint16_t capacitance, float current_offset)
 inline auto get_offset_pf(uint16_t unitless_capdac) -> float {
     return static_cast<float>(unitless_capdac) * CAPDAC_OFFSET;
 }
-
-}  // namespace fdc1004_utils
+};  // namespace fdc1004
+};  // namespace sensors

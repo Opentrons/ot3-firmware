@@ -81,6 +81,8 @@ enum class MessageId {
     set_sensor_threshold_response = 0x87,
     sensor_diagnostic_request = 0x88,
     sensor_diagnostic_response = 0x89,
+    bind_sensor_output_request = 0x8a,
+    bind_sensor_output_response = 0x8b,
 };
 
 /** Can bus arbitration id node id. */
@@ -132,6 +134,13 @@ enum class SensorType {
     temperature = 0x3,
     pressure = 0x4,
     pressure_temperature = 0x5,
+};
+
+/** Links sensor threshold triggers to pins. */
+enum class SensorOutputBinding {
+    none = 0x0,
+    sync = 0x1,
+    report = 0x2,
 };
 
 }  // namespace can_ids

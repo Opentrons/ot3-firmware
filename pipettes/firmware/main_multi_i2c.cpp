@@ -10,10 +10,11 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
-#include "common/firmware/i2c_comms.hpp"
+#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
@@ -25,6 +26,7 @@
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -51,8 +53,8 @@ spi::SPI_interface SPI_intf = {
 };
 static spi::Spi spi_comms(SPI_intf);
 
-static auto i2c_comms3 = i2c::I2C();
-static auto i2c_comms1 = i2c::I2C();
+static auto i2c_comms3 = i2c::hardware::I2C();
+static auto i2c_comms1 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
@@ -110,6 +112,11 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
+static sensors::hardware::SensorHardware pins_for_sensor_multi(gpio::PinConfig{
+    .port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
+static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
+    .port = GPIOB, .pin = GPIO_PIN_5, .active_setting = GPIO_PIN_RESET});
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -133,9 +140,12 @@ auto main() -> int {
 
     can_start();
 
-    pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms3, i2c_comms1,
-                                id);
+    pipettes_tasks::start_tasks(
+        can_bus_1, pipette_motor.motion_controller, pipette_motor.driver,
+        i2c_comms3, i2c_comms1,
+        ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
+                                              : pins_for_sensor_multi),
+        id);
 
     iWatchdog.start(6);
 

@@ -4,6 +4,7 @@
 #include "sensors/simulation/sensors.hpp"
 
 namespace mmr920C04_simulator {
+using namespace sensors;
 class MMR920C04 : public sensor_simulator::SensorType {
   public:
     MMR920C04() {

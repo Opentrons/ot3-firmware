@@ -4,17 +4,21 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "i2c/core/messages.hpp"
 #include "pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
 
-namespace pressure_sensor_task {
+namespace sensors {
+namespace tasks {
 
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
+template <class I2CQueueWriter, class I2CQueuePoller,
+          message_writer_task::TaskClient CanClient, class OwnQueue>
 class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
-                                    CanClient &can_client)
-        : driver{i2c_writer, can_client} {}
+                                    I2CQueuePoller &i2c_poller,
+                                    CanClient &can_client, OwnQueue &own_queue)
+        : driver{i2c_writer, i2c_poller, can_client, own_queue} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -23,7 +27,7 @@ class PressureMessageHandler {
         -> PressureMessageHandler && = delete;
     ~PressureMessageHandler() = default;
 
-    void handle_message(sensor_task_utils::TaskMessage &m) {
+    void handle_message(const utils::TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
@@ -37,9 +41,13 @@ class PressureMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(const std::monostate &m) {}
 
-    void visit(can_messages::ReadFromSensorRequest &m) {
+    void visit(const i2c::messages::TransactionResponse &m) {
+        driver.handle_response(m);
+    }
+
+    void visit(const can_messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
             driver.get_pressure(mmr920C04::Registers::PRESSURE_READ);
@@ -48,7 +56,7 @@ class PressureMessageHandler {
         }
     }
 
-    void visit(can_messages::WriteToSensorRequest &m) {
+    void visit(const can_messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor\n", m.data,
             m.sensor);
         if (mmr920C04::is_valid_address(m.reg_address)) {
@@ -56,7 +64,7 @@ class PressureMessageHandler {
         }
     }
 
-    void visit(can_messages::BaselineSensorRequest &m) {
+    void visit(const can_messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
@@ -67,26 +75,30 @@ class PressureMessageHandler {
         }
     }
 
-    void visit(can_messages::SetSensorThresholdRequest &m) {
+    void visit(const can_messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
         driver.set_threshold(m.threshold);
         driver.send_threshold();
     }
 
-    pressure_driver::MMR92C04<I2CQueueWriter, CanClient> driver;
+    void visit(const can_messages::BindSensorOutputRequest &m) {
+        LOG("received bind request but not implemented");
+        static_cast<void>(m);
+    }
+
+    MMR92C04<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl, class I2CQueueWriter,
-          message_writer_task::TaskClient CanClient>
-requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
-                      sensor_task_utils::TaskMessage>
+          class I2CQueuePoller, message_writer_task::TaskClient CanClient>
+requires MessageQueue<QueueImpl<utils::TaskMessage>, utils::TaskMessage>
 class PressureSensorTask {
   public:
-    using QueueType = QueueImpl<sensor_task_utils::TaskMessage>;
+    using QueueType = QueueImpl<utils::TaskMessage>;
     PressureSensorTask(QueueType &queue) : queue{queue} {}
     PressureSensorTask(const PressureSensorTask &c) = delete;
     PressureSensorTask(const PressureSensorTask &&c) = delete;
@@ -97,11 +109,12 @@ class PressureSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer,
+    [[noreturn]] void operator()(I2CQueueWriter *writer, I2CQueuePoller *poller,
                                  CanClient *can_client) {
-        auto handler = PressureMessageHandler{*writer, *can_client};
+        auto handler =
+            PressureMessageHandler{*writer, *poller, *can_client, get_queue()};
         handler.initialize();
-        sensor_task_utils::TaskMessage message{};
+        utils::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
@@ -114,5 +127,5 @@ class PressureSensorTask {
   private:
     QueueType &queue;
 };
-
-}  // namespace pressure_sensor_task
+}  // namespace tasks
+}  // namespace sensors

@@ -39,8 +39,7 @@ static auto system_message_handler = system_handler::SystemMessageHandler{
     queue_client, version_get()->version, version_get()->flags,
     std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 
-static auto sensor_handler =
-    sensor_message_handler::SensorHandler{queue_client};
+static auto sensor_handler = sensors::handlers::SensorHandler{queue_client};
 
 static auto pipette_info_handler =
     pipette_info::PipetteInfoMessageHandler{queue_client};
@@ -80,7 +79,8 @@ static auto system_dispatch_target = can_dispatch::DispatchParseTarget<
 static auto sensor_dispatch_target = can_dispatch::DispatchParseTarget<
     decltype(sensor_handler), can_messages::ReadFromSensorRequest,
     can_messages::WriteToSensorRequest, can_messages::BaselineSensorRequest,
-    can_messages::SetSensorThresholdRequest>{sensor_handler};
+    can_messages::SetSensorThresholdRequest,
+    can_messages::BindSensorOutputRequest>{sensor_handler};
 
 static auto pipette_info_target =
     can_dispatch::DispatchParseTarget<decltype(pipette_info_handler),
