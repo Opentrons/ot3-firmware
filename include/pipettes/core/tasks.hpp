@@ -30,6 +30,21 @@ namespace pipettes_tasks {
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      motion_controller,
+<<<<<<< HEAD
+=======
+                 i2c::hardware::I2CDeviceBase& i2c,
+                 sensors::hardware::SensorHardwareBase& sensor_hardware,
+                 spi::hardware::SpiDeviceBase& spi_device,
+                 tmc2130::configs::TMC2130DriverConfig& driver_configs,
+                 can_ids::NodeId id);
+
+/**
+ * Start pipettes tasks with two i2c buses.
+ */
+void start_tasks(can_bus::CanBus& can_bus,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     motion_controller,
+>>>>>>> rebase fixups
                  i2c::hardware::I2CDeviceBase& i2c3_device,
                  i2c::hardware::I2CDeviceBase& i2c1_device,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,

@@ -150,7 +150,7 @@ auto main() -> int {
         ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
                                               : pins_for_sensor_lt),
         spi_comms, driver_configs, id);
-
+    
     iWatchdog.start(6);
 
     vTaskStartScheduler();

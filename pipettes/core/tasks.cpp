@@ -67,6 +67,7 @@ static auto i2c3_poll_client =
 
 static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
+
 /**
  * Start pipettes tasks.
  */
@@ -102,13 +103,13 @@ void pipettes_tasks::start_tasks(
     auto& motion = mc_task_builder.start(5, "motion controller",
                                          motion_controller, queues);
     auto& tmc2130_driver = tmc2130_driver_task_builder.start(
-        5, driver_configs, queues, spi_task_client);
+        5, "tmc2130 driver", driver_configs, queues, spi_task_client);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
 
-    auto& spi_task = spi_task_builder.start(5, spi_device);
+    auto& spi_task = spi_task_builder.start(5, "spi task" spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
 
     auto& eeprom_task =
@@ -121,7 +122,6 @@ void pipettes_tasks::start_tasks(
         5, "capacitive sensor", i2c1_task_client, i2c1_poll_client,
         sensor_hardware, queues);
 
-    // TODO (lc: 03-21-2022, add necessary sensor tasks for secondary i2c bus
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
     tasks.tmc2130_driver = &tmc2130_driver;
