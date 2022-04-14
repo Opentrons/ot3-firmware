@@ -2,8 +2,8 @@
 
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
-#include "spi/core/writer.hpp"
 #include "spi/core/tasks/spi_task.hpp"
+#include "spi/core/writer.hpp"
 #include "spi/tests/mock_response_queue.hpp"
 
 #define u8(X) static_cast<uint8_t>(X)
@@ -25,7 +25,8 @@ SCENARIO("Test the spi command queue writer") {
         constexpr uint8_t TEST_REGISTER = 0x1;
 
         WHEN("we write some data to a register") {
-            writer.write(TEST_REGISTER, 0xd34db33f, response_queue, TEST_REGISTER);
+            writer.write(TEST_REGISTER, 0xd34db33f, response_queue,
+                         TEST_REGISTER);
             THEN("the queue should contain one messages") {
                 REQUIRE(queue.get_size() == 1);
             }
@@ -62,10 +63,9 @@ SCENARIO("Test the spi command queue writer") {
                 AND_WHEN("we try and write a response") {
                     std::array check_buf{u8(1), u8(2), u8(3), u8(4), u8(5)};
                     response_msg.response_writer.write(
-                        spi::messages::TransactResponse{
-                            .id = {.token = 25},
-                            .rxBuffer = check_buf,
-                            .success = true});
+                        spi::messages::TransactResponse{.id = {.token = 25},
+                                                        .rxBuffer = check_buf,
+                                                        .success = true});
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 25);

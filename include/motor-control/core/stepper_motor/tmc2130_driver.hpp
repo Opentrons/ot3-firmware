@@ -54,7 +54,7 @@ class TMC2130 {
     auto write(Registers addr, uint32_t command_data) -> bool {
         uint8_t converted_addr = static_cast<uint8_t>(addr);
         return _spi_manager.write(converted_addr, command_data, _task_queue,
-                           converted_addr);
+                                  converted_addr);
     }
 
     auto write_config() -> bool {

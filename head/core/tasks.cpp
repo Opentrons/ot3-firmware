@@ -105,10 +105,11 @@ void head_tasks::start_tasks(
     left_tasks.tmc2130_driver = &left_tmc2130_driver;
     left_tasks.move_group = &left_move_group;
     left_tasks.move_status_reporter = &left_move_status_reporter;
-    left_tasks.spi
+    left_tasks
+        .spi
 
-    // Assign left motor queue client message queue pointers
-    left_queues.motion_queue = &left_motion.get_queue();
+            // Assign left motor queue client message queue pointers
+            left_queues.motion_queue = &left_motion.get_queue();
     left_queues.motor_queue = &left_tmc2130_driver.get_queue();
     left_queues.move_group_queue = &left_move_group.get_queue();
     left_queues.set_queue(&can_writer.get_queue());

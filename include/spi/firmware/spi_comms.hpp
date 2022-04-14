@@ -32,6 +32,6 @@ class Spi : public SpiDeviceBase {
     SPI_interface SPI_intf;
 };
 
-} // namespace hardware
+}  // namespace hardware
 
-} // namespace spi
+}  // namespace spi

@@ -1,13 +1,10 @@
 #include "catch2/catch.hpp"
+#include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "spi/core/writer.hpp"
 
-#include "common/tests/mock_message_queue.hpp"
-
-
 TEST_CASE("Setup a tmc2130 motor driver") {
-    auto fake_queue =
-    auto spi_writer = spi::writer::Writer{};
+    auto fake_queue = auto spi_writer = spi::writer::Writer{};
     tmc2130::TMC2130DriverConfig driver_config{
         .registers = {.gconfig = {.en_pwm_mode = 1},
                       .ihold_irun = {.hold_current = 0x2,
@@ -27,7 +24,8 @@ TEST_CASE("Setup a tmc2130 motor driver") {
             .v_sf = 0.325,
         }};
 
-    auto subject = tmc2130::driver::TMC2130{spi_writer, task_queue, driver_config};
+    auto subject =
+        tmc2130::driver::TMC2130{spi_writer, task_queue, driver_config};
 
     GIVEN("a tmc2130 motor driver") {
         WHEN("Setup is called") {

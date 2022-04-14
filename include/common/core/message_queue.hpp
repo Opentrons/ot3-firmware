@@ -41,4 +41,3 @@ template <class MQ, typename OtherMessageType>
 concept RespondableMessageQueue = requires(MQ mq, const OtherMessageType& om) {
     { MQ::try_write_static(&mq, om) } -> std::same_as<bool>;
 };
-
