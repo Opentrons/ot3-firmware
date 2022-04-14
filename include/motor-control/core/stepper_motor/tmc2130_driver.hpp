@@ -115,16 +115,16 @@ class TMC2130 {
                                        response);
         switch (addr) {
             case Registers::GCONF:
-                _registers.gconfig = GConfig{response};
+                update_gconf(response);
                 return response;
             case Registers::GSTAT:
-                _registers.gstat = GStatus{response};
+                update_gstatus(response);
                 return response;
             case Registers::CHOPCONF:
-                _registers.chopconf = ChopConfig{response};
+                update_chop_config(response);
                 return response;
             case Registers::DRVSTATUS:
-                _registers.drvstatus = DriveStatus{response};
+                update_driver_status(response);
                 return response;
             default:
                 return response;
@@ -258,32 +258,51 @@ class TMC2130 {
      * be read, so this function gets it from the actual device.
      */
     [[nodiscard]] auto get_gconf() -> std::optional<GConfig> {
-        auto ret = read_register<GConfig>();
+        return _registers.gconfig;
+    }
+
+    auto update_gconf(uint32_t data) -> void {
+        auto ret = read_register<GConfig>(data);
         if (ret.has_value()) {
             _registers.gconfig = ret.value();
         }
-        return ret;
     }
+
     /**
      * @brief Get the general status register
      */
     [[nodiscard]] auto get_gstatus() -> GStatus {
-        auto ret = read_register<GStatus>();
-        if (ret.has_value()) {
-            return ret.value();
+        if (bool(_registers.gstat)) {
+                return _registers.gstat;
         }
         return GStatus{.driver_error = 1};
+    }
+
+    /**
+     * @brief Update the general status register
+     */
+    auto update_gstatus(uint32_t data) -> void {
+        auto ret = read_register<GStatus>(data);
+        if (ret.has_value()) {
+            _registers.gstat = ret.value();
+        }
     }
     /**
      * @brief Get the current CHOPCONF register status. This register can
      * be read, so this function gets it from the actual device.
      */
     [[nodiscard]] auto get_chop_config() -> std::optional<ChopConfig> {
-        auto ret = read_register<ChopConfig>();
+        return _registers.chopconf;
+    }
+
+    /**
+     * @brief Update the current CHOPCONF register status.
+     */
+    auto update_chop_config(uint32_t data) -> void {
+        auto ret = read_register<ChopConfig>(data);
         if (ret.has_value()) {
             _registers.chopconf = ret.value();
         }
-        return ret;
     }
 
     /**
@@ -292,7 +311,19 @@ class TMC2130 {
      * @return The register, or nothing if the register couldn't be read.
      */
     [[nodiscard]] auto get_driver_status() -> std::optional<DriveStatus> {
-        return read_register<DriveStatus>();
+        return _registers.drvstatus;
+    }
+
+    /**
+     * @brief Get the current DRV_STATUS register reading. Contains
+     * information on the current error & stallguard status of the IC.
+     * @return The register, or nothing if the register couldn't be read.
+     */
+    auto update_driver_status(uint32_t data) -> void {
+        auto ret = read_register<DriveStatus>(data);
+        if (ret.has_value()) {
+            _registers.drvstatus = ret.value();
+        }
     }
 
     /**
