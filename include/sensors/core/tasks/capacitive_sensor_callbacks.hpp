@@ -90,7 +90,10 @@ struct ReadCapacitanceCallback {
 
     void set_echoing(bool should_echo) { echoing = should_echo; }
 
-    void set_bind_sync(bool should_bind) { bind_sync = should_bind; }
+    void set_bind_sync(bool should_bind) {
+        bind_sync = should_bind;
+        hardware.reset_sync();
+    }
 
     void set_offset(float new_offset) {
         if (new_offset != current_offset_pf) {
