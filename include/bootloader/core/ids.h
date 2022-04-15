@@ -25,6 +25,8 @@ typedef enum {
     can_messageid_task_info_response = 0x305,
     can_messageid_pipette_info_request = 0x306,
     can_messageid_pipette_info_response = 0x307,
+    can_messageid_gripper_info_request = 0x308,
+    can_messageid_gripper_info_response = 0x309,
     can_messageid_stop_request = 0x0,
     can_messageid_get_status_request = 0x1,
     can_messageid_get_status_response = 0x5,
@@ -95,6 +97,8 @@ typedef enum {
     can_nodeid_head_l = 0x51,
     can_nodeid_head_r = 0x52,
     can_nodeid_gripper = 0x20,
+    can_nodeid_gripper_z = 0x21,
+    can_nodeid_gripper_g = 0x22,
     can_nodeid_pipette_left_bootloader = 0x6f,
     can_nodeid_pipette_right_bootloader = 0x7f,
     can_nodeid_gantry_x_bootloader = 0x3f,
@@ -126,10 +130,9 @@ typedef enum {
 
 /** A bit field of the arbitration id parts. */
 typedef struct {
-    unsigned int function_code: 4;
-    unsigned int node_id: 7;
-    unsigned int originating_node_id: 7;
-    unsigned int message_id: 11;
-    unsigned int padding: 3;
+    unsigned int function_code : 4;
+    unsigned int node_id : 7;
+    unsigned int originating_node_id : 7;
+    unsigned int message_id : 11;
+    unsigned int padding : 3;
 } CANArbitrationIdParts;
-
