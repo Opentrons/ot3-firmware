@@ -127,7 +127,6 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
-
 void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -137,7 +136,6 @@ void z_motor_iface::initialize() {
 
     // Initialize Encoder
     initialize_enc();
-
 }
 
 auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
