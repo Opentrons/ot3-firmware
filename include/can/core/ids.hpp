@@ -27,6 +27,8 @@ enum class MessageId {
     task_info_response = 0x305,
     pipette_info_request = 0x306,
     pipette_info_response = 0x307,
+    gripper_info_request = 0x308,
+    gripper_info_response = 0x309,
     stop_request = 0x0,
     get_status_request = 0x1,
     get_status_response = 0x5,

@@ -12,6 +12,7 @@
 #include "common/core/logging.h"
 #include "common/core/version.h"
 #include "gripper/core/can_task.hpp"
+#include "gripper/core/gripper_info.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
 
@@ -33,6 +34,8 @@ static auto can_brushed_motor_handler =
     motor_message_handler::BrushedMotorHandler{queue_client};
 static auto can_brushed_motion_handler =
     motion_message_handler::BrushedMotionHandler{queue_client};
+static auto gripper_info_handler =
+    gripper_info::GripperInfoMessageHandler{queue_client};
 
 /** Handler of system messages. */
 static auto system_message_handler = system_handler::SystemMessageHandler{
@@ -56,12 +59,15 @@ static auto brushed_motor_dispatch_target =
 static auto brushed_motion_dispatch_target =
     can_task::BrushedMotionDispatchTarget{can_brushed_motion_handler};
 
+static auto gripper_info_dispatch_target =
+    can_task::GripperInfoDispatchTarget{gripper_info_handler};
+
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_task::GripperDispatcherType(
     [](auto _) -> bool { return true; }, motor_dispatch_target,
     motion_group_dispatch_target, motion_dispatch_target,
     system_dispatch_target, brushed_motor_dispatch_target,
-    brushed_motion_dispatch_target);
+    brushed_motion_dispatch_target, gripper_info_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_can_dispatch::FreeRTOSCanBufferControl<
