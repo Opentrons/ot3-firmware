@@ -21,6 +21,8 @@ GantryHardwarePin gantry_hardware_get_gpio(GantryHardwareDevice device) {
             return pinout;
 
         default:
+            pinout.port = GPIOB;
+            pinout.pin = GPIO_PIN_11;
             return pinout;
     }
 }
