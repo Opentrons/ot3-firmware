@@ -3,6 +3,7 @@
 #include "can/simlib/transport.hpp"
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_driver_hardware_iface.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
@@ -11,7 +12,7 @@
 /**
  * The SPI bus.
  */
-static auto spi_comms = sim_spi::SimSpiDeviceBase();
+static auto spi_comms = spi::hardware::SimSpiDeviceBase();
 
 /**
  * The motor interface.
@@ -27,7 +28,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 /**
  * Motor driver configuration.
  */
-static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
+static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -53,7 +54,6 @@ static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
  * The motor struct.
  */
 static motor_class::Motor motor{
-    spi_comms,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
@@ -63,7 +63,6 @@ static motor_class::Motor motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue};
 
 /**
@@ -90,7 +89,12 @@ static auto grip_motor = brushed_motor::BrushedMotor(
 
 void z_motor_iface::initialize(){};
 
+
 void grip_motor_iface::initialize(){};
+
+auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {
+    return spi_comms;
+}
 
 auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return motor;
@@ -98,4 +102,8 @@ auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
 
 auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
     return grip_motor;
+
+auto z_motor_iface::get_tmc2130_driver_configs()
+-> tmc2130::configs::TMC2130DriverConfig& {
+    return MotorDriverConfigurations;
 }
