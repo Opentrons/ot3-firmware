@@ -48,7 +48,7 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
             return pinout;
         case pipette_hardware_device_sync_in:
             pinout.port = GPIOC;
-            pinout.pin = GPIO_PIN_2;
+            pinout.pin = GPIO_PIN_5;
             return pinout;
         case pipette_hardware_device_sync_out:
             pinout.port = GPIOB;
