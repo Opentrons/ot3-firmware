@@ -18,9 +18,9 @@ namespace tasks {
 
 using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
 using CanMessageTuple = std::tuple<can_messages::ReadMotorDriverRegister,
-                                    can_messages::SetupRequest,
-                                    can_messages::WriteMotorDriverRegister,
-                                    can_messages::WriteMotorCurrentRequest>;
+                                   can_messages::SetupRequest,
+                                   can_messages::WriteMotorDriverRegister,
+                                   can_messages::WriteMotorCurrentRequest>;
 using CanMessage =
     typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
                                        CanMessageTuple>::type;

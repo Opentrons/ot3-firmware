@@ -3,8 +3,8 @@
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
-#include "spi/core/writer.hpp"
 #include "spi/core/tasks/spi_task.hpp"
+#include "spi/core/writer.hpp"
 
 TEST_CASE("Setup a tmc2130 motor driver") {
     test_mocks::MockMessageQueue<tmc2130::tasks::TaskMessage> resp_queue{};
@@ -40,15 +40,13 @@ TEST_CASE("Setup a tmc2130 motor driver") {
                 auto register_config = driver_config.registers;
                 REQUIRE(subject.get_gconf().value().en_pwm_mode ==
                         register_config.gconfig.en_pwm_mode);
-                REQUIRE(subject.get_register_map()
-                            .ihold_irun.hold_current ==
+                REQUIRE(subject.get_register_map().ihold_irun.hold_current ==
                         register_config.ihold_irun.hold_current);
+                REQUIRE(subject.get_register_map().ihold_irun.run_current ==
+                        register_config.ihold_irun.run_current);
                 REQUIRE(
-                    subject.get_register_map().ihold_irun.run_current ==
-                    register_config.ihold_irun.run_current);
-                REQUIRE(subject.get_register_map()
-                            .ihold_irun.hold_current_delay ==
-                        register_config.ihold_irun.hold_current_delay);
+                    subject.get_register_map().ihold_irun.hold_current_delay ==
+                    register_config.ihold_irun.hold_current_delay);
                 REQUIRE(subject.get_chop_config().value().toff ==
                         register_config.chopconf.toff);
                 REQUIRE(subject.get_chop_config().value().hstrt ==

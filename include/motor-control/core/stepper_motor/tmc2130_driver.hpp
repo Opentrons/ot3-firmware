@@ -273,7 +273,7 @@ class TMC2130 {
      */
     [[nodiscard]] auto get_gstatus() -> GStatus {
         if (bool(_registers.gstat)) {
-                return _registers.gstat;
+            return _registers.gstat;
         }
         return GStatus{.driver_error = 1};
     }
