@@ -68,8 +68,8 @@ struct AllTask {
     motor_driver_task::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
-        QueueClient>* motion_controller{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
+        nullptr};
     move_status_reporter_task::MoveStatusReporterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
         nullptr};

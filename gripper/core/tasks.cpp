@@ -4,7 +4,7 @@
 #include "gripper/core/can_task.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
-#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -13,8 +13,8 @@ static auto tasks = gripper_tasks::AllTask{};
 static auto queues = gripper_tasks::QueueClient{can_ids::NodeId::gripper};
 
 static auto mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                gripper_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
 static auto motor_driver_task_builder =
     freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
 static auto move_group_task_builder =
@@ -34,7 +34,7 @@ void gripper_tasks::start_tasks(
     brushed_motor::BrushedMotor& grip_motor) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
-    auto& motion = mc_task_builder.start(5, z_motor.motion_controller, queues);
+    auto& motion = mc_task_builder.start(5, "z mc", z_motor.motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, "motor driver", z_motor.driver, queues);
     auto& move_group = move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
