@@ -1,12 +1,13 @@
 #include "head/core/tasks.hpp"
 
+#include "common/core/freertos_task.hpp"
 #include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
 #include "head/core/tasks/presence_sensing_driver_task_starter.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 static auto head_tasks_col = head_tasks::HeadTasks{};
 static auto head_queues = head_tasks::HeadQueueClient{};
@@ -33,12 +34,10 @@ static auto left_move_group_task_builder =
 static auto right_move_group_task_builder =
     move_group_task_starter::TaskStarter<512, head_tasks::MotorQueueClient,
                                          head_tasks::MotorQueueClient>{};
-static auto left_move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, head_tasks::MotorQueueClient, lms::LeadScrewConfig>{};
-static auto right_move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, head_tasks::MotorQueueClient, lms::LeadScrewConfig>{};
+static auto left_move_status_task_builder = freertos_task::TaskStarter<
+    512, move_status_reporter_task::MoveStatusReporterTask>{};
+static auto right_move_status_task_builder = freertos_task::TaskStarter<
+    512, move_status_reporter_task::MoveStatusReporterTask>{};
 
 static auto presence_sensing_driver_task_builder =
     presence_sensing_driver_task_starter::TaskStarter<
@@ -79,7 +78,8 @@ void head_tasks::start_tasks(
     auto& left_move_group =
         left_move_group_task_builder.start(5, left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(
-        5, left_queues, left_motion_controller.get_mechanical_config());
+        5, "left move status", left_queues,
+        left_motion_controller.get_mechanical_config());
 
     // Assign left motor task collection task pointers
     left_tasks.motion_controller = &left_motion;
@@ -103,7 +103,8 @@ void head_tasks::start_tasks(
     auto& right_move_group =
         right_move_group_task_builder.start(5, right_queues, right_queues);
     auto& right_move_status_reporter = right_move_status_task_builder.start(
-        5, right_queues, right_motion_controller.get_mechanical_config());
+        5, "right move status", right_queues,
+        right_motion_controller.get_mechanical_config());
 
     // Assign right motor task collection task pointers
     right_tasks.motion_controller = &right_motion;
