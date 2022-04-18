@@ -3,7 +3,7 @@
 #include "common/core/freertos_task.hpp"
 #include "gripper/core/can_task.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
-#include "motor-control/core/tasks/brushed_motor_driver_task_starter.hpp"
+#include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -22,8 +22,8 @@ static auto move_group_task_builder =
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 static auto brushed_motor_driver_task_builder =
-    brushed_motor_driver_task_starter::TaskStarter<
-        512, gripper_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512,
+                               brushed_motor_driver_task::MotorDriverTask>{};
 static auto brushed_motion_controller_task_builder = freertos_task::TaskStarter<
     512, brushed_motion_controller_task::MotionControllerTask>{};
 /**
@@ -46,7 +46,7 @@ void gripper_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
-        5, brushed_motor_driver, queues);
+        5, "bdc driver", brushed_motor_driver, queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
         5, "bdc controller", brushed_motion_controller, queues);
 

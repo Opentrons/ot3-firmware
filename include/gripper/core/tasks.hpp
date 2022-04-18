@@ -78,8 +78,8 @@ struct AllTask {
     move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
     brushed_motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
-        brushed_motor_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* brushed_motor_driver{
+        nullptr};
     brushed_motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         brushed_motion_controller{nullptr};
