@@ -22,8 +22,7 @@ class PollerTaskStarter {
         freertos_message_queue::FreeRTOSMessageQueue<poller::TaskMessage>;
     using I2CWriterType =
         i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
-    using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, PollerTaskType, I2CWriterType>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, PollerTaskType>;
 
     PollerTaskStarter() : task_entry{queue}, task{task_entry} {}
     PollerTaskStarter(const PollerTaskStarter& c) = delete;

@@ -14,8 +14,7 @@ class TaskStarter {
         freertos_message_queue::FreeRTOSMessageQueue, MotionClient, CanClient>;
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         move_group_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<StackDepth, MoveGroupTaskType,
-                                                 MotionClient, CanClient>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, MoveGroupTaskType>;
 
     TaskStarter() : task_entry{queue, move_group_manager}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

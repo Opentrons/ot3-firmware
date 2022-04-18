@@ -15,8 +15,7 @@ class TaskStarter {
         freertos_message_queue::FreeRTOSMessageQueue, CanClient>;
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motion_controller_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<StackDepth, MotorTaskType,
-                                                 MotorType, CanClient>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, MotorTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

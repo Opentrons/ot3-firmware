@@ -16,9 +16,8 @@ class TaskStarter {
             freertos_message_queue::FreeRTOSMessageQueue, CanClient>;
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         presence_sensing_driver_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<
-        StackDepth, PresenceSensingDriverTaskType,
-        presence_sensing_driver::PresenceSensingDriver, CanClient>;
+    using TaskType =
+        freertos_task::FreeRTOSTask<StackDepth, PresenceSensingDriverTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

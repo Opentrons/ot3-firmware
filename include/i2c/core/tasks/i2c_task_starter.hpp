@@ -18,8 +18,7 @@ class I2CTaskStarter {
         tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<writer::TaskMessage>;
-    using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, I2CTaskType, I2CBaseType>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, I2CTaskType>;
 
     I2CTaskStarter() : task_entry{queue}, task{task_entry} {}
     I2CTaskStarter(const I2CTaskStarter& c) = delete;

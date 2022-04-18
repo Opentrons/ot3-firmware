@@ -130,11 +130,11 @@ auto static reader_task =
 auto static writer_task = can_task::CanMessageWriterTask{can_sender_queue};
 
 auto static reader_task_control =
-    freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask,
-                                can_bus::CanBus>{reader_task};
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageReaderTask>{
+        reader_task};
 auto static writer_task_control =
-    freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask,
-                                can_bus::CanBus>{writer_task};
+    freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask>{
+        writer_task};
 
 auto can_task::start_reader(can_bus::CanBus& canbus, can_ids::NodeId id)
     -> can_task::CanMessageReaderTask& {
