@@ -8,6 +8,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "i2c/core/writer.hpp"
 #include "sensors/core/hdc2080.hpp"
 #include "sensors/core/utils.hpp"
 
@@ -126,11 +127,11 @@ class EnvironmentSensorMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl, class I2CQueueWriter,
-          message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<utils::TaskMessage>, utils::TaskMessage>
 class EnvironmentSensorTask {
   public:
+    using Messages = utils::TaskMessage;
     using QueueType = QueueImpl<utils::TaskMessage>;
     EnvironmentSensorTask(QueueType &queue) : queue{queue} {}
     EnvironmentSensorTask(const EnvironmentSensorTask &c) = delete;
@@ -142,7 +143,8 @@ class EnvironmentSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer,
+    template <message_writer_task::TaskClient CanClient>
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  CanClient *can_client) {
         auto handler =
             EnvironmentSensorMessageHandler(*writer, *can_client, get_queue());

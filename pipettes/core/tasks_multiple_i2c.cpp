@@ -11,7 +11,6 @@
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
-#include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -34,8 +33,7 @@ static auto eeprom_task_builder =
     eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
 
 static auto environment_sensor_task_builder =
-    sensors::tasks::EnvironmentalSensorTaskStarter<
-        512, pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>{};
 static auto capacitive_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>{};
 static auto pressure_sensor_task_builder =
@@ -84,8 +82,8 @@ void pipettes_tasks::start_tasks(
         5, queues, motion_controller.get_mechanical_config());
 
     auto& eeprom_task = eeprom_task_builder.start(5, i2c3_task_client, queues);
-    auto& environment_sensor_task =
-        environment_sensor_task_builder.start(5, i2c3_task_client, queues);
+    auto& environment_sensor_task = environment_sensor_task_builder.start(
+        5, "enviro sensor", i2c3_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
         5, "pressure sensor", i2c3_task_client, i2c3_poll_client, queues);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
