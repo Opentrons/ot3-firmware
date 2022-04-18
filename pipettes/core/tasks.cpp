@@ -2,7 +2,9 @@
 
 #include "can/core/ids.hpp"
 #include "common/core/freertos_message_queue.hpp"
-#include "i2c/core/tasks/i2c_poller_task_starter.hpp"
+#include "common/core/freertos_task.hpp"
+#include "common/core/freertos_timer.hpp"
+#include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
@@ -40,8 +42,12 @@ static auto pressure_sensor_task_builder =
 static auto i2c_task_builder =
     freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
 
+template <template <typename> typename QueueImpl>
+using PollerWithTimer =
+    i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
+
 static auto i2c_poll_task_builder =
-    i2c::task_starters::PollerTaskStarter<1024>{};
+    freertos_task::TaskStarter<1024, PollerWithTimer>{};
 static auto i2c_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
@@ -64,7 +70,8 @@ void pipettes_tasks::start_tasks(
     can_task::start_reader(can_bus, id);
     auto& i2c3_task = i2c_task_builder.start(5, "i2c", i2c_device);
     i2c_task_client.set_queue(&i2c3_task.get_queue());
-    auto& i2c3_poller_task = i2c_poll_task_builder.start(5, i2c_task_client);
+    auto& i2c3_poller_task =
+        i2c_poll_task_builder.start(5, "i2c poller", i2c_task_client);
     i2c_poll_client.set_queue(&i2c3_poller_task.get_queue());
     auto& motion = mc_task_builder.start(5, "motion controller",
                                          motion_controller, queues);
