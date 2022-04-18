@@ -132,12 +132,11 @@ struct AllTask {
         i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
         QueueClient>* environment_sensor_task{nullptr};
     sensors::tasks::CapacitiveSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
-        i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* capacitive_sensor_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* capacitive_sensor_task{
+        nullptr};
     sensors::tasks::PressureSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task{
+        nullptr};
 };
 
 /**

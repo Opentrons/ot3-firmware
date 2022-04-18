@@ -5,10 +5,10 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
+#include "i2c/core/poller.hpp"
+#include "i2c/core/writer.hpp"
 #include "pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
-#include "i2c/core/writer.hpp"
-#include "i2c/core/poller.hpp"
 
 namespace sensors {
 namespace tasks {
@@ -112,8 +112,8 @@ class PressureSensorTask {
      * Task entry point.
      */
     template <message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl>* writer,
-                                 i2c::poller::Poller<QueueImpl>* poller,
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
+                                 i2c::poller::Poller<QueueImpl> *poller,
                                  CanClient *can_client) {
         auto handler =
             PressureMessageHandler{*writer, *poller, *can_client, get_queue()};
