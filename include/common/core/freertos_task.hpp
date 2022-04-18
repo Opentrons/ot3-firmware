@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "FreeRTOS.h"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
 #include "task.h"
 
@@ -71,6 +72,30 @@ class FreeRTOSTask {
     EntryPoint& entry_point;
 
     std::function<void()> starter{};
+};
+
+template <uint32_t StackDepth,
+          template <template <typename> typename> typename TaskObj>
+struct TaskStarter {
+    TaskStarter() : queue{}, task_entry{queue}, task{task_entry} {}
+    TaskStarter(const TaskStarter&) = delete;
+    auto operator=(const TaskStarter&) -> TaskStarter& = delete;
+    TaskStarter(TaskStarter&&) = delete;
+    auto operator=(TaskStarter&&) -> TaskStarter& = delete;
+    ~TaskStarter() = default;
+    using TaskType = TaskObj<freertos_message_queue::FreeRTOSMessageQueue>;
+    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
+        typename TaskType::Messages>;
+
+    template <typename... TaskArgs>
+    auto start(uint32_t priority, const char* name, TaskArgs&... task_args)
+        -> TaskType& {
+        task.start(priority, name, &task_args...);
+        return task_entry;
+    }
+    QueueType queue;
+    TaskType task_entry;
+    FreeRTOSTask<StackDepth, TaskType> task;
 };
 
 }  // namespace freertos_task
