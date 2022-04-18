@@ -4,7 +4,7 @@
 #include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
 #include "head/core/tasks/presence_sensing_driver_task_starter.hpp"
-#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -19,11 +19,13 @@ static auto right_queues =
     head_tasks::MotorQueueClient{can_ids::NodeId::head_r};
 
 static auto left_mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                head_tasks::MotorQueueClient>{};
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
+
 static auto right_mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                head_tasks::MotorQueueClient>{};
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
+
 static auto left_motor_driver_task_builder =
     freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
 static auto right_motor_driver_task_builder =
@@ -69,8 +71,8 @@ void head_tasks::start_tasks(
     head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
 
     // Start the left motor tasks
-    auto& left_motion =
-        left_mc_task_builder.start(5, left_motion_controller, left_queues);
+    auto& left_motion = left_mc_task_builder.start(
+        5, "left mc", left_motion_controller, left_queues);
     auto& left_motor = left_motor_driver_task_builder.start(
         5, "left motor driver", left_motor_driver, left_queues);
     auto& left_move_group = left_move_group_task_builder.start(
@@ -94,8 +96,8 @@ void head_tasks::start_tasks(
         &left_move_status_reporter.get_queue();
 
     // Start the right motor tasks
-    auto& right_motion =
-        right_mc_task_builder.start(5, right_motion_controller, right_queues);
+    auto& right_motion = right_mc_task_builder.start(
+        5, "right mc", right_motion_controller, right_queues);
     auto& right_motor = right_motor_driver_task_builder.start(
         5, "right motor driver", right_motor_driver, right_queues);
     auto& right_move_group = right_move_group_task_builder.start(

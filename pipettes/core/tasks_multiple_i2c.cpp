@@ -4,7 +4,7 @@
 #include "i2c/core/tasks/i2c_poller_task_starter.hpp"
 #include "i2c/core/tasks/i2c_task_starter.hpp"
 #include "i2c/core/writer.hpp"
-#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -22,8 +22,8 @@ static auto i2c1_task_client =
 static auto i2c3_task_client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
 static auto motor_driver_task_builder =
     freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
 static auto move_group_task_builder =
@@ -76,7 +76,8 @@ void pipettes_tasks::start_tasks(
     i2c1_poll_client.set_queue(&i2c1_poller_task.get_queue());
     i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
 
-    auto& motion = mc_task_builder.start(5, motion_controller, queues);
+    auto& motion = mc_task_builder.start(5, "motion controller",
+                                         motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, "motor driver",
                                                   motor_driver, queues);
     auto& move_group =
