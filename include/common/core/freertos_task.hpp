@@ -40,7 +40,7 @@ class FreeRTOSTask {
         using InstanceDataType = std::pair<void*, std::tuple<TaskArgs*...>>;
 
         InstanceDataType instance_data{this, std::make_tuple(task_args...)};
-        starter = [instance_data](void) -> void {
+        starter = [instance_data]() -> void {
             auto instance = static_cast<FreeRTOSTask<StackDepth, EntryPoint>*>(
                 instance_data.first);
             LOG("Entering task: %s", pcTaskGetName(instance->handle));
