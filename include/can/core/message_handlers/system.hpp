@@ -74,11 +74,12 @@ class SystemMessageHandler {
             uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
         for (UBaseType_t i = 0; i < num_tasks; i++) {
             auto r = TaskInfoResponse{};
-            std::copy_n(tasks[i].pcTaskName, r.name.size(), r.name.begin());
-            r.runtime_counter = tasks[i].ulRunTimeCounter;
-            r.stack_high_water_mark = tasks[i].usStackHighWaterMark;
-            r.state = tasks[i].eCurrentState;
-            r.priority = tasks[i].uxCurrentPriority;
+            std::copy_n(tasks[i].pcTaskName, r.name.size(),  // NOLINT
+                        r.name.begin());
+            r.runtime_counter = tasks[i].ulRunTimeCounter;            // NOLINT
+            r.stack_high_water_mark = tasks[i].usStackHighWaterMark;  // NOLINT
+            r.state = tasks[i].eCurrentState;                         // NOLINT
+            r.priority = tasks[i].uxCurrentPriority;                  // NOLINT
             writer.send_can_message(can_ids::NodeId::host, r);
         }
     }

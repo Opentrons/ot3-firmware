@@ -95,6 +95,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
 
 using TaskInfoRequest = Empty<MessageId::task_info_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct TaskInfoResponse : BaseMessage<MessageId::task_info_response> {
     std::array<char, 12> name{};
     uint32_t runtime_counter;
@@ -618,6 +619,7 @@ using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
 
 using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint16_t model;
     std::array<char, 12> serial{};
@@ -674,6 +676,7 @@ struct SensorDiagnosticResponse
 
 using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     uint16_t name;
     uint16_t model;
