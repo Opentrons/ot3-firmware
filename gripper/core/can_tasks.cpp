@@ -17,26 +17,26 @@
 
 using namespace can_dispatch;
 
-static auto& queue_client = gripper_tasks::get_queues();
+static auto& tasks = gripper_tasks::get_tasks();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
 
 /** The parsed message handler */
 static auto can_motor_handler =
-    motor_message_handler::MotorHandler{queue_client};
+    motor_message_handler::MotorHandler{tasks};
 static auto can_move_group_handler =
-    move_group_handler::MoveGroupHandler{queue_client};
+    move_group_handler::MoveGroupHandler{tasks};
 static auto can_motion_handler =
-    motion_message_handler::MotionHandler{queue_client};
+    motion_message_handler::MotionHandler{tasks};
 static auto can_brushed_motor_handler =
-    motor_message_handler::BrushedMotorHandler{queue_client};
+    motor_message_handler::BrushedMotorHandler{tasks};
 static auto can_brushed_motion_handler =
-    motion_message_handler::BrushedMotionHandler{queue_client};
+    motion_message_handler::BrushedMotionHandler{tasks};
 
 /** Handler of system messages. */
 static auto system_message_handler = system_handler::SystemMessageHandler{
-    queue_client, version_get()->version, version_get()->flags,
+    tasks, version_get()->version, version_get()->flags,
     std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};

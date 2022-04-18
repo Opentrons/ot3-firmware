@@ -34,7 +34,7 @@ class MotionHandler {
     void handle_message(std::monostate &m) { static_cast<void>(m); }
 
     void handle_message(const auto &m) {
-        motion_client.send_motion_controller_queue(m);
+        motion_client.send_queue(m, motion_controller_task::QueueTag{});
     }
 
     MotionTaskClient &motion_client;
@@ -65,7 +65,7 @@ class BrushedMotionHandler {
     void handle_message(std::monostate &m) { static_cast<void>(m); }
 
     void handle_message(const auto &m) {
-        motion_client.send_brushed_motion_controller_queue(m);
+        motion_client.send_queue(m, brushed_motion_controller_task::QueueTag{});
     }
 
     BrushedMotionTaskClient &motion_client;

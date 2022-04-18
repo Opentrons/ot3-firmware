@@ -93,11 +93,11 @@ class MoveGroupMessageHandler {
     void visit_move(const std::monostate& m) {}
 
     void visit_move(const can_messages::AddLinearMoveRequest& m) {
-        mc_client.send_motion_controller_queue(m);
+        mc_client.send_queue(m);
     }
 
     void visit_move(const can_messages::HomeRequest& m) {
-        mc_client.send_motion_controller_queue(m);
+        mc_client.send_queue(m);
     }
 
     MoveGroupType& move_groups;
@@ -105,6 +105,7 @@ class MoveGroupMessageHandler {
     CanClient& can_client;
 };
 
+struct QueueTag{};
 /**
  * The task type.
  */
@@ -112,6 +113,7 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveGroupTask {
   public:
+    using Tag = QueueTag;
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     MoveGroupTask(QueueType& queue) : queue{queue} {}
@@ -150,8 +152,8 @@ class MoveGroupTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_move_group_queue(m)};
+concept TaskClient = requires(Client client, const TaskMessage& m, QueueTag qt) {
+    {client.send_queue(m, qt)};
 };
 
 }  // namespace move_group_task

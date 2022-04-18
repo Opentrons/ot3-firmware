@@ -54,6 +54,7 @@ class MoveStatusMessageHandler {
     sq31_31 um_per_step;
 };
 
+struct QueueTag{};
 /**
  * The task type.
  */
@@ -62,6 +63,7 @@ requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveStatusReporterTask {
   public:
     using Messages = TaskMessage;
+    using Tag = QueueTag;
     using QueueType = QueueImpl<TaskMessage>;
     MoveStatusReporterTask(QueueType& queue) : queue{queue} {}
     MoveStatusReporterTask(const MoveStatusReporterTask& c) = delete;
@@ -98,8 +100,8 @@ class MoveStatusReporterTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_move_status_reporter_queue(m)};
+concept TaskClient = requires(Client client, const TaskMessage& m, QueueTag qt) {
+    {client.send_queue(m, qt)};
 };
 
 }  // namespace move_status_reporter_task

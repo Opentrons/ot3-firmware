@@ -21,7 +21,7 @@ class MoveGroupHandler {
     auto operator=(const MoveGroupHandler &&) -> MoveGroupHandler && = delete;
     ~MoveGroupHandler() = default;
 
-    void handle(MessageType &m) { task_client.send_move_group_queue(m); }
+        void handle(MessageType &m) { task_client.send_queue(m, move_group_task::QueueTag{}); }
 
   private:
     Client &task_client;

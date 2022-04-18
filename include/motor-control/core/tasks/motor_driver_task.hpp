@@ -89,6 +89,8 @@ class MotorDriverMessageHandler {
     CanClient& can_client;
 };
 
+struct QueueTag{};
+
 /**
  * The task type.
  */
@@ -96,6 +98,7 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MotorDriverTask {
   public:
+    using Tag = QueueTag;
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     MotorDriverTask(QueueType& queue) : queue{queue} {}
@@ -134,8 +137,8 @@ class MotorDriverTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_motor_driver_queue(m)};
+concept TaskClient = requires(Client client, const TaskMessage& m, QueueTag qt) {
+    {client.send_queue(m, qt)};
 };
 
 }  // namespace motor_driver_task

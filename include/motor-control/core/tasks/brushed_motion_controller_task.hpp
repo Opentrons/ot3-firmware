@@ -61,6 +61,8 @@ class MotionControllerMessageHandler {
     CanClient& can_client;
 };
 
+struct QueueTag {};
+
 /**
  * The task type.
  */
@@ -68,6 +70,7 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MotionControllerTask {
   public:
+    using Tag = QueueTag;
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     MotionControllerTask(QueueType& queue) : queue{queue} {}
@@ -104,8 +107,8 @@ class MotionControllerTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_brushed_motion_controller_queue(m)};
+concept TaskClient = requires(Client client, const TaskMessage& m, QueueTag qt) {
+    {client.send_queue(m, qt)};
 };
 
 }  // namespace brushed_motion_controller_task

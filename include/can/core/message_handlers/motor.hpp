@@ -23,7 +23,7 @@ class MotorHandler {
     auto operator=(const MotorHandler &&) -> MotorHandler && = delete;
     ~MotorHandler() = default;
 
-    void handle(MessageType &m) { motor_client.send_motor_driver_queue(m); }
+        void handle(MessageType &m) { motor_client.send_queue(m, motor_driver_task::QueueTag{}); }
 
   private:
     MotorDriverTaskClient &motor_client;
@@ -47,7 +47,7 @@ class BrushedMotorHandler {
     ~BrushedMotorHandler() = default;
 
     void handle(MessageType &m) {
-        motor_client.send_brushed_motor_driver_queue(m);
+        motor_client.send_queue(m, brushed_motor_driver_task::QueueTag{});
     }
 
   private:

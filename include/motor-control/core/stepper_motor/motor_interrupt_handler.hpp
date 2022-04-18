@@ -216,7 +216,7 @@ class MotorInterruptHandler {
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
-                status_queue_client.send_move_status_reporter_queue(ack));
+                status_queue_client.send_queue(ack, move_status_reporter_task::QueueTag{}));
         }
         set_buffered_move(Move{});
     }
