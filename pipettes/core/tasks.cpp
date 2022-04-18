@@ -12,7 +12,6 @@
 #include "pipettes/core/tasks/eeprom_task_starter.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
 #include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
-#include "sensors/core/tasks/pressure_sensor_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -38,9 +37,8 @@ static auto environment_sensor_task_builder =
 static auto capacitive_sensor_task_builder =
     sensors::tasks::CapacitiveSensorTaskStarter<512,
                                                 pipettes_tasks::QueueClient>{};
-static auto pressure_sensor_task_builder =
-    sensors::tasks::PressureSensorTaskStarter<512,
-                                              pipettes_tasks::QueueClient>{};
+ static auto pressure_sensor_task_builder =
+     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask>{};
 
 static auto i2c_task_builder = i2c::task_starters::I2CTaskStarter<512>{};
 
@@ -80,7 +78,7 @@ void pipettes_tasks::start_tasks(
     auto& environment_sensor_task =
         environment_sensor_task_builder.start(5, i2c_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
-        5, i2c_task_client, i2c_poll_client, queues);
+        5, "pressure sensor", i2c_task_client, i2c_poll_client, queues);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
         5, i2c_task_client, i2c_poll_client, sensor_hardware, queues);
 
