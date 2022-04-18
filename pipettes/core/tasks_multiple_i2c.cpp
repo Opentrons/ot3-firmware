@@ -77,8 +77,8 @@ void pipettes_tasks::start_tasks(
     i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
 
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
-    auto& motor = motor_driver_task_builder.start(
-        5, "motor driver", motor_driver, queues);
+    auto& motor = motor_driver_task_builder.start(5, "motor driver",
+                                                  motor_driver, queues);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(

@@ -5,7 +5,7 @@
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/tasks/brushed_motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
@@ -79,7 +79,7 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
         brushed_motor_driver{nullptr};
     brushed_motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
+        freertos_message_queue::FreeRTOSMessageQueue>*
         brushed_motion_controller{nullptr};
 };
 
