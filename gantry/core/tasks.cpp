@@ -56,12 +56,14 @@ void gantry_tasks::start_tasks(
     tasks.tmc2130_driver = &tmc2130_driver;
     tasks.move_group = &move_group;
     tasks.move_status_reporter = &move_status_reporter;
+    tasks.spi_task = &spi_task;
 
     queues.motion_queue = &motion.get_queue();
     queues.tmc2130_driver_queue = &tmc2130_driver.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.set_queue(&can_writer.get_queue());
     queues.move_status_report_queue = &move_status_reporter.get_queue();
+    queues.spi_queue = &spi_task.get_queue();
 }
 
 gantry_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)

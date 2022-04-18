@@ -1,4 +1,7 @@
 #include <array>
+#include <type_traits>
+#include <typeinfo>
+#include <string>
 
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
@@ -7,6 +10,7 @@
 #include "spi/tests/mock_response_queue.hpp"
 
 #define u8(X) static_cast<uint8_t>(X)
+template <typename T> std::string type_name();
 
 template <typename Queue>
 auto get_message(Queue& queue) -> spi::messages::Transact {
@@ -22,7 +26,8 @@ SCENARIO("Test the spi command queue writer") {
     writer.set_queue(&queue);
     spi::writer::TaskMessage empty_msg{};
     GIVEN("a write request") {
-        constexpr uint8_t TEST_REGISTER = 0x1;
+        constexpr uint8_t TEST_REGISTER = 0x23;
+        constexpr uint8_t WRITE_BIT = 0x80;
 
         WHEN("we write some data to a register") {
             writer.write(TEST_REGISTER, 0xd34db33f, response_queue,
@@ -32,8 +37,8 @@ SCENARIO("Test the spi command queue writer") {
             }
             auto msg = get_message(queue);
             THEN("the transaction is correct") {
-                std::array compare{u8(0x23), u8(0xd3), u8(0x4d), u8(0xb3),
-                                   u8(0x3f)};
+                std::array compare{u8(TEST_REGISTER | WRITE_BIT), u8(0xd3),
+                                   u8(0x4d), u8(0xb3), u8(0x3f)};
                 REQUIRE(msg.transaction.txBuffer == compare);
                 REQUIRE(msg.id.send_response == false);
                 REQUIRE(msg.id.token == TEST_REGISTER);

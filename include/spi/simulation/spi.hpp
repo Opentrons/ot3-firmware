@@ -30,11 +30,20 @@ class SimSpiDeviceBase : public SpiDeviceBase {
     bool transmit_receive(const spi::utils::MaxMessageBuffer& transmit,
                           spi::utils::MaxMessageBuffer& receive) final;
 
+    auto get_txrx_count() const -> std::size_t;
+    auto get_last_received() const -> const std::vector<uint8_t> &;
+    auto get_last_transmitted() const -> const std::vector<uint8_t> &;
+    auto set_next_received(const std::vector<uint8_t> &to_receive) -> void;
+
   private:
     RegisterMap register_map;
     uint8_t read_register{0};
     // This status byte is unused currently but may have some use in the future.
     uint8_t status{0};
+    std::size_t txrx_count = 0;
+    std::vector<uint8_t> last_transmitted{};
+    std::vector<uint8_t> last_received{};
+    std::vector<uint8_t> next_receive{};
 };
 
 }  // namespace hardware

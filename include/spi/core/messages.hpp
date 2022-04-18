@@ -59,6 +59,7 @@ struct ResponseWriter {
     auto operator=(const ResponseWriter& other) -> ResponseWriter& = default;
     ResponseWriter(ResponseWriter&& other) = default;
     auto operator=(ResponseWriter&& other) -> ResponseWriter& = default;
+    ResponseWriter() = default;
     ~ResponseWriter() = default;
     void* queue_ref{nullptr};
     bool (*writer)(void*, const TransactResponse&){nullptr};

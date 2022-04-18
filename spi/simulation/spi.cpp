@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "spi/simulation/spi.hpp"
 
 #include "common/core/bit_utils.hpp"
@@ -6,8 +8,12 @@
 bool spi::hardware::SimSpiDeviceBase::transmit_receive(
     const spi::utils::MaxMessageBuffer& transmit,
     spi::utils::MaxMessageBuffer& receive) {
+    txrx_count++;
     uint8_t control = 0;
     uint32_t data = 0;
+
+    last_transmitted = std::vector<uint8_t>(transmit.size());
+    std::copy(transmit.begin(), transmit.end(), last_transmitted.begin());
 
     auto iter = transmit.begin();
 
@@ -33,7 +39,26 @@ bool spi::hardware::SimSpiDeviceBase::transmit_receive(
         out_iter = bit_utils::int_to_bytes(register_map[read_register],
                                            out_iter, receive.end());
     }
+
+    last_received = std::vector<uint8_t>(receive.size());
+    std::copy(receive.begin(), receive.end(), last_transmitted.begin());
     // The register is cached for the next read operation.
     read_register = reg;
     return true;
+}
+
+auto spi::hardware::SimSpiDeviceBase::get_last_transmitted() const -> const std::vector<uint8_t> & {
+    return last_transmitted;
+}
+
+auto spi::hardware::SimSpiDeviceBase::get_txrx_count() const -> std::size_t {
+    return txrx_count;
+}
+
+auto spi::hardware::SimSpiDeviceBase::set_next_received(const std::vector<uint8_t> &to_receive) -> void {
+    next_receive = to_receive;
+}
+
+auto spi::hardware::SimSpiDeviceBase::get_last_received() const -> const std::vector<uint8_t> & {
+    return last_received;
 }
