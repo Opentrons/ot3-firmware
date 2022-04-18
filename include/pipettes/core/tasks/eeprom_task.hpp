@@ -8,6 +8,7 @@
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
 #include "i2c/core/messages.hpp"
+#include "i2c/core/writer.hpp"
 
 namespace eeprom_task {
 
@@ -71,11 +72,11 @@ class EEPromMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl, class I2CQueueWriter,
-          message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class EEPromTask {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     EEPromTask(QueueType &queue) : queue{queue} {}
     EEPromTask(const EEPromTask &c) = delete;
@@ -87,7 +88,8 @@ class EEPromTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer,
+    template <message_writer_task::TaskClient CanClient>
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  CanClient *can_client) {
         auto handler = EEPromMessageHandler{*writer, *can_client, get_queue()};
         TaskMessage message{};
