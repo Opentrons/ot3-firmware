@@ -9,7 +9,6 @@
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
 #include "pipettes/core/can_task.hpp"
-#include "pipettes/core/tasks/eeprom_task_starter.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -27,7 +26,7 @@ static auto move_status_task_builder =
     move_status_reporter_task_starter::TaskStarter<
         512, pipettes_tasks::QueueClient, lms::LeadScrewConfig>{};
 static auto eeprom_task_builder =
-    eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, eeprom_task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>{};
@@ -70,7 +69,8 @@ void pipettes_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(
         5, queues, motion_controller.get_mechanical_config());
 
-    auto& eeprom_task = eeprom_task_builder.start(5, i2c_task_client, queues);
+    auto& eeprom_task =
+        eeprom_task_builder.start(5, "eeprom", i2c_task_client, queues);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(

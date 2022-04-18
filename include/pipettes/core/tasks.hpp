@@ -123,10 +123,8 @@ struct AllTask {
     i2c::tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
                               freertos_timer::FreeRTOSTimer>* i2c1_poller_task{
         nullptr};
-    eeprom_task::EEPromTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* eeprom_task{nullptr};
+    eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        eeprom_task{nullptr};
     sensors::tasks::EnvironmentSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue>* environment_sensor_task{
         nullptr};
