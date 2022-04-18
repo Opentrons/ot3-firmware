@@ -2,7 +2,7 @@
 
 #include "common/core/freertos_task.hpp"
 #include "gripper/core/can_task.hpp"
-#include "motor-control/core/tasks/brushed_motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
@@ -24,9 +24,8 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
 static auto brushed_motor_driver_task_builder =
     brushed_motor_driver_task_starter::TaskStarter<
         512, gripper_tasks::QueueClient>{};
-static auto brushed_motion_controller_task_builder =
-    brushed_motion_controller_task_starter::TaskStarter<
-        512, gripper_tasks::QueueClient>{};
+static auto brushed_motion_controller_task_builder = freertos_task::TaskStarter<
+    512, brushed_motion_controller_task::MotionControllerTask>{};
 /**
  * Start gripper tasks.
  */
@@ -49,7 +48,7 @@ void gripper_tasks::start_tasks(
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, brushed_motor_driver, queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
-        5, brushed_motion_controller, queues);
+        5, "bdc controller", brushed_motion_controller, queues);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
