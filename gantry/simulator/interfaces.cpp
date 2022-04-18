@@ -38,7 +38,8 @@ static motor_class::Motor motor{
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
         .mech_config = lms::BeltConfig{.pulley_diameter = 12.7},
         .steps_per_rev = 200,
-        .microstep = 32},
+        .microstep = 32,
+        .encoder_ppr = 1000},
     motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,

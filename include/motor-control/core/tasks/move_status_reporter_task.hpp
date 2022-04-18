@@ -26,7 +26,8 @@ class MoveStatusMessageHandler {
         : can_client{can_client},
           lms_config(lms_config),
           um_per_step(convert_to_fixed_point_64_bit(
-              lms_config.get_um_per_step(), 31)) {}
+              lms_config.get_um_per_step(), 31)) ,
+          encoder_ppr(lms_config.get_encoder_pulses_per_mm()){}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
     MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
     auto operator=(const MoveStatusMessageHandler& c) = delete;
@@ -43,7 +44,7 @@ class MoveStatusMessageHandler {
             .seq_id = message.seq_id,
             .current_position_um = fixed_point_multiply(
                 um_per_step, message.current_position_steps),
-            .encoder_position = message.encoder_position,
+            .encoder_position = message.encoder_position/encoder_ppr,
             .ack_id = static_cast<uint8_t>(message.ack_id)};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }
@@ -52,6 +53,7 @@ class MoveStatusMessageHandler {
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
     sq31_31 um_per_step;
+    uint32_t encoder_ppr;
 };
 
 /**
