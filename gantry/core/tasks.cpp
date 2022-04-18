@@ -4,7 +4,7 @@
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
-#include "motor-control/core/tasks/move_group_task_starter.hpp"
+#include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 static auto tasks = gantry_tasks::AllTask{};
@@ -16,8 +16,7 @@ static auto mc_task_builder =
 static auto motor_driver_task_builder =
     motor_driver_task_starter::TaskStarter<512, gantry_tasks::QueueClient>{};
 static auto move_group_task_builder =
-    move_group_task_starter::TaskStarter<512, gantry_tasks::QueueClient,
-                                         gantry_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
@@ -32,7 +31,8 @@ void gantry_tasks::start_tasks(
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, motion_controller, queues);
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
-    auto& move_group = move_group_task_builder.start(5, queues, queues);
+    auto& move_group =
+        move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
 

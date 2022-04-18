@@ -109,9 +109,8 @@ struct AllTask {
     move_status_reporter_task::MoveStatusReporterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
         nullptr};
-    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
-                                   QueueClient, QueueClient>* move_group{
-        nullptr};
+    move_group_task::MoveGroupTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
 
     i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
         i2c3_task{nullptr};
