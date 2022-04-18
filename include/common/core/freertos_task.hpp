@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <tuple>
 
 #include "FreeRTOS.h"
@@ -17,7 +18,7 @@ namespace freertos_task {
  * takes one argument.
  * @tparam TaskArgs Pointer types of arguments passed to EntryPoint
  */
-template <uint32_t StackDepth, typename EntryPoint, typename... TaskArgs>
+template <uint32_t StackDepth, typename EntryPoint>
 class FreeRTOSTask {
   public:
     FreeRTOSTask(EntryPoint& entry_point) : entry_point{entry_point} {}
@@ -33,36 +34,44 @@ class FreeRTOSTask {
      * @param task_name Task name.
      * @param task_args Data passed into task entry point.
      */
+    template <typename... TaskArgs>
     void start(UBaseType_t priority, const char* task_name,
                TaskArgs*... task_args) {
-        instance_data.first = this;
-        instance_data.second = std::make_tuple(task_args...);
-        handle = xTaskCreateStatic(f, task_name, backing.size(), &instance_data,
-                                   priority, backing.data(), &static_task);
+        using InstanceDataType = std::pair<void*, std::tuple<TaskArgs*...>>;
+
+        InstanceDataType instance_data{this, std::make_tuple(task_args...)};
+        starter = [instance_data](void) -> void {
+            auto instance = static_cast<FreeRTOSTask<StackDepth, EntryPoint>*>(
+                instance_data.first);
+            LOG("Entering task: %s", pcTaskGetName(instance->handle));
+            // Call the entry point with the argument
+            std::apply(instance->entry_point, instance_data.second);
+        };
+        handle = xTaskCreateStatic(f, task_name, backing.size(), this, priority,
+                                   backing.data(), &static_task);
     }
 
   private:
     /**
      * Entry point passed to the task.
-     * @param v Instance data.
+     * @param v This instance
      */
     static void f(void* v) {
-        auto instance_data = static_cast<InstanceDataType*>(v);
-        // Extract the "this" pointer.
-        auto instance =
-            static_cast<FreeRTOSTask<StackDepth, EntryPoint, TaskArgs...>*>(
-                instance_data->first);
-        LOG("Entering task: %s", pcTaskGetName(instance->handle));
-        // Call the entry point with the argument
-        std::apply(instance->entry_point, instance_data->second);
+        auto task_obj = static_cast<FreeRTOSTask<StackDepth, EntryPoint>*>(v);
+        if (task_obj && task_obj->starter) {
+            task_obj->starter();
+        } else {
+            LOG("Could not start task");
+        }
     }
 
     TaskHandle_t handle{nullptr};
     StaticTask_t static_task{};
     std::array<StackType_t, StackDepth> backing{};
     EntryPoint& entry_point;
-    using InstanceDataType = std::pair<void*, std::tuple<TaskArgs*...>>;
-    InstanceDataType instance_data{nullptr, {}};
+
+    std::function<void()> starter{};
+};
 };
 
 }  // namespace freertos_task

@@ -16,9 +16,8 @@ class TaskStarter {
             freertos_message_queue::FreeRTOSMessageQueue, CanClient, LmsConfig>;
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<
-        StackDepth, MoveStatusReporterTaskType, CanClient,
-        const lms::LinearMotionSystemConfig<LmsConfig>>;
+    using TaskType =
+        freertos_task::FreeRTOSTask<StackDepth, MoveStatusReporterTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

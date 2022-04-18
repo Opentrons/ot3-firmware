@@ -129,7 +129,7 @@ class SimCANBus : public CanBus {
     Reader reader;
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
-    FreeRTOSTask<256, Reader, SimCANBus> reader_task;
+    FreeRTOSTask<256, Reader> reader_task;
     std::vector<sim_filter::Filter> filters{};
 };
 

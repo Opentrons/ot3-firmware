@@ -17,8 +17,7 @@ class TaskStarter {
                                 I2CWriterType, CanClient>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType,
-                                                 I2CWriterType, CanClient>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

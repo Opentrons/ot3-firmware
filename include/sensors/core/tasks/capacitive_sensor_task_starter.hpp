@@ -24,9 +24,7 @@ class CapacitiveSensorTaskStarter {
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<utils::TaskMessage>;
     using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, CapacitiveTaskType,
-                                    I2CWriterType, I2CPollerType,
-                                    hardware::SensorHardwareBase, CanClient>;
+        freertos_task::FreeRTOSTask<StackDepth, CapacitiveTaskType>;
 
     CapacitiveSensorTaskStarter() : task_entry{queue}, task{task_entry} {}
     CapacitiveSensorTaskStarter(const CapacitiveSensorTaskStarter& c) = delete;

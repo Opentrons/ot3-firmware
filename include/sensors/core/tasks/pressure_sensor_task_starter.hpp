@@ -22,9 +22,7 @@ class PressureSensorTaskStarter {
                            I2CWriterType, I2CPollerType, CanClient>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<utils::TaskMessage>;
-    using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, PressureTaskType, I2CWriterType,
-                                    I2CPollerType, CanClient>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, PressureTaskType>;
 
     PressureSensorTaskStarter() : task_entry{queue}, task{task_entry} {}
     PressureSensorTaskStarter(const PressureSensorTaskStarter& c) = delete;

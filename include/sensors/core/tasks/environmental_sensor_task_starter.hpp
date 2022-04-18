@@ -20,8 +20,7 @@ class EnvironmentalSensorTaskStarter {
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<utils::TaskMessage>;
     using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, EnvironmentTaskType,
-                                    I2CWriterType, CanClient>;
+        freertos_task::FreeRTOSTask<StackDepth, EnvironmentTaskType>;
 
     EnvironmentalSensorTaskStarter() : task_entry{queue}, task{task_entry} {}
     EnvironmentalSensorTaskStarter(const EnvironmentalSensorTaskStarter& c) =

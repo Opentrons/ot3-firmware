@@ -19,8 +19,7 @@ class TaskStarter {
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>;
     using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, MotionControllerTaskType,
-                                    MotionControllerType, CanClient>;
+        freertos_task::FreeRTOSTask<StackDepth, MotionControllerTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;
