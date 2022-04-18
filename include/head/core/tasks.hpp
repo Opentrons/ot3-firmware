@@ -91,8 +91,8 @@ struct MotorTasks {
         freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
         MotorQueueClient>* motion_controller{nullptr};
     move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue, MotorQueueClient,
-        lms::LeadScrewConfig>* move_status_reporter{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
+        nullptr};
     move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
                                    MotorQueueClient, MotorQueueClient>*
         move_group{nullptr};

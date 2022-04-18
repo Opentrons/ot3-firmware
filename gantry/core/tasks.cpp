@@ -5,7 +5,7 @@
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/motor_driver_task_starter.hpp"
 #include "motor-control/core/tasks/move_group_task_starter.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 static auto tasks = gantry_tasks::AllTask{};
 static auto queues = gantry_tasks::QueueClient{utils::get_node_id()};
@@ -18,9 +18,8 @@ static auto motor_driver_task_builder =
 static auto move_group_task_builder =
     move_group_task_starter::TaskStarter<512, gantry_tasks::QueueClient,
                                          gantry_tasks::QueueClient>{};
-static auto move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, gantry_tasks::QueueClient, lms::BeltConfig>{};
+static auto move_status_task_builder = freertos_task::TaskStarter<
+    512, move_status_reporter_task::MoveStatusReporterTask>{};
 
 /**
  * Start gantry tasks.
@@ -35,7 +34,7 @@ void gantry_tasks::start_tasks(
     auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
     auto& move_group = move_group_task_builder.start(5, queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, queues, motion_controller.get_mechanical_config());
+        5, "move status", queues, motion_controller.get_mechanical_config());
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
