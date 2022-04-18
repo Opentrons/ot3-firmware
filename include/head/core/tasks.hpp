@@ -85,8 +85,7 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
  */
 struct MotorTasks {
     motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, MotorQueueClient>*
-        motor_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
         MotorQueueClient>* motion_controller{nullptr};

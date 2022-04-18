@@ -5,7 +5,7 @@
 #include "head/core/can_task.hpp"
 #include "head/core/tasks/presence_sensing_driver_task_starter.hpp"
 #include "motor-control/core/tasks/motion_controller_task_starter.hpp"
-#include "motor-control/core/tasks/motor_driver_task_starter.hpp"
+#include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
@@ -25,9 +25,9 @@ static auto right_mc_task_builder =
     motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
                                                 head_tasks::MotorQueueClient>{};
 static auto left_motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, head_tasks::MotorQueueClient>{};
+    freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
 static auto right_motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, head_tasks::MotorQueueClient>{};
+    freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
 static auto left_move_group_task_builder =
     freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
 static auto right_move_group_task_builder =
@@ -71,8 +71,8 @@ void head_tasks::start_tasks(
     // Start the left motor tasks
     auto& left_motion =
         left_mc_task_builder.start(5, left_motion_controller, left_queues);
-    auto& left_motor =
-        left_motor_driver_task_builder.start(5, left_motor_driver, left_queues);
+    auto& left_motor = left_motor_driver_task_builder.start(
+        5, "left motor driver", left_motor_driver, left_queues);
     auto& left_move_group = left_move_group_task_builder.start(
         5, "left move group", left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(
@@ -97,7 +97,7 @@ void head_tasks::start_tasks(
     auto& right_motion =
         right_mc_task_builder.start(5, right_motion_controller, right_queues);
     auto& right_motor = right_motor_driver_task_builder.start(
-        5, right_motor_driver, right_queues);
+        5, "right motor driver", right_motor_driver, right_queues);
     auto& right_move_group = right_move_group_task_builder.start(
         5, "right move group", right_queues, right_queues);
     auto& right_move_status_reporter = right_move_status_task_builder.start(
