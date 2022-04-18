@@ -87,6 +87,7 @@ requires MessageQueue<QueueImpl<poller::TaskMessage>, poller::TaskMessage> &&
     MessageQueue<QueueImpl<writer::TaskMessage>, writer::TaskMessage>
 class I2CPollerTask {
   public:
+    using Messages = poller::TaskMessage;
     using QueueType = QueueImpl<poller::TaskMessage>;
     using I2CWriterType = i2c::writer::Writer<QueueImpl>;
     I2CPollerTask(QueueType &queue) : queue{queue} {}
