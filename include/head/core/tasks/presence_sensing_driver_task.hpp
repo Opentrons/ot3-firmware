@@ -94,11 +94,11 @@ class PresenceSensingDriverMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class PresenceSensingDriverTask {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     PresenceSensingDriverTask(QueueType& queue) : queue{queue} {}
     PresenceSensingDriverTask(const PresenceSensingDriverTask& c) = delete;
@@ -110,6 +110,7 @@ class PresenceSensingDriverTask {
     /**
      * Task entry point.
      */
+    template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
         presence_sensing_driver::PresenceSensingDriver* driver,
         CanClient* can_client) {

@@ -47,7 +47,7 @@ struct HeadTasks {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     presence_sensing_driver_task::PresenceSensingDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, HeadQueueClient>*
+        freertos_message_queue::FreeRTOSMessageQueue>*
         presence_sensing_driver_task{nullptr};
 };
 

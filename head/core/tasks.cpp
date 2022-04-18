@@ -3,7 +3,7 @@
 #include "common/core/freertos_task.hpp"
 #include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
-#include "head/core/tasks/presence_sensing_driver_task_starter.hpp"
+#include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -39,9 +39,8 @@ static auto left_move_status_task_builder = freertos_task::TaskStarter<
 static auto right_move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
-static auto presence_sensing_driver_task_builder =
-    presence_sensing_driver_task_starter::TaskStarter<
-        512, head_tasks::HeadQueueClient>{};
+static auto presence_sensing_driver_task_builder = freertos_task::TaskStarter<
+    512, presence_sensing_driver_task::PresenceSensingDriverTask>{};
 
 /**
  * Start head tasks.
@@ -60,7 +59,7 @@ void head_tasks::start_tasks(
     can_task::start_reader(can_bus);
 
     auto& presence_sensing = presence_sensing_driver_task_builder.start(
-        5, presence_sensing_driver, head_queues);
+        5, "presence", presence_sensing_driver, head_queues);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
