@@ -72,6 +72,5 @@ class FreeRTOSTask {
 
     std::function<void()> starter{};
 };
-};
 
 }  // namespace freertos_task
