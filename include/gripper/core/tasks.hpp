@@ -2,7 +2,9 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task_starter.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -15,13 +17,9 @@ namespace gripper_tasks {
 /**
  * Start gripper tasks.
  */
-void start_tasks(
-    can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig>&
-        motion_controller,
-    motor_driver::MotorDriver& motor_driver,
-    brushed_motor_driver::BrushedMotorDriverIface& brushed_motor_driver,
-    motor_hardware::BrushedMotorHardwareIface& brushed_motion_controller);
+void start_tasks(can_bus::CanBus& can_bus,
+                 motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+                 brushed_motor::BrushedMotor& grip_motor);
 
 /**
  * Access to all the message queues in the system.
