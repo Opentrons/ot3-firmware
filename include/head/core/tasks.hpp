@@ -93,9 +93,8 @@ struct MotorTasks {
     move_status_reporter_task::MoveStatusReporterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
         nullptr};
-    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
-                                   MotorQueueClient, MotorQueueClient>*
-        move_group{nullptr};
+    move_group_task::MoveGroupTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
 };
 
 /**
