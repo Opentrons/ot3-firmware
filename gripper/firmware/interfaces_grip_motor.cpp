@@ -63,13 +63,3 @@ void grip_motor_iface::initialize() {
 auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
     return grip_motor;
 }
-
-// auto grip_motor_iface::get_motor_hardware_iface()
-//     -> motor_hardware::BrushedMotorHardwareIface& {
-//     return brushed_motor_hardware_iface;
-// }
-//
-// auto grip_motor_iface::get_motor_driver_hardware_iface()
-//     -> brushed_motor_driver::BrushedMotorDriverIface& {
-//     return brushed_motor_driver_iface;
-// }
