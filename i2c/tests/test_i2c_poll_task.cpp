@@ -95,7 +95,8 @@ SCENARIO("test the limited-count i2c poller") {
                             .id = transaction.id,
                             .bytes_read = 4,
                             .read_buffer = response_buffer};
-                        static_cast<void>(transaction.response_writer.write(response));
+                        static_cast<void>(
+                            transaction.response_writer.write(response));
                         auto first_resp =
                             get_message<i2c::messages::TransactionResponse>(
                                 poll_queue);
@@ -156,7 +157,8 @@ SCENARIO("test the limited-count i2c poller") {
                             .read_buffer = response_buffer,
                         };
                         CHECK(last_txn.id.is_completed_poll == true);
-                        static_cast<void>(last_txn.response_writer.write(response));
+                        static_cast<void>(
+                            last_txn.response_writer.write(response));
                         auto resp =
                             get_message<i2c::messages::TransactionResponse>(
                                 poll_queue);
@@ -241,7 +243,8 @@ SCENARIO("test the limited-count i2c poller") {
                             .id = msg.id,
                             .bytes_read = 4,
                             .read_buffer = response_buf_1};
-                        static_cast<void>(msg.response_writer.write(response_1));
+                        static_cast<void>(
+                            msg.response_writer.write(response_1));
                         auto next =
                             get_message<i2c::messages::TransactionResponse>(
                                 poll_queue);
@@ -279,7 +282,8 @@ SCENARIO("test the limited-count i2c poller") {
                                     .id = msg.id,
                                     .bytes_read = msg.transaction.bytes_to_read,
                                     .read_buffer = response_buf_2};
-                                static_cast<void>(msg.response_writer.write(response_2));
+                                static_cast<void>(
+                                    msg.response_writer.write(response_2));
                                 next = get_message<
                                     i2c::messages::TransactionResponse>(
                                     poll_queue);
@@ -313,7 +317,8 @@ SCENARIO("test the limited-count i2c poller") {
                         .id = txn.id,
                         .bytes_read = 5,
                         .read_buffer = first_response_buf};
-                    static_cast<void>(txn.response_writer.write(first_response));
+                    static_cast<void>(
+                        txn.response_writer.write(first_response));
                     auto next = get_message<i2c::messages::TransactionResponse>(
                         poll_queue);
                     CHECK(next == first_response);
@@ -325,7 +330,8 @@ SCENARIO("test the limited-count i2c poller") {
                         .id = txn.id,
                         .bytes_read = 5,
                         .read_buffer = second_response_buf};
-                    static_cast<void>(txn.response_writer.write(second_response));
+                    static_cast<void>(
+                        txn.response_writer.write(second_response));
                     next = get_message<i2c::messages::TransactionResponse>(
                         poll_queue);
                     CHECK(next == second_response);
@@ -360,7 +366,8 @@ SCENARIO("test the limited-count i2c poller") {
                             .id = txn.id,
                             .bytes_read = 5,
                             .read_buffer = first_response_buf};
-                        static_cast<void>(txn.response_writer.write(first_response));
+                        static_cast<void>(
+                            txn.response_writer.write(first_response));
                         auto next =
                             get_message<i2c::messages::TransactionResponse>(
                                 poll_queue);
@@ -372,7 +379,8 @@ SCENARIO("test the limited-count i2c poller") {
                             .id = txn.id,
                             .bytes_read = 5,
                             .read_buffer = second_response_buf};
-                        static_cast<void>(txn.response_writer.write(second_response));
+                        static_cast<void>(
+                            txn.response_writer.write(second_response));
                         next = get_message<i2c::messages::TransactionResponse>(
                             poll_queue);
                         CHECK(next == second_response);
@@ -449,7 +457,8 @@ SCENARIO("test the ongoing i2c polling") {
                         .id = transaction.id,
                         .bytes_read = transaction.transaction.bytes_to_read,
                         .read_buffer = std::array<uint8_t, 5>{1, 2, 3, 4, 5}};
-                    static_cast<void>(transaction.response_writer.write(response_msg));
+                    static_cast<void>(
+                        transaction.response_writer.write(response_msg));
                     auto next = get_message<i2c::messages::TransactionResponse>(
                         poll_queue);
                     REQUIRE(next == response_msg);
@@ -513,7 +522,8 @@ SCENARIO("test the ongoing i2c polling") {
                         .id = transaction.id,
                         .bytes_read = 3,
                         .read_buffer = first_resp_buffer};
-                    static_cast<void>(transaction.response_writer.write(first_resp));
+                    static_cast<void>(
+                        transaction.response_writer.write(first_resp));
                     auto next = get_message<i2c::messages::TransactionResponse>(
                         poll_queue);
                     tm = next;
@@ -536,8 +546,9 @@ SCENARIO("test the ongoing i2c polling") {
                                 .id = second_transaction.id,
                                 .bytes_read = 3,
                                 .read_buffer = second_resp_buffer};
-                            static_cast<void>(second_transaction.response_writer.write(
-                                second_resp));
+                            static_cast<void>(
+                                second_transaction.response_writer.write(
+                                    second_resp));
                             next =
                                 get_message<i2c::messages::TransactionResponse>(
                                     poll_queue);

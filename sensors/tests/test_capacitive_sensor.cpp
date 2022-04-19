@@ -270,7 +270,10 @@ SCENARIO("capacitance callback tests") {
     GIVEN("a callback instance that is echoing and not bound") {
         callback_host.set_echoing(true);
         callback_host.set_bind_sync(false);
-
+        THEN("it should reset the sync line") {
+            REQUIRE(mock_hw.get_sync_state_mock() == false);
+            REQUIRE(mock_hw.get_sync_reset_calls() == 1);
+        }
         WHEN("it receives data under its threshold") {
             std::array<uint8_t, 5> buffer_a = {0, 0, 0, 0, 0};
             std::array<uint8_t, 5> buffer_b = {0, 0, 0, 0, 0};
@@ -299,7 +302,7 @@ SCENARIO("capacitance callback tests") {
             THEN("it should not touch the sync line") {
                 REQUIRE(mock_hw.get_sync_state_mock() == false);
                 REQUIRE(mock_hw.get_sync_set_calls() == 0);
-                REQUIRE(mock_hw.get_sync_reset_calls() == 0);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 1);
             }
         }
         WHEN("it receives data over its threshold") {
@@ -337,13 +340,17 @@ SCENARIO("capacitance callback tests") {
             THEN("it should not touch the sync line") {
                 REQUIRE(mock_hw.get_sync_state_mock() == false);
                 REQUIRE(mock_hw.get_sync_set_calls() == 0);
-                REQUIRE(mock_hw.get_sync_reset_calls() == 0);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 1);
             }
         }
     }
     GIVEN("a callback instance that is bound and not echoing") {
         callback_host.set_echoing(false);
         callback_host.set_bind_sync(true);
+        THEN("it should reset its sync line") {
+            REQUIRE(mock_hw.get_sync_reset_calls() == 1);
+            REQUIRE(mock_hw.get_sync_state_mock() == false);
+        }
 
         WHEN("it receives data under its threshold") {
             std::array<uint8_t, 5> buffer_a = {0, 0, 0, 0, 0};
@@ -374,7 +381,7 @@ SCENARIO("capacitance callback tests") {
             THEN("it should deassert the sync line") {
                 REQUIRE(mock_hw.get_sync_state_mock() == false);
                 REQUIRE(mock_hw.get_sync_set_calls() == 0);
-                REQUIRE(mock_hw.get_sync_reset_calls() == 1);
+                REQUIRE(mock_hw.get_sync_reset_calls() == 2);
             }
         }
         WHEN("it receives data over its threshold") {
@@ -399,14 +406,15 @@ SCENARIO("capacitance callback tests") {
             callback_host.set_threshold(10);
             callback_host.handle_ongoing_response(first);
             callback_host.handle_ongoing_response(second);
-
             THEN("it should not send can messages") {
                 REQUIRE(!can_queue.has_message());
             }
             THEN("it should assert the sync line") {
                 REQUIRE(mock_hw.get_sync_state_mock() == true);
                 REQUIRE(mock_hw.get_sync_set_calls() == 1);
-                REQUIRE(mock_hw.get_sync_reset_calls() == 0);
+                // this call is still the one from setting up
+                // when we started the bind
+                REQUIRE(mock_hw.get_sync_reset_calls() == 1);
             }
         }
     }
