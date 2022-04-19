@@ -75,9 +75,21 @@ class FreeRTOSTask {
 };
 
 template <uint32_t StackDepth,
-          template <template <typename> typename> typename TaskObj>
+          template  // TaskStarter is a class template whose argument is
+                    // also a template - TaskObj, e.g. I2CTask or
+                    // MotorDriverTask.
+          <template <typename> typename>  // The task object's template argument
+                                          // is also a template rather than a
+                                          // reified type - a queue type like
+                                          // FreeRTOSQueue. Its argument is a
+                                          // reified type.
+          typename TaskObj>
+// The complexity of the templating here is required because we don't want the
+// task classes or includes to have to deal with FreeRTOS - we want to leave the
+// exact type of queue, for instance, a template as long as we can. This class
+// is the place where we finally specify the type of queue.
 struct TaskStarter {
-    TaskStarter() : queue{}, task_entry{queue}, task{task_entry} {}
+    TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter&) = delete;
     auto operator=(const TaskStarter&) -> TaskStarter& = delete;
     TaskStarter(TaskStarter&&) = delete;
@@ -93,7 +105,7 @@ struct TaskStarter {
         task.start(priority, name, &task_args...);
         return task_entry;
     }
-    QueueType queue;
+    QueueType queue{};
     TaskType task_entry;
     FreeRTOSTask<StackDepth, TaskType> task;
 };
