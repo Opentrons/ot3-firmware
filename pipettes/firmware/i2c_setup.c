@@ -64,7 +64,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
             // PIN PC1 is SDA
             // Secondary pressure sensor
         __HAL_RCC_I2C3_CLK_ENABLE();
-        __HAL_RCC_GPIOC_CLK_ENABLE();
         GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
         GPIO_InitStruct.Pull = GPIO_NOPULL;

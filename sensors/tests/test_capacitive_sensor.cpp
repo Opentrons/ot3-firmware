@@ -1,6 +1,5 @@
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
-#include "common/core/logging.h"
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "i2c/core/messages.hpp"
@@ -163,7 +162,6 @@ SCENARIO("read capacitance sensor values") {
                         response_msg.sensor_data, 15);
                     float expected = 15;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
-                    LOG("thing im testing is done");
                 }
                 THEN(
                     "using the callback with -saturated data returns the "
