@@ -65,7 +65,8 @@ class Writer {
     requires std::is_integral_v<Data>
     void write(uint16_t device_address, uint8_t reg, Data data) {
         messages::MaxMessageBuffer max_buffer{};
-        auto iter = max_buffer.begin();
+        auto* iter = max_buffer.begin();
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         *iter++ = reg;
         static_cast<void>(
             bit_utils::int_to_bytes(data, iter, max_buffer.end()));
@@ -99,7 +100,7 @@ class Writer {
                                 std::min(read_bytes, messages::MAX_BUFFER_SIZE),
                             .bytes_to_write = 0,
                             .write_buffer{}},
-            .id = {.token = id, .is_completed_poll = 0},
+            .id = {.token = id, .is_completed_poll = false},
             .response_writer = messages::ResponseWriter(response_queue)};
         queue->try_write(message);
     }

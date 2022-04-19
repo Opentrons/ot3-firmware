@@ -48,7 +48,7 @@ class CapacitiveMessageHandler {
     void initialize() {
         std::array reg_buf{static_cast<uint8_t>(DEVICE_ID_REGISTER)};
         writer.transact(ADDRESS, reg_buf, 2, own_queue,
-                        utils::build_id(ADDRESS, DEVICE_ID_REGISTER, false));
+                        utils::build_id(ADDRESS, DEVICE_ID_REGISTER, 0));
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
@@ -90,7 +90,7 @@ class CapacitiveMessageHandler {
             capacitance_handler.set_number_of_reads(1);
             poller.multi_register_poll(
                 ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, 1, DELAY,
-                own_queue, utils::build_id(ADDRESS, MSB_MEASUREMENT_1, true));
+                own_queue, utils::build_id(ADDRESS, MSB_MEASUREMENT_1, 1));
         }
     }
 

@@ -64,7 +64,7 @@ template <typename Message, typename Queue>
 inline auto launder_response(Message& msg, Queue& q,
                              const i2c::messages::TransactionResponse& tr)
     -> i2c::messages::TransactionResponse {
-    msg.response_writer.write(tr);
+    static_cast<void>(msg.response_writer.write(tr));
     return get_response(q);
 }
 

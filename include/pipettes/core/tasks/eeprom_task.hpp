@@ -12,10 +12,10 @@
 
 namespace eeprom_task {
 
-using _CanMessageTuple = std::tuple<can_messages::WriteToEEPromRequest,
-                                    can_messages::ReadFromEEPromRequest>;
+using CanMessageTuple = std::tuple<can_messages::WriteToEEPromRequest,
+                                   can_messages::ReadFromEEPromRequest>;
 using CanMessage = typename utils::TuplesToVariants<std::tuple<std::monostate>,
-                                                    _CanMessageTuple>::type;
+                                                    CanMessageTuple>::type;
 
 using TaskMessage = typename utils::VariantCat<
     CanMessage, std::variant<i2c::messages::TransactionResponse>>::type;
@@ -46,7 +46,8 @@ class EEPromMessageHandler {
         uint16_t data = 0;
         static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
                                                   m.read_buffer.cend(), data));
-        auto message = can_messages::ReadFromEEPromResponse({}, data);
+        auto message =
+            can_messages::ReadFromEEPromResponse{.serial_number = data};
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 

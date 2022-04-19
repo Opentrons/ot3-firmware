@@ -113,9 +113,15 @@ static motor_class::Motor pipette_motor{
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
 static sensors::hardware::SensorHardware pins_for_sensor_lt(gpio::PinConfig{
-    .port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .port = GPIOB,
+    .pin = GPIO_PIN_4,
+    .active_setting = GPIO_PIN_RESET});
 static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
-    .port = GPIOB, .pin = GPIO_PIN_5, .active_setting = GPIO_PIN_RESET});
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .port = GPIOB,
+    .pin = GPIO_PIN_5,
+    .active_setting = GPIO_PIN_RESET});
 
 auto main() -> int {
     HardwareInit();

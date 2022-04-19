@@ -52,7 +52,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -93,7 +93,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -138,7 +138,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -179,7 +179,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -227,7 +227,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -272,7 +272,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -319,7 +319,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(
@@ -362,7 +362,7 @@ SCENARIO("Test the i2c poller command queue") {
                         .read_buffer =
                             std::array{u8(1), u8(2), u8(0), u8(0), u8(0)},
                     };
-                    poll_msg.response_writer.write(resp);
+                    static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
                         auto resp_msg =
                             get_message<i2c::messages::TransactionResponse>(

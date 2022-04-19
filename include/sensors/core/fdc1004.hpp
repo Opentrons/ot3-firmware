@@ -112,7 +112,7 @@ inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
 // Turn a capacitance value into the value to send to the capdac
 // control register to use that offset.
 inline auto get_capdac_raw(float offset_pf) -> uint8_t {
-    uint8_t capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
+    auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
     return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
 }
 

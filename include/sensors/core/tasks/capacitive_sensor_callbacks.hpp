@@ -31,6 +31,8 @@ struct ReadCapacitanceCallback {
     void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
+
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             polling_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
             return;
@@ -59,6 +61,7 @@ struct ReadCapacitanceCallback {
     void handle_baseline_response(i2c::messages::TransactionResponse &m) {
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             baseline_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
             return;
@@ -86,7 +89,7 @@ struct ReadCapacitanceCallback {
         this->number_of_reads = number_of_reads;
     }
 
-    auto get_offset() const -> float { return current_offset_pf; }
+    [[nodiscard]] auto get_offset() const -> float { return current_offset_pf; }
 
     void set_echoing(bool should_echo) { echoing = should_echo; }
 
@@ -118,7 +121,9 @@ struct ReadCapacitanceCallback {
         zero_threshold_pf = threshold_pf;
     }
 
-    auto get_threshold(void) const -> float { return zero_threshold_pf; }
+    [[nodiscard]] auto get_threshold() const -> float {
+        return zero_threshold_pf;
+    }
 
   private:
     CanClient &can_client;

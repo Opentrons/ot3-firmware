@@ -30,13 +30,9 @@ requires MessageQueue<QueueImpl<writer::TaskMessage>, writer::TaskMessage>
 struct ContinuousPoll {
     using I2CWriterType = writer::Writer<QueueImpl>;
 
-    ContinuousPoll() = default;
+    ContinuousPoll() = delete;
     ContinuousPoll(I2CWriterType& writer, OwnQueueType& own_queue)
-        : transactions{},
-          current_transaction(transactions.cbegin()),
-          id{},
-          responder{},
-          timer(
+        : timer(
               "i2c cts poller", [this]() -> void { do_next_transaction(); },
               100),
           own_queue(own_queue),
@@ -45,10 +41,11 @@ struct ContinuousPoll {
     auto operator=(const ContinuousPoll&) -> ContinuousPoll& = delete;
     ContinuousPoll(ContinuousPoll&&) = delete;
     auto operator=(ContinuousPoll&&) -> ContinuousPoll& = delete;
-    std::array<messages::Transaction, 2> transactions;
-    decltype(transactions.cbegin()) current_transaction;
-    messages::TransactionIdentifier id;
-    messages::ResponseWriter responder;
+    ~ContinuousPoll() = default;
+    std::array<messages::Transaction, 2> transactions{};
+    decltype(transactions.cbegin()) current_transaction{transactions.cbegin()};
+    messages::TransactionIdentifier id{};
+    messages::ResponseWriter responder{};
     TimerImpl timer;
     OwnQueueType& own_queue;
     I2CWriterType& writer;
@@ -74,7 +71,7 @@ struct ContinuousPoll {
 
     auto handle_response(messages::TransactionResponse& response) {
         response.id.is_completed_poll = false;
-        responder.write(response);
+        static_cast<void>(responder.write(response));
         if (current_transaction != transactions.cbegin()) {
             do_next_transaction();
         }
@@ -108,14 +105,9 @@ template <template <class> class QueueImpl, timer::Timer TimerImpl,
 requires MessageQueue<QueueImpl<writer::TaskMessage>, writer::TaskMessage>
 struct LimitedPoll {
     using I2CWriterType = writer::Writer<QueueImpl>;
-    LimitedPoll() = default;
+    LimitedPoll() = delete;
     LimitedPoll(I2CWriterType& writer, OwnQueueType& own_queue)
-        : transactions{},
-          current_transaction{},
-          remaining_polls{},
-          id{},
-          responder{},
-          timer(
+        : timer(
               "i2c limited poller", [this]() -> void { do_next_transaction(); },
               1),
           own_queue(own_queue),
@@ -124,11 +116,12 @@ struct LimitedPoll {
     auto operator=(const LimitedPoll&) -> LimitedPoll& = delete;
     LimitedPoll(LimitedPoll&&) = delete;
     auto operator=(LimitedPoll&&) -> LimitedPoll& = delete;
-    std::array<messages::Transaction, 2> transactions;
-    decltype(transactions.cbegin()) current_transaction;
-    int remaining_polls;
-    messages::TransactionIdentifier id;
-    messages::ResponseWriter responder;
+    ~LimitedPoll() = default;
+    std::array<messages::Transaction, 2> transactions{};
+    decltype(transactions.cbegin()) current_transaction{transactions.cbegin()};
+    int remaining_polls = 0;
+    messages::TransactionIdentifier id{};
+    messages::ResponseWriter responder{};
     TimerImpl timer;
     OwnQueueType& own_queue;
     I2CWriterType& writer;
@@ -150,14 +143,14 @@ struct LimitedPoll {
             LOG("adding poll of %#04x @ %d ms for %d samples",
                 transactions[0].address, message.delay_ms, remaining_polls);
             remaining_polls = message.polling;
-            id.is_completed_poll = 0;
+            id.is_completed_poll = false;
             timer.update_period(message.delay_ms);
             timer.start();
         }
     }
 
     auto handle_response(messages::TransactionResponse& response) -> void {
-        responder.write(response);
+        static_cast<void>(responder.write(response));
         if (response.id.is_completed_poll) {
             transactions[0] = {};
             transactions[1] = {};
@@ -182,8 +175,8 @@ struct LimitedPoll {
     }
 
     auto do_next_transaction() -> void {
-        auto first = transactions.cbegin();
-        auto then_current = current_transaction;
+        const auto* first = transactions.cbegin();
+        const auto* then_current = current_transaction;
         if (current_transaction != first) {
             remaining_polls--;
             current_transaction = first;
@@ -224,7 +217,7 @@ struct PollManager {
     using PollType = PollT<QueueImpl, TimerImpl, OwnQueueType>;
     using Polls = std::array<PollType, MAX_CONTINUOUS_POLLS>;
     Polls polls;
-    explicit PollManager(PollType::I2CWriterType& writer,
+    explicit PollManager(typename PollType::I2CWriterType& writer,
                          OwnQueueType& own_queue)
         : polls{PollType(writer, own_queue), PollType(writer, own_queue),
                 PollType(writer, own_queue), PollType(writer, own_queue),
@@ -254,9 +247,8 @@ struct PollManager {
             LOG("Could not add continuous poller for id %d",
                 message.first.address, message.id.token);
             return;
-        } else {
-            maybe_poller->handle_message(message);
         }
+        maybe_poller->handle_message(message);
     }
 
     auto handle_response(messages::TransactionResponse& response) -> void {
@@ -264,9 +256,8 @@ struct PollManager {
         auto maybe_poller = get_poller(response.id, matched);
         if (!matched) {
             return;
-        } else {
-            maybe_poller->handle_response(response);
         }
+        maybe_poller->handle_response(response);
     }
 };
 
