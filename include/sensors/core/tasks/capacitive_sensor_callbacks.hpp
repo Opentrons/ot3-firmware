@@ -8,6 +8,7 @@
 #include "common/core/logging.h"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
+#include "sensors/core/utils.hpp"
 
 namespace sensors {
 namespace tasks {
@@ -72,10 +73,15 @@ struct ReadCapacitanceCallback {
         }
         auto capacitance = convert_capacitance(measurement, number_of_reads,
                                                current_offset_pf);
-        auto message = can_messages::ReadFromSensorResponse{
+        if (utils::tag_in_token(m.id.token,
+                                utils::ResponseTag::IS_THRESHOLD_SENSE)) {
+            set_threshold(capacitance + 1);
+        } else {
+            auto message = can_messages::ReadFromSensorResponse{
             .sensor = SensorType::capacitive,
             .sensor_data = convert_to_fixed_point(capacitance, 15)};
-        can_client.send_can_message(can_ids::NodeId::host, message);
+            can_client.send_can_message(can_ids::NodeId::host, message);
+        }
         auto new_offset = update_offset(capacitance, current_offset_pf);
         set_offset(new_offset);
     }
@@ -119,6 +125,10 @@ struct ReadCapacitanceCallback {
 
     auto set_threshold(float threshold_pf) -> void {
         zero_threshold_pf = threshold_pf;
+        auto message = can_messages::SensorThresholdResponse{
+            .sensor = SensorType::capacitive,
+            .threshold = convert_to_fixed_point(zero_threshold_pf, 15)};
+        can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     [[nodiscard]] auto get_threshold() const -> float {
