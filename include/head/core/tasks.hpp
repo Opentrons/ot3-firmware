@@ -47,7 +47,7 @@ struct HeadTasks {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     presence_sensing_driver_task::PresenceSensingDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, HeadQueueClient>*
+        freertos_message_queue::FreeRTOSMessageQueue>*
         presence_sensing_driver_task{nullptr};
 };
 
@@ -85,17 +85,15 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
  */
 struct MotorTasks {
     motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, MotorQueueClient>*
-        motor_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
-        MotorQueueClient>* motion_controller{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
+        nullptr};
     move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue, MotorQueueClient,
-        lms::LeadScrewConfig>* move_status_reporter{nullptr};
-    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
-                                   MotorQueueClient, MotorQueueClient>*
-        move_group{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
+        nullptr};
+    move_group_task::MoveGroupTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
 };
 
 /**

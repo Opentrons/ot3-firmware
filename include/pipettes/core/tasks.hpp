@@ -101,17 +101,15 @@ struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
-        motor_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
-        QueueClient>* motion_controller{nullptr};
-    move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient,
-        lms::LeadScrewConfig>* move_status_reporter{nullptr};
-    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
-                                   QueueClient, QueueClient>* move_group{
+        freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
+    move_status_reporter_task::MoveStatusReporterTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
+        nullptr};
+    move_group_task::MoveGroupTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
 
     i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
         i2c3_task{nullptr};
@@ -123,24 +121,17 @@ struct AllTask {
     i2c::tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
                               freertos_timer::FreeRTOSTimer>* i2c1_poller_task{
         nullptr};
-    eeprom_task::EEPromTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* eeprom_task{nullptr};
+    eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        eeprom_task{nullptr};
     sensors::tasks::EnvironmentSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* environment_sensor_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* environment_sensor_task{
+        nullptr};
     sensors::tasks::CapacitiveSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
-        i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* capacitive_sensor_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* capacitive_sensor_task{
+        nullptr};
     sensors::tasks::PressureSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>,
-        i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>,
-        QueueClient>* pressure_sensor_task{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task{
+        nullptr};
 };
 
 /**

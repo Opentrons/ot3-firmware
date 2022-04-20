@@ -64,11 +64,11 @@ class MotionControllerMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MotionControllerTask {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     MotionControllerTask(QueueType& queue) : queue{queue} {}
     MotionControllerTask(const MotionControllerTask& c) = delete;
@@ -80,6 +80,7 @@ class MotionControllerTask {
     /**
      * Task entry point.
      */
+    template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
         motor_hardware::BrushedMotorHardwareIface* motor,
         CanClient* can_client) {

@@ -7,6 +7,8 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "i2c/core/poller.hpp"
+#include "i2c/core/writer.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_callbacks.hpp"
 #include "sensors/core/utils.hpp"
@@ -160,11 +162,11 @@ class CapacitiveMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl, class I2CQueueWriter,
-          class I2CQueuePoller, message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<utils::TaskMessage>, utils::TaskMessage>
 class CapacitiveSensorTask {
   public:
+    using Messages = utils::TaskMessage;
     using QueueType = QueueImpl<utils::TaskMessage>;
     CapacitiveSensorTask(QueueType &queue) : queue{queue} {}
     CapacitiveSensorTask(const CapacitiveSensorTask &c) = delete;
@@ -176,7 +178,9 @@ class CapacitiveSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer, I2CQueuePoller *poller,
+    template <message_writer_task::TaskClient CanClient>
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
+                                 i2c::poller::Poller<QueueImpl> *poller,
                                  SensorHardwareBase *hardware,
                                  CanClient *can_client) {
         auto handler = CapacitiveMessageHandler{*writer, *poller, *hardware,

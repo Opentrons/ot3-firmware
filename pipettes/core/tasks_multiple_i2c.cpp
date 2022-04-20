@@ -1,19 +1,21 @@
 #include "can/core/ids.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/core/freertos_task.hpp"
+#include "common/core/freertos_timer.hpp"
 #include "i2c/core/poller.hpp"
-#include "i2c/core/tasks/i2c_poller_task_starter.hpp"
-#include "i2c/core/tasks/i2c_task_starter.hpp"
+#include "i2c/core/tasks/i2c_poller_task.hpp"
+#include "i2c/core/tasks/i2c_task.hpp"
 #include "i2c/core/writer.hpp"
-#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
-#include "motor-control/core/tasks/motor_driver_task_starter.hpp"
-#include "motor-control/core/tasks/move_group_task_starter.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/move_group_task.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "pipettes/core/tasks/eeprom_task_starter.hpp"
-#include "sensors/core/tasks/capacitive_sensor_task_starter.hpp"
-#include "sensors/core/tasks/environmental_sensor_task_starter.hpp"
-#include "sensors/core/tasks/pressure_sensor_task_starter.hpp"
+#include "pipettes/core/tasks/eeprom_task.hpp"
+#include "sensors/core/tasks/capacitive_sensor_task.hpp"
+#include "sensors/core/tasks/environmental_sensor_task.hpp"
+#include "sensors/core/tasks/pressure_sensor_task.hpp"
 
 static auto tasks = pipettes_tasks::AllTask{};
 static auto queue_client = pipettes_tasks::QueueClient{};
@@ -22,33 +24,32 @@ static auto i2c1_task_client =
 static auto i2c3_task_client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
 static auto motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
 static auto move_group_task_builder =
-    move_group_task_starter::TaskStarter<512, pipettes_tasks::QueueClient,
-                                         pipettes_tasks::QueueClient>{};
-static auto move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, pipettes_tasks::QueueClient, lms::LeadScrewConfig>{};
+    freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
+static auto move_status_task_builder = freertos_task::TaskStarter<
+    512, move_status_reporter_task::MoveStatusReporterTask>{};
 static auto eeprom_task_builder =
-    eeprom_task_starter::TaskStarter<512, pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, eeprom_task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
-    sensors::tasks::EnvironmentalSensorTaskStarter<
-        512, pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>{};
 static auto capacitive_sensor_task_builder =
-    sensors::tasks::CapacitiveSensorTaskStarter<512,
-                                                pipettes_tasks::QueueClient>{};
-
+    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>{};
 static auto pressure_sensor_task_builder =
-    sensors::tasks::PressureSensorTaskStarter<512,
-                                              pipettes_tasks::QueueClient>{};
+    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask>{};
 
-static auto i2c_task_builder = i2c::task_starters::I2CTaskStarter<512>{};
+static auto i2c_task_builder =
+    freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
+template <template <typename> typename QueueImpl>
+using PollerWithTimer =
+    i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
+
 static auto i2c_poll_task_builder =
-    i2c::task_starters::PollerTaskStarter<1024>{};
+    freertos_task::TaskStarter<1024, PollerWithTimer>{};
 static auto i2c1_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 static auto i2c3_poll_client =
@@ -72,29 +73,36 @@ void pipettes_tasks::start_tasks(
 
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus, id);
-    auto& i2c3_task = i2c_task_builder.start(5, i2c3_device);
+    auto& i2c3_task = i2c_task_builder.start(5, "i2c3", i2c3_device);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
-    auto& i2c1_task = i2c_task_builder.start(5, i2c1_device);
+    auto& i2c1_task = i2c_task_builder.start(5, "i2c1", i2c1_device);
     i2c1_task_client.set_queue(&i2c1_task.get_queue());
 
-    auto& i2c3_poller_task = i2c_poll_task_builder.start(5, i2c3_task_client);
-    auto& i2c1_poller_task = i2c_poll_task_builder.start(5, i2c1_task_client);
+    auto& i2c3_poller_task =
+        i2c_poll_task_builder.start(5, "i2c3 poll", i2c3_task_client);
+    auto& i2c1_poller_task =
+        i2c_poll_task_builder.start(5, "i2c1 poll", i2c1_task_client);
     i2c1_poll_client.set_queue(&i2c1_poller_task.get_queue());
     i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
 
-    auto& motion = mc_task_builder.start(5, motion_controller, queues);
-    auto& motor = motor_driver_task_builder.start(5, motor_driver, queues);
-    auto& move_group = move_group_task_builder.start(5, queues, queues);
+    auto& motion = mc_task_builder.start(5, "motion controller",
+                                         motion_controller, queues);
+    auto& motor = motor_driver_task_builder.start(5, "motor driver",
+                                                  motor_driver, queues);
+    auto& move_group =
+        move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, queues, motion_controller.get_mechanical_config());
+        5, "move status", queues, motion_controller.get_mechanical_config());
 
-    auto& eeprom_task = eeprom_task_builder.start(5, i2c3_task_client, queues);
-    auto& environment_sensor_task =
-        environment_sensor_task_builder.start(5, i2c3_task_client, queues);
+    auto& eeprom_task =
+        eeprom_task_builder.start(5, "eeprom", i2c3_task_client, queues);
+    auto& environment_sensor_task = environment_sensor_task_builder.start(
+        5, "enviro sensor", i2c3_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
-        5, i2c3_task_client, i2c3_poll_client, queues);
+        5, "pressure sensor", i2c3_task_client, i2c3_poll_client, queues);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, i2c3_task_client, i2c3_poll_client, sensor_hardware, queues);
+        5, "capacitive sensor", i2c3_task_client, i2c3_poll_client,
+        sensor_hardware, queues);
 
     // TODO (lc: 03-21-2022, add necessary sensor tasks for secondary i2c bus
     tasks.can_writer = &can_writer;

@@ -1,12 +1,13 @@
 #include "head/core/tasks.hpp"
 
+#include "common/core/freertos_task.hpp"
 #include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
-#include "head/core/tasks/presence_sensing_driver_task_starter.hpp"
-#include "motor-control/core/tasks/motion_controller_task_starter.hpp"
-#include "motor-control/core/tasks/motor_driver_task_starter.hpp"
-#include "motor-control/core/tasks/move_group_task_starter.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task_starter.hpp"
+#include "head/core/tasks/presence_sensing_driver_task.hpp"
+#include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_driver_task.hpp"
+#include "motor-control/core/tasks/move_group_task.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 static auto head_tasks_col = head_tasks::HeadTasks{};
 static auto head_queues = head_tasks::HeadQueueClient{};
@@ -18,31 +19,28 @@ static auto right_queues =
     head_tasks::MotorQueueClient{can_ids::NodeId::head_r};
 
 static auto left_mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                head_tasks::MotorQueueClient>{};
-static auto right_mc_task_builder =
-    motion_controller_task_starter::TaskStarter<lms::LeadScrewConfig, 512,
-                                                head_tasks::MotorQueueClient>{};
-static auto left_motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, head_tasks::MotorQueueClient>{};
-static auto right_motor_driver_task_builder =
-    motor_driver_task_starter::TaskStarter<512, head_tasks::MotorQueueClient>{};
-static auto left_move_group_task_builder =
-    move_group_task_starter::TaskStarter<512, head_tasks::MotorQueueClient,
-                                         head_tasks::MotorQueueClient>{};
-static auto right_move_group_task_builder =
-    move_group_task_starter::TaskStarter<512, head_tasks::MotorQueueClient,
-                                         head_tasks::MotorQueueClient>{};
-static auto left_move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, head_tasks::MotorQueueClient, lms::LeadScrewConfig>{};
-static auto right_move_status_task_builder =
-    move_status_reporter_task_starter::TaskStarter<
-        512, head_tasks::MotorQueueClient, lms::LeadScrewConfig>{};
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
 
-static auto presence_sensing_driver_task_builder =
-    presence_sensing_driver_task_starter::TaskStarter<
-        512, head_tasks::HeadQueueClient>{};
+static auto right_mc_task_builder =
+    freertos_task::TaskStarter<512,
+                               motion_controller_task::MotionControllerTask>{};
+
+static auto left_motor_driver_task_builder =
+    freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
+static auto right_motor_driver_task_builder =
+    freertos_task::TaskStarter<512, motor_driver_task::MotorDriverTask>{};
+static auto left_move_group_task_builder =
+    freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
+static auto right_move_group_task_builder =
+    freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
+static auto left_move_status_task_builder = freertos_task::TaskStarter<
+    512, move_status_reporter_task::MoveStatusReporterTask>{};
+static auto right_move_status_task_builder = freertos_task::TaskStarter<
+    512, move_status_reporter_task::MoveStatusReporterTask>{};
+
+static auto presence_sensing_driver_task_builder = freertos_task::TaskStarter<
+    512, presence_sensing_driver_task::PresenceSensingDriverTask>{};
 
 /**
  * Start head tasks.
@@ -61,7 +59,7 @@ void head_tasks::start_tasks(
     can_task::start_reader(can_bus);
 
     auto& presence_sensing = presence_sensing_driver_task_builder.start(
-        5, presence_sensing_driver, head_queues);
+        5, "presence", presence_sensing_driver, head_queues);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
@@ -72,14 +70,15 @@ void head_tasks::start_tasks(
     head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
 
     // Start the left motor tasks
-    auto& left_motion =
-        left_mc_task_builder.start(5, left_motion_controller, left_queues);
-    auto& left_motor =
-        left_motor_driver_task_builder.start(5, left_motor_driver, left_queues);
-    auto& left_move_group =
-        left_move_group_task_builder.start(5, left_queues, left_queues);
+    auto& left_motion = left_mc_task_builder.start(
+        5, "left mc", left_motion_controller, left_queues);
+    auto& left_motor = left_motor_driver_task_builder.start(
+        5, "left motor driver", left_motor_driver, left_queues);
+    auto& left_move_group = left_move_group_task_builder.start(
+        5, "left move group", left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(
-        5, left_queues, left_motion_controller.get_mechanical_config());
+        5, "left move status", left_queues,
+        left_motion_controller.get_mechanical_config());
 
     // Assign left motor task collection task pointers
     left_tasks.motion_controller = &left_motion;
@@ -96,14 +95,15 @@ void head_tasks::start_tasks(
         &left_move_status_reporter.get_queue();
 
     // Start the right motor tasks
-    auto& right_motion =
-        right_mc_task_builder.start(5, right_motion_controller, right_queues);
+    auto& right_motion = right_mc_task_builder.start(
+        5, "right mc", right_motion_controller, right_queues);
     auto& right_motor = right_motor_driver_task_builder.start(
-        5, right_motor_driver, right_queues);
-    auto& right_move_group =
-        right_move_group_task_builder.start(5, right_queues, right_queues);
+        5, "right motor driver", right_motor_driver, right_queues);
+    auto& right_move_group = right_move_group_task_builder.start(
+        5, "right move group", right_queues, right_queues);
     auto& right_move_status_reporter = right_move_status_task_builder.start(
-        5, right_queues, right_motion_controller.get_mechanical_config());
+        5, "right move status", right_queues,
+        right_motion_controller.get_mechanical_config());
 
     // Assign right motor task collection task pointers
     right_tasks.motion_controller = &right_motion;

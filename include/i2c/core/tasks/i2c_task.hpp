@@ -62,6 +62,7 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<writer::TaskMessage>, writer::TaskMessage>
 class I2CTask {
   public:
+    using Messages = writer::TaskMessage;
     using QueueType = QueueImpl<writer::TaskMessage>;
     I2CTask(QueueType &queue) : queue{queue} {}
     I2CTask(const I2CTask &c) = delete;

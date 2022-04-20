@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "FreeRTOS.h"
+#include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
 #include "task.h"
 
@@ -71,6 +72,42 @@ class FreeRTOSTask {
     EntryPoint& entry_point;
 
     std::function<void()> starter{};
+};
+
+template <uint32_t StackDepth,
+          template  // TaskStarter is a class template whose argument is
+                    // also a template - TaskObj, e.g. I2CTask or
+                    // MotorDriverTask.
+          <template <typename> typename>  // The task object's template argument
+                                          // is also a template rather than a
+                                          // reified type - a queue type like
+                                          // FreeRTOSQueue. Its argument is a
+                                          // reified type.
+          typename TaskObj>
+// The complexity of the templating here is required because we don't want the
+// task classes or includes to have to deal with FreeRTOS - we want to leave the
+// exact type of queue, for instance, a template as long as we can. This class
+// is the place where we finally specify the type of queue.
+struct TaskStarter {
+    TaskStarter() : task_entry{queue}, task{task_entry} {}
+    TaskStarter(const TaskStarter&) = delete;
+    auto operator=(const TaskStarter&) -> TaskStarter& = delete;
+    TaskStarter(TaskStarter&&) = delete;
+    auto operator=(TaskStarter&&) -> TaskStarter& = delete;
+    ~TaskStarter() = default;
+    using TaskType = TaskObj<freertos_message_queue::FreeRTOSMessageQueue>;
+    using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
+        typename TaskType::Messages>;
+
+    template <typename... TaskArgs>
+    auto start(uint32_t priority, const char* name, TaskArgs&... task_args)
+        -> TaskType& {
+        task.start(priority, name, &task_args...);
+        return task_entry;
+    }
+    QueueType queue{};
+    TaskType task_entry;
+    FreeRTOSTask<StackDepth, TaskType> task;
 };
 
 }  // namespace freertos_task
