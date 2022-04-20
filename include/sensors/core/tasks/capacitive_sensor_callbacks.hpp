@@ -25,26 +25,25 @@ template <message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
-                            hardware::SensorHardwareBase &hardware,
-                            int32_t threshold, float current_offset)
-        : can_client{can_client},
-          i2c_writer{i2c_writer},
-          hardware{hardware},
-          current_offset{current_offset},
-          zero_threshold{threshold} {}
+                            hardware::SensorHardwareBase &hardware)
+        : can_client{can_client}, i2c_writer{i2c_writer}, hardware{hardware} {}
 
     void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
+
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             polling_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
             return;
         }
-        auto cap_raw_val =
-            convert_reads(polling_results[0], polling_results[1]);
-        auto cap_val = convert_capacitance(cap_raw_val, 1, current_offset);
+        auto capacitance = convert_capacitance(
+            convert_reads(polling_results[0], polling_results[1]), 1,
+            current_offset_pf);
+        auto new_offset = update_offset(capacitance, current_offset_pf);
+        set_offset(new_offset);
         if (bind_sync) {
-            if (cap_val > zero_threshold) {
+            if (capacitance > zero_threshold_pf) {
                 hardware.set_sync();
             } else {
                 hardware.reset_sync();
@@ -55,13 +54,14 @@ struct ReadCapacitanceCallback {
                 can_ids::NodeId::host,
                 can_messages::ReadFromSensorResponse{
                     .sensor = can_ids::SensorType::capacitive,
-                    .sensor_data = cap_val});
+                    .sensor_data = convert_to_fixed_point(capacitance, 15)});
         }
     }
 
     void handle_baseline_response(i2c::messages::TransactionResponse &m) {
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             baseline_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
             return;
@@ -70,23 +70,14 @@ struct ReadCapacitanceCallback {
         if (!m.id.is_completed_poll) {
             return;
         }
-        auto capacitance =
-            convert_capacitance(measurement, number_of_reads, current_offset);
+        auto capacitance = convert_capacitance(measurement, number_of_reads,
+                                               current_offset_pf);
         auto message = can_messages::ReadFromSensorResponse{
-            .sensor = SensorType::capacitive, .sensor_data = capacitance};
+            .sensor = SensorType::capacitive,
+            .sensor_data = convert_to_fixed_point(capacitance, 15)};
         can_client.send_can_message(can_ids::NodeId::host, message);
-        if (capacitance > zero_threshold || capacitance < zero_threshold) {
-            LOG("Capacitance %d exceeds zero threshold %d ", capacitance,
-                zero_threshold);
-            auto capdac = update_capdac(capacitance, current_offset);
-            // convert back to pF
-            current_offset = get_offset_pf(capdac);
-            LOG("Setting offset to %d ", static_cast<int>(current_offset));
-            uint16_t update = CONFIGURATION_MEASUREMENT |
-                              POSITIVE_INPUT_CHANNEL | NEGATIVE_INPUT_CHANNEL |
-                              capdac;
-            i2c_writer.write(ADDRESS, update);
-        }
+        auto new_offset = update_offset(capacitance, current_offset_pf);
+        set_offset(new_offset);
     }
 
     void reset_limited() {
@@ -98,18 +89,48 @@ struct ReadCapacitanceCallback {
         this->number_of_reads = number_of_reads;
     }
 
-    auto get_offset() -> float { return current_offset; }
+    [[nodiscard]] auto get_offset() const -> float { return current_offset_pf; }
 
     void set_echoing(bool should_echo) { echoing = should_echo; }
 
-    void set_bind_sync(bool should_bind) { bind_sync = should_bind; }
+    void set_bind_sync(bool should_bind) {
+        bind_sync = should_bind;
+        hardware.reset_sync();
+    }
+
+    void set_offset(float new_offset) {
+        if (new_offset != current_offset_pf) {
+            auto capdac_raw = get_capdac_raw(new_offset);
+            std::array offset{CONFIGURATION_MEASUREMENT,
+                              device_configuration_msb(capdac_raw),
+                              device_configuration_lsb(capdac_raw)};
+            i2c_writer.write(ADDRESS, offset);
+            current_offset_pf = new_offset;
+            std::array configuration_data{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
+                                          SAMPLE_RATE_LSB};
+            i2c_writer.write(ADDRESS, configuration_data);
+        }
+    }
+
+    void initialize() {
+        current_offset_pf = -1;
+        set_offset(0);
+    }
+
+    auto set_threshold(float threshold_pf) -> void {
+        zero_threshold_pf = threshold_pf;
+    }
+
+    [[nodiscard]] auto get_threshold() const -> float {
+        return zero_threshold_pf;
+    }
 
   private:
     CanClient &can_client;
     I2CQueueWriter &i2c_writer;
     hardware::SensorHardwareBase &hardware;
-    float current_offset;
-    int32_t zero_threshold;
+    float current_offset_pf = 0;
+    float zero_threshold_pf = 30;
     int32_t measurement = 0;
     uint16_t number_of_reads = 1;
     bool echoing = false;

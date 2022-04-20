@@ -165,7 +165,8 @@ class Poller {
                              std::size_t register_2_read_bytes,
                              uint16_t number_reads, uint16_t delay,
                              RQType& response_queue, uint32_t id = 0) {
-        std::array<uint8_t, sizeof(Data)> buf_1{}, buf_2{};
+        std::array<uint8_t, sizeof(Data)> buf_1{};
+        std::array<uint8_t, sizeof(Data)> buf_2{};
         static_cast<void>(bit_utils::int_to_bytes(register_1_data,
                                                   buf_1.begin(), buf_1.end()));
         static_cast<void>(bit_utils::int_to_bytes(register_2_data,
@@ -245,7 +246,8 @@ class Poller {
                                         std::size_t register_2_read_bytes,
                                         uint16_t delay, RQType& response_queue,
                                         uint32_t id) {
-        std::array<uint8_t, sizeof(Data)> buf_1{}, buf_2{};
+        std::array<uint8_t, sizeof(Data)> buf_1{};
+        std::array<uint8_t, sizeof(Data)> buf_2{};
         static_cast<void>(bit_utils::int_to_bytes(register_1_data,
                                                   buf_1.begin(), buf_1.end()));
         static_cast<void>(bit_utils::int_to_bytes(register_2_data,

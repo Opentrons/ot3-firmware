@@ -141,7 +141,7 @@ class MMR92C04 {
 
     auto read_pressure(uint32_t data) -> bool {
         LOG("Updated pressure reading is %d", data);
-        if (data) {
+        if (data != 0) {
             _registers.pressure.reading = data;
             return true;
         }
@@ -149,7 +149,7 @@ class MMR92C04 {
     }
 
     auto read_pressure_low_pass(uint32_t data) -> bool {
-        if (data) {
+        if (data != 0) {
             _registers.low_pass_pressure.reading = data;
             return true;
         }
@@ -157,7 +157,7 @@ class MMR92C04 {
     }
 
     auto read_temperature(uint32_t data) -> bool {
-        if (data) {
+        if (data != 0) {
             _registers.temperature.reading = data;
             return true;
         }
@@ -165,7 +165,7 @@ class MMR92C04 {
     }
 
     auto read_status(uint32_t data) -> bool {
-        if (data) {
+        if (data != 0) {
             _registers.status.reading = data & mmr920C04::Status::value_mask;
             return true;
         }

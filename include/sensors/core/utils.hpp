@@ -9,19 +9,19 @@
 namespace sensors {
 namespace utils {
 
-using _CanMessageTuple = std::tuple<can_messages::ReadFromSensorRequest,
-                                    can_messages::WriteToSensorRequest,
-                                    can_messages::BaselineSensorRequest,
-                                    can_messages::SetSensorThresholdRequest,
-                                    can_messages::BindSensorOutputRequest>;
-using _OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
+using CanMessageTuple = std::tuple<can_messages::ReadFromSensorRequest,
+                                   can_messages::WriteToSensorRequest,
+                                   can_messages::BaselineSensorRequest,
+                                   can_messages::SetSensorThresholdRequest,
+                                   can_messages::BindSensorOutputRequest>;
+using OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
 using CanMessage =
     typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-                                       _CanMessageTuple>::type;
+                                       CanMessageTuple>::type;
 using TaskMessage = typename ::utils::VariantCat<
     std::variant<std::monostate>,
-    typename ::utils::TuplesToVariants<_CanMessageTuple,
-                                       _OtherTaskMessagesTuple>::type>::type;
+    typename ::utils::TuplesToVariants<CanMessageTuple,
+                                       OtherTaskMessagesTuple>::type>::type;
 
 /**
  * Concept describing a class that can message this task.

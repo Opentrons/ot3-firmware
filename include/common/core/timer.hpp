@@ -5,7 +5,7 @@
  * Concept and useful definitions for generic timers.
  * */
 namespace timer {
-using Callback = std::function<void(void)>;
+using Callback = std::function<void()>;
 
 template <typename TimerType>
 concept Timer = requires(TimerType tt, Callback cb) {
@@ -15,7 +15,6 @@ concept Timer = requires(TimerType tt, Callback cb) {
     {tt.update_period(static_cast<uint32_t>(10))};
     {tt.start()};
     {tt.stop()};
-    {TimerType(
-        "hello", []() {}, static_cast<uint32_t>(0))};
+    {TimerType("hello", std::move(cb), static_cast<uint32_t>(0))};
 };
 };  // namespace timer

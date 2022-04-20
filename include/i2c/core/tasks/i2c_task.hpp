@@ -29,23 +29,23 @@ class I2CMessageHandler {
 
     void visit(Transact &m) {
         messages::MaxMessageBuffer read_buf{};
-        if (m.transaction.bytes_to_write) {
+        if (m.transaction.bytes_to_write != 0) {
             i2c_device.central_transmit(
                 m.transaction.write_buffer.data(),
                 std::min(m.transaction.bytes_to_write,
                          m.transaction.write_buffer.size()),
                 m.transaction.address, TIMEOUT);
         }
-        if (m.transaction.bytes_to_read) {
+        if (m.transaction.bytes_to_read != 0) {
             i2c_device.central_receive(
                 read_buf.data(),
                 std::min(m.transaction.bytes_to_read, read_buf.size()),
                 m.transaction.address, TIMEOUT);
         }
-        m.response_writer.write(
+        static_cast<void>(m.response_writer.write(
             TransactionResponse{.id = m.id,
                                 .bytes_read = m.transaction.bytes_to_read,
-                                .read_buffer = read_buf});
+                                .read_buffer = read_buf}));
     }
 
     i2c::hardware::I2CDeviceBase &i2c_device;

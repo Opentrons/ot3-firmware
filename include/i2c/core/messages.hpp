@@ -71,23 +71,24 @@ concept I2CResponseQueue =
 struct ResponseWriter {
     template <I2CResponseQueue OriginatingQueue>
     explicit ResponseWriter(OriginatingQueue& rq)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         : queue_ref(reinterpret_cast<void*>(&rq)),
           writer(&OriginatingQueue::try_write_static) {}
-    ResponseWriter() : queue_ref(nullptr), writer(nullptr) {}
+    ResponseWriter() = default;
     ResponseWriter(const ResponseWriter& other) = default;
     auto operator=(const ResponseWriter& other) -> ResponseWriter& = default;
     ResponseWriter(ResponseWriter&& other) = default;
     auto operator=(ResponseWriter&& other) -> ResponseWriter& = default;
     ~ResponseWriter() = default;
-    void* queue_ref;
-    bool (*writer)(void*, const TransactionResponse&);
+    void* queue_ref{nullptr};
+    bool (*writer)(void*, const TransactionResponse&){nullptr};
 
-    auto write(const TransactionResponse& response) -> bool {
-        if (writer && queue_ref) {
+    [[nodiscard]] auto write(const TransactionResponse& response) const
+        -> bool {
+        if ((writer != nullptr) && (queue_ref != nullptr)) {
             return writer(queue_ref, response);
-        } else {
-            return false;
         }
+        return false;
     }
 };
 

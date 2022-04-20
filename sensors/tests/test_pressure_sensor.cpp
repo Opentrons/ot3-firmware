@@ -131,7 +131,7 @@ SCENARIO("read pressure sensor values") {
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 15);
                     // pressure value returned in pascals
-                    float expected = 257.33041;
+                    float expected = 514.66083;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }

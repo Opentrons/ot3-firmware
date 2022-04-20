@@ -8,7 +8,8 @@ typedef struct {
 typedef enum {
     gantry_hardware_device_limit_switch,
     gantry_hardware_device_LED_drive,
-    gantry_hardware_device_sync_in
+    gantry_hardware_device_sync_in,
+    gantry_hardware_device_sync_out,
 }GantryHardwareDevice;
 
 GantryHardwarePin gantry_hardware_get_gpio(GantryHardwareDevice device);

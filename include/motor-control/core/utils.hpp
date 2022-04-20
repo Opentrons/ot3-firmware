@@ -18,3 +18,5 @@ auto fixed_point_multiply(sq31_31 a, sq0_31 b) -> sq0_31;
 auto fixed_point_multiply(sq31_31 a, uint32_t b) -> uint32_t;
 
 auto fixed_point_to_float(uint32_t data, int to_radix) -> float;
+
+auto signed_fixed_point_to_float(int32_t data, int to_radix) -> float;

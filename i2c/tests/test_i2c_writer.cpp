@@ -134,11 +134,11 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.response_writer.writer != nullptr);
                 AND_WHEN("we try and write a response") {
                     std::array check_buf{u8(1), u8(2), u8(3), u8(4), u8(5)};
-                    msg.response_writer.write(
+                    static_cast<void>(msg.response_writer.write(
                         i2c::messages::TransactionResponse{
                             .id = {.token = 25, .is_completed_poll = false},
                             .bytes_read = 5,
-                            .read_buffer = check_buf});
+                            .read_buffer = check_buf}));
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 25);
@@ -186,11 +186,11 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.response_writer.writer != nullptr);
                 AND_WHEN("we write a response") {
                     std::array response_buf{u8(1), u8(2), u8(0), u8(4), u8(10)};
-                    msg.response_writer.write(
+                    static_cast<void>(msg.response_writer.write(
                         i2c::messages::TransactionResponse{
                             .id = {.token = 10, .is_completed_poll = false},
                             .bytes_read = 5,
-                            .read_buffer = response_buf});
+                            .read_buffer = response_buf}));
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 10);
@@ -238,11 +238,11 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.response_writer.writer != nullptr);
                 AND_WHEN("we write a response") {
                     std::array response_buf{u8(1), u8(2), u8(0), u8(4), u8(10)};
-                    msg.response_writer.write(
+                    static_cast<void>(msg.response_writer.write(
                         i2c::messages::TransactionResponse{
                             .id = {.token = 10, .is_completed_poll = false},
                             .bytes_read = 5,
-                            .read_buffer = response_buf});
+                            .read_buffer = response_buf}));
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 10);
@@ -313,11 +313,11 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.response_writer.writer != nullptr);
                 AND_WHEN("we write a response") {
                     std::array response_buf{u8(1), u8(2), u8(0), u8(4), u8(10)};
-                    msg.response_writer.write(
+                    static_cast<void>(msg.response_writer.write(
                         i2c::messages::TransactionResponse{
                             .id = {.token = 10, .is_completed_poll = false},
                             .bytes_read = 5,
-                            .read_buffer = response_buf});
+                            .read_buffer = response_buf}));
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 10);

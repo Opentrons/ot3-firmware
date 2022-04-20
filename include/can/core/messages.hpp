@@ -168,17 +168,20 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
         ticks duration = 0;
         um_per_tick_sq acceleration = 0;
         um_per_tick velocity = 0;
+        uint8_t request_stop_condition = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, acceleration);
         body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
         return AddLinearMoveRequest{
             .group_id = group_id,
             .seq_id = seq_id,
             .duration = duration,
             .acceleration = acceleration,
             .velocity = velocity,
+            .request_stop_condition = request_stop_condition,
         };
     }
 
