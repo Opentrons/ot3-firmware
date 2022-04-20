@@ -59,10 +59,10 @@ class MotorDriverMessageHandler {
 
     void handle(const spi::messages::TransactResponse& m) {
         if (m.id.command_type ==
-            static_cast<uint8_t>(spi::hardware::Mode::WRITE)) {
-            driver.handle_spi_write(tmc2130::registers::Registers(m.id.token),
-                                    m.rxBuffer);
-        } else {
+            static_cast<uint8_t>(spi::hardware::Mode::WRITE) && !m.success) {
+            driver.handle_spi_write_failure(tmc2130::registers::Registers(m.id.token));
+        } else if (m.id.command_type ==
+                   static_cast<uint8_t>(spi::hardware::Mode::READ)) {
             auto data = driver.handle_spi_read(
                 tmc2130::registers::Registers(m.id.token), m.rxBuffer);
             can_messages::ReadMotorDriverRegisterResponse response_msg{

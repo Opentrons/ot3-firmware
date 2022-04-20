@@ -141,15 +141,21 @@ class TMC2130 {
         }
     }
 
-    auto handle_spi_write(Registers addr,
-                          const spi::utils::MaxMessageBuffer& rxBuffer)
+    auto handle_spi_write_failure(Registers addr)
         -> void {
-
+        // If we fail to set the given register,
+        // we should set the value to zero again
+        // and treat the driver as uninitialized.
+        _initialized = false;
         switch (addr) {
             case Registers::GCONF:
+                update_gconf(0);
             case Registers::GSTAT:
+                update_gconf(0);
             case Registers::CHOPCONF:
+                update_gconf(0);
             case Registers::DRVSTATUS:
+                update_gconf(0);
             default:
                 break;
         }
