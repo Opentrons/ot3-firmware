@@ -37,22 +37,19 @@ SCENARIO("read and write data with the spi task") {
         auto real_response = spi::messages::ResponseWriter(response_queue);
         WHEN("handling an empty transaction with response") {
             auto response_only = spi::writer::TaskMessage{
-                spi::messages::Transact{
-                    .id = id,
-                    .transaction = empty_txn,
-                    .response_writer = real_response}};
+                spi::messages::Transact{.id = id,
+                                        .transaction = empty_txn,
+                                        .response_writer = real_response}};
             spi_handler.handle_message(response_only);
-            THEN(
-                "a response should not have been sent.") {
+            THEN("a response should not have been sent.") {
                 REQUIRE(response_queue.get_size() == 0);
             }
         }
         WHEN("handling a real transaction with empty response") {
             auto txn_only = spi::writer::TaskMessage{
-                spi::messages::Transact{
-                    .id = id,
-                    .transaction = real_txn,
-                    .response_writer = empty_response}};
+                spi::messages::Transact{.id = id,
+                                        .transaction = real_txn,
+                                        .response_writer = empty_response}};
             spi_handler.handle_message(txn_only);
             THEN("the simulator should have been called") {
                 REQUIRE(sim_spi.get_txrx_count() == 1);
@@ -75,10 +72,9 @@ SCENARIO("read and write data with the spi task") {
             // require a response from the spi task
             id.requires_response = true;
             auto both = spi::writer::TaskMessage{
-                spi::messages::Transact{
-                    .id = id,
-                    .transaction = real_txn,
-                    .response_writer = real_response}};
+                spi::messages::Transact{.id = id,
+                                        .transaction = real_txn,
+                                        .response_writer = real_response}};
             spi_handler.handle_message(both);
             THEN("the simulator should have been called") {
                 std::vector check{u8(0x1), u8(0), u8(0), u8(0), u8(0)};
@@ -97,8 +93,8 @@ SCENARIO("read and write data with the spi task") {
             // by introducing an anonymous scope, creating a temporary there,
             // and then memcpying into the outer variable we can make sure that
             // the original is cleaned up before we try and use the copy, which
-            // should stress test any issues brought up by the memcpy for passing
-            // structs through queues.
+            // should stress test any issues brought up by the memcpy for
+            // passing structs through queues.
             {
                 auto response_only = spi::writer::TaskMessage{
                     spi::messages::Transact{.id = id,

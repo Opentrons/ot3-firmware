@@ -14,7 +14,7 @@ namespace messages {
  * @param[token] id of the message (generally the register reading/writing to)
  * @param[command_type] whether it's a read or write command
  * @param[requires_response] whether the message requires a response
-*/
+ */
 struct TransactionIdentifier {
     uint8_t token;
     uint8_t command_type;
@@ -27,7 +27,7 @@ struct TransactionIdentifier {
  * @brief Transaction, the contents of a transaction request
  *
  * @param[txBuffer] The buffer to be transmitted
-*/
+ */
 struct Transaction {
     spi::utils::MaxMessageBuffer txBuffer;
 
@@ -41,7 +41,7 @@ struct Transaction {
  * @param[id] Originating message ID
  * @param[rxBuffer] The response from transact
  * @param[success] A boolean recording whether the SPI transact was successful
-*/
+ */
 struct TransactResponse {
     auto operator==(const TransactResponse&) const -> bool = default;
     TransactionIdentifier id;
@@ -50,20 +50,20 @@ struct TransactResponse {
 };
 
 /**
-* A concept that can be used to identify a queue capable of receiving a
-* Transaction Response.
-*/
+ * A concept that can be used to identify a queue capable of receiving a
+ * Transaction Response.
+ */
 template <typename MessageQueue>
 concept OriginatingResponseQueue =
     RespondableMessageQueue<MessageQueue, TransactResponse>;
 
 /**
-* Holds a special tiny little closure for writing response values
-* that can be passed something with static lifetime - a normal
-* function pointer. We need this because it will be memcpy'd, and
-* so we can't use an actual safe closure like a std::function because
-* it will get destroyed.
-*/
+ * Holds a special tiny little closure for writing response values
+ * that can be passed something with static lifetime - a normal
+ * function pointer. We need this because it will be memcpy'd, and
+ * so we can't use an actual safe closure like a std::function because
+ * it will get destroyed.
+ */
 struct ResponseWriter {
     template <OriginatingResponseQueue OriginatingQueue>
     explicit ResponseWriter(OriginatingQueue& rq)
@@ -94,7 +94,7 @@ struct ResponseWriter {
  * @param[id] Originating message ID
  * @param[transaction] The response from transact
  * @param[response_writer] A closure containing the originating task queue
-*/
+ */
 struct Transact {
     TransactionIdentifier id;
     Transaction transaction;

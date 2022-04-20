@@ -1,7 +1,7 @@
 #include <array>
+#include <string>
 #include <type_traits>
 #include <typeinfo>
-#include <string>
 
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
@@ -66,10 +66,9 @@ SCENARIO("Test the spi command queue writer") {
                 AND_WHEN("we try and write a response") {
                     std::array check_buf{u8(1), u8(2), u8(3), u8(4), u8(5)};
                     response_msg.response_writer.write(
-                        spi::messages::TransactResponse{
-                            .id = {.token = 25},
-                            .rxBuffer = check_buf,
-                            .success = true});
+                        spi::messages::TransactResponse{.id = {.token = 25},
+                                                        .rxBuffer = check_buf,
+                                                        .success = true});
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 25);

@@ -46,9 +46,9 @@ class Writer {
      * @return A success boolean
      */
     template <OriginatingResponseQueue RQType>
-    auto read(uint8_t addr, uint32_t command_data, RQType& response_queue) -> bool {
-        auto txBuffer =
-            build_message(addr, spi::hardware::Mode::READ, 0);
+    auto read(uint8_t addr, uint32_t command_data, RQType& response_queue)
+        -> bool {
+        auto txBuffer = build_message(addr, spi::hardware::Mode::READ, 0);
         TransactionIdentifier _transaction_id{
             .token = addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::READ),
@@ -74,7 +74,8 @@ class Writer {
      * @return A success boolean
      */
     template <OriginatingResponseQueue RQType>
-    auto write(uint8_t addr, uint32_t command_data, RQType& response_queue) -> bool {
+    auto write(uint8_t addr, uint32_t command_data, RQType& response_queue)
+        -> bool {
         auto txBuffer =
             build_message(addr, spi::hardware::Mode::WRITE, command_data);
         TransactionIdentifier _transaction_id{

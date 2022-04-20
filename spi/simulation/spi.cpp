@@ -1,6 +1,6 @@
-#include <vector>
-
 #include "spi/simulation/spi.hpp"
+
+#include <vector>
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
@@ -44,7 +44,8 @@ bool spi::hardware::SimSpiDeviceBase::transmit_receive(
     return true;
 }
 
-auto spi::hardware::SimSpiDeviceBase::get_last_transmitted() const -> const std::vector<uint8_t> & {
+auto spi::hardware::SimSpiDeviceBase::get_last_transmitted() const
+    -> const std::vector<uint8_t>& {
     return last_transmitted;
 }
 
@@ -52,7 +53,8 @@ auto spi::hardware::SimSpiDeviceBase::get_txrx_count() const -> std::size_t {
     return txrx_count;
 }
 
-auto spi::hardware::SimSpiDeviceBase::set_next_received(const std::vector<uint8_t> &to_receive) -> void {
+auto spi::hardware::SimSpiDeviceBase::set_next_received(
+    const std::vector<uint8_t>& to_receive) -> void {
     uint8_t reg = to_receive[0] & ~write_mask;
 
     uint32_t data = 0;
@@ -62,6 +64,7 @@ auto spi::hardware::SimSpiDeviceBase::set_next_received(const std::vector<uint8_
     read_register = reg;
 }
 
-auto spi::hardware::SimSpiDeviceBase::get_last_received() const -> const std::vector<uint8_t> & {
+auto spi::hardware::SimSpiDeviceBase::get_last_received() const
+    -> const std::vector<uint8_t>& {
     return last_received;
 }

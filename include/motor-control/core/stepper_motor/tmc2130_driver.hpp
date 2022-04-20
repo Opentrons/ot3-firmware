@@ -141,8 +141,7 @@ class TMC2130 {
         }
     }
 
-    auto handle_spi_write_failure(Registers addr)
-        -> void {
+    auto handle_spi_write_failure(Registers addr) -> void {
         // If we fail to set the given register,
         // we should set the value to zero again
         // and treat the driver as uninitialized.
