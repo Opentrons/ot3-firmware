@@ -41,12 +41,12 @@ struct LinearMotionSystemConfig {
                (steps_per_rev * microstep * gear_ratio) * 1000;
     }
     [[nodiscard]] constexpr auto get_encoder_pulses_per_mm() const -> float {
-        return (encoder_ppr * gear_ratio) /
+        return (encoder_ppr * 4.0 * gear_ratio) /
                (mech_config.get_mm_per_rev());
     }
     [[nodiscard]] constexpr auto get_encoder_um_per_pulse() const -> float {
         return (mech_config.get_mm_per_rev()) /
-               (encoder_ppr * gear_ratio) * 1000;
+               (encoder_ppr * 4.0 * gear_ratio) * 1000.0;
     }
 };
 

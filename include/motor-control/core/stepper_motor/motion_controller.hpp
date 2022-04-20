@@ -32,8 +32,7 @@ class MotionController {
           motion_constraints(constraints),
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_steps_per_mm(), 31)),
-          encoder_pulses_per_mm(linear_motion_sys_config.get_encoder_pulses_per_mm()) {}
+              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
 
     auto operator=(const MotionController&) -> MotionController& = delete;
     auto operator=(MotionController&&) -> MotionController&& = delete;
@@ -106,7 +105,6 @@ class MotionController {
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
-    uint32_t encoder_pulses_per_mm{0};
 
 };
 
