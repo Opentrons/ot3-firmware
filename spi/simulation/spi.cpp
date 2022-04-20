@@ -1,7 +1,5 @@
 #include "spi/simulation/spi.hpp"
 
-#include <vector>
-
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "spi/core/spi.hpp"
 #include "spi/core/utils.hpp"
