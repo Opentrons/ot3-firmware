@@ -34,13 +34,17 @@ void gripper_tasks::start_tasks(
     brushed_motor::BrushedMotor& grip_motor) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
-    auto& motion = mc_task_builder.start(5, "z mc", z_motor.motion_controller, queues);
-    auto& motor = motor_driver_task_builder.start(5, "motor driver", z_motor.driver, queues);
-    auto& move_group = move_group_task_builder.start(5, "move group", queues, queues);
+    auto& motion =
+        mc_task_builder.start(5, "z mc", z_motor.motion_controller, queues);
+    auto& motor = motor_driver_task_builder.start(5, "motor driver",
+                                                  z_motor.driver, queues);
+    auto& move_group =
+        move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", queues, z_motor.motion_controller.get_mechanical_config());
-    auto& brushed_motor =
-        brushed_motor_driver_task_builder.start(5, "bdc driver", grip_motor.driver, queues);
+        5, "move status", queues,
+        z_motor.motion_controller.get_mechanical_config());
+    auto& brushed_motor = brushed_motor_driver_task_builder.start(
+        5, "bdc driver", grip_motor.driver, queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
         5, "bdc controller", grip_motor.motion_controller, queues);
 
