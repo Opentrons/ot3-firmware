@@ -65,14 +65,12 @@ class MotorDriverMessageHandler {
         } else {
             auto data = driver.handle_spi_read(
                 tmc2130::registers::Registers(m.id.token), m.rxBuffer);
-            if (m.id.send_response) {
-                can_messages::ReadMotorDriverRegisterResponse response_msg{
-                    .reg_address = m.id.token,
-                    .data = data,
-                };
-                can_client.send_can_message(can_ids::NodeId::host,
-                                            response_msg);
-            }
+            can_messages::ReadMotorDriverRegisterResponse response_msg{
+                .reg_address = m.id.token,
+                .data = data,
+            };
+            can_client.send_can_message(can_ids::NodeId::host,
+                                        response_msg);
         }
     }
 

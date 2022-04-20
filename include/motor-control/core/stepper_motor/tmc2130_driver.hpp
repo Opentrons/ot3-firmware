@@ -31,6 +31,12 @@ using namespace tmc2130::configs;
 template <class Writer, class TaskQueue>
 class TMC2130 {
   public:
+    /**
+     *
+     * @param[spi_manager] The
+     * @param[task_queue]
+     * @param[conf]
+     */
     TMC2130(Writer& spi_manager, TaskQueue& task_queue,
             TMC2130DriverConfig& conf)
         : _registers(conf.registers),
@@ -47,16 +53,20 @@ class TMC2130 {
 
     auto read(Registers addr, uint32_t command_data) -> void {
         auto converted_addr = static_cast<uint8_t>(addr);
-        _spi_manager.read(converted_addr, command_data, _task_queue,
-                          converted_addr);
+        _spi_manager.read(converted_addr, command_data, _task_queue);
     }
 
     auto write(Registers addr, uint32_t command_data) -> bool {
         auto converted_addr = static_cast<uint8_t>(addr);
-        return _spi_manager.write(converted_addr, command_data, _task_queue,
-                                  converted_addr);
+        return _spi_manager.write(converted_addr, command_data, _task_queue);
     }
 
+    /**
+     *
+     *
+     * @return True if configurations were successfully writen to the spi task
+     * queue and false otherwise.
+     */
     auto write_config() -> bool {
         if (!set_gconf(_registers.gconfig)) {
             return false;
@@ -134,6 +144,7 @@ class TMC2130 {
     auto handle_spi_write(Registers addr,
                           const spi::utils::MaxMessageBuffer& rxBuffer)
         -> void {
+
         switch (addr) {
             case Registers::GCONF:
             case Registers::GSTAT:

@@ -56,7 +56,7 @@ SCENARIO("simulator works") {
         }
     }
 
-    GIVEN("a registter map") {
+    GIVEN("a register map") {
         auto register_map =
             spi::hardware::SimSpiDeviceBase::RegisterMap{{1, 2}, {2, 3}};
         auto subject = spi::hardware::SimSpiDeviceBase{register_map};

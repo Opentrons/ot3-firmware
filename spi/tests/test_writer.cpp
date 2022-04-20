@@ -10,7 +10,6 @@
 #include "spi/tests/mock_response_queue.hpp"
 
 #define u8(X) static_cast<uint8_t>(X)
-template <typename T> std::string type_name();
 
 template <typename Queue>
 auto get_message(Queue& queue) -> spi::messages::Transact {
@@ -30,8 +29,7 @@ SCENARIO("Test the spi command queue writer") {
         constexpr uint8_t WRITE_BIT = 0x80;
 
         WHEN("we write some data to a register") {
-            writer.write(TEST_REGISTER, 0xd34db33f, response_queue,
-                         TEST_REGISTER);
+            writer.write(TEST_REGISTER, 0xd34db33f, response_queue);
             THEN("the queue should contain one messages") {
                 REQUIRE(queue.get_size() == 1);
             }
@@ -40,7 +38,7 @@ SCENARIO("Test the spi command queue writer") {
                 std::array compare{u8(TEST_REGISTER | WRITE_BIT), u8(0xd3),
                                    u8(0x4d), u8(0xb3), u8(0x3f)};
                 REQUIRE(msg.transaction.txBuffer == compare);
-                REQUIRE(msg.id.send_response == false);
+                REQUIRE(msg.id.requires_response == true);
                 REQUIRE(msg.id.token == TEST_REGISTER);
             }
         }
@@ -48,29 +46,30 @@ SCENARIO("Test the spi command queue writer") {
     GIVEN("a read request") {
         constexpr uint8_t TEST_REGISTER = 0x1;
         WHEN("we receive a read request") {
-            writer.read(TEST_REGISTER, 0x0, response_queue, TEST_REGISTER);
-            THEN("the queue should contain two messages") {
+            writer.read(TEST_REGISTER, 0x0, response_queue);
+            THEN("the queue should contain one message") {
                 REQUIRE(queue.get_size() == 2);
             }
             auto read_msg = get_message(queue);
             auto response_msg = get_message(queue);
             THEN("the id is correct for the read message") {
-                REQUIRE(read_msg.id.send_response == false);
+                REQUIRE(read_msg.id.requires_response == false);
                 REQUIRE(read_msg.id.token == TEST_REGISTER);
             }
             THEN("the id is correct for the response message") {
-                REQUIRE(response_msg.id.send_response == true);
+                REQUIRE(response_msg.id.requires_response == true);
                 REQUIRE(response_msg.id.token == TEST_REGISTER);
             }
-            THEN("the response is present") {
+            THEN("the response is present for the response message") {
                 REQUIRE(response_msg.response_writer.queue_ref != nullptr);
                 REQUIRE(response_msg.response_writer.writer != nullptr);
                 AND_WHEN("we try and write a response") {
                     std::array check_buf{u8(1), u8(2), u8(3), u8(4), u8(5)};
                     response_msg.response_writer.write(
-                        spi::messages::TransactResponse{.id = {.token = 25},
-                                                        .rxBuffer = check_buf,
-                                                        .success = true});
+                        spi::messages::TransactResponse{
+                            .id = {.token = 25},
+                            .rxBuffer = check_buf,
+                            .success = true});
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 25);

@@ -1,7 +1,11 @@
 /**
- * @file tmc2130_registers.hpp
+ * @file tmc2130.hpp
  * @brief Contains register mapping information for the TMC2130 motor
- * driver IC.
+ * driver IC. See the datasheet for additional information.
+ *
+ * Datasheet:
+ * https://www.trinamic.com/fileadmin/assets/Products/ICs_Documents/TMC2130_datasheet.pdf
+ *
  *
  */
 #pragma once

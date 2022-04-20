@@ -22,9 +22,6 @@ bool spi::hardware::SimSpiDeviceBase::transmit_receive(
 
     LOG("transmit_receive: control=%d, data=%d", control, data);
 
-    constexpr uint8_t write_mask =
-        static_cast<uint8_t>(spi::hardware::Mode::WRITE);
-
     auto out_iter = receive.begin();
     // Write status byte into buffer.
     out_iter = bit_utils::int_to_bytes(status, out_iter, receive.end());
@@ -41,9 +38,9 @@ bool spi::hardware::SimSpiDeviceBase::transmit_receive(
     }
 
     last_received = std::vector<uint8_t>(receive.size());
-    std::copy(receive.begin(), receive.end(), last_transmitted.begin());
-    // The register is cached for the next read operation.
+    std::copy(receive.begin(), receive.end(), last_received.begin());
     read_register = reg;
+    // The register is cached for the next read operation.
     return true;
 }
 
@@ -56,7 +53,13 @@ auto spi::hardware::SimSpiDeviceBase::get_txrx_count() const -> std::size_t {
 }
 
 auto spi::hardware::SimSpiDeviceBase::set_next_received(const std::vector<uint8_t> &to_receive) -> void {
-    next_receive = to_receive;
+    uint8_t reg = to_receive[0] & ~write_mask;
+
+    uint32_t data = 0;
+    auto iter = to_receive.begin() + 1;
+    iter = bit_utils::bytes_to_int(iter, to_receive.end(), data);
+    register_map[reg] = data;
+    read_register = reg;
 }
 
 auto spi::hardware::SimSpiDeviceBase::get_last_received() const -> const std::vector<uint8_t> & {

@@ -334,6 +334,7 @@ void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
+//    htim7.Init.Prescaler = 2000;
     htim7.Init.Prescaler = 849;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
@@ -374,5 +375,4 @@ void initialize_timer(motor_interrupt_callback callback) {
     TIM2_EncoderZL_Init();
     TIM3_EncoderZR_Init();
     MX_TIM7_Init();
-
 }

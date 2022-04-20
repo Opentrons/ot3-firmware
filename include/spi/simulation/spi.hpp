@@ -44,6 +44,8 @@ class SimSpiDeviceBase : public SpiDeviceBase {
     std::vector<uint8_t> last_transmitted{};
     std::vector<uint8_t> last_received{};
     std::vector<uint8_t> next_receive{};
+    static constexpr uint8_t write_mask =
+        static_cast<uint8_t>(spi::hardware::Mode::WRITE);
 };
 
 }  // namespace hardware

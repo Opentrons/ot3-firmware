@@ -7,27 +7,41 @@ namespace spi {
 
 namespace messages {
 
-/*
-** Component struct for identifying a transaction. The primary identifier
-** is an arbitrary uint8_t (typically the register id) - this should be set by
-*the caller, and is
-** available for setting in spi::writer::Writer
-** index is which transaction just completed.
+/**
+ *
+ * @brief Transaction identifier struct
+ *
+ * @param[token] id of the message (generally the register reading/writing to)
+ * @param[command_type] whether it's a read or write command
+ * @param[requires_response] whether the message requires a response
 */
 struct TransactionIdentifier {
     uint8_t token;
     uint8_t command_type;
-    bool send_response;
+    bool requires_response;
 
     auto operator==(const TransactionIdentifier& other) const -> bool = default;
 };
 
+/**
+ * @brief Transaction, the contents of a transaction request
+ *
+ * @param[txBuffer] The buffer to be transmitted
+*/
 struct Transaction {
     spi::utils::MaxMessageBuffer txBuffer;
 
     auto operator==(const Transaction&) const -> bool = default;
 };
 
+/**
+ *
+ * @brief TransactResponse, the message sent back from the SPI task
+ *
+ * @param[id] Originating message ID
+ * @param[rxBuffer] The response from transact
+ * @param[success] A boolean recording whether the SPI transact was successful
+*/
 struct TransactResponse {
     auto operator==(const TransactResponse&) const -> bool = default;
     TransactionIdentifier id;
@@ -35,23 +49,23 @@ struct TransactResponse {
     bool success;
 };
 
-/*
-** A concept that can be used to identify a queue capable of receiving a
-** Transaction Response.
+/**
+* A concept that can be used to identify a queue capable of receiving a
+* Transaction Response.
 */
 template <typename MessageQueue>
-concept SpiResponseQueue =
+concept OriginatingResponseQueue =
     RespondableMessageQueue<MessageQueue, TransactResponse>;
 
-/*
-** Holds a special tiny little closure for writing response values
-** that can be passed something with static lifetime - a normal
-** function pointer. We need this because it will be memcpy'd, and
-** so we can't use an actual safe closure like a std::function because
-** it will get destroyed.
+/**
+* Holds a special tiny little closure for writing response values
+* that can be passed something with static lifetime - a normal
+* function pointer. We need this because it will be memcpy'd, and
+* so we can't use an actual safe closure like a std::function because
+* it will get destroyed.
 */
 struct ResponseWriter {
-    template <SpiResponseQueue OriginatingQueue>
+    template <OriginatingResponseQueue OriginatingQueue>
     explicit ResponseWriter(OriginatingQueue& rq)
         : queue_ref(static_cast<void*>(&rq)),
           writer(&OriginatingQueue::try_write_static) {}
@@ -73,6 +87,14 @@ struct ResponseWriter {
     }
 };
 
+/**
+ *
+ * @brief Transact, the full message sent to the SPI task queue
+ *
+ * @param[id] Originating message ID
+ * @param[transaction] The response from transact
+ * @param[response_writer] A closure containing the originating task queue
+*/
 struct Transact {
     TransactionIdentifier id;
     Transaction transaction;

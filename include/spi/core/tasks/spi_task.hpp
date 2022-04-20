@@ -41,8 +41,10 @@ class MessageHandler {
         spi::utils::MaxMessageBuffer rxBuffer{};
         auto success =
             driver.transmit_receive(m.transaction.txBuffer, rxBuffer);
-        m.response_writer.write(spi::messages::TransactResponse{
-            .id = m.id, .rxBuffer = rxBuffer, .success = success});
+        if (m.id.requires_response) {
+            m.response_writer.write(spi::messages::TransactResponse{
+                .id = m.id, .rxBuffer = rxBuffer, .success = success});
+        }
     }
 
     spi::hardware::SpiDeviceBase& driver;
