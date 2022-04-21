@@ -55,7 +55,7 @@ class MoveStatusMessageHandler {
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
     sq31_31 um_per_step;
-    uint32_t encoder_ppr;
+    uint32_t um_per_encoder_pulse;
 };
 
 /**
