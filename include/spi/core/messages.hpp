@@ -16,7 +16,7 @@ namespace messages {
  * @param[requires_response] whether the message requires a response
  */
 struct TransactionIdentifier {
-    uint8_t token;
+    uint32_t token;
     uint8_t command_type;
     bool requires_response;
 

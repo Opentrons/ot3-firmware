@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "spi/**"
+      - "common/**"
       - "include/spi/**"
       - "cmake/*"
       - "CMakeLists.txt"
@@ -14,6 +15,7 @@ on:
   push:
     paths:
       - "spi/**"
+      - "common/**"
       - "include/spi/**"
       - "include/common/**"
       - "cmake/*"

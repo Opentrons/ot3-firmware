@@ -39,18 +39,19 @@ class Writer {
      * @brief Command to add two transact message(s) to the SPI Task Queue
      *
      * @tparam[RQType] The originating response queue
-     * @param[addr] The address to read from
+     * @param[register_addr] The address to read from
      * @param[command_data] The contents to send to the address (generally 0)
      * @param[response_queue] The queue with which the SPI task will write a
      * response
      * @return A success boolean
      */
     template <OriginatingResponseQueue RQType>
-    auto read(uint8_t addr, uint32_t command_data, RQType& response_queue)
-        -> bool {
-        auto txBuffer = build_message(addr, spi::hardware::Mode::READ, 0);
+    auto read(uint8_t register_addr, uint32_t command_data,
+              RQType& response_queue) -> bool {
+        auto txBuffer = build_message(register_addr, spi::hardware::Mode::READ,
+                                      command_data);
         TransactionIdentifier _transaction_id{
-            .token = addr,
+            .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::READ),
             .requires_response = false};
         Transact message{.id = _transaction_id,
@@ -67,19 +68,19 @@ class Writer {
      * @brief Command to add a transact message to the SPI Task Queue
      *
      * @tparam[RQType] The originating response queue
-     * @param[addr] The address to write to
+     * @param[register_addr] The address to write to
      * @param[command_data] The contents to write to the address
      * @param[response_queue] The queue with which the SPI task will write a
      * response
      * @return A success boolean
      */
     template <OriginatingResponseQueue RQType>
-    auto write(uint8_t addr, uint32_t command_data, RQType& response_queue)
-        -> bool {
-        auto txBuffer =
-            build_message(addr, spi::hardware::Mode::WRITE, command_data);
+    auto write(uint8_t register_addr, uint32_t command_data,
+               RQType& response_queue) -> bool {
+        auto txBuffer = build_message(register_addr, spi::hardware::Mode::WRITE,
+                                      command_data);
         TransactionIdentifier _transaction_id{
-            .token = addr,
+            .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::WRITE),
             .requires_response = true};
         Transact message{.id = _transaction_id,

@@ -3,7 +3,7 @@
 #include "stdint.h"
 #include "platform_specific_hal_conf.h"
 
-typedef struct PinType {
+typedef struct {
     void* port;
     uint16_t pin;
 } GantryHardwarePin;

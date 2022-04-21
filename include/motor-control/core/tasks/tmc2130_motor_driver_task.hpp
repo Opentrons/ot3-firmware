@@ -61,14 +61,15 @@ class MotorDriverMessageHandler {
         if (m.id.command_type ==
                 static_cast<uint8_t>(spi::hardware::Mode::WRITE) &&
             !m.success) {
-            driver.handle_spi_write_failure(
-                tmc2130::registers::Registers(m.id.token));
+            driver.handle_spi_write_failure(tmc2130::registers::Registers(
+                static_cast<uint8_t>(m.id.token)));
         } else if (m.id.command_type ==
                    static_cast<uint8_t>(spi::hardware::Mode::READ)) {
             auto data = driver.handle_spi_read(
-                tmc2130::registers::Registers(m.id.token), m.rxBuffer);
+                tmc2130::registers::Registers(static_cast<uint8_t>(m.id.token)),
+                m.rxBuffer);
             can_messages::ReadMotorDriverRegisterResponse response_msg{
-                .reg_address = m.id.token,
+                .reg_address = static_cast<uint8_t>(m.id.token),
                 .data = data,
             };
             can_client.send_can_message(can_ids::NodeId::host, response_msg);
