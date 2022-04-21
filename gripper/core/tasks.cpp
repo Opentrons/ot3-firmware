@@ -2,14 +2,12 @@
 
 #include "common/core/freertos_task.hpp"
 #include "gripper/core/can_task.hpp"
-
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
@@ -34,7 +32,8 @@ static auto brushed_motor_driver_task_builder =
 static auto brushed_motion_controller_task_builder = freertos_task::TaskStarter<
     512, brushed_motion_controller_task::MotionControllerTask>{};
 
-static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
+static auto spi_task_builder =
+    freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
 /**
  * Start gripper tasks.
@@ -60,7 +59,7 @@ void gripper_tasks::start_tasks(
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
         5, "bdc controller", grip_motor.motion_controller, queues);
 
-    auto &spi_task = spi_task_builder.start(5, "spi", spi_device);
+    auto& spi_task = spi_task_builder.start(5, "spi", spi_device);
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

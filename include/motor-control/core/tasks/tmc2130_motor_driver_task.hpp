@@ -136,8 +136,8 @@ class MotorDriverTask {
      * Task entry point.
      */
 
-    template<message_writer_task::TaskClient CanClient,
-             class MotorDriverConfigs, class SpiWriter>
+    template <message_writer_task::TaskClient CanClient,
+              class MotorDriverConfigs, class SpiWriter>
     [[noreturn]] void operator()(MotorDriverConfigs* configs,
                                  CanClient* can_client, SpiWriter* writer) {
         auto handler = MotorDriverMessageHandler(*writer, *can_client,

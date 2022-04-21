@@ -3,9 +3,8 @@
 #include "gripper/core/interfaces.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
-
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
 #pragma GCC diagnostic push
@@ -137,7 +136,6 @@ void z_motor_iface::initialize() {
 
     // Initialize Encoder
     initialize_enc();
-
 }
 
 auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {

@@ -73,8 +73,7 @@ struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     tmc2130::tasks::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        tmc2130_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};

@@ -27,8 +27,8 @@ int main() {
     grip_motor_iface::initialize();
     gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
                                grip_motor_iface::get_grip_motor(),
-                               interfaces::get_spi(),
-                               interfaces::get_tmc2130_driver_configs());
+                               z_motor_iface::get_spi(),
+                               z_motor_iface::get_tmc2130_driver_configs());
 
     vTaskStartScheduler();
 }

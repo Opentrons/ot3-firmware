@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "can/core/can_bus.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
@@ -8,7 +7,6 @@
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "spi/core/spi.hpp"
-
 
 namespace z_motor_iface {
 
@@ -47,4 +45,3 @@ void initialize();
 auto get_grip_motor() -> brushed_motor::BrushedMotor &;
 
 }  // namespace grip_motor_iface
-

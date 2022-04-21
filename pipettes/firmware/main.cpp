@@ -14,7 +14,6 @@
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "i2c/firmware/i2c_comms.hpp"
-#include "spi/firmware/spi_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
@@ -26,6 +25,7 @@
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
+#include "spi/firmware/spi_comms.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -145,8 +145,7 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(
-        can_bus_1, pipette_motor.motion_controller,
-        i2c_comms3, i2c_comms1,
+        can_bus_1, pipette_motor.motion_controller, i2c_comms3, i2c_comms1,
         ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
                                               : pins_for_sensor_lt),
         spi_comms, driver_configs, id);

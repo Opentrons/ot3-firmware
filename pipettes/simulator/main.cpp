@@ -102,8 +102,8 @@ int main() {
     });
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c3_comms, i2c1_comms,
-                                fake_sensor_hw, spi_comms, driver_configs,
+                                i2c3_comms, i2c1_comms, fake_sensor_hw,
+                                spi_comms, driver_configs,
                                 node_from_env(std::getenv("MOUNT")));
 
     vTaskStartScheduler();

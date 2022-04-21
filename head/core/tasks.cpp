@@ -3,12 +3,11 @@
 #include "common/core/freertos_task.hpp"
 #include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
-
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
@@ -51,8 +50,10 @@ static auto right_move_status_task_builder = freertos_task::TaskStarter<
 static auto presence_sensing_driver_task_builder = freertos_task::TaskStarter<
     512, presence_sensing_driver_task::PresenceSensingDriverTask>{};
 
-static auto spi2_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
-static auto spi3_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
+static auto spi2_task_builder =
+    freertos_task::TaskStarter<512, spi::tasks::Task>{};
+static auto spi3_task_builder =
+    freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
 /**
  * Start head tasks.
@@ -117,7 +118,8 @@ void head_tasks::start_tasks(
     auto& right_motion = right_mc_task_builder.start(
         5, "right mc", right_motion_controller, right_queues);
     auto& right_tmc2130_driver = right_motor_driver_task_builder.start(
-        5, "right motor driver", driver_configs, right_queues, spi2_task_client);
+        5, "right motor driver", driver_configs, right_queues,
+        spi2_task_client);
     auto& right_move_group = right_move_group_task_builder.start(
         5, "right move group", right_queues, right_queues);
     auto& right_move_status_reporter = right_move_status_task_builder.start(

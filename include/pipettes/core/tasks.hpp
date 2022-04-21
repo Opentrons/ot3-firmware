@@ -37,7 +37,6 @@ void start_tasks(can_bus::CanBus& can_bus,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
                  can_ids::NodeId id);
 
-
 /**
  * Access to all the message queues in the system.
  */
@@ -98,8 +97,7 @@ struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     tmc2130::tasks::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        tmc2130_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};

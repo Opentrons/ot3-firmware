@@ -2,11 +2,10 @@
 
 #include "gantry/core/can_task.hpp"
 #include "gantry/core/utils.hpp"
-
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
@@ -26,7 +25,8 @@ static auto move_group_task_builder =
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
-static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
+static auto spi_task_builder =
+    freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
 /**
  * Start gantry tasks.
@@ -49,7 +49,6 @@ void gantry_tasks::start_tasks(
 
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
-
 
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;

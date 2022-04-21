@@ -89,7 +89,6 @@ static auto grip_motor = brushed_motor::BrushedMotor(
 
 void z_motor_iface::initialize(){};
 
-
 void grip_motor_iface::initialize(){};
 
 auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {
@@ -102,8 +101,9 @@ auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
 
 auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
     return grip_motor;
+}
 
 auto z_motor_iface::get_tmc2130_driver_configs()
--> tmc2130::configs::TMC2130DriverConfig& {
+    -> tmc2130::configs::TMC2130DriverConfig& {
     return MotorDriverConfigurations;
 }

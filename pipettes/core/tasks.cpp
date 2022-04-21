@@ -9,10 +9,9 @@
 #include "i2c/core/tasks/i2c_task.hpp"
 #include "i2c/core/writer.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
@@ -65,8 +64,8 @@ static auto i2c1_poll_client =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
-static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
-
+static auto spi_task_builder =
+    freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
 /**
  * Start pipettes tasks.
@@ -80,7 +79,6 @@ void pipettes_tasks::start_tasks(
     sensors::hardware::SensorHardwareBase& sensor_hardware,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs, can_ids::NodeId id) {
-
     queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
