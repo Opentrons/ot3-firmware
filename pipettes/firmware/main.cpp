@@ -12,21 +12,20 @@
 #include "common/firmware/errors.h"
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
-#include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
+#include "spi/firmware/spi_comms.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -45,13 +44,13 @@ static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
-spi::SPI_interface SPI_intf = {
+spi::hardware::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOC,
     .pin = GPIO_PIN_6,
 };
-static spi::Spi spi_comms(SPI_intf);
+static spi::hardware::Spi spi_comms(SPI_intf);
 
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_comms1 = i2c::hardware::I2C();
@@ -100,15 +99,14 @@ static motor_handler::MotorInterruptHandler plunger_interrupt(
  */
 
 static motor_class::Motor pipette_motor{
-    spi_comms,
-    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE),
-    plunger_hw,
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), plunger_hw,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    configs::driver_config_by_axis(PIPETTE_TYPE),
     motor_queue};
+
+static auto driver_configs = configs::driver_config_by_axis(PIPETTE_TYPE);
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
@@ -147,11 +145,10 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(
-        can_bus_1, pipette_motor.motion_controller, pipette_motor.driver,
-        i2c_comms3, i2c_comms1,
+        can_bus_1, pipette_motor.motion_controller, i2c_comms3, i2c_comms1,
         ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
                                               : pins_for_sensor_lt),
-        id);
+        spi_comms, driver_configs, id);
 
     iWatchdog.start(6);
 

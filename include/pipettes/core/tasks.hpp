@@ -8,15 +8,19 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/tasks/spi_task.hpp"
+#include "spi/core/writer.hpp"
 
 namespace pipettes_tasks {
 
@@ -26,10 +30,11 @@ namespace pipettes_tasks {
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      motion_controller,
-                 motor_driver::MotorDriver& motor_driver,
                  i2c::hardware::I2CDeviceBase& i2c3_device,
                  i2c::hardware::I2CDeviceBase& i2c1_device,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
+                 spi::hardware::SpiDeviceBase& spi_device,
+                 tmc2130::configs::TMC2130DriverConfig& driver_configs,
                  can_ids::NodeId id);
 
 /**
@@ -41,7 +46,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
 
-    void send_motor_driver_queue(const motor_driver_task::TaskMessage& m);
+    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
 
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
@@ -58,8 +63,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motor_driver_task::TaskMessage>* motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+        tmc2130_driver_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
         move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -81,6 +86,8 @@ struct QueueClient : can_message_writer::MessageWriter {
         i2c3_poller_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c::poller::TaskMessage>*
         i2c1_poller_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
+        spi_queue{nullptr};
 };
 
 /**
@@ -89,8 +96,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
-    motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
+    tmc2130::tasks::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
@@ -110,6 +117,9 @@ struct AllTask {
     i2c::tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
                               freertos_timer::FreeRTOSTimer>* i2c1_poller_task{
         nullptr};
+    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
+        nullptr};
+
     eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
     sensors::tasks::EnvironmentSensorTask<

@@ -8,9 +8,12 @@
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/tasks/spi_task.hpp"
+#include "spi/core/writer.hpp"
 
 namespace gripper_tasks {
 
@@ -19,7 +22,9 @@ namespace gripper_tasks {
  */
 void start_tasks(can_bus::CanBus& can_bus,
                  motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-                 brushed_motor::BrushedMotor& grip_motor);
+                 brushed_motor::BrushedMotor& grip_motor,
+                 spi::hardware::SpiDeviceBase& spi_device,
+                 tmc2130::configs::TMC2130DriverConfig& driver_configs);
 
 /**
  * Access to all the message queues in the system.
@@ -30,7 +35,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
 
-    void send_motor_driver_queue(const motor_driver_task::TaskMessage& m);
+    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
 
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
@@ -45,8 +50,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motor_driver_task::TaskMessage>* motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+        tmc2130_driver_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
         move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -57,6 +62,8 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
+        spi_queue{nullptr};
 };
 
 /**
@@ -65,8 +72,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
-    motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
+    tmc2130::tasks::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
@@ -81,6 +88,8 @@ struct AllTask {
     brushed_motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         brushed_motion_controller{nullptr};
+    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
+        nullptr};
 };
 
 /**

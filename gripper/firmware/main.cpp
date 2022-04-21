@@ -34,7 +34,9 @@ auto main() -> int {
     can_start();
 
     gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
-                               grip_motor_iface::get_grip_motor());
+                               grip_motor_iface::get_grip_motor(),
+                               z_motor_iface::get_spi(),
+                               z_motor_iface::get_tmc2130_driver_configs());
 
     iWatchdog.start(6);
 

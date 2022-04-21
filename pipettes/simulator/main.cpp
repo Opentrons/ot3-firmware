@@ -10,10 +10,9 @@
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
-#include "common/simulation/spi.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/configs.hpp"
@@ -24,6 +23,7 @@
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
 #include "sensors/simulation/sensors.hpp"
+#include "spi/simulation/spi.hpp"
 #include "task.h"
 
 static auto PIPETTE_TYPE = get_pipette_type();
@@ -33,7 +33,7 @@ static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
-static sim_spi::SimSpiDeviceBase spi_comms{};
+static spi::hardware::SimSpiDeviceBase spi_comms{};
 
 static sim_motor_hardware_iface::SimMotorHardwareIface plunger_hw{};
 
@@ -59,14 +59,11 @@ static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map};
 static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
 
 static motor_class::Motor pipette_motor{
-    spi_comms,
-    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE),
-    plunger_hw,
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), plunger_hw,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    configs::driver_config_by_axis(PIPETTE_TYPE),
     motor_queue};
 
 static auto node_from_env(const char* env) -> can_ids::NodeId {
@@ -95,6 +92,8 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
+static auto driver_configs = configs::driver_config_by_axis(PIPETTE_TYPE);
+
 int main() {
     signal(SIGINT, signal_handler);
 
@@ -103,8 +102,8 @@ int main() {
     });
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c3_comms, i2c1_comms,
-                                fake_sensor_hw,
+                                i2c3_comms, i2c1_comms, fake_sensor_hw,
+                                spi_comms, driver_configs,
                                 node_from_env(std::getenv("MOUNT")));
 
     vTaskStartScheduler();

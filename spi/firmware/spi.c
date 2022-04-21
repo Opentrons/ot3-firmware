@@ -1,4 +1,4 @@
-#include "spi.h"
+#include "../../include/spi/firmware/spi.h"
 
 #include "common/firmware/errors.h"
 #include "platform_specific_hal_conf.h"

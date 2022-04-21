@@ -22,16 +22,15 @@
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
-#include "common/firmware/spi_comms.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/stepper_motor/motor_driver_config.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/core/stepper_motor/tmc2130_registers.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "spi/firmware/spi_comms.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -50,21 +49,21 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
  * @retval None
  */
 
-spi::SPI_interface SPI_intf2 = {
+spi::hardware::SPI_interface SPI_intf2 = {
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
     .pin = GPIO_PIN_12,
 };
-static spi::Spi spi_comms2(SPI_intf2);
+static spi::hardware::Spi spi_comms2(SPI_intf2);
 
-spi::SPI_interface SPI_intf3 = {
+spi::hardware::SPI_interface SPI_intf3 = {
     .SPI_handle = &hspi3,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOA,
     .pin = GPIO_PIN_4,
 };
-static spi::Spi spi_comms3(SPI_intf3);
+static spi::hardware::Spi spi_comms3(SPI_intf3);
 
 struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
@@ -142,7 +141,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         .active_setting = GPIO_PIN_RESET}
 };
 
-static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
+static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -174,7 +173,6 @@ static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right);
 
 static motor_class::Motor motor_right{
-    spi_comms2,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
@@ -184,7 +182,6 @@ static motor_class::Motor motor_right{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue_right};
 
 static motor_hardware::MotorHardware motor_hardware_left(
@@ -193,7 +190,6 @@ static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left);
 
 static motor_class::Motor motor_left{
-    spi_comms3,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
@@ -203,7 +199,6 @@ static motor_class::Motor motor_left{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue_left};
 
 extern "C" void motor_callback_glue() {
@@ -245,8 +240,8 @@ auto main() -> int {
     can_start();
 
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
-                            motor_left.driver, motor_right.motion_controller,
-                            motor_right.driver, psd);
+                            motor_right.motion_controller, psd, spi_comms2,
+                            spi_comms3, MotorDriverConfigurations);
 
     timer_for_notifier.start();
 

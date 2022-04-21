@@ -14,7 +14,6 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
     ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
     ${COMMON_EXECUTABLE_DIR}/gpio.cpp
     ${CAN_FW_DIR}/hal_can.c
@@ -33,7 +32,6 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/hardware_config.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-    ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/system/app_update.c
     ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
     ${COMMON_EXECUTABLE_DIR}/gpio.c

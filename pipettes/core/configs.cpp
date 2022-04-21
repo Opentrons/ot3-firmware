@@ -1,10 +1,10 @@
 #include "pipettes/core/configs.hpp"
 
 auto configs::driver_config_by_axis(PipetteType which)
-    -> tmc2130::TMC2130DriverConfig {
+    -> tmc2130::configs::TMC2130DriverConfig {
     switch (which) {
         default:
-            return tmc2130::TMC2130DriverConfig{
+            return tmc2130::configs::TMC2130DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
                                              .run_current = 0x10,

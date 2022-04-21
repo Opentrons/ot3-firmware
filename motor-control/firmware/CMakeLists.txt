@@ -1,4 +1,5 @@
 function(target_ot_motor_control_firmware TARGET)
+    target_spi_firmware(${TARGET})
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/motor_control_hardware.c
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/stepper_motor/motor_hardware.cpp
