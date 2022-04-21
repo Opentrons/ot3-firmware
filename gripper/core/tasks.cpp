@@ -23,7 +23,7 @@ static auto mc_task_builder =
     freertos_task::TaskStarter<512,
                                motion_controller_task::MotionControllerTask>{};
 static auto motor_driver_task_builder =
-    freertos_task::TaskStarter<512, tmc2130::tasks::TMC2130MotorDriverTask>{};
+    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
 static auto move_group_task_builder =
     freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder = freertos_task::TaskStarter<

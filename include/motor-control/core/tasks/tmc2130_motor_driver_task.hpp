@@ -119,48 +119,28 @@ class MotorDriverMessageHandler {
 /**
  * The task type.
  */
-<<<<<<< HEAD
 template <template <class> class QueueImpl>
-=======
-template <template <class> class QueueImpl, class MotorDriverConfigs,
-          message_writer_task::TaskClient CanClient, class SpiWriter>
->>>>>>> more edits to the motor controller driver
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MotorDriverTask {
   public:
     using QueueType = QueueImpl<TaskMessage>;
-<<<<<<< HEAD
-
-    TMC2130MotorDriverTask(QueueType& queue) : queue{queue} {}
-    TMC2130MotorDriverTask(const TMC2130MotorDriverTask& c) = delete;
-    TMC2130MotorDriverTask(const TMC2130MotorDriverTask&& c) = delete;
-    auto operator=(const TMC2130MotorDriverTask& c) = delete;
-    auto operator=(const TMC2130MotorDriverTask&& c) = delete;
-    ~TMC2130MotorDriverTask() = default;
-=======
     MotorDriverTask(QueueType& queue) : queue{queue} {}
     MotorDriverTask(const MotorDriverTask& c) = delete;
     MotorDriverTask(const MotorDriverTask&& c) = delete;
     auto operator=(const MotorDriverTask& c) = delete;
     auto operator=(const MotorDriverTask&& c) = delete;
     ~MotorDriverTask() = default;
->>>>>>> more edits to the motor controller driver
 
     /**
      * Task entry point.
      */
-<<<<<<< HEAD
-    template <message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(motor_driver::MotorDriver* driver,
-                                 CanClient* can_client) {
 
-        auto handler = MotorDriverMessageHandler{*driver, *can_client};
-=======
+    template<message_writer_task::TaskClient CanClient,
+             class MotorDriverConfigs, class SpiWriter>
     [[noreturn]] void operator()(MotorDriverConfigs* configs,
                                  CanClient* can_client, SpiWriter* writer) {
         auto handler = MotorDriverMessageHandler(*writer, *can_client,
                                                  get_queue(), *configs);
->>>>>>> more edits to the motor controller driver
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

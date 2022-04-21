@@ -35,9 +35,9 @@ static auto right_mc_task_builder =
                                motion_controller_task::MotionControllerTask>{};
 
 static auto left_motor_driver_task_builder =
-    freertos_task::TaskStarter<512, tmc2130::tasks::TMC2130MotorDriverTask>{};
+    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
 static auto right_motor_driver_task_builder =
-    freertos_task::TaskStarter<512, tmc2130::tasks::TMC2130MotorDriverTask>{};
+    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
 
 static auto left_move_group_task_builder =
     freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
