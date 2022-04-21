@@ -57,6 +57,7 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class Task {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     Task(QueueType& queue) : queue{queue} {}
     Task(const Task& c) = delete;

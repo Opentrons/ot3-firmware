@@ -145,7 +145,7 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(
-        can_bus_1, pipette_motor.motion_controller, pipette_motor.driver,
+        can_bus_1, pipette_motor.motion_controller,
         i2c_comms3, i2c_comms1,
         ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
                                               : pins_for_sensor_lt),

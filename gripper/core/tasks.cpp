@@ -34,7 +34,7 @@ static auto brushed_motor_driver_task_builder =
 static auto brushed_motion_controller_task_builder = freertos_task::TaskStarter<
     512, brushed_motion_controller_task::MotionControllerTask>{};
 
-static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::SPITask>{};
+static auto spi_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
 /**
  * Start gripper tasks.
@@ -48,8 +48,6 @@ void gripper_tasks::start_tasks(
     can_task::start_reader(can_bus);
     auto& motion =
         mc_task_builder.start(5, "z mc", z_motor.motion_controller, queues);
-    auto& motor = motor_driver_task_builder.start(5, "motor driver",
-                                                  z_motor.driver, queues);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& tmc2130_driver = motor_driver_task_builder.start(
@@ -62,6 +60,8 @@ void gripper_tasks::start_tasks(
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
         5, "bdc controller", grip_motor.motion_controller, queues);
 
+    auto &spi_task = spi_task_builder.start(5, "spi", spi_device);
+
     tasks.can_writer = &can_writer;
     tasks.motion_controller = &motion;
     tasks.tmc2130_driver = &tmc2130_driver;
@@ -69,6 +69,7 @@ void gripper_tasks::start_tasks(
     tasks.move_status_reporter = &move_status_reporter;
     tasks.brushed_motor_driver = &brushed_motor;
     tasks.brushed_motion_controller = &brushed_motion;
+    tasks.spi_task = &spi_task;
 
     queues.motion_queue = &motion.get_queue();
     queues.tmc2130_driver_queue = &tmc2130_driver.get_queue();
@@ -77,6 +78,7 @@ void gripper_tasks::start_tasks(
     queues.move_status_report_queue = &move_status_reporter.get_queue();
     queues.brushed_motor_queue = &brushed_motor.get_queue();
     queues.brushed_motion_queue = &brushed_motion.get_queue();
+    queues.spi_queue = &spi_task.get_queue();
 }
 
 gripper_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)

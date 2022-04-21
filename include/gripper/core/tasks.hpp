@@ -23,7 +23,7 @@ namespace gripper_tasks {
 void start_tasks(can_bus::CanBus& can_bus,
                  motor_class::Motor<lms::LeadScrewConfig>& z_motor,
                  brushed_motor::BrushedMotor& grip_motor,
-                 spi::SpiDeviceBase& spi_device,
+                 spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs);
 
 /**

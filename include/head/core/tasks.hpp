@@ -92,10 +92,7 @@ struct MotorQueueClient : can_message_writer::MessageWriter {
  * and one for the right.
  */
 struct MotorTasks {
-    tmc2130::tasks::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue,
-        tmc2130::configs::TMC2130DriverConfig, MotorQueueClient,
-        spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>>*
+    tmc2130::tasks::MotorDriverTask<freertos_message_queue::FreeRTOSMessageQueue>*
         tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
@@ -105,9 +102,7 @@ struct MotorTasks {
         nullptr};
     move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
-    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi2_task{
-        nullptr};
-    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi3_task{
+    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
         nullptr};
 
 };

@@ -109,7 +109,7 @@ void pipettes_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
 
-    auto& spi_task = spi_task_builder.start(5, "spi task" spi_device);
+    auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
 
     auto& eeprom_task =

@@ -123,6 +123,7 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MotorDriverTask {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     MotorDriverTask(QueueType& queue) : queue{queue} {}
     MotorDriverTask(const MotorDriverTask& c) = delete;

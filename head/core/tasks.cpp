@@ -51,8 +51,8 @@ static auto right_move_status_task_builder = freertos_task::TaskStarter<
 static auto presence_sensing_driver_task_builder = freertos_task::TaskStarter<
     512, presence_sensing_driver_task::PresenceSensingDriverTask>{};
 
-static auto spi2_task_builder = freertos_task::TaskStarter<512, spi::tasks::SPITask>{};
-static auto spi3_task_builder = freertos_task::TaskStarter<512, spi::tasks::SPITask>{};
+static auto spi2_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
+static auto spi3_task_builder = freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
 /**
  * Start head tasks.
@@ -71,9 +71,9 @@ void head_tasks::start_tasks(
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
 
-    auto& spi2_task = spi2_task_builder.start(5, spi2_device);
+    auto& spi2_task = spi2_task_builder.start(5, "spi bus 2", spi2_device);
     spi2_task_client.set_queue(&spi2_task.get_queue());
-    auto& spi3_task = spi3_task_builder.start(5, spi3_device);
+    auto& spi3_task = spi3_task_builder.start(5, "spi bus 3", spi3_device);
     spi3_task_client.set_queue(&spi3_task.get_queue());
 
     auto& presence_sensing = presence_sensing_driver_task_builder.start(
@@ -92,8 +92,6 @@ void head_tasks::start_tasks(
         5, "left mc", left_motion_controller, left_queues);
     auto& left_tmc2130_driver = left_motor_driver_task_builder.start(
         5, "left motor driver", driver_configs, left_queues, spi3_task_client);
-    auto& left_motor = left_motor_driver_task_builder.start(
-        5, "left motor driver", left_motor_driver, left_queues);
     auto& left_move_group = left_move_group_task_builder.start(
         5, "left move group", left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(

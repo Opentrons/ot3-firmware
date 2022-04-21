@@ -41,7 +41,7 @@ void gantry_tasks::start_tasks(
     auto& motion = mc_task_builder.start(5, "motion controller",
                                          motion_controller, queues);
     auto& tmc2130_driver = motor_driver_task_builder.start(
-        5, "tmc2130 driver" driver_configs, queues, spi_task_client);
+        5, "tmc2130 driver", driver_configs, queues, spi_task_client);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
