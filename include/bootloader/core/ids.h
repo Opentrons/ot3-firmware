@@ -73,6 +73,8 @@ typedef enum {
     can_messageid_fw_update_erase_app_ack = 0x69,
     can_messageid_limit_sw_request = 0x8,
     can_messageid_limit_sw_response = 0x9,
+    can_messageid_do_self_contained_tip_action_request = 0x501,
+    can_messageid_do_self_contained_tip_action_response = 0x502,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
     can_messageid_baseline_sensor_request = 0x84,
@@ -130,9 +132,10 @@ typedef enum {
 
 /** A bit field of the arbitration id parts. */
 typedef struct {
-    unsigned int function_code : 4;
-    unsigned int node_id : 7;
-    unsigned int originating_node_id : 7;
-    unsigned int message_id : 11;
-    unsigned int padding : 3;
+    unsigned int function_code: 4;
+    unsigned int node_id: 7;
+    unsigned int originating_node_id: 7;
+    unsigned int message_id: 11;
+    unsigned int padding: 3;
 } CANArbitrationIdParts;
+
