@@ -140,9 +140,9 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
 
         body = bit_utils::bytes_to_int(body, limit, address);
         body = bit_utils::bytes_to_int(body, limit, data_length);
-        std::copy_n(body,
-                    std::min(static_cast<size_t>(data_length), data.size()),
-                    data.begin());
+        // Cap the length
+        data_length = std::min(static_cast<size_t>(data_length), data.size());
+        std::copy_n(body, data_length, data.begin());
 
         return WriteToEEPromRequest{
             .address = address, .data_length = data_length, .data = data};
@@ -170,13 +170,35 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     eeprom::data_length data_length;
     eeprom::EepromData data;
 
+    /**
+     * Create a response message from iterator
+     * @tparam DataIter byte iterator type
+     * @tparam Limit end of data
+     * @param data_iter beginning of data
+     * @param limit end of data
+     * @return new instance
+     */
+    template <bit_utils::ByteIterator DataIter, typename Limit>
+    static auto create(eeprom::address address, DataIter data_iter, Limit limit)
+        -> ReadFromEEPromResponse {
+        eeprom::EepromData data{};
+        eeprom::data_length data_length =
+            std::min(eeprom::max_data_length,
+                     static_cast<eeprom::data_length>(limit - data_iter));
+        std::copy_n(data_iter, data_length, data.begin());
+        return ReadFromEEPromResponse{
+            .address = address, .data_length = data_length, .data = data};
+    }
+
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(address, body, limit);
-        iter = bit_utils::int_to_bytes(data_length, body, limit);
+        iter = bit_utils::int_to_bytes(data_length, iter, limit);
         iter = std::copy_n(
             data.cbegin(),
-            std::min(data.size(), static_cast<size_t>(limit - iter)), iter);
+            std::min(data_length,
+                     static_cast<eeprom::data_length>(limit - iter)),
+            iter);
         return iter - body;
     }
     auto operator==(const ReadFromEEPromResponse& other) const
