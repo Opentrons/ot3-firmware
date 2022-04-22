@@ -770,6 +770,7 @@ struct TipActionResponse
     uint32_t current_position_um;
     uint32_t encoder_position;
     uint8_t ack_id;
+    uint8_t success;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -778,6 +779,7 @@ struct TipActionResponse
         iter = bit_utils::int_to_bytes(current_position_um, iter, limit);
         iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
         iter = bit_utils::int_to_bytes(ack_id, iter, limit);
+        iter = bit_utils::int_to_bytes(success, iter, limit);
         return iter - body;
     }
 
