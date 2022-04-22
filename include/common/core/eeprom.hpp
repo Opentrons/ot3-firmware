@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace eeprom {
+namespace eeprom_types {
 
 // 0-8192
 using address = uint16_t;
