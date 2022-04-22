@@ -9,6 +9,12 @@
 #pragma GCC diagnostic pop
 
 /**
+ * The pending move queue
+ */
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
+    motor_queue("Grip Motor Queue");
+
+/**
  * Brushed motor pin configuration.
  */
 struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {

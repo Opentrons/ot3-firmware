@@ -17,29 +17,32 @@
 #include "gripper/core/tasks.hpp"
 
 using namespace can_dispatch;
+using namespace gripper_tasks;
 
-static auto& queue_client = gripper_tasks::get_queues();
+static auto& main_queue_client = get_main_queues();
+static auto& z_queue_client = z_tasks::get_queues();
+static auto& g_queue_client = g_tasks::get_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
 
 /** The parsed message handler */
 static auto can_motor_handler =
-    motor_message_handler::MotorHandler{queue_client};
+    motor_message_handler::MotorHandler{z_queue_client};
 static auto can_move_group_handler =
-    move_group_handler::MoveGroupHandler{queue_client};
+    move_group_handler::MoveGroupHandler{z_queue_client};
 static auto can_motion_handler =
-    motion_message_handler::MotionHandler{queue_client};
+    motion_message_handler::MotionHandler{z_queue_client};
 static auto can_brushed_motor_handler =
-    motor_message_handler::BrushedMotorHandler{queue_client};
+    motor_message_handler::BrushedMotorHandler{g_queue_client};
 static auto can_brushed_motion_handler =
-    motion_message_handler::BrushedMotionHandler{queue_client};
+    motion_message_handler::BrushedMotionHandler{g_queue_client};
 static auto gripper_info_handler =
-    gripper_info::GripperInfoMessageHandler{queue_client};
+    gripper_info::GripperInfoMessageHandler{main_queue_client};
 
 /** Handler of system messages. */
 static auto system_message_handler = system_handler::SystemMessageHandler{
-    queue_client, version_get()->version, version_get()->flags,
+    main_queue_client, version_get()->version, version_get()->flags,
     std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};

@@ -97,7 +97,7 @@ static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
  * The pending move queue
  */
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
-    motor_queue("Motor Queue");
+    motor_queue("Z Motor Queue");
 
 /**
  * The motor struct.
@@ -120,7 +120,7 @@ static motor_class::Motor z_motor{
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gripper_tasks::get_queues(), motor_hardware_iface);
+    motor_queue, gripper_tasks::z_tasks::get_queues(), motor_hardware_iface);
 
 /**
  * Timer callback.
