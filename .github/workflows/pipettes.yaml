@@ -66,7 +66,7 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=cross-pipettes .
+        run: cmake --preset=cross-pipettes . -DCMAKE_BUILD_TYPE=debug
       - name: "Format"
         run: cmake --build --preset=pipettes --target pipettes-format-ci
       - name: "Build"
