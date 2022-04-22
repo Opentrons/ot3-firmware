@@ -46,6 +46,7 @@ enum class MessageId {
     clear_all_move_groups_request = 0x19,
     home_request = 0x20,
     move_completed = 0x13,
+    encoder_position = 0x14,
     set_motion_constraints = 0x101,
     get_motion_constraints_request = 0x102,
     get_motion_constraints_response = 0x103,
@@ -142,9 +143,9 @@ enum class SensorType {
 
 /** Links sensor threshold triggers to pins. */
 enum class SensorOutputBinding {
-    none = 0x0,
     sync = 0x1,
     report = 0x2,
 };
 
 }  // namespace can_ids
+

@@ -44,6 +44,7 @@ typedef enum {
     can_messageid_clear_all_move_groups_request = 0x19,
     can_messageid_home_request = 0x20,
     can_messageid_move_completed = 0x13,
+    can_messageid_encoder_position = 0x14,
     can_messageid_set_motion_constraints = 0x101,
     can_messageid_get_motion_constraints_request = 0x102,
     can_messageid_get_motion_constraints_response = 0x103,
@@ -130,9 +131,10 @@ typedef enum {
 
 /** A bit field of the arbitration id parts. */
 typedef struct {
-    unsigned int function_code : 4;
-    unsigned int node_id : 7;
-    unsigned int originating_node_id : 7;
-    unsigned int message_id : 11;
-    unsigned int padding : 3;
+    unsigned int function_code: 4;
+    unsigned int node_id: 7;
+    unsigned int originating_node_id: 7;
+    unsigned int message_id: 11;
+    unsigned int padding: 3;
 } CANArbitrationIdParts;
+
