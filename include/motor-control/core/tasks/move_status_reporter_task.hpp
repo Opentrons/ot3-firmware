@@ -46,7 +46,7 @@ class MoveStatusMessageHandler {
             .current_position_um = fixed_point_multiply(um_per_step,
                  message.current_position_steps),
             .encoder_position = fixed_point_multiply(um_per_encoder_pulse,
-             message.encoder_position),
+                 message.encoder_position),
             .ack_id = static_cast<uint8_t>(message.ack_id)};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }
