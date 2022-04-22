@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace eeprom_types {
 
 // 0-8192
@@ -13,4 +12,4 @@ constexpr data_length max_data_length = 32;
 
 using EepromData = std::array<uint8_t, max_data_length>;
 
-}
+}  // namespace eeprom_types
