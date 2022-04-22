@@ -3,7 +3,7 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "motor-control/core/tasks/brushed_motion_controller_task_starter.hpp"
+#include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 
 namespace motion_message_handler {

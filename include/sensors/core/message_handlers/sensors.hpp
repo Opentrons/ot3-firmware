@@ -4,9 +4,10 @@
 #include "can/core/messages.hpp"
 #include "sensors/core/utils.hpp"
 
-namespace sensor_message_handler {
+namespace sensors {
+namespace handlers {
 
-template <sensor_task_utils::TaskClient SensorTaskClient>
+template <utils::TaskClient SensorTaskClient>
 class SensorHandler {
   public:
     explicit SensorHandler(SensorTaskClient &client) : client(client) {}
@@ -16,33 +17,36 @@ class SensorHandler {
     auto operator=(const SensorHandler &&) -> SensorHandler && = delete;
     ~SensorHandler() = default;
 
-    void handle(sensor_task_utils::TaskMessage &m) {
+    void handle(const utils::CanMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
   private:
     SensorTaskClient &client;
 
-    void visit(std::monostate &m) {}
+    void visit(const std::monostate &m) {}
 
-    void visit(can_messages::SetSensorThresholdRequest &m) {
+    void visit(const can_messages::SetSensorThresholdRequest &m) {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
-    void visit(can_messages::BaselineSensorRequest &m) {
+    void visit(const can_messages::BaselineSensorRequest &m) {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
-    void visit(can_messages::WriteToSensorRequest &m) {
+    void visit(const can_messages::WriteToSensorRequest &m) {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
-    void visit(can_messages::ReadFromSensorRequest &m) {
+    void visit(const can_messages::ReadFromSensorRequest &m) {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
-    void send_to_queue(can_ids::SensorType type,
-                       sensor_task_utils::TaskMessage m) {
+    void visit(const can_messages::BindSensorOutputRequest &m) {
+        send_to_queue(can_ids::SensorType(m.sensor), m);
+    }
+
+    void send_to_queue(can_ids::SensorType type, const utils::TaskMessage &m) {
         switch (type) {
             case can_ids::SensorType::temperature: {
                 client.send_environment_sensor_queue(m);
@@ -50,17 +54,20 @@ class SensorHandler {
             }
             case can_ids::SensorType::humidity: {
                 client.send_environment_sensor_queue(m);
+                break;
             }
             case can_ids::SensorType::capacitive: {
                 client.send_capacitive_sensor_queue(m);
+                break;
             }
             case can_ids::SensorType::pressure: {
                 client.send_pressure_sensor_queue(m);
+                break;
             }
             default:
                 break;
         }
     }
 };
-
-}  // namespace sensor_message_handler
+};  // namespace handlers
+};  // namespace sensors

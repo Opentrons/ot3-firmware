@@ -13,10 +13,9 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-    ${COMMON_EXECUTABLE_DIR}/spi/spi_comms.cpp
-    ${COMMON_EXECUTABLE_DIR}/i2c/i2c_comms.cpp
-    ${COMMON_EXECUTABLE_DIR}/i2c/i2c.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
+    ${COMMON_EXECUTABLE_DIR}/gpio.cpp
     ${CAN_FW_DIR}/hal_can.c
     ${CAN_FW_DIR}/hal_can_bus.cpp
     ${CAN_FW_DIR}/utils.c)
@@ -31,10 +30,12 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/hardware_config.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
-    ${COMMON_EXECUTABLE_DIR}/spi/spi.c
     ${COMMON_EXECUTABLE_DIR}/system/app_update.c
-    ${COMMON_EXECUTABLE_DIR}/system/iwdg.c)
+    ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
+    ${COMMON_EXECUTABLE_DIR}/gpio.c
+    )
 
 
 target_include_directories(STM32L5xx_Drivers_Pipettes
@@ -66,7 +67,7 @@ function(add_pipettes_executable TARGET)
     add_executable(${TARGET}
             ${PIPETTE_FW_LINTABLE_SRCS}
             ${PIPETTE_FW_NON_LINTABLE_SRCS})
-
+    target_i2c_firmware(${TARGET})
     target_ot_motor_control(${TARGET})
 
     target_link_libraries(${TARGET}
@@ -97,17 +98,13 @@ function(add_pipettes_executable TARGET)
             $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
     if(${TARGET} STREQUAL "pipettes-single")
-        target_sources(${TARGET} PUBLIC main.cpp low_throughput_config.c)
-        target_pipettes_core_single(${TARGET})
+            target_pipettes_core_single(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-multi")
-        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp low_throughput_config.c)
-        target_pipettes_core_multi(${TARGET})
+            target_pipettes_core_multi(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-96")
-        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp high_throughput_config.c)
-        target_pipettes_core_96(${TARGET})
+            target_pipettes_core_96(${TARGET})
     elseif(${TARGET} STREQUAL "pipettes-384")
-        target_sources(${TARGET} PUBLIC main_multi_i2c.cpp high_throughput_config.c)
-        target_pipettes_core_384(${TARGET})
+            target_pipettes_core_384(${TARGET})
     else ()
         message(FATAL_ERROR "Invalid pipette target provided.")
     endif ()
@@ -195,3 +192,4 @@ add_pipettes_executable(pipettes-single)
 add_pipettes_executable(pipettes-multi)
 add_pipettes_executable(pipettes-96)
 add_pipettes_executable(pipettes-384)
+set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

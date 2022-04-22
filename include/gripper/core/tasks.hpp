@@ -2,26 +2,29 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/tasks/brushed_motion_controller_task_starter.hpp"
+#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_driver_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "spi/core/spi.hpp"
+#include "spi/core/tasks/spi_task.hpp"
+#include "spi/core/writer.hpp"
 
 namespace gripper_tasks {
 
 /**
  * Start gripper tasks.
  */
-void start_tasks(
-    can_bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig>&
-        motion_controller,
-    motor_driver::MotorDriver& motor_driver,
-    brushed_motor_driver::BrushedMotorDriverIface& brushed_motor_driver,
-    motor_hardware::BrushedMotorHardwareIface& brushed_motion_controller);
+void start_tasks(can_bus::CanBus& can_bus,
+                 motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+                 brushed_motor::BrushedMotor& grip_motor,
+                 spi::hardware::SpiDeviceBase& spi_device,
+                 tmc2130::configs::TMC2130DriverConfig& driver_configs);
 
 /**
  * Access to all the message queues in the system.
@@ -32,7 +35,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
 
-    void send_motor_driver_queue(const motor_driver_task::TaskMessage& m);
+    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
 
     void send_move_group_queue(const move_group_task::TaskMessage& m);
 
@@ -47,8 +50,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motor_driver_task::TaskMessage>* motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+        tmc2130_driver_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
         move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -59,6 +62,8 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
+        spi_queue{nullptr};
 };
 
 /**
@@ -67,24 +72,24 @@ struct QueueClient : can_message_writer::MessageWriter {
 struct AllTask {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
-    motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
-        motor_driver{nullptr};
+    tmc2130::tasks::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
     motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, lms::LeadScrewConfig,
-        QueueClient>* motion_controller{nullptr};
-    move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient,
-        lms::LeadScrewConfig>* move_status_reporter{nullptr};
-    move_group_task::MoveGroupTask<freertos_message_queue::FreeRTOSMessageQueue,
-                                   QueueClient, QueueClient>* move_group{
+        freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
+    move_status_reporter_task::MoveStatusReporterTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
+        nullptr};
+    move_group_task::MoveGroupTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
     brushed_motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
-        brushed_motor_driver{nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>* brushed_motor_driver{
+        nullptr};
     brushed_motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue, QueueClient>*
+        freertos_message_queue::FreeRTOSMessageQueue>*
         brushed_motion_controller{nullptr};
+    spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
+        nullptr};
 };
 
 /**

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "can/core/can_bus.hpp"
-#include "common/core/spi.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "spi/core/spi.hpp"
 
 namespace interfaces {
 
@@ -22,7 +23,7 @@ auto get_can_bus() -> can_bus::CanBus &;
  * Get the SPI interface
  * @return the SPI interface
  */
-auto get_spi() -> spi::SpiDeviceBase &;
+auto get_spi() -> spi::hardware::SpiDeviceBase &;
 
 /**
  * Get the motor hardware interface
@@ -36,5 +37,12 @@ auto get_motor_hardware_iface() -> motor_hardware::StepperMotorHardwareIface &;
  * @return The motor.
  */
 auto get_motor() -> motor_class::Motor<lms::BeltConfig> &;
+
+/**
+ * Access to the global motor driver configs.
+ *
+ * @return The motor driver configs.
+ */
+auto get_driver_config() -> tmc2130::configs::TMC2130DriverConfig &;
 
 }  // namespace interfaces

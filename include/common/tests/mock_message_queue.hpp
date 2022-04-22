@@ -2,7 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <vector>
+#include <deque>
+
+#include "common/core/message_queue.hpp"
 
 namespace test_mocks {
 
@@ -19,16 +21,29 @@ class MockMessageQueue {
 
     ~MockMessageQueue() {}
 
-    auto try_write(const Message& message, const uint32_t timeout_ticks = 0)
-        -> bool {
+    auto try_write(const Message& message, uint32_t timeout_ticks = 0) -> bool {
         queue_data_structure.push_back(message);
         return true;
     }
 
+    template <typename OtherMessage>
+    requires ConvertibleMessage<Message, OtherMessage>
+    auto try_write(const OtherMessage& message, uint32_t timeout_ticks = 0)
+        -> bool {
+        Message our_message(message);
+        return try_write(our_message, timeout_ticks);
+    }
+
+    static auto try_write_static(void* self, auto& om) -> bool {
+        auto instance =
+            reinterpret_cast<MockMessageQueue<Message, queue_size>*>(self);
+        return instance->try_write(om);
+    }
+
     auto try_read(Message* message, uint32_t timeout_ticks = 0) -> bool {
         if (has_message()) {
-            *message = queue_data_structure.back();
-            queue_data_structure.pop_back();
+            *message = queue_data_structure.front();
+            queue_data_structure.pop_front();
             return true;
         }
         return false;
@@ -59,6 +74,6 @@ class MockMessageQueue {
     uint8_t get_size() { return queue_data_structure.size(); }
 
   private:
-    std::vector<Message> queue_data_structure;
+    std::deque<Message> queue_data_structure;
 };
 }  // namespace test_mocks

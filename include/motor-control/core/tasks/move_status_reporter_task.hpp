@@ -61,12 +61,11 @@ class MoveStatusMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl,
-          message_writer_task::TaskClient CanClient,
-          lms::MotorMechanicalConfig LmsConfig>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveStatusReporterTask {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
     MoveStatusReporterTask(QueueType& queue) : queue{queue} {}
     MoveStatusReporterTask(const MoveStatusReporterTask& c) = delete;
@@ -78,6 +77,8 @@ class MoveStatusReporterTask {
     /**
      * Task entry point.
      */
+    template <message_writer_task::TaskClient CanClient,
+              lms::MotorMechanicalConfig LmsConfig>
     [[noreturn]] void operator()(
         CanClient* can_client,
         const lms::LinearMotionSystemConfig<LmsConfig>* config) {

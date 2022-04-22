@@ -95,6 +95,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
 
 using TaskInfoRequest = Empty<MessageId::task_info_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct TaskInfoResponse : BaseMessage<MessageId::task_info_response> {
     std::array<char, 12> name{};
     uint32_t runtime_counter;
@@ -167,17 +168,20 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
         ticks duration = 0;
         um_per_tick_sq acceleration = 0;
         um_per_tick velocity = 0;
+        uint8_t request_stop_condition = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, acceleration);
         body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
         return AddLinearMoveRequest{
             .group_id = group_id,
             .seq_id = seq_id,
             .duration = duration,
             .acceleration = acceleration,
             .velocity = velocity,
+            .request_stop_condition = request_stop_condition,
         };
     }
 
@@ -633,6 +637,26 @@ using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
 
 using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
 
+using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
+    uint16_t model;
+    std::array<char, 12> serial{};
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(model, body, limit);
+        iter = std::copy_n(serial.cbegin(),
+                           std::min(static_cast<size_t>(serial.size()),
+                                    static_cast<size_t>(limit - iter)),
+                           iter);
+        return iter - body;
+    }
+
+    auto operator==(const GripperInfoResponse& other) const -> bool = default;
+};
+
 struct SensorDiagnosticRequest
     : BaseMessage<MessageId::sensor_diagnostic_request> {
     uint8_t sensor;
@@ -672,6 +696,7 @@ struct SensorDiagnosticResponse
 
 using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     uint16_t name;
     uint16_t model;
@@ -691,18 +716,54 @@ struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     auto operator==(const PipetteInfoResponse& other) const -> bool = default;
 };
 
+struct BindSensorOutputRequest
+    : BaseMessage<MessageId::bind_sensor_output_request> {
+    can_ids::SensorType sensor;
+    uint8_t binding;  // a bitfield of can_ids::SensorOutputBinding
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> BindSensorOutputRequest {
+        uint8_t _sensor = 0;
+        uint8_t _binding = 0;
+        body = bit_utils::bytes_to_int(body, limit, _sensor);
+        body = bit_utils::bytes_to_int(body, limit, _binding);
+        return BindSensorOutputRequest{
+            .sensor = static_cast<can_ids::SensorType>(_sensor),
+            .binding = _binding};
+    }
+
+    auto operator==(const BindSensorOutputRequest& other) const
+        -> bool = default;
+};
+
+struct BindSensorOutputResponse
+    : BaseMessage<MessageId::bind_sensor_output_response> {
+    can_ids::SensorType sensor{};
+    uint8_t binding{};  // a bitfield of can_ids::SensorOutputBinding
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(binding, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const BindSensorOutputResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
 
-using ResponseMessageType =
-    std::variant<HeartbeatResponse, DeviceInfoResponse,
-                 GetMotionConstraintsResponse, GetMoveGroupResponse,
-                 ReadMotorDriverRegisterResponse, ReadFromEEPromResponse,
-                 MoveCompleted, ReadPresenceSensingVoltageResponse,
-                 PushToolsDetectedNotification, ReadLimitSwitchResponse,
-                 ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-                 SensorThresholdResponse, SensorDiagnosticResponse,
-                 TaskInfoResponse, PipetteInfoResponse>;
+using ResponseMessageType = std::variant<
+    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
+    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
+    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
+    PushToolsDetectedNotification, ReadLimitSwitchResponse,
+    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
+    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse>;
 
 }  // namespace can_messages

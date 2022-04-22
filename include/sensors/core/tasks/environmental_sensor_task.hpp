@@ -1,27 +1,27 @@
 #pragma once
 
+#include <array>
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "sensors/core/tasks/environment_sensor_callbacks.hpp"
+#include "i2c/core/writer.hpp"
+#include "sensors/core/hdc2080.hpp"
 #include "sensors/core/utils.hpp"
 
-namespace environment_sensor_task {
+namespace sensors {
+namespace tasks {
 
-using namespace environment_sensor_callbacks;
-
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient>
+template <class I2CQueueWriter, message_writer_task::TaskClient CanClient,
+          class OwnQueue>
 class EnvironmentSensorMessageHandler {
   public:
-    explicit EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
-                                             CanClient &can_client)
-        : writer{i2c_writer},
-          can_client{can_client},
-          humidity_handler{can_client},
-          temperature_handler{can_client} {}
+    EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
+                                    CanClient &can_client, OwnQueue &own_queue)
+        : writer{i2c_writer}, can_client{can_client}, own_queue(own_queue) {}
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
         delete;
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
@@ -33,77 +33,106 @@ class EnvironmentSensorMessageHandler {
     ~EnvironmentSensorMessageHandler() = default;
 
     void initialize() {
-        writer.write(ADDRESS, DEVICE_ID_REGISTER, 0x0);
-        writer.read(
-            ADDRESS, [this]() { internal_handler.send_to_can(); },
-            [this](auto message_a) { internal_handler.handle_data(message_a); },
-            DEVICE_ID_REGISTER);
+        std::array reg_buf{static_cast<uint8_t>(hdc2080::DEVICE_ID_REGISTER)};
+        writer.transact(
+            hdc2080::ADDRESS, reg_buf, 4, own_queue,
+            utils::build_id(hdc2080::ADDRESS, hdc2080::DEVICE_ID_REGISTER, 0));
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        writer.write(SAMPLE_RATE, ADDRESS, DRDY_CONFIG);
-        writer.write(SET_DATARDY, ADDRESS, INTERRUPT_REGISTER);
-        writer.write(BEGIN_MEASUREMENT_RECORDING, ADDRESS, MEASURE_REGISTER);
+        uint16_t configuration_data =
+            hdc2080::DRDY_CONFIG << 8 | hdc2080::SAMPLE_RATE;
+        writer.write(hdc2080::ADDRESS, configuration_data);
+        configuration_data =
+            hdc2080::INTERRUPT_REGISTER << 8 | hdc2080::SET_DATARDY;
+        writer.write(hdc2080::ADDRESS, configuration_data);
+        configuration_data = (hdc2080::MEASURE_REGISTER << 8) |
+                             (hdc2080::BEGIN_MEASUREMENT_RECORDING);
+        writer.write(hdc2080::ADDRESS, configuration_data);
     }
 
-    void handle_message(sensor_task_utils::TaskMessage &m) {
+    void handle_message(const utils::TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(const std::monostate &m) {}
 
-    void visit(can_messages::BaselineSensorRequest &m) {}
-
-    void visit(can_messages::SetSensorThresholdRequest &m) {}
-
-    void visit(can_messages::WriteToSensorRequest &m) {
-        LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
-        writer.write(m.data, ADDRESS);
-    }
-
-    void visit(can_messages::ReadFromSensorRequest &m) {
-        LOG("Received request to read from %d sensor", m.sensor);
-        if (SensorType(m.sensor) == SensorType::humidity) {
-            writer.write(ADDRESS, HUMIDITY_REGISTER, 0x0);
-            writer.read(
-                ADDRESS, [this]() { humidity_handler.send_to_can(); },
-                [this](auto message_a) {
-                    humidity_handler.handle_data(message_a);
-                },
-                HUMIDITY_REGISTER);
-        } else {
-            writer.write(ADDRESS, TEMPERATURE_REGISTER, 0x0);
-            writer.read(
-                ADDRESS, [this]() { temperature_handler.send_to_can(); },
-                [this](auto message_a) {
-                    temperature_handler.handle_data(message_a);
-                },
-                TEMPERATURE_REGISTER);
+    void visit(const i2c::messages::TransactionResponse &m) {
+        uint16_t data = 0x0;
+        const auto *iter = m.read_buffer.cbegin();
+        iter = bit_utils::bytes_to_int(iter, m.read_buffer.cend(), data);
+        switch (utils::reg_from_id<uint8_t>(m.id.token)) {
+            case hdc2080::LSB_HUMIDITY_REGISTER:
+                LOG("Handling humidity data received %d", data);
+                can_client.send_can_message(
+                    can_ids::NodeId::host,
+                    can_messages::ReadFromSensorResponse{
+                        .sensor = can_ids::SensorType::humidity,
+                        .sensor_data = hdc2080::convert(
+                            data, can_ids::SensorType::humidity)});
+                break;
+            case hdc2080::LSB_TEMPERATURE_REGISTER:
+                LOG("Handling temperature data recieved %d", data);
+                can_client.send_can_message(
+                    can_ids::NodeId::host,
+                    can_messages::ReadFromSensorResponse{
+                        .sensor = can_ids::SensorType::temperature,
+                        .sensor_data = hdc2080::convert(
+                            data, can_ids::SensorType::temperature)});
+                break;
+            default:
+                // do nothing
+                break;
         }
     }
 
-    InternalCallback internal_handler{};
-    sensor_task_utils::BitMode mode = sensor_task_utils::BitMode::MSB;
-    uint8_t HUMIDITY_REGISTER = LSB_HUMIDITY_REGISTER;
-    uint8_t TEMPERATURE_REGISTER = LSB_TEMPERATURE_REGISTER;
+    void visit(const can_messages::BaselineSensorRequest &m) {
+        LOG("Received non-supported BaselineSensorRequest");
+    }
+
+    void visit(const can_messages::SetSensorThresholdRequest &m) {
+        LOG("Received non-supported SetSensorThresholdRequest");
+    }
+
+    void visit(const can_messages::WriteToSensorRequest &m) {
+        LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
+        writer.write(hdc2080::ADDRESS, m.data);
+    }
+
+    void visit(const can_messages::ReadFromSensorRequest &m) {
+        LOG("Received request to read from %d sensor", m.sensor);
+        if (can_ids::SensorType(m.sensor) == can_ids::SensorType::humidity) {
+            std::array reg_buf{hdc2080::LSB_HUMIDITY_REGISTER};
+            writer.transact(hdc2080::ADDRESS, reg_buf, 2, own_queue,
+                            utils::build_id(hdc2080::ADDRESS,
+                                            hdc2080::LSB_HUMIDITY_REGISTER));
+        } else {
+            std::array reg_buf{hdc2080::LSB_TEMPERATURE_REGISTER};
+            writer.transact(hdc2080::ADDRESS, reg_buf, 2, own_queue,
+                            utils::build_id(hdc2080::ADDRESS,
+                                            hdc2080::LSB_TEMPERATURE_REGISTER));
+        }
+    }
+
+    void visit(const can_messages::BindSensorOutputRequest &m) {
+        LOG("Received non-supported BindSensorOutputRequest");
+    }
 
     I2CQueueWriter &writer;
     CanClient &can_client;
-    HumidityReadingCallback<CanClient> humidity_handler;
-    TemperatureReadingCallback<CanClient> temperature_handler;
+    OwnQueue &own_queue;
 };
 
 /**
  * The task type.
  */
-template <template <class> class QueueImpl, class I2CQueueWriter,
-          message_writer_task::TaskClient CanClient>
-requires MessageQueue<QueueImpl<sensor_task_utils::TaskMessage>,
-                      sensor_task_utils::TaskMessage>
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<utils::TaskMessage>, utils::TaskMessage>
 class EnvironmentSensorTask {
   public:
-    using QueueType = QueueImpl<sensor_task_utils::TaskMessage>;
+    using Messages = utils::TaskMessage;
+    using QueueType = QueueImpl<utils::TaskMessage>;
     EnvironmentSensorTask(QueueType &queue) : queue{queue} {}
     EnvironmentSensorTask(const EnvironmentSensorTask &c) = delete;
     EnvironmentSensorTask(const EnvironmentSensorTask &&c) = delete;
@@ -114,11 +143,13 @@ class EnvironmentSensorTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(I2CQueueWriter *writer,
+    template <message_writer_task::TaskClient CanClient>
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  CanClient *can_client) {
-        auto handler = EnvironmentSensorMessageHandler{*writer, *can_client};
+        auto handler =
+            EnvironmentSensorMessageHandler(*writer, *can_client, get_queue());
         handler.initialize();
-        sensor_task_utils::TaskMessage message{};
+        utils::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
@@ -131,5 +162,6 @@ class EnvironmentSensorTask {
   private:
     QueueType &queue;
 };
+};  // namespace tasks
 
-}  // namespace environment_sensor_task
+};  // namespace sensors

@@ -108,15 +108,13 @@ class MoveGroupMessageHandler {
 /**
  * The task type.
  */
-template <template <class> class QueueImpl,
-          motion_controller_task::TaskClient MotionControllerClient,
-          message_writer_task::TaskClient CanClient>
+template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class MoveGroupTask {
   public:
+    using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    MoveGroupTask(QueueType& queue, MoveGroupType& move_group)
-        : queue{queue}, move_group{move_group} {}
+    MoveGroupTask(QueueType& queue) : queue{queue} {}
     MoveGroupTask(const MoveGroupTask& c) = delete;
     MoveGroupTask(const MoveGroupTask&& c) = delete;
     auto operator=(const MoveGroupTask& c) = delete;
@@ -126,6 +124,8 @@ class MoveGroupTask {
     /**
      * Task entry point.
      */
+    template <motion_controller_task::TaskClient MotionControllerClient,
+              message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(MotionControllerClient* mc_client,
                                  CanClient* can_client) {
         auto handler =
@@ -142,7 +142,7 @@ class MoveGroupTask {
 
   private:
     QueueType& queue;
-    MoveGroupType& move_group;
+    MoveGroupType move_group{};
 };
 
 /**

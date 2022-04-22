@@ -15,27 +15,26 @@ namespace mock_client {
 struct QueueClient
     : mock_message_writer::MockMessageWriter<test_mocks::MockMessageQueue> {
     test_mocks::MockMessageQueue<eeprom_task::TaskMessage>* eeprom_queue;
-    test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>*
+    test_mocks::MockMessageQueue<sensors::utils::TaskMessage>*
         environment_sensor_queue;
-    test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>*
+    test_mocks::MockMessageQueue<sensors::utils::TaskMessage>*
         capacitive_sensor_queue;
-    test_mocks::MockMessageQueue<sensor_task_utils::TaskMessage>*
+    test_mocks::MockMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue;
 
     void send_eeprom_queue(const eeprom_task::TaskMessage& m) {
         eeprom_queue->try_write(m);
     }
 
-    void send_environment_sensor_queue(
-        const sensor_task_utils::TaskMessage& m) {
+    void send_environment_sensor_queue(const sensors::utils::TaskMessage& m) {
         environment_sensor_queue->try_write(m);
     }
 
-    void send_capacitive_sensor_queue(const sensor_task_utils::TaskMessage& m) {
+    void send_capacitive_sensor_queue(const sensors::utils::TaskMessage& m) {
         capacitive_sensor_queue->try_write(m);
     }
 
-    void send_pressure_sensor_queue(const sensor_task_utils::TaskMessage& m) {
+    void send_pressure_sensor_queue(const sensors::utils::TaskMessage& m) {
         pressure_sensor_queue->try_write(m);
     }
 };

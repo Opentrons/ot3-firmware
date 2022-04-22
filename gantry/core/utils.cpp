@@ -17,10 +17,10 @@ auto utils::get_node_id() -> can_ids::NodeId {
 }
 
 auto utils::driver_config_by_axis(enum GantryAxisType which)
-    -> tmc2130::TMC2130DriverConfig {
+    -> tmc2130::configs::TMC2130DriverConfig {
     switch (which) {
         case GantryAxisType::gantry_x:
-            return tmc2130::TMC2130DriverConfig{
+            return tmc2130::configs::TMC2130DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
                                              .run_current = 0x18,
@@ -38,7 +38,7 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
                 }};
 
         case GantryAxisType::gantry_y:
-            return tmc2130::TMC2130DriverConfig{
+            return tmc2130::configs::TMC2130DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
                                              .run_current = 0x18,
@@ -58,7 +58,7 @@ auto utils::driver_config_by_axis(enum GantryAxisType which)
     std::abort();
 }
 
-auto utils::driver_config() -> tmc2130::TMC2130DriverConfig {
+auto utils::driver_config() -> tmc2130::configs::TMC2130DriverConfig {
     return driver_config_by_axis(get_axis_type());
 }
 

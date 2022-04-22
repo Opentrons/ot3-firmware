@@ -2,12 +2,12 @@
 
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
-#include "common/simulation/spi.hpp"
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+#include "spi/simulation/spi.hpp"
 
 /**
  * The CAN bus.
@@ -17,7 +17,7 @@ static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 /**
  * The SPI bus.
  */
-static auto spi_comms = sim_spi::SimSpiDeviceBase();
+static auto spi_comms = spi::hardware::SimSpiDeviceBase();
 
 /**
  * The motor interface.
@@ -30,11 +30,12 @@ static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
+static auto driver_configs = utils::driver_config();
+
 /**
  * The motor struct.
  */
 static motor_class::Motor motor{
-    spi_comms,
     lms::LinearMotionSystemConfig<lms::BeltConfig>{
         .mech_config = lms::BeltConfig{.pulley_diameter = 12.7},
         .steps_per_rev = 200,
@@ -45,7 +46,6 @@ static motor_class::Motor motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    utils::driver_config(),
     motor_queue};
 
 /**
@@ -62,7 +62,9 @@ void interfaces::initialize() {}
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 
-auto interfaces::get_spi() -> spi::SpiDeviceBase& { return spi_comms; }
+auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
+    return spi_comms;
+}
 
 auto interfaces::get_motor_hardware_iface()
     -> motor_hardware::StepperMotorHardwareIface& {
@@ -71,4 +73,8 @@ auto interfaces::get_motor_hardware_iface()
 
 auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
     return motor;
+}
+
+auto interfaces::get_driver_config() -> tmc2130::configs::TMC2130DriverConfig& {
+    return driver_configs;
 }

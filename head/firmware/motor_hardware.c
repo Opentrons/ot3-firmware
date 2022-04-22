@@ -374,5 +374,4 @@ void initialize_timer(motor_interrupt_callback callback) {
     TIM2_EncoderZL_Init();
     TIM3_EncoderZR_Init();
     MX_TIM7_Init();
-
 }

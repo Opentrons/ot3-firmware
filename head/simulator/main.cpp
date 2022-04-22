@@ -3,15 +3,16 @@
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.h"
-#include "common/simulation/spi.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
 #include "head/simulation/adc.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+#include "spi/simulation/spi.hpp"
 #include "task.h"
 
 /**
@@ -22,8 +23,8 @@ static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 /**
  * The SPI busses.
  */
-static auto spi_comms_right = sim_spi::SimSpiDeviceBase();
-static auto spi_comms_left = sim_spi::SimSpiDeviceBase();
+static auto spi_comms_right = spi::hardware::SimSpiDeviceBase();
+static auto spi_comms_left = spi::hardware::SimSpiDeviceBase();
 
 /**
  * The motor interfaces.
@@ -38,7 +39,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_left("Motor Queue Left");
 
-static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
+static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -66,7 +67,6 @@ static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_interface_right);
 
 static motor_class::Motor motor_right{
-    spi_comms_right,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
@@ -77,14 +77,12 @@ static motor_class::Motor motor_right{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue_right};
 
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_interface_left);
 
 static motor_class::Motor motor_left{
-    spi_comms_left,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
@@ -95,7 +93,6 @@ static motor_class::Motor motor_left{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue_left};
 
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_right(
@@ -121,8 +118,9 @@ int main() {
     });
 
     head_tasks::start_tasks(canbus, motor_left.motion_controller,
-                            motor_left.driver, motor_right.motion_controller,
-                            motor_right.driver, presence_sense_driver);
+                            motor_right.motion_controller,
+                            presence_sense_driver, spi_comms_right,
+                            spi_comms_left, MotorDriverConfigurations);
 
     vTaskStartScheduler();
     return 0;

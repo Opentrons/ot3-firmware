@@ -1,6 +1,7 @@
 #include <signal.h>
 
 #include "FreeRTOS.h"
+#include "can/simlib/sim_canbus.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
 #include "task.h"
@@ -10,6 +11,11 @@ void signal_handler(int signum) {
     exit(signum);
 }
 
+/**
+ * The CAN bus.
+ */
+static auto canbus = sim_canbus::SimCANBus(can_transport::create());
+
 int main() {
     signal(SIGINT, signal_handler);
 
@@ -17,13 +23,12 @@ int main() {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
 
-    interfaces::initialize();
-
-    gripper_tasks::start_tasks(
-        interfaces::get_can_bus(), interfaces::get_z_motor().motion_controller,
-        interfaces::get_z_motor().driver,
-        interfaces::get_brushed_motor_driver_hardware_iface(),
-        interfaces::get_brushed_motor_hardware_iface());
+    z_motor_iface::initialize();
+    grip_motor_iface::initialize();
+    gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
+                               grip_motor_iface::get_grip_motor(),
+                               z_motor_iface::get_spi(),
+                               z_motor_iface::get_tmc2130_driver_configs());
 
     vTaskStartScheduler();
 }

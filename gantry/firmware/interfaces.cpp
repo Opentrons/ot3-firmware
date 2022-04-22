@@ -4,7 +4,6 @@
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/firmware/iwdg.hpp"
-#include "common/firmware/spi_comms.hpp"
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces.hpp"
 #include "gantry/core/tasks.hpp"
@@ -12,6 +11,7 @@
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "spi/firmware/spi_comms.hpp"
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -23,7 +23,7 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**
  * The SPI configuration.
  */
-static spi::SPI_interface SPI_intf = {
+static spi::hardware::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .GPIO_handle = GPIOB,
@@ -33,7 +33,7 @@ static spi::SPI_interface SPI_intf = {
 /**
  * The SPI interface.
  */
-static spi::Spi spi_comms(SPI_intf);
+static spi::hardware::Spi spi_comms(SPI_intf);
 
 /**
  * Motor pin configuration.
@@ -121,6 +121,7 @@ static motor_hardware::MotorHardware motor_hardware_iface(
     (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
     nullptr);
 
+static auto driver_configs = utils::driver_config();
 /**
  * The can bus.
  */
@@ -136,14 +137,11 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
  * The motor struct.
  */
 static motor_class::Motor motor{
-    spi_comms,
-    utils::linear_motion_system_config(),
-    motor_hardware_iface,
+    utils::linear_motion_system_config(), motor_hardware_iface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    utils::driver_config(),
     motor_queue};
 
 /**
@@ -173,7 +171,9 @@ void interfaces::initialize() {
 
 auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
 
-auto interfaces::get_spi() -> spi::SpiDeviceBase& { return spi_comms; }
+auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
+    return spi_comms;
+}
 
 auto interfaces::get_motor_hardware_iface()
     -> motor_hardware::StepperMotorHardwareIface& {
@@ -182,4 +182,8 @@ auto interfaces::get_motor_hardware_iface()
 
 auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
     return motor;
+}
+
+auto interfaces::get_driver_config() -> tmc2130::configs::TMC2130DriverConfig& {
+    return driver_configs;
 }

@@ -1,23 +1,18 @@
 #include "gripper/core/interfaces.hpp"
 
-#include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
-#include "common/simulation/spi.hpp"
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_driver_hardware_iface.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
-
-/**
- * The CAN bus.
- */
-static auto canbus = sim_canbus::SimCANBus(can_transport::create());
+#include "spi/simulation/spi.hpp"
 
 /**
  * The SPI bus.
  */
-static auto spi_comms = sim_spi::SimSpiDeviceBase();
+static auto spi_comms = spi::hardware::SimSpiDeviceBase();
 
 /**
  * The motor interface.
@@ -33,7 +28,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 /**
  * Motor driver configuration.
  */
-static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
+static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -59,7 +54,6 @@ static tmc2130::TMC2130DriverConfig MotorDriverConfigurations{
  * The motor struct.
  */
 static motor_class::Motor motor{
-    spi_comms,
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
@@ -70,7 +64,6 @@ static motor_class::Motor motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    MotorDriverConfigurations,
     motor_queue};
 
 /**
@@ -92,27 +85,26 @@ static auto brushed_motor_driver_iface =
 static auto brushed_motor_hardware_iface =
     sim_motor_hardware_iface::SimBrushedMotorHardwareIface();
 
-void interfaces::initialize() {}
+static auto grip_motor = brushed_motor::BrushedMotor(
+    brushed_motor_hardware_iface, brushed_motor_driver_iface);
 
-auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
+void z_motor_iface::initialize(){};
 
-auto interfaces::get_spi() -> spi::SpiDeviceBase& { return spi_comms; }
+void grip_motor_iface::initialize(){};
 
-auto interfaces::get_motor_hardware_iface()
-    -> motor_hardware::MotorHardwareIface& {
-    return motor_interface;
+auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {
+    return spi_comms;
 }
 
-auto interfaces::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
+auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return motor;
 }
 
-auto interfaces::get_brushed_motor_driver_hardware_iface()
-    -> brushed_motor_driver::BrushedMotorDriverIface& {
-    return brushed_motor_driver_iface;
+auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
+    return grip_motor;
 }
 
-auto interfaces::get_brushed_motor_hardware_iface()
-    -> motor_hardware::BrushedMotorHardwareIface& {
-    return brushed_motor_hardware_iface;
+auto z_motor_iface::get_tmc2130_driver_configs()
+    -> tmc2130::configs::TMC2130DriverConfig& {
+    return MotorDriverConfigurations;
 }

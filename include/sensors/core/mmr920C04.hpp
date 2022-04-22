@@ -21,6 +21,7 @@
  * The command bits (C7->C0) are another way of stating the 'register' address.
  * Leaving them alone for now.
  */
+namespace sensors {
 namespace mmr920C04 {
 constexpr uint16_t ADDRESS = 0x67 << 1;
 
@@ -192,11 +193,11 @@ struct __attribute__((packed, __may_alias__)) Pressure {
 
     [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
         // Sign extend pressure result
-        if (reg & 0x00800000)
+        if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
-        else
+        } else {
             reg &= 0x007FFFFF;
-
+        }
         float pressure = static_cast<float>(reg) * PA_PER_COUNT;
         return convert_to_fixed_point(pressure, 15);
     }
@@ -225,10 +226,11 @@ struct __attribute__((packed, __may_alias__)) LowPassPressure {
 
     [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
         // Sign extend pressure result
-        if (reg & 0x00800000)
+        if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
-        else
+        } else {
             reg &= 0x007FFFFF;
+        }
 
         float pressure = static_cast<float>(reg) * PA_PER_COUNT;
         return convert_to_fixed_point(pressure, 15);
@@ -309,5 +311,5 @@ struct MMR920C04RegisterMap {
 using RegisterSerializedType = uint32_t;
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
-
-}  // namespace mmr920C04
+};  // namespace mmr920C04
+};  // namespace sensors
