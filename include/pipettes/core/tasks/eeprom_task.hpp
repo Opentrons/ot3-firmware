@@ -43,19 +43,15 @@ class EEPromMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
-        uint16_t data = 0;
-        static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
-                                                  m.read_buffer.cend(), data));
-        auto message =
-            can_messages::ReadFromEEPromResponse{.serial_number = data};
+        auto message = can_messages::ReadFromEEPromResponse::create(
+            0, m.read_buffer.cbegin(), m.read_buffer.cend());
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     void visit(can_messages::WriteToEEPromRequest &m) {
-        LOG("Received request to write serial number: %d", m.serial_number);
-        std::array serial_buf{static_cast<uint8_t>(m.serial_number >> 8),
-                              static_cast<uint8_t>(m.serial_number & 0xff)};
-        writer.write(DEVICE_ADDRESS, serial_buf);
+        LOG("Received request to write %d bytes to address %x", m.data_length,
+            m.data);
+        writer.write(DEVICE_ADDRESS, m.data);
     }
 
     void visit(can_messages::ReadFromEEPromRequest &m) {
@@ -64,7 +60,6 @@ class EEPromMessageHandler {
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0x1;
-    static constexpr int SERIAL_NUMBER_SIZE = 0x2;
     I2CQueueWriter &writer;
     CanClient &can_client;
     OwnQueue &own_queue;

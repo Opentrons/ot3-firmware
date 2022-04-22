@@ -42,6 +42,58 @@ SCENARIO("message deserializing works") {
             }
         }
     }
+
+    GIVEN("a write to eeprom message") {
+        auto arr = std::array<uint8_t, 10>{// Address
+                                           0x5, 0x12,
+                                           // Data Length
+                                           7,
+                                           // Data
+                                           1, 2, 3, 4, 5, 6, 7};
+        WHEN("constructed") {
+            auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
+            THEN("it is converted to a the correct structure") {
+                REQUIRE(r.address == 0x0512);
+                REQUIRE(r.data_length == 7);
+                REQUIRE(r.data[0] == 1);
+                REQUIRE(r.data[1] == 2);
+                REQUIRE(r.data[2] == 3);
+                REQUIRE(r.data[3] == 4);
+                REQUIRE(r.data[4] == 5);
+                REQUIRE(r.data[5] == 6);
+                REQUIRE(r.data[6] == 7);
+            }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.address = 125;
+                REQUIRE(other != r);
+            }
+        }
+    }
+
+    GIVEN("a write to eeprom message with too large data length") {
+        auto arr = std::array<uint8_t, 35>{// Address
+                                           0x5, 0x12,
+                                           // Data Length
+                                           122,
+                                           // Data
+                                           0, 1};
+        WHEN("constructed") {
+            auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
+            THEN("it is converted to a the correct structure") {
+                REQUIRE(r.address == 0x0512);
+                REQUIRE(r.data_length == 32);
+                REQUIRE(r.data[0] == 0);
+                REQUIRE(r.data[1] == 1);
+                REQUIRE(r.data[2] == 0);
+                REQUIRE(r.data[3] == 0);
+                REQUIRE(r.data[4] == 0);
+                REQUIRE(r.data[5] == 0);
+                REQUIRE(r.data[6] == 0);
+            }
+        }
+    }
 }
 
 SCENARIO("message serializing works") {
@@ -124,6 +176,47 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[16] == 0);
             }
             THEN("size must be returned") { REQUIRE(size == 16); }
+        }
+    }
+
+    GIVEN("a read from eeprom response") {
+        auto data = std::array<uint8_t, 5>{0, 1, 2, 3, 4};
+        auto message =
+            ReadFromEEPromResponse::create(513, data.cbegin(), data.cend());
+
+        THEN("the length is correctly set.") {
+            REQUIRE(message.data_length == data.size());
+        }
+
+        WHEN("serialized into too small a buffer") {
+            auto arr = std::array<uint8_t, 5>{};
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is written into the buffer.") {
+                REQUIRE(arr[0] == 0x2);
+                REQUIRE(arr[1] == 0x1);
+                REQUIRE(arr[2] == 0x5);
+                REQUIRE(arr[3] == 0x0);
+                REQUIRE(arr[4] == 0x1);
+            }
+            THEN("size is correct") { REQUIRE(size == 5); }
+        }
+
+        WHEN("serialized into too large a buffer") {
+            auto arr = std::array<uint8_t, 10>{};
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is written into the buffer.") {
+                REQUIRE(arr[0] == 0x2);
+                REQUIRE(arr[1] == 0x1);
+                REQUIRE(arr[2] == 0x5);
+                REQUIRE(arr[3] == 0x0);
+                REQUIRE(arr[4] == 0x1);
+                REQUIRE(arr[5] == 0x2);
+                REQUIRE(arr[6] == 0x3);
+                REQUIRE(arr[7] == 0x4);
+                REQUIRE(arr[8] == 0x0);
+                REQUIRE(arr[9] == 0x0);
+            }
+            THEN("size is correct") { REQUIRE(size == 8); }
         }
     }
 }
