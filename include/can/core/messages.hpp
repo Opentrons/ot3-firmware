@@ -760,7 +760,7 @@ struct TipActionRequest
                                 .velocity = velocity};
     }
 
-    auto operator==(const PickUpTipRequest& other) const -> bool = default;
+    auto operator==(const TipActionRequest& other) const -> bool = default;
 };
 
 struct TipActionResponse
