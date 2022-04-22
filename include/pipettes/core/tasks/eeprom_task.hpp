@@ -43,12 +43,14 @@ class EEPromMessageHandler {
     void visit(std::monostate &m) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
-        auto message = can_messages::ReadFromEEPromResponse::create(0, m.read_buffer.cbegin(), m.read_buffer.cend());
+        auto message = can_messages::ReadFromEEPromResponse::create(
+            0, m.read_buffer.cbegin(), m.read_buffer.cend());
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     void visit(can_messages::WriteToEEPromRequest &m) {
-        LOG("Received request to write %d bytes to address %x", m.data_length, m.data);
+        LOG("Received request to write %d bytes to address %x", m.data_length,
+            m.data);
         writer.write(DEVICE_ADDRESS, m.data);
     }
 

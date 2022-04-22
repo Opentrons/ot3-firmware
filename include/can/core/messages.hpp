@@ -163,10 +163,9 @@ struct ReadFromEEPromRequest : BaseMessage<MessageId::read_eeprom_request> {
         body = bit_utils::bytes_to_int(body, limit, address);
         body = bit_utils::bytes_to_int(body, limit, data_length);
 
-        return ReadFromEEPromRequest{
-            .address = address, .data_length = data_length};
+        return ReadFromEEPromRequest{.address = address,
+                                     .data_length = data_length};
     }
-
 
     auto operator==(const ReadFromEEPromRequest& other) const -> bool = default;
 };
@@ -185,8 +184,8 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
      * @return new instance
      */
     template <bit_utils::ByteIterator DataIter, typename Limit>
-    static auto create(eeprom_types::address address, DataIter data_iter, Limit limit)
-        -> ReadFromEEPromResponse {
+    static auto create(eeprom_types::address address, DataIter data_iter,
+                       Limit limit) -> ReadFromEEPromResponse {
         eeprom_types::EepromData data{};
         eeprom_types::data_length data_length =
             std::min(eeprom_types::max_data_length,
