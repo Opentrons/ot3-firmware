@@ -284,6 +284,23 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     auto operator==(const MoveCompleted& other) const -> bool = default;
 };
 
+
+struct EncoderPositionResponse : BaseMessage<MessageId::encoder_position> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint32_t encoder_position;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const EncoderPositionResponse& other) const -> bool = default;
+};
+
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
     um_per_tick min_velocity;
     um_per_tick max_velocity;
