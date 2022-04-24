@@ -174,7 +174,7 @@ static motor_handler::MotorInterruptHandler motor_interrupt_right(
 
 static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 8.0},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
         .steps_per_rev = 200.0,
         .microstep = 16.0,
         .encoder_ppr = 1000.0},
@@ -192,7 +192,7 @@ static motor_handler::MotorInterruptHandler motor_interrupt_left(
 
 static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 8.0},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
         .steps_per_rev = 200.0,
         .microstep = 16.0,
         .encoder_ppr = 1000.0},
