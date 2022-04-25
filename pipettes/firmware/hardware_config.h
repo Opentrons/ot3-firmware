@@ -8,7 +8,8 @@ typedef struct {
 typedef enum {
     pipette_hardware_device_limit_switch,
     pipette_hardware_device_LED_drive,
-    pipette_hardware_device_sync_in
+    pipette_hardware_device_sync_in,
+    pipette_hardware_device_sync_out
 }PipetteHardwareDevice;
 
 uint16_t pipette_hardware_spi_pins();

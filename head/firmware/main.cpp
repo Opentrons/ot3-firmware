@@ -215,14 +215,15 @@ static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
 
 static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
 
-auto timer_for_notifier = freertos_timer::FreeRTOSTimer<pdMS_TO_TICKS(100)>(
+auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
     "timer for notifier", ([] {
         auto* presence_sensing_task =
             head_tasks::get_tasks().presence_sensing_driver_task;
         if (presence_sensing_task != nullptr) {
             presence_sensing_task->notifier_callback();
         }
-    }));
+    }),
+    100);
 
 auto main() -> int {
     HardwareInit();

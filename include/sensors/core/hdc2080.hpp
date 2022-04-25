@@ -11,8 +11,8 @@
  * Datasheet can be found at:
  * https://www.ti.com/lit/ds/symlink/hdc2080.pdf?ts=1644850101397&ref_url=https%253A%252F%252Fwww.google.com%252F#:~:text=The%20HDC2080%20device%20is%20an,to%20dissipate%20condensation%20and%20moisture.
  */
-
-namespace hdc2080_utils {
+namespace sensors {
+namespace hdc2080 {
 
 // constants
 constexpr float TEMP_CONST_MULTIPLIER = 165.0;
@@ -63,5 +63,5 @@ inline auto convert(uint16_t data, can_ids::SensorType type) -> sq14_15 {
             return 0.0;
     }
 }
-
-}  // namespace hdc2080_utils
+};  // namespace hdc2080
+};  // namespace sensors

@@ -2,7 +2,7 @@
 
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
-#include "pipettes/core/i2c_writer.hpp"
+#include "i2c/core/writer.hpp"
 #include "pipettes/core/tasks/eeprom_task.hpp"
 
 namespace eeprom_task_starter {
@@ -11,14 +11,13 @@ template <uint32_t StackDepth, message_writer_task::TaskClient CanClient>
 class TaskStarter {
   public:
     using I2CWriterType =
-        i2c_writer::I2CWriter<freertos_message_queue::FreeRTOSMessageQueue>;
+        i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
     using EEPromTaskType =
         eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue,
                                 I2CWriterType, CanClient>;
     using QueueType =
         freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>;
-    using TaskType = freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType,
-                                                 I2CWriterType, CanClient>;
+    using TaskType = freertos_task::FreeRTOSTask<StackDepth, EEPromTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

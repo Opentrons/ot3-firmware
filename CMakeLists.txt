@@ -57,7 +57,9 @@ endif ()
 set(LINT_TARGETS "")
 add_subdirectory(common)
 add_subdirectory(can)
+add_subdirectory(i2c)
 add_subdirectory(motor-control)
+add_subdirectory(sensors)
 add_subdirectory(pipettes)
 add_subdirectory(gantry)
 add_subdirectory(head)
@@ -78,6 +80,8 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./motor-control/*.hpp ./motor-control/*.cpp
         ./gripper/*.hpp ./gripper/*.cpp
         ./bootloader/*.hpp ./bootloader/*.cpp
+        ./i2c/*.hpp ./i2c/*.cpp
+        ./sensors/*.hpp ./sensors/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.

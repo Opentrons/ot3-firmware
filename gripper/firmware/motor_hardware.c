@@ -2,6 +2,7 @@
 
 DAC_HandleTypeDef hdac1;
 
+
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
@@ -139,4 +140,4 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef* hdac) {
     }
 }
 
-void initialize_dac() { MX_DAC1_Init(); }
+void initialize_dac() { MX_DAC1_Init();}

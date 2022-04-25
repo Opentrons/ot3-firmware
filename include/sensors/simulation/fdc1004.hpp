@@ -4,6 +4,7 @@
 #include "sensors/simulation/sensors.hpp"
 
 namespace fdc1004_simulator {
+using namespace sensors;
 class FDC1004 : public sensor_simulator::SensorType {
   public:
     FDC1004() {

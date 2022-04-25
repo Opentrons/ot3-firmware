@@ -134,7 +134,6 @@ void DMA1_Channel4_IRQHandler(void)
     HAL_DMA_IRQHandler(&hdma_spi1_tx);
 }
 
-
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */

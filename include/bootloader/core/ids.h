@@ -25,6 +25,8 @@ typedef enum {
     can_messageid_task_info_response = 0x305,
     can_messageid_pipette_info_request = 0x306,
     can_messageid_pipette_info_response = 0x307,
+    can_messageid_gripper_info_request = 0x308,
+    can_messageid_gripper_info_response = 0x309,
     can_messageid_stop_request = 0x0,
     can_messageid_get_status_request = 0x1,
     can_messageid_get_status_response = 0x5,
@@ -79,6 +81,8 @@ typedef enum {
     can_messageid_set_sensor_threshold_response = 0x87,
     can_messageid_sensor_diagnostic_request = 0x88,
     can_messageid_sensor_diagnostic_response = 0x89,
+    can_messageid_bind_sensor_output_request = 0x8a,
+    can_messageid_bind_sensor_output_response = 0x8b,
 } CANMessageId;
 
 /** Can bus arbitration id node id. */
@@ -93,6 +97,8 @@ typedef enum {
     can_nodeid_head_l = 0x51,
     can_nodeid_head_r = 0x52,
     can_nodeid_gripper = 0x20,
+    can_nodeid_gripper_z = 0x21,
+    can_nodeid_gripper_g = 0x22,
     can_nodeid_pipette_left_bootloader = 0x6f,
     can_nodeid_pipette_right_bootloader = 0x7f,
     can_nodeid_gantry_x_bootloader = 0x3f,

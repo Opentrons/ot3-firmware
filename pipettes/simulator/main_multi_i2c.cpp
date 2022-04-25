@@ -10,16 +10,17 @@
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
-#include "common/simulation/i2c_sim.hpp"
 #include "common/simulation/spi.hpp"
+#include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "sensors/simulation/eeprom.hpp"
+#include "pipettes/simulation/eeprom.hpp"
 #include "sensors/simulation/fdc1004.hpp"
+#include "sensors/simulation/hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
 #include "sensors/simulation/sensors.hpp"
@@ -52,8 +53,10 @@ std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {capsensor.ADDRESS, capsensor},
     {pressuresensor.ADDRESS, pressuresensor}};
 
-static auto i2c3_comms = sim_i2c::SimI2C{sensor_map};
-static auto i2c1_comms = sim_i2c::SimI2C{sensor_map};
+static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map};
+static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map};
+
+static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
 
 static motor_class::Motor pipette_motor{
     spi_comms,
@@ -101,6 +104,7 @@ int main() {
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
                                 pipette_motor.driver, i2c3_comms, i2c1_comms,
+                                fake_sensor_hw,
                                 node_from_env(std::getenv("MOUNT")));
 
     vTaskStartScheduler();

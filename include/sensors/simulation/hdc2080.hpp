@@ -4,6 +4,7 @@
 #include "sensors/simulation/sensors.hpp"
 
 namespace hdc2080_simulator {
+using namespace sensors;
 class HDC2080 : public sensor_simulator::SensorType {
   public:
     HDC2080() {

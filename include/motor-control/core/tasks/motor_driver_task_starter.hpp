@@ -15,8 +15,7 @@ class TaskStarter {
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         motor_driver_task::TaskMessage>;
     using TaskType =
-        freertos_task::FreeRTOSTask<StackDepth, MotorDriverTaskType,
-                                    MotorDriverType, CanClient>;
+        freertos_task::FreeRTOSTask<StackDepth, MotorDriverTaskType>;
 
     TaskStarter() : task_entry{queue}, task{task_entry} {}
     TaskStarter(const TaskStarter& c) = delete;

@@ -7,6 +7,7 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 
@@ -44,12 +45,16 @@ using BrushedMotionDispatchTarget = can_dispatch::DispatchParseTarget<
     motion_message_handler::BrushedMotionHandler<gripper_tasks::QueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
     can_messages::GripperGripRequest, can_messages::GripperHomeRequest>;
+using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<
+    gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient>,
+    can_messages::GripperInfoRequest>;
 
 using GripperDispatcherType =
     can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
                              MotionControllerDispatchTarget,
                              SystemDispatchTarget, BrushedMotorDispatchTarget,
-                             BrushedMotionDispatchTarget>;
+                             BrushedMotionDispatchTarget,
+                             GripperInfoDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =

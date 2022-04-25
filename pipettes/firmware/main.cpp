@@ -10,10 +10,10 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
-#include "common/firmware/i2c_comms.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/spi_comms.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
@@ -25,10 +25,12 @@
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
+#include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
@@ -50,7 +52,7 @@ spi::SPI_interface SPI_intf = {
 };
 static spi::Spi spi_comms(SPI_intf);
 
-static auto i2c_comms3 = i2c::I2C();
+static auto i2c_comms3 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
 struct motion_controller::HardwareConfig plunger_pins {
@@ -91,7 +93,7 @@ struct motion_controller::HardwareConfig plunger_pins {
         .active_setting = GPIO_PIN_RESET}
 };
 
-static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, nullptr);
+static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, pipettes_tasks::get_queues(), plunger_hw);
 
@@ -114,12 +116,16 @@ static motor_class::Motor pipette_motor{
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
+static sensors::hardware::SensorHardware pins_for_sensor(
+    {.port = GPIOB, .pin = GPIO_PIN_4, .active_setting = GPIO_PIN_RESET});
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
     utility_gpio_init();
     adc_init();
+    initialize_enc(PIPETTE_TYPE);
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct, PIPETTE_TYPE);
@@ -136,7 +142,8 @@ auto main() -> int {
     can_start();
 
     pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                pipette_motor.driver, i2c_comms3, id);
+                                pipette_motor.driver, i2c_comms3,
+                                pins_for_sensor, id);
 
     iWatchdog.start(6);
 

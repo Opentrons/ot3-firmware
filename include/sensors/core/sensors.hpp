@@ -1,4 +1,5 @@
-namespace sensors_registers {
+namespace sensors {
+namespace registers {
 
 template <typename Reg>
 concept WritableRegister = requires() {
@@ -9,5 +10,5 @@ template <typename Reg>
 concept ReadableRegister = requires() {
     {Reg::readable};
 };
-
-}  // namespace sensors_registers
+};  // namespace registers
+};  // namespace sensors

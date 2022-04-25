@@ -14,7 +14,8 @@ add_executable(motor-control
         test_motor_driver.cpp
         test_limit_switch.cpp
         test_move_status_handling.cpp
-)
+        test_sync_handling.cpp
+        )
 
 target_ot_motor_control(motor-control)
 
