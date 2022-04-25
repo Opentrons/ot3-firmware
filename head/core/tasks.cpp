@@ -67,7 +67,8 @@ void head_tasks::start_tasks(
     presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
-    tmc2130::configs::TMC2130DriverConfig& driver_configs) {
+    tmc2130::configs::TMC2130DriverConfig& left_driver_configs,
+    tmc2130::configs::TMC2130DriverConfig& right_driver_configs) {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
@@ -92,7 +93,8 @@ void head_tasks::start_tasks(
     auto& left_motion = left_mc_task_builder.start(
         5, "left mc", left_motion_controller, left_queues);
     auto& left_tmc2130_driver = left_motor_driver_task_builder.start(
-        5, "left motor driver", driver_configs, left_queues, spi3_task_client);
+        5, "left motor driver", left_driver_configs, left_queues,
+        spi3_task_client);
     auto& left_move_group = left_move_group_task_builder.start(
         5, "left move group", left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(
@@ -118,7 +120,7 @@ void head_tasks::start_tasks(
     auto& right_motion = right_mc_task_builder.start(
         5, "right mc", right_motion_controller, right_queues);
     auto& right_tmc2130_driver = right_motor_driver_task_builder.start(
-        5, "right motor driver", driver_configs, right_queues,
+        5, "right motor driver", right_driver_configs, right_queues,
         spi2_task_client);
     auto& right_move_group = right_move_group_task_builder.start(
         5, "right move group", right_queues, right_queues);

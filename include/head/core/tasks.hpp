@@ -27,7 +27,8 @@ void start_tasks(
     presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
-    tmc2130::configs::TMC2130DriverConfig& configs);
+    tmc2130::configs::TMC2130DriverConfig& left_driver_configs,
+    tmc2130::configs::TMC2130DriverConfig& right_driver_configs);
 
 /**
  * The client for all head message queues not associated with a single motor.
