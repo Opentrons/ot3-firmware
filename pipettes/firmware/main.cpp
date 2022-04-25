@@ -22,6 +22,7 @@
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/configs.hpp"
+#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
@@ -44,12 +45,8 @@ static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
-spi::hardware::SPI_interface SPI_intf = {
-    .SPI_handle = &hspi2,
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .GPIO_handle = GPIOC,
-    .pin = GPIO_PIN_6,
-};
+spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
+
 static spi::hardware::Spi spi_comms(SPI_intf);
 
 static auto i2c_comms3 = i2c::hardware::I2C();
@@ -106,7 +103,7 @@ static motor_class::Motor pipette_motor{
                                       .max_acceleration = 2},
     motor_queue};
 
-static auto driver_configs = configs::driver_config_by_axis(PIPETTE_TYPE);
+static auto driver_configs = interfaces::driver_config_by_axis(PIPETTE_TYPE);
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
