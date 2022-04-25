@@ -168,7 +168,7 @@ static motor_hardware::MotorHardware motor_hardware_iface(
  * The motor driver config.
  */
 static tmc2130::configs::TMC2130DriverConfig motor_driver_config =
-    (get_axis_type() == gantry_x) ? gantry_x_driver_configs : gantry_y_driver_configs);
+    (get_axis_type() == gantry_x) ? gantry_x_driver_configs : gantry_y_driver_configs;
 
 /**
  * The can bus.
