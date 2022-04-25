@@ -5,7 +5,7 @@
 using namespace gripper_tasks::z_tasks;
 
 static auto z_tasks = MotorTasks{};
-static auto z_queues = QueueClient{can_ids::NodeId::gripper_z};
+static auto z_queues = QueueClient{};
 
 static auto mc_task_builder =
     freertos_task::TaskStarter<512,
@@ -18,7 +18,8 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
 // Start Z tasks
-void start_tasks(motor_class::Motor<lms::LeadScrewConfig>& z_motor) {
+void start_tasks(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+                 gripper_tasks::QueueType* can_queue) {
     auto& motion =
         mc_task_builder.start(5, "z mc", z_motor.motion_controller, z_queues);
     auto& motor = motor_driver_task_builder.start(5, "z motor driver",
@@ -38,7 +39,11 @@ void start_tasks(motor_class::Motor<lms::LeadScrewConfig>& z_motor) {
     z_queues.motor_queue = &motor.get_queue();
     z_queues.move_group_queue = &move_group.get_queue();
     z_queues.move_status_report_queue = &move_status_reporter.get_queue();
+    z_queues.set_queue(can_queue);
 }
+
+QueueClient::QueueClient()
+    : can_message_writer::MessageWriter{can_ids::NodeId::gripper_z} {}
 
 void QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

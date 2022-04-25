@@ -8,7 +8,7 @@
 using namespace gripper_tasks;
 
 static auto main_tasks = MainTasks{};
-static auto main_queues = MainQueueClient{can_ids::NodeId::gripper};
+static auto main_queues = MainQueueClient{};
 
 /**
  * Start gripper tasks.
@@ -24,14 +24,14 @@ void start_all_tasks(can_bus::CanBus& can_bus,
     main_queues.set_queue(&can_writer.get_queue());
 
     // Start z motor tasks
-    z_tasks::start_tasks(z_motor);
+    z_tasks::start_tasks(z_motor, &can_writer.get_queue());
 
     // Start g motor tasks
-    g_tasks::start_tasks(grip_motor);
+    g_tasks::start_tasks(grip_motor, &can_writer.get_queue());
 }
 
-MainQueueClient::MainQueueClient(can_ids::NodeId this_fw)
-    : can_message_writer::MessageWriter{this_fw} {}
+MainQueueClient::MainQueueClient()
+    : can_message_writer::MessageWriter{can_ids::NodeId::gripper} {}
 
 /**
  * Access to the tasks singleton

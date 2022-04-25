@@ -13,13 +13,17 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 namespace gripper_tasks {
+
+using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
+    message_writer_task::TaskMessage>;
+
 struct MainTasks {
     message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
 };
 
 struct MainQueueClient : can_message_writer::MessageWriter {
-    MainQueueClient(can_ids::NodeId fw);
+    MainQueueClient();
 };
 
 [[nodiscard]] auto get_main_tasks() -> MainTasks&;
@@ -34,11 +38,11 @@ void start_all_tasks(can_bus::CanBus& can_bus,
                      brushed_motor::BrushedMotor& grip_motor);
 
 namespace z_tasks {
-void start_tasks(motor_class::Motor<lms::LeadScrewConfig>& z_motor);
+
+void start_tasks(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+                 gripper_tasks::QueueType* can_queue);
 
 struct MotorTasks {
-    message_writer_task::MessageWriterTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     motor_driver_task::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motor_driver{nullptr};
     motion_controller_task::MotionControllerTask<
@@ -54,8 +58,8 @@ struct MotorTasks {
 /**
  * Access to all the message queues for the z motor.
  */
-struct QueueClient : MainQueueClient {
-    QueueClient(can_ids::NodeId this_fw);
+struct QueueClient : can_message_writer::MessageWriter {
+    QueueClient();
 
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
@@ -86,7 +90,8 @@ struct QueueClient : MainQueueClient {
 
 namespace g_tasks {
 
-void start_tasks(brushed_motor::BrushedMotor& grip_motor);
+void start_tasks(brushed_motor::BrushedMotor& grip_motor,
+                 gripper_tasks::QueueType* can_queue);
 
 struct MotorTasks {
     brushed_motor_driver_task::MotorDriverTask<
@@ -100,8 +105,8 @@ struct MotorTasks {
 /**
  * Access to all the message queues for the g motor.
  */
-struct QueueClient : MainQueueClient {
-    QueueClient(can_ids::NodeId this_fw);
+struct QueueClient : can_message_writer::MessageWriter {
+    QueueClient();
 
     void send_brushed_motor_driver_queue(
         const brushed_motor_driver_task::TaskMessage& m);

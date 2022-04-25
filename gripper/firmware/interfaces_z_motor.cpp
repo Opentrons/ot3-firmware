@@ -1,6 +1,7 @@
 #include "common/firmware/spi_comms.hpp"
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
+#include "gripper/core/tasks.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
