@@ -3,6 +3,7 @@
 #include "common/firmware/errors.h"
 
 TIM_HandleTypeDef htim7;
+TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
@@ -349,21 +350,50 @@ void MX_TIM7_Init(void) {
     }
 }
 
+void MX_TIM6_Init(void) {
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+    htim6.Instance = TIM6;
+    htim6.Init.Prescaler = 849;
+    htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim6.Init.Period = 1;
+    htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    if (HAL_TIM_Base_Init(&htim6) != HAL_OK) {
+        Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) !=
+        HAL_OK) {
+        Error_Handler();
+    }
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
     if ((htim == &htim7) && motor_callback) {
         motor_callback();
     }
+    else if ((htim == &htim6) && motor_callback){
+        motor_callback();
+    }
+    
 }
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim7) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM7_CLK_ENABLE();
-
         /* TIM7 interrupt Init */
         HAL_NVIC_SetPriority(TIM7_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM7_IRQn);
+    }
+    else if (htim == &htim6) {
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM6_CLK_ENABLE();
+        /* TIM6 interrupt Init */
+        HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
     }
 }
 
@@ -374,4 +404,5 @@ void initialize_timer(motor_interrupt_callback callback) {
     TIM2_EncoderZL_Init();
     TIM3_EncoderZR_Init();
     MX_TIM7_Init();
+    MX_TIM6_Init();
 }

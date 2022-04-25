@@ -9,6 +9,7 @@ extern "C" {
 extern SPI_HandleTypeDef hspi3;
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 
