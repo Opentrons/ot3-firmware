@@ -29,7 +29,8 @@ class SimSpiDeviceBase : public SpiDeviceBase {
         : register_map{register_map} {}
 
     bool transmit_receive(const spi::utils::MaxMessageBuffer& transmit,
-                          spi::utils::MaxMessageBuffer& receive) final;
+                          spi::utils::MaxMessageBuffer& receive,
+                          spi::utils::ChipSelectInterface cs_intf) final;
 
     auto get_txrx_count() const -> std::size_t;
     auto get_last_received() const -> const std::vector<uint8_t>&;

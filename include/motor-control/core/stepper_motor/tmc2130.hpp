@@ -13,6 +13,8 @@
 #include <concepts>
 #include <cstdint>
 
+#include "spi/core/utils.hpp"
+
 namespace tmc2130 {
 
 namespace registers {
@@ -474,6 +476,7 @@ struct TMC2130MotorCurrentConfig {
 struct TMC2130DriverConfig {
     registers::TMC2130RegisterMap registers{};
     TMC2130MotorCurrentConfig current_config{};
+    spi::utils::ChipSelectInterface chip_select{};
 };
 
 }  // namespace configs

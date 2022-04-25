@@ -47,16 +47,18 @@ class Writer {
      */
     template <OriginatingResponseQueue RQType>
     auto read(uint8_t register_addr, uint32_t command_data,
-              RQType& response_queue) -> bool {
+              RQType& response_queue, utils::ChipSelectInterface cs_intf)
+        -> bool {
         auto txBuffer = build_message(register_addr, spi::hardware::Mode::READ,
                                       command_data);
         TransactionIdentifier _transaction_id{
             .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::READ),
             .requires_response = false};
-        Transact message{.id = _transaction_id,
-                         .transaction = {.txBuffer = txBuffer},
-                         .response_writer = ResponseWriter(response_queue)};
+        Transact message{
+            .id = _transaction_id,
+            .transaction = {.txBuffer = txBuffer, .cs_interface = cs_intf},
+            .response_writer = ResponseWriter(response_queue)};
         queue->try_write(message);
 
         message.id.requires_response = true;
@@ -76,16 +78,18 @@ class Writer {
      */
     template <OriginatingResponseQueue RQType>
     auto write(uint8_t register_addr, uint32_t command_data,
-               RQType& response_queue) -> bool {
+               RQType& response_queue, utils::ChipSelectInterface cs_intf)
+        -> bool {
         auto txBuffer = build_message(register_addr, spi::hardware::Mode::WRITE,
                                       command_data);
         TransactionIdentifier _transaction_id{
             .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::WRITE),
             .requires_response = true};
-        Transact message{.id = _transaction_id,
-                         .transaction = {.txBuffer = txBuffer},
-                         .response_writer = ResponseWriter(response_queue)};
+        Transact message{
+            .id = _transaction_id,
+            .transaction = {.txBuffer = txBuffer, .cs_interface = cs_intf},
+            .response_writer = ResponseWriter(response_queue)};
         queue->try_write(message);
         return true;
     }
