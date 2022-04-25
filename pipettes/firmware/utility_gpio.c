@@ -2,6 +2,40 @@
 #include "platform_specific_hal_conf.h"
 #include "hardware_config.h"
 #include "pipettes/core/pipette_type.h"
+
+
+/**
+ * @brief Tip Sense GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+void tip_sense_gpio_init() {
+    PipetteType pipette_type = get_pipette_type();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        /* GPIO Ports Clock Enable */
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /*Configure GPIO pin : PC12, back tip sense */
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+        /*Configure GPIO pin : PH1, front tip sense */
+        GPIO_InitStruct.Pin = GPIO_PIN_1;
+        HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+    } else {
+        /* GPIO Ports Clock Enable */
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /*Configure GPIO pin : A10 */
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+}
+
+
 /**
  * @brief Limit Switch GPIO Initialization Function
  * @param None
@@ -9,17 +43,27 @@
  */
 void limit_switch_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
-    /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
-    PipetteHardwarePin hardware = pipette_hardware_get_gpio(
-            pipette_type, pipette_hardware_device_limit_switch);
 
-    /*Configure GPIO pin*/
+    // Enable linear limit switch
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = hardware.pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        // Enable Gear sense switches
+        /*
+         * Right gear -> PC14
+         * Left gear -> PA10
+         */
+        GPIO_InitStruct.Pin = GPIO_PIN_14;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
 }
 
 /**
@@ -77,8 +121,13 @@ void sync_drive_gpio_init() {
     HAL_GPIO_WritePin(sync_out_hardware.port, sync_out_hardware.pin, GPIO_PIN_SET);
 }
 
+int tip_present() {
+    return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET;
+}
+
 void utility_gpio_init() {
     limit_switch_gpio_init();
+    tip_sense_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
 }
