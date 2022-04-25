@@ -82,9 +82,9 @@ struct QueueClient : can_message_writer::MessageWriter {
         nullptr};
 };
 
-[[nodiscard]] auto get_tasks() -> MotorTasks&;
+[[nodiscard]] auto get_z_tasks() -> MotorTasks&;
 
-[[nodiscard]] auto get_queues() -> QueueClient&;
+[[nodiscard]] auto get_z_queues() -> QueueClient&;
 
 }  // namespace z_tasks
 
@@ -121,9 +121,9 @@ struct QueueClient : can_message_writer::MessageWriter {
         nullptr};
 };
 
-[[nodiscard]] auto get_tasks() -> MotorTasks&;
+[[nodiscard]] auto get_z_tasks() -> MotorTasks&;
 
-[[nodiscard]] auto get_queues() -> QueueClient&;
+[[nodiscard]] auto get_g_queues() -> QueueClient&;
 
 }  // namespace g_tasks
 

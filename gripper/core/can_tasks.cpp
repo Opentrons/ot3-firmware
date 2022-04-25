@@ -20,8 +20,8 @@ using namespace can_dispatch;
 using namespace gripper_tasks;
 
 static auto& main_queue_client = get_main_queues();
-static auto& z_queue_client = z_tasks::get_queues();
-static auto& g_queue_client = g_tasks::get_queues();
+static auto& z_queue_client = z_tasks::get_z_queues();
+static auto& g_queue_client = g_tasks::get_g_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};

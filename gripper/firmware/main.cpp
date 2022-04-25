@@ -28,10 +28,9 @@ auto main() -> int {
 
     app_update_clear_flags();
 
+    can_start();
     z_motor_iface::initialize();
     grip_motor_iface::initialize();
-
-    can_start();
 
     gripper_tasks::start_all_tasks(canbus, z_motor_iface::get_z_motor(),
                                    grip_motor_iface::get_grip_motor());

@@ -1,3 +1,4 @@
+#include "common/core/freertos_task.hpp"
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
@@ -42,6 +43,6 @@ void QueueClient::send_brushed_motion_controller_queue(
     brushed_motion_queue->try_write(m);
 }
 
-auto get_tasks() -> MotorTasks& { return g_tasks; }
+auto get_g_tasks() -> MotorTasks& { return g_tasks; }
 
-auto get_queues() -> QueueClient& { return g_queues; }
+auto get_g_queues() -> QueueClient& { return g_queues; }

@@ -1,3 +1,4 @@
+#include "common/core/freertos_task.hpp"
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_driver_task.hpp"
@@ -64,6 +65,6 @@ void QueueClient::send_move_status_reporter_queue(
     static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
-auto get_tasks() -> MotorTasks& { return z_tasks; }
+auto get_z_tasks() -> MotorTasks& { return z_tasks; }
 
-auto get_queues() -> QueueClient& { return z_queues; }
+auto get_z_queues() -> QueueClient& { return z_queues; }
