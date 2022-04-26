@@ -42,6 +42,7 @@ class TMC2130 {
         : _registers(conf.registers),
           _current_config(conf.current_config),
           _spi_manager(spi_manager),
+          _cs_intf(conf.chip_select),
           _task_queue(task_queue),
           _initialized(false) {}
 
@@ -53,12 +54,13 @@ class TMC2130 {
 
     auto read(Registers addr, uint32_t command_data) -> void {
         auto converted_addr = static_cast<uint8_t>(addr);
-        _spi_manager.read(converted_addr, command_data, _task_queue);
+        _spi_manager.read(converted_addr, command_data, _task_queue, _cs_intf);
     }
 
     auto write(Registers addr, uint32_t command_data) -> bool {
         auto converted_addr = static_cast<uint8_t>(addr);
-        return _spi_manager.write(converted_addr, command_data, _task_queue);
+        return _spi_manager.write(converted_addr, command_data, _task_queue,
+                                  _cs_intf);
     }
 
     /**
@@ -399,6 +401,7 @@ class TMC2130 {
     TMC2130RegisterMap _registers = {};
     TMC2130MotorCurrentConfig _current_config = {};
     Writer& _spi_manager;
+    spi::utils::ChipSelectInterface _cs_intf;
     TaskQueue& _task_queue;
     bool _initialized;
 };

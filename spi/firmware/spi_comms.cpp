@@ -31,13 +31,15 @@ using namespace spi::hardware;
 Spi::Spi(SPI_interface SPI_intf_instance) : SPI_intf(SPI_intf_instance) {}
 
 auto Spi::transmit_receive(const MaxMessageBuffer& transmit,
-                           MaxMessageBuffer& receive) -> bool {
-    Reset_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
+                           MaxMessageBuffer& receive,
+                           ChipSelectInterface cs_intf) -> bool {
+    Reset_CS_Pin(static_cast<GPIO_TypeDef*>(cs_intf.GPIO_handle),
+                 cs_intf.cs_pin);
     auto response = hal_transmit_receive(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         const_cast<uint8_t*>(transmit.data()), receive.data(), MAX_BUFFER_SIZE,
         TIMEOUT, this->SPI_intf.SPI_handle);
 
-    Set_CS_Pin(SPI_intf.GPIO_handle, SPI_intf.pin);
+    Set_CS_Pin(static_cast<GPIO_TypeDef*>(cs_intf.GPIO_handle), cs_intf.cs_pin);
     return response == HAL_OK;
 }

@@ -39,8 +39,9 @@ class MessageHandler {
     void visit(spi::messages::Transact& m) {
         LOG("Received SPI read request");
         spi::utils::MaxMessageBuffer rxBuffer{};
-        auto success =
-            driver.transmit_receive(m.transaction.txBuffer, rxBuffer);
+        auto transaction = m.transaction;
+        auto success = driver.transmit_receive(transaction.txBuffer, rxBuffer,
+                                               transaction.cs_interface);
         if (m.id.requires_response) {
             m.response_writer.write(spi::messages::TransactResponse{
                 .id = m.id, .rxBuffer = rxBuffer, .success = success});

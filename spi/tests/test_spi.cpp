@@ -36,17 +36,18 @@ SCENARIO("build_command works") {
 SCENARIO("simulator works") {
     auto transmit = spi::utils::MaxMessageBuffer{};
     auto receive = spi::utils::MaxMessageBuffer{};
+    auto empty_cs = spi::utils::ChipSelectInterface{};
 
     GIVEN("a register write command") {
         auto subject = spi::hardware::SimSpiDeviceBase{};
         subject.build_command(transmit, spi::hardware::Mode::WRITE, 0x01,
                               0xBEEFDEAD);
-        subject.transmit_receive(transmit, receive);
+        subject.transmit_receive(transmit, receive, empty_cs);
 
         WHEN("called with a read command") {
             spi::hardware::SpiDeviceBase::build_command(
                 transmit, spi::hardware::Mode::READ, 0x01, 0);
-            subject.transmit_receive(transmit, receive);
+            subject.transmit_receive(transmit, receive, empty_cs);
             THEN("the data is what was written") {
                 REQUIRE(receive[1] == 0xBE);
                 REQUIRE(receive[2] == 0xEF);
@@ -64,8 +65,8 @@ SCENARIO("simulator works") {
         WHEN("called with a read command") {
             spi::hardware::SpiDeviceBase::build_command(
                 transmit, spi::hardware::Mode::READ, 0x01, 0);
-            subject.transmit_receive(transmit, receive);
-            subject.transmit_receive(transmit, receive);
+            subject.transmit_receive(transmit, receive, empty_cs);
+            subject.transmit_receive(transmit, receive, empty_cs);
             THEN("the data is was in the register map") {
                 REQUIRE(receive[1] == 0x0);
                 REQUIRE(receive[2] == 0x0);
@@ -75,8 +76,8 @@ SCENARIO("simulator works") {
 
             spi::hardware::SpiDeviceBase::build_command(
                 transmit, spi::hardware::Mode::READ, 0x02, 0);
-            subject.transmit_receive(transmit, receive);
-            subject.transmit_receive(transmit, receive);
+            subject.transmit_receive(transmit, receive, empty_cs);
+            subject.transmit_receive(transmit, receive, empty_cs);
             THEN("the data is was in the register map") {
                 REQUIRE(receive[1] == 0x0);
                 REQUIRE(receive[2] == 0x0);

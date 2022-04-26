@@ -16,8 +16,6 @@ namespace hardware {
 
 struct SPI_interface {
     SPI_HandleTypeDef* SPI_handle;
-    GPIO_TypeDef* GPIO_handle;
-    uint32_t pin;
 };
 
 class Spi : public SpiDeviceBase {
@@ -25,7 +23,8 @@ class Spi : public SpiDeviceBase {
     explicit Spi(SPI_interface SPI_int);
 
     auto transmit_receive(const utils::MaxMessageBuffer& transmit,
-                          utils::MaxMessageBuffer& receive) -> bool final;
+                          utils::MaxMessageBuffer& receive,
+                          utils::ChipSelectInterface cs_intf) -> bool final;
 
   private:
     static constexpr uint32_t TIMEOUT = 0xFFFF;

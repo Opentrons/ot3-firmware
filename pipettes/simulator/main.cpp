@@ -16,6 +16,7 @@
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "pipettes/core/configs.hpp"
+#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "pipettes/simulation/eeprom.hpp"
 #include "sensors/simulation/fdc1004.hpp"
@@ -92,7 +93,7 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto driver_configs = configs::driver_config_by_axis(PIPETTE_TYPE);
+static auto driver_configs = interfaces::driver_config_by_axis(PIPETTE_TYPE);
 
 int main() {
     signal(SIGINT, signal_handler);

@@ -19,9 +19,6 @@
  */
 static spi::hardware::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .GPIO_handle = GPIOB,
-    .pin = GPIO_PIN_12,
 };
 
 /**
@@ -90,9 +87,15 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
         },
-    .current_config = {
-        .r_sense = 0.1,
-        .v_sf = 0.325,
+    .current_config =
+        {
+            .r_sense = 0.1,
+            .v_sf = 0.325,
+        },
+    .chip_select = {
+        .cs_pin = GPIO_PIN_12,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .GPIO_handle = GPIOB,
     }};
 
 /**
