@@ -7,6 +7,7 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
+#include "types.hpp"
 #include "i2c/core/messages.hpp"
 #include "i2c/core/writer.hpp"
 
@@ -55,12 +56,12 @@ class EEPromMessageHandler {
         writer.write(DEVICE_ADDRESS, m.data);
     }
 
-    void visit(can_messages::ReadFromEEPromRequest &) {
-        LOG("Received request to read serial number");
+    void visit(can_messages::ReadFromEEPromRequest &m) {
+        LOG("Received request to read %d bytes from address %d", m.data_length, m.address);
         writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
     }
 
-    static constexpr uint16_t DEVICE_ADDRESS = 0x1;
+    static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
     I2CQueueWriter &writer;
     CanClient &can_client;
     OwnQueue &own_queue;
