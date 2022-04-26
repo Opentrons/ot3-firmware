@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "axis_hardware_config.h"
 
 GantryHardwarePin gantry_hardware_get_gpio(GantryHardwareDevice device) {
@@ -19,9 +21,6 @@ GantryHardwarePin gantry_hardware_get_gpio(GantryHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_6;
             return pinout;
-        default:
-            pinout.port = 0;
-            pinout.pin = 0;
-            return pinout;
     }
+    abort();
 }
