@@ -7,37 +7,26 @@ static I2C_HandleTypeDef hi2c3;
 
 
 /**
- * @brief Tip Sense GPIO Initialization Function
- * @param None
- * @retval None
- */
-void tip_sense_gpio_init() {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-
-    /*Configure GPIO pin : A10 */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-}
-
-/**
  * @brief Eeprom Write Pin GPIO Initialization Function
  * @param None
  * @retval None
  */
 void eeprom_write_gpio_init() {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    /*Configure GPIO pin : B8 */
+    PipetteType pipette_type = get_pipette_type();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /*Configure GPIO pin : A15 */
+        GPIO_InitStruct.Pin = GPIO_PIN_15;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    } else {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        /*Configure GPIO pin : B8 */
+        GPIO_InitStruct.Pin = GPIO_PIN_8;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    }
 }
 
 
@@ -149,10 +138,6 @@ int data_ready() {
     return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9) == GPIO_PIN_SET;
 }
 
-int tip_present() {
-    return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET;
-}
-
 void enable_eeprom() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
 }
@@ -164,7 +149,6 @@ void disable_eeprom() {
 void i2c_setup(I2CHandlerStruct* temp_struct) {
     HAL_I2C_HANDLE i2c3 = MX_I2C3_Init();
     temp_struct->i2c3 = i2c3;
-    tip_sense_gpio_init();
     eeprom_write_gpio_init();
     HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
     temp_struct->i2c1 = i2c1;
