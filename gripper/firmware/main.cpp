@@ -47,7 +47,6 @@ static constexpr auto can_bit_timings =
  */
 static auto i2c_handles = I2CHandlerStruct{};
 
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();

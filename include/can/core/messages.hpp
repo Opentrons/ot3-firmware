@@ -6,6 +6,7 @@
 #include <span>
 
 #include "can/core/ids.hpp"
+#include "eeprom/core/types.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
 #include "eeprom/core/types.hpp"
