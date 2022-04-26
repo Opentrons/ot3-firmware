@@ -51,17 +51,11 @@ using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient>,
     can_messages::GripperInfoRequest>;
 
-using GripperDispatcherType =
-    can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
-                             MotionControllerDispatchTarget,
-                             SystemDispatchTarget, BrushedMotorDispatchTarget,
-                             BrushedMotionDispatchTarget,
-                             GripperInfoDispatchTarget>;
-
 auto constexpr reader_message_buffer_size = 1024;
-using CanMessageReaderTask =
-    freertos_can_dispatch::FreeRTOSCanReader<reader_message_buffer_size,
-                                             GripperDispatcherType>;
+
+struct CanMessageReaderTask {
+    [[noreturn]] void operator()(can_bus::CanBus* can_bus);
+};
 
 /**
  * Create the can message reader task.
