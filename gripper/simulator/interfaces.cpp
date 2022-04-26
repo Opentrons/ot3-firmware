@@ -69,7 +69,7 @@ static motor_class::Motor motor{
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gripper_tasks::get_queues(), motor_interface);
+    motor_queue, gripper_tasks::z_tasks::get_queues(), motor_interface);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,

@@ -32,16 +32,6 @@ void start_tasks(can_bus::CanBus& can_bus,
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient(can_ids::NodeId this_fw);
 
-    void send_motion_controller_queue(
-        const motion_controller_task::TaskMessage& m);
-
-    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
-
-    void send_move_group_queue(const move_group_task::TaskMessage& m);
-
-    void send_move_status_reporter_queue(
-        const move_status_reporter_task::TaskMessage& m);
-
     void send_brushed_motor_driver_queue(
         const brushed_motor_driver_task::TaskMessage& m);
 
@@ -49,21 +39,10 @@ struct QueueClient : can_message_writer::MessageWriter {
         const brushed_motion_controller_task::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<
-        motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
-        tmc2130_driver_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
-        move_group_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        move_status_reporter_task::TaskMessage>* move_status_report_queue{
-        nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
         nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
-        spi_queue{nullptr};
 };
 
 /**
@@ -96,12 +75,73 @@ struct AllTask {
  * Access to the tasks singleton
  * @return
  */
-[[nodiscard]] auto get_tasks() -> AllTask&;
+[[nodiscard]] auto get_all_tasks() -> AllTask&;
 
 /**
  * Access to the queues singleton
  * @return
  */
+[[nodiscard]] auto get_main_queues() -> QueueClient&;
+
+namespace z_tasks {
+
+void start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+                spi::hardware::SpiDeviceBase& spi_device,
+                tmc2130::configs::TMC2130DriverConfig& driver_configs,
+                AllTask tasks);
+
+struct QueueClient : can_message_writer::MessageWriter {
+    QueueClient();
+
+    void send_motion_controller_queue(
+        const motion_controller_task::TaskMessage& m);
+
+    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
+
+    void send_move_group_queue(const move_group_task::TaskMessage& m);
+
+    void send_move_status_reporter_queue(
+        const move_status_reporter_task::TaskMessage& m);
+
+    freertos_message_queue::FreeRTOSMessageQueue<
+        motion_controller_task::TaskMessage>* motion_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+        tmc2130_driver_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
+        move_group_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        move_status_reporter_task::TaskMessage>* move_status_report_queue{
+        nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
+        spi_queue{nullptr};
+};
+
 [[nodiscard]] auto get_queues() -> QueueClient&;
+
+}  // namespace z_tasks
+
+namespace g_tasks {
+
+void start_task(brushed_motor::BrushedMotor& grip_motor, AllTask gripper_tasks);
+
+struct QueueClient : can_message_writer::MessageWriter {
+    QueueClient();
+
+    void send_brushed_motor_driver_queue(
+        const brushed_motor_driver_task::TaskMessage& m);
+
+    void send_brushed_motion_controller_queue(
+        const brushed_motion_controller_task::TaskMessage& m);
+
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
+        nullptr};
+};
+
+[[nodiscard]] auto get_queues() -> QueueClient&;
+
+}  // namespace g_tasks
 
 }  // namespace gripper_tasks
