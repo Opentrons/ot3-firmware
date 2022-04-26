@@ -75,13 +75,13 @@ struct AllTask {
  * Access to the tasks singleton
  * @return
  */
-[[nodiscard]] auto get_tasks() -> AllTask&;
+[[nodiscard]] auto get_all_tasks() -> AllTask&;
 
 /**
  * Access to the queues singleton
  * @return
  */
-[[nodiscard]] auto get_queues() -> QueueClient&;
+[[nodiscard]] auto get_main_queues() -> QueueClient&;
 
 namespace z_tasks {
 
@@ -122,7 +122,25 @@ struct QueueClient : can_message_writer::MessageWriter {
 
 namespace g_tasks {
 
-void start_task(brushed_motor::BrushedMotor& grip_motor);
+void start_task(brushed_motor::BrushedMotor& grip_motor, AllTask gripper_tasks);
+
+struct QueueClient : can_message_writer::MessageWriter {
+    QueueClient();
+
+    void send_brushed_motor_driver_queue(
+        const brushed_motor_driver_task::TaskMessage& m);
+
+    void send_brushed_motion_controller_queue(
+        const brushed_motion_controller_task::TaskMessage& m);
+
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
+        nullptr};
+};
+
+[[nodiscard]] auto get_queues() -> QueueClient&;
 
 }  // namespace g_tasks
 

@@ -7,7 +7,9 @@
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
-static auto z_queues = gripper_tasks::z_tasks::QueueClient{};
+using namespace gripper_tasks;
+
+static auto z_queues = z_tasks::QueueClient{};
 
 static auto spi_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
@@ -28,11 +30,10 @@ static auto move_group_task_builder =
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
-void gripper_tasks::z_tasks::start_task(
-    motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-    spi::hardware::SpiDeviceBase& spi_device,
-    tmc2130::configs::TMC2130DriverConfig& driver_configs,
-    gripper_tasks::AllTask gripper_tasks) {
+void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+                         spi::hardware::SpiDeviceBase& spi_device,
+                         tmc2130::configs::TMC2130DriverConfig& driver_configs,
+                         AllTask gripper_tasks) {
     auto& motion =
         mc_task_builder.start(5, "z mc", z_motor.motion_controller, z_queues);
     auto& move_group =
@@ -57,30 +58,27 @@ void gripper_tasks::z_tasks::start_task(
     z_queues.spi_queue = &spi_task.get_queue();
 }
 
-gripper_tasks::z_tasks::QueueClient::QueueClient()
+z_tasks::QueueClient::QueueClient()
     : can_message_writer::MessageWriter{can_ids::NodeId::gripper_z} {}
 
-void gripper_tasks::z_tasks::QueueClient::send_motion_controller_queue(
+void z_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {
     motion_queue->try_write(m);
 }
 
-void gripper_tasks::z_tasks::QueueClient::send_motor_driver_queue(
+void z_tasks::QueueClient::send_motor_driver_queue(
     const tmc2130::tasks::TaskMessage& m) {
     tmc2130_driver_queue->try_write(m);
 }
 
-void gripper_tasks::z_tasks::QueueClient::send_move_group_queue(
+void z_tasks::QueueClient::send_move_group_queue(
     const move_group_task::TaskMessage& m) {
     move_group_queue->try_write(m);
 }
 
-void gripper_tasks::z_tasks::QueueClient::send_move_status_reporter_queue(
+void z_tasks::QueueClient::send_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
     static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
-auto gripper_tasks::z_tasks::get_queues()
-    -> gripper_tasks::z_tasks::QueueClient& {
-    return z_queues;
-}
+auto z_tasks::get_queues() -> z_tasks::QueueClient& { return z_queues; }

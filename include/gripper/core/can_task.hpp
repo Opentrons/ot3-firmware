@@ -40,11 +40,11 @@ using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
     can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
 using BrushedMotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::BrushedMotorHandler<gripper_tasks::QueueClient>,
+    motor_message_handler::BrushedMotorHandler<g_tasks::QueueClient>,
     can_messages::SetupRequest, can_messages::SetBrushedMotorVrefRequest,
     can_messages::SetBrushedMotorPwmRequest>;
 using BrushedMotionDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::BrushedMotionHandler<gripper_tasks::QueueClient>,
+    motion_message_handler::BrushedMotionHandler<g_tasks::QueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
     can_messages::GripperGripRequest, can_messages::GripperHomeRequest>;
 using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<

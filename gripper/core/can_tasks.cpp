@@ -18,8 +18,9 @@
 
 using namespace can_dispatch;
 
-static auto& queue_client = gripper_tasks::get_queues();
+static auto& queue_client = gripper_tasks::get_main_queues();
 static auto& z_queue_client = gripper_tasks::z_tasks::get_queues();
+static auto& g_queue_client = gripper_tasks::g_tasks::get_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
@@ -32,9 +33,9 @@ static auto can_move_group_handler =
 static auto can_motion_handler =
     motion_message_handler::MotionHandler{z_queue_client};
 static auto can_brushed_motor_handler =
-    motor_message_handler::BrushedMotorHandler{queue_client};
+    motor_message_handler::BrushedMotorHandler{g_queue_client};
 static auto can_brushed_motion_handler =
-    motion_message_handler::BrushedMotionHandler{queue_client};
+    motion_message_handler::BrushedMotionHandler{g_queue_client};
 static auto gripper_info_handler =
     gripper_info::GripperInfoMessageHandler{queue_client};
 
