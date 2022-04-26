@@ -13,11 +13,10 @@ class HDC2080 : public sensor_simulator::SensorType {
         REGISTER_MAP = {{hdc2080::INTERRUPT_REGISTER, 0},
                         {hdc2080::DRDY_CONFIG, 0},
                         {hdc2080::MEASURE_REGISTER, 0},
-                        {hdc2080::LSB_TEMPERATURE_REGISTER, 25},
-                        {hdc2080::LSB_HUMIDITY_REGISTER, 50},
-                        {hdc2080::MSB_TEMPERATURE_REGISTER, 55},
-                        {hdc2080::MSB_HUMIDITY_REGISTER, 40},
-                        {hdc2080::DEVICE_ID_REGISTER, 0}};
+                        {hdc2080::LSB_TEMPERATURE_REGISTER, 25000},
+                        {hdc2080::LSB_HUMIDITY_REGISTER, 55000},
+                        {hdc2080::MSB_TEMPERATURE_REGISTER, 50000},
+                        {hdc2080::MSB_HUMIDITY_REGISTER, 40000}};
     }
 };
 };  // namespace hdc2080_simulator
