@@ -673,11 +673,40 @@ struct SetBrushedMotorPwmRequest
         -> bool = default;
 };
 
-using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
+struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    ticks duration;
+    uint32_t freq;
+    uint32_t duty_cycle;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GripperGripRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        ticks duration = 0;
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+
+        return GripperGripRequest{.group_id = group_id,
+                                  .seq_id = seq_id,
+                                  .duration = duration,
+                                  .freq = freq,
+                                  .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const GripperGripRequest& other) const -> bool = default;
+};
 
 struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
     uint8_t group_id;
     uint8_t seq_id;
+    ticks duration;
     uint32_t freq;
     uint32_t duty_cycle;
 
@@ -685,15 +714,18 @@ struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
     static auto parse(Input body, Limit limit) -> GripperHomeRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        uint32_t freq;
-        uint32_t duty_cycle;
+        ticks duration = 0;
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, freq);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
 
         return GripperHomeRequest{.group_id = group_id,
                                   .seq_id = seq_id,
+                                  .duration = duration,
                                   .freq = freq,
                                   .duty_cycle = duty_cycle};
     }
