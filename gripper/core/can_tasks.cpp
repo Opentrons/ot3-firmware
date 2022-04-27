@@ -35,6 +35,8 @@ static auto can_brushed_motor_handler =
     motor_message_handler::BrushedMotorHandler{g_queues};
 static auto can_brushed_motion_handler =
     motion_message_handler::BrushedMotionHandler{g_queues};
+static auto can_brushed_move_group_handler =
+    move_group_handler::BrushedMoveGroupHandler{g_queues};
 static auto gripper_info_handler =
     gripper_info::GripperInfoMessageHandler{main_queues};
 
@@ -60,6 +62,9 @@ static auto brushed_motor_dispatch_target =
 static auto brushed_motion_dispatch_target =
     can_task::BrushedMotionDispatchTarget{can_brushed_motion_handler};
 
+static auto brushed_motion_group_dispatch_target =
+    can_task::BrushedMoveGroupDispatchTarget{can_brushed_move_group_handler};
+
 static auto gripper_info_dispatch_target =
     can_task::GripperInfoDispatchTarget{gripper_info_handler};
 
@@ -83,7 +88,8 @@ static auto dispatcher_z = can_dispatch::Dispatcher(
     motion_dispatch_target);
 
 static auto dispatcher_g = can_dispatch::Dispatcher(
-    check_for_g, brushed_motion_dispatch_target, brushed_motor_dispatch_target);
+    check_for_g, brushed_motion_dispatch_target, brushed_motor_dispatch_target,
+    brushed_motion_group_dispatch_target);
 
 /** Dispatcher to the various handlers */
 static auto main_dispatcher = can_dispatch::Dispatcher(
