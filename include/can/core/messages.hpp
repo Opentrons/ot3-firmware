@@ -126,7 +126,7 @@ using SetupRequest = Empty<MessageId::setup_request>;
 
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
-using EncoderPositionRequest = Empty<MessageId::get_encoder_position_request>;
+using EncoderPositionRequest = Empty<MessageId::encoder_position_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint16_t serial_number;
@@ -291,7 +291,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
 };
 
 
-struct EncoderPositionResponse : BaseMessage<MessageId::get_encoder_position_response> {
+struct EncoderPositionResponse : BaseMessage<MessageId::encoder_position_response> {
     uint32_t encoder_position;
 
     template <bit_utils::ByteIterator Output, typename Limit>
