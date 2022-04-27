@@ -7,6 +7,7 @@
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
+#include "motor-control/core/tasks/brushed_move_group_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -31,18 +32,6 @@ void start_tasks(can_bus::CanBus& can_bus,
  */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient(can_ids::NodeId this_fw);
-
-    void send_brushed_motor_driver_queue(
-        const brushed_motor_driver_task::TaskMessage& m);
-
-    void send_brushed_motion_controller_queue(
-        const brushed_motion_controller_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
-        nullptr};
 };
 
 /**
@@ -68,6 +57,9 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue>*
         brushed_motion_controller{nullptr};
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
+        nullptr};
+    brushed_move_group_task::MoveGroupTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* brushed_move_group{
         nullptr};
 };
 
@@ -133,10 +125,16 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_brushed_motion_controller_queue(
         const brushed_motion_controller_task::TaskMessage& m);
 
+    void send_brushed_move_group_queue(
+        const brushed_move_group_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
+        nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        brushed_move_group_task::TaskMessage>* brushed_move_group_queue{
         nullptr};
 };
 
