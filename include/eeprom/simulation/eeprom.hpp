@@ -2,7 +2,9 @@
 
 #include "sensors/simulation/sensors.hpp"
 
-namespace eeprom_simulator {
+namespace eeprom {
+namespace simulator {
+
 class EEProm : public sensor_simulator::SensorType {
   public:
     EEProm() {
@@ -11,4 +13,6 @@ class EEProm : public sensor_simulator::SensorType {
         REGISTER_MAP = {{0x0, 0}};
     }
 };
-};  // namespace eeprom_simulator
+
+}
+}  // namespace eeprom_simulator

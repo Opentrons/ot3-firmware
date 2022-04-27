@@ -10,6 +10,7 @@
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
+#include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
@@ -18,7 +19,6 @@
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/tasks.hpp"
-#include "pipettes/simulation/eeprom.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
@@ -46,11 +46,11 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
-static auto eeprom = eeprom_simulator::EEProm{};
+static auto sim_eeprom = eeprom::simulator::EEProm{};
 static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
 std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {hdcsensor.ADDRESS, hdcsensor},
-    {eeprom.ADDRESS, eeprom},
+    {sim_eeprom.ADDRESS, sim_eeprom},
     {capsensor.ADDRESS, capsensor},
     {pressuresensor.ADDRESS, pressuresensor}};
 

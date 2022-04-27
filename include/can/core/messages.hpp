@@ -7,8 +7,8 @@
 
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
-#include "common/core/eeprom.hpp"
 #include "common/core/version.h"
+#include "eeprom//core/types.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
@@ -128,15 +128,15 @@ using SetupRequest = Empty<MessageId::setup_request>;
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
-    eeprom_types::address address;
-    eeprom_types::data_length data_length;
-    eeprom_types::EepromData data;
+    eeprom::types::address address;
+    eeprom::types::data_length data_length;
+    eeprom::types::EepromData data;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
-        eeprom_types::address address = 0;
-        eeprom_types::data_length data_length = 0;
-        eeprom_types::EepromData data{};
+        eeprom::types::address address = 0;
+        eeprom::types::data_length data_length = 0;
+        eeprom::types::EepromData data{};
 
         body = bit_utils::bytes_to_int(body, limit, address);
         body = bit_utils::bytes_to_int(body, limit, data_length);
@@ -152,13 +152,13 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
 };
 
 struct ReadFromEEPromRequest : BaseMessage<MessageId::read_eeprom_request> {
-    eeprom_types::address address;
-    eeprom_types::data_length data_length;
+    eeprom::types::address address;
+    eeprom::types::data_length data_length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> ReadFromEEPromRequest {
-        eeprom_types::address address = 0;
-        eeprom_types::data_length data_length = 0;
+        eeprom::types::address address = 0;
+        eeprom::types::data_length data_length = 0;
 
         body = bit_utils::bytes_to_int(body, limit, address);
         body = bit_utils::bytes_to_int(body, limit, data_length);
@@ -171,9 +171,9 @@ struct ReadFromEEPromRequest : BaseMessage<MessageId::read_eeprom_request> {
 };
 
 struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
-    eeprom_types::address address;
-    eeprom_types::data_length data_length;
-    eeprom_types::EepromData data;
+    eeprom::types::address address;
+    eeprom::types::data_length data_length;
+    eeprom::types::EepromData data;
 
     /**
      * Create a response message from iterator
@@ -184,12 +184,12 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
      * @return new instance
      */
     template <bit_utils::ByteIterator DataIter, typename Limit>
-    static auto create(eeprom_types::address address, DataIter data_iter,
+    static auto create(eeprom::types::address address, DataIter data_iter,
                        Limit limit) -> ReadFromEEPromResponse {
-        eeprom_types::EepromData data{};
-        eeprom_types::data_length data_length =
-            std::min(eeprom_types::max_data_length,
-                     static_cast<eeprom_types::data_length>(limit - data_iter));
+        eeprom::types::EepromData data{};
+        eeprom::types::data_length data_length = std::min(
+            eeprom::types::max_data_length,
+            static_cast<eeprom::types::data_length>(limit - data_iter));
         std::copy_n(data_iter, data_length, data.begin());
         return ReadFromEEPromResponse{
             .address = address, .data_length = data_length, .data = data};
@@ -202,7 +202,7 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
         iter = std::copy_n(
             data.cbegin(),
             std::min(data_length,
-                     static_cast<eeprom_types::data_length>(limit - iter)),
+                     static_cast<eeprom::types::data_length>(limit - iter)),
             iter);
         return iter - body;
     }

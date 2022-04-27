@@ -13,7 +13,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/version.h"
-#include "pipettes/core/message_handlers/eeprom.hpp"
+#include "eeprom/core/message_handler.hpp"
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/core/message_handlers/sensors.hpp"
@@ -33,7 +33,7 @@ static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(queue_client);
 
 static auto eeprom_handler =
-    eeprom_message_handler::EEPromHandler{queue_client};
+    eeprom::message_handler::EEPromHandler{queue_client};
 
 static auto system_message_handler = system_handler::SystemMessageHandler{
     queue_client, version_get()->version, version_get()->flags,

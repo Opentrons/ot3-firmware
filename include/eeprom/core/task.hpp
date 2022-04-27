@@ -10,7 +10,8 @@
 #include "i2c/core/messages.hpp"
 #include "i2c/core/writer.hpp"
 
-namespace eeprom_task {
+namespace eeprom {
+namespace task {
 
 using CanMessageTuple = std::tuple<can_messages::WriteToEEPromRequest,
                                    can_messages::ReadFromEEPromRequest>;
@@ -111,4 +112,5 @@ concept TaskClient = requires(Client client, const TaskMessage &m) {
     {client.send_eeprom_queue(m)};
 };
 
-}  // namespace eeprom_task
+}  // namespace task
+}  // namespace eeprom
