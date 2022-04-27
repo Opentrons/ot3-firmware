@@ -675,7 +675,31 @@ struct SetBrushedMotorPwmRequest
 
 using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
 
-using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
+struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint32_t freq;
+    uint32_t duty_cycle;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GripperHomeRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        uint32_t freq;
+        uint32_t duty_cycle;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+
+        return GripperHomeRequest{.group_id = group_id,
+                                  .seq_id = seq_id,
+                                  .freq = freq,
+                                  .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const GripperHomeRequest& other) const -> bool = default;
+};
 
 using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
 
