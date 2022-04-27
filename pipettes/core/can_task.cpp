@@ -33,7 +33,7 @@ static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(queue_client);
 
 static auto eeprom_handler =
-    eeprom_message_handler::EEPromHandler{queue_client};
+    eeprom::message_handler::EEPromHandler{queue_client};
 
 static auto system_message_handler = system_handler::SystemMessageHandler{
     queue_client, version_get()->version, version_get()->flags,

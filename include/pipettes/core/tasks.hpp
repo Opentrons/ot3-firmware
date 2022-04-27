@@ -53,7 +53,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
-    void send_eeprom_queue(const eeprom_task::TaskMessage& m);
+    void send_eeprom_queue(const eeprom::task::TaskMessage& m);
 
     void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
 
@@ -70,7 +70,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>* move_status_report_queue{
         nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<eeprom_task::TaskMessage>*
+    freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         environment_sensor_queue{nullptr};
@@ -120,7 +120,7 @@ struct AllTask {
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
         nullptr};
 
-    eeprom_task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
+    eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
     sensors::tasks::EnvironmentSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue>* environment_sensor_task{
