@@ -3,7 +3,7 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "pipettes/core/tasks/eeprom_task.hpp"
+#include "task.hpp"
 
 namespace eeprom_message_handler {
 

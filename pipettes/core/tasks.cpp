@@ -13,7 +13,7 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "pipettes/core/can_task.hpp"
-#include "pipettes/core/tasks/eeprom_task.hpp"
+#include "eeprom/core/task.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"

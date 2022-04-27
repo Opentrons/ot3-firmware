@@ -13,7 +13,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/version.h"
-#include "pipettes/core/message_handlers/eeprom.hpp"
+#include "eeprom/core/message_handler.hpp"
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/core/message_handlers/sensors.hpp"
