@@ -112,5 +112,5 @@ concept TaskClient = requires(Client client, const TaskMessage &m) {
     {client.send_eeprom_queue(m)};
 };
 
-}
-}  // namespace eeprom_task
+}  // namespace task
+}  // namespace eeprom

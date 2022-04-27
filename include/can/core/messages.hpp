@@ -6,9 +6,9 @@
 #include <span>
 
 #include "can/core/ids.hpp"
-#include "eeprom//core/types.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
+#include "eeprom//core/types.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
@@ -187,9 +187,9 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     static auto create(eeprom::types::address address, DataIter data_iter,
                        Limit limit) -> ReadFromEEPromResponse {
         eeprom::types::EepromData data{};
-        eeprom::types::data_length data_length =
-            std::min(eeprom::types::max_data_length,
-                     static_cast<eeprom::types::data_length>(limit - data_iter));
+        eeprom::types::data_length data_length = std::min(
+            eeprom::types::max_data_length,
+            static_cast<eeprom::types::data_length>(limit - data_iter));
         std::copy_n(data_iter, data_length, data.begin());
         return ReadFromEEPromResponse{
             .address = address, .data_length = data_length, .data = data};
