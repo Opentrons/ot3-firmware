@@ -32,7 +32,7 @@ using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::ReadLimitSwitchRequest>;
+    can_messages::ReadLimitSwitchRequest, can_messages::EncoderPositionRequest>;
 using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
     system_handler::SystemMessageHandler<gripper_tasks::QueueClient>,
     can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,

@@ -126,6 +126,8 @@ using SetupRequest = Empty<MessageId::setup_request>;
 
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
+using EncoderPositionRequest = Empty<MessageId::get_encoder_position_request>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint16_t serial_number;
 
@@ -289,16 +291,12 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
 };
 
 
-struct EncoderPositionResponse : BaseMessage<MessageId::encoder_position> {
-    uint8_t group_id;
-    uint8_t seq_id;
+struct EncoderPositionResponse : BaseMessage<MessageId::get_encoder_position_response> {
     uint32_t encoder_position;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
-        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
-        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
+        auto iter = bit_utils::int_to_bytes(encoder_position, body, limit);
         return iter - body;
     }
 
@@ -761,7 +759,7 @@ using ResponseMessageType = std::variant<
     HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
-    PushToolsDetectedNotification, ReadLimitSwitchResponse,
+    PushToolsDetectedNotification, ReadLimitSwitchResponse, EncoderPositionResponse,
     ReadFromSensorResponse, FirmwareUpdateStatusResponse,
     SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
     PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse>;

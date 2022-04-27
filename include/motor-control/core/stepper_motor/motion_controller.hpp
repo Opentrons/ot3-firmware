@@ -79,6 +79,8 @@ class MotionController {
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
+    auto read_encoder_pulses() { return hardware.get_encoder_pulses(); }
+
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
     void enable_motor() {
