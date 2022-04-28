@@ -22,15 +22,9 @@ bool BrushedMotorHardware::check_limit_switch() {
     return gpio::is_set(pins.limit_switch);
 }
 
-void BrushedMotorHardware::grip() {
-    activate_motor();
-    positive_direction();
-}
+void BrushedMotorHardware::grip() { positive_direction(); }
 
-void BrushedMotorHardware::home() {
-    activate_motor();
-    negative_direction();
-}
+void BrushedMotorHardware::home() { negative_direction(); }
 
 void BrushedMotorHardware::stop_pwm() {
     motor_hardware_stop_pwm(pins.pwm_1.tim, pins.pwm_1.channel);

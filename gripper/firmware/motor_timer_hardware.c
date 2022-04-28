@@ -266,6 +266,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     if (htim == &htim7 && timer_callback) {
         timer_callback();
     }
+}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim) {
     if ((htim == &htim1 || htim == &htim3) && brushed_timer_callback) {
         brushed_timer_callback();
     }
