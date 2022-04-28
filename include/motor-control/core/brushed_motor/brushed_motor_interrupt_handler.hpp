@@ -38,7 +38,34 @@ class BrushedMotorInterruptHandler {
     BrushedMotorInterruptHandler(BrushedMotorInterruptHandler&) = delete;
     BrushedMotorInterruptHandler(BrushedMotorInterruptHandler&&) = delete;
 
-    void run_interrupt() {}
+    [[nodiscard]] auto has_messages() const -> bool {
+        return queue.has_message_isr();
+    }
+
+    void run_interrupt() {
+        if (!has_active_move && has_messages()) {
+            update_move();
+        }
+        if (has_active_move) {
+            if (buffered_move.stop_condition ==
+                    MoveStopCondition::limit_switch &&
+                homing_stopped()) {
+                hardware.stop_pwm();
+            }
+        }
+    }
+
+    void update_move() {
+        has_active_move = queue.try_read_isr(&buffered_move);
+        if (has_active_move &&
+            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            position_tracker = 0x7FFFFFFFFFFFFFFF;
+        }
+        // (TODO: lc) We should check the direction (and set respectively)
+        // the direction pin for the motor once a move is being pulled off the
+        // queue stack. We'll probably want to think about moving the hardware
+        // pin configurations out of motion controller.
+    }
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
@@ -68,9 +95,10 @@ class BrushedMotorInterruptHandler {
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
-                status_queue_client.send_move_status_reporter_queue(ack));
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                    ack));
         }
-        set_buffered_move(Move{});
+        set_buffered_move(BrushedMove{});
     }
 
     auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
