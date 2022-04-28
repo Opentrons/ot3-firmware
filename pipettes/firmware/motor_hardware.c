@@ -16,12 +16,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_CIPO
         PB15     ------> SPI2_COPI
-
-         Step/Dir
-         PC3  ---> Dir Pin
-         PC7  ---> Step Pin
-         Enable
-         PC8  ---> Enable Pin
         */
         PipetteType pipette_type = get_pipette_type();
         GPIO_InitStruct.Pin = pipette_hardware_spi_pins(pipette_type, GPIOB);
@@ -74,18 +68,24 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     }
 }
 
+void motor_driver_CLK_gpio_init() {
+    // Driver Clock Pin
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+}
+
 void motor_driver_gpio_init() {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     PipetteType pipette_type = get_pipette_type();
 
-    // EnableDir/Step pin
-    GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
+    GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOC);
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOC);
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     if (pipette_type != NINETY_SIX_CHANNEL) {
@@ -98,11 +98,11 @@ void motor_driver_gpio_init() {
          * should ignore this setup when we're compiling for the 96 channel.
          */
         // Driver Clock Pin.
-        GPIO_InitStruct.Pin = GPIO_PIN_2;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+        motor_driver_CLK_gpio_init();
     } else {
+        // Enable Dir/Step pin
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
         // Enable/Dir/Step pin
         GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOB);
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
