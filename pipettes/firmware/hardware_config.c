@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "hardware_config.h"
 #include "platform_specific_hal_conf.h"
 #include "stm32l5xx_hal_gpio.h"
@@ -20,8 +18,11 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_5;
             return pinout;
+        default:
+            pinout.port = 0;
+            pinout.pin = 0;
+            return pinout;
     }
-    abort();
 
 }
 
@@ -41,8 +42,8 @@ static uint16_t get_spi_pins_ht(GPIO_TypeDef* for_handle) {
         case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         // PC6, PC8, PC9
         case (uint32_t)GPIOC: return GPIO_PIN_6 | GPIO_PIN_9 | GPIO_PIN_10;
+        default: return 0;
     }
-    abort();
 }
 
 static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
@@ -60,8 +61,11 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_4;
             return pinout;
+        default:
+            pinout.port = 0;
+            pinout.pin = 0;
+            return pinout;
     }
-    abort();
 }
 
 
@@ -78,8 +82,8 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
     switch((uint32_t)for_handle) {
         case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         case (uint32_t)GPIOC: return GPIO_PIN_6;
+        default: return 0;
     }
-    abort();
 }
 
 static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle) {
@@ -105,8 +109,8 @@ static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle) {
         case (uint32_t)GPIOB: return GPIO_PIN_8 | GPIO_PIN_10;
         case (uint32_t)GPIOC: return GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_13;
         case (uint32_t)GPIOD: return GPIO_PIN_2;
+        default: return 0;
     }
-    abort();
 }
 
 static uint16_t get_motor_driver_pins_lt(GPIO_TypeDef* for_handle) {
@@ -122,8 +126,8 @@ static uint16_t get_motor_driver_pins_lt(GPIO_TypeDef* for_handle) {
     switch((uint32_t)for_handle) {
         case (uint32_t)GPIOA: return GPIO_PIN_5;
         case (uint32_t)GPIOC: return GPIO_PIN_3 | GPIO_PIN_7 | GPIO_PIN_8;
+        default: return 0;
     }
-    abort();
 }
 
 
