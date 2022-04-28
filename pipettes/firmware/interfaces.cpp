@@ -13,7 +13,7 @@ auto interfaces::driver_config_by_axis(PipetteType which)
             return tmc2130::configs::TMC2130DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
-                                             .run_current = 0x10,
+                                             .run_current = 0x18,
                                              .hold_current_delay = 0x7},
                               .tpowerdown = {},
                               .tcoolthrs = {.threshold = 0},
