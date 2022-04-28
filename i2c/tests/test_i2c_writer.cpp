@@ -45,7 +45,7 @@ SCENARIO("Test the i2c command queue writer") {
             auto msg = get_message(queue);
             THEN("the transaction is correct") {
                 auto compare = i2c::messages::MaxMessageBuffer{
-                    u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f), u8(0)};
+                    u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f)};
                 REQUIRE(msg.transaction.write_buffer == compare);
                 REQUIRE(msg.transaction.bytes_to_write == 4);
                 REQUIRE(msg.transaction.bytes_to_read == 0);
@@ -60,7 +60,7 @@ SCENARIO("Test the i2c command queue writer") {
             writer.write(ADDRESS, std::array{0x1, 0x02});
             auto msg = get_message(queue);
             THEN("the transaction is correct") {
-                auto compare = i2c::messages::MaxMessageBuffer{u8(0x1), u8(0x2), u8(0), u8(0), u8(0)};
+                auto compare = i2c::messages::MaxMessageBuffer{u8(0x1), u8(0x2)};
                 REQUIRE(msg.transaction.write_buffer == compare);
                 REQUIRE(msg.transaction.bytes_to_write == 2);
                 REQUIRE(msg.transaction.bytes_to_read == 0);
@@ -71,7 +71,7 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.response_writer.writer == nullptr);
             }
         }
-        WHEN("we write a five byte buffer") {
+        WHEN("we write a full buffer") {
             writer.write(ADDRESS, std::array{u8(0x01), u8(0x02), u8(0x03),
                                              u8(0x04), u8(0x05)});
             auto msg = get_message(queue);
@@ -86,14 +86,17 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.response_writer.writer == nullptr);
             }
         }
-        WHEN("we try and write a six byte buffer (too big)") {
-            writer.write(ADDRESS, std::array{u8(0x01), u8(0x02), u8(0x03),
-                                             u8(0x04), u8(0x05), u8(0x06)});
+        WHEN("we try and write a byte buffer that is too big") {
+            auto too_big = std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE + 2>{};
+            too_big.fill(0x12);
+            writer.write(ADDRESS, too_big);
+
             auto msg = get_message(queue);
             THEN("the transaction is correct") {
-                auto compare = i2c::messages::MaxMessageBuffer{u8(0x1), u8(0x2), u8(0x3), u8(0x4), u8(0x5)};
+                auto compare = i2c::messages::MaxMessageBuffer{};
+                compare.fill(0x12);
                 REQUIRE(msg.transaction.write_buffer == compare);
-                REQUIRE(msg.transaction.bytes_to_write == 5);
+                REQUIRE(msg.transaction.bytes_to_write == i2c::messages::MAX_BUFFER_SIZE);
                 REQUIRE(msg.transaction.bytes_to_read == 0);
             }
             THEN("the response is empty") {
@@ -105,8 +108,7 @@ SCENARIO("Test the i2c command queue writer") {
             writer.write(ADDRESS, 0x23, 0xd34db33f);
             auto msg = get_message(queue);
             THEN("the transaction is correct") {
-                auto compare = i2c::messages::MaxMessageBuffer{u8(0x23), u8(0xd3), u8(0x4d), u8(0xb3),
-                                   u8(0x3f)};
+                auto compare = i2c::messages::MaxMessageBuffer{u8(0x23), u8(0xd3), u8(0x4d), u8(0xb3), u8(0x3f)};
                 REQUIRE(msg.transaction.write_buffer == compare);
                 REQUIRE(msg.transaction.bytes_to_write == 5);
                 REQUIRE(msg.transaction.bytes_to_read == 0);
@@ -149,10 +151,10 @@ SCENARIO("Test the i2c command queue writer") {
             }
         }
         WHEN("we command a read of > max size") {
-            writer.read(0x1234, 6, response_queue);
+            writer.read(0x1234, i2c::messages::MAX_BUFFER_SIZE + 5, response_queue);
             auto msg = get_message(queue);
             THEN("the transaction is limited to max size") {
-                REQUIRE(msg.transaction.bytes_to_read == 5);
+                REQUIRE(msg.transaction.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
             }
         }
         WHEN("we specify a transaction token") {
@@ -272,17 +274,19 @@ SCENARIO("Test the i2c command queue writer") {
                 REQUIRE(msg.id.is_completed_poll == false);
             }
         }
-        WHEN("we try and write and read a six bytes (too big) ") {
+        WHEN("we try and write and read a buffer that is too big") {
+            auto too_big =std::array<uint8_t,i2c::messages::MAX_BUFFER_SIZE + 2>{};
+            too_big.fill(0x33);
             writer.transact(ADDRESS,
-                            std::array{u8(0x01), u8(0x02), u8(0x03), u8(0x04),
-                                       u8(0x05), u8(0x06)},
-                            6, response_queue);
+                            too_big,
+                            too_big.size(), response_queue);
             auto msg = get_message(queue);
             THEN("the transaction size is limited") {
-                auto compare = i2c::messages::MaxMessageBuffer{u8(0x1), u8(0x2), u8(0x3), u8(0x4), u8(5)};
+                auto compare = i2c::messages::MaxMessageBuffer{};
+                compare.fill(0x33);
                 REQUIRE(msg.transaction.write_buffer == compare);
-                REQUIRE(msg.transaction.bytes_to_write == 5);
-                REQUIRE(msg.transaction.bytes_to_read == 5);
+                REQUIRE(msg.transaction.bytes_to_write == i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(msg.transaction.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
                 REQUIRE(msg.transaction.address == ADDRESS);
             }
         }
@@ -328,17 +332,20 @@ SCENARIO("Test the i2c command queue writer") {
                 }
             }
         }
-        WHEN("we try and write and read six bytes (too big) ") {
+        WHEN("we try and write and read a buffer that is too big") {
+            auto too_big = std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE>{};
+            too_big.fill(0x11);
             writer.transact(
-                ADDRESS, 6,
-                i2c::messages::MaxMessageBuffer{u8(0x01), u8(0x02), u8(0x03), u8(0x04), u8(0x05)}, 6,
+                ADDRESS, too_big.size(),
+                too_big, too_big.size(),
                 {.token = 651, .is_completed_poll = true}, response_queue);
             auto msg = get_message(queue);
             THEN("the transaction size is limited") {
-                auto compare = i2c::messages::MaxMessageBuffer{u8(0x1), u8(0x2), u8(0x3), u8(0x4), u8(5)};
+                auto compare = i2c::messages::MaxMessageBuffer{};
+                compare.fill(0x11);
                 REQUIRE(msg.transaction.write_buffer == compare);
-                REQUIRE(msg.transaction.bytes_to_write == 5);
-                REQUIRE(msg.transaction.bytes_to_read == 5);
+                REQUIRE(msg.transaction.bytes_to_write == i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(msg.transaction.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
                 REQUIRE(msg.transaction.address == ADDRESS);
             }
         }
