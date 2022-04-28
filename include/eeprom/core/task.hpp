@@ -1,34 +1,30 @@
 #pragma once
 
-#include "can/core/can_writer_task.hpp"
-#include "can/core/messages.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/buffer_type.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
-#include "types.hpp"
 #include "i2c/core/messages.hpp"
 #include "i2c/core/writer.hpp"
+#include "types.hpp"
+#include "messages.hpp"
 
 namespace eeprom {
 namespace task {
 
-using CanMessageTuple = std::tuple<can_messages::WriteToEEPromRequest,
-                                   can_messages::ReadFromEEPromRequest>;
-using CanMessage = typename utils::TuplesToVariants<std::tuple<std::monostate>,
-                                                    CanMessageTuple>::type;
+using TaskMessage = std::variant<
+    eeprom::message::WriteEepromMessage,
+      eeprom::message::ReadEepromMessage,
+      i2c::messages::TransactionResponse,
+    std::monostate>;
 
-using TaskMessage = typename utils::VariantCat<
-    CanMessage, std::variant<i2c::messages::TransactionResponse>>::type;
-
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient,
-          class OwnQueue>
+template <class I2CQueueWriter, class OwnQueue>
 class EEPromMessageHandler {
   public:
     explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
-                                  CanClient &can_client, OwnQueue &own_queue)
-        : writer{i2c_writer}, can_client{can_client}, own_queue{own_queue} {}
+                                  OwnQueue &own_queue)
+        : writer{i2c_writer}, own_queue{own_queue} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -37,33 +33,39 @@ class EEPromMessageHandler {
         -> EEPromMessageHandler && = delete;
     ~EEPromMessageHandler() = default;
 
-    void handle_message(TaskMessage &m) {
+    void handle_message(TaskMessage& m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
   private:
     void visit(std::monostate &) {}
 
-    void visit(i2c::messages::TransactionResponse &m) {
-        auto message = can_messages::ReadFromEEPromResponse::create(
-            0, m.read_buffer.cbegin(), m.read_buffer.cend());
-        can_client.send_can_message(can_ids::NodeId::host, message);
+    void visit(i2c::messages::TransactionResponse& m) {
+//        auto message = can_messages::ReadFromEEPromResponse::create(
+//            0, m.read_buffer.cbegin(), m.read_buffer.cend());
     }
 
-    void visit(can_messages::WriteToEEPromRequest &m) {
-        LOG("Received request to write %d bytes to address %x", m.data_length,
+    void visit(eeprom::message::WriteEepromMessage& m) {
+        LOG("Received request to write %d bytes to address %x", m.length,
             m.data);
-        writer.write(DEVICE_ADDRESS, m.data);
+        auto buffer = i2c::messages::MaxMessageBuffer{};
+        auto iter = buffer.begin();
+        // First byte is address
+        *iter++ = m.memory_address;
+        // Remainder is data
+        iter = std::copy_n(iter, std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)), m.data.begin());
+
+        writer.write(DEVICE_ADDRESS, std::span(buffer.begin(), iter));
     }
 
-    void visit(can_messages::ReadFromEEPromRequest &m) {
-        LOG("Received request to read %d bytes from address %d", m.data_length, m.address);
-        writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
+    void visit(eeprom::message::ReadEepromMessage& m) {
+        LOG("Received request to read %d bytes from address %d", m.length,
+            m.memory_address);
+//        writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
     I2CQueueWriter &writer;
-    CanClient &can_client;
     OwnQueue &own_queue;
 };
 
@@ -86,10 +88,8 @@ class EEPromTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
-                                 CanClient *can_client) {
-        auto handler = EEPromMessageHandler{*writer, *can_client, get_queue()};
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer) {
+        auto handler = EEPromMessageHandler{*writer, get_queue()};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
