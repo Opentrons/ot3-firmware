@@ -85,6 +85,8 @@ target_compile_options(gantry-x
         PUBLIC
         -Wall
         -Werror
+        -Wextra
+        -Wno-missing-field-initializers
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
@@ -96,6 +98,8 @@ target_compile_options(gantry-y
         PUBLIC
         -Wall
         -Werror
+        -Wextra
+        -Wno-missing-field-initializers
         $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
         $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>

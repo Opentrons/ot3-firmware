@@ -23,6 +23,8 @@ target_compile_options(sensors
         -Wall
         -Werror
         -Weffc++
+        -Wextra
+        -Wno-missing-field-initializers
         -Wreorder
         -Wsign-promo
         -Wextra-semi

@@ -35,6 +35,15 @@ set(BOOTLOADER_SIMULATOR_SRC
 add_executable(
         bootloader-simulator
         ${BOOTLOADER_SIMULATOR_SRC}
+        )
+
+target_compile_options(
+        bootloader-simulator
+        PRIVATE
+        -Wall
+        -Wextra
+        -Wno-missing-field-initializers
+        -Werror
 )
 
 if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})

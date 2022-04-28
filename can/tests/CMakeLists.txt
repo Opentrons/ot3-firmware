@@ -25,6 +25,8 @@ target_compile_options(can
         PUBLIC
         -Wall
         -Werror
+        -Wextra
+        -Wno-missing-field-initializers
         -Weffc++
         -Wreorder
         -Wsign-promo

@@ -24,6 +24,8 @@ target_compile_options(head
         -Wall
         -Werror
         -Weffc++
+        -Wextra
+        -Wno-missing-field-initializers
         -Wreorder
         -Wsign-promo
         -Wextra-semi

@@ -25,6 +25,8 @@ target_compile_options(i2c
         -Wall
         -Werror
         -Weffc++
+        -Wextra
+        -Wno-missing-field-initializers
         -Wreorder
         -Wsign-promo
         -Wextra-semi
