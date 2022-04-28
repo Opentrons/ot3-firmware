@@ -39,6 +39,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     auto check_limit_switch() -> bool final;
     void grip() final;
     void home() final;
+    void stop_pwm() final;
     auto check_sync_in() -> bool final;
     auto get_encoder_pulses() -> uint32_t final;
     void reset_encoder_pulses() final;

@@ -61,6 +61,9 @@ struct AllTask {
     brushed_move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* brushed_move_group{
         nullptr};
+    move_status_reporter_task::MoveStatusReporterTask<
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        brushed_move_status_reporter{nullptr};
 };
 
 /**
@@ -128,6 +131,9 @@ struct QueueClient : can_message_writer::MessageWriter {
     void send_brushed_move_group_queue(
         const brushed_move_group_task::TaskMessage& m);
 
+    void send_brushed_move_status_reporter_queue(
+        const move_status_reporter_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -136,6 +142,9 @@ struct QueueClient : can_message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_move_group_task::TaskMessage>* brushed_move_group_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        move_status_reporter_task::TaskMessage>*
+        brushed_move_status_report_queue{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;

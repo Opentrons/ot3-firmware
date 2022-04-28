@@ -1,5 +1,7 @@
+#include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
+#include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
 #pragma GCC diagnostic push
@@ -34,6 +36,12 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
 };
 
 /**
+ * The pending move queue
+ */
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::BrushedMove>
+    motor_queue("Brushed Motor Queue");
+
+/**
  * Brushed motor dac configuration.
  */
 struct brushed_motor_driver::DacConfig dac_config {
@@ -53,11 +61,24 @@ static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5}, update_pwm);
 
 static brushed_motor::BrushedMotor grip_motor(brushed_motor_hardware_iface,
-                                              brushed_motor_driver_iface);
+                                              brushed_motor_driver_iface,
+                                              motor_queue);
+
+/**
+ * Handler of brushed motor interrupts.
+ */
+static brushed_motor_handler::BrushedMotorInterruptHandler
+    brushed_motor_interrupt(motor_queue, gripper_tasks::g_tasks::get_queues(),
+                            brushed_motor_hardware_iface);
+
+extern "C" void call_brushed_motor_handler(void) {
+    brushed_motor_interrupt.run_interrupt();
+}
 
 void grip_motor_iface::initialize() {
     // Initialize DAC
     initialize_dac();
+    set_brushed_motor_timer_callback(call_brushed_motor_handler);
 }
 
 auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {

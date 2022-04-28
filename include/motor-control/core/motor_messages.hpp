@@ -31,6 +31,16 @@ struct Move {        // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 };
+
+struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    ticks duration;   // in ticks
+    uint32_t freq;
+    uint32_t duty_cycle;
+    uint8_t group_id;
+    uint8_t seq_id;
+    MoveStopCondition stop_condition = MoveStopCondition::none;
+};
+
 const uint8_t NO_GROUP = 0xff;
 
 enum class AckMessageId : uint8_t {

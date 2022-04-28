@@ -8,6 +8,7 @@ TIM_OC_InitTypeDef htim1_sConfigOC = {0};
 TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 
 static motor_interrupt_callback timer_callback = NULL;
+static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 
 uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
     return (dividend + (divisor / 2)) / divisor;
@@ -190,13 +191,6 @@ void MX_TIM7_Init(void) {
     }
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-    // Check which version of the timer triggered this callback
-    if (htim == &htim7 && timer_callback) {
-        timer_callback();
-    }
-}
-
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
     if (htim == &htim7) {
         /* Peripheral clock enable */
@@ -260,4 +254,19 @@ void update_pwm(uint32_t freq, uint32_t duty_cycle) {
         htim3.Instance->CCR1 = duty_cycle;
     }
     htim3.Instance->EGR = TIM_EGR_UG;
+}
+
+void set_brushed_motor_timer_callback(
+    brushed_motor_interrupt_callback callback) {
+    brushed_timer_callback = callback;
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+    // Check which version of the timer triggered this callback
+    if (htim == &htim7 && timer_callback) {
+        timer_callback();
+    }
+    if ((htim == &htim1 || htim == &htim3) && brushed_timer_callback) {
+        brushed_timer_callback();
+    }
 }

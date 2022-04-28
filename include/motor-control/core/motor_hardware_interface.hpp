@@ -33,5 +33,6 @@ class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
   public:
     virtual void grip() = 0;
     virtual void home() = 0;
+    virtual void stop_pwm() = 0;
 };
 };  // namespace motor_hardware
