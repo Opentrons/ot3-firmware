@@ -181,8 +181,8 @@ struct __attribute__((packed, __may_alias__)) Pressure {
     static constexpr float PA_PER_COUNT =
         1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
 
-    uint32_t C7 : 1 = 1;
-    uint32_t C6 : 1 = 1;
+    uint32_t C7 : 1 = 0;
+    uint32_t C6 : 1 = 0;
     uint32_t C5 : 1 = 0;
     uint32_t C4 : 1 = 0;
     uint32_t C3 : 1 = 0;
@@ -193,12 +193,15 @@ struct __attribute__((packed, __may_alias__)) Pressure {
 
     [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
         // Sign extend pressure result
+        LOG("reg = %d before sign extend", reg);
         if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
         } else {
             reg &= 0x007FFFFF;
         }
+        LOG("reg = %d after sign extend", reg);
         float pressure = static_cast<float>(reg) * PA_PER_COUNT;
+        LOG("reg = %d , pressure = %d", reg, pressure);
         return convert_to_fixed_point(pressure, 15);
     }
 };
@@ -214,12 +217,12 @@ struct __attribute__((packed, __may_alias__)) LowPassPressure {
     static constexpr float PA_PER_COUNT =
         1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
 
-    uint32_t C7 : 1 = 1;
-    uint32_t C6 : 1 = 1;
+    uint32_t C7 : 1 = 0;
+    uint32_t C6 : 1 = 0;
     uint32_t C5 : 1 = 0;
     uint32_t C4 : 1 = 0;
     uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 1;
+    uint32_t C2 : 1 = 0;
     uint32_t C1 : 1 = 0;
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;

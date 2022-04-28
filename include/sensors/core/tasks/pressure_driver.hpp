@@ -173,6 +173,7 @@ class MMR92C04 {
     }
 
     auto send_pressure() -> void {
+        LOG("Pressure reading = %d", _registers.pressure.reading);
         auto pressure =
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto message = can_messages::ReadFromSensorResponse{
