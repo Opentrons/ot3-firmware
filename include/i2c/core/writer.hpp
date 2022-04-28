@@ -50,7 +50,7 @@ class Writer {
     void write(uint16_t device_address, const DataBuffer& buf) {
         messages::MaxMessageBuffer max_buffer{};
         auto write_size = std::min(buf.size(), max_buffer.size());
-        std::copy_n(buf.cbegin(), write_size, max_buffer.begin());
+        std::copy_n(buf.begin(), write_size, max_buffer.begin());
         do_write(device_address, write_size, max_buffer);
     }
     template <typename Data>
@@ -150,7 +150,7 @@ class Writer {
                   ResponseQueue& response_queue, uint32_t transaction_id = 0) {
         messages::MaxMessageBuffer max_buffer{};
         auto write_size = std::min(buf.size(), max_buffer.size());
-        std::copy_n(buf.cbegin(), write_size, max_buffer.begin());
+        std::copy_n(buf.begin(), write_size, max_buffer.begin());
         transact(device_address, write_size, max_buffer, read_count,
                  messages::TransactionIdentifier{.token = transaction_id,
                                                  .is_completed_poll = false},

@@ -9,7 +9,7 @@ namespace i2c {
 namespace messages {
 
 using std::size_t;
-static constexpr std::size_t MAX_BUFFER_SIZE = 5;
+static constexpr std::size_t MAX_BUFFER_SIZE = 9;
 using MaxMessageBuffer = std::array<uint8_t, MAX_BUFFER_SIZE>;
 
 /*

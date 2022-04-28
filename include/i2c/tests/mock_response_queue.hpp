@@ -20,7 +20,7 @@ auto get_response(Queue& queue) -> i2c::messages::TransactionResponse {
 }
 
 inline auto dummy_response(const i2c::messages::Transact& m,
-                           const std::array<uint8_t, 5>& resp = {})
+                           const std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE>& resp = {})
     -> i2c::messages::TransactionResponse {
     return i2c::messages::TransactionResponse{
         .id = m.id,

@@ -23,7 +23,7 @@ SCENARIO("read and write data to the i2c task") {
 
         auto i2c_handler = i2c::tasks::I2CMessageHandler{sim_i2c};
 
-        std::array buffer{u8(1), u8(2), u8(3), u8(4), u8(5)};
+        auto buffer = i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(3), u8(4), u8(5)};
         auto empty_txn = i2c::messages::Transaction{.address = 15,
                                                     .bytes_to_read = 0,
                                                     .bytes_to_write = 0,
@@ -59,7 +59,7 @@ SCENARIO("read and write data to the i2c task") {
                 "a response should have been enqueued with the mirrored data") {
                 auto resp = test_mocks::get_response(response_queue);
                 REQUIRE(resp.bytes_read == 0);
-                REQUIRE(resp.read_buffer == std::array<uint8_t, 5>{});
+                REQUIRE(resp.read_buffer == i2c::messages::MaxMessageBuffer{});
                 REQUIRE(resp.id == id);
             }
         }
@@ -102,7 +102,7 @@ SCENARIO("read and write data to the i2c task") {
             THEN("the response should be present and correct") {
                 auto resp = test_mocks::get_response(response_queue);
                 REQUIRE(resp.bytes_read == 3);
-                std::array check_buffer{u8(7), u8(9), u8(10), u8(0), u8(0)};
+                auto check_buffer=i2c::messages::MaxMessageBuffer{u8(7), u8(9), u8(10), u8(0), u8(0)};
                 REQUIRE(resp.read_buffer == check_buffer);
                 REQUIRE(resp.id == id);
             }
@@ -126,7 +126,7 @@ SCENARIO("read and write data to the i2c task") {
                 "a response should have been enqueued with the mirrored data") {
                 auto resp = test_mocks::get_response(response_queue);
                 REQUIRE(resp.bytes_read == 0);
-                REQUIRE(resp.read_buffer == std::array<uint8_t, 5>{});
+                REQUIRE(resp.read_buffer == i2c::messages::MaxMessageBuffer{});
                 REQUIRE(resp.id == id);
             }
         }
