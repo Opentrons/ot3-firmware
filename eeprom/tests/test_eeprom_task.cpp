@@ -31,6 +31,7 @@ SCENARIO("Eeprom task interaction") {
                 i2c_queue.try_read(&i2c_message);
 
                 auto transact_message = std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address==0xA0);
                 REQUIRE(transact_message.transaction.bytes_to_read==0);
                 REQUIRE(transact_message.transaction.bytes_to_write==static_cast<std::size_t>(data_length + 1));
                 REQUIRE(transact_message.transaction.write_buffer[0] == address);

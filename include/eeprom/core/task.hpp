@@ -53,7 +53,7 @@ class EEPromMessageHandler {
         // First byte is address
         *iter++ = m.memory_address;
         // Remainder is data
-        iter = std::copy_n(iter, std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)), m.data.begin());
+        iter = std::copy_n(m.data.cbegin(), std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)), iter);
 
         writer.write(DEVICE_ADDRESS, std::span(buffer.begin(), iter));
     }
