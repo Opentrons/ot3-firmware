@@ -44,8 +44,8 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a write to eeprom message") {
-        auto arr = std::array<uint8_t, 10>{// Address
-                                           0x5, 0x12,
+        auto arr = std::array<uint8_t, 9>{// Address
+                                           0x12,
                                            // Data Length
                                            7,
                                            // Data
@@ -53,7 +53,7 @@ SCENARIO("message deserializing works") {
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.address == 0x0512);
+                REQUIRE(r.address == 0x12);
                 REQUIRE(r.data_length == 7);
                 REQUIRE(r.data[0] == 1);
                 REQUIRE(r.data[1] == 2);
@@ -74,7 +74,7 @@ SCENARIO("message deserializing works") {
 
     GIVEN("a write to eeprom message with too large data length") {
         auto arr = std::array<uint8_t, 35>{// Address
-                                           0x5, 0x12,
+                                           0x5,
                                            // Data Length
                                            122,
                                            // Data
@@ -82,8 +82,8 @@ SCENARIO("message deserializing works") {
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.address == 0x0512);
-                REQUIRE(r.data_length == 32);
+                REQUIRE(r.address == 0x05);
+                REQUIRE(r.data_length == 8);
                 REQUIRE(r.data[0] == 0);
                 REQUIRE(r.data[1] == 1);
                 REQUIRE(r.data[2] == 0);
@@ -182,7 +182,7 @@ SCENARIO("message serializing works") {
     GIVEN("a read from eeprom response") {
         auto data = std::array<uint8_t, 5>{0, 1, 2, 3, 4};
         auto message =
-            ReadFromEEPromResponse::create(513, data.cbegin(), data.cend());
+            ReadFromEEPromResponse::create(13, data.cbegin(), data.cend());
 
         THEN("the length is correctly set.") {
             REQUIRE(message.data_length == data.size());
@@ -192,11 +192,11 @@ SCENARIO("message serializing works") {
             auto arr = std::array<uint8_t, 5>{};
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer.") {
-                REQUIRE(arr[0] == 0x2);
-                REQUIRE(arr[1] == 0x1);
-                REQUIRE(arr[2] == 0x5);
-                REQUIRE(arr[3] == 0x0);
-                REQUIRE(arr[4] == 0x1);
+                REQUIRE(arr[0] == 13);
+                REQUIRE(arr[1] == 0x5);
+                REQUIRE(arr[2] == 0x0);
+                REQUIRE(arr[3] == 0x1);
+                REQUIRE(arr[4] == 0x2);
             }
             THEN("size is correct") { REQUIRE(size == 5); }
         }
@@ -205,18 +205,18 @@ SCENARIO("message serializing works") {
             auto arr = std::array<uint8_t, 10>{};
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer.") {
-                REQUIRE(arr[0] == 0x2);
-                REQUIRE(arr[1] == 0x1);
-                REQUIRE(arr[2] == 0x5);
-                REQUIRE(arr[3] == 0x0);
-                REQUIRE(arr[4] == 0x1);
-                REQUIRE(arr[5] == 0x2);
-                REQUIRE(arr[6] == 0x3);
-                REQUIRE(arr[7] == 0x4);
+                REQUIRE(arr[0] == 13);
+                REQUIRE(arr[1] == 0x5);
+                REQUIRE(arr[2] == 0x0);
+                REQUIRE(arr[3] == 0x1);
+                REQUIRE(arr[4] == 0x2);
+                REQUIRE(arr[5] == 0x3);
+                REQUIRE(arr[6] == 0x4);
+                REQUIRE(arr[7] == 0x0);
                 REQUIRE(arr[8] == 0x0);
                 REQUIRE(arr[9] == 0x0);
             }
-            THEN("size is correct") { REQUIRE(size == 8); }
+            THEN("size is correct") { REQUIRE(size == 7); }
         }
     }
 }
