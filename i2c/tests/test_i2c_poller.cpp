@@ -50,7 +50,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -63,9 +64,12 @@ SCENARIO("Test the i2c poller command queue") {
             }
         }
         WHEN("we request a poll with the data overload") {
-            auto data = std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE+4>{};
+            auto data =
+                std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE + 4>{};
             data.fill(0xfe);
-            poller.single_register_poll(ADDRESS, data, i2c::messages::MAX_BUFFER_SIZE + 4, 20, 15, queue, 2015);
+            poller.single_register_poll(ADDRESS, data,
+                                        i2c::messages::MAX_BUFFER_SIZE + 4, 20,
+                                        15, queue, 2015);
             auto poll_msg =
                 get_message<i2c::messages::SingleRegisterPollRead>(queue);
             THEN("the top data members are correct") {
@@ -78,9 +82,11 @@ SCENARIO("Test the i2c poller command queue") {
 
             THEN("the transaction is correct and limited") {
                 REQUIRE(poll_msg.first.address == ADDRESS);
-                REQUIRE(poll_msg.first.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
-                REQUIRE(poll_msg.first.bytes_to_write == i2c::messages::MAX_BUFFER_SIZE);
-                REQUIRE(poll_msg.first.write_buffer ==expected_write_buffer);
+                REQUIRE(poll_msg.first.bytes_to_read ==
+                        i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(poll_msg.first.bytes_to_write ==
+                        i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(poll_msg.first.write_buffer == expected_write_buffer);
             }
             THEN("the id is passed along") {
                 REQUIRE(poll_msg.id.token == 2015);
@@ -94,7 +100,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -125,7 +132,8 @@ SCENARIO("Test the i2c poller command queue") {
                 REQUIRE(poll_msg.first.bytes_to_read == 4);
                 REQUIRE(poll_msg.first.bytes_to_write == 1);
                 REQUIRE(poll_msg.first.write_buffer ==
-                        i2c::messages::MaxMessageBuffer{u8(5), u8(0), u8(0), u8(0), u8(0)});
+                        i2c::messages::MaxMessageBuffer{u8(5), u8(0), u8(0),
+                                                        u8(0), u8(0)});
             }
             THEN("the id is passed through") {
                 REQUIRE(poll_msg.id.token == 15);
@@ -139,7 +147,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -152,10 +161,11 @@ SCENARIO("Test the i2c poller command queue") {
             }
         }
         WHEN("we request a poll with the data overload") {
-            auto data = std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE+4>{};
+            auto data =
+                std::array<uint8_t, i2c::messages::MAX_BUFFER_SIZE + 4>{};
             data.fill(0xfe);
-            poller.continuous_single_register_poll(ADDRESS, data, data.size(), 15, queue,
-                                                   2015);
+            poller.continuous_single_register_poll(ADDRESS, data, data.size(),
+                                                   15, queue, 2015);
             auto poll_msg = get_message<
                 i2c::messages::ConfigureSingleRegisterContinuousPolling>(queue);
             THEN("the top data members are correct") {
@@ -167,8 +177,10 @@ SCENARIO("Test the i2c poller command queue") {
 
             THEN("the transaction is correct and limited") {
                 REQUIRE(poll_msg.first.address == ADDRESS);
-                REQUIRE(poll_msg.first.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
-                REQUIRE(poll_msg.first.bytes_to_write == i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(poll_msg.first.bytes_to_read ==
+                        i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(poll_msg.first.bytes_to_write ==
+                        i2c::messages::MAX_BUFFER_SIZE);
                 REQUIRE(poll_msg.first.write_buffer == expected_write_buffer);
             }
             THEN("the id is passed along") {
@@ -183,7 +195,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -231,7 +244,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -245,8 +259,9 @@ SCENARIO("Test the i2c poller command queue") {
         }
         WHEN("we request a poll with the data overload") {
             uint32_t data_1 = 22, data_2 = 512;
-            poller.multi_register_poll(ADDRESS, data_1, i2c::messages::MAX_BUFFER_SIZE + 1, data_2, 2, 20, 15,
-                                       queue, 15);
+            poller.multi_register_poll(ADDRESS, data_1,
+                                       i2c::messages::MAX_BUFFER_SIZE + 1,
+                                       data_2, 2, 20, 15, queue, 15);
             auto poll_msg =
                 get_message<i2c::messages::MultiRegisterPollRead>(queue);
             THEN("the top level members are correct") {
@@ -256,13 +271,16 @@ SCENARIO("Test the i2c poller command queue") {
 
             THEN("the transactions are correct") {
                 REQUIRE(poll_msg.first.bytes_to_write == 4);
-                REQUIRE(poll_msg.first.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(poll_msg.first.bytes_to_read ==
+                        i2c::messages::MAX_BUFFER_SIZE);
                 REQUIRE(poll_msg.first.write_buffer ==
-                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(0), u8(22), u8(0)});
+                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(0),
+                                                        u8(22), u8(0)});
                 REQUIRE(poll_msg.second.bytes_to_write == 4);
                 REQUIRE(poll_msg.second.bytes_to_read == 2);
                 REQUIRE(poll_msg.second.write_buffer ==
-                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(2), u8(0), u8(0)});
+                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(2),
+                                                        u8(0), u8(0)});
             }
             THEN("the id is passed through") {
                 REQUIRE(poll_msg.id.token == 15);
@@ -276,7 +294,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -323,7 +342,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {
@@ -337,19 +357,23 @@ SCENARIO("Test the i2c poller command queue") {
         }
         WHEN("we request a poll with the data overload") {
             uint32_t data_1 = 22, data_2 = 512;
-            poller.continuous_multi_register_poll(ADDRESS, data_1, i2c::messages::MAX_BUFFER_SIZE + 1, data_2, 2,
-                                                  15, queue, 15);
+            poller.continuous_multi_register_poll(
+                ADDRESS, data_1, i2c::messages::MAX_BUFFER_SIZE + 1, data_2, 2,
+                15, queue, 15);
             auto poll_msg = get_message<
                 i2c::messages::ConfigureMultiRegisterContinuousPolling>(queue);
             THEN("the transactions are correct") {
                 REQUIRE(poll_msg.first.bytes_to_write == 4);
-                REQUIRE(poll_msg.first.bytes_to_read == i2c::messages::MAX_BUFFER_SIZE);
+                REQUIRE(poll_msg.first.bytes_to_read ==
+                        i2c::messages::MAX_BUFFER_SIZE);
                 REQUIRE(poll_msg.first.write_buffer ==
-                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(0), u8(22), u8(0)});
+                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(0),
+                                                        u8(22), u8(0)});
                 REQUIRE(poll_msg.second.bytes_to_write == 4);
                 REQUIRE(poll_msg.second.bytes_to_read == 2);
                 REQUIRE(poll_msg.second.write_buffer ==
-                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(2), u8(0), u8(0)});
+                        i2c::messages::MaxMessageBuffer{u8(0), u8(0), u8(2),
+                                                        u8(0), u8(0)});
             }
             THEN("the top level members are correct") {
                 REQUIRE(poll_msg.delay_ms == 15);
@@ -366,7 +390,8 @@ SCENARIO("Test the i2c poller command queue") {
                         .id = {.token = 1231, .is_completed_poll = false},
                         .bytes_read = 2,
                         .read_buffer =
-                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0), u8(0), u8(0)},
+                            i2c::messages::MaxMessageBuffer{u8(1), u8(2), u8(0),
+                                                            u8(0), u8(0)},
                     };
                     static_cast<void>(poll_msg.response_writer.write(resp));
                     THEN("the response is passed along correctly") {

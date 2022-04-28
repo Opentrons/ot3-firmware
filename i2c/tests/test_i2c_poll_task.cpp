@@ -49,7 +49,8 @@ SCENARIO("test the limited-count i2c poller") {
             .bytes_to_read = 4,
             .bytes_to_write = 3,
             .write_buffer =
-                i2c::messages::MaxMessageBuffer{u8(0x2), u8(0x3), u8(0x4), u8(0x5), u8(0x6)},
+                i2c::messages::MaxMessageBuffer{u8(0x2), u8(0x3), u8(0x4),
+                                                u8(0x5), u8(0x6)},
         };
         i2c::messages::SingleRegisterPollRead msg{
             .polling = poll_count,
@@ -89,7 +90,8 @@ SCENARIO("test the limited-count i2c poller") {
                         get_message<i2c::messages::Transact>(i2c_queue);
                     REQUIRE(transaction.transaction == original_txn);
                     AND_WHEN("that transaction is responded to") {
-                        auto response_buffer = i2c::messages::MaxMessageBuffer{0xf, 0xe, 0xd, 0xc, 0xb};
+                        auto response_buffer = i2c::messages::MaxMessageBuffer{
+                            0xf, 0xe, 0xd, 0xc, 0xb};
                         i2c::messages::TransactionResponse response{
                             .id = transaction.id,
                             .bytes_read = 4,
@@ -112,8 +114,8 @@ SCENARIO("test the limited-count i2c poller") {
                 }
             }
             AND_WHEN("firing the timer poll_count-1 times") {
-                auto response_buffer=i2c::messages::MaxMessageBuffer{0xaa, 0xbb, 0xcc, 0xdd,
-                                                       0xee};
+                auto response_buffer = i2c::messages::MaxMessageBuffer{
+                    0xaa, 0xbb, 0xcc, 0xdd, 0xee};
                 i2c::messages::TransactionResponse response{
                     .id = msg.id,
                     .bytes_read = msg.first.bytes_to_read,
@@ -148,8 +150,8 @@ SCENARIO("test the limited-count i2c poller") {
                         poll.timer.fire();
                         auto last_txn =
                             get_message<i2c::messages::Transact>(i2c_queue);
-                        auto response_buffer = i2c::messages::MaxMessageBuffer{0xf, 0xe, 0xd,
-                                                                  0xc, 0xb};
+                        auto response_buffer = i2c::messages::MaxMessageBuffer{
+                            0xf, 0xe, 0xd, 0xc, 0xb};
                         response = {
                             .id = last_txn.id,
                             .bytes_read = 3,
@@ -181,8 +183,10 @@ SCENARIO("test the limited-count i2c poller") {
 
     GIVEN("multi register limited poll command") {
         uint16_t addr = 0x1234;
-        auto register_payload_1=i2c::messages::MaxMessageBuffer{0x2, 0x3, 0x4, 0x5, 0x6};
-        auto register_payload_2=i2c::messages::MaxMessageBuffer{0x4, 0x6, 0x8, 0xa, 0xc};
+        auto register_payload_1 =
+            i2c::messages::MaxMessageBuffer{0x2, 0x3, 0x4, 0x5, 0x6};
+        auto register_payload_2 =
+            i2c::messages::MaxMessageBuffer{0x4, 0x6, 0x8, 0xa, 0xc};
         int poll_count = 10;
         int delay = 100;
         i2c::messages::Transaction original_txn_1{
@@ -236,7 +240,8 @@ SCENARIO("test the limited-count i2c poller") {
                     REQUIRE(msg.id.is_completed_poll == false);
                     REQUIRE(msg.id.transaction_index == 0);
                     AND_WHEN("that transaction is responded to") {
-                        auto response_buf_1 = i2c::messages::MaxMessageBuffer{0xf, 0xe, 0xd, 0xc, 0xb};
+                        auto response_buf_1 = i2c::messages::MaxMessageBuffer{
+                            0xf, 0xe, 0xd, 0xc, 0xb};
                         i2c::messages::TransactionResponse response_1{
                             .id = msg.id,
                             .bytes_read = 4,
@@ -274,8 +279,9 @@ SCENARIO("test the limited-count i2c poller") {
                             REQUIRE(msg.id.transaction_index == 1);
                             REQUIRE(msg.id.is_completed_poll == false);
                             AND_WHEN("that second transaction is handled") {
-                                auto response_buf_2 = i2c::messages::MaxMessageBuffer{
-                                    0xff, 0xee, 0xdd, 0xcc, 0xbb};
+                                auto response_buf_2 =
+                                    i2c::messages::MaxMessageBuffer{
+                                        0xff, 0xee, 0xdd, 0xcc, 0xbb};
                                 i2c::messages::TransactionResponse response_2{
                                     .id = msg.id,
                                     .bytes_read = msg.transaction.bytes_to_read,
@@ -304,10 +310,10 @@ SCENARIO("test the limited-count i2c poller") {
                 }
             }
             AND_WHEN("firing the timer enough times to exhaust the poll") {
-                auto first_response_buf = i2c::messages::MaxMessageBuffer{0xf, 0xe, 0xd, 0xc,
-                                                             0xb};
-                auto second_response_buf = i2c::messages::MaxMessageBuffer{0xff, 0xee, 0xdd,
-                                                              0xcc, 0xbb};
+                auto first_response_buf =
+                    i2c::messages::MaxMessageBuffer{0xf, 0xe, 0xd, 0xc, 0xb};
+                auto second_response_buf = i2c::messages::MaxMessageBuffer{
+                    0xff, 0xee, 0xdd, 0xcc, 0xbb};
                 for (int count = 0; count < (poll_count - 1); count++) {
                     poll.timer.fire();
                     auto txn = get_message<i2c::messages::Transact>(i2c_queue);
@@ -433,7 +439,8 @@ SCENARIO("test the ongoing i2c polling") {
                       .bytes_to_read = 3,
                       .bytes_to_write = 5,
                       .write_buffer =
-                          i2c::messages::MaxMessageBuffer{0x1, 0x2, 0x3, 0x4, 0x5}},
+                          i2c::messages::MaxMessageBuffer{0x1, 0x2, 0x3, 0x4,
+                                                          0x5}},
             .id = {.token = 12345,
                    .is_completed_poll = false,
                    .transaction_index = 0},
@@ -454,7 +461,8 @@ SCENARIO("test the ongoing i2c polling") {
                     i2c::messages::TransactionResponse response_msg{
                         .id = transaction.id,
                         .bytes_read = transaction.transaction.bytes_to_read,
-                        .read_buffer = i2c::messages::MaxMessageBuffer{1, 2, 3, 4, 5}};
+                        .read_buffer =
+                            i2c::messages::MaxMessageBuffer{1, 2, 3, 4, 5}};
                     static_cast<void>(
                         transaction.response_writer.write(response_msg));
                     auto next = get_message<i2c::messages::TransactionResponse>(
@@ -492,12 +500,14 @@ SCENARIO("test the ongoing i2c polling") {
             .address = 0x1234,
             .bytes_to_read = 3,
             .bytes_to_write = 5,
-            .write_buffer = i2c::messages::MaxMessageBuffer{0x1, 0x2, 0x3, 0x4, 0x5}};
+            .write_buffer =
+                i2c::messages::MaxMessageBuffer{0x1, 0x2, 0x3, 0x4, 0x5}};
         auto second_txn = i2c::messages::Transaction{
             .address = 0x1234,
             .bytes_to_read = 3,
             .bytes_to_write = 5,
-            .write_buffer = i2c::messages::MaxMessageBuffer{0x6, 0x7, 0x8, 0x9, 0xa}};
+            .write_buffer =
+                i2c::messages::MaxMessageBuffer{0x6, 0x7, 0x8, 0x9, 0xa}};
         i2c::messages::ConfigureMultiRegisterContinuousPolling poll_msg{
             .delay_ms = 100,
             .first = first_txn,
@@ -515,7 +525,8 @@ SCENARIO("test the ongoing i2c polling") {
                     get_message<i2c::messages::Transact>(i2c_queue);
                 REQUIRE(transaction.transaction == first_txn);
                 AND_WHEN("responding to that transaction") {
-                    auto first_resp_buffer = i2c::messages::MaxMessageBuffer{5, 4, 3, 2, 1};
+                    auto first_resp_buffer =
+                        i2c::messages::MaxMessageBuffer{5, 4, 3, 2, 1};
                     i2c::messages::TransactionResponse first_resp{
                         .id = transaction.id,
                         .bytes_read = 3,
@@ -538,8 +549,8 @@ SCENARIO("test the ongoing i2c polling") {
                             get_message<i2c::messages::Transact>(i2c_queue);
                         REQUIRE(second_transaction.transaction == second_txn);
                         AND_WHEN("responding to the second transaction") {
-                            auto second_resp_buffer= i2c::messages::MaxMessageBuffer{10, 9, 8,
-                                                                      7, 6};
+                            auto second_resp_buffer =
+                                i2c::messages::MaxMessageBuffer{10, 9, 8, 7, 6};
                             i2c::messages::TransactionResponse second_resp{
                                 .id = second_transaction.id,
                                 .bytes_read = 3,

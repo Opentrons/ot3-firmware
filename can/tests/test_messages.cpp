@@ -45,11 +45,11 @@ SCENARIO("message deserializing works") {
 
     GIVEN("a write to eeprom message") {
         auto arr = std::array<uint8_t, 9>{// Address
-                                           0x12,
-                                           // Data Length
-                                           7,
-                                           // Data
-                                           1, 2, 3, 4, 5, 6, 7};
+                                          0x12,
+                                          // Data Length
+                                          7,
+                                          // Data
+                                          1, 2, 3, 4, 5, 6, 7};
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {

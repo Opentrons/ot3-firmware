@@ -14,5 +14,5 @@ class EEProm : public sensor_simulator::SensorType {
     }
 };
 
-}
-}  // namespace eeprom_simulator
+}  // namespace simulator
+}  // namespace eeprom
