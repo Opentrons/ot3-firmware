@@ -61,7 +61,7 @@ class EEPromMessageHandler {
     void visit(eeprom::message::ReadEepromMessage& m) {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
-        writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
+        writer.read(DEVICE_ADDRESS, m.memory_address, m.length, own_queue, 0);
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
