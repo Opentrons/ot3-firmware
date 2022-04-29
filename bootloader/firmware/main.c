@@ -1,7 +1,6 @@
 #include "platform_specific_hal_conf.h"
 #include "platform_specific_hal.h"
 #include "common/core/app_update.h"
-#include "common/firmware/can.h"
 #include "common/firmware/errors.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/iwdg.h"
@@ -11,7 +10,7 @@
 #include "bootloader/core/updater.h"
 #include "bootloader/firmware/system.h"
 #include "bootloader/firmware/crc32.h"
-
+#include "bootloader/firmware/can.h"
 /**
  * The CAN handle.
  */
