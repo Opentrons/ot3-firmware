@@ -17,8 +17,8 @@ class SimADC : public BaseADC {
     auto get_a_channel() -> SimChannel& override { return a_channel; }
 
   private:
-    SimChannel z_channel;
-    SimChannel a_channel;
-    SimChannel gripper_channel;
+    SimChannel z_channel{};
+    SimChannel a_channel{};
+    SimChannel gripper_channel{};
 };
 };  // namespace adc

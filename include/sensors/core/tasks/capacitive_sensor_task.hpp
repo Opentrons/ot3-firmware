@@ -56,7 +56,7 @@ class CapacitiveMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
         if (utils::reg_from_id<uint8_t>(m.id.token) != MSB_MEASUREMENT_1) {

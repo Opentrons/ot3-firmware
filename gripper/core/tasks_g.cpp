@@ -15,7 +15,7 @@ static auto brushed_motion_controller_task_builder = freertos_task::TaskStarter<
     512, brushed_motion_controller_task::MotionControllerTask>{};
 
 void g_tasks::start_task(brushed_motor::BrushedMotor& grip_motor,
-                         AllTask gripper_tasks) {
+                         AllTask& gripper_tasks) {
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(

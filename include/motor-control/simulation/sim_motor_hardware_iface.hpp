@@ -21,7 +21,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         }
         return false;
     }
-    void set_LED(bool status) final {}
+    void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final { return true; }
     void reset_encoder_pulses() final { test_pulses = 0; }
@@ -47,8 +47,8 @@ class SimBrushedMotorHardwareIface
         }
         return false;
     }
-    void grip() final{};
-    void home() final{};
+    void grip() final {}
+    void home() final {}
     bool check_sync_in() final { return true; }
     void reset_encoder_pulses() final { test_pulses = 0; }
     uint32_t get_encoder_pulses() final { return 0; }

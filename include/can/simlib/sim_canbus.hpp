@@ -32,6 +32,7 @@ class SimCANBus : public CanBus {
     SimCANBus(const SimCANBus&&) = delete;
     SimCANBus& operator=(const SimCANBus&) = delete;
     SimCANBus&& operator=(const SimCANBus&&) = delete;
+    ~SimCANBus() = default;
 
     /**
      * Add an arbitration id filter.
@@ -126,7 +127,7 @@ class SimCANBus : public CanBus {
     };
 
     TransportType transport;
-    Reader reader;
+    Reader reader{};
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
     FreeRTOSTask<256, Reader> reader_task;

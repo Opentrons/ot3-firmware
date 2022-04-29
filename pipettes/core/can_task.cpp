@@ -89,7 +89,7 @@ static auto pipette_info_target =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_dispatch::Dispatcher(
-    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    [](auto) -> bool { return true; }, motor_dispatch_target,
     motion_controller_dispatch_target, motion_group_dispatch_target,
     eeprom_dispatch_target, sensor_dispatch_target, system_dispatch_target,
     pipette_info_target);
@@ -109,8 +109,7 @@ static auto read_can_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(void* cb_data, uint32_t identifier, uint8_t* data,
-              uint8_t length) {
+void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
                                                  data + length);  // NOLINT
 }

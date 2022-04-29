@@ -255,7 +255,7 @@ class MMR92C04 {
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
-    auto set_register(Reg reg) -> bool {
+    auto set_register(Reg) -> bool {
         write(Reg::address, 0x0);
         return true;
     }
