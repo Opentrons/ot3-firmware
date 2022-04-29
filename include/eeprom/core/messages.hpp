@@ -3,11 +3,13 @@
 namespace eeprom {
 namespace message {
 
-/** Basic eeprom message */
+/** Eeprom message */
 struct EepromMessage {
     eeprom::types::address memory_address{0};
     eeprom::types::data_length length{0};
     eeprom::types::EepromData data{};
+
+    auto operator==(const EepromMessage&) const -> bool = default;
 };
 
 /** Forward declaration of response handler interface */
@@ -16,7 +18,9 @@ class EepromResponseHandler;
 /**
  * The read from eeprom message.
  */
-struct ReadEepromMessage : public EepromMessage {
+struct ReadEepromMessage {
+    eeprom::types::address memory_address{0};
+    eeprom::types::data_length length{0};
     EepromResponseHandler* response_handler{nullptr};
 };
 
@@ -28,10 +32,9 @@ using WriteEepromMessage = EepromMessage;
  */
 class EepromResponseHandler {
   public:
-    virtual void handle(const EepromMessage& m) {}
-    virtual ~EepromResponseHandler(){}
+    virtual void handle(const EepromMessage& m) = 0;
+    virtual ~EepromResponseHandler() {}
 };
-
 
 }  // namespace message
 }  // namespace eeprom
