@@ -37,7 +37,7 @@ SCENARIO("Dispatcher") {
         auto buff = BufferType{1};
         uint32_t arb_id = 1234;
 
-        auto subject = Dispatcher([](auto _) -> bool { return true; }, l1, l2);
+        auto subject = Dispatcher([](auto) -> bool { return true; }, l1, l2);
 
         WHEN("dispatching a message") {
             subject.handle(arb_id, buff.begin(), buff.end());

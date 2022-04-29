@@ -40,6 +40,8 @@ class BusTransportBase {
      */
     virtual auto read(uint32_t& arb_id, uint8_t* buff, uint32_t& buff_len)
         -> bool = 0;
+
+    virtual ~BusTransportBase() = default;
 };
 
 /**

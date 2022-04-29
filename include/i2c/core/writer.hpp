@@ -50,7 +50,7 @@ class Writer {
     void write(uint16_t device_address, const DataBuffer& buf) {
         messages::MaxMessageBuffer max_buffer{};
         auto write_size = std::min(buf.size(), max_buffer.size());
-        std::copy_n(buf.cbegin(), write_size, max_buffer.begin());
+        std::copy_n(buf.begin(), write_size, max_buffer.begin());
         do_write(device_address, write_size, max_buffer);
     }
     template <typename Data>
@@ -105,6 +105,29 @@ class Writer {
         queue->try_write(message);
     }
 
+    /**
+     * A single read from a register or memory address
+     * @tparam RQType response queue type
+     * @param device_address the i2c device address
+     * @param address register/address to read from
+     * @param read_bytes number of bytes to read
+     * @param response_queue queue to respond to
+     * @param id optional transaction id returned in response.
+     */
+    template <messages::I2CResponseQueue RQType>
+    void read(uint16_t device_address, uint8_t address, std::size_t read_bytes,
+              RQType& response_queue, uint32_t id = 0) {
+        messages::Transact message{
+            .transaction = {.address = device_address,
+                            .bytes_to_read =
+                                std::min(read_bytes, messages::MAX_BUFFER_SIZE),
+                            .bytes_to_write = 1,
+                            .write_buffer{address}},
+            .id = {.token = id, .is_completed_poll = false},
+            .response_writer = messages::ResponseWriter(response_queue)};
+        queue->try_write(message);
+    }
+
     /*
      * A full read+write transaction on the i2c bus.
      *
@@ -150,7 +173,7 @@ class Writer {
                   ResponseQueue& response_queue, uint32_t transaction_id = 0) {
         messages::MaxMessageBuffer max_buffer{};
         auto write_size = std::min(buf.size(), max_buffer.size());
-        std::copy_n(buf.cbegin(), write_size, max_buffer.begin());
+        std::copy_n(buf.begin(), write_size, max_buffer.begin());
         transact(device_address, write_size, max_buffer, read_count,
                  messages::TransactionIdentifier{.token = transaction_id,
                                                  .is_completed_poll = false},

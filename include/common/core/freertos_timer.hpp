@@ -30,7 +30,7 @@ class FreeRTOSTimer {
     auto is_running() -> bool { return (xTimerIsTimerActive(timer) == pdTRUE); }
 
     void update_callback(Callback&& new_callback) {
-        callback = std::move(callback);
+        callback = std::move(new_callback);
     }
 
     void update_period(uint32_t period_ms) {

@@ -4,6 +4,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/freertos_timer.hpp"
+#include "eeprom/core/task.hpp"
 #include "i2c/core/poller.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
@@ -13,7 +14,6 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "pipettes/core/can_task.hpp"
-#include "pipettes/core/tasks/eeprom_task.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
@@ -40,7 +40,7 @@ static auto move_group_task_builder =
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 static auto eeprom_task_builder =
-    freertos_task::TaskStarter<512, eeprom_task::EEPromTask>{};
+    freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>{};
@@ -180,7 +180,7 @@ void pipettes_tasks::QueueClient::send_move_status_reporter_queue(
 }
 
 void pipettes_tasks::QueueClient::send_eeprom_queue(
-    const eeprom_task::TaskMessage& m) {
+    const eeprom::task::TaskMessage& m) {
     eeprom_queue->try_write(m);
 }
 
