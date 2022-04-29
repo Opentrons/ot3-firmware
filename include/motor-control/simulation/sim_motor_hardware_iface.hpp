@@ -47,9 +47,9 @@ class SimBrushedMotorHardwareIface
         }
         return false;
     }
-    void grip() final{};
-    void home() final{};
-    void stop_pwm() final{};
+    void grip() final {}
+    void home() final {}
+    void stop_pwm() final {}
     bool check_sync_in() final { return true; }
     void reset_encoder_pulses() final { test_pulses = 0; }
     uint32_t get_encoder_pulses() final { return 0; }
