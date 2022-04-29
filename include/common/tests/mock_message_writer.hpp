@@ -25,7 +25,7 @@ class MockMessageWriter {
      * @param message The message to send
      */
     template <message_core::CanResponseMessage ResponseMessage>
-    void send_can_message(can_ids::NodeId node, ResponseMessage&& message) {
+    void send_can_message(can_ids::NodeId, ResponseMessage&& message) {
         TaskMessage task_msg{.arbitration_id = 0x1, .message = message};
         queue->try_write(task_msg);
     }

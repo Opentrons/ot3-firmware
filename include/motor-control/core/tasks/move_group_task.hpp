@@ -50,7 +50,7 @@ class MoveGroupMessageHandler {
     }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    void handle(std::monostate&) {}
 
     void handle(const can_messages::AddLinearMoveRequest& m) {
         LOG("Received add linear move request: groupid=%d, seqid=%d",
@@ -74,7 +74,7 @@ class MoveGroupMessageHandler {
         can_client.send_can_message(can_ids::NodeId::host, response);
     }
 
-    void handle(const can_messages::ClearAllMoveGroupsRequest& m) {
+    void handle(const can_messages::ClearAllMoveGroupsRequest&) {
         LOG("Received clear move groups request");
         for (auto& group : move_groups) {
             group.clear();
@@ -90,7 +90,7 @@ class MoveGroupMessageHandler {
         }
     }
 
-    void visit_move(const std::monostate& m) {}
+    void visit_move(const std::monostate&) {}
 
     void visit_move(const can_messages::AddLinearMoveRequest& m) {
         mc_client.send_motion_controller_queue(m);

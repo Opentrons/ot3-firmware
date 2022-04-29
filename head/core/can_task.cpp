@@ -122,7 +122,7 @@ static auto dispatcher_left_motor = can_dispatch::Dispatcher(
     motion_dispatch_target_left, move_group_dispatch_target_left);
 
 static auto main_dispatcher = can_dispatch::Dispatcher(
-    [](auto _) -> bool { return true; }, dispatcher_right_motor,
+    [](auto) -> bool { return true; }, dispatcher_right_motor,
     dispatcher_left_motor, presence_sensing_disptach_target,
     system_dispatch_target);
 
@@ -141,8 +141,7 @@ static auto read_can_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(void* cb_data, uint32_t identifier, uint8_t* data,
-              uint8_t length) {
+void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
                                                  data + length);  // NOLINT
 }

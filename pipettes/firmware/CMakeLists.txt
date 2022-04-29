@@ -90,6 +90,8 @@ function(add_pipettes_executable TARGET)
     target_compile_options(${TARGET}
             PUBLIC
             -Wall
+            -Wextra
+            -Wno-missing-field-initializers
             -Werror
             $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
             $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>

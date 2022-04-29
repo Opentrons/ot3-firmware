@@ -20,6 +20,8 @@ set_target_properties(spi
 target_compile_options(spi
         PUBLIC
         -Wall
+        -Wextra
+        -Wno-missing-field-initializers
         -Werror
         -Weffc++
         -Wreorder

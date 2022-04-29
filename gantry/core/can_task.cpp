@@ -52,7 +52,7 @@ static auto motion_dispatch_target =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_task::GantryDispatcherType(
-    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    [](auto) -> bool { return true; }, motor_dispatch_target,
     motion_group_dispatch_target, motion_dispatch_target,
     system_dispatch_target);
 
