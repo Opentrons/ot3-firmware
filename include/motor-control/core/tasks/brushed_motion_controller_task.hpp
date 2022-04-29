@@ -54,7 +54,7 @@ class MotionControllerMessageHandler {
         controller.disable_motor();
     }
 
-    void handle(const can_messages::StopRequest& m) {
+    void handle(const can_messages::StopRequest&) {
         LOG("Received stop request");
         controller.stop();
     }
@@ -67,7 +67,7 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-    void handle(const can_messages::ReadLimitSwitchRequest& m) {
+    void handle(const can_messages::ReadLimitSwitchRequest&) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
         can_messages::ReadLimitSwitchResponse msg{{}, response};

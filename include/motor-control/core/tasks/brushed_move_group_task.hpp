@@ -50,7 +50,7 @@ class MoveGroupMessageHandler {
     }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    void handle(std::monostate&) {}
 
     void handle(const can_messages::GripperHomeRequest& m) {
         LOG("Received gripper home request: groupid=%d, seqid=%d\n", m.group_id,
@@ -74,7 +74,7 @@ class MoveGroupMessageHandler {
         can_client.send_can_message(can_ids::NodeId::host, response);
     }
 
-    void handle(const can_messages::ClearAllMoveGroupsRequest& m) {
+    void handle(const can_messages::ClearAllMoveGroupsRequest&) {
         LOG("Received clear move groups request");
         for (auto& group : move_groups) {
             group.clear();
@@ -90,7 +90,7 @@ class MoveGroupMessageHandler {
         }
     }
 
-    void visit_move(const std::monostate& m) {}
+    void visit_move(const std::monostate& m) { static_cast<void>(m); }
 
     void visit_move(const can_messages::GripperGripRequest& m) {
         mc_client.send_brushed_motion_controller_queue(m);
