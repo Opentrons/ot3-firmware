@@ -215,7 +215,6 @@ class MMR92C04 {
         uint32_t data = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
-
         switch (utils::reg_from_id<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);

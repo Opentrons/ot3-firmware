@@ -30,7 +30,6 @@ class I2CMessageHandler {
     void visit(Transact &m) {
         messages::MaxMessageBuffer read_buf{};
         if (m.transaction.bytes_to_write != 0) {
-            LOG("buffer data = %d", m.transaction.write_buffer.data());
             i2c_device.central_transmit(
                 m.transaction.write_buffer.data(),
                 std::min(m.transaction.bytes_to_write,

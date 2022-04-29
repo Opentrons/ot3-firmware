@@ -46,11 +46,11 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
-static auto eeprom = eeprom_simulator::EEProm{};
+static auto sim_eeprom = eeprom_simulator::EEProm{};
 static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
 std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {hdcsensor.ADDRESS, hdcsensor},
-    {eeprom.ADDRESS, eeprom},
+    {sim_eeprom.ADDRESS, sim_eeprom},
     {capsensor.ADDRESS, capsensor},
     {pressuresensor.ADDRESS, pressuresensor}};
 
