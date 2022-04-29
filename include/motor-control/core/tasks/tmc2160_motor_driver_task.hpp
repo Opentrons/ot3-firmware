@@ -18,27 +18,27 @@ namespace tasks {
 
 using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
 using CanMessageTuple = std::tuple<can_messages::ReadMotorDriverRegister,
-    can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister,
-    can_messages::WriteMotorCurrentRequest>;
+                                   can_messages::SetupRequest,
+                                   can_messages::WriteMotorDriverRegister,
+                                   can_messages::WriteMotorCurrentRequest>;
 using CanMessage =
-typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-    CanMessageTuple>::type;
+    typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
+                                       CanMessageTuple>::type;
 using TaskMessage = typename ::utils::VariantCat<
     std::variant<std::monostate>,
     typename ::utils::TuplesToVariants<CanMessageTuple,
-        SpiResponseMessage>::type>::type;
+                                       SpiResponseMessage>::type>::type;
 
 /**
  * The handler of motor driver messages
  */
 template <class Writer, message_writer_task::TaskClient CanClient,
-    class TaskQueue>
+          class TaskQueue>
 class MotorDriverMessageHandler {
   public:
     MotorDriverMessageHandler(Writer& writer, CanClient& can_client,
                               TaskQueue& task_queue,
-                              tmc2160::configs::TMC2130DriverConfig& configs)
+                              tmc2160::configs::TMC2160DriverConfig& configs)
         : driver(writer, task_queue, configs), can_client(can_client) {}
     MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
     MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
@@ -59,14 +59,14 @@ class MotorDriverMessageHandler {
 
     void handle(const spi::messages::TransactResponse& m) {
         if (m.id.command_type ==
-            static_cast<uint8_t>(spi::hardware::Mode::WRITE) &&
+                static_cast<uint8_t>(spi::hardware::Mode::WRITE) &&
             !m.success) {
-            driver.handle_spi_write_failure(tmc2130::registers::Registers(
+            driver.handle_spi_write_failure(tmc2160::registers::Registers(
                 static_cast<uint8_t>(m.id.token)));
         } else if (m.id.command_type ==
                    static_cast<uint8_t>(spi::hardware::Mode::READ)) {
             auto data = driver.handle_spi_read(
-                tmc2130::registers::Registers(static_cast<uint8_t>(m.id.token)),
+                tmc2160::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
             can_messages::ReadMotorDriverRegisterResponse response_msg{
                 .reg_address = static_cast<uint8_t>(m.id.token),
@@ -138,7 +138,7 @@ class MotorDriverTask {
      */
 
     template <message_writer_task::TaskClient CanClient,
-        class MotorDriverConfigs, class SpiWriter>
+              class MotorDriverConfigs, class SpiWriter>
     [[noreturn]] void operator()(MotorDriverConfigs* configs,
                                  CanClient* can_client, SpiWriter* writer) {
         auto handler = MotorDriverMessageHandler(*writer, *can_client,
@@ -168,4 +168,4 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
 
 }  // namespace tasks
 
-}  // namespace tmc2130
+}  // namespace tmc2160

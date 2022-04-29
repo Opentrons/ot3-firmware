@@ -1,6 +1,6 @@
 /**
- * @file tmc2130.hpp
- * @brief Interface to control a TMC2130 IC
+ * @file tmc2160.hpp
+ * @brief Interface to control a TMC2160 IC
  */
 #pragma once
 
@@ -19,7 +19,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 
-namespace tmc2130 {
+namespace tmc2160 {
 
 namespace driver {
 
@@ -76,7 +76,7 @@ class TMC2160 {
             return false;
         }
         if (!set_power_down_delay(
-            PowerDownDelay::reg_to_seconds(_registers.tpowerdown.time))) {
+                PowerDownDelay::reg_to_seconds(_registers.tpowerdown.time))) {
             return false;
         }
         if (!set_cool_threshold(_registers.tcoolthrs)) {
@@ -99,15 +99,15 @@ class TMC2160 {
     }
 
     /**
- * @brief Check if the TMC2130 has been initialized.
- * @return true if the registers have been written at least once,
- * false otherwise.
- */
+     * @brief Check if the TMC2160 has been initialized.
+     * @return true if the registers have been written at least once,
+     * false otherwise.
+     */
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
     auto handle_spi_read(Registers addr,
                          const spi::utils::MaxMessageBuffer& rxBuffer)
-    -> uint32_t {
+        -> uint32_t {
         uint32_t response = 0;
         const auto* iter = rxBuffer.cbegin();                      // NOLINT
         iter = bit_utils::bytes_to_int(iter + 1, rxBuffer.cend(),  // NOLINT
@@ -158,7 +158,6 @@ class TMC2160 {
      * @return True if new register was set succesfully, false otherwise
      */
     auto set_gconf(GConfig reg) -> bool {
-        reg.enc_commutation = 0;
         reg.test_mode = 0;
         if (set_register(reg)) {
             _registers.gconfig = reg;
@@ -190,7 +189,7 @@ class TMC2160 {
      */
     auto set_power_down_delay(double time) -> bool {
         PowerDownDelay temp_reg = {.time =
-        PowerDownDelay::seconds_to_reg(time)};
+                                       PowerDownDelay::seconds_to_reg(time)};
         if (set_register(temp_reg)) {
             _registers.tpowerdown = temp_reg;
             return true;
@@ -362,18 +361,19 @@ class TMC2160 {
     /**
      * @brief Get the register map
      */
-    [[nodiscard]] auto get_register_map() -> TMC2130RegisterMap& {
+    [[nodiscard]] auto get_register_map() -> TMC2160RegisterMap& {
         return _registers;
     }
 
     [[nodiscard]] auto convert_to_tmc2160_current_value(uint32_t c) const
-    -> uint32_t {
+        -> uint32_t {
         constexpr auto SQRT_TWO = sqrt2;
-        constexpr auto CURR_GLOB_SCALE = *reinterpret_cast<RegisterSerializedTypeA*>(&_registers.glob_scale);
-        constexpr auto GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0
-        auto FLOAT_CONSTANT = static_cast<float>(
-            SQRT_TWO * 32.0 * (_current_config.r_sense) /
-            _current_config.v_sf * GLOB_SCALE);
+        constexpr auto CURR_GLOB_SCALE =
+            *reinterpret_cast<RegisterSerializedTypeA*>(&_registers.glob_scale);
+        constexpr auto GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
+        auto FLOAT_CONSTANT =
+            static_cast<float>(SQRT_TWO * 32.0 * (_current_config.r_sense) /
+                               _current_config.v_sf * GLOB_SCALE);
         auto fixed_point_constant = static_cast<uint32_t>(
             FLOAT_CONSTANT * static_cast<float>(1LL << 16));
         uint64_t val = static_cast<uint64_t>(fixed_point_constant) *
@@ -382,10 +382,9 @@ class TMC2160 {
         return new_val - 1;
     }
 
-
   private:
     /**
-     * @brief Set a register on the TMC2130
+     * @brief Set a register on the TMC2160
      *
      * @tparam Reg The type of register to set
      * @tparam Policy Abstraction class for actual writing
@@ -395,7 +394,7 @@ class TMC2160 {
      * Attempts to write to an unwirteable register will throw a static
      * assertion.
      */
-    template <TMC2130Register Reg>
+    template <TMC2160Register Reg>
     requires WritableRegister<Reg>
     auto set_register(Reg& reg) -> bool {
         // Ignore the typical linter warning because we're only using
@@ -406,7 +405,7 @@ class TMC2160 {
         return write(Reg::address, value);
     }
     /**
-     * @brief Read a register on the TMC2130
+     * @brief Read a register on the TMC2160
      *
      * @tparam Reg The type of register to read
      * @tparam Policy Abstraction class for actual writing
@@ -414,7 +413,7 @@ class TMC2160 {
      * @return The contents of the register, or nothing if the register
      * can't be read.
      */
-    template <TMC2130Register Reg>
+    template <TMC2160Register Reg>
     requires ReadableRegister<Reg>
     auto read_register(uint32_t data) -> std::optional<Reg> {
         using RT = std::optional<RegisterSerializedType>;
@@ -436,6 +435,8 @@ class TMC2160 {
     spi::utils::ChipSelectInterface _cs_intf;
     TaskQueue& _task_queue;
     bool _initialized;
+};
+}  // namespace driver
 
-
-}
+}  // namespace tmc2160
+#pragma GCC diagnostic pop

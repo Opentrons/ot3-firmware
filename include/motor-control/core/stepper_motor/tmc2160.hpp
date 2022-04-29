@@ -60,7 +60,7 @@ enum class Registers : uint8_t {
     PWM_SCALE = 0x71,
     PWM_AUTO = 0x72,
     LOST_STEPS = 0x73,
-}
+};
 
 inline auto is_valid_address(const uint8_t add) -> bool {
     switch (Registers(add)) {
@@ -164,8 +164,8 @@ struct __attribute__((packed, __may_alias__)) GStatus {
 };
 
 /**
-* This register sets the control current for holding and running.
-*/
+ * This register sets the control current for holding and running.
+ */
 struct __attribute__((packed, __may_alias__)) CurrentControl {
     static constexpr Registers address = Registers::IHOLD_IRUN;
     static constexpr bool writable = true;
@@ -182,8 +182,8 @@ struct __attribute__((packed, __may_alias__)) CurrentControl {
 };
 
 /**
-* This register scales the current set in ihold_irun.
-*/
+ * This register scales the current set in ihold_irun.
+ */
 struct __attribute__((packed, __may_alias__)) GlobalScaler {
     static constexpr Registers address = Registers::GLOBAL_SCALER;
     static constexpr bool writable = true;
@@ -298,7 +298,7 @@ struct __attribute__((packed, __may_alias__)) ChopConfig {
     uint32_t disfdcc : 1 = 0;
 
     // reserved, set to 0
-    uint32_t padding_1: 1 = 0;
+    uint32_t padding_1 : 1 = 0;
     /**
      * Chopper mode. 0 = standard mode, 1 = constant off-time with fast decay.
      */
@@ -309,7 +309,7 @@ struct __attribute__((packed, __may_alias__)) ChopConfig {
     uint32_t tbl : 2 = 2;
 
     // reserved, set to 0
-    uint32_t padding_2: 1 = 0;
+    uint32_t padding_2 : 1 = 0;
     /**
      * High velocity fullstep selection: Enables switching to fullstep when
      * VHIGH is exceeded. Only switches at 45º position.
@@ -502,7 +502,7 @@ struct TMC2160RegisterMap {
     CoolConfig coolconf = {};
     DriveStatus drvstatus = {};
     GStatus gstat = {};
-    GlobalScaler glob_scal = {};
+    GlobalScaler glob_scale = {};
 };
 
 // Registers are all 32 bits
@@ -510,7 +510,7 @@ using RegisterSerializedType = uint32_t;
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
 
-} // registers
+}  // namespace registers
 
 namespace configs {
 // R sense and VSF configuration
@@ -520,11 +520,11 @@ struct TMC2160MotorCurrentConfig {
 };
 
 struct TMC2160DriverConfig {
-    registers::TMC2130RegisterMap registers{};
-    TMC2130MotorCurrentConfig current_config{};
+    registers::TMC2160RegisterMap registers{};
+    TMC2160MotorCurrentConfig current_config{};
     spi::utils::ChipSelectInterface chip_select{};
 };
 
 }  // namespace configs
 
-} // tmc2160
+}  // namespace tmc2160
