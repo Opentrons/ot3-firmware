@@ -40,7 +40,7 @@ class EEPromMessageHandler {
   private:
     void visit(std::monostate &) {}
 
-    void visit(i2c::messages::TransactionResponse& m) {
+    void visit(i2c::messages::TransactionResponse&){//} m) {
 //        auto message = can_messages::ReadFromEEPromResponse::create(
 //            0, m.read_buffer.cbegin(), m.read_buffer.cend());
     }
@@ -61,7 +61,7 @@ class EEPromMessageHandler {
     void visit(eeprom::message::ReadEepromMessage& m) {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
-//        writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
+        writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
