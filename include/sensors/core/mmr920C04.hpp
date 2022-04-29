@@ -198,7 +198,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
         } else {
             reg &= 0x007FFFFF;
         }
-        float pressure = reg * PA_PER_COUNT;
+        float pressure = static_cast<float>(reg) * PA_PER_COUNT;
         return convert_to_fixed_point(pressure, 16);
     }
 };
