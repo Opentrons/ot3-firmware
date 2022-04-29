@@ -171,6 +171,21 @@ SCENARIO("Test the i2c command queue writer") {
             auto msg = get_message(queue);
             THEN("the token is used") { REQUIRE(msg.id.token == 52); }
         }
+        WHEN("we command a read from a specified register") {
+            writer.read(0x4321, 3, 5,
+                        response_queue);
+            auto msg = get_message(queue);
+            THEN("the transaction contains a write portion for the address") {
+                REQUIRE(msg.transaction.bytes_to_write==1);
+                REQUIRE(msg.transaction.write_buffer[0]==3);
+            }
+            THEN("the device address is set") {
+                REQUIRE(msg.transaction.address == 0x4321);
+            }
+            THEN("the read count is set") {
+                REQUIRE(msg.transaction.bytes_to_read==5);
+            }
+        }
     }
 
     GIVEN("a desire to transact") {
