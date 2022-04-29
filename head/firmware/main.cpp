@@ -19,6 +19,7 @@
 #include "stm32g4xx_hal_conf.h"
 #include "utility_hardware.h"
 #pragma GCC diagnostic pop
+#include "can/core/bit_timings.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
@@ -249,6 +250,19 @@ auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
     }),
     100);
 
+// Unfortunately, these numbers need to be literals or defines
+// to get the compile-time checks to work so we can't actually
+// correctly rely on the hal to get these numbers - they need
+// to be checked against current configuration. However, they are
+// - clock input is 85MHz assuming the CAN is clocked from PCLK1
+// which has a clock divider of 2, and the system clock is 170MHZ
+// - 50ns time quantum to match host
+// - 250KHz bitrate
+// - 88.2% (.882*255) sample point
+
+static constexpr auto can_bit_timings =
+    can::bit_timings::BitTimings<85000000, 50, 250000, 882>{};
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -266,7 +280,9 @@ auto main() -> int {
 
     utility_gpio_init();
 
-    can_start();
+    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
+              can_bit_timings.segment_2_quanta,
+              can_bit_timings.max_sync_jump_width);
 
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_right.motion_controller, psd, spi_comms2,

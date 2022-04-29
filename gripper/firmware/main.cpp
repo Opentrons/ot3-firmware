@@ -6,6 +6,7 @@
 #include "system_stm32g4xx.h"
 // clang-format on
 
+#include "can/core/bit_timings.hpp"
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/app_update.h"
@@ -20,6 +21,8 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
  * The can bus.
  */
 static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
+static constexpr auto can_bit_timings =
+    can::bit_timings::BitTimings<85000000, 50, 250000, 882>{};
 
 auto main() -> int {
     HardwareInit();
@@ -31,7 +34,9 @@ auto main() -> int {
     z_motor_iface::initialize();
     grip_motor_iface::initialize();
 
-    can_start();
+    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
+              can_bit_timings.segment_2_quanta,
+              can_bit_timings.max_sync_jump_width);
 
     gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
                                grip_motor_iface::get_grip_motor(),

@@ -1,5 +1,6 @@
 #include "gantry/core/interfaces.hpp"
 
+#include "can/core/bit_timings.hpp"
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
@@ -204,6 +205,9 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
+static constexpr auto can_bit_timings =
+    can::bit_timings::BitTimings<85000000, 50, 250000, 882>{};
+
 void interfaces::initialize() {
     // Initialize SPI
     if (initialize_spi(get_axis_type()) != HAL_OK) {
@@ -213,7 +217,9 @@ void interfaces::initialize() {
     initialize_timer(call_motor_handler);
 
     // Start the can bus
-    can_start();
+    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
+              can_bit_timings.segment_2_quanta,
+              can_bit_timings.max_sync_jump_width);
 
     iWatchdog.start(6);
 }

@@ -5,6 +5,7 @@
 
 // clang-format on
 
+#include "can/core/bit_timings.hpp"
 #include "can/core/ids.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/app_update.h"
@@ -118,6 +119,9 @@ static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
     .pin = GPIO_PIN_5,
     .active_setting = GPIO_PIN_RESET});
 
+static constexpr auto can_bit_timings =
+    can::bit_timings::BitTimings<110000000, 50, 250000, 882>{};
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -139,7 +143,9 @@ auto main() -> int {
 
     initialize_timer(plunger_callback);
 
-    can_start();
+    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
+              can_bit_timings.segment_2_quanta,
+              can_bit_timings.max_sync_jump_width);
 
     pipettes_tasks::start_tasks(
         can_bus_1, pipette_motor.motion_controller, i2c_comms3, i2c_comms1,

@@ -41,11 +41,11 @@ static void * message_callback_data = NULL;
 /**
  * Start CAN
  */
-void can_start() {
+void can_start(uint8_t clock_divider, uint8_t segment_1_tqs, uint8_t segment_2_tqs, uint8_t max_sync_jump_width) {
     mutex = xSemaphoreCreateMutexStatic(&mutex_data);
 
     // TODO (al, 2021-11-18): error returns?
-    MX_FDCAN1_Init(&fdcan1);
+    MX_FDCAN1_Init(&fdcan1, clock_divider, segment_1_tqs, segment_2_tqs, max_sync_jump_width);
 
     HAL_FDCAN_ActivateNotification(&fdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE,0);
 
