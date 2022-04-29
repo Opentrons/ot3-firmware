@@ -54,21 +54,21 @@ class SystemMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
-    void visit(DeviceInfoRequest &m) {
+    void visit(DeviceInfoRequest &) {
         writer.send_can_message(can_ids::NodeId::host, response);
     }
 
-    void visit(InitiateFirmwareUpdate &m) { app_update_start(); }
+    void visit(InitiateFirmwareUpdate &) { app_update_start(); }
 
-    void visit(FirmwareUpdateStatusRequest &m) {
+    void visit(FirmwareUpdateStatusRequest &) {
         auto status_response =
             FirmwareUpdateStatusResponse{.flags = app_update_flags()};
         writer.send_can_message(can_ids::NodeId::host, status_response);
     }
 
-    void visit(TaskInfoRequest &m) {
+    void visit(TaskInfoRequest &) {
         auto tasks = std::array<TaskStatus_t, 20>{};
         auto num_tasks =
             uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);

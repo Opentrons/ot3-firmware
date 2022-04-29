@@ -41,21 +41,21 @@ class MotionControllerMessageHandler {
     }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    void handle(std::monostate&) {}
 
-    void handle(const can_messages::EnableMotorRequest& m) {
+    void handle(const can_messages::EnableMotorRequest&) {
         LOG("Received enable motor request");
         motor.activate_motor();
     }
 
-    void handle(const can_messages::DisableMotorRequest& m) {
+    void handle(const can_messages::DisableMotorRequest&) {
         LOG("Received disable motor request");
         motor.deactivate_motor();
     }
 
-    void handle(const can_messages::GripperGripRequest& m) { motor.grip(); }
+    void handle(const can_messages::GripperGripRequest&) { motor.grip(); }
 
-    void handle(const can_messages::GripperHomeRequest& m) { motor.home(); }
+    void handle(const can_messages::GripperHomeRequest&) { motor.home(); }
 
     motor_hardware::BrushedMotorHardwareIface& motor;
     CanClient& can_client;

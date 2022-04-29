@@ -87,7 +87,7 @@ static auto dispatcher_g = can_dispatch::Dispatcher(
 
 /** Dispatcher to the various handlers */
 static auto main_dispatcher = can_dispatch::Dispatcher(
-    [](auto _) -> bool { return true; }, dispatcher_z, dispatcher_g,
+    [](auto) -> bool { return true; }, dispatcher_z, dispatcher_g,
     system_dispatch_target, gripper_info_dispatch_target);
 
 auto static reader_message_buffer =
@@ -102,8 +102,7 @@ static auto reader_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(void* cb_data, uint32_t identifier, uint8_t* data,
-              uint8_t length) {
+void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     reader_message_buffer_writer.send_from_isr(identifier, data,
                                                data + length);  // NOLINT
 }

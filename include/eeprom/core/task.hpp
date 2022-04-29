@@ -41,7 +41,7 @@ class EEPromMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
         auto message = can_messages::ReadFromEEPromResponse::create(
@@ -55,7 +55,7 @@ class EEPromMessageHandler {
         writer.write(DEVICE_ADDRESS, m.data);
     }
 
-    void visit(can_messages::ReadFromEEPromRequest &m) {
+    void visit(can_messages::ReadFromEEPromRequest &) {
         LOG("Received request to read serial number");
         writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
     }

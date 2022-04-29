@@ -99,9 +99,7 @@ class MoveGroup {
   private:
     std::array<MoveTypes, GroupSize> storage{};
 
-    static auto visit_duration(const std::monostate& m) -> uint32_t {
-        return 0;
-    }
+    static auto visit_duration(const std::monostate&) -> uint32_t { return 0; }
 
     static auto visit_duration(const auto& m) -> uint32_t { return m.duration; }
 };

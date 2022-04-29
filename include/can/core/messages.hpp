@@ -40,16 +40,16 @@ struct BaseMessage {
 template <MessageId MId>
 struct Empty : BaseMessage<MId> {
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> Empty {
+    static auto parse(Input, Limit) -> Empty {
         return Empty{};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
+    auto serialize(Output, Limit) const -> uint8_t {
         return 0;
     }
 
-    auto operator==(const Empty& other) const -> bool = default;
+    auto operator==(const Empty&) const -> bool = default;
 };
 
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
