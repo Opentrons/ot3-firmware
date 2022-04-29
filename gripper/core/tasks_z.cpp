@@ -33,7 +33,7 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
 void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
                          spi::hardware::SpiDeviceBase& spi_device,
                          tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                         AllTask gripper_tasks) {
+                         AllTask& gripper_tasks) {
     auto& motion =
         mc_task_builder.start(5, "z mc", z_motor.motion_controller, z_queues);
     auto& move_group =
