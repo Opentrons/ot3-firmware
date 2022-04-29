@@ -46,11 +46,13 @@ class BrushedMotorInterruptHandler {
         if (!has_active_move && has_messages()) {
             update_move();
         }
-        if (has_active_move) {
+        if (has_active_move && limit_switch_triggered()) {
+            hardware.stop_pwm();
             if (buffered_move.stop_condition ==
-                    MoveStopCondition::limit_switch &&
-                homing_stopped()) {
-                hardware.stop_pwm();
+                MoveStopCondition::limit_switch) {
+                homing_stopped();
+            } else {
+                finish_current_move(AckMessageId::position_error);
             }
         }
     }
@@ -67,13 +69,9 @@ class BrushedMotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    auto homing_stopped() -> bool {
-        if (limit_switch_triggered()) {
-            finish_current_move(AckMessageId::stopped_by_condition);
-            reset_encoder_pulses();
-            return true;
-        }
-        return false;
+    void homing_stopped() {
+        finish_current_move(AckMessageId::stopped_by_condition);
+        reset_encoder_pulses();
     }
 
     auto limit_switch_triggered() -> bool {

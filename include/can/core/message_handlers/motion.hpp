@@ -45,8 +45,7 @@ class BrushedMotionHandler {
   public:
     using MessageType =
         std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
-                     GripperGripRequest, GripperHomeRequest, StopRequest,
-                     ReadLimitSwitchRequest>;
+                     StopRequest, ReadLimitSwitchRequest>;
 
     BrushedMotionHandler(BrushedMotionTaskClient &motion_client)
         : motion_client{motion_client} {}
