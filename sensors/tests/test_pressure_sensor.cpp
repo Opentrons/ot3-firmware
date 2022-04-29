@@ -116,7 +116,8 @@ SCENARIO("read pressure sensor values") {
                 }
                 THEN(
                     "using the callback with data returns the expected value") {
-                    std::array<uint8_t, 5> buffer_a = {0, 8, 2, 8, 0};
+                    auto buffer_a =
+                        i2c::messages::MaxMessageBuffer{0, 8, 2, 8, 0};
                     auto response = test_mocks::launder_response(
                         read_message, response_queue,
                         test_mocks::dummy_single_response(read_message, true,

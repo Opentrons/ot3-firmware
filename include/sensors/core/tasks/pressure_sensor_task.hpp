@@ -43,7 +43,7 @@ class PressureMessageHandler {
     }
 
   private:
-    void visit(const std::monostate &m) {}
+    void visit(const std::monostate &) {}
 
     void visit(const i2c::messages::TransactionResponse &m) {
         driver.handle_response(m);

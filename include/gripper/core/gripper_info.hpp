@@ -64,9 +64,9 @@ class GripperInfoMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
-    void visit(GripperInfoRequest &m) {
+    void visit(GripperInfoRequest &) {
         writer.send_can_message(can_ids::NodeId::host, response);
     }
 

@@ -152,6 +152,7 @@ void fw_update_wait_erase(const UpdateState * state) {
  *  for program it is the address. (not in use by us)
  */
 void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue) {
+    (void)ReturnValue;
     // If we're erasing and getting the magic ReturnValue then we're done.
     if (get_update_state()->erase_state == erase_state_running && ReturnValue == 0xFFFFFFFFU) {
         get_update_state()->erase_state = erase_state_done;
@@ -168,6 +169,7 @@ void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue) {
  *   address for program (not in use by us)
  */
 void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue) {
+    (void)ReturnValue;
     // If we're erasing then we've got an error on our hands.
     if (get_update_state()->erase_state == erase_state_running) {
         get_update_state()->erase_state = erase_state_error;

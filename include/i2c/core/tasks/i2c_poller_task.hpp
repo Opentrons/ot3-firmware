@@ -35,7 +35,7 @@ class I2CPollerMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
     void visit(messages::SingleRegisterPollRead &m) {
         // TODO (lc, 03-01-2022): we should try to consolidate polling to

@@ -18,21 +18,19 @@ extern "C" const version* version_get() { return &version_stub; }
 
 /** Stub fw update functions.*/
 
-FwUpdateReturn fw_update_initialize(UpdateState* state) { return fw_update_ok; }
+FwUpdateReturn fw_update_initialize(UpdateState*) { return fw_update_ok; }
 
-FwUpdateReturn fw_update_data(UpdateState* state, uint32_t address,
-                              const uint8_t* data, uint8_t length) {
+FwUpdateReturn fw_update_data(UpdateState*, uint32_t, const uint8_t*, uint8_t) {
     return fw_update_ok;
 }
 
-FwUpdateReturn fw_update_complete(UpdateState* state, uint32_t num_messages,
-                                  uint32_t crc32) {
+FwUpdateReturn fw_update_complete(UpdateState*, uint32_t, uint32_t) {
     return fw_update_invalid_size;
 }
 
 void fw_update_start_application() {}
 
-FwUpdateReturn fw_update_erase_application(UpdateState* state) {
+FwUpdateReturn fw_update_erase_application(UpdateState*) {
     return fw_update_ok;
 }
 

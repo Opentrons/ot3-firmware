@@ -24,7 +24,7 @@ class SensorHandler {
   private:
     SensorTaskClient &client;
 
-    void visit(const std::monostate &m) {}
+    void visit(const std::monostate &) {}
 
     void visit(const can_messages::SetSensorThresholdRequest &m) {
         send_to_queue(can_ids::SensorType(m.sensor), m);

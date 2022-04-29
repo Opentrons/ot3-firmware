@@ -22,6 +22,7 @@ class MockMessageQueue {
     ~MockMessageQueue() {}
 
     auto try_write(const Message& message, uint32_t timeout_ticks = 0) -> bool {
+        static_cast<void>(timeout_ticks);
         queue_data_structure.push_back(message);
         return true;
     }
@@ -41,6 +42,7 @@ class MockMessageQueue {
     }
 
     auto try_read(Message* message, uint32_t timeout_ticks = 0) -> bool {
+        static_cast<void>(timeout_ticks);
         if (has_message()) {
             *message = queue_data_structure.front();
             queue_data_structure.pop_front();

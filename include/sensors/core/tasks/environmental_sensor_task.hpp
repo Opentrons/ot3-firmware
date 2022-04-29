@@ -56,7 +56,7 @@ class EnvironmentSensorMessageHandler {
     }
 
   private:
-    void visit(const std::monostate &m) {}
+    void visit(const std::monostate &) {}
 
     void visit(const i2c::messages::TransactionResponse &m) {
         uint16_t data = 0x0;
@@ -87,11 +87,11 @@ class EnvironmentSensorMessageHandler {
         }
     }
 
-    void visit(const can_messages::BaselineSensorRequest &m) {
+    void visit(const can_messages::BaselineSensorRequest &) {
         LOG("Received non-supported BaselineSensorRequest");
     }
 
-    void visit(const can_messages::SetSensorThresholdRequest &m) {
+    void visit(const can_messages::SetSensorThresholdRequest &) {
         LOG("Received non-supported SetSensorThresholdRequest");
     }
 
@@ -115,7 +115,7 @@ class EnvironmentSensorMessageHandler {
         }
     }
 
-    void visit(const can_messages::BindSensorOutputRequest &m) {
+    void visit(const can_messages::BindSensorOutputRequest &) {
         LOG("Received non-supported BindSensorOutputRequest");
     }
 

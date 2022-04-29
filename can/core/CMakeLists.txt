@@ -17,13 +17,15 @@ target_include_directories(can-core
         ${CMAKE_CURRENT_LIST_DIR}/../../include)
 
 target_compile_options(can-core
-        PRIVATE
+        PUBLIC
         -Wall
         -Werror
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy
-        -fno-rtti
+        -Wno-missing-field-initializers
+        -Wextra
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
         )

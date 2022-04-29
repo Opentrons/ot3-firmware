@@ -88,7 +88,7 @@ namespace z_tasks {
 void start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
                 spi::hardware::SpiDeviceBase& spi_device,
                 tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                AllTask tasks);
+                AllTask& tasks);
 
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
@@ -122,7 +122,8 @@ struct QueueClient : can_message_writer::MessageWriter {
 
 namespace g_tasks {
 
-void start_task(brushed_motor::BrushedMotor& grip_motor, AllTask gripper_tasks);
+void start_task(brushed_motor::BrushedMotor& grip_motor,
+                AllTask& gripper_tasks);
 
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
