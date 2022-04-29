@@ -17,6 +17,7 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
         case pipette_hardware_device_sync_out:
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_5;
+            return pinout;
         default:
             pinout.port = 0;
             pinout.pin = 0;
@@ -59,6 +60,7 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
         case pipette_hardware_device_sync_out:
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_4;
+            return pinout;
         default:
             pinout.port = 0;
             pinout.pin = 0;
