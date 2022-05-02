@@ -15,6 +15,13 @@ void BrushedMotorHardware::negative_direction() {
     motor_hardware_start_pwm(pins.pwm_2.tim, pins.pwm_2.channel);
 }
 
+void BrushedMotorHardware::start_timer_interrupt() {
+    motor_hardware_start_timer(pins.pwm_1.tim);  // start base timer
+}
+void BrushedMotorHardware::stop_timer_interrupt() {
+    motor_hardware_stop_timer(pins.pwm_1.tim);  // stop base timer
+}
+
 void BrushedMotorHardware::activate_motor() { gpio::set(pins.enable); }
 void BrushedMotorHardware::deactivate_motor() { gpio::reset(pins.enable); }
 
@@ -24,7 +31,7 @@ bool BrushedMotorHardware::check_limit_switch() {
 
 void BrushedMotorHardware::grip() { positive_direction(); }
 
-void BrushedMotorHardware::home() { negative_direction(); }
+void BrushedMotorHardware::ungrip() { negative_direction(); }
 
 void BrushedMotorHardware::stop_pwm() {
     motor_hardware_stop_pwm(pins.pwm_1.tim, pins.pwm_1.channel);

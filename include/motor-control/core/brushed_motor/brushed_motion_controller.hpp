@@ -33,7 +33,6 @@ class MotionController {
                         .seq_id = can_msg.seq_id,
                         .stop_condition = MoveStopCondition::none};
         queue.try_write(msg);
-        hardware.grip();
     }
 
     void move(const can_messages::GripperHomeRequest& can_msg) {
@@ -44,12 +43,17 @@ class MotionController {
                         .seq_id = can_msg.seq_id,
                         .stop_condition = MoveStopCondition::limit_switch};
         queue.try_write(msg);
-        hardware.home();
     }
 
-    void enable_motor() { hardware.activate_motor(); }
+    void enable_motor() {
+        hardware.activate_motor();
+        hardware.start_timer_interrupt();
+    }
 
-    void disable_motor() { hardware.deactivate_motor(); }
+    void disable_motor() {
+        hardware.deactivate_motor();
+        hardware.stop_timer_interrupt();
+    }
 
     void stop() { hardware.stop_pwm(); }
 

@@ -265,6 +265,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7 && timer_callback) {
         timer_callback();
+    } else if (htim == &htim1) {
+        brushed_timer_callback();
     }
 }
 

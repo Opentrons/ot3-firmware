@@ -44,7 +44,7 @@ class BrushedMotorInterruptHandler {
 
     void run_interrupt() {
         if (!has_active_move && has_messages()) {
-            update_move();
+            update_and_start_move();
         }
         if (has_active_move && limit_switch_triggered()) {
             hardware.stop_pwm();
@@ -57,16 +57,13 @@ class BrushedMotorInterruptHandler {
         }
     }
 
-    void update_move() {
+    void update_and_start_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
-        if (has_active_move &&
-            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
-            position_tracker = 0x7FFFFFFFFFFFFFFF;
+        if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            hardware.ungrip();
+        } else {
+            hardware.grip();
         }
-        // (TODO: lc) We should check the direction (and set respectively)
-        // the direction pin for the motor once a move is being pulled off the
-        // queue stack. We'll probably want to think about moving the hardware
-        // pin configurations out of motion controller.
     }
 
     void homing_stopped() {

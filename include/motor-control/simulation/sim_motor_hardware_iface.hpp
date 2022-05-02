@@ -40,6 +40,8 @@ class SimBrushedMotorHardwareIface
     void negative_direction() final {}
     void activate_motor() final {}
     void deactivate_motor() final {}
+    void start_timer_interrupt() final {}
+    void stop_timer_interrupt() final {}
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;
@@ -48,7 +50,7 @@ class SimBrushedMotorHardwareIface
         return false;
     }
     void grip() final {}
-    void home() final {}
+    void ungrip() final {}
     void stop_pwm() final {}
     bool check_sync_in() final { return true; }
     void reset_encoder_pulses() final { test_pulses = 0; }
