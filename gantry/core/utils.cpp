@@ -1,15 +1,16 @@
 #include "gantry/core/utils.hpp"
 
-#include <cstdlib>
-
 auto utils::get_node_id_by_axis(enum GantryAxisType which) -> can_ids::NodeId {
     switch (which) {
         case GantryAxisType::gantry_x:
             return can_ids::NodeId::gantry_x;
         case GantryAxisType::gantry_y:
             return can_ids::NodeId::gantry_y;
+        default:
+            // Return a bootloader node id for the X gantry
+            // if both other cases fail.
+            return can_ids::NodeId::gantry_x_bootloader;
     }
-    std::abort();
 }
 
 auto utils::get_node_id() -> can_ids::NodeId {
@@ -31,8 +32,9 @@ auto utils::linear_motion_sys_config_by_axis(enum GantryAxisType which)
                 .steps_per_rev = 200,
                 .microstep = 32,
             };
+        default:
+            return lms::LinearMotionSystemConfig<lms::BeltConfig>{};
     }
-    std::abort();
 }
 
 auto utils::linear_motion_system_config()
