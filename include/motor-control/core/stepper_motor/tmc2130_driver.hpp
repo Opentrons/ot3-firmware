@@ -150,13 +150,14 @@ class TMC2130 {
         _initialized = false;
         switch (addr) {
             case Registers::GCONF:
-                update_gconf(0);
+                [[fallthrough]];
             case Registers::GSTAT:
-                update_gconf(0);
+                [[fallthrough]];
             case Registers::CHOPCONF:
-                update_gconf(0);
+                [[fallthrough]];
             case Registers::DRVSTATUS:
                 update_gconf(0);
+                break;
             default:
                 break;
         }

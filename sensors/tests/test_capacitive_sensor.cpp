@@ -129,8 +129,10 @@ SCENARIO("read capacitance sensor values") {
                 THEN(
                     "using the callback with +saturated data returns the "
                     "expected value") {
-                    std::array<uint8_t, 5> buffer_a = {0x7f, 0xff, 0, 0, 0};
-                    std::array<uint8_t, 5> buffer_b = {0xff, 0, 0, 0, 0};
+                    auto buffer_a =
+                        i2c::messages::MaxMessageBuffer{0x7f, 0xff, 0, 0, 0};
+                    auto buffer_b =
+                        i2c::messages::MaxMessageBuffer{0xff, 0, 0, 0, 0};
                     std::array<sensors::utils::TaskMessage, 4> responses{
                         test_mocks::launder_response(
                             read_message, response_queue,
@@ -166,8 +168,10 @@ SCENARIO("read capacitance sensor values") {
                 THEN(
                     "using the callback with -saturated data returns the "
                     "expected value") {
-                    std::array<uint8_t, 5> buffer_a = {0x80, 0x00, 0, 0, 0};
-                    std::array<uint8_t, 5> buffer_b = {0x00, 0, 0, 0, 0};
+                    auto buffer_a =
+                        i2c::messages::MaxMessageBuffer{0x80, 0x00, 0, 0, 0};
+                    auto buffer_b =
+                        i2c::messages::MaxMessageBuffer{0x00, 0, 0, 0, 0};
                     std::array<sensors::utils::TaskMessage, 4> responses{
                         test_mocks::launder_response(
                             read_message, response_queue,
@@ -211,8 +215,8 @@ SCENARIO("read capacitance sensor values") {
             can_messages::BaselineSensorRequest({}, capacitive_id, NUM_READS));
         WHEN("we call the capacitance handler") {
             sensor.handle_message(multi_read);
-            std::array<uint8_t, 5> buffer_a = {200, 80, 0, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {100, 10, 0, 0, 0};
+            auto buffer_a = i2c::messages::MaxMessageBuffer{200, 80, 0, 0, 0};
+            auto buffer_b = i2c::messages::MaxMessageBuffer{100, 10, 0, 0, 0};
             auto read_message =
                 get_message<i2c::messages::MultiRegisterPollRead>(poller_queue);
             for (int i = 0; i < NUM_READS; i++) {
@@ -273,8 +277,8 @@ SCENARIO("capacitance callback tests") {
             REQUIRE(mock_hw.get_sync_reset_calls() == 1);
         }
         WHEN("it receives data under its threshold") {
-            std::array<uint8_t, 5> buffer_a = {0, 0, 0, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {0, 0, 0, 0, 0};
+            auto buffer_a = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
+            auto buffer_b = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{
@@ -304,8 +308,8 @@ SCENARIO("capacitance callback tests") {
             }
         }
         WHEN("it receives data over its threshold") {
-            std::array<uint8_t, 5> buffer_a = {0x7f, 0xff, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {0xff, 0, 0, 0, 0};
+            auto buffer_a = i2c::messages::MaxMessageBuffer{0x7f, 0xff, 0, 0};
+            auto buffer_b = i2c::messages::MaxMessageBuffer{0xff, 0, 0, 0, 0};
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{
@@ -351,8 +355,8 @@ SCENARIO("capacitance callback tests") {
         }
 
         WHEN("it receives data under its threshold") {
-            std::array<uint8_t, 5> buffer_a = {0, 0, 0, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {0, 0, 0, 0, 0};
+            auto buffer_a = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
+            auto buffer_b = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{
@@ -383,8 +387,9 @@ SCENARIO("capacitance callback tests") {
             }
         }
         WHEN("it receives data over its threshold") {
-            std::array<uint8_t, 5> buffer_a = {0x7f, 0xff, 0, 0, 0};
-            std::array<uint8_t, 5> buffer_b = {0xff, 0, 0, 0, 0};
+            auto buffer_a =
+                i2c::messages::MaxMessageBuffer{0x7f, 0xff, 0, 0, 0};
+            auto buffer_b = i2c::messages::MaxMessageBuffer{0xff, 0, 0, 0, 0};
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{

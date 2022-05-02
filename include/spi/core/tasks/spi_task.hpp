@@ -34,7 +34,7 @@ class MessageHandler {
     }
 
   private:
-    void visit(std::monostate m) {}
+    void visit(std::monostate&) {}
 
     void visit(spi::messages::Transact& m) {
         LOG("Received SPI read request");

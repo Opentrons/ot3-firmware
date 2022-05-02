@@ -39,22 +39,22 @@ class MotionControllerMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can_messages::StopRequest& m) {
+    void handle(const can_messages::StopRequest&) {
         LOG("Received stop request");
         controller.stop();
     }
 
-    void handle(const can_messages::EnableMotorRequest& m) {
+    void handle(const can_messages::EnableMotorRequest&) {
         LOG("Received enable motor request");
         controller.enable_motor();
     }
 
-    void handle(const can_messages::DisableMotorRequest& m) {
+    void handle(const can_messages::DisableMotorRequest&) {
         LOG("Received disable motor request");
         controller.disable_motor();
     }
 
-    void handle(const can_messages::GetMotionConstraintsRequest& m) {
+    void handle(const can_messages::GetMotionConstraintsRequest&) {
         auto constraints = controller.get_motion_constraints();
         can_messages::GetMotionConstraintsResponse response_msg{
             .min_velocity = constraints.min_velocity,
@@ -89,7 +89,7 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-    void handle(const can_messages::ReadLimitSwitchRequest& m) {
+    void handle(const can_messages::ReadLimitSwitchRequest&) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
         can_messages::ReadLimitSwitchResponse msg{{}, response};

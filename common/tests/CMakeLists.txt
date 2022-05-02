@@ -23,6 +23,8 @@ target_compile_options(common
   PUBLIC
   -Wall
   -Werror
+  -Wextra
+  -Wno-missing-field-initializers
   -Weffc++
   -Wreorder
   -Wsign-promo

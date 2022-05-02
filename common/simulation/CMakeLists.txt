@@ -16,6 +16,8 @@ target_include_directories(common-simulation
 target_compile_options(common-simulation
         PRIVATE
         -Wall
+        -Wextra
+        -Wno-missing-field-initializers
         -Werror
         -Weffc++
         -Wreorder

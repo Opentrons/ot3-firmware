@@ -25,7 +25,7 @@ class I2CMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
     void visit(Transact &m) {
         messages::MaxMessageBuffer read_buf{};

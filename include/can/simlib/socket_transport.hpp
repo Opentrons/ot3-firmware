@@ -19,7 +19,7 @@ class SocketTransport : public can_transport::BusTransportBase {
   public:
     explicit SocketTransport(const char *host, uint32_t port)
         : host{host}, port{port}, socket{context} {}
-    ~SocketTransport() = default;
+    ~SocketTransport() {}
     SocketTransport(const SocketTransport &) = delete;
     SocketTransport(const SocketTransport &&) = delete;
     SocketTransport &operator=(const SocketTransport &) = delete;
@@ -47,7 +47,7 @@ auto SocketTransport<CriticalSection>::open() -> bool {
     try {
         boost::asio::connect(socket,
                              resolver.resolve(host, std::to_string(port)));
-    } catch (boost::system::system_error) {
+    } catch (boost::system::system_error &) {
         return false;
     }
 

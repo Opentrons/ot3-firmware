@@ -3,14 +3,15 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
-#include "pipettes/core/tasks/eeprom_task.hpp"
+#include "task.hpp"
 
-namespace eeprom_message_handler {
+namespace eeprom {
+namespace message_handler {
 
-template <eeprom_task::TaskClient EEPromTaskClient>
+template <eeprom::task::TaskClient EEPromTaskClient>
 class EEPromHandler {
   public:
-    using MessageType = eeprom_task::CanMessage;
+    using MessageType = eeprom::task::CanMessage;
 
     explicit EEPromHandler(EEPromTaskClient &client) : client(client) {}
     EEPromHandler(const EEPromHandler &) = delete;
@@ -29,4 +30,5 @@ class EEPromHandler {
     EEPromTaskClient &client;
 };
 
-}  // namespace eeprom_message_handler
+}  // namespace message_handler
+}  // namespace eeprom
