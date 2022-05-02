@@ -139,8 +139,7 @@ void FDCAN1_IT0_IRQHandler(void) {
 }
 
 /**
- * @brief This function handles TIM1 update interrupt and TIM16 global
- * interrupt.
+ * @brief This function handles TIM1 capture/compare interrupt.
  */
 void TIM1_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
 
