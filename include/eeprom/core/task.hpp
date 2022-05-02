@@ -7,17 +7,16 @@
 #include "common/core/message_utils.hpp"
 #include "i2c/core/messages.hpp"
 #include "i2c/core/writer.hpp"
-#include "types.hpp"
 #include "messages.hpp"
+#include "types.hpp"
 
 namespace eeprom {
 namespace task {
 
-using TaskMessage = std::variant<
-    eeprom::message::WriteEepromMessage,
-      eeprom::message::ReadEepromMessage,
-      i2c::messages::TransactionResponse,
-    std::monostate>;
+using TaskMessage =
+    std::variant<eeprom::message::WriteEepromMessage,
+                 eeprom::message::ReadEepromMessage,
+                 i2c::messages::TransactionResponse, std::monostate>;
 
 template <class I2CQueueWriter, class OwnQueue>
 class EEPromMessageHandler {
@@ -33,19 +32,19 @@ class EEPromMessageHandler {
         -> EEPromMessageHandler && = delete;
     ~EEPromMessageHandler() = default;
 
-    void handle_message(TaskMessage& m) {
+    void handle_message(TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
   private:
     void visit(std::monostate &) {}
 
-    void visit(i2c::messages::TransactionResponse&){//} m) {
-//        auto message = can_messages::ReadFromEEPromResponse::create(
-//            0, m.read_buffer.cbegin(), m.read_buffer.cend());
+    void visit(i2c::messages::TransactionResponse &) {  //} m) {
+        //        auto message = can_messages::ReadFromEEPromResponse::create(
+        //            0, m.read_buffer.cbegin(), m.read_buffer.cend());
     }
 
-    void visit(eeprom::message::WriteEepromMessage& m) {
+    void visit(eeprom::message::WriteEepromMessage &m) {
         LOG("Received request to write %d bytes to address %x", m.length,
             m.data);
         auto buffer = i2c::messages::MaxMessageBuffer{};
@@ -53,12 +52,15 @@ class EEPromMessageHandler {
         // First byte is address
         *iter++ = m.memory_address;
         // Remainder is data
-        iter = std::copy_n(m.data.cbegin(), std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)), iter);
+        iter = std::copy_n(
+            m.data.cbegin(),
+            std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
+            iter);
 
         writer.write(DEVICE_ADDRESS, std::span(buffer.begin(), iter));
     }
 
-    void visit(eeprom::message::ReadEepromMessage& m) {
+    void visit(eeprom::message::ReadEepromMessage &m) {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
         writer.read(DEVICE_ADDRESS, m.memory_address, m.length, own_queue, 0);

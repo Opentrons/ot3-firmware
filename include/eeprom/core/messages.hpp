@@ -12,8 +12,7 @@ struct EepromMessage {
     auto operator==(const EepromMessage&) const -> bool = default;
 };
 
-/** Forward declaration of response handler interface */
-class EepromResponseHandler;
+using ReadResponseCallback = void(*)(const EepromMessage&, void*);
 
 /**
  * The read from eeprom message.
@@ -21,20 +20,13 @@ class EepromResponseHandler;
 struct ReadEepromMessage {
     eeprom::types::address memory_address{0};
     eeprom::types::data_length length{0};
-    EepromResponseHandler* response_handler{nullptr};
+    ReadResponseCallback callback;
+    void* callback_param;
 };
 
 /** The write to eeprom message */
 using WriteEepromMessage = EepromMessage;
 
-/**
- * The eeprom response handler interface
- */
-class EepromResponseHandler {
-  public:
-    virtual void handle(const EepromMessage& m) = 0;
-    virtual ~EepromResponseHandler() {}
-};
 
 }  // namespace message
 }  // namespace eeprom
