@@ -19,15 +19,14 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
             uint16_t store_in_register = 0;
             auto *iter = data + 1;
             if (size == 3) {
-                auto *iter = data + 1;
-                iter = bit_utils::bytes_to_int(iter, data + size, store_in register);
-                sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
-                else if (size == 5) {
-                    uint32_t store_in_register = 0;
-                    auto *iter = data + 1;
-                    iter = bit_utils::bytes_to_int(iter, data + size, store_in_register);
-                    sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
-                }
+                iter = bit_utils::bytes_to_int(iter, data + size,
+                                               store_in_register);
+            } else if (size == 5) {
+                uint32_t store_in_register = 0;
+                iter = bit_utils::bytes_to_int(iter, data + size,
+                                               store_in_register);
+            }
+            sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
         }
     }
 
@@ -49,8 +48,8 @@ auto SimI2C::central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
          * integer sizes
          * */
         if (size == 2) {
-            iter = static_cast<uint16_t>(
-                bit_utils::int_to_bytes(data_from_reg, iter, data + size));
+            iter = bit_utils::int_to_bytes(static_cast<uint16_t>(data_from_reg),
+                                           iter, data + size);
         } else {
             iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
         }
