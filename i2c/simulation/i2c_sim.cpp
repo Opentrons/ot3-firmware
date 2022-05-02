@@ -16,17 +16,18 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
     if (!sensor_map.empty()) {
         next_register_map[dev_address] = reg;
         if (size > 1) {
-            uint16_t store_in_register = 0;
             auto *iter = data + 1;
+            uint16_t store_in_register = 0;
             if (size == 3) {
                 iter = bit_utils::bytes_to_int(iter, data + size,
                                                store_in_register);
+                sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
             } else if (size == 5) {
                 uint32_t store_in_register = 0;
                 iter = bit_utils::bytes_to_int(iter, data + size,
                                                store_in_register);
+                sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
             }
-            sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
         }
     }
 
