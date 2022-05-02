@@ -7,11 +7,9 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 
-SCENARIO("Eeprom task interaction") {
+SCENARIO("Sending messages to Eeprom task") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
-    test_mocks::MockMessageQueue<eeprom::task::TaskMessage> eeprom_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
-    i2c::writer::TaskMessage empty_msg{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
 
@@ -75,6 +73,55 @@ SCENARIO("Eeprom task interaction") {
                 REQUIRE(transact_message.transaction.write_buffer[0] ==
                         address);
                 REQUIRE(transact_message.id.token == 0);
+            }
+        }
+    }
+}
+
+struct ReadResponseHandler {
+    static void callback(const eeprom::message::EepromMessage& msg,
+                         void* param) {
+        reinterpret_cast<ReadResponseHandler*>(param)->_callback(msg);
+    }
+    void _callback(const eeprom::message::EepromMessage& msg) { message = msg; }
+    eeprom::message::EepromMessage message;
+};
+
+SCENARIO("Transaction response handling.") {
+    test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
+    test_mocks::MockI2CResponseQueue response_queue{};
+    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
+    writer.set_queue(&i2c_queue);
+
+    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue};
+
+    GIVEN("A read request") {
+        eeprom::types::address address = 14;
+        eeprom::types::data_length data_length = 5;
+        auto read_response_handler = ReadResponseHandler{};
+        auto read_msg =
+            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
+                .memory_address = address,
+                .length = data_length,
+                .callback = ReadResponseHandler::callback,
+                .callback_param = &read_response_handler});
+        eeprom.handle_message(read_msg);
+
+        WHEN("a transaction response is sent") {
+            auto transaction_response =
+                eeprom::task::TaskMessage(i2c::messages::TransactionResponse{
+                    .id = i2c::messages::TransactionIdentifier{.token = 0},
+                    .bytes_read = data_length,
+                    .read_buffer =
+                        i2c::messages::MaxMessageBuffer{1, 2, 3, 4, 5}});
+
+            eeprom.handle_message(transaction_response);
+            THEN("the callback is called") {
+                REQUIRE(read_response_handler.message ==
+                        eeprom::message::EepromMessage{
+                            .memory_address = address,
+                            .length = data_length,
+                            .data = eeprom::types::EepromData{1, 2, 3, 4, 5}});
             }
         }
     }
