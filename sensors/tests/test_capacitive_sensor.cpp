@@ -161,8 +161,8 @@ SCENARIO("read capacitance sensor values") {
                         std::get<can_messages::ReadFromSensorResponse>(
                             can_msg.message);
                     float check_data = signed_fixed_point_to_float(
-                        response_msg.sensor_data, 15);
-                    float expected = 15;
+                        response_msg.sensor_data, 16);
+                    float expected = 7.5;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
                 THEN(
