@@ -260,6 +260,8 @@ auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
 // - 250KHz bitrate
 // - 88.2% (.882*255) sample point
 
+// For the exact timing values these generate see
+// can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<85000000, 50, 250000, 882>{};
 
@@ -279,7 +281,6 @@ auto main() -> int {
     }
 
     utility_gpio_init();
-
     can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
               can_bit_timings.segment_2_quanta,
               can_bit_timings.max_sync_jump_width);

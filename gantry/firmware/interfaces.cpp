@@ -205,6 +205,8 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
+// For the exact timing values these generate see
+// can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<85000000, 50, 250000, 882>{};
 
