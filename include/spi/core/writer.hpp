@@ -62,8 +62,7 @@ class Writer {
         queue->try_write(message);
 
         message.id.requires_response = true;
-        queue->try_write(message);
-        return true;
+        return queue->try_write(message);
     }
 
     /**
@@ -90,8 +89,7 @@ class Writer {
             .id = _transaction_id,
             .transaction = {.txBuffer = txBuffer, .cs_interface = cs_intf},
             .response_writer = ResponseWriter(response_queue)};
-        queue->try_write(message);
-        return true;
+        return queue->try_write(message);
     }
 
   private:
