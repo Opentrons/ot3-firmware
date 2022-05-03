@@ -30,6 +30,7 @@ struct TransactionIdentifier {
  */
 struct Transaction {
     spi::utils::MaxMessageBuffer txBuffer;
+    spi::utils::ChipSelectInterface cs_interface;
 
     auto operator==(const Transaction&) const -> bool = default;
 };

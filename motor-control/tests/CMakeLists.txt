@@ -29,6 +29,8 @@ target_compile_options(motor-control
         -Wall
         -Werror
         -Weffc++
+        -Wextra
+        -Wno-missing-field-initializers
         -Wreorder
         -Wsign-promo
         -Wextra-semi

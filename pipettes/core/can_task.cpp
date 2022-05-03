@@ -13,7 +13,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/version.h"
-#include "pipettes/core/message_handlers/eeprom.hpp"
+#include "eeprom/core/message_handler.hpp"
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/core/message_handlers/sensors.hpp"
@@ -33,7 +33,7 @@ static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(queue_client);
 
 static auto eeprom_handler =
-    eeprom_message_handler::EEPromHandler{queue_client};
+    eeprom::message_handler::EEPromHandler{queue_client};
 
 static auto system_message_handler = system_handler::SystemMessageHandler{
     queue_client, version_get()->version, version_get()->flags,
@@ -91,7 +91,7 @@ static auto pipette_info_target =
 
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_dispatch::Dispatcher(
-    [](auto _) -> bool { return true; }, motor_dispatch_target,
+    [](auto) -> bool { return true; }, motor_dispatch_target,
     motion_controller_dispatch_target, motion_group_dispatch_target,
     eeprom_dispatch_target, sensor_dispatch_target, system_dispatch_target,
     pipette_info_target);
@@ -111,8 +111,7 @@ static auto read_can_message_buffer_writer =
  * @param data Message data
  * @param length Message data length
  */
-void callback(void* cb_data, uint32_t identifier, uint8_t* data,
-              uint8_t length) {
+void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     read_can_message_buffer_writer.send_from_isr(identifier, data,
                                                  data + length);  // NOLINT
 }

@@ -5,7 +5,8 @@
 
 bool spi::hardware::SimSpiDeviceBase::transmit_receive(
     const spi::utils::MaxMessageBuffer& transmit,
-    spi::utils::MaxMessageBuffer& receive) {
+    spi::utils::MaxMessageBuffer& receive,
+    spi::utils::ChipSelectInterface cs_intf) {
     txrx_count++;
     uint8_t control = 0;
     uint32_t data = 0;
@@ -18,7 +19,8 @@ bool spi::hardware::SimSpiDeviceBase::transmit_receive(
     iter = bit_utils::bytes_to_int(iter, transmit.end(), control);
     iter = bit_utils::bytes_to_int(iter, transmit.end(), data);
 
-    LOG("transmit_receive: control=%d, data=%d", control, data);
+    LOG("transmit_receive for pin %d on port %d: control=%d, data=%d",
+        cs_intf.cs_pin, cs_intf.GPIO_handle, control, data);
 
     auto out_iter = receive.begin();
     // Write status byte into buffer.

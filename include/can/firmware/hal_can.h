@@ -16,10 +16,12 @@ typedef void(*can_message_callback)(void* cb_data, uint32_t identifier, uint8_t*
  */
 typedef void * HAL_CAN_HANDLE;
 
+
+
 /**
  * Start CAN.
  */
-void can_start();
+void can_start(uint8_t clock_divider, uint8_t segment_1_tqs, uint8_t segment_2_tqs, uint8_t max_sync_jump_width);
 
 
 /**

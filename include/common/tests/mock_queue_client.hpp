@@ -4,7 +4,7 @@
 
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_message_writer.hpp"
-#include "pipettes/core/tasks/eeprom_task.hpp"
+#include "eeprom/core/task.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace mock_client {
@@ -14,7 +14,7 @@ namespace mock_client {
  */
 struct QueueClient
     : mock_message_writer::MockMessageWriter<test_mocks::MockMessageQueue> {
-    test_mocks::MockMessageQueue<eeprom_task::TaskMessage>* eeprom_queue;
+    test_mocks::MockMessageQueue<eeprom::task::TaskMessage>* eeprom_queue;
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>*
         environment_sensor_queue;
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>*
@@ -22,7 +22,7 @@ struct QueueClient
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue;
 
-    void send_eeprom_queue(const eeprom_task::TaskMessage& m) {
+    void send_eeprom_queue(const eeprom::task::TaskMessage& m) {
         eeprom_queue->try_write(m);
     }
 

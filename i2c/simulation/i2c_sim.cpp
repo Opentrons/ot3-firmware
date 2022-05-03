@@ -7,7 +7,7 @@
 #include "common/core/logging.h"
 using namespace i2c::hardware;
 auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
-                              uint16_t dev_address, uint32_t timeout) -> bool {
+                              uint16_t dev_address, uint32_t) -> bool {
     uint8_t reg = data[0];
     LOG("Received a register bit: %d", reg);
     last_transmitted = std::vector<uint8_t>(size);
@@ -26,7 +26,7 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
 }
 
 auto SimI2C::central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
-                             uint32_t timeout) -> bool {
+                             uint32_t) -> bool {
     auto next_reg = next_register_map[dev_address];
     // This will raise if the register value is bad - helpful for forcing
     // tests to fail

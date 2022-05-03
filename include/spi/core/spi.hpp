@@ -26,7 +26,9 @@ class SpiDeviceBase {
      * @param receive The receive buffer.
      */
     virtual auto transmit_receive(const utils::MaxMessageBuffer& transmit,
-                                  utils::MaxMessageBuffer& receive) -> bool = 0;
+                                  utils::MaxMessageBuffer& receive,
+                                  utils::ChipSelectInterface cs_intf)
+        -> bool = 0;
 
     /**
      * Fill a buffer with a command.

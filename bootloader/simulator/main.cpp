@@ -25,8 +25,7 @@ static auto canbus = sim_canbus::SimCANBus(can_transport::create());
  * @param data data
  * @param length length of data
  */
-void on_can_message(void* cb_data, uint32_t identifier, uint8_t* data,
-                    uint8_t length) {
+void on_can_message(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     Message message;
     Message response;
 

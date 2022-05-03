@@ -5,6 +5,7 @@
 
 // clang-format on
 
+#include "can/core/bit_timings.hpp"
 #include "can/core/ids.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/app_update.h"
@@ -22,6 +23,7 @@
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/configs.hpp"
+#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
@@ -32,6 +34,7 @@
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
+#include "motor_timer_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
@@ -44,12 +47,8 @@ static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
-spi::hardware::SPI_interface SPI_intf = {
-    .SPI_handle = &hspi2,
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .GPIO_handle = GPIOC,
-    .pin = GPIO_PIN_6,
-};
+spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
+
 static spi::hardware::Spi spi_comms(SPI_intf);
 
 static auto i2c_comms3 = i2c::hardware::I2C();
@@ -106,9 +105,13 @@ static motor_class::Motor pipette_motor{
                                       .max_acceleration = 2},
     motor_queue};
 
-static auto driver_configs = configs::driver_config_by_axis(PIPETTE_TYPE);
+static auto driver_configs = interfaces::driver_config_by_axis(PIPETTE_TYPE);
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
+
+extern "C" void gear_callback() {
+    // TODO implement the motor handler for the 96 channel
+}
 
 static sensors::hardware::SensorHardware pins_for_sensor_lt(gpio::PinConfig{
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -120,6 +123,24 @@ static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
     .port = GPIOB,
     .pin = GPIO_PIN_5,
     .active_setting = GPIO_PIN_RESET});
+
+// Unfortunately, these numbers need to be literals or defines
+// to get the compile-time checks to work so we can't actually
+// correctly rely on the hal to get these numbers - they need
+// to be checked against current configuration. However, they are
+// - clock input is 110MHz assuming the CAN is clocked from sysclk
+// - 455ns requested time quantum yields a 454ns actual
+// - 275.33KHz bitrate
+// - 87.5% sample point
+// Should drive
+// segment 1 = 8 quanta
+// segment 2 = 1 quantum
+
+// For the exact timing values these generate see
+// can/tests/test_bit_timings.cpp
+static constexpr auto can_bit_timings =
+    can::bit_timings::BitTimings<110 * can::bit_timings::MHZ, 455, 275330,
+                                 875>{};
 
 auto main() -> int {
     HardwareInit();
@@ -140,9 +161,14 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    initialize_timer(plunger_callback);
+    initialize_linear_timer(plunger_callback);
+    if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
+        initialize_gear_timer(gear_callback);
+    }
 
-    can_start();
+    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
+              can_bit_timings.segment_2_quanta,
+              can_bit_timings.max_sync_jump_width);
 
     pipettes_tasks::start_tasks(
         can_bus_1, pipette_motor.motion_controller, i2c_comms3, i2c_comms1,

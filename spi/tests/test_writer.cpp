@@ -6,6 +6,7 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "spi/core/tasks/spi_task.hpp"
+#include "spi/core/utils.hpp"
 #include "spi/core/writer.hpp"
 #include "spi/tests/mock_response_queue.hpp"
 
@@ -24,12 +25,14 @@ SCENARIO("Test the spi command queue writer") {
     auto writer = spi::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&queue);
     spi::writer::TaskMessage empty_msg{};
+
+    spi::utils::ChipSelectInterface empty_cs{};
     GIVEN("a write request") {
         constexpr uint8_t TEST_REGISTER = 0x23;
         constexpr uint8_t WRITE_BIT = 0x80;
 
         WHEN("we write some data to a register") {
-            writer.write(TEST_REGISTER, 0xd34db33f, response_queue);
+            writer.write(TEST_REGISTER, 0xd34db33f, response_queue, empty_cs);
             THEN("the queue should contain one messages") {
                 REQUIRE(queue.get_size() == 1);
             }
@@ -46,7 +49,7 @@ SCENARIO("Test the spi command queue writer") {
     GIVEN("a read request") {
         constexpr uint8_t TEST_REGISTER = 0x1;
         WHEN("we receive a read request") {
-            writer.read(TEST_REGISTER, 0x0, response_queue);
+            writer.read(TEST_REGISTER, 0x0, response_queue, empty_cs);
             THEN("the queue should contain one message") {
                 REQUIRE(queue.get_size() == 2);
             }

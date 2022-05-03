@@ -1,4 +1,4 @@
-#include "common/firmware/can.h"
+#include "bootloader/firmware/can.h"
 
 
 /**

@@ -58,7 +58,8 @@ SCENARIO("read temperature and humidity values") {
                 }
                 THEN(
                     "using the callback with data returns the expected value") {
-                    std::array<uint8_t, 5> my_buff = {250, 80, 0, 0, 0};
+                    auto my_buff =
+                        i2c::messages::MaxMessageBuffer{250, 80, 0, 0, 0};
                     auto response = test_mocks::launder_response(
                         transact_message, response_queue,
                         test_mocks::dummy_response(transact_message, my_buff));
@@ -98,7 +99,8 @@ SCENARIO("read temperature and humidity values") {
                 }
                 THEN(
                     "using the callback with data returns the expected value") {
-                    std::array<uint8_t, 5> my_buff = {200, 0, 0, 0, 0};
+                    auto my_buff =
+                        i2c::messages::MaxMessageBuffer{200, 0, 0, 0, 0};
                     auto response = test_mocks::launder_response(
                         transact_message, response_queue,
                         test_mocks::dummy_response(transact_message, my_buff));

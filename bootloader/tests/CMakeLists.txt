@@ -28,6 +28,8 @@ set_target_properties(bootloader
 target_compile_options(bootloader
         PUBLIC
         -Wall
+        -Wextra
+        -Wno-missing-field-initializers
         -Werror
         -Weffc++
         -Wreorder

@@ -30,7 +30,27 @@ static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
-static auto driver_configs = utils::driver_config();
+static tmc2130::configs::TMC2130DriverConfig driver_configs{
+    .registers = {.gconfig = {.en_pwm_mode = 1},
+                  .ihold_irun = {.hold_current = 0x2,
+                                 .run_current = 0x18,
+                                 .hold_current_delay = 0x7},
+                  .thigh = {.threshold = 0xFFFFF},
+                  .chopconf = {.toff = 0x5,
+                               .hstrt = 0x5,
+                               .hend = 0x3,
+                               .tbl = 0x2,
+                               .mres = 0x3},
+                  .coolconf = {.sgt = 0x6}},
+    .current_config =
+        {
+            .r_sense = 0.1,
+            .v_sf = 0.325,
+        },
+    .chip_select{
+        .cs_pin = 0,
+        .GPIO_handle = 0,
+    }};
 
 /**
  * The motor struct.

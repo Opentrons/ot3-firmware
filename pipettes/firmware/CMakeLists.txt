@@ -14,6 +14,7 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
     ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
     ${COMMON_EXECUTABLE_DIR}/gpio.cpp
     ${CAN_FW_DIR}/hal_can.c
@@ -29,6 +30,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/hardware_config.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
@@ -89,6 +91,8 @@ function(add_pipettes_executable TARGET)
     target_compile_options(${TARGET}
             PUBLIC
             -Wall
+            -Wextra
+            -Wno-missing-field-initializers
             -Werror
             $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
             $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>

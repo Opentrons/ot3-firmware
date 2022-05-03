@@ -19,6 +19,7 @@
 #include "stm32g4xx_hal_conf.h"
 #include "utility_hardware.h"
 #pragma GCC diagnostic pop
+#include "can/core/bit_timings.hpp"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
@@ -51,17 +52,11 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 
 spi::hardware::SPI_interface SPI_intf2 = {
     .SPI_handle = &hspi2,
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .GPIO_handle = GPIOB,
-    .pin = GPIO_PIN_12,
 };
 static spi::hardware::Spi spi_comms2(SPI_intf2);
 
 spi::hardware::SPI_interface SPI_intf3 = {
     .SPI_handle = &hspi3,
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .GPIO_handle = GPIOA,
-    .pin = GPIO_PIN_4,
 };
 static spi::hardware::Spi spi_comms3(SPI_intf3);
 
@@ -141,7 +136,8 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         .active_setting = GPIO_PIN_RESET}
 };
 
-static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
+// TODO clean up the head main file by using interfaces.
+static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -157,10 +153,44 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
         },
-    .current_config = {
-        .r_sense = 0.1,
-        .v_sf = 0.325,
+    .current_config =
+        {
+            .r_sense = 0.1,
+            .v_sf = 0.325,
+        },
+    .chip_select{
+        .cs_pin = GPIO_PIN_12,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .GPIO_handle = GPIOB,
     }};
+
+static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
+    .registers =
+        {
+            .gconfig = {.en_pwm_mode = 1},
+            .ihold_irun = {.hold_current = 0xB,
+                           .run_current = 0x19,
+                           .hold_current_delay = 0x7},
+            .tcoolthrs = {.threshold = 0},
+            .thigh = {.threshold = 0xFFFFF},
+            .chopconf = {.toff = 0x5,
+                         .hstrt = 0x5,
+                         .hend = 0x3,
+                         .tbl = 0x2,
+                         .mres = 0x4},
+            .coolconf = {.sgt = 0x6},
+        },
+    .current_config =
+        {
+            .r_sense = 0.1,
+            .v_sf = 0.325,
+        },
+    .chip_select{
+        .cs_pin = GPIO_PIN_4,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .GPIO_handle = GPIOA,
+    }};
+
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -222,6 +252,25 @@ auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
     }),
     100);
 
+// Unfortunately, these numbers need to be literals or defines
+// to get the compile-time checks to work so we can't actually
+// correctly rely on the hal to get these numbers - they need
+// to be checked against current configuration. However, they are
+// - clock input is 85MHz assuming the CAN is clocked from PCLK1
+// which has a clock divider of 2, and the system clock is 170MHZ
+// - 240ns requested time quantum yields a 235ns actual
+// - 250KHz bitrate requested yields 250312KHz actual
+// - 88.3% sample point
+// Should drive
+// segment 1 = 14 quanta
+// segment 2 = 2 quanta
+
+// For the exact timing values these generate see
+// can/tests/test_bit_timings.cpp
+static constexpr auto can_bit_timings =
+    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 240,
+                                 250 * can::bit_timings::KHZ, 883>{};
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -238,12 +287,14 @@ auto main() -> int {
     }
 
     utility_gpio_init();
-
-    can_start();
+    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
+              can_bit_timings.segment_2_quanta,
+              can_bit_timings.max_sync_jump_width);
 
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_right.motion_controller, psd, spi_comms2,
-                            spi_comms3, MotorDriverConfigurations);
+                            spi_comms3, motor_driver_configs_left,
+                            motor_driver_configs_right);
 
     timer_for_notifier.start();
 

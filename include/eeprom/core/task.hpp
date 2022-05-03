@@ -10,7 +10,8 @@
 #include "i2c/core/messages.hpp"
 #include "i2c/core/writer.hpp"
 
-namespace eeprom_task {
+namespace eeprom {
+namespace task {
 
 using CanMessageTuple = std::tuple<can_messages::WriteToEEPromRequest,
                                    can_messages::ReadFromEEPromRequest>;
@@ -40,31 +41,26 @@ class EEPromMessageHandler {
     }
 
   private:
-    void visit(std::monostate &m) {}
+    void visit(std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
-        uint16_t data = 0;
-        static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
-                                                  m.read_buffer.cend(), data));
-        auto message =
-            can_messages::ReadFromEEPromResponse{.serial_number = data};
+        auto message = can_messages::ReadFromEEPromResponse::create(
+            0, m.read_buffer.cbegin(), m.read_buffer.cend());
         can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     void visit(can_messages::WriteToEEPromRequest &m) {
-        LOG("Received request to write serial number: %d", m.serial_number);
-        std::array serial_buf{static_cast<uint8_t>(m.serial_number >> 8),
-                              static_cast<uint8_t>(m.serial_number & 0xff)};
-        writer.write(DEVICE_ADDRESS, serial_buf);
+        LOG("Received request to write %d bytes to address %x", m.data_length,
+            m.data);
+        writer.write(DEVICE_ADDRESS, m.data);
     }
 
-    void visit(can_messages::ReadFromEEPromRequest &m) {
+    void visit(can_messages::ReadFromEEPromRequest &) {
         LOG("Received request to read serial number");
         writer.transact(DEVICE_ADDRESS, 0, 2, own_queue);
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0x1;
-    static constexpr int SERIAL_NUMBER_SIZE = 0x2;
     I2CQueueWriter &writer;
     CanClient &can_client;
     OwnQueue &own_queue;
@@ -116,4 +112,5 @@ concept TaskClient = requires(Client client, const TaskMessage &m) {
     {client.send_eeprom_queue(m)};
 };
 
-}  // namespace eeprom_task
+}  // namespace task
+}  // namespace eeprom

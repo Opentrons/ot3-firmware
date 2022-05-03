@@ -21,6 +21,8 @@ target_compile_options(gantry
         PUBLIC
         -Wall
         -Werror
+        -Wextra
+        -Wno-missing-field-initializers
         -Weffc++
         -Wreorder
         -Wsign-promo

@@ -8,6 +8,7 @@
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
+#include "eeprom//core/types.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
@@ -39,16 +40,16 @@ struct BaseMessage {
 template <MessageId MId>
 struct Empty : BaseMessage<MId> {
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> Empty {
+    static auto parse(Input, Limit) -> Empty {
         return Empty{};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
-    auto serialize(Output body, Limit limit) const -> uint8_t {
+    auto serialize(Output, Limit) const -> uint8_t {
         return 0;
     }
 
-    auto operator==(const Empty& other) const -> bool = default;
+    auto operator==(const Empty&) const -> bool = default;
 };
 
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
@@ -129,26 +130,82 @@ using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 using EncoderPositionRequest = Empty<MessageId::encoder_position_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
-    uint16_t serial_number;
+    eeprom::types::address address;
+    eeprom::types::data_length data_length;
+    eeprom::types::EepromData data;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToEEPromRequest {
-        uint16_t serial_number = 0;
-        body = bit_utils::bytes_to_int(body, limit, serial_number);
-        return WriteToEEPromRequest{.serial_number = serial_number};
+        eeprom::types::address address = 0;
+        eeprom::types::data_length data_length = 0;
+        eeprom::types::EepromData data{};
+
+        body = bit_utils::bytes_to_int(body, limit, address);
+        body = bit_utils::bytes_to_int(body, limit, data_length);
+        // Cap the length
+        data_length = std::min(static_cast<size_t>(data_length), data.size());
+        std::copy_n(body, data_length, data.begin());
+
+        return WriteToEEPromRequest{
+            .address = address, .data_length = data_length, .data = data};
     }
 
     auto operator==(const WriteToEEPromRequest& other) const -> bool = default;
 };
 
-using ReadFromEEPromRequest = Empty<MessageId::read_eeprom_request>;
+struct ReadFromEEPromRequest : BaseMessage<MessageId::read_eeprom_request> {
+    eeprom::types::address address;
+    eeprom::types::data_length data_length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadFromEEPromRequest {
+        eeprom::types::address address = 0;
+        eeprom::types::data_length data_length = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, address);
+        body = bit_utils::bytes_to_int(body, limit, data_length);
+
+        return ReadFromEEPromRequest{.address = address,
+                                     .data_length = data_length};
+    }
+
+    auto operator==(const ReadFromEEPromRequest& other) const -> bool = default;
+};
 
 struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
-    uint16_t serial_number;
+    eeprom::types::address address;
+    eeprom::types::data_length data_length;
+    eeprom::types::EepromData data;
+
+    /**
+     * Create a response message from iterator
+     * @tparam DataIter byte iterator type
+     * @tparam Limit end of data
+     * @param data_iter beginning of data
+     * @param limit end of data
+     * @return new instance
+     */
+    template <bit_utils::ByteIterator DataIter, typename Limit>
+    static auto create(eeprom::types::address address, DataIter data_iter,
+                       Limit limit) -> ReadFromEEPromResponse {
+        eeprom::types::EepromData data{};
+        eeprom::types::data_length data_length = std::min(
+            eeprom::types::max_data_length,
+            static_cast<eeprom::types::data_length>(limit - data_iter));
+        std::copy_n(data_iter, data_length, data.begin());
+        return ReadFromEEPromResponse{
+            .address = address, .data_length = data_length, .data = data};
+    }
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(serial_number, body, limit);
+        auto iter = bit_utils::int_to_bytes(address, body, limit);
+        iter = bit_utils::int_to_bytes(data_length, iter, limit);
+        iter = std::copy_n(
+            data.cbegin(),
+            std::min(data_length,
+                     static_cast<eeprom::types::data_length>(limit - iter)),
+            iter);
         return iter - body;
     }
     auto operator==(const ReadFromEEPromResponse& other) const
@@ -751,6 +808,56 @@ struct BindSensorOutputResponse
         -> bool = default;
 };
 
+struct TipActionRequest
+    : BaseMessage<MessageId::do_self_contained_tip_action_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    ticks duration;
+    um_per_tick velocity;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> TipActionRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        ticks duration = 0;
+        um_per_tick velocity = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, velocity);
+
+        return TipActionRequest{.group_id = group_id,
+                                .seq_id = seq_id,
+                                .duration = duration,
+                                .velocity = velocity};
+    }
+
+    auto operator==(const TipActionRequest& other) const -> bool = default;
+};
+
+struct TipActionResponse
+    : BaseMessage<MessageId::do_self_contained_tip_action_response> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint32_t current_position_um;
+    uint32_t encoder_position;
+    uint8_t ack_id;
+    uint8_t success;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(group_id, body, limit);
+        iter = bit_utils::int_to_bytes(seq_id, iter, limit);
+        iter = bit_utils::int_to_bytes(current_position_um, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
+        iter = bit_utils::int_to_bytes(ack_id, iter, limit);
+        iter = bit_utils::int_to_bytes(success, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const TipActionResponse& other) const -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -762,6 +869,7 @@ using ResponseMessageType = std::variant<
     PushToolsDetectedNotification, ReadLimitSwitchResponse, EncoderPositionResponse,
     ReadFromSensorResponse, FirmwareUpdateStatusResponse,
     SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
-    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse>;
+    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
+    TipActionResponse>;
 
 }  // namespace can_messages

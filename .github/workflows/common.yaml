@@ -50,7 +50,7 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=cross .
+        run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=debug
       - name: "Format"
         run: cmake --build ./build-cross --target common-format-ci
         # TODO (AL 2021-07-09) - uncomment when adding common-lint is added

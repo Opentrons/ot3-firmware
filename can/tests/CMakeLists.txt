@@ -13,6 +13,7 @@ add_executable(
         test_can_message_buffer.cpp
         test_dispatch.cpp
         test_arbitration_id.cpp
+        test_bit_timings.cpp
 )
 
 target_include_directories(can PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
@@ -25,6 +26,8 @@ target_compile_options(can
         PUBLIC
         -Wall
         -Werror
+        -Wextra
+        -Wno-missing-field-initializers
         -Weffc++
         -Wreorder
         -Wsign-promo

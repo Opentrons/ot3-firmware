@@ -61,7 +61,10 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
             .r_sense = 0.1,
             .v_sf = 0.325,
         },
-};
+    .chip_select{
+        .cs_pin = 0,
+        .GPIO_handle = 0,
+    }};
 
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_interface_right);
@@ -117,10 +120,10 @@ int main() {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
 
-    head_tasks::start_tasks(canbus, motor_left.motion_controller,
-                            motor_right.motion_controller,
-                            presence_sense_driver, spi_comms_right,
-                            spi_comms_left, MotorDriverConfigurations);
+    head_tasks::start_tasks(
+        canbus, motor_left.motion_controller, motor_right.motion_controller,
+        presence_sense_driver, spi_comms_right, spi_comms_left,
+        MotorDriverConfigurations, MotorDriverConfigurations);
 
     vTaskStartScheduler();
     return 0;
