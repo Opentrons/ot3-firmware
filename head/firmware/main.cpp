@@ -23,6 +23,7 @@
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
+#include "common/firmware/gpio.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/tasks.hpp"
 #include "head/firmware/adc_comms.hpp"
@@ -35,7 +36,12 @@
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
-static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
+static auto can_bus_1 = hal_can_bus::HalCanBus(
+    can_get_device_handle(),
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_6,
+                    .active_setting = GPIO_PIN_RESET});
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_left("Motor Queue Left");
@@ -85,12 +91,7 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_6,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
@@ -285,10 +286,7 @@ auto main() -> int {
     }
 
     utility_gpio_init();
-    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
-              can_bit_timings.segment_2_quanta,
-              can_bit_timings.max_sync_jump_width);
-
+    can_bus_1.start(can_bit_timings);
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_right.motion_controller, psd, spi_comms2,
                             spi_comms3, motor_driver_configs_left,

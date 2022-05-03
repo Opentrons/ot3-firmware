@@ -4,6 +4,7 @@
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces.hpp"
@@ -61,12 +62,7 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_11,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
@@ -99,12 +95,7 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_11,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
@@ -175,7 +166,12 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_config =
 /**
  * The can bus.
  */
-static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
+static auto canbus = hal_can_bus::HalCanBus(
+    can_get_device_handle(),
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_11,
+                    .active_setting = GPIO_PIN_RESET});
 
 /**
  * The pending move queue
@@ -234,9 +230,7 @@ void interfaces::initialize() {
     initialize_timer(call_motor_handler);
 
     // Start the can bus
-    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
-              can_bit_timings.segment_2_quanta,
-              can_bit_timings.max_sync_jump_width);
+    canbus.start(can_bit_timings);
 
     iWatchdog.start(6);
 }

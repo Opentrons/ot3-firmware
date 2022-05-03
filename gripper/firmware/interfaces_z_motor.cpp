@@ -54,11 +54,7 @@ struct motion_controller::HardwareConfig motor_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_SET},
-    .led = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_6,
-        .active_setting = GPIO_PIN_RESET},
+    .led = {},
 };
 
 /**
