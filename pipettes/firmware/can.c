@@ -7,7 +7,12 @@
  * @param handle Pointer to an FDCAN handle
  * @return HAL_OK on success
  */
-HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef* handle) {
+HAL_StatusTypeDef MX_FDCAN1_Init(
+    FDCAN_HandleTypeDef* handle,
+    uint8_t clock_divider,
+    uint8_t segment_1_tqs,
+    uint8_t segment_2_tqs,
+    uint8_t max_sync_jump_width) {
     handle->Instance = FDCAN1;
     handle->Init.ClockDivider = FDCAN_CLOCK_DIV1;
     handle->Init.FrameFormat = FDCAN_FRAME_FD_NO_BRS;
@@ -15,14 +20,14 @@ HAL_StatusTypeDef MX_FDCAN1_Init(FDCAN_HandleTypeDef* handle) {
     handle->Init.AutoRetransmission = ENABLE;
     handle->Init.TransmitPause = DISABLE;
     handle->Init.ProtocolException = DISABLE;
-    handle->Init.NominalPrescaler = 50;
-    handle->Init.NominalSyncJumpWidth = 2;
-    handle->Init.NominalTimeSeg1 = 6;
-    handle->Init.NominalTimeSeg2 = 1;
-    handle->Init.DataPrescaler = 50;
-    handle->Init.DataSyncJumpWidth = 1;
-    handle->Init.DataTimeSeg1 = 6;
-    handle->Init.DataTimeSeg2 = 1;
+    handle->Init.NominalPrescaler = clock_divider,
+    handle->Init.NominalSyncJumpWidth = max_sync_jump_width;
+    handle->Init.NominalTimeSeg1 = segment_1_tqs;
+    handle->Init.NominalTimeSeg2 = segment_2_tqs;
+    handle->Init.DataPrescaler = clock_divider;
+    handle->Init.DataSyncJumpWidth = max_sync_jump_width;
+    handle->Init.DataTimeSeg1 = segment_1_tqs;
+    handle->Init.DataTimeSeg2 = segment_2_tqs;
     handle->Init.StdFiltersNbr = 20;
     handle->Init.ExtFiltersNbr = 20;
     handle->Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;

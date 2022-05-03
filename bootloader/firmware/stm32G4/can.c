@@ -1,4 +1,4 @@
-#include "common/firmware/can.h"
+#include "bootloader/firmware/can.h"
 
 /**
  * Initialize a connection to FDCAN1
