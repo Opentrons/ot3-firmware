@@ -23,8 +23,8 @@ enum class MoveStopCondition : uint8_t {
     cap_sensor = 0x2
 };
 
-struct Move {        // NOLINT(cppcoreguidelines-pro-type-member-init)
-    ticks duration;  // in ticks
+struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    stepper_timer_ticks duration;  // in stepper timer ticks
     steps_per_tick velocity;
     steps_per_tick_sq acceleration;
     uint8_t group_id;
@@ -33,7 +33,11 @@ struct Move {        // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 
 struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
-    ticks duration;   // in ticks
+    /**
+     * Note that brushed timer tick at a different frequency from the stepper
+     * motor timer.
+     */
+    brushed_timer_ticks duration;  // in brushed timer ticks
     uint32_t freq;
     uint32_t duty_cycle;
     uint8_t group_id;

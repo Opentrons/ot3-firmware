@@ -58,7 +58,11 @@ static void MX_TIM1_Init(void) {
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
     htim1.Instance = TIM1;
-    /* Set counter clock frequency to 32 kHz */
+    /*
+     * Setting counter clock frequency to 32 kHz
+     * Note that brushed timer tick at a different frequency from the stepper
+     * motor timer.
+     */
     htim1.Init.Prescaler = calc_prescaler(1700000, 32000);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim1.Init.Period = 100 - 1;
@@ -124,7 +128,11 @@ static void MX_TIM3_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim3.Instance = TIM3;
-    /* Set counter clock frequency to 32 kHz */
+    /*
+     * Setting counter clock frequency to 32 kHz
+     * Note that brushed timer tick at a different frequency from the stepper
+     * motor timer.
+     */
     htim3.Init.Prescaler = calc_prescaler(1700000, 32000);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim3.Init.Period = 100 - 1;
@@ -176,6 +184,9 @@ void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
+    /*
+     * Setting counter clock frequency to 100 kHz
+     */
     htim7.Init.Prescaler = 849;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
