@@ -11,7 +11,7 @@ class EEProm : public sensor_simulator::SensorType {
         DEVICE_ID = 0x0;
         ADDRESS = 0x1;
         REGISTER_MAP = {{0x0, 0}};
-    };
+    }
 };
 }  // namespace simulator
 }  // namespace eeprom
