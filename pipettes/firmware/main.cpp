@@ -33,6 +33,7 @@
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
+#include "motor_timer_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
@@ -107,6 +108,10 @@ static auto driver_configs = interfaces::driver_config_by_axis(PIPETTE_TYPE);
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
+extern "C" void gear_callback() {
+    // TODO implement the motor handler for the 96 channel
+}
+
 static sensors::hardware::SensorHardware pins_for_sensor_lt(gpio::PinConfig{
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .port = GPIOB,
@@ -137,7 +142,10 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    initialize_timer(plunger_callback);
+    initialize_linear_timer(plunger_callback);
+    if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
+        initialize_gear_timer(gear_callback);
+    }
 
     can_start();
 
