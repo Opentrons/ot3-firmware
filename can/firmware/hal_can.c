@@ -33,10 +33,19 @@ static FDCAN_HandleTypeDef fdcan1;
 static can_message_callback message_callback = NULL;
 
 /**
- * User parameter passed back to can message callback..
+ * User parameter passed back to can message callback.
  */
 static void * message_callback_data = NULL;
 
+/**
+ * Hardware state callback.
+ */
+static can_state_callback state_callback = NULL;
+
+/**
+ * User parameter passed back to hardware state callback.
+ */
+static void * state_callback_data = NULL;
 
 /**
  * Start CAN
@@ -47,7 +56,10 @@ void can_start(uint8_t clock_divider, uint8_t segment_1_tqs, uint8_t segment_2_t
     // TODO (al, 2021-11-18): error returns?
     MX_FDCAN1_Init(&fdcan1, clock_divider, segment_1_tqs, segment_2_tqs, max_sync_jump_width);
 
-    HAL_FDCAN_ActivateNotification(&fdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE,0);
+    HAL_FDCAN_ActivateNotification(
+        &fdcan1,
+        FDCAN_IT_RX_FIFO0_NEW_MESSAGE | FDCAN_IT_RX_FIFO1_NEW_MESSAGE | FDCAN_IT_ERROR_PASSIVE | FDCAN_IT_BUS_OFF,
+        0);
 
     HAL_FDCAN_Start(&fdcan1);
 }
@@ -75,6 +87,19 @@ HAL_CAN_HANDLE can_get_device_handle() {
 void can_register_message_callback(void * cb_data, can_message_callback callback) {
     message_callback_data = cb_data;
     message_callback = callback;
+}
+
+/**
+ * Register a callback function to handle a change in the CAN hardware state.
+ *
+ * This is called from an ISR
+ *
+ * @param cb_data a value that will be passed to the callback function.
+ * @param callback a callback function.
+ */
+void can_register_state_callback(void *cb_data, can_state_callback callback) {
+    state_callback_data = cb_data;
+    state_callback = callback;
 }
 
 
@@ -184,5 +209,25 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo1ITs) {
     if ((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != 0) {
         try_read_from_fifo(hfdcan, FDCAN_RX_FIFO1);
+    }
+}
+
+static hal_can_state_t hal_status_to_external_status(
+    FDCAN_ProtocolStatusTypeDef hal_status) {
+    if (hal_status.BusOff == 1) {
+        return HAL_CAN_STATE_BUS_OFF;
+    }
+    if (hal_status.ErrorPassive == 1) {
+        return HAL_CAN_STATE_ERROR_PASSIVE;
+    }
+    return HAL_CAN_STATE_ERROR_ACTIVE;
+}
+
+void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorStatusITs) {
+    (void)ErrorStatusITs;
+    FDCAN_ProtocolStatusTypeDef protocol_status = {};
+    (void)HAL_FDCAN_GetProtocolStatus(hfdcan, &protocol_status);
+    if (state_callback) {
+        state_callback(state_callback_data, hal_status_to_external_status(protocol_status));
     }
 }

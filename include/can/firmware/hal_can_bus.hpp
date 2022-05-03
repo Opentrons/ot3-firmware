@@ -1,8 +1,10 @@
 #pragma once
 
+#include "can/core/bit_timings.hpp"
 #include "can/core/can_bus.hpp"
 #include "can/firmware/hal_can.h"
-
+#include "common/core/freertos_timer.hpp"
+#include "common/firmware/gpio.hpp"
 namespace hal_can_bus {
 
 using namespace can_bus;
@@ -17,13 +19,28 @@ class HalCanBus : public CanBus {
      * Construct
      * @param handle A pointer to an initialized FDCAN_HandleTypeDef
      */
-    explicit HalCanBus(HAL_CAN_HANDLE handle) : handle{handle} {}
+    explicit HalCanBus(HAL_CAN_HANDLE handle) : HalCanBus(handle, {}) {}
+    HalCanBus(HAL_CAN_HANDLE handle, gpio::PinConfig indicator_pin)
+        : indicator_timer{"can indicator", [this]() -> void { handle_timer(); },
+                          BLINK_HALF_PERIOD_ERROR_ACTIVE_MS},
+          handle{handle},
+          indicator{indicator_pin} {}
 
-    HalCanBus(const HalCanBus&) = default;
-    auto operator=(const HalCanBus&) -> HalCanBus& = default;
-    HalCanBus(HalCanBus&&) = default;
-    auto operator=(HalCanBus&&) -> HalCanBus& = default;
+    HalCanBus(const HalCanBus&) = delete;
+    auto operator=(const HalCanBus&) -> HalCanBus& = delete;
+    HalCanBus(HalCanBus&&) = delete;
+    auto operator=(HalCanBus&&) -> HalCanBus& = delete;
     ~HalCanBus() final = default;
+
+    template <can::bit_timings::BitTimingSpec TimingsT>
+    void start(TimingsT timings) {
+        if (indicator.port != nullptr) {
+            indicator_timer.update_period(BLINK_HALF_PERIOD_ERROR_ACTIVE_MS);
+            indicator_timer.start();
+        }
+        can_start(timings.clock_divider, timings.segment_1_quanta,
+                  timings.segment_2_quanta, timings.max_sync_jump_width);
+    }
 
     /**
      * Set the incoming message callback.
@@ -56,8 +73,14 @@ class HalCanBus : public CanBus {
               CanFDMessageLength buffer_length) final;
 
   private:
+    static constexpr uint32_t BLINK_HALF_PERIOD_ERROR_PASSIVE_MS = 50;
+    static constexpr uint32_t BLINK_HALF_PERIOD_ERROR_ACTIVE_MS = 250;
+    void handle_timer();
+    static void hal_state_callback(void* data, hal_can_state_t state);
+    freertos_timer::FreeRTOSTimer indicator_timer;
     HAL_CAN_HANDLE handle;
     uint32_t filter_index = 0;
+    gpio::PinConfig indicator;
 };
 
 }  // namespace hal_can_bus
