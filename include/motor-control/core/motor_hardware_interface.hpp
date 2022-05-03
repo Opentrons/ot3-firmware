@@ -18,6 +18,9 @@ class MotorHardwareIface {
     virtual auto check_sync_in() -> bool = 0;
     virtual auto get_encoder_pulses() -> uint32_t = 0;
     virtual void reset_encoder_pulses() = 0;
+    virtual void clear_encoder_SR() = 0;
+    virtual auto get_encoder_SR_flag() -> bool = 0;
+    virtual auto get_encoder_direction() -> bool = 0;
 };
 
 class StepperMotorHardwareIface : virtual public MotorHardwareIface {

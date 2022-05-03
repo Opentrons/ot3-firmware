@@ -79,6 +79,7 @@ class MotorInterruptHandler {
     void start() { hardware.start_timer_interrupt(); }
     void stop() { hardware.stop_timer_interrupt(); }
 
+    
     // condense these
     [[nodiscard]] auto pulse() -> bool {
         /*
@@ -144,6 +145,7 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             finish_current_move(AckMessageId::stopped_by_condition);
+            enc_position_tracker = 0;
             reset_encoder_pulses();
             return true;
         }
@@ -221,9 +223,36 @@ class MotorInterruptHandler {
         set_buffered_move(Move{});
     }
 
-    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
+    auto get_encoder_pulses() { 
+        uint32_t pulses = hardware.get_encoder_pulses();
+        // bool direction = hardware.get_encoder_direction();
+        if (get_encoder_overflow_status() == true &&
+            enc_future_flag == false){
+            pulses = UINT16_MAX + pulses;
+            hardware.clear_encoder_SR();
+            enc_future_flag = true;
+        }
+        else if (get_encoder_overflow_status() == true &&
+            enc_future_flag == true){
+            pulses = hardware.get_encoder_pulses();
+            hardware.clear_encoder_SR();
+            enc_future_flag = false;
+        }
+        else {
+            pulses = hardware.get_encoder_pulses(); 
+        }
+        return pulses;
+        }
+
+    // Backup function
+    // auto get_encoder_pulses(){return hardware.get_encoder_pulses();}
 
     void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
+
+    /* These functions will handle the overflow on the Encoder */
+    void clear_encoder_overflow_flag() {hardware.clear_encoder_SR(); }
+    auto get_encoder_overflow_status() -> bool {return hardware.get_encoder_SR_flag(); }
+
     void reset() {
         /*
          * Reset the position and all queued moves to the motor interrupt
@@ -264,7 +293,9 @@ class MotorInterruptHandler {
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
+    q31_31 enc_position_tracker = 0x0; // pulses
     q31_31 position_tracker = 0x0;  // in steps
+    bool enc_future_flag = false;
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;

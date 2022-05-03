@@ -41,3 +41,15 @@ uint32_t MotorHardware::get_encoder_pulses() {
 void MotorHardware::reset_encoder_pulses() {
     motor_hardware_reset_encoder_count(enc_handle);
 }
+
+void MotorHardware::clear_encoder_SR(){
+    motor_hardware_clear_status_register(enc_handle);
+}
+
+bool MotorHardware::get_encoder_SR_flag(){
+    return motor_hardware_encoder_get_status_register(enc_handle);
+}
+
+bool MotorHardware::get_encoder_direction(){
+    return motor_hardware_encoder_get_direction(enc_handle);
+}

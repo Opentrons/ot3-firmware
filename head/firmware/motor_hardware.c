@@ -238,7 +238,7 @@ void MX_GPIO_Init(void) {
 }
 
 
-void TIM2_EncoderZL_Init(void){
+void TIM2_EncoderZR_Init(void){
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
@@ -246,7 +246,7 @@ void TIM2_EncoderZL_Init(void){
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = UINT32_MAX;
+    htim2.Init.Period = UINT16_MAX;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
@@ -280,12 +280,18 @@ void TIM2_EncoderZL_Init(void){
     }
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim2, 0);
+     /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim2);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
 
-void TIM3_EncoderZR_Init(void){
+void TIM3_EncoderZL_Init(void){
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
@@ -327,6 +333,12 @@ void TIM3_EncoderZR_Init(void){
     }
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim3, 0);
+     /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_IT(&htim3,TIM_IT_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim3,TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim3);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
 }
@@ -401,8 +413,8 @@ void initialize_timer(motor_interrupt_callback callback) {
     motor_callback = callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
-    TIM2_EncoderZL_Init();
-    TIM3_EncoderZR_Init();
+    TIM2_EncoderZR_Init();
+    TIM3_EncoderZL_Init();
     MX_TIM7_Init();
     MX_TIM6_Init();
 }
