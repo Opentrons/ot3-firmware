@@ -1,6 +1,8 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
+#include <type_traits>
 
 namespace can {
 namespace bit_timings {
@@ -149,6 +151,16 @@ struct BitTimings {
     // time quanta.
     static constexpr uint8_t max_sync_jump_width = sync_jump_width;
 };
+
+template <typename BT>
+concept BitTimingSpec =
+    std::is_same_v<std::remove_cvref_t<decltype(BT::clock_divider)>, uint8_t> &&
+    std::is_same_v<std::remove_cvref_t<decltype(BT::segment_1_quanta)>,
+                   uint8_t> &&
+    std::is_same_v<std::remove_cvref_t<decltype(BT::segment_2_quanta)>,
+                   uint8_t> &&
+    std::is_same_v<std::remove_cvref_t<decltype(BT::max_sync_jump_width)>,
+                   uint8_t>;
 
 };  // namespace bit_timings
 };  // namespace can
