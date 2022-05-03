@@ -21,10 +21,24 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
  * The can bus.
  */
 static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
+// Unfortunately, these numbers need to be literals or defines
+// to get the compile-time checks to work so we can't actually
+// correctly rely on the hal to get these numbers - they need
+// to be checked against current configuration. However, they are
+// - clock input is 85MHz assuming the CAN is clocked from PCLK1
+// which has a clock divider of 2, and the system clock is 170MHZ
+// - 240ns requested time quantum yields a 235ns actual
+// - 250KHz bitrate requested yields 250312KHz actual
+// - 88.3% sample point
+// Should drive
+// segment 1 = 14 quanta
+// segment 2 = 2 quanta
+//
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<85000000, 50, 250000, 882>{};
+    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 240,
+                                 250 * can::bit_timings::KHZ, 883>{};
 
 auto main() -> int {
     HardwareInit();

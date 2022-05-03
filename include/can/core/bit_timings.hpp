@@ -4,6 +4,9 @@
 
 namespace can {
 namespace bit_timings {
+// Useful for writing large clean frequencies and keeping them readable
+static constexpr uint32_t MHZ = 1000 * 1000;
+static constexpr uint32_t KHZ = 1000;
 
 // helper functions and values for calculating bit timings
 static constexpr uint32_t NS_PER_S = 1000 * 1000 * 1000;
@@ -79,7 +82,7 @@ consteval auto get_segment_2_quanta() -> uint8_t {
         (total_time_quanta * (SAMPLE_POINT_MAX - sample_point_ratio)) /
         SAMPLE_POINT_MAX);
     return (
-        ((segment_1_quanta + try_segment_2_quanta) < (total_time_quanta + 1))
+        ((segment_1_quanta + try_segment_2_quanta) < (total_time_quanta - 1))
             ? (try_segment_2_quanta + 1)
             : try_segment_2_quanta);
 }
