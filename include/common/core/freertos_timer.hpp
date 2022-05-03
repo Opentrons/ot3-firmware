@@ -46,6 +46,29 @@ class FreeRTOSTimer {
         }
     }
 
+    void update_period_from_isr(uint32_t period_ms) {
+        // As update period, but callable from an interrupt context
+        // Because of the limited api in interrupt contexts, this method will
+        // always start the timer even if it had not previously been running.
+        // to stop the timer, explicitly call stop_from_isr().
+        BaseType_t higher_woken = pdFALSE;
+        xTimerChangePeriodFromISR(timer, pdMS_TO_TICKS(period_ms),
+                                  &higher_woken);
+        if (higher_woken == pdTRUE) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            portYIELD_FROM_ISR(higher_woken);
+        }
+    }
+
+    void stop_from_isr() {
+        BaseType_t higher_woken = pdFALSE;
+        xTimerStopFromISR(timer, &higher_woken);
+        if (higher_woken == pdTRUE) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            portYIELD_FROM_ISR(higher_woken);
+        }
+    }
+
     void start() { xTimerStart(timer, 1); }
 
     void stop() { xTimerStop(timer, 1); }
