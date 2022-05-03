@@ -58,8 +58,8 @@ static void MX_TIM1_Init(void) {
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
     htim1.Instance = TIM1;
-    /* Set counter clock frequency to 100 MHz */
-    htim1.Init.Prescaler = calc_prescaler(17000000, 320000);
+    /* Set counter clock frequency to 32 kHz */
+    htim1.Init.Prescaler = calc_prescaler(1700000, 32000);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim1.Init.Period = 100 - 1;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -83,7 +83,7 @@ static void MX_TIM1_Init(void) {
         Error_Handler();
     }
     htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 85% */
+    /* Set duty cycle at 65% */
     htim1_sConfigOC.Pulse = 65;
     htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
@@ -124,8 +124,8 @@ static void MX_TIM3_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim3.Instance = TIM3;
-    /* Set counter clock frequency to 320 kHz */
-    htim3.Init.Prescaler = calc_prescaler(17000000, 320000);
+    /* Set counter clock frequency to 32 kHz */
+    htim3.Init.Prescaler = calc_prescaler(1700000, 32000);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim3.Init.Period = 100 - 1;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -147,7 +147,7 @@ static void MX_TIM3_Init(void) {
         Error_Handler();
     }
     htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 85% */
+    /* Set duty cycle at 65% */
     htim3_sConfigOC.Pulse = 65;  // round_closest(htim3.Init.Period, 2);
     htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -243,13 +243,13 @@ void initialize_timer(motor_interrupt_callback callback) {
 }
 
 void update_pwm(uint32_t freq, uint32_t duty_cycle) {
-    htim1.Instance->PSC = calc_prescaler(17000000, freq * 10);
+    htim1.Instance->PSC = calc_prescaler(1700000, freq);
     if (duty_cycle < htim1.Init.Period) {
         htim1.Instance->CCR1 = duty_cycle;
     }
     htim1.Instance->EGR = TIM_EGR_UG;
 
-    htim3.Instance->PSC = calc_prescaler(17000000, freq * 10);
+    htim3.Instance->PSC = calc_prescaler(1700000, freq);
     if (duty_cycle < htim3.Init.Period) {
         htim3.Instance->CCR1 = duty_cycle;
     }
