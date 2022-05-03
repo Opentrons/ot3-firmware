@@ -2,6 +2,7 @@
 
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -26,10 +27,12 @@ class BrushedMotorInterruptHandler {
     BrushedMotorInterruptHandler() = delete;
     BrushedMotorInterruptHandler(
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
-        motor_hardware::BrushedMotorHardwareIface& hardware_iface)
+        motor_hardware::BrushedMotorHardwareIface& hardware_iface,
+        brushed_motor_driver::BrushedMotorDriverIface& driver_iface)
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
-          hardware(hardware_iface) {}
+          hardware(hardware_iface),
+          driver_hardware(driver_iface) {}
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
         -> BrushedMotorInterruptHandler& = delete;
@@ -59,6 +62,10 @@ class BrushedMotorInterruptHandler {
 
     void update_and_start_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
+        if (buffered_move.freq && buffered_move.duty_cycle) {
+            driver_hardware.update_pwm_settings(buffered_move.freq,
+                                                buffered_move.duty_cycle);
+        }
         if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             hardware.ungrip();
         } else {
@@ -113,6 +120,7 @@ class BrushedMotorInterruptHandler {
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::BrushedMotorHardwareIface& hardware;
+    brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     BrushedMove buffered_move = BrushedMove{};
 };
 }  // namespace brushed_motor_handler

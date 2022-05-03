@@ -145,6 +145,11 @@ void FDCAN1_IT0_IRQHandler(void) {
 void TIM1_UP_TIM16_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
 
 /**
+ * @brief This function handles TIM1 capture/compare interrupt.
+ */
+void TIM1_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
+
+/**
  * @brief This function handles TIM3 global interrupt.
  */
 void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }

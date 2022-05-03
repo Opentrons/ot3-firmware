@@ -69,7 +69,8 @@ static brushed_motor::BrushedMotor grip_motor(brushed_motor_hardware_iface,
  */
 static brushed_motor_handler::BrushedMotorInterruptHandler
     brushed_motor_interrupt(motor_queue, gripper_tasks::g_tasks::get_queues(),
-                            brushed_motor_hardware_iface);
+                            brushed_motor_hardware_iface,
+                            brushed_motor_driver_iface);
 
 extern "C" void call_brushed_motor_handler(void) {
     brushed_motor_interrupt.run_interrupt();
