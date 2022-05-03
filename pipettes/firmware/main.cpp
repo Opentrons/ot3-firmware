@@ -48,7 +48,12 @@ static auto PIPETTE_TYPE = get_pipette_type();
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
-static auto can_bus_1 = hal_can_bus::HalCanBus(can_get_device_handle());
+static auto can_bus_1 = hal_can_bus::HalCanBus(
+    can_get_device_handle(),
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOA,
+                    .pin = GPIO_PIN_8,
+                    .active_setting = GPIO_PIN_RESET});
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
@@ -98,11 +103,7 @@ struct motion_controller::HardwareConfig plunger_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_8,
-        .active_setting = GPIO_PIN_RESET},
+    .led = {},
 };
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, &htim2);
@@ -179,9 +180,7 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
-              can_bit_timings.segment_2_quanta,
-              can_bit_timings.max_sync_jump_width);
+    can_bus_1.start(can_bit_timings);
 
     central_tasks::start_tasks(can_bus_1, id);
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms1, spi_comms);
