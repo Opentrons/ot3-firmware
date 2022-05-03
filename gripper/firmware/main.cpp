@@ -27,18 +27,18 @@ static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
 // to be checked against current configuration. However, they are
 // - clock input is 85MHz assuming the CAN is clocked from PCLK1
 // which has a clock divider of 2, and the system clock is 170MHZ
-// - 240ns requested time quantum yields a 235ns actual
+// - 50ns requested time quantum yields a 235ns actual
 // - 250KHz bitrate requested yields 250312KHz actual
 // - 88.3% sample point
 // Should drive
-// segment 1 = 14 quanta
-// segment 2 = 2 quanta
+// segment 1 = 73 quanta
+// segment 2 = 11 quanta
 //
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 240,
-                                 250 * can::bit_timings::KHZ, 883>{};
+    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 50,
+                                 250 * can::bit_timings::KHZ, 882>{};
 
 auto main() -> int {
     HardwareInit();
