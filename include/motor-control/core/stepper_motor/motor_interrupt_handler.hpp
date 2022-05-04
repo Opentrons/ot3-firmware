@@ -145,7 +145,6 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             finish_current_move(AckMessageId::stopped_by_condition);
-            enc_position_tracker = 0;
             reset_encoder_pulses();
             return true;
         }
@@ -198,6 +197,8 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
+    void update_encoder_position() {enc_position_tracker = get_encoder_pulses(); }
+
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
     }
@@ -206,15 +207,14 @@ class MotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
-        uint32_t pulses = 0x0;
-        pulses = get_encoder_pulses();
+        update_encoder_position();
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = pulses,
+                .encoder_position = enc_position_tracker,
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -224,28 +224,22 @@ class MotorInterruptHandler {
     }
 
     auto get_encoder_pulses() { 
-        uint32_t pulses = hardware.get_encoder_pulses();
-        // bool direction = hardware.get_encoder_direction();
-        if (get_encoder_overflow_status() == true &&
-            enc_future_flag == false){
-            pulses = UINT16_MAX + pulses;
+        enc_position_tracker = hardware.get_encoder_pulses();
+        if (get_encoder_overflow_status() == true) {
             hardware.clear_encoder_SR();
-            enc_future_flag = true;
-        }
-        else if (get_encoder_overflow_status() == true &&
-            enc_future_flag == true){
-            pulses = hardware.get_encoder_pulses();
-            hardware.clear_encoder_SR();
-            enc_future_flag = false;
-        }
+            if (enc_overflow_future_flag) {
+                enc_position_tracker = hardware.get_encoder_pulses();
+                enc_overflow_future_flag = false;
+            } else {
+                enc_position_tracker = UINT16_MAX + enc_position_tracker;
+                enc_overflow_future_flag = true;
+            }
+        } 
         else {
-            pulses = hardware.get_encoder_pulses(); 
+            enc_position_tracker = hardware.get_encoder_pulses(); 
         }
-        return pulses;
+        return enc_position_tracker;
         }
-
-    // Backup function
-    // auto get_encoder_pulses(){return hardware.get_encoder_pulses();}
 
     void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
 
@@ -293,9 +287,9 @@ class MotorInterruptHandler {
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
-    q31_31 enc_position_tracker = 0x0; // pulses
     q31_31 position_tracker = 0x0;  // in steps
-    bool enc_future_flag = false;
+    bool enc_overflow_future_flag = false;
+    uint32_t enc_position_tracker = 0x0;
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;

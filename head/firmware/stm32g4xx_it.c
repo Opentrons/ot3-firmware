@@ -46,8 +46,6 @@
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 extern TIM_HandleTypeDef htim7;
-extern TIM_HandleTypeDef htim6;
-
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
@@ -146,11 +144,6 @@ void FDCAN1_IT0_IRQHandler(void) {
  * @brief This function handles TIM7 global interrupt.
  */
 void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
-
-/**
- * @brief This function handles TIM6 global interrupt.
- */
-void TIM6_IRQHandler(void) { HAL_TIM_IRQHandler(&htim6); }
 
 extern void xPortSysTickHandler(void);
 void SysTick_Handler(void) {

@@ -3,7 +3,6 @@
 #include "common/firmware/errors.h"
 
 TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
@@ -190,15 +189,15 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     /* Encoder Z Axis GPIO Configuration
@@ -211,7 +210,7 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     // ENC CHANNELI Z AXIS PIN Configure
@@ -219,7 +218,7 @@ void Encoder_GPIO_Init(void){
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 }
 
@@ -362,34 +361,11 @@ void MX_TIM7_Init(void) {
     }
 }
 
-void MX_TIM6_Init(void) {
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-    htim6.Instance = TIM6;
-    htim6.Init.Prescaler = 849;
-    htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim6.Init.Period = 1;
-    htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    if (HAL_TIM_Base_Init(&htim6) != HAL_OK) {
-        Error_Handler();
-    }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) !=
-        HAL_OK) {
-        Error_Handler();
-    }
-}
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
     if ((htim == &htim7) && motor_callback) {
         motor_callback();
     }
-    else if ((htim == &htim6) && motor_callback){
-        motor_callback();
-    }
-    
 }
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
@@ -400,13 +376,6 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
         HAL_NVIC_SetPriority(TIM7_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM7_IRQn);
     }
-    else if (htim == &htim6) {
-        /* Peripheral clock enable */
-        __HAL_RCC_TIM6_CLK_ENABLE();
-        /* TIM6 interrupt Init */
-        HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 6, 0);
-        HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
-    }
 }
 
 void initialize_timer(motor_interrupt_callback callback) {
@@ -416,5 +385,4 @@ void initialize_timer(motor_interrupt_callback callback) {
     TIM2_EncoderZR_Init();
     TIM3_EncoderZL_Init();
     MX_TIM7_Init();
-    MX_TIM6_Init();
 }
