@@ -1,8 +1,6 @@
 #include "i2c/simulation/i2c_sim.hpp"
-
 #include <map>
 #include <vector>
-
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 using namespace i2c::hardware;
@@ -18,12 +16,13 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
         if (size > 1) {
             auto *iter = data + 1;
             uint16_t store_in_register = 0;
-            if (size == 3) {
+            // check if address belongs to pressure sensor
+            if (dev_address == 0x67 << 1) {
+                uint32_t store_in_register = 0;
                 iter = bit_utils::bytes_to_int(iter, data + size,
                                                store_in_register);
                 sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
-            } else if (size == 5) {
-                uint32_t store_in_register = 0;
+            } else {
                 iter = bit_utils::bytes_to_int(iter, data + size,
                                                store_in_register);
                 sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
@@ -48,11 +47,11 @@ auto SimI2C::central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
          * needed to allow them to exist in the same map with different
          * integer sizes
          * */
-        if (size == 2) {
+        if (dev_address == 0x67 << 1) {
+            iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
+        } else {
             iter = bit_utils::int_to_bytes(static_cast<uint16_t>(data_from_reg),
                                            iter, data + size);
-        } else {
-            iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
         }
         next_register_map[dev_address] = 0;
     } else {

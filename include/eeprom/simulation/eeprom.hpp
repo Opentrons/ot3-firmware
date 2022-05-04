@@ -13,5 +13,6 @@ class EEProm : public sensor_simulator::SensorType {
         REGISTER_MAP = {{0x0, 0}};
     }
 };
+
 }  // namespace simulator
 }  // namespace eeprom
