@@ -43,7 +43,7 @@ void SysTick_Handler(void);
 void DMA1_Channel2_IRQHandler(void);
 void DMA1_Channel3_IRQHandler(void);
 void FDCAN1_IT0_IRQHandler(void);
-void TIM1_UP_TIM16_IRQHandler(void);
+void TIM1_CC_IRQHandler(void);
 void TIM3_IRQHandler(void);
 void TIM7_IRQHandler(void);
 

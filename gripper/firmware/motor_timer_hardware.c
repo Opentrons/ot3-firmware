@@ -8,6 +8,7 @@ TIM_OC_InitTypeDef htim1_sConfigOC = {0};
 TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 
 static motor_interrupt_callback timer_callback = NULL;
+static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 
 uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
     return (dividend + (divisor / 2)) / divisor;
@@ -57,8 +58,12 @@ static void MX_TIM1_Init(void) {
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
     htim1.Instance = TIM1;
-    /* Set counter clock frequency to 100 MHz */
-    htim1.Init.Prescaler = calc_prescaler(17000000, 320000);
+    /*
+     * Setting counter clock frequency to 32 kHz
+     * Note that brushed timer tick at a different frequency from the stepper
+     * motor timer.
+     */
+    htim1.Init.Prescaler = calc_prescaler(1700000, 32000);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim1.Init.Period = 100 - 1;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -82,7 +87,7 @@ static void MX_TIM1_Init(void) {
         Error_Handler();
     }
     htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 85% */
+    /* Set duty cycle at 65% */
     htim1_sConfigOC.Pulse = 65;
     htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
@@ -123,8 +128,12 @@ static void MX_TIM3_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim3.Instance = TIM3;
-    /* Set counter clock frequency to 320 kHz */
-    htim3.Init.Prescaler = calc_prescaler(17000000, 320000);
+    /*
+     * Setting counter clock frequency to 32 kHz
+     * Note that brushed timer tick at a different frequency from the stepper
+     * motor timer.
+     */
+    htim3.Init.Prescaler = calc_prescaler(1700000, 32000);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim3.Init.Period = 100 - 1;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -146,7 +155,7 @@ static void MX_TIM3_Init(void) {
         Error_Handler();
     }
     htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 85% */
+    /* Set duty cycle at 65% */
     htim3_sConfigOC.Pulse = 65;  // round_closest(htim3.Init.Period, 2);
     htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -163,6 +172,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base) {
         __HAL_RCC_TIM1_CLK_DISABLE();
         /* TIM1 interrupt DeInit */
         HAL_NVIC_DisableIRQ(TIM1_UP_TIM16_IRQn);
+        HAL_NVIC_DisableIRQ(TIM1_CC_IRQn);
     } else if (htim_base->Instance == TIM3) {
         /* Peripheral clock disable */
         __HAL_RCC_TIM3_CLK_DISABLE();
@@ -175,6 +185,9 @@ void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
+    /*
+     * Setting counter clock frequency to 100 kHz
+     */
     htim7.Init.Prescaler = 849;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
@@ -187,13 +200,6 @@ void MX_TIM7_Init(void) {
     if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) !=
         HAL_OK) {
         Error_Handler();
-    }
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-    // Check which version of the timer triggered this callback
-    if (htim == &htim7 && timer_callback) {
-        timer_callback();
     }
 }
 
@@ -210,6 +216,8 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
         /* TIM1 interrupt Init */
         HAL_NVIC_SetPriority(TIM1_UP_TIM16_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
+        HAL_NVIC_SetPriority(TIM1_CC_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
     } else if (htim == &htim3) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM3_CLK_ENABLE();
@@ -249,15 +257,29 @@ void initialize_timer(motor_interrupt_callback callback) {
 }
 
 void update_pwm(uint32_t freq, uint32_t duty_cycle) {
-    htim1.Instance->PSC = calc_prescaler(17000000, freq * 10);
+    htim1.Instance->PSC = calc_prescaler(1700000, freq);
     if (duty_cycle < htim1.Init.Period) {
         htim1.Instance->CCR1 = duty_cycle;
     }
     htim1.Instance->EGR = TIM_EGR_UG;
 
-    htim3.Instance->PSC = calc_prescaler(17000000, freq * 10);
+    htim3.Instance->PSC = calc_prescaler(1700000, freq);
     if (duty_cycle < htim3.Init.Period) {
         htim3.Instance->CCR1 = duty_cycle;
     }
     htim3.Instance->EGR = TIM_EGR_UG;
+}
+
+void set_brushed_motor_timer_callback(
+    brushed_motor_interrupt_callback callback) {
+    brushed_timer_callback = callback;
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+    // Check which version of the timer triggered this callback
+    if (htim == &htim7 && timer_callback) {
+        timer_callback();
+    } else if (htim == &htim1) {
+        brushed_timer_callback();
+    }
 }

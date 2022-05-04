@@ -38,10 +38,13 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void deactivate_motor() final;
     auto check_limit_switch() -> bool final;
     void grip() final;
-    void home() final;
+    void ungrip() final;
+    void stop_pwm() final;
     auto check_sync_in() -> bool final;
     auto get_encoder_pulses() -> uint32_t final;
     void reset_encoder_pulses() final;
+    void start_timer_interrupt() final;
+    void stop_timer_interrupt() final;
 
   private:
     BrushedHardwareConfig pins;

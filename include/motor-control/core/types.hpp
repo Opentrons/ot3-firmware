@@ -9,6 +9,7 @@ using q31_31 =
 
 using sq31_31 = int64_t;
 
-using ticks = uint64_t;
+using stepper_timer_ticks = uint64_t;
+using brushed_timer_ticks = uint64_t;
 using steps_per_tick = sq0_31;
 using steps_per_tick_sq = sq0_31;

@@ -111,7 +111,8 @@ static motor_class::Motor z_motor{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
-        .microstep = 16},
+        .microstep = 16,
+        .gear_ratio = 1.8},
     motor_hardware_iface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,

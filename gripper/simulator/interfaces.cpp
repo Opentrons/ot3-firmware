@@ -26,6 +26,11 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
 /**
+ * The pending brushed move queue
+ */
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::BrushedMove>
+    brushed_motor_queue("Brushed Motor Queue");
+/**
  * Motor driver configuration.
  */
 static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
@@ -85,7 +90,8 @@ static auto brushed_motor_hardware_iface =
     sim_motor_hardware_iface::SimBrushedMotorHardwareIface();
 
 static auto grip_motor = brushed_motor::BrushedMotor(
-    brushed_motor_hardware_iface, brushed_motor_driver_iface);
+    brushed_motor_hardware_iface, brushed_motor_driver_iface,
+    brushed_motor_queue);
 
 void z_motor_iface::initialize(){};
 

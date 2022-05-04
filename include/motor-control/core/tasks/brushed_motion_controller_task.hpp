@@ -6,7 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
-#include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/brushed_motor/brushed_motion_controller.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/utils.hpp"
 
@@ -22,8 +22,9 @@ template <message_writer_task::TaskClient CanClient>
 class MotionControllerMessageHandler {
   public:
     MotionControllerMessageHandler(
-        motor_hardware::BrushedMotorHardwareIface& motor, CanClient& can_client)
-        : motor{motor}, can_client{can_client} {}
+        brushed_motion_controller::MotionController& controller,
+        CanClient& can_client)
+        : controller{controller}, can_client{can_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -45,19 +46,35 @@ class MotionControllerMessageHandler {
 
     void handle(const can_messages::EnableMotorRequest&) {
         LOG("Received enable motor request");
-        motor.activate_motor();
+        controller.enable_motor();
     }
 
     void handle(const can_messages::DisableMotorRequest&) {
         LOG("Received disable motor request");
-        motor.deactivate_motor();
+        controller.disable_motor();
     }
 
-    void handle(const can_messages::GripperGripRequest&) { motor.grip(); }
+    void handle(const can_messages::StopRequest&) {
+        LOG("Received stop request");
+        controller.stop();
+    }
 
-    void handle(const can_messages::GripperHomeRequest&) { motor.home(); }
+    void handle(const can_messages::GripperGripRequest& m) {
+        controller.move(m);
+    }
 
-    motor_hardware::BrushedMotorHardwareIface& motor;
+    void handle(const can_messages::GripperHomeRequest& m) {
+        controller.move(m);
+    }
+
+    void handle(const can_messages::ReadLimitSwitchRequest&) {
+        auto response = static_cast<uint8_t>(controller.read_limit_switch());
+        LOG("Received read limit switch: limit_switch=%d", response);
+        can_messages::ReadLimitSwitchResponse msg{{}, response};
+        can_client.send_can_message(can_ids::NodeId::host, msg);
+    }
+
+    brushed_motion_controller::MotionController& controller;
     CanClient& can_client;
 };
 
@@ -82,9 +99,9 @@ class MotionControllerTask {
      */
     template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
-        motor_hardware::BrushedMotorHardwareIface* motor,
+        brushed_motion_controller::MotionController* controller,
         CanClient* can_client) {
-        auto handler = MotionControllerMessageHandler{*motor, *can_client};
+        auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

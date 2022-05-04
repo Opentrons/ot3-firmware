@@ -30,6 +30,9 @@ void gripper_tasks::start_tasks(
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks);
 
     g_tasks::start_task(grip_motor, tasks);
+
+    z_tasks::get_queues().set_queue(&can_writer.get_queue());
+    g_tasks::get_queues().set_queue(&can_writer.get_queue());
 }
 
 gripper_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)

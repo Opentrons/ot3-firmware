@@ -15,7 +15,8 @@ namespace can_messages {
 
 using namespace can_ids;
 
-using ticks = uint32_t;
+using stepper_timer_ticks = uint32_t;
+using brushed_timer_ticks = uint32_t;
 using um_per_tick = int32_t;
 using um_per_tick_sq = int32_t;
 
@@ -213,7 +214,7 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
 struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     uint8_t group_id;
     uint8_t seq_id;
-    ticks duration;
+    stepper_timer_ticks duration;
     um_per_tick_sq acceleration;
     um_per_tick velocity;
     uint8_t request_stop_condition;
@@ -222,7 +223,7 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     static auto parse(Input body, Limit limit) -> AddLinearMoveRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        ticks duration = 0;
+        stepper_timer_ticks duration = 0;
         um_per_tick_sq acceleration = 0;
         um_per_tick velocity = 0;
         uint8_t request_stop_condition = 0;
@@ -248,14 +249,14 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
 struct HomeRequest : BaseMessage<MessageId::home_request> {
     uint8_t group_id;
     uint8_t seq_id;
-    ticks duration;
+    stepper_timer_ticks duration;
     um_per_tick velocity;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> HomeRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        ticks duration = 0;
+        stepper_timer_ticks duration = 0;
         um_per_tick velocity = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
@@ -673,9 +674,65 @@ struct SetBrushedMotorPwmRequest
         -> bool = default;
 };
 
-using GripperGripRequest = Empty<MessageId::gripper_grip_request>;
+struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    brushed_timer_ticks duration;
+    uint32_t freq;
+    uint32_t duty_cycle;
 
-using GripperHomeRequest = Empty<MessageId::gripper_home_request>;
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GripperGripRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        brushed_timer_ticks duration = 0;
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+
+        return GripperGripRequest{.group_id = group_id,
+                                  .seq_id = seq_id,
+                                  .duration = duration,
+                                  .freq = freq,
+                                  .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const GripperGripRequest& other) const -> bool = default;
+};
+
+struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
+    uint8_t group_id;
+    uint8_t seq_id;
+    brushed_timer_ticks duration;
+    uint32_t freq;
+    uint32_t duty_cycle;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GripperHomeRequest {
+        uint8_t group_id = 0;
+        uint8_t seq_id = 0;
+        brushed_timer_ticks duration = 0;
+        uint32_t freq = 0;
+        uint32_t duty_cycle = 0;
+        body = bit_utils::bytes_to_int(body, limit, group_id);
+        body = bit_utils::bytes_to_int(body, limit, seq_id);
+        body = bit_utils::bytes_to_int(body, limit, duration);
+        body = bit_utils::bytes_to_int(body, limit, freq);
+        body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+
+        return GripperHomeRequest{.group_id = group_id,
+                                  .seq_id = seq_id,
+                                  .duration = duration,
+                                  .freq = freq,
+                                  .duty_cycle = duty_cycle};
+    }
+
+    auto operator==(const GripperHomeRequest& other) const -> bool = default;
+};
 
 using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
 
@@ -797,14 +854,14 @@ struct TipActionRequest
     : BaseMessage<MessageId::do_self_contained_tip_action_request> {
     uint8_t group_id;
     uint8_t seq_id;
-    ticks duration;
+    stepper_timer_ticks duration;
     um_per_tick velocity;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> TipActionRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
-        ticks duration = 0;
+        stepper_timer_ticks duration = 0;
         um_per_tick velocity = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
