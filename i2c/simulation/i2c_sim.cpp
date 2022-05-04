@@ -1,6 +1,8 @@
 #include "i2c/simulation/i2c_sim.hpp"
+
 #include <map>
 #include <vector>
+
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 using namespace i2c::hardware;
