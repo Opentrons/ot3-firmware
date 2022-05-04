@@ -6,6 +6,7 @@
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
 #include "i2c/core/messages.hpp"
+#include "i2c/core/transaction.hpp"
 #include "i2c/core/writer.hpp"
 #include "messages.hpp"
 #include "types.hpp"
@@ -40,14 +41,18 @@ class EEPromMessageHandler {
     void visit(std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
-        auto data = eeprom::types::EepromData{};
-        std::copy_n(m.read_buffer.cbegin(), std::min(m.bytes_read, data.size()),
-                    data.begin());
-        auto v = eeprom::message::EepromMessage{
-            .memory_address = last_.memory_address,
-            .length = static_cast<eeprom::types::data_length>(m.bytes_read),
-            .data = data};
-        last_.callback(v, last_.callback_param);
+        auto id_map_entry = id_map.remove(m.id.token);
+        if (id_map_entry) {
+            auto transaction = id_map_entry.value();
+            auto data = eeprom::types::EepromData{};
+            std::copy_n(m.read_buffer.cbegin(),
+                        std::min(m.bytes_read, data.size()), data.begin());
+            auto v = eeprom::message::EepromMessage{
+                .memory_address = transaction.memory_address,
+                .length = static_cast<eeprom::types::data_length>(m.bytes_read),
+                .data = data};
+            transaction.callback(v, transaction.callback_param);
+        }
     }
 
     void visit(eeprom::message::WriteEepromMessage &m) {
@@ -81,15 +86,22 @@ class EEPromMessageHandler {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
 
+        auto token = id_map.add(m);
+        if (!token) {
+            LOG("No space in the id map.");
+            return;
+        }
+
         auto transaction =
             i2c::messages::Transaction{.address = DEVICE_ADDRESS,
                                        .bytes_to_read = m.length,
                                        .bytes_to_write = 1,
                                        .write_buffer{m.memory_address}};
-        auto transaction_id = i2c::messages::TransactionIdentifier{.token = 0};
+        auto transaction_id =
+            i2c::messages::TransactionIdentifier{.token = token.value()};
 
-        if (writer.transact(transaction, transaction_id, own_queue)) {
-            last_ = m;
+        if (!writer.transact(transaction, transaction_id, own_queue)) {
+            id_map.remove(token.value());
         }
     }
 
@@ -97,8 +109,7 @@ class EEPromMessageHandler {
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
 
-    ///
-    eeprom::message::ReadEepromMessage last_{};
+    i2c::transaction::IdMap<eeprom::message::ReadEepromMessage, 10> id_map{};
 };
 
 /**
