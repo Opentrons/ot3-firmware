@@ -23,9 +23,10 @@ using TaskMessage =
 template <class I2CQueueWriter, class OwnQueue>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
-                                  OwnQueue &own_queue)
-        : writer{i2c_writer}, own_queue{own_queue} {}
+    explicit EEPromMessageHandler(
+        I2CQueueWriter &i2c_writer, OwnQueue &own_queue,
+        eeprom::write_protect::WriteProtectPin &wp_pin)
+        : writer{i2c_writer}, own_queue{own_queue}, write_protector{wp_pin} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -149,8 +150,7 @@ class EEPromMessageHandler {
     i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
                             MAX_INFLIGHT_READS>
         id_map{};
-    eeprom::write_protect::WriteProtector write_protector{};
-
+    eeprom::write_protect::WriteProtector write_protector;
 };
 
 /**

@@ -7,13 +7,20 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 
+struct MockWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
+    void set(bool enabled) { set_calls.push_back(enabled); }
+    std::vector<bool> set_calls{};
+};
+
 SCENARIO("Sending messages to Eeprom task") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
+    auto wp_pin = MockWriteProtectPin{};
 
-    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue};
+    auto eeprom =
+        eeprom::task::EEPromMessageHandler{writer, response_queue, wp_pin};
 
     GIVEN("A write message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
@@ -106,8 +113,10 @@ SCENARIO("Transaction response handling.") {
     test_mocks::MockI2CResponseQueue response_queue{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
+    auto wp_pin = MockWriteProtectPin{};
 
-    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue};
+    auto eeprom =
+        eeprom::task::EEPromMessageHandler{writer, response_queue, wp_pin};
 
     GIVEN("A read request") {
         eeprom::types::address address = 14;

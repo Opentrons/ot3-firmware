@@ -4,11 +4,20 @@
 namespace eeprom {
 namespace write_protect {
 
+
 /**
- * Change the write protect status. Must be implemented in FW and Simulation
- * @param enabled true to inhibit writing
+ * Interface to write protect pin. Must be implemented in FW and Simulation
  */
-void set(bool enabled);
+class WriteProtectPin {
+  public:
+    virtual ~WriteProtectPin() = default;
+
+    /**
+     * Change the write protect status.
+     * @param enabled true to inhibit writing
+     */
+    virtual void set(bool) = 0;
+};
 
 
 /**
@@ -22,11 +31,17 @@ void set(bool enabled);
 class WriteProtector {
   public:
     /**
+     * Constructor
+     * @param pin
+     */
+    explicit WriteProtector(WriteProtectPin& pin) : pin{pin} {}
+
+    /**
      * Disable the write protect
      */
     void disable() {
         if (count++ == 0) {
-            set(false);
+            pin.set(false);
         }
     }
 
@@ -36,15 +51,16 @@ class WriteProtector {
     void enable() {
         if (count > 0) {
             if (--count == 0) {
-                set(true);
+                pin.set(true);
             }
         } else {
-            set(true);
+            pin.set(true);
         }
     }
   private:
     // THe number of times that disable has been called.
     uint32_t count{0};
+    WriteProtectPin& pin;
 };
 
 }
