@@ -58,6 +58,37 @@ class MoveStatusMessageHandler {
     sq31_31 um_per_encoder_pulse;
 };
 
+template <message_writer_task::TaskClient CanClient>
+class BrushedMoveStatusMessageHandler {
+  public:
+    BrushedMoveStatusMessageHandler(CanClient& can_client)
+        : can_client{can_client} {}
+    BrushedMoveStatusMessageHandler(const BrushedMoveStatusMessageHandler& c) =
+        delete;
+    BrushedMoveStatusMessageHandler(const BrushedMoveStatusMessageHandler&& c) =
+        delete;
+    auto operator=(const BrushedMoveStatusMessageHandler& c) = delete;
+    auto operator=(const BrushedMoveStatusMessageHandler&& c) = delete;
+    ~BrushedMoveStatusMessageHandler() = default;
+
+    /**
+     * Called upon arrival of new message
+     * @param message
+     */
+    void handle_message(const TaskMessage& message) {
+        can_messages::MoveCompleted msg = {
+            .group_id = message.group_id,
+            .seq_id = message.seq_id,
+            .current_position_um = 0,
+            .encoder_position = message.encoder_position,
+            .ack_id = static_cast<uint8_t>(message.ack_id)};
+        can_client.send_can_message(can_ids::NodeId::host, msg);
+    }
+
+  private:
+    CanClient& can_client;
+};
+
 /**
  * The task type.
  */
@@ -91,6 +122,20 @@ class MoveStatusReporterTask {
         }
     }
 
+    /**
+     * Brushed task entry point.
+     */
+    template <message_writer_task::TaskClient CanClient>
+    [[noreturn]] void operator()(CanClient* can_client) {
+        auto handler = BrushedMoveStatusMessageHandler{*can_client};
+        TaskMessage message{};
+        for (;;) {
+            if (queue.try_read(&message, queue.max_delay)) {
+                handler.handle_message(message);
+            }
+        }
+    }
+
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
@@ -104,6 +149,15 @@ class MoveStatusReporterTask {
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_move_status_reporter_queue(m)};
+};
+
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept BrushedTaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_brushed_move_status_reporter_queue(m)};
 };
 
 }  // namespace move_status_reporter_task

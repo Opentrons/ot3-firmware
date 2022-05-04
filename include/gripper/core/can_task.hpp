@@ -46,6 +46,11 @@ using BrushedMotorDispatchTarget = can_dispatch::DispatchParseTarget<
 using BrushedMotionDispatchTarget = can_dispatch::DispatchParseTarget<
     motion_message_handler::BrushedMotionHandler<g_tasks::QueueClient>,
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
+    can_messages::StopRequest, can_messages::ReadLimitSwitchRequest>;
+using BrushedMoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
+    move_group_handler::BrushedMoveGroupHandler<g_tasks::QueueClient>,
+    can_messages::ClearAllMoveGroupsRequest,
+    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
     can_messages::GripperGripRequest, can_messages::GripperHomeRequest>;
 using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient>,

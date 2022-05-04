@@ -1,6 +1,7 @@
 #pragma once
 
 #include "can/core/messages.hpp"
+#include "motor-control/core/tasks/brushed_move_group_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 
 namespace move_group_handler {
@@ -25,6 +26,31 @@ class MoveGroupHandler {
 
   private:
     Client &task_client;
+};
+
+template <brushed_move_group_task::TaskClient Brushed_Client>
+class BrushedMoveGroupHandler {
+  public:
+    using MessageType =
+        std::variant<std::monostate, ClearAllMoveGroupsRequest,
+                     ExecuteMoveGroupRequest, GetMoveGroupRequest,
+                     GripperGripRequest, GripperHomeRequest>;
+    BrushedMoveGroupHandler(Brushed_Client &task_client)
+        : task_client{task_client} {}
+    BrushedMoveGroupHandler(const BrushedMoveGroupHandler &) = delete;
+    BrushedMoveGroupHandler(const BrushedMoveGroupHandler &&) = delete;
+    auto operator=(const BrushedMoveGroupHandler &)
+        -> BrushedMoveGroupHandler & = delete;
+    auto operator=(const BrushedMoveGroupHandler &&)
+        -> BrushedMoveGroupHandler && = delete;
+    ~BrushedMoveGroupHandler() = default;
+
+    void handle(MessageType &m) {
+        task_client.send_brushed_move_group_queue(m);
+    }
+
+  private:
+    Brushed_Client &task_client;
 };
 
 }  // namespace move_group_handler

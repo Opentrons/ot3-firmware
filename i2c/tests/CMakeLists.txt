@@ -12,6 +12,7 @@ add_executable(
         test_i2c_poller.cpp
         test_i2c_task.cpp
         test_i2c_poll_impl.cpp
+        test_transaction.cpp
 )
 
 target_include_directories(i2c PUBLIC ${CMAKE_SOURCE_DIR}/include)
