@@ -39,9 +39,16 @@ class EEPromMessageHandler {
   private:
     void visit(std::monostate &) {}
 
-    void visit(i2c::messages::TransactionResponse &) {  //} m) {
-        //        auto message = can_messages::ReadFromEEPromResponse::create(
-        //            0, m.read_buffer.cbegin(), m.read_buffer.cend());
+    void visit(i2c::messages::TransactionResponse& m) {
+        auto data = eeprom::types::EepromData{};
+        std::copy_n(
+            m.read_buffer.cbegin(), std::min(m.bytes_read, data.size()), data.begin());
+        auto v = eeprom::message::EepromMessage{
+            .memory_address=last_.memory_address,
+            .length=static_cast<eeprom::types::data_length>(m.bytes_read),
+            .data=data
+        };
+        last_.callback(v, last_.callback_param);
     }
 
     void visit(eeprom::message::WriteEepromMessage &m) {
@@ -63,12 +70,17 @@ class EEPromMessageHandler {
     void visit(eeprom::message::ReadEepromMessage &m) {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
-        writer.read(DEVICE_ADDRESS, m.memory_address, m.length, own_queue, 0);
+        if (writer.read(DEVICE_ADDRESS, m.memory_address, m.length, own_queue, 0)) {
+            last_ = m;
+        }
     }
 
     static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
+
+    ///
+    eeprom::message::ReadEepromMessage last_{};
 };
 
 /**
