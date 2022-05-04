@@ -12,9 +12,12 @@ void set(bool enabled);
 
 
 /**
- * Simple class to manage disabling and enabling write protect.
+ * Class to manages the state of the write protect pin across multiple transactions.
  *
- * Assumes that write protect is active.
+ * Consecutive write requests will want to have write protection disabled. The enable should
+ * happen when all the write transactions have completed.
+ *
+ * This class keeps the eeprom from having to keep track of the write protection state.
  */
 class WriteProtector {
   public:
@@ -40,6 +43,7 @@ class WriteProtector {
         }
     }
   private:
+    // THe number of times that disable has been called.
     uint32_t count{0};
 };
 

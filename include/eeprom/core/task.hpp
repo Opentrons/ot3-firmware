@@ -10,6 +10,7 @@
 #include "i2c/core/writer.hpp"
 #include "messages.hpp"
 #include "types.hpp"
+#include "write_protect.hpp"
 
 namespace eeprom {
 namespace task {
@@ -48,6 +49,7 @@ class EEPromMessageHandler {
         LOG("Transaction with token %ud has completed.", m.id.token);
         if (m.id.token == WRITE_TOKEN) {
             // A write has completed
+            write_protector.enable();
         } else {
             // A read has completed
             auto id_map_entry = id_map.remove(m.id.token);
@@ -95,7 +97,10 @@ class EEPromMessageHandler {
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
 
+        write_protector.disable();
         if (writer.transact(transaction, transaction_id, own_queue)) {
+            // Failed to write transaction. Re-enable write protection.
+            write_protector.enable();
         }
     }
 
@@ -114,6 +119,7 @@ class EEPromMessageHandler {
         auto token = id_map.add(m);
         if (!token) {
             LOG("No space in the id map.");
+            // TODO (amit, 2022-05-04): Should we re-enqueue the message?
             return;
         }
 
@@ -143,6 +149,8 @@ class EEPromMessageHandler {
     i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
                             MAX_INFLIGHT_READS>
         id_map{};
+    eeprom::write_protect::WriteProtector write_protector{};
+
 };
 
 /**
