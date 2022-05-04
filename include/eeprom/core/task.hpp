@@ -40,21 +40,38 @@ class EEPromMessageHandler {
   private:
     void visit(std::monostate &) {}
 
+    /**
+     * Handle a transaction response from the i2c task
+     * @param m The message
+     */
     void visit(i2c::messages::TransactionResponse &m) {
-        auto id_map_entry = id_map.remove(m.id.token);
-        if (id_map_entry) {
-            auto transaction = id_map_entry.value();
-            auto data = eeprom::types::EepromData{};
-            std::copy_n(m.read_buffer.cbegin(),
-                        std::min(m.bytes_read, data.size()), data.begin());
-            auto v = eeprom::message::EepromMessage{
-                .memory_address = transaction.memory_address,
-                .length = static_cast<eeprom::types::data_length>(m.bytes_read),
-                .data = data};
-            transaction.callback(v, transaction.callback_param);
+        LOG("Transaction with token %ud has completed.", m.id.token);
+        if (m.id.token == WRITE_TOKEN) {
+            // A write has completed
+        } else {
+            // A read has completed
+            auto id_map_entry = id_map.remove(m.id.token);
+            if (id_map_entry) {
+                auto read_message = id_map_entry.value();
+                auto data = eeprom::types::EepromData{};
+                std::copy_n(m.read_buffer.cbegin(),
+                            std::min(m.bytes_read, data.size()), data.begin());
+                auto v = eeprom::message::EepromMessage{
+                    .memory_address = read_message.memory_address,
+                    .length =
+                        static_cast<eeprom::types::data_length>(m.bytes_read),
+                    .data = data};
+                read_message.callback(v, read_message.callback_param);
+            } else {
+                LOG("Failed to find entry for token %ud.", m.id.token);
+            }
         }
     }
 
+    /**
+     * Handle a request to write to eeprom.
+     * @param m THe message
+     */
     void visit(eeprom::message::WriteEepromMessage &m) {
         LOG("Received request to write %d bytes to address %x", m.length,
             m.data);
@@ -68,23 +85,31 @@ class EEPromMessageHandler {
             std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
             iter);
 
+        // A write transaction.
         auto transaction = i2c::messages::Transaction{
             .address = DEVICE_ADDRESS,
             .bytes_to_read = 0,
             .bytes_to_write = static_cast<std::size_t>(iter - buffer.begin()),
             .write_buffer = buffer};
-        auto transaction_id = i2c::messages::TransactionIdentifier{.token = 0};
+        // Use the WRITE_TOKEN to disambiguate from the reads.
+        auto transaction_id =
+            i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
 
         if (writer.transact(transaction, transaction_id, own_queue)) {
         }
     }
 
+    /**
+     * Handle a request to read from the eeprom
+     * @param m The message
+     */
     void visit(eeprom::message::ReadEepromMessage &m) {
+        LOG("Received request to read %d bytes from address %d", m.length,
+            m.memory_address);
+
         if (m.length <= 0) {
             return;
         }
-        LOG("Received request to read %d bytes from address %d", m.length,
-            m.memory_address);
 
         auto token = id_map.add(m);
         if (!token) {
@@ -92,15 +117,19 @@ class EEPromMessageHandler {
             return;
         }
 
+        // The transaction will write the memory address, then read the
+        // data.
         auto transaction =
             i2c::messages::Transaction{.address = DEVICE_ADDRESS,
                                        .bytes_to_read = m.length,
                                        .bytes_to_write = 1,
                                        .write_buffer{m.memory_address}};
+        // The transaction identifier uses the token returned from id_map.add
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = token.value()};
 
         if (!writer.transact(transaction, transaction_id, own_queue)) {
+            // The writer cannot accept this message. Remove it from the id_map.
             id_map.remove(token.value());
         }
     }
@@ -109,7 +138,11 @@ class EEPromMessageHandler {
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
 
-    i2c::transaction::IdMap<eeprom::message::ReadEepromMessage, 10> id_map{};
+    static constexpr auto WRITE_TOKEN = static_cast<uint32_t>(-1);
+    static constexpr auto MAX_INFLIGHT_READS = 10;
+    i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
+                            MAX_INFLIGHT_READS>
+        id_map{};
 };
 
 /**
