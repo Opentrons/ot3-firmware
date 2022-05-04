@@ -12,7 +12,7 @@ struct EepromMessage {
     auto operator==(const EepromMessage&) const -> bool = default;
 };
 
-using ReadResponseCallback = void(*)(const EepromMessage&, void*);
+using ReadResponseCallback = void (*)(const EepromMessage&, void*);
 
 /**
  * The read from eeprom message.
@@ -26,7 +26,6 @@ struct ReadEepromMessage {
 
 /** The write to eeprom message */
 using WriteEepromMessage = EepromMessage;
-
 
 }  // namespace message
 }  // namespace eeprom

@@ -76,6 +76,19 @@ SCENARIO("Sending messages to Eeprom task") {
             }
         }
     }
+    GIVEN("A read message with zero length") {
+        eeprom::types::address address = 14;
+        eeprom::types::data_length data_length = 0;
+        auto read_msg =
+            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
+                .memory_address = address, .length = data_length});
+        eeprom.handle_message(read_msg);
+        WHEN("the message is sent") {
+            THEN("the i2c queue is not populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 0);
+            }
+        }
+    }
 }
 
 struct ReadResponseHandler {

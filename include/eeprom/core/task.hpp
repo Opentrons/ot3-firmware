@@ -39,15 +39,14 @@ class EEPromMessageHandler {
   private:
     void visit(std::monostate &) {}
 
-    void visit(i2c::messages::TransactionResponse& m) {
+    void visit(i2c::messages::TransactionResponse &m) {
         auto data = eeprom::types::EepromData{};
-        std::copy_n(
-            m.read_buffer.cbegin(), std::min(m.bytes_read, data.size()), data.begin());
+        std::copy_n(m.read_buffer.cbegin(), std::min(m.bytes_read, data.size()),
+                    data.begin());
         auto v = eeprom::message::EepromMessage{
-            .memory_address=last_.memory_address,
-            .length=static_cast<eeprom::types::data_length>(m.bytes_read),
-            .data=data
-        };
+            .memory_address = last_.memory_address,
+            .length = static_cast<eeprom::types::data_length>(m.bytes_read),
+            .data = data};
         last_.callback(v, last_.callback_param);
     }
 
@@ -64,13 +63,32 @@ class EEPromMessageHandler {
             std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
             iter);
 
-        writer.write(DEVICE_ADDRESS, std::span(buffer.begin(), iter));
+        auto transaction = i2c::messages::Transaction{
+            .address = DEVICE_ADDRESS,
+            .bytes_to_read = 0,
+            .bytes_to_write = static_cast<std::size_t>(iter - buffer.begin()),
+            .write_buffer = buffer};
+        auto transaction_id = i2c::messages::TransactionIdentifier{.token = 0};
+
+        if (writer.transact(transaction, transaction_id, own_queue)) {
+        }
     }
 
     void visit(eeprom::message::ReadEepromMessage &m) {
+        if (m.length <= 0) {
+            return;
+        }
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
-        if (writer.read(DEVICE_ADDRESS, m.memory_address, m.length, own_queue, 0)) {
+
+        auto transaction =
+            i2c::messages::Transaction{.address = DEVICE_ADDRESS,
+                                       .bytes_to_read = m.length,
+                                       .bytes_to_write = 1,
+                                       .write_buffer{m.memory_address}};
+        auto transaction_id = i2c::messages::TransactionIdentifier{.token = 0};
+
+        if (writer.transact(transaction, transaction_id, own_queue)) {
             last_ = m;
         }
     }
