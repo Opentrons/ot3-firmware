@@ -58,6 +58,21 @@ SCENARIO("Sending messages to Eeprom task") {
             }
         }
     }
+    GIVEN("A write message with zero length") {
+        auto data = eeprom::types::EepromData{};
+        eeprom::types::address address = 14;
+        eeprom::types::data_length data_length = 0;
+        auto write_msg = eeprom::task::TaskMessage(
+            eeprom::message::WriteEepromMessage{.memory_address = address,
+                                                .length = data_length,
+                                                .data = data});
+        WHEN("the message is sent") {
+            eeprom.handle_message(write_msg);
+            THEN("the i2c queue is not populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 0);
+            }
+        }
+    }
     GIVEN("A read message") {
         eeprom::types::address address = 14;
         eeprom::types::data_length data_length = 5;
@@ -145,6 +160,30 @@ SCENARIO("Transaction response handling.") {
                             .memory_address = address,
                             .length = data_length,
                             .data = eeprom::types::EepromData{1, 2, 3, 4, 5}});
+            }
+        }
+    }
+
+    GIVEN("A write request") {
+        auto data = eeprom::types::EepromData{1, 2, 3};
+        eeprom::types::address address = 14;
+        eeprom::types::data_length data_length = 3;
+        auto write_msg = eeprom::task::TaskMessage(
+            eeprom::message::WriteEepromMessage{.memory_address = address,
+                                                .length = data_length,
+                                                .data = data});
+        eeprom.handle_message(write_msg);
+
+        WHEN("a transaction response is sent") {
+            auto transaction_response =
+                eeprom::task::TaskMessage(i2c::messages::TransactionResponse{
+                    .id = i2c::messages::TransactionIdentifier{.token = static_cast<uint32_t>(-1)},
+                    .bytes_read = 0,
+                    .read_buffer = i2c::messages::MaxMessageBuffer{}});
+
+            eeprom.handle_message(transaction_response);
+            THEN("the write protect pin is disabled then enabled") {
+                REQUIRE(wp_pin.set_calls == std::vector<bool>{false, true});
             }
         }
     }

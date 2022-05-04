@@ -78,6 +78,11 @@ class EEPromMessageHandler {
     void visit(eeprom::message::WriteEepromMessage &m) {
         LOG("Received request to write %d bytes to address %x", m.length,
             m.data);
+
+        if (m.length <= 0) {
+            return;
+        }
+
         auto buffer = i2c::messages::MaxMessageBuffer{};
         auto iter = buffer.begin();
         // First byte is address
@@ -99,7 +104,7 @@ class EEPromMessageHandler {
             i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
 
         write_protector.disable();
-        if (writer.transact(transaction, transaction_id, own_queue)) {
+        if (!writer.transact(transaction, transaction_id, own_queue)) {
             // Failed to write transaction. Re-enable write protection.
             write_protector.enable();
         }
