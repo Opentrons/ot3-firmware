@@ -11,6 +11,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
 #include "eeprom/simulation/eeprom.hpp"
+#include "eeprom/simulation/write_protect.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
@@ -46,6 +47,7 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
+static auto sim_eeprom_wp_pin = eeprom::sim_write_protect::SimWriteProtectPin{};
 static auto sim_eeprom = eeprom::simulator::EEProm{};
 static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
 std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
@@ -102,10 +104,10 @@ int main() {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
 
-    pipettes_tasks::start_tasks(can_bus_1, pipette_motor.motion_controller,
-                                i2c3_comms, i2c1_comms, fake_sensor_hw,
-                                spi_comms, driver_configs,
-                                node_from_env(std::getenv("MOUNT")));
+    pipettes_tasks::start_tasks(
+        can_bus_1, pipette_motor.motion_controller, i2c3_comms, i2c1_comms,
+        fake_sensor_hw, spi_comms, driver_configs,
+        node_from_env(std::getenv("MOUNT")), sim_eeprom_wp_pin);
 
     vTaskStartScheduler();
 }

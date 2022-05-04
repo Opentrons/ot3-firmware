@@ -177,7 +177,9 @@ SCENARIO("Transaction response handling.") {
         WHEN("a transaction response is sent") {
             auto transaction_response =
                 eeprom::task::TaskMessage(i2c::messages::TransactionResponse{
-                    .id = i2c::messages::TransactionIdentifier{.token = static_cast<uint32_t>(-1)},
+                    .id =
+                        i2c::messages::TransactionIdentifier{
+                            .token = static_cast<uint32_t>(-1)},
                     .bytes_read = 0,
                     .read_buffer = i2c::messages::MaxMessageBuffer{}});
 

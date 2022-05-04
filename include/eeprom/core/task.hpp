@@ -177,8 +177,9 @@ class EEPromTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer) {
-        auto handler = EEPromMessageHandler{*writer, get_queue()};
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
+                                 write_protect::WriteProtectPin *pin) {
+        auto handler = EEPromMessageHandler{*writer, get_queue(), *pin};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
