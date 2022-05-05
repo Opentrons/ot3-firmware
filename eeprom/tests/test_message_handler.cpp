@@ -68,10 +68,7 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
             THEN("the size is set") {
                 REQUIRE(eeprom_message.length == can_msg.data_length);
             }
-            THEN("the callback is set") {
-                REQUIRE(eeprom_message.callback == decltype(subject)::callback);
-            }
-            THEN("the param is set") {
+            THEN("the param is set to the address of the handler") {
                 REQUIRE(eeprom_message.callback_param == &subject);
             }
         }
@@ -88,7 +85,6 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
             std::get<eeprom::message::ReadEepromMessage>(queue_message);
 
         WHEN("the message is responded to") {
-
             auto response = eeprom::message::EepromMessage {
                 .memory_address=can_msg.address,
                 .length=can_msg.data_length,

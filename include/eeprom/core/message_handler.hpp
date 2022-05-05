@@ -29,11 +29,13 @@ class EEPromHandler {
         std::visit([this](auto &m) -> void { this->visit(m); }, can_message);
     }
 
-    static void callback(const eeprom::message::EepromMessage &, void *) {}
-
   private:
     void visit(std::monostate &) {}
 
+    /**
+     * Handle a request to write to eeprom
+     * @param can_msg The CAN message
+     */
     void visit(can_messages::WriteToEEPromRequest &can_msg) {
         auto msg = eeprom::message::WriteEepromMessage{
             .memory_address = can_msg.address,
@@ -42,6 +44,10 @@ class EEPromHandler {
         client.send_eeprom_queue(msg);
     }
 
+    /**
+     * Handle a request to read from eeprom
+     * @param can_msg The CAN message
+     */
     void visit(can_messages::ReadFromEEPromRequest &can_msg) {
         auto msg = eeprom::message::ReadEepromMessage{
             .memory_address = can_msg.address,
@@ -49,6 +55,21 @@ class EEPromHandler {
             .callback = callback,
             .callback_param = this};
         client.send_eeprom_queue(msg);
+    }
+
+    /**
+     * Handle a callback from eeprom task that a read is complete.
+     * @param msg The read results
+     * @param param Param (this pointer)
+     */
+    static void callback(const eeprom::message::EepromMessage &msg,
+                         void *param) {
+        auto *self =
+            reinterpret_cast<EEPromHandler<EEPromTaskClient, CanClient> *>(
+                param);
+        auto message = can_messages::ReadFromEEPromResponse::create(
+            msg.memory_address, msg.data.cbegin(), msg.data.end());
+        self->can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
     EEPromTaskClient &client;
