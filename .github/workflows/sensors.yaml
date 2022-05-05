@@ -1,4 +1,4 @@
-name: "i2c build/test"
+name: "Sensors build/test"
 on:
   pull_request:
     paths:
