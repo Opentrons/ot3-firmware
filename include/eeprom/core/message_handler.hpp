@@ -28,12 +28,29 @@ class EEPromHandler {
             can_message);
     }
 
+    static void callback(const eeprom::message::EepromMessage&, void*) {}
+
   private:
     void visit(std::monostate&) {}
 
-    void visit(can_messages::WriteToEEPromRequest&) {}
+    void visit(can_messages::WriteToEEPromRequest& can_msg) {
+        auto msg = eeprom::message::WriteEepromMessage{
+            .memory_address=can_msg.address,
+            .length=can_msg.data_length,
+            .data{can_msg.data}
+        };
+        client.send_eeprom_queue(msg);
+    }
 
-    void visit(can_messages::ReadFromEEPromRequest&) {}
+    void visit(can_messages::ReadFromEEPromRequest& can_msg) {
+        auto msg = eeprom::message::ReadEepromMessage{
+            .memory_address=can_msg.address,
+            .length=can_msg.data_length,
+            .callback=callback,
+            .callback_param=this
+        };
+        client.send_eeprom_queue(msg);
+    }
 
     EEPromTaskClient &client;
     CanClient& can_client;
