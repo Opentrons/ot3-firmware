@@ -1,27 +1,31 @@
+#include "can/core/can_writer_task.hpp"
 #include "catch2/catch.hpp"
-#include "eeprom/core/message_handler.hpp"
-#include "eeprom/core/task.hpp"
+#include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_message_writer.hpp"
 #include "common/tests/mock_queue_client.hpp"
-#include "common/tests/mock_message_queue.hpp"
-#include "can/core/can_writer_task.hpp"
-
+#include "eeprom/core/message_handler.hpp"
+#include "eeprom/core/task.hpp"
 
 SCENARIO("Sending messages to Eeprom CAN message handler") {
-    auto can_write_queue = test_mocks::MockMessageQueue<message_writer_task::TaskMessage>{};
-    auto eeprom_queue = test_mocks::MockMessageQueue<eeprom::task::TaskMessage>{};
+    auto can_write_queue =
+        test_mocks::MockMessageQueue<message_writer_task::TaskMessage>{};
+    auto eeprom_queue =
+        test_mocks::MockMessageQueue<eeprom::task::TaskMessage>{};
     auto eeprom_task_client = mock_client::QueueClient{};
-    auto can_writer_client = mock_message_writer::MockMessageWriter<test_mocks::MockMessageQueue>{};
+    auto can_writer_client =
+        mock_message_writer::MockMessageWriter<test_mocks::MockMessageQueue>{};
 
     eeprom_task_client.eeprom_queue = &eeprom_queue;
     can_writer_client.set_queue(&can_write_queue);
 
-    auto subject = eeprom::message_handler::EEPromHandler{eeprom_task_client, can_writer_client};
+    auto subject = eeprom::message_handler::EEPromHandler{eeprom_task_client,
+                                                          can_writer_client};
 
     GIVEN("A WriteToEEPromRequest message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
 
-        auto can_msg = can_messages::WriteToEEPromRequest{.address=22, .data_length=data.size(), .data=data};
+        auto can_msg = can_messages::WriteToEEPromRequest{
+            .address = 22, .data_length = data.size(), .data = data};
         auto msg = eeprom::message_handler::MessageType{can_msg};
         WHEN("the message is received") {
             subject.handle(msg);
@@ -33,13 +37,13 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
             auto queue_message = eeprom::task::TaskMessage{};
             eeprom_queue.try_read(&queue_message);
             auto eeprom_message =
-                    std::get<eeprom::message::WriteEepromMessage>(queue_message);
+                std::get<eeprom::message::WriteEepromMessage>(queue_message);
 
             THEN("the address is set") {
                 REQUIRE(eeprom_message.memory_address == can_msg.address);
             }
             THEN("the size is set") {
-                REQUIRE(eeprom_message.length ==can_msg.data_length);
+                REQUIRE(eeprom_message.length == can_msg.data_length);
             }
             THEN("the data is set") {
                 REQUIRE(eeprom_message.data == can_msg.data);
@@ -47,7 +51,8 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
         }
     }
     GIVEN("A ReadFromEEPromRequest message") {
-        auto can_msg = can_messages::ReadFromEEPromRequest{.address=5, .data_length=8};
+        auto can_msg =
+            can_messages::ReadFromEEPromRequest{.address = 5, .data_length = 8};
         auto msg = eeprom::message_handler::MessageType{can_msg};
 
         WHEN("the message is received") {
@@ -75,7 +80,8 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
     }
 
     GIVEN("A complete read message transaction") {
-        auto can_msg=can_messages::ReadFromEEPromRequest{.address=5, .data_length=8};
+        auto can_msg =
+            can_messages::ReadFromEEPromRequest{.address = 5, .data_length = 8};
         auto msg = eeprom::message_handler::MessageType{can_msg};
         subject.handle(msg);
 
@@ -85,10 +91,10 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
             std::get<eeprom::message::ReadEepromMessage>(queue_message);
 
         WHEN("the message is responded to") {
-            auto response = eeprom::message::EepromMessage {
-                .memory_address=can_msg.address,
-                .length=can_msg.data_length,
-                .data{1,2,3,4,5,6,7,8}};
+            auto response = eeprom::message::EepromMessage{
+                .memory_address = can_msg.address,
+                .length = can_msg.data_length,
+                .data{1, 2, 3, 4, 5, 6, 7, 8}};
 
             eeprom_message.callback(response, eeprom_message.callback_param);
 
@@ -96,15 +102,17 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
                 REQUIRE(can_write_queue.get_size() == 1);
             }
 
-            auto can_queue_message = message_writer_task::TaskMessage {};
+            auto can_queue_message = message_writer_task::TaskMessage{};
             can_write_queue.try_read(&can_queue_message);
-            auto can_message =
-                std::get<can_messages::ReadFromEEPromResponse>(can_queue_message.message);
+            auto can_message = std::get<can_messages::ReadFromEEPromResponse>(
+                can_queue_message.message);
 
-            THEN("the response message is populated with data in eeprom response") {
-                REQUIRE(can_message.address==response.memory_address);
-                REQUIRE(can_message.data_length==response.length);
-                REQUIRE(can_message.data==response.data);
+            THEN(
+                "the response message is populated with data in eeprom "
+                "response") {
+                REQUIRE(can_message.address == response.memory_address);
+                REQUIRE(can_message.data_length == response.length);
+                REQUIRE(can_message.data == response.data);
             }
         }
     }
