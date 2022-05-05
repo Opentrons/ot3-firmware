@@ -14,6 +14,7 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "eeprom/core/write_protect.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
@@ -54,6 +55,17 @@ static spi::hardware::Spi spi_comms(SPI_intf);
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_comms1 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
+
+class EEPromWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
+  public:
+    void set(bool enable) final {
+        if (enable)
+            enable_eeprom();
+        else
+            disable_eeprom();
+    }
+};
+static auto eeprom_write_protect_pin = EEPromWriteProtectPin();
 
 struct motion_controller::HardwareConfig plunger_pins {
     .direction =
@@ -174,7 +186,7 @@ auto main() -> int {
         can_bus_1, pipette_motor.motion_controller, i2c_comms3, i2c_comms1,
         ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
                                               : pins_for_sensor_lt),
-        spi_comms, driver_configs, id);
+        spi_comms, driver_configs, id, eeprom_write_protect_pin);
 
     iWatchdog.start(6);
 
