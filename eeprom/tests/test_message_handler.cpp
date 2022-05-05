@@ -78,7 +78,7 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
 
     GIVEN("A complete read message transaction") {
         auto can_msg =
-            can_messages::ReadFromEEPromRequest{.address = 5, .data_length = 8};
+            can_messages::ReadFromEEPromRequest{.address = 5, .data_length = 4};
         auto msg = eeprom::message_handler::MessageType{can_msg};
         subject.handle(msg);
 
@@ -91,7 +91,7 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
             auto response = eeprom::message::EepromMessage{
                 .memory_address = can_msg.address,
                 .length = can_msg.data_length,
-                .data{1, 2, 3, 4, 5, 6, 7, 8}};
+                .data{1, 2, 3, 4}};
 
             eeprom_message.callback(response, eeprom_message.callback_param);
 

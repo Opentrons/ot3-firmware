@@ -68,7 +68,8 @@ class EEPromHandler {
             reinterpret_cast<EEPromHandler<EEPromTaskClient, CanClient> *>(
                 param);
         auto message = can_messages::ReadFromEEPromResponse::create(
-            msg.memory_address, msg.data.cbegin(), msg.data.end());
+            msg.memory_address, msg.data.cbegin(),
+            msg.data.cbegin() + msg.length);
         self->can_client.send_can_message(can_ids::NodeId::host, message);
     }
 
