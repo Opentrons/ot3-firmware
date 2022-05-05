@@ -1,7 +1,6 @@
 #include "can/core/can_writer_task.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
-#include "common/tests/mock_message_writer.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "eeprom/core/message_handler.hpp"
 #include "eeprom/core/task.hpp"
@@ -11,15 +10,13 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
         test_mocks::MockMessageQueue<message_writer_task::TaskMessage>{};
     auto eeprom_queue =
         test_mocks::MockMessageQueue<eeprom::task::TaskMessage>{};
-    auto eeprom_task_client = mock_client::QueueClient{};
-    auto can_writer_client =
-        mock_message_writer::MockMessageWriter<test_mocks::MockMessageQueue>{};
+    auto queue_client = mock_client::QueueClient{};
 
-    eeprom_task_client.eeprom_queue = &eeprom_queue;
-    can_writer_client.set_queue(&can_write_queue);
+    queue_client.eeprom_queue = &eeprom_queue;
+    queue_client.set_queue(&can_write_queue);
 
-    auto subject = eeprom::message_handler::EEPromHandler{eeprom_task_client,
-                                                          can_writer_client};
+    auto subject =
+        eeprom::message_handler::EEPromHandler{queue_client, queue_client};
 
     GIVEN("A WriteToEEPromRequest message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};

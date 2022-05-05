@@ -24,7 +24,7 @@ SCENARIO("read capacitance sensor values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
-    test_mocks::MockMessageQueue<mock_message_writer::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         capacitive_queue{};
 
@@ -153,7 +153,7 @@ SCENARIO("read capacitance sensor values") {
                     for (auto& response : responses) {
                         sensor.handle_message(response);
                     }
-                    mock_message_writer::TaskMessage can_msg{};
+                    message_writer_task::TaskMessage can_msg{};
 
                     REQUIRE(can_queue.get_size() == 1);
                     can_queue.try_read(&can_msg);
@@ -194,7 +194,7 @@ SCENARIO("read capacitance sensor values") {
                     }
 
                     REQUIRE(can_queue.get_size() == 1);
-                    mock_message_writer::TaskMessage can_msg{};
+                    message_writer_task::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =
@@ -238,7 +238,7 @@ SCENARIO("read capacitance sensor values") {
                 auto read = sensors::utils::TaskMessage(
                     can_messages::ReadFromSensorRequest({}, capacitive_id, 1));
                 sensor.handle_message(read);
-                mock_message_writer::TaskMessage can_msg{};
+                message_writer_task::TaskMessage can_msg{};
 
                 can_queue.try_read(&can_msg);
                 auto response_msg =
@@ -258,7 +258,7 @@ SCENARIO("capacitance callback tests") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
-    test_mocks::MockMessageQueue<mock_message_writer::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
 
     auto queue_client = mock_client::QueueClient{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
@@ -267,7 +267,7 @@ SCENARIO("capacitance callback tests") {
     sensors::tasks::ReadCapacitanceCallback callback_host(queue_client, writer,
                                                           mock_hw);
 
-    mock_message_writer::TaskMessage empty_msg{};
+    message_writer_task::TaskMessage empty_msg{};
 
     GIVEN("a callback instance that is echoing and not bound") {
         callback_host.set_echoing(true);
