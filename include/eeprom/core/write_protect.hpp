@@ -10,6 +10,11 @@ namespace write_protect {
  */
 class WriteProtectPin {
   public:
+    WriteProtectPin() = default;
+    WriteProtectPin(const WriteProtectPin&) = default;
+    WriteProtectPin(WriteProtectPin&&) = default;
+    auto operator=(WriteProtectPin&&) -> WriteProtectPin& = default;
+    auto operator=(const WriteProtectPin&) -> WriteProtectPin& = default;
     virtual ~WriteProtectPin() = default;
 
     /**

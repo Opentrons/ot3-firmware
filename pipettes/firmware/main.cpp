@@ -59,10 +59,11 @@ static I2CHandlerStruct i2chandler_struct{};
 class EEPromWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
   public:
     void set(bool enable) final {
-        if (enable)
+        if (enable) {
             enable_eeprom();
-        else
+        } else {
             disable_eeprom();
+        }
     }
 };
 static auto eeprom_write_protect_pin = EEPromWriteProtectPin();
