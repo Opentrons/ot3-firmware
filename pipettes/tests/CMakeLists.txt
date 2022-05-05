@@ -8,7 +8,6 @@ add_executable(
         pipettes
         test_main.cpp
         test_mount_detection.cpp
-        test_write_protect.cpp
 )
 
 target_include_directories(pipettes PUBLIC ${CMAKE_SOURCE_DIR}/include)
