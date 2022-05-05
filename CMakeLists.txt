@@ -65,6 +65,7 @@ add_subdirectory(pipettes)
 add_subdirectory(gantry)
 add_subdirectory(head)
 add_subdirectory(gripper)
+add_subdirectory(eeprom)
 add_subdirectory(bootloader)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
