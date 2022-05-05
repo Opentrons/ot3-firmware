@@ -19,12 +19,12 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
     auto subject = eeprom::message_handler::EEPromHandler{eeprom_task_client, can_writer_client};
 
     GIVEN("A WriteToEEPromRequest message") {
-        eeprom::types::address address = 22;
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
 
-        auto msg = eeprom::message_handler::MessageType{can_messages::WriteToEEPromRequest{.address=address, .data_length=data.size(), .data=data}};
+        auto msg = eeprom::message_handler::MessageType{can_messages::WriteToEEPromRequest{.address=22, .data_length=data.size(), .data=data}};
         WHEN("the message is received") {
             subject.handle(msg);
+
             THEN("the message is written to the eeprom client") {
                 REQUIRE(eeprom_queue.get_size() == 1);
             }
@@ -46,9 +46,31 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
         }
     }
     GIVEN("A ReadFromEEPromRequest message") {
+        auto msg = eeprom::message_handler::MessageType{can_messages::ReadFromEEPromRequest{.address=5, .data_length=8}};
+
         WHEN("the message is received") {
+            subject.handle(msg);
+
             THEN("the message is written to the eeprom client") {
                 REQUIRE(eeprom_queue.get_size() == 1);
+            }
+
+            auto queue_message = eeprom::task::TaskMessage{};
+            eeprom_queue.try_read(&queue_message);
+            auto eeprom_message =
+                std::get<eeprom::message::ReadEepromMessage>(queue_message);
+
+            THEN("the address is set") {
+                REQUIRE(eeprom_message.memory_address == std::get<can_messages::ReadFromEEPromRequest>(msg).address);
+            }
+            THEN("the size is set") {
+                REQUIRE(eeprom_message.length == std::get<can_messages::ReadFromEEPromRequest>(msg).data_length);
+            }
+            THEN("the callback is set") {
+                REQUIRE(eeprom_message.callback == decltype(subject)::callback);
+            }
+            THEN("the param is set") {
+                REQUIRE(eeprom_message.callback_param == &subject);
             }
         }
     }
