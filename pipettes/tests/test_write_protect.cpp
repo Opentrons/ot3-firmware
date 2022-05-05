@@ -1,15 +1,12 @@
-#include "catch2/catch.hpp"
-#include "eeprom/core/write_protect.hpp"
 #include <vector>
 
+#include "catch2/catch.hpp"
+#include "eeprom/core/write_protect.hpp"
 
 struct MockWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
-    void set(bool enabled) {
-        set_calls.push_back(enabled);
-    }
+    void set(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };
-
 
 SCENARIO("WriteProtector class") {
     GIVEN("A write protector") {
