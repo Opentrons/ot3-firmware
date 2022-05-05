@@ -45,6 +45,7 @@ void gripper_tasks::start_tasks(
     auto& eeprom_task =
         eeprom_task_builder.start(5, "eeprom", i2c3_task_client, eeprom_wp_pin);
     tasks.eeprom_task = &eeprom_task;
+    queues.eeprom_queue = &eeprom_task.get_queue();
 
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks);
 
@@ -56,6 +57,11 @@ void gripper_tasks::start_tasks(
 
 gripper_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)
     : can_message_writer::MessageWriter{this_fw} {}
+
+void gripper_tasks::QueueClient::send_eeprom_queue(
+    const eeprom::task::TaskMessage& m) {
+    eeprom_queue->try_write(m);
+}
 
 /**
  * Access to the tasks singleton
