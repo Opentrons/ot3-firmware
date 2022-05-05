@@ -1,9 +1,7 @@
 #pragma once
 
-
 namespace eeprom {
 namespace write_protect {
-
 
 /**
  * Interface to write protect pin. Must be implemented in FW and Simulation
@@ -24,14 +22,15 @@ class WriteProtectPin {
     virtual void set(bool) = 0;
 };
 
-
 /**
- * Class to manages the state of the write protect pin across multiple transactions.
+ * Class to manages the state of the write protect pin across multiple
+ * transactions.
  *
- * Consecutive write requests will want to have write protection disabled. The enable should
- * happen when all the write transactions have completed.
+ * Consecutive write requests will want to have write protection disabled. The
+ * enable should happen when all the write transactions have completed.
  *
- * This class keeps the eeprom from having to keep track of the write protection state.
+ * This class keeps the eeprom from having to keep track of the write protection
+ * state.
  */
 class WriteProtector {
   public:
@@ -62,11 +61,12 @@ class WriteProtector {
             pin.set(true);
         }
     }
+
   private:
     // THe number of times that disable has been called.
     uint32_t count{0};
     WriteProtectPin& pin;
 };
 
-}
-}
+}  // namespace write_protect
+}  // namespace eeprom

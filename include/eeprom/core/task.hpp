@@ -84,12 +84,9 @@ class EEPromMessageHandler {
         }
 
         auto buffer = i2c::messages::MaxMessageBuffer{};
-        auto * iter = buffer.begin();
+        auto *iter = buffer.begin();
         // First byte is address
-        iter = std::copy_n(
-            &m.memory_address,
-            1,
-            iter);
+        iter = std::copy_n(&m.memory_address, 1, iter);
         // Remainder is data
         iter = std::copy_n(
             m.data.cbegin(),
