@@ -43,6 +43,8 @@ target_gripper_core(gripper)
 
 target_ot_motor_control(gripper)
 
+target_i2c_firmware(gripper)
+
 target_link_libraries(gripper
         PUBLIC STM32G491RETx
         STM32G4xx_Drivers_Gripper STM32G4xx_FreeRTOS_Gripper
