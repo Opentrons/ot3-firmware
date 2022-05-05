@@ -2,17 +2,19 @@
 
 #include <variant>
 
+#include "can/core/can_writer_task.hpp"
 #include "can/core/messages.hpp"
 #include "task.hpp"
 
 namespace eeprom {
 namespace message_handler {
 
+using MessageType =  std::variant<std::monostate, can_messages::WriteToEEPromRequest, can_messages::ReadFromEEPromRequest>;
+
+
 template <eeprom::task::TaskClient EEPromTaskClient, message_writer_task::TaskClient CanClient>
 class EEPromHandler {
   public:
-    using MessageType =  std::variant<std::monostate, can_messages::WriteToEEPromRequest, can_messages::ReadFromEEPromRequest>;
-
     explicit EEPromHandler(EEPromTaskClient &client, CanClient& can_client) : client(client), can_client(can_client) {}
     EEPromHandler(const EEPromHandler &) = delete;
     EEPromHandler(const EEPromHandler &&) = delete;
