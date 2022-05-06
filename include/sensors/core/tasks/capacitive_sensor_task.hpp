@@ -53,6 +53,7 @@ class CapacitiveMessageHandler {
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
         capacitance_handler.initialize();
+        is_initialized = true;
     }
 
   private:
@@ -140,6 +141,15 @@ class CapacitiveMessageHandler {
                             utils::byte_from_tags(tags)));
     }
 
+    void visit(can_messages::PeripheralInfoRequest &m) {
+        LOG("received peripheral device status request");
+        can_client.send_can_message(
+            can_ids::NodeId::host,
+            can_messages::PeripheralInfoResponse{
+                .sensor = m.sensor,
+                .status = static_cast<uint8_t>(is_initialized)});
+    }
+
     utils::BitMode mode = utils::BitMode::MSB;
     static constexpr uint16_t DELAY = 20;
     I2CQueueWriter &writer;
@@ -148,6 +158,7 @@ class CapacitiveMessageHandler {
     CanClient &can_client;
     OwnQueue &own_queue;
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
+    bool is_initialized = false;
 };
 
 /**

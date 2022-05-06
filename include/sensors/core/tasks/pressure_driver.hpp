@@ -211,6 +211,12 @@ class MMR92C04 {
         can_client.send_can_message(get_host_id(), message);
     }
 
+    auto send_peripheral_response() -> void {
+        auto message = can_messages::PeripheralInfoResponse{
+            .sensor = get_sensor_id(), .status = initialized()};
+        can_client.send_message(get_host_id(), message);
+    }
+
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
         uint32_t data = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
