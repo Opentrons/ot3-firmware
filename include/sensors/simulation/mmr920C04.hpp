@@ -12,10 +12,9 @@ class MMR920C04 : public sensor_simulator::SensorType {
         REGISTER_MAP = {
             {static_cast<uint8_t>(mmr920C04::Registers::STATUS), 0xED},
             {static_cast<uint8_t>(mmr920C04::Registers::MEASURE_MODE_1), 0},
-            {static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ),
-             3000000},
+            {static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ), 6000},
             {static_cast<uint8_t>(mmr920C04::Registers::LOW_PASS_PRESSURE_READ),
-             3000000},
+             6000},
             {static_cast<uint8_t>(mmr920C04::Registers::TEMPERATURE_READ),
              3200}};
     }
