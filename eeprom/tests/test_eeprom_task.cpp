@@ -19,8 +19,8 @@ SCENARIO("Sending messages to Eeprom task") {
     writer.set_queue(&i2c_queue);
     auto hardware_iface = MockHardwareIface{};
 
-    auto eeprom =
-        eeprom::task::EEPromMessageHandler{writer, response_queue, hardware_iface};
+    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue,
+                                                     hardware_iface};
 
     GIVEN("A write message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
@@ -130,8 +130,8 @@ SCENARIO("Transaction response handling.") {
     writer.set_queue(&i2c_queue);
     auto hardware_iface = MockHardwareIface{};
 
-    auto eeprom =
-        eeprom::task::EEPromMessageHandler{writer, response_queue, hardware_iface};
+    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue,
+                                                     hardware_iface};
 
     GIVEN("A read request") {
         eeprom::types::address address = 14;
@@ -185,7 +185,8 @@ SCENARIO("Transaction response handling.") {
 
             eeprom.handle_message(transaction_response);
             THEN("the write protect pin is disabled then enabled") {
-                REQUIRE(hardware_iface.set_calls == std::vector<bool>{false, true});
+                REQUIRE(hardware_iface.set_calls ==
+                        std::vector<bool>{false, true});
             }
         }
     }
