@@ -81,7 +81,7 @@ class EEPromMessageHandler {
      */
     void visit(eeprom::message::WriteEepromMessage &m) {
         LOG("Received request to write %d bytes to address %x", m.length,
-            m.data);
+            m.memory_address);
 
         if (m.length <= 0) {
             return;
