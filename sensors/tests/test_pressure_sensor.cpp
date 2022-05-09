@@ -130,7 +130,7 @@ SCENARIO("read pressure sensor values") {
                         std::get<can_messages::ReadFromSensorResponse>(
                             can_msg.message);
                     float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 15);
+                        fixed_point_to_float(response_msg.sensor_data, 16);
                     // pressure value returned in pascals
                     float expected = 514.66083;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));

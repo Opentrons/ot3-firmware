@@ -191,7 +191,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq15_16 {
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
@@ -199,7 +199,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
             reg &= 0x007FFFFF;
         }
         float pressure = static_cast<float>(reg) * PA_PER_COUNT;
-        return convert_to_fixed_point(pressure, 15);
+        return convert_to_fixed_point(pressure, 16);
     }
 };
 
@@ -224,7 +224,7 @@ struct __attribute__((packed, __may_alias__)) LowPassPressure {
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq14_15 {
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq15_16 {
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
@@ -233,7 +233,7 @@ struct __attribute__((packed, __may_alias__)) LowPassPressure {
         }
 
         float pressure = static_cast<float>(reg) * PA_PER_COUNT;
-        return convert_to_fixed_point(pressure, 15);
+        return convert_to_fixed_point(pressure, 16);
     }
 };
 
@@ -257,7 +257,7 @@ struct __attribute__((packed, __may_alias__)) Temperature {
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
 
-    [[nodiscard]] static auto to_temperature(uint32_t reg) -> sq14_15 {
+    [[nodiscard]] static auto to_temperature(uint32_t reg) -> sq15_16 {
         float temperature =
             CONVERT_TO_CELSIUS * (static_cast<float>(reg) / MAX_SIZE);
         return convert_to_fixed_point(temperature, 15);

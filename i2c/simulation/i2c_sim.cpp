@@ -14,12 +14,22 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
     std::copy_n(data, size, last_transmitted.begin());
     transmit_count++;
     if (!sensor_map.empty()) {
-        uint16_t store_in_register = 0;
-        auto *iter = data + 1;
-        iter = bit_utils::bytes_to_int(iter, data + size, store_in_register);
-        LOG("Storing %d in register %d", store_in_register, reg);
-        sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
         next_register_map[dev_address] = reg;
+        if (size > 1) {
+            auto *iter = data + 1;
+            uint16_t store_in_register = 0;
+            // check if address belongs to pressure sensor
+            if (dev_address == 0x67 << 1) {
+                uint32_t store_in_register = 0;
+                iter = bit_utils::bytes_to_int(iter, data + size,
+                                               store_in_register);
+                sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
+            } else {
+                iter = bit_utils::bytes_to_int(iter, data + size,
+                                               store_in_register);
+                sensor_map[dev_address].REGISTER_MAP[reg] = store_in_register;
+            }
+        }
     }
 
     return true;
@@ -31,9 +41,20 @@ auto SimI2C::central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
     // This will raise if the register value is bad - helpful for forcing
     // tests to fail
     if (!sensor_map.empty()) {
+        next_register_map[dev_address] = next_reg;
         auto data_from_reg = sensor_map[dev_address].REGISTER_MAP.at(next_reg);
         auto *iter = data;
-        iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
+        /*
+         * TODO: sensors have different data types, so this check is
+         * needed to allow them to exist in the same map with different
+         * integer sizes
+         * */
+        if (dev_address == 0x67 << 1) {
+            iter = bit_utils::int_to_bytes(data_from_reg, iter, data + size);
+        } else {
+            iter = bit_utils::int_to_bytes(static_cast<uint16_t>(data_from_reg),
+                                           iter, data + size);
+        }
         next_register_map[dev_address] = 0;
     } else {
         std::copy_n(

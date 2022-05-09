@@ -843,6 +843,35 @@ struct TipActionResponse
     auto operator==(const TipActionResponse& other) const -> bool = default;
 };
 
+struct PeripheralInfoRequest : BaseMessage<MessageId::peripheral_info_request> {
+    can_ids::SensorType sensor;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> PeripheralInfoRequest {
+        uint8_t _sensor = 0;
+        body = bit_utils::bytes_to_int(body, limit, _sensor);
+        return PeripheralInfoRequest{
+            .sensor = static_cast<can_ids::SensorType>(_sensor)};
+    }
+    auto operator==(const PeripheralInfoRequest& other) const -> bool = default;
+};
+
+struct PeripheralInfoResponse
+    : BaseMessage<MessageId::peripheral_info_response> {
+    can_ids::SensorType sensor;
+    uint8_t status;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(sensor, body, limit);
+        iter = bit_utils::int_to_bytes(status, body, limit);
+        return iter - body;
+    }
+
+    auto operator==(const PeripheralInfoResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */

@@ -173,6 +173,7 @@ class MMR92C04 {
     }
 
     auto send_pressure() -> void {
+        LOG("Pressure reading = %d", _registers.pressure.reading);
         auto pressure =
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto message = can_messages::ReadFromSensorResponse{
@@ -210,11 +211,16 @@ class MMR92C04 {
         can_client.send_can_message(get_host_id(), message);
     }
 
+    auto send_peripheral_response() -> void {
+        auto message = can_messages::PeripheralInfoResponse{
+            .sensor = get_sensor_id(), .status = initialized()};
+        can_client.send_message(get_host_id(), message);
+    }
+
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
         uint32_t data = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
-
         switch (utils::reg_from_id<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);

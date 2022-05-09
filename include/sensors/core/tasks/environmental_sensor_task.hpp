@@ -49,6 +49,7 @@ class EnvironmentSensorMessageHandler {
         configuration_data = (hdc2080::MEASURE_REGISTER << 8) |
                              (hdc2080::BEGIN_MEASUREMENT_RECORDING);
         writer.write(hdc2080::ADDRESS, configuration_data);
+        is_initialized = true;
     }
 
     void handle_message(const utils::TaskMessage &m) {
@@ -119,9 +120,19 @@ class EnvironmentSensorMessageHandler {
         LOG("Received non-supported BindSensorOutputRequest");
     }
 
+    void visit(const can_messages::PeripheralInfoRequest &m) {
+        LOG("received peripheral device status request");
+        can_client.send_can_message(
+            can_ids::NodeId::host,
+            can_messages::PeripheralInfoResponse{
+                .sensor = m.sensor,
+                .status = static_cast<uint8_t>(is_initialized)});
+    }
+
     I2CQueueWriter &writer;
     CanClient &can_client;
     OwnQueue &own_queue;
+    bool is_initialized = false;
 };
 
 /**
