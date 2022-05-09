@@ -139,8 +139,8 @@ static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<110 * can::bit_timings::MHZ, 50,
-                                 250 * can::bit_timings::KHZ, 882>{};
+    can::bit_timings::BitTimings<110 * can::bit_timings::MHZ, 100,
+                                 250 * can::bit_timings::KHZ, 800>{};
 
 auto main() -> int {
     HardwareInit();
