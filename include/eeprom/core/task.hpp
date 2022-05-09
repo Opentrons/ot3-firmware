@@ -35,6 +35,10 @@ class EEPromMessageHandler {
         -> EEPromMessageHandler && = delete;
     ~EEPromMessageHandler() = default;
 
+    static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
+    static constexpr auto WRITE_TOKEN = static_cast<uint32_t>(-1);
+    static constexpr auto MAX_INFLIGHT_READS = 10;
+
     void handle_message(TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
@@ -146,12 +150,8 @@ class EEPromMessageHandler {
         }
     }
 
-    static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
-
-    static constexpr auto WRITE_TOKEN = static_cast<uint32_t>(-1);
-    static constexpr auto MAX_INFLIGHT_READS = 10;
     i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
                             MAX_INFLIGHT_READS>
         id_map{};

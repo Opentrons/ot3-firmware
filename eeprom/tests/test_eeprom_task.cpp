@@ -54,7 +54,7 @@ SCENARIO("Sending messages to Eeprom task") {
                         data[2]);
                 REQUIRE(transact_message.transaction.write_buffer[4] ==
                         data[3]);
-                REQUIRE(transact_message.id.token == static_cast<uint32_t>(-1));
+                REQUIRE(transact_message.id.token == eeprom.WRITE_TOKEN);
             }
         }
     }

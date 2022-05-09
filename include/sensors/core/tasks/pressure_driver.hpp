@@ -1,6 +1,5 @@
 #pragma once
 
-#include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
