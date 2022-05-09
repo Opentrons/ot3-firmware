@@ -138,12 +138,16 @@ class TMC2160 {
         switch (addr) {
             case Registers::GCONF:
                 update_gconf(0);
+                break;
             case Registers::GSTAT:
-                update_gconf(0);
+                update_gstatus(0);
+                break;
             case Registers::CHOPCONF:
-                update_gconf(0);
+                update_chop_config(0);
+                break;
             case Registers::DRVSTATUS:
-                update_gconf(0);
+                update_driver_status(0);
+                break;
             default:
                 break;
         }
@@ -368,9 +372,8 @@ class TMC2160 {
     [[nodiscard]] auto convert_to_tmc2160_current_value(uint32_t c) const
         -> uint32_t {
         constexpr auto SQRT_TWO = sqrt2;
-        constexpr auto CURR_GLOB_SCALE =
-            *reinterpret_cast<RegisterSerializedTypeA*>(&_registers.glob_scale);
-        constexpr auto GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
+        uint32_t CURR_GLOB_SCALE = _registers.glob_scale.global_scaler;
+        uint32_t GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
         auto FLOAT_CONSTANT =
             static_cast<float>(SQRT_TWO * 32.0 * (_current_config.r_sense) /
                                _current_config.v_sf * GLOB_SCALE);
