@@ -218,8 +218,8 @@ extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 // can/tests/test_bit_timings.cpp
 
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 50,
-                                 250 * can::bit_timings::KHZ, 882>{};
+    can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
+                                 250 * can::bit_timings::KHZ, 800>{};
 
 void interfaces::initialize() {
     // Initialize SPI

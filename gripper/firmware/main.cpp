@@ -49,8 +49,8 @@ static auto canbus = hal_can_bus::HalCanBus(
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 50,
-                                 250 * can::bit_timings::KHZ, 882>{};
+    can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
+                                 250 * can::bit_timings::KHZ, 800>{};
 
 auto main() -> int {
     HardwareInit();

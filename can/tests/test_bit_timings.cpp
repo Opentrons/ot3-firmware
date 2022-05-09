@@ -7,7 +7,7 @@ using can::bit_timings::MHZ;
 SCENARIO("bit timing properties") {
     WHEN("testing standard G4 properties") {
         auto timings =
-            can::bit_timings::BitTimings<85 * MHZ, 50, 250 * KHZ, 882>{};
+            can::bit_timings::BitTimings<170 * MHZ, 100, 250 * KHZ, 800>{};
         THEN("the clock divider is 4") { REQUIRE(timings.clock_divider == 4); }
         THEN("the time quantum is 47ns") {
             REQUIRE(timings.actual_time_quantum == 47);
@@ -38,7 +38,7 @@ SCENARIO("bit timing properties") {
     }
     WHEN("testing standard L5 properties") {
         auto timings =
-            can::bit_timings::BitTimings<110 * MHZ, 50, 250 * KHZ, 882>{};
+            can::bit_timings::BitTimings<110 * MHZ, 100, 250 * KHZ, 800>{};
         THEN("the clock divider is 50") { REQUIRE(timings.clock_divider == 5); }
         THEN("the time quantum is 45ns") {
             REQUIRE(timings.actual_time_quantum == 45);
