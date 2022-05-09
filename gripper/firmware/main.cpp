@@ -51,7 +51,13 @@ static auto i2c_handles = I2CHandlerStruct{};
 
 class EEPromWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
   public:
-    void set(bool) final {}
+    void set(bool enable) final {
+        if (enable) {
+            enable_eeprom_write();
+        } else {
+            disable_eeprom_write();
+        }
+    }
 };
 static auto eeprom_write_protect_pin = EEPromWriteProtectPin();
 

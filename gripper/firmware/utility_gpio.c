@@ -42,24 +42,7 @@ void LED_drive_gpio_init(void) {
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
-/**
- * @brief enable the eeprom write protect pin.
- */
-void eeprom_write_protect_init(void) {
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-
-    /*Configure GPIO pin : C12 */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-}
-
-
 void utility_gpio_init(void) {
     limit_switch_gpio_init();
     LED_drive_gpio_init();
-    eeprom_write_protect_init();
 }

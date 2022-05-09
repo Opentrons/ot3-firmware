@@ -56,7 +56,42 @@ HAL_I2C_HANDLE MX_I2C3_Init()
     return &hi2c3;
 }
 
+#define EEPROM_GPIO_BANK  GPIOC
+#define EEPROM_GPIO_PIN   GPIO_PIN_12
+
+/**
+ * @brief enable the eeprom write protect pin.
+ */
+void eeprom_write_protect_init(void) {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    /*Configure GPIO pin : C12 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = EEPROM_GPIO_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(EEPROM_GPIO_BANK, &GPIO_InitStruct);
+}
+
+
+/**
+ * @brief enable writing to the eeprom.
+ */
+void enable_eeprom_write() {
+    HAL_GPIO_WritePin(GPIOC, EEPROM_GPIO_PIN, GPIO_PIN_SET);
+}
+
+/**
+ * @brief disable writing to the eeprom.
+ */
+void disable_eeprom_write() {
+    HAL_GPIO_WritePin(GPIOC, EEPROM_GPIO_PIN, GPIO_PIN_RESET);
+}
+
+
 void i2c_setup(I2CHandlerStruct* i2c_handles) {
     HAL_I2C_HANDLE i2c3 = MX_I2C3_Init();
     i2c_handles->i2c3 = i2c3;
+    eeprom_write_protect_init();
 }
