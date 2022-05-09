@@ -1,14 +1,13 @@
-name: "Sensors build/test"
+name: "Eeprom build/test"
 on:
   pull_request:
     paths:
+      - "eeprom/**"
       - "i2c/**"
-      - "include/motor-control/core/**"
-      - "motor-control/core/**"
       - "include/i2c/**"
+      - "include/eeprom/**"
       - "common/**"
       - "include/common/**"
-      - "include/sensors/**"
       - "common/**"
       - "include/can/**"
       - "cmake/*"
@@ -20,13 +19,12 @@ on:
       - "cmake/Arduino*"
   push:
     paths:
-      - "include/motor-control/core/**"
-      - "motor-control/core/**"
+      - "eeprom/**"
       - "i2c/**"
       - "include/i2c/**"
+      - "include/eeprom/**"
       - "common/**"
       - "include/common/**"
-      - "include/sensors/**"
       - "common/**"
       - "include/can/**"
       - "cmake/*"
@@ -34,13 +32,13 @@ on:
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/sensors.yaml"
+      - ".github/workflows/eeprom.yaml"
     paths_ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
     tags:
-      - "sensors@*"
+      - "eeprom@*"
   workflow_dispatch:
 
 env:
@@ -66,7 +64,7 @@ jobs:
       - name: "Configure"
         run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=debug
       - name: "Format"
-        run: cmake --build ./build-cross --target sensors-format-ci
+        run: cmake --build ./build-cross --target eeprom-format-ci
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -85,4 +83,4 @@ jobs:
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
       - name: 'Build and test'
-        run: cmake --build ./build-host --target sensors-build-and-test
+        run: cmake --build ./build-host --target eeprom-build-and-test

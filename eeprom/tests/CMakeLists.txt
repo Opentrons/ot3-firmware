@@ -5,18 +5,18 @@ include(Catch)
 include(AddBuildAndTestTarget)
 
 add_executable(
-        pipettes
+        eeprom
         test_main.cpp
-        test_mount_detection.cpp
+        test_eeprom_task.cpp
 )
 
-target_include_directories(pipettes PUBLIC ${CMAKE_SOURCE_DIR}/include)
-set_target_properties(pipettes
+target_include_directories(eeprom PUBLIC ${CMAKE_SOURCE_DIR}/include)
+set_target_properties(eeprom
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(pipettes
+target_compile_options(eeprom
         PUBLIC
         -Wall
         -Werror
@@ -28,8 +28,8 @@ target_compile_options(pipettes
         -Wextra-semi
         -Wctor-dtor-privacy)
 
-target_link_libraries(pipettes Catch2::Catch2 common-simulation common-core motor-utils)
-target_i2c_simlib(pipettes)
+target_link_libraries(eeprom Catch2::Catch2)
+target_i2c_simlib(eeprom)
 
-catch_discover_tests(pipettes)
-add_build_and_test_target(pipettes)
+catch_discover_tests(eeprom)
+add_build_and_test_target(eeprom)
