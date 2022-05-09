@@ -1,25 +1,25 @@
 #pragma once
 
 namespace eeprom {
-namespace write_protect {
+namespace hardware_iface {
 
 /**
- * Interface to write protect pin. Must be implemented in FW and Simulation
+ * Interface to eeprom. Must be implemented in FW and Simulation
  */
-class WriteProtectPin {
+class EEPromHardwareIface {
   public:
-    WriteProtectPin() = default;
-    WriteProtectPin(const WriteProtectPin&) = default;
-    WriteProtectPin(WriteProtectPin&&) = default;
-    auto operator=(WriteProtectPin&&) -> WriteProtectPin& = default;
-    auto operator=(const WriteProtectPin&) -> WriteProtectPin& = default;
-    virtual ~WriteProtectPin() = default;
+    EEPromHardwareIface() = default;
+    EEPromHardwareIface(const EEPromHardwareIface&) = default;
+    EEPromHardwareIface(EEPromHardwareIface&&) = default;
+    auto operator=(EEPromHardwareIface&&) -> EEPromHardwareIface& = default;
+    auto operator=(const EEPromHardwareIface&) -> EEPromHardwareIface& = default;
+    virtual ~EEPromHardwareIface() = default;
 
     /**
      * Change the write protect status.
      * @param enabled true to inhibit writing
      */
-    virtual void set(bool) = 0;
+    virtual void set_write_protect(bool) = 0;
 };
 
 /**
@@ -38,14 +38,14 @@ class WriteProtector {
      * Constructor
      * @param pin
      */
-    explicit WriteProtector(WriteProtectPin& pin) : pin{pin} {}
+    explicit WriteProtector(EEPromHardwareIface& pin) : pin{pin} {}
 
     /**
      * Disable the write protect
      */
     void disable() {
         if (count++ == 0) {
-            pin.set(false);
+            pin.set_write_protect(false);
         }
     }
 
@@ -55,17 +55,17 @@ class WriteProtector {
     void enable() {
         if (count > 0) {
             if (--count == 0) {
-                pin.set(true);
+                pin.set_write_protect(true);
             }
         } else {
-            pin.set(true);
+            pin.set_write_protect(true);
         }
     }
 
   private:
     // THe number of times that disable has been called.
     uint32_t count{0};
-    WriteProtectPin& pin;
+    EEPromHardwareIface& pin;
 };
 
 }  // namespace write_protect

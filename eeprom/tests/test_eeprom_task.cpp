@@ -7,8 +7,8 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 
-struct MockWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
-    void set(bool enabled) { set_calls.push_back(enabled); }
+struct MockHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+    void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };
 
@@ -17,10 +17,10 @@ SCENARIO("Sending messages to Eeprom task") {
     test_mocks::MockI2CResponseQueue response_queue{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
-    auto wp_pin = MockWriteProtectPin{};
+    auto hardware_iface = MockHardwareIface{};
 
     auto eeprom =
-        eeprom::task::EEPromMessageHandler{writer, response_queue, wp_pin};
+        eeprom::task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     GIVEN("A write message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
@@ -128,10 +128,10 @@ SCENARIO("Transaction response handling.") {
     test_mocks::MockI2CResponseQueue response_queue{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
-    auto wp_pin = MockWriteProtectPin{};
+    auto hardware_iface = MockHardwareIface{};
 
     auto eeprom =
-        eeprom::task::EEPromMessageHandler{writer, response_queue, wp_pin};
+        eeprom::task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     GIVEN("A read request") {
         eeprom::types::address address = 14;
@@ -185,7 +185,7 @@ SCENARIO("Transaction response handling.") {
 
             eeprom.handle_message(transaction_response);
             THEN("the write protect pin is disabled then enabled") {
-                REQUIRE(wp_pin.set_calls == std::vector<bool>{false, true});
+                REQUIRE(hardware_iface.set_calls == std::vector<bool>{false, true});
             }
         }
     }

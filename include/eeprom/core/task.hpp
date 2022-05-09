@@ -5,12 +5,12 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
+#include "hardware_iface.hpp"
 #include "i2c/core/messages.hpp"
 #include "i2c/core/transaction.hpp"
 #include "i2c/core/writer.hpp"
 #include "messages.hpp"
 #include "types.hpp"
-#include "write_protect.hpp"
 
 namespace eeprom {
 namespace task {
@@ -25,7 +25,7 @@ class EEPromMessageHandler {
   public:
     explicit EEPromMessageHandler(
         I2CQueueWriter &i2c_writer, OwnQueue &own_queue,
-        eeprom::write_protect::WriteProtectPin &wp_pin)
+        eeprom::hardware_iface::EEPromHardwareIface &wp_pin)
         : writer{i2c_writer}, own_queue{own_queue}, write_protector{wp_pin} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
@@ -155,7 +155,7 @@ class EEPromMessageHandler {
     i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
                             MAX_INFLIGHT_READS>
         id_map{};
-    eeprom::write_protect::WriteProtector write_protector;
+    eeprom::hardware_iface::WriteProtector write_protector;
 };
 
 /**
@@ -178,7 +178,7 @@ class EEPromTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
-                                 write_protect::WriteProtectPin *pin) {
+                                 hardware_iface::EEPromHardwareIface *pin) {
         auto handler = EEPromMessageHandler{*writer, get_queue(), *pin};
         TaskMessage message{};
         for (;;) {

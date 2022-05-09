@@ -1,28 +1,28 @@
 #include <vector>
 
 #include "catch2/catch.hpp"
-#include "eeprom/core/write_protect.hpp"
+#include "eeprom/core/hardware_iface.hpp"
 
-struct MockWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
-    void set(bool enabled) { set_calls.push_back(enabled); }
+struct MockEepromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+    void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };
 
 SCENARIO("WriteProtector class") {
     GIVEN("A write protector") {
-        auto pin = MockWriteProtectPin{};
-        auto subject = eeprom::write_protect::WriteProtector(pin);
+        auto hw = MockEepromHardwareIface{};
+        auto subject = eeprom::hardware_iface::WriteProtector(hw);
         WHEN("disable is called") {
             subject.disable();
             THEN("write protect is disabled") {
-                REQUIRE(pin.set_calls == std::vector<bool>{false});
+                REQUIRE(hw.set_calls == std::vector<bool>{false});
             }
         }
         WHEN("disable then enable is called") {
             subject.disable();
             subject.enable();
             THEN("write protect is disabled then enabled") {
-                REQUIRE(pin.set_calls == std::vector<bool>{false, true});
+                REQUIRE(hw.set_calls == std::vector<bool>{false, true});
             }
         }
 
@@ -31,7 +31,7 @@ SCENARIO("WriteProtector class") {
             subject.disable();
             subject.enable();
             THEN("write protect is disabled and not reenabled") {
-                REQUIRE(pin.set_calls == std::vector<bool>{false});
+                REQUIRE(hw.set_calls == std::vector<bool>{false});
             }
         }
 
@@ -43,14 +43,14 @@ SCENARIO("WriteProtector class") {
             subject.enable();
             subject.enable();
             THEN("write protect is disabled and re enabled") {
-                REQUIRE(pin.set_calls == std::vector<bool>{false, true});
+                REQUIRE(hw.set_calls == std::vector<bool>{false, true});
             }
         }
 
         WHEN("enable is only  call") {
             subject.enable();
             THEN("write protect is enabled") {
-                REQUIRE(pin.set_calls == std::vector<bool>{true});
+                REQUIRE(hw.set_calls == std::vector<bool>{true});
             }
         }
 
@@ -58,7 +58,7 @@ SCENARIO("WriteProtector class") {
             subject.enable();
             subject.disable();
             THEN("write protect is enabled then disabled") {
-                REQUIRE(pin.set_calls == std::vector<bool>{true, false});
+                REQUIRE(hw.set_calls == std::vector<bool>{true, false});
             }
         }
     }
