@@ -66,7 +66,8 @@ class MotorInterruptHandler {
     void run_interrupt() {
         if (set_direction_pin()) {
             hardware.positive_direction();
-        } else {
+        } 
+        else {
             hardware.negative_direction();
         }
         if (pulse()) {
@@ -197,7 +198,7 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    void update_encoder_position() {enc_position_tracker = get_encoder_pulses(); }
+    auto update_encoder_position() -> uint32_t {return get_encoder_pulses(); }
 
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
@@ -207,14 +208,13 @@ class MotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
-        update_encoder_position();
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = enc_position_tracker,
+                .encoder_position = update_encoder_position(),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -224,14 +224,13 @@ class MotorInterruptHandler {
     }
 
     auto get_encoder_pulses() { 
-        enc_position_tracker = hardware.get_encoder_pulses();
         if (get_encoder_overflow_status() == true) {
             hardware.clear_encoder_SR();
             if (enc_overflow_future_flag) {
                 enc_position_tracker = hardware.get_encoder_pulses();
                 enc_overflow_future_flag = false;
             } else {
-                enc_position_tracker = UINT16_MAX + enc_position_tracker;
+                enc_position_tracker = UINT16_MAX + hardware.get_encoder_pulses();
                 enc_overflow_future_flag = true;
             }
         } 
@@ -239,12 +238,17 @@ class MotorInterruptHandler {
             enc_position_tracker = hardware.get_encoder_pulses(); 
         }
         return enc_position_tracker;
-        }
+        /* This function fixes the overflow issue for each motor.
+        Check whether the UIEF interrupt bit in the Status register gets triggered.
+        If it gets triggered we save the previous state of the triggered flag and clear
+        the status register interrupt bit. 
+        */
+    }
 
     void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
 
-    /* These functions will handle the overflow on the Encoder */
     void clear_encoder_overflow_flag() {hardware.clear_encoder_SR(); }
+
     auto get_encoder_overflow_status() -> bool {return hardware.get_encoder_SR_flag(); }
 
     void reset() {

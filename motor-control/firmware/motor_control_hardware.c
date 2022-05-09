@@ -97,7 +97,12 @@ void motor_hardware_reset_encoder_count(void* enc_htim) {
 */
 void motor_hardware_clear_status_register(void *enc_htim){
     if (enc_htim != NULL){
-        __HAL_TIM_CLEAR_IT((TIM_HandleTypeDef*)enc_htim, 0);
+        /* Clear interrupt flag bit */
+        __HAL_TIM_CLEAR_IT((TIM_HandleTypeDef*)enc_htim, TIM_IT_UPDATE);
+         /* The update event of the enable timer is interrupted */
+        __HAL_TIM_ENABLE_IT((TIM_HandleTypeDef*)enc_htim, TIM_IT_UPDATE);
+        /* Set update event request source as: counter overflow */
+        __HAL_TIM_URS_ENABLE((TIM_HandleTypeDef*)enc_htim);
     }
 }
 
