@@ -12,7 +12,8 @@ class EEPromHardwareIface {
     EEPromHardwareIface(const EEPromHardwareIface&) = default;
     EEPromHardwareIface(EEPromHardwareIface&&) = default;
     auto operator=(EEPromHardwareIface&&) -> EEPromHardwareIface& = default;
-    auto operator=(const EEPromHardwareIface&) -> EEPromHardwareIface& = default;
+    auto operator=(const EEPromHardwareIface&)
+        -> EEPromHardwareIface& = default;
     virtual ~EEPromHardwareIface() = default;
 
     /**
@@ -68,5 +69,5 @@ class WriteProtector {
     EEPromHardwareIface& pin;
 };
 
-}  // namespace write_protect
+}  // namespace hardware_iface
 }  // namespace eeprom

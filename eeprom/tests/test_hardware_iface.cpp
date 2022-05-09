@@ -3,7 +3,8 @@
 #include "catch2/catch.hpp"
 #include "eeprom/core/hardware_iface.hpp"
 
-struct MockEepromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+struct MockEepromHardwareIface
+    : public eeprom::hardware_iface::EEPromHardwareIface {
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };
