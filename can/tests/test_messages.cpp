@@ -216,7 +216,7 @@ SCENARIO("message serializing works") {
                 REQUIRE(arr[8] == 0x0);
                 REQUIRE(arr[9] == 0x0);
             }
-            THEN("size is correct") { REQUIRE(size == 7); }
+            THEN("size is correct") { REQUIRE(size == 10); }
         }
     }
 }

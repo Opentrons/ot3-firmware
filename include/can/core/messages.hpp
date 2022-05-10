@@ -205,7 +205,7 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
             std::min(data_length,
                      static_cast<eeprom::types::data_length>(limit - iter)),
             iter);
-        return iter - body;
+        return limit - body;
     }
     auto operator==(const ReadFromEEPromResponse& other) const
         -> bool = default;
