@@ -60,7 +60,7 @@ using PipetteInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::PipetteInfoRequest>;
 
 using EEPromDispatchTarget = can_dispatch::DispatchParseTarget<
-    eeprom::message_handler::EEPromHandler<sensor_tasks::QueueClient>,
+    eeprom::message_handler::EEPromHandler<sensor_tasks::QueueClient, sensor_tasks::QueueClient>,
     can_messages::WriteToEEPromRequest, can_messages::ReadFromEEPromRequest>;
 
 // TODO update with the proper message handler for pipette pick up tip

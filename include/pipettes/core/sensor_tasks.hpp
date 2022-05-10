@@ -25,7 +25,8 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  I2CClient& i2c1_task_client,
                  I2CPollerClient& i2c1_poller_client,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
-                 can_ids::NodeId id);
+                 can_ids::NodeId id,
+                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all tasks pipette peripheral tasks. This will be a singleton.
