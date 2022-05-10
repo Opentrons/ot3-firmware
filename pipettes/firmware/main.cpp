@@ -25,19 +25,15 @@
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
-
 #include "pipettes/core/central_tasks.hpp"
-#include "pipettes/core/peripheral_tasks.hpp"
-#include "pipettes/core/sensor_tasks.hpp"
-#include "pipettes/core/linear_motor_tasks.hpp"
-#include "pipettes/core/gear_motor_tasks.hpp"
-
 #include "pipettes/core/configs.hpp"
+#include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
+#include "pipettes/core/linear_motor_tasks.hpp"
+#include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
-
+#include "pipettes/core/sensor_tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
-
 #include "spi/firmware/spi_comms.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 
@@ -193,43 +189,35 @@ auto main() -> int {
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms1, spi_comms);
 
     if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
-        sensor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_writer(),
-            peripheral_tasks::get_i2c1_writer(),
-            peripheral_tasks::get_i2c1_poller_client(),
-            pins_for_sensor_96, id);
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_writer(),
+                                  peripheral_tasks::get_i2c1_writer(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  pins_for_sensor_96, id);
 
         initialize_linear_timer(plunger_callback);
         initialize_gear_timer(gear_callback);
-        linear_motor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller,
-            peripheral_tasks::get_spi_writer(),
-            driver_configs,
-            id);
+        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                        pipette_motor.motion_controller,
+                                        peripheral_tasks::get_spi_writer(),
+                                        driver_configs, id);
         // todo update with correct motion controller.
-        gear_motor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller,
-            peripheral_tasks::get_spi_writer(),
-            driver_configs,
-            id);
+        gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                      pipette_motor.motion_controller,
+                                      peripheral_tasks::get_spi_writer(),
+                                      driver_configs, id);
     } else {
-        sensor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_writer(),
-            peripheral_tasks::get_i2c1_writer(),
-            peripheral_tasks::get_i2c1_poller_client(),
-            pins_for_sensor_lt, id);
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_writer(),
+                                  peripheral_tasks::get_i2c1_writer(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  pins_for_sensor_lt, id);
 
         initialize_linear_timer(plunger_callback);
-        linear_motor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller,
-            peripheral_tasks::get_spi_writer(),
-            driver_configs,
-            id);
+        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                        pipette_motor.motion_controller,
+                                        peripheral_tasks::get_spi_writer(),
+                                        driver_configs, id);
     }
 
     iWatchdog.start(6);

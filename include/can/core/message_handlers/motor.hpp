@@ -15,8 +15,7 @@ class MotorHandler {
   public:
     using MessageType = tmc2130::tasks::CanMessage;
 
-    MotorHandler(Client &motor_client)
-        : motor_client{motor_client} {}
+    MotorHandler(Client &motor_client) : motor_client{motor_client} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
     auto operator=(const MotorHandler &) -> MotorHandler & = delete;

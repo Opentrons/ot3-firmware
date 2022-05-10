@@ -46,12 +46,11 @@ void sensor_tasks::start_tasks(
     queues.environment_sensor_queue = &environment_sensor_task.get_queue();
     queues.capacitive_sensor_queue = &capacitive_sensor_task.get_queue();
     queues.pressure_sensor_queue = &pressure_sensor_task.get_queue();
-
 }
 
 sensor_tasks::QueueClient::QueueClient()
-// This gets overridden in start_tasks, needs to be static here since this
-// is free-store allocated
+    // This gets overridden in start_tasks, needs to be static here since this
+    // is free-store allocated
     : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
 void sensor_tasks::QueueClient::send_eeprom_queue(

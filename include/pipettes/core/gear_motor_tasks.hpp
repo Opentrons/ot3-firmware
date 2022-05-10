@@ -1,29 +1,27 @@
 #pragma once
 
-#include "can/core/ids.hpp"
 #include "can/core/can_writer_task.hpp"
+#include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
-
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
-
 #include "spi/core/writer.hpp"
 
 namespace gear_motor_tasks {
 
+using CanWriterTask = message_writer_task::MessageWriterTask<
+    freertos_message_queue::FreeRTOSMessageQueue>;
+using SPIWriterClient =
+    spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
-using CanWriterTask = message_writer_task::MessageWriterTask<freertos_message_queue::FreeRTOSMessageQueue>;
-using SPIWriterClient = spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
-
-void start_tasks(
-    CanWriterTask& can_writer,
-    motion_controller::MotionController<lms::LeadScrewConfig>& motion_controller,
-    SPIWriterClient& spi_writer,
-    tmc2130::configs::TMC2130DriverConfig& gear_driver_configs,
-    can_ids::NodeId id);
-
+void start_tasks(CanWriterTask& can_writer,
+                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                     motion_controller,
+                 SPIWriterClient& spi_writer,
+                 tmc2130::configs::TMC2130DriverConfig& gear_driver_configs,
+                 can_ids::NodeId id);
 
 struct Tasks {
     tmc2130::tasks::MotorDriverTask<
@@ -34,7 +32,7 @@ struct Tasks {
         nullptr};
 };
 
-struct QueueClient: can_message_writer::MessageWriter {
+struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
 
     void send_motion_controller_queue(
@@ -47,7 +45,6 @@ struct QueueClient: can_message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
-
 };
 
 /**
@@ -56,11 +53,10 @@ struct QueueClient: can_message_writer::MessageWriter {
  */
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
-
 /**
  * Access to the queues singleton
  * @return
  */
 [[nodiscard]] auto get_queues() -> QueueClient&;
 
-} // namespace gear_motor_tasks
+}  // namespace gear_motor_tasks
