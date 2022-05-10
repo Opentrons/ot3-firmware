@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "can/simlib/sim_canbus.hpp"
 #include "eeprom/simulation/eeprom.hpp"
-#include "eeprom/simulation/write_protect.hpp"
+#include "eeprom/simulation/hardware_iface.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
@@ -24,7 +24,7 @@ std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {sim_eeprom.ADDRESS, sim_eeprom}};
 static auto i2c3 = i2c::hardware::SimI2C{sensor_map};
 
-static auto eeprom_wp_pin = eeprom::sim_write_protect::SimWriteProtectPin{};
+static auto eeprom_hw_iface = eeprom::sim_hardware_iface::SimEEPromHardwareIface{};
 
 int main() {
     signal(SIGINT, signal_handler);
@@ -38,7 +38,7 @@ int main() {
     gripper_tasks::start_tasks(
         canbus, z_motor_iface::get_z_motor(),
         grip_motor_iface::get_grip_motor(), z_motor_iface::get_spi(),
-        z_motor_iface::get_tmc2130_driver_configs(), i2c3, eeprom_wp_pin);
+        z_motor_iface::get_tmc2130_driver_configs(), i2c3, eeprom_hw_iface);
 
     vTaskStartScheduler();
 }

@@ -49,9 +49,9 @@ static constexpr auto can_bit_timings =
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};
 
-class EEPromWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
+class EEPromHardwareInterface : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
-    void set(bool enable) final {
+    void set_write_protect(bool enable) final {
         if (enable) {
             enable_eeprom_write();
         } else {
@@ -59,7 +59,7 @@ class EEPromWriteProtectPin : public eeprom::write_protect::WriteProtectPin {
         }
     }
 };
-static auto eeprom_write_protect_pin = EEPromWriteProtectPin();
+static auto eeprom_hw_iface = EEPromHardwareInterface();
 
 auto main() -> int {
     HardwareInit();
@@ -82,7 +82,7 @@ auto main() -> int {
                                grip_motor_iface::get_grip_motor(),
                                z_motor_iface::get_spi(),
                                z_motor_iface::get_tmc2130_driver_configs(),
-                               i2c_comms3, eeprom_write_protect_pin);
+                               i2c_comms3, eeprom_hw_iface);
 
     iWatchdog.start(6);
 

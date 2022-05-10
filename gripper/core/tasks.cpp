@@ -32,7 +32,7 @@ void gripper_tasks::start_tasks(
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     i2c::hardware::I2CDeviceBase& i2c3,
-    eeprom::write_protect::WriteProtectPin& eeprom_wp_pin) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     tasks.can_writer = &can_writer;
@@ -43,7 +43,7 @@ void gripper_tasks::start_tasks(
     queues.i2c3_queue = &i2c3_task.get_queue();
 
     auto& eeprom_task =
-        eeprom_task_builder.start(5, "eeprom", i2c3_task_client, eeprom_wp_pin);
+        eeprom_task_builder.start(5, "eeprom", i2c3_task_client, eeprom_hw_iface);
     tasks.eeprom_task = &eeprom_task;
     queues.eeprom_queue = &eeprom_task.get_queue();
 

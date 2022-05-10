@@ -3,7 +3,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "eeprom/core/task.hpp"
-#include "eeprom/core/write_protect.hpp"
+#include "eeprom/core/hardware_iface.hpp"
 #include "i2c/core/hardware_iface.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
@@ -31,7 +31,7 @@ void start_tasks(can_bus::CanBus& can_bus,
                  spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
                  i2c::hardware::I2CDeviceBase& i2c3,
-                 eeprom::write_protect::WriteProtectPin& eeprom_wp_pin);
+                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
 
 /**
  * Access to all the message queues in the system.
