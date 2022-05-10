@@ -60,9 +60,9 @@ class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
     void set_write_protect(bool enable) final {
         if (enable) {
-            enable_eeprom();
-        } else {
             disable_eeprom();
+        } else {
+            enable_eeprom();
         }
     }
 };
