@@ -21,13 +21,14 @@ void sensor_tasks::start_tasks(
     sensor_tasks::I2CClient& i2c1_task_client,
     sensor_tasks::I2CPollerClient& i2c1_poller_client,
     sensors::hardware::SensorHardwareBase& sensor_hardware,
-    can_ids::NodeId id) {
+    can_ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
     auto& tasks = sensor_tasks::get_tasks();
 
     auto& eeprom_task =
-        eeprom_task_builder.start(5, "eeprom", i2c3_task_client, queues);
+        eeprom_task_builder.start(5, "eeprom", i2c3_task_client, eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c1_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(

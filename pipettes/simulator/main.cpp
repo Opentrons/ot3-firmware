@@ -118,7 +118,8 @@ int main() {
                                   peripheral_tasks::get_i2c1_writer(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   fake_sensor_hw,
-                                  node_from_env(std::getenv("MOUNT")));
+                                  node_from_env(std::getenv("MOUNT")),
+                                  sim_eeprom_hw_interface);
 
         linear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
@@ -134,7 +135,8 @@ int main() {
                                   peripheral_tasks::get_i2c1_writer(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   fake_sensor_hw,
-                                  node_from_env(std::getenv("MOUNT")));
+                                  node_from_env(std::getenv("MOUNT")),
+                                  sim_eeprom_hw_interface);
 
         linear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,

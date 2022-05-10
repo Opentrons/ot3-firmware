@@ -193,7 +193,7 @@ auto main() -> int {
                                   peripheral_tasks::get_i2c3_writer(),
                                   peripheral_tasks::get_i2c1_writer(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  pins_for_sensor_96, id);
+                                  pins_for_sensor_96, id, eeprom_hardware_iface);
 
         initialize_linear_timer(plunger_callback);
         initialize_gear_timer(gear_callback);
@@ -211,7 +211,7 @@ auto main() -> int {
                                   peripheral_tasks::get_i2c3_writer(),
                                   peripheral_tasks::get_i2c1_writer(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  pins_for_sensor_lt, id);
+                                  pins_for_sensor_lt, id, eeprom_hardware_iface);
 
         initialize_linear_timer(plunger_callback);
         linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
