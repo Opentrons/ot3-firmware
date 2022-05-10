@@ -24,7 +24,8 @@ std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
     {sim_eeprom.ADDRESS, sim_eeprom}};
 static auto i2c3 = i2c::hardware::SimI2C{sensor_map};
 
-static auto eeprom_hw_iface = eeprom::sim_hardware_iface::SimEEPromHardwareIface{};
+static auto eeprom_hw_iface =
+    eeprom::sim_hardware_iface::SimEEPromHardwareIface{};
 
 int main() {
     signal(SIGINT, signal_handler);

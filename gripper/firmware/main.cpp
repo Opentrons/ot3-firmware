@@ -49,13 +49,14 @@ static constexpr auto can_bit_timings =
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};
 
-class EEPromHardwareInterface : public eeprom::hardware_iface::EEPromHardwareIface {
+class EEPromHardwareInterface
+    : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
     void set_write_protect(bool enable) final {
         if (enable) {
-            enable_eeprom_write();
-        } else {
             disable_eeprom_write();
+        } else {
+            enable_eeprom_write();
         }
     }
 };
