@@ -11,7 +11,9 @@ namespace message_handler {
 template <eeprom::task::TaskClient EEPromTaskClient>
 class EEPromHandler {
   public:
-    using MessageType = eeprom::task::CanMessage;
+    using MessageType =
+        std::variant<std::monostate, can_messages::WriteToEEPromRequest,
+                     can_messages::ReadFromEEPromRequest>;
 
     explicit EEPromHandler(EEPromTaskClient &client) : client(client) {}
     EEPromHandler(const EEPromHandler &) = delete;
@@ -20,11 +22,7 @@ class EEPromHandler {
     auto operator=(const EEPromHandler &&) -> EEPromHandler && = delete;
     ~EEPromHandler() = default;
 
-    void handle(MessageType &can_message) {
-        std::visit(
-            [this](auto m) -> void { this->client.send_eeprom_queue(m); },
-            can_message);
-    }
+    void handle(MessageType &) {}
 
   private:
     EEPromTaskClient &client;

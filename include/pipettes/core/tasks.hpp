@@ -35,7 +35,8 @@ void start_tasks(can_bus::CanBus& can_bus,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
                  spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                 can_ids::NodeId id);
+                 can_ids::NodeId id,
+                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all the message queues in the system.

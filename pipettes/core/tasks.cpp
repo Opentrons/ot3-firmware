@@ -80,7 +80,8 @@ void pipettes_tasks::start_tasks(
     i2c::hardware::I2CDeviceBase& i2c1_device,
     sensors::hardware::SensorHardwareBase& sensor_hardware,
     spi::hardware::SpiDeviceBase& spi_device,
-    tmc2130::configs::TMC2130DriverConfig& driver_configs, can_ids::NodeId id) {
+    tmc2130::configs::TMC2130DriverConfig& driver_configs, can_ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
     queue_client.set_node_id(id);
     auto& queues = pipettes_tasks::get_queues();
     auto& tasks = pipettes_tasks::get_tasks();
@@ -112,8 +113,8 @@ void pipettes_tasks::start_tasks(
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
 
-    auto& eeprom_task =
-        eeprom_task_builder.start(5, "eeprom", i2c3_task_client, queues);
+    auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
+                                                  eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c1_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
