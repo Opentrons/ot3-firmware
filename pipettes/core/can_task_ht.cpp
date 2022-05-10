@@ -25,8 +25,8 @@ static auto can_motion_handler =
 static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(linear_motor_queue_client);
 
-static auto eeprom_handler =
-    eeprom::message_handler::EEPromHandler{sensor_queue_client, sensor_queue_client};
+static auto eeprom_handler = eeprom::message_handler::EEPromHandler{
+    sensor_queue_client, sensor_queue_client};
 
 static auto system_message_handler = system_handler::SystemMessageHandler{
     central_queue_client, version_get()->version, version_get()->flags,

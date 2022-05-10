@@ -14,12 +14,11 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
-
 #include "eeprom/core/hardware_iface.hpp"
 
 // todo check if needed
+#include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -35,7 +34,6 @@
 #include "pipettes/core/sensor_tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
-#include "i2c/firmware/i2c_comms.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -193,7 +191,8 @@ auto main() -> int {
                                   peripheral_tasks::get_i2c3_writer(),
                                   peripheral_tasks::get_i2c1_writer(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  pins_for_sensor_96, id, eeprom_hardware_iface);
+                                  pins_for_sensor_96, id,
+                                  eeprom_hardware_iface);
 
         initialize_linear_timer(plunger_callback);
         initialize_gear_timer(gear_callback);
@@ -211,7 +210,8 @@ auto main() -> int {
                                   peripheral_tasks::get_i2c3_writer(),
                                   peripheral_tasks::get_i2c1_writer(),
                                   peripheral_tasks::get_i2c1_poller_client(),
-                                  pins_for_sensor_lt, id, eeprom_hardware_iface);
+                                  pins_for_sensor_lt, id,
+                                  eeprom_hardware_iface);
 
         initialize_linear_timer(plunger_callback);
         linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
