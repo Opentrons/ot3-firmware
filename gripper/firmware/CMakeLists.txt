@@ -29,6 +29,7 @@ set(GRIPPER_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
@@ -41,6 +42,8 @@ add_executable(gripper
 target_gripper_core(gripper)
 
 target_ot_motor_control(gripper)
+
+target_i2c_firmware(gripper)
 
 target_link_libraries(gripper
         PUBLIC STM32G491RETx
