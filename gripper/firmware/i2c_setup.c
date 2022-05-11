@@ -2,6 +2,10 @@
 #include "gripper/firmware/i2c_setup.h"
 #include "common/firmware/errors.h"
 
+
+#define EEPROM_GPIO_BANK  GPIOC
+#define EEPROM_GPIO_PIN   GPIO_PIN_12
+
 static I2C_HandleTypeDef hi2c3;
 
 
@@ -12,7 +16,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
     if(hi2c->Instance==I2C3) {
             // PIN PC8 is SCL
             // PIN PC9 is SDA
-            // Secondary pressure sensor
         __HAL_RCC_I2C3_CLK_ENABLE();
         GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
@@ -55,9 +58,6 @@ HAL_I2C_HANDLE MX_I2C3_Init()
     }
     return &hi2c3;
 }
-
-#define EEPROM_GPIO_BANK  GPIOC
-#define EEPROM_GPIO_PIN   GPIO_PIN_12
 
 /**
  * @brief enable the eeprom write protect pin.
