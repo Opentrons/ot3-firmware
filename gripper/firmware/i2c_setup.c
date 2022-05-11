@@ -69,7 +69,7 @@ void eeprom_write_protect_init(void) {
     /*Configure GPIO pin : C12 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = EEPROM_GPIO_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(EEPROM_GPIO_BANK, &GPIO_InitStruct);
 }
@@ -79,14 +79,14 @@ void eeprom_write_protect_init(void) {
  * @brief enable writing to the eeprom.
  */
 void enable_eeprom_write() {
-    HAL_GPIO_WritePin(GPIOC, EEPROM_GPIO_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, EEPROM_GPIO_PIN, GPIO_PIN_RESET);
 }
 
 /**
  * @brief disable writing to the eeprom.
  */
 void disable_eeprom_write() {
-    HAL_GPIO_WritePin(GPIOC, EEPROM_GPIO_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, EEPROM_GPIO_PIN, GPIO_PIN_SET);
 }
 
 

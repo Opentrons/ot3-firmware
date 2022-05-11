@@ -175,6 +175,8 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     eeprom::types::address address;
     eeprom::types::data_length data_length;
     eeprom::types::EepromData data;
+    static constexpr uint8_t SIZE =
+        sizeof(address) + sizeof(data_length) + eeprom::types::max_data_length;
 
     /**
      * Create a response message from iterator
@@ -205,7 +207,10 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
             std::min(data_length,
                      static_cast<eeprom::types::data_length>(limit - iter)),
             iter);
-        return limit - body;
+
+        // The size is the fixed size of the message or the supplied buffer
+        // size. Whichever is smaller.
+        return std::min(static_cast<uint8_t>(limit - body), SIZE);
     }
     auto operator==(const ReadFromEEPromResponse& other) const
         -> bool = default;
