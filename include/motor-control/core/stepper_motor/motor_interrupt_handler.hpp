@@ -66,8 +66,7 @@ class MotorInterruptHandler {
     void run_interrupt() {
         if (set_direction_pin()) {
             hardware.positive_direction();
-        } 
-        else {
+        } else {
             hardware.negative_direction();
         }
         if (pulse()) {
@@ -80,7 +79,6 @@ class MotorInterruptHandler {
     void start() { hardware.start_timer_interrupt(); }
     void stop() { hardware.stop_timer_interrupt(); }
 
-    
     // condense these
     [[nodiscard]] auto pulse() -> bool {
         /*
@@ -198,7 +196,7 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    auto update_encoder_position() -> uint32_t {return get_encoder_pulses(); }
+    auto update_encoder_position() -> uint32_t { return get_encoder_pulses(); }
 
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
@@ -223,33 +221,35 @@ class MotorInterruptHandler {
         set_buffered_move(Move{});
     }
 
-    auto get_encoder_pulses() { 
+    auto get_encoder_pulses() {
         if (get_encoder_overflow_status() == true) {
             hardware.clear_encoder_SR();
             if (enc_overflow_future_flag) {
                 enc_position_tracker = hardware.get_encoder_pulses();
                 enc_overflow_future_flag = false;
             } else {
-                enc_position_tracker = UINT16_MAX + hardware.get_encoder_pulses();
+                enc_position_tracker =
+                    UINT16_MAX + hardware.get_encoder_pulses();
                 enc_overflow_future_flag = true;
             }
-        } 
-        else {
-            enc_position_tracker = hardware.get_encoder_pulses(); 
+        } else {
+            enc_position_tracker = hardware.get_encoder_pulses();
         }
         return enc_position_tracker;
         /* This function fixes the overflow issue for each motor.
-        Check whether the UIEF interrupt bit in the Status register gets triggered.
-        If it gets triggered we save the previous state of the triggered flag and clear
-        the status register interrupt bit. 
+        Check whether the UIEF interrupt bit in the Status register gets
+        triggered. If it gets triggered we save the previous state of the
+        triggered flag and clear the status register interrupt bit.
         */
     }
 
     void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
 
-    void clear_encoder_overflow_flag() {hardware.clear_encoder_SR(); }
+    void clear_encoder_overflow_flag() { hardware.clear_encoder_SR(); }
 
-    auto get_encoder_overflow_status() -> bool {return hardware.get_encoder_SR_flag(); }
+    auto get_encoder_overflow_status() -> bool {
+        return hardware.get_encoder_SR_flag();
+    }
 
     void reset() {
         /*

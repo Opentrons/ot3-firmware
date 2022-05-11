@@ -81,9 +81,10 @@ class MotionController {
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
-    auto read_encoder_pulses() { 
-    return fixed_point_multiply(um_per_encoder_pulse, hardware.get_encoder_pulses()); 
-                 }
+    auto read_encoder_pulses() {
+        return fixed_point_multiply(um_per_encoder_pulse,
+                                    hardware.get_encoder_pulses());
+    }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
@@ -114,7 +115,6 @@ class MotionController {
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_encoder_pulse{0};
-
 };
 
 }  // namespace motion_controller

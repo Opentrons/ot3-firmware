@@ -7,9 +7,7 @@ TEST_CASE("Linear motion system using a leadscrew") {
     GIVEN("OT2 GEN2 pipette config") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
             .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
-            .steps_per_rev = 200,
-            .microstep = 32,
-            .encoder_ppr=1000,
+            .steps_per_rev = 200, .microstep = 32, .encoder_ppr = 1000,
         };
         THEN("the steps/mm calculation should match the known value") {
             REQUIRE(linearConfig.get_steps_per_mm() == 3200);

@@ -30,8 +30,8 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void reset_encoder_pulses() final { test_pulses = 0; }
     uint32_t get_encoder_pulses() final { return test_pulses; }
     void clear_encoder_SR() final {}
-    auto get_encoder_SR_flag() -> bool final{return mock_sr_value;}
-    auto get_encoder_direction() -> bool final{return mock_dir_value;}
+    auto get_encoder_SR_flag() -> bool final { return mock_sr_value; }
+    auto get_encoder_direction() -> bool final { return mock_dir_value; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
 
   private:

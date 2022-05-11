@@ -10,7 +10,7 @@ using MotionControlTaskMessage = std::variant<
     can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
     can_messages::GetMotionConstraintsRequest,
     can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::EncoderPositionRequest, can_messages::ReadLimitSwitchRequest, 
+    can_messages::EncoderPositionRequest, can_messages::ReadLimitSwitchRequest,
     can_messages::HomeRequest>;
 
 using MotorDriverTaskMessage =

@@ -348,8 +348,8 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     auto operator==(const MoveCompleted& other) const -> bool = default;
 };
 
-
-struct EncoderPositionResponse : BaseMessage<MessageId::encoder_position_response> {
+struct EncoderPositionResponse
+    : BaseMessage<MessageId::encoder_position_response> {
     uint32_t encoder_position;
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -358,7 +358,8 @@ struct EncoderPositionResponse : BaseMessage<MessageId::encoder_position_respons
         return iter - body;
     }
 
-    auto operator==(const EncoderPositionResponse& other) const -> bool = default;
+    auto operator==(const EncoderPositionResponse& other) const
+        -> bool = default;
 };
 
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
@@ -923,10 +924,10 @@ using ResponseMessageType = std::variant<
     HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
-    PushToolsDetectedNotification, ReadLimitSwitchResponse, EncoderPositionResponse,
-    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
-    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
-    TipActionResponse>;
+    PushToolsDetectedNotification, ReadLimitSwitchResponse,
+    EncoderPositionResponse, ReadFromSensorResponse,
+    FirmwareUpdateStatusResponse, SensorThresholdResponse,
+    SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
+    BindSensorOutputResponse, GripperInfoResponse, TipActionResponse>;
 
 }  // namespace can_messages
