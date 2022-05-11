@@ -202,7 +202,7 @@ SCENARIO("message serializing works") {
         }
 
         WHEN("serialized into too large a buffer") {
-            auto arr = std::array<uint8_t, 10>{};
+            auto arr = std::array<uint8_t, ReadFromEEPromResponse::SIZE + 5>{};
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer.") {
                 REQUIRE(arr[0] == 13);
@@ -216,7 +216,9 @@ SCENARIO("message serializing works") {
                 REQUIRE(arr[8] == 0x0);
                 REQUIRE(arr[9] == 0x0);
             }
-            THEN("size is correct") { REQUIRE(size == 10); }
+            THEN("size is correct") {
+                REQUIRE(size == ReadFromEEPromResponse::SIZE);
+            }
         }
     }
 }
