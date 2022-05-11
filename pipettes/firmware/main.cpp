@@ -15,18 +15,23 @@
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "eeprom/core/hardware_iface.hpp"
+
+// todo check if needed
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
+#include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
+#include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
+#include "pipettes/core/linear_motor_tasks.hpp"
+#include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
-#include "pipettes/core/tasks.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -102,7 +107,7 @@ struct motion_controller::HardwareConfig plunger_pins {
 
 static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
-    motor_queue, pipettes_tasks::get_queues(), plunger_hw);
+    motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -177,20 +182,46 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    initialize_linear_timer(plunger_callback);
-    if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
-        initialize_gear_timer(gear_callback);
-    }
-
     can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
               can_bit_timings.segment_2_quanta,
               can_bit_timings.max_sync_jump_width);
 
-    pipettes_tasks::start_tasks(
-        can_bus_1, pipette_motor.motion_controller, i2c_comms3, i2c_comms1,
-        ((PIPETTE_TYPE == NINETY_SIX_CHANNEL) ? pins_for_sensor_96
-                                              : pins_for_sensor_lt),
-        spi_comms, driver_configs, id, eeprom_hardware_iface);
+    central_tasks::start_tasks(can_bus_1, id);
+    peripheral_tasks::start_tasks(i2c_comms3, i2c_comms1, spi_comms);
+
+    if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c1_client(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  pins_for_sensor_96, id,
+                                  eeprom_hardware_iface);
+
+        initialize_linear_timer(plunger_callback);
+        initialize_gear_timer(gear_callback);
+        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                        pipette_motor.motion_controller,
+                                        peripheral_tasks::get_spi_client(),
+                                        driver_configs, id);
+        // todo update with correct motion controller.
+        gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                      pipette_motor.motion_controller,
+                                      peripheral_tasks::get_spi_client(),
+                                      driver_configs, id);
+    } else {
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c1_client(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  pins_for_sensor_lt, id,
+                                  eeprom_hardware_iface);
+
+        initialize_linear_timer(plunger_callback);
+        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                        pipette_motor.motion_controller,
+                                        peripheral_tasks::get_spi_client(),
+                                        driver_configs, id);
+    }
 
     iWatchdog.start(6);
 

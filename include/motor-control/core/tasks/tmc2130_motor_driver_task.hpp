@@ -136,7 +136,6 @@ class MotorDriverTask {
     /**
      * Task entry point.
      */
-
     template <message_writer_task::TaskClient CanClient,
               class MotorDriverConfigs, class SpiWriter>
     [[noreturn]] void operator()(MotorDriverConfigs* configs,

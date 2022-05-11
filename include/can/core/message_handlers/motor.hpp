@@ -10,13 +10,12 @@ namespace motor_message_handler {
 
 using namespace can_messages;
 
-template <tmc2130::tasks::TaskClient MotorDriverTaskClient>
+template <tmc2130::tasks::TaskClient Client>
 class MotorHandler {
   public:
     using MessageType = tmc2130::tasks::CanMessage;
 
-    MotorHandler(MotorDriverTaskClient &motor_client)
-        : motor_client{motor_client} {}
+    MotorHandler(Client &motor_client) : motor_client{motor_client} {}
     MotorHandler(const MotorHandler &) = delete;
     MotorHandler(const MotorHandler &&) = delete;
     auto operator=(const MotorHandler &) -> MotorHandler & = delete;
@@ -32,7 +31,7 @@ class MotorHandler {
     }
 
   private:
-    MotorDriverTaskClient &motor_client;
+    Client &motor_client;
 };
 
 template <brushed_motor_driver_task::TaskClient BrushedMotorDriverTaskClient>
