@@ -373,7 +373,7 @@ class TMC2160 {
         -> uint32_t {
         constexpr auto SQRT_TWO = sqrt2;
         uint32_t CURR_GLOB_SCALE = _registers.glob_scale.global_scaler;
-        uint32_t GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
+        auto GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
         auto FLOAT_CONSTANT =
             static_cast<float>(SQRT_TWO * 32.0 * (_current_config.r_sense) /
                                _current_config.v_sf * GLOB_SCALE);

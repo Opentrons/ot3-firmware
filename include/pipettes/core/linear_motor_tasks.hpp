@@ -110,7 +110,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     QueueClient()
         : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
-    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m) {
+    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m) const {
         driver_queue->try_write(m);
     }
 
@@ -149,7 +149,7 @@ struct QueueClient : can_message_writer::MessageWriter {
     QueueClient()
         : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
-    void send_motor_driver_queue(const tmc2160::tasks::TaskMessage& m) {
+    void send_motor_driver_queue(const tmc2160::tasks::TaskMessage& m) const {
         driver_queue->try_write(m);
     }
 

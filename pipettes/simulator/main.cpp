@@ -115,30 +115,30 @@ int main() {
     if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
         sensor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_writer(),
-            peripheral_tasks::get_i2c1_writer(),
+            peripheral_tasks::get_i2c3_client(),
+            peripheral_tasks::get_i2c1_client(),
             peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
             node_from_env(std::getenv("MOUNT")), sim_eeprom_hw_interface);
 
         linear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller, peripheral_tasks::get_spi_writer(),
+            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
             driver_configs, node_from_env(std::getenv("MOUNT")));
         gear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller, peripheral_tasks::get_spi_writer(),
+            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
             driver_configs, node_from_env(std::getenv("MOUNT")));
     } else {
         sensor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_writer(),
-            peripheral_tasks::get_i2c1_writer(),
+            peripheral_tasks::get_i2c3_client(),
+            peripheral_tasks::get_i2c1_client(),
             peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
             node_from_env(std::getenv("MOUNT")), sim_eeprom_hw_interface);
 
         linear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller, peripheral_tasks::get_spi_writer(),
+            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
             driver_configs, node_from_env(std::getenv("MOUNT")));
     }
 
