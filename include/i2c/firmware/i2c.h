@@ -24,9 +24,16 @@ bool hal_i2c_master_receive(HAL_I2C_HANDLE handle, uint16_t dev_address, uint8_t
 HAL_I2C_HANDLE MX_I2C1_Init();
 HAL_I2C_HANDLE MX_I2C3_Init();
 int data_ready();
-void enable_eeprom();
-void disable_eeprom();
 
+/**
+ * enable writing to the eeprom.
+ */
+void enable_eeprom_write();
+
+/**
+ * disable writing to the eeprom.
+ */
+void disable_eeprom_write();
 
 #ifdef __cplusplus
 }  // extern "C"
