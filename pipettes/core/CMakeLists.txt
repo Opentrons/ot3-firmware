@@ -14,26 +14,26 @@ function(target_pipettes_core_single TARGET)
     target_pipettes_core_common(${TARGET})
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/pipette_type_single.cpp
-            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_lt.cpp)
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_low_throughput.cpp)
 endfunction()
 
 function(target_pipettes_core_multi TARGET)
     target_pipettes_core_common(${TARGET})
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/pipette_type_multi.cpp
-            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_lt.cpp)
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_low_throughput.cpp)
 endfunction()
 
 function(target_pipettes_core_96 TARGET)
     target_pipettes_core_common(${TARGET})
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/pipette_type_96.cpp
-            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_ht.cpp)
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_high_throughput.cpp)
 endfunction()
 
 function(target_pipettes_core_384 TARGET)
     target_pipettes_core_common(${TARGET})
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/pipette_type_384.cpp
-            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_ht.cpp)
+            ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_task_high_throughput.cpp)
 endfunction()
