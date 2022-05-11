@@ -49,14 +49,31 @@ class BrushedMotorInterruptHandler {
         if (!has_active_move && has_messages()) {
             update_and_start_move();
         }
-        if (has_active_move && limit_switch_triggered()) {
-            hardware.stop_pwm();
-            if (buffered_move.stop_condition ==
-                MoveStopCondition::limit_switch) {
-                homing_stopped();
-            } else {
-                finish_current_move(AckMessageId::position_error);
+        if (has_active_move) {
+            if (limit_switch_triggered()) {
+                hardware.stop_pwm();
+                if (buffered_move.stop_condition ==
+                    MoveStopCondition::limit_switch) {
+                    homing_stopped();
+                } else {
+                    finish_current_move(AckMessageId::position_error);
+                }
+            } else if (check_for_stop()) {
+                finish_current_move(AckMessageId::complete_without_condition);
             }
+        }
+    }
+
+    bool check_for_stop() {
+        /*
+         * TODO: Check encoder position as the condition to stop motor instead
+         * of duration.
+         */
+        if (tick_count < buffered_move.duration) {
+            tick_count++;
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -84,6 +101,7 @@ class BrushedMotorInterruptHandler {
 
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
+        tick_count = 0x0;
         has_active_move = false;
         uint32_t pulses = 0x0;
         pulses = get_encoder_pulses();
@@ -116,6 +134,7 @@ class BrushedMotorInterruptHandler {
     bool has_active_move = false;
 
   private:
+    uint64_t tick_count = 0x0;
     q31_31 position_tracker = 0x0;
     GenericQueue& queue;
     StatusClient& status_queue_client;
