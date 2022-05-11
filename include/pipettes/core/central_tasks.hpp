@@ -6,6 +6,11 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_timer.hpp"
 
+/**
+ * Central Tasks
+ *
+ * These tasks will start the CAN bus message writer and reader task.
+ */
 namespace central_tasks {
 
 /**
@@ -14,7 +19,7 @@ namespace central_tasks {
 void start_tasks(can_bus::CanBus& can_bus, can_ids::NodeId id);
 
 /**
- * Access to all tasks not associated with a motor. This will be a singleton.
+ * Access to central CAN bus tasks. This will be a singleton.
  */
 struct Tasks {
     message_writer_task::MessageWriterTask<
@@ -22,7 +27,7 @@ struct Tasks {
 };
 
 /**
- * Access to all the message queues in the system.
+ * Access to the can writer message queue.
  */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
@@ -32,7 +37,7 @@ struct QueueClient : can_message_writer::MessageWriter {
 };
 
 /**
- * Access to the gear motor tasks singleton
+ * Access to the central tasks singleton
  * @return
  */
 [[nodiscard]] auto get_tasks() -> Tasks&;

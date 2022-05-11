@@ -11,6 +11,14 @@
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
 #include "spi/core/writer.hpp"
 
+/**
+ * Linear Motor Tasks
+ *
+ * All tasks that deal with motion control for linear motion on pipettes.
+ *
+ * For the single/8 channel, the tmc2130 driver is used.
+ * For the 96 channel, the tmc2160 driver is used.
+ */
 namespace linear_motor_tasks {
 
 using CanWriterTask = message_writer_task::MessageWriterTask<
@@ -34,6 +42,9 @@ void start_tasks(CanWriterTask& can_writer,
                  tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
                  can_ids::NodeId);
 
+/**
+ * Access to all the linear motion task queues on the pipette.
+ */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
 
@@ -55,6 +66,10 @@ struct QueueClient : can_message_writer::MessageWriter {
         nullptr};
 };
 
+/**
+ * Access to all the linear motion tasks on the pipette. This will be a
+ * singleton.
+ */
 struct Tasks {
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
@@ -66,16 +81,31 @@ struct Tasks {
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
 };
 
+/**
+ * Access to the linear tasks singleton
+ * @return
+ */
 [[nodiscard]] auto get_queues() -> QueueClient&;
+
+/**
+ * Access to the linear queues singleton
+ * @return
+ */
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
 namespace tmc2130_driver {
 
+/**
+ * Tasks related specifically to the the tmc2130 driver.
+ */
 struct Tasks {
     tmc2130::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* driver{nullptr};
 };
 
+/**
+ * Queues related specifically to the the tmc2130 driver.
+ */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient()
         : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
@@ -88,18 +118,33 @@ struct QueueClient : can_message_writer::MessageWriter {
         driver_queue{nullptr};
 };
 
+/**
+ * Access to the tmc2130 queue.
+ * @return
+ */
 [[nodiscard]] auto get_queues() -> QueueClient&;
+
+/**
+ * Access to the tmc2130 driver task.
+ * @return
+ */
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
 }  // namespace tmc2130_driver
 
 namespace tmc2160_driver {
 
+/**
+ * Tasks related specifically to the the tmc2160 driver.
+ */
 struct Tasks {
     tmc2160::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* driver{nullptr};
 };
 
+/**
+ * Queues related specifically to the the tmc2160 driver.
+ */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient()
         : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
@@ -112,7 +157,16 @@ struct QueueClient : can_message_writer::MessageWriter {
         driver_queue{nullptr};
 };
 
+/**
+ * Access to the tmc2160 queue.
+ * @return
+ */
 [[nodiscard]] auto get_queues() -> QueueClient&;
+
+/**
+ * Access to the tmc2160 driver task.
+ * @return
+ */
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
 }  // namespace tmc2160_driver

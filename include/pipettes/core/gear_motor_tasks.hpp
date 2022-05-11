@@ -9,6 +9,14 @@
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/writer.hpp"
 
+/**
+ * Gear Motor Tasks
+ *
+ * All tasks that deal with motion control related to the 96 channel
+ * pick up/drop tip motors.
+ *
+ * Both motors are driven by a tmc2130 driver.
+ */
 namespace gear_motor_tasks {
 
 using CanWriterTask = message_writer_task::MessageWriterTask<
@@ -23,6 +31,9 @@ void start_tasks(CanWriterTask& can_writer,
                  tmc2130::configs::TMC2130DriverConfig& gear_driver_configs,
                  can_ids::NodeId id);
 
+/**
+ * Access to all the gear motion tasks.
+ */
 struct Tasks {
     tmc2130::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* driver{nullptr};
@@ -32,6 +43,9 @@ struct Tasks {
         nullptr};
 };
 
+/**
+ * Access to all the gear motion task queues.
+ */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
 
@@ -54,7 +68,7 @@ struct QueueClient : can_message_writer::MessageWriter {
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
 /**
- * Access to the queues singleton
+ * Access to the gear motor tasks queues singleton
  * @return
  */
 [[nodiscard]] auto get_queues() -> QueueClient&;

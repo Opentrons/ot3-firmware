@@ -52,14 +52,6 @@ void gear_motor_tasks::QueueClient::send_motor_driver_queue(
     driver_queue->try_write(m);
 }
 
-/**
- * Access to the gear motor tasks singleton
- * @return
- */
 auto gear_motor_tasks::get_tasks() -> Tasks& { return tasks; }
 
-/**
- * Access to the queues singleton
- * @return
- */
 auto gear_motor_tasks::get_queues() -> QueueClient& { return queue_client; }

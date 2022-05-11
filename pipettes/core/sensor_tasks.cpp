@@ -73,14 +73,6 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue(
     pressure_sensor_queue->try_write(m);
 }
 
-/**
- * Access to the tasks singleton
- * @return
- */
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
 
-/**
- * Access to the queues singleton
- * @return
- */
 auto sensor_tasks::get_queues() -> QueueClient& { return queue_client; }

@@ -11,6 +11,13 @@
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
+/**
+ * Peripheral Tasks
+ *
+ * These tasks will start the three main peripherals used on the
+ * pipette board -- SPI2, I2C1 and I2C3. None of the tasks in this file
+ * should communicate with CAN tasks directly.
+ */
 namespace peripheral_tasks {
 
 using I2CClient =
@@ -25,7 +32,7 @@ void start_tasks(i2c::hardware::I2CDeviceBase& i2c3_device,
                  spi::hardware::SpiDeviceBase& spi_device);
 
 /**
- * Access to all tasks pipette peripheral tasks. This will be a singleton.
+ * Access to all the pipette peripheral tasks. This will be a singleton.
  */
 struct Tasks {
     i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
@@ -43,7 +50,10 @@ struct Tasks {
 };
 
 /**
- * Access to all the message queues in the system.
+ * Access to all the pipette peripheral task queues.
+ *
+ * Since these tasks do not communicate with the CAN client at all, we
+ * don't need to inherit from it.
  */
 struct QueueClient {
     QueueClient();
@@ -62,25 +72,45 @@ struct QueueClient {
 };
 
 /**
- * Access to the gear motor tasks singleton
+ * Access to the peripheral tasks singleton
  * @return
  */
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
 /**
- * Access to the queues singleton
+ * Access to the peripheral tasks queues singleton
  * @return
  */
 [[nodiscard]] auto get_queues() -> QueueClient&;
 
-auto get_i2c3_writer() -> I2CClient&;
+/**
+ * Access to i2c3 client global defined in the cpp file.
+ * @return
+ */
+auto get_i2c3_client() -> I2CClient&;
 
-auto get_i2c1_writer() -> I2CClient&;
+/**
+ * Access to i2c1 client global defined in the cpp file.
+ * @return
+ */
+auto get_i2c1_client() -> I2CClient&;
 
+/**
+ * Access to i2c1 poller client global defined in the cpp file.
+ * @return
+ */
 auto get_i2c1_poller_client() -> I2CPollerClient&;
 
+/**
+ * Access to i2c3 poller client global defined in the cpp file.
+ * @return
+ */
 auto get_i2c3_poller_client() -> I2CPollerClient&;
 
-auto get_spi_writer() -> SPIClient&;
+/**
+ * Access to spi client global defined in the cpp file.
+ * @return
+ */
+auto get_spi_client() -> SPIClient&;
 
 }  // namespace peripheral_tasks

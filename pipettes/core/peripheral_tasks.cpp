@@ -73,11 +73,11 @@ auto peripheral_tasks::get_tasks() -> Tasks& { return tasks; }
 
 auto peripheral_tasks::get_queues() -> QueueClient& { return queue_client; }
 
-auto peripheral_tasks::get_i2c3_writer() -> peripheral_tasks::I2CClient& {
+auto peripheral_tasks::get_i2c3_client() -> peripheral_tasks::I2CClient& {
     return i2c3_task_client;
 }
 
-auto peripheral_tasks::get_i2c1_writer() -> peripheral_tasks::I2CClient& {
+auto peripheral_tasks::get_i2c1_client() -> peripheral_tasks::I2CClient& {
     return i2c1_task_client;
 }
 
@@ -91,6 +91,6 @@ auto peripheral_tasks::get_i2c3_poller_client()
     return i2c3_poll_client;
 }
 
-auto peripheral_tasks::get_spi_writer() -> peripheral_tasks::SPIClient& {
+auto peripheral_tasks::get_spi_client() -> peripheral_tasks::SPIClient& {
     return spi_task_client;
 }

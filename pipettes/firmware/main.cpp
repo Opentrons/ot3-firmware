@@ -188,8 +188,8 @@ auto main() -> int {
 
     if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  peripheral_tasks::get_i2c3_writer(),
-                                  peripheral_tasks::get_i2c1_writer(),
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   pins_for_sensor_96, id,
                                   eeprom_hardware_iface);
@@ -198,17 +198,17 @@ auto main() -> int {
         initialize_gear_timer(gear_callback);
         linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                         pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_writer(),
+                                        peripheral_tasks::get_spi_client(),
                                         driver_configs, id);
         // todo update with correct motion controller.
         gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                       pipette_motor.motion_controller,
-                                      peripheral_tasks::get_spi_writer(),
+                                      peripheral_tasks::get_spi_client(),
                                       driver_configs, id);
     } else {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  peripheral_tasks::get_i2c3_writer(),
-                                  peripheral_tasks::get_i2c1_writer(),
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c1_client(),
                                   peripheral_tasks::get_i2c1_poller_client(),
                                   pins_for_sensor_lt, id,
                                   eeprom_hardware_iface);
@@ -216,7 +216,7 @@ auto main() -> int {
         initialize_linear_timer(plunger_callback);
         linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                         pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_writer(),
+                                        peripheral_tasks::get_spi_client(),
                                         driver_configs, id);
     }
 

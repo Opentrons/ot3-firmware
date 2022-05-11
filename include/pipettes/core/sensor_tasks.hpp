@@ -12,6 +12,16 @@
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 
+/**
+ * Sensor Tasks
+ *
+ * Handles all tasks that use the i2c clients.
+ *
+ * Capacitive sensor
+ * Pressure sensor
+ * Humidity sensor
+ * Eeprom
+ */
 namespace sensor_tasks {
 
 using CanWriterTask = message_writer_task::MessageWriterTask<
@@ -29,7 +39,7 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
- * Access to all tasks pipette peripheral tasks. This will be a singleton.
+ * Access to all sensor/eeprom tasks. This will be a singleton.
  */
 struct Tasks {
     eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
@@ -46,7 +56,7 @@ struct Tasks {
 };
 
 /**
- * Access to all the message queues in the system.
+ * Access to all sensor/eeprom task queues.
  */
 struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
@@ -70,13 +80,13 @@ struct QueueClient : can_message_writer::MessageWriter {
 };
 
 /**
- * Access to the gear motor tasks singleton
+ * Access to the sensor tasks singleton
  * @return
  */
 [[nodiscard]] auto get_tasks() -> Tasks&;
 
 /**
- * Access to the queues singleton
+ * Access to the sensor queues singleton
  * @return
  */
 [[nodiscard]] auto get_queues() -> QueueClient&;
