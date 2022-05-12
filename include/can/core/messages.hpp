@@ -941,6 +941,6 @@ using ResponseMessageType = std::variant<
     ReadFromSensorResponse, FirmwareUpdateStatusResponse,
     SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
     PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
-    TipActionResponse>;
+    TipActionResponse, PeripheralInfoResponse>;
 
 }  // namespace can_messages
