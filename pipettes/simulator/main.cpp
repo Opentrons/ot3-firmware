@@ -55,14 +55,15 @@ static auto sim_eeprom_hw_interface =
     eeprom::sim_hardware_iface::SimEEPromHardwareIface{};
 static auto sim_eeprom = eeprom::simulator::EEProm{};
 static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
-std::map<uint16_t, sensor_simulator::SensorType> sensor_map = {
+std::map<uint16_t, sensor_simulator::SensorType> sensor_map_i2c1 = {
     {hdcsensor.ADDRESS, hdcsensor},
-    {sim_eeprom.ADDRESS, sim_eeprom},
     {capsensor.ADDRESS, capsensor},
     {pressuresensor.ADDRESS, pressuresensor}};
+std::map<uint16_t, sensor_simulator::SensorType> sensor_map_i2c3 = {
+    {sim_eeprom.ADDRESS, sim_eeprom}};
 
-static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map};
-static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map};
+static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map_i2c3};
+static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};
 
 static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
 
