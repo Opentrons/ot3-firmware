@@ -50,31 +50,28 @@ class BrushedMotorInterruptHandler {
             update_and_start_move();
         }
         if (has_active_move) {
-            if (limit_switch_triggered()) {
+            if (buffered_move.stop_condition ==
+                    MoveStopCondition::limit_switch &&
+                limit_switch_triggered()) {
                 hardware.stop_pwm();
-                if (buffered_move.stop_condition ==
-                    MoveStopCondition::limit_switch) {
-                    homing_stopped();
-                } else {
-                    finish_current_move(AckMessageId::position_error);
+                homing_stopped();
+            } else {
+                tick_count++;
+                if (!should_continue()) {
+                    hardware.stop_pwm();
+                    finish_current_move(
+                        AckMessageId::complete_without_condition);
                 }
-            } else if (check_for_stop()) {
-                finish_current_move(AckMessageId::complete_without_condition);
             }
         }
     }
 
-    bool check_for_stop() {
+    [[nodiscard]] auto should_continue() const -> bool {
         /*
          * TODO: Check encoder position as the condition to stop motor instead
          * of duration.
          */
-        if (tick_count < buffered_move.duration) {
-            tick_count++;
-            return false;
-        } else {
-            return true;
-        }
+        return tick_count < buffered_move.duration;
     }
 
     void update_and_start_move() {
