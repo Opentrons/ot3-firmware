@@ -32,6 +32,8 @@ class EnvironmentSensorMessageHandler {
         -> EnvironmentSensorMessageHandler && = delete;
     ~EnvironmentSensorMessageHandler() = default;
 
+    // TODO(cm): we should move this to the env sensor driver when that's
+    // complete
     void initialize() {
         std::array reg_buf{static_cast<uint8_t>(hdc2080::DEVICE_ID_REGISTER)};
         writer.transact(

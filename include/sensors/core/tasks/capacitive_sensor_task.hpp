@@ -45,6 +45,8 @@ class CapacitiveMessageHandler {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
+    // TODO(cm): we should move this to the capacitive sensor driver class when
+    // that is complete
     void initialize() {
         std::array reg_buf{static_cast<uint8_t>(DEVICE_ID_REGISTER)};
         writer.transact(ADDRESS, reg_buf, 2, own_queue,
