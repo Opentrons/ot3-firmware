@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "system_stm32g4xx.h"
+#include "gripper/firmware/i2c_setup.h"
 // clang-format on
 
 #include "can/core/bit_timings.hpp"
@@ -15,8 +16,10 @@
 #include "common/firmware/utility_gpio.h"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
+#include "i2c/firmware/i2c_comms.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
+
 /**
  * The can bus.
  */
@@ -40,6 +43,25 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 240,
                                  250 * can::bit_timings::KHZ, 883>{};
 
+/**
+ * I2C handles
+ */
+static auto i2c_comms3 = i2c::hardware::I2C();
+static auto i2c_handles = I2CHandlerStruct{};
+
+class EEPromHardwareInterface
+    : public eeprom::hardware_iface::EEPromHardwareIface {
+  public:
+    void set_write_protect(bool enable) final {
+        if (enable) {
+            disable_eeprom_write();
+        } else {
+            enable_eeprom_write();
+        }
+    }
+};
+static auto eeprom_hw_iface = EEPromHardwareInterface();
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -50,6 +72,12 @@ auto main() -> int {
     z_motor_iface::initialize();
     grip_motor_iface::initialize();
 
+    i2c_setup(&i2c_handles);
+    i2c_comms3.set_handle(i2c_handles.i2c3);
+
+    // write protect the eeprom.
+    disable_eeprom_write();
+
     can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
               can_bit_timings.segment_2_quanta,
               can_bit_timings.max_sync_jump_width);
@@ -57,7 +85,8 @@ auto main() -> int {
     gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
                                grip_motor_iface::get_grip_motor(),
                                z_motor_iface::get_spi(),
-                               z_motor_iface::get_tmc2130_driver_configs());
+                               z_motor_iface::get_tmc2130_driver_configs(),
+                               i2c_comms3, eeprom_hw_iface);
 
     iWatchdog.start(6);
 

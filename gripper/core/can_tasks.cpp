@@ -11,6 +11,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/core/version.h"
+#include "eeprom/core/message_handler.hpp"
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/gripper_info.hpp"
 #include "gripper/core/interfaces.hpp"
@@ -46,6 +47,15 @@ static auto system_message_handler = system_handler::SystemMessageHandler{
     std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
+
+/** Handler for eeprom messages.*/
+static auto eeprom_message_handler =
+    eeprom::message_handler::EEPromHandler{main_queues, main_queues};
+static auto eeprom_dispatch_target =
+    can_dispatch::DispatchParseTarget<decltype(eeprom_message_handler),
+                                      can_messages::WriteToEEPromRequest,
+                                      can_messages::ReadFromEEPromRequest>{
+        eeprom_message_handler};
 
 static auto motor_dispatch_target =
     can_task::MotorDispatchTarget{can_motor_handler};
@@ -94,7 +104,8 @@ static auto dispatcher_g = can_dispatch::Dispatcher(
 /** Dispatcher to the various handlers */
 static auto main_dispatcher = can_dispatch::Dispatcher(
     [](auto) -> bool { return true; }, dispatcher_z, dispatcher_g,
-    system_dispatch_target, gripper_info_dispatch_target);
+    system_dispatch_target, gripper_info_dispatch_target,
+    eeprom_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};

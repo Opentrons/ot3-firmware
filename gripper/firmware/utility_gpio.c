@@ -41,6 +41,7 @@ void LED_drive_gpio_init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
+
 void utility_gpio_init(void) {
     limit_switch_gpio_init();
     LED_drive_gpio_init();

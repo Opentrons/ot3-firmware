@@ -50,6 +50,8 @@ target_gripper_core(gripper-simulator)
 
 target_ot_motor_control(gripper-simulator)
 
+target_i2c_simlib(gripper-simulator)
+
 target_link_libraries(gripper-simulator PRIVATE can-core common-simulation freertos-gripper pthread Boost::boost)
 
 set_target_properties(gripper-simulator
