@@ -1,5 +1,7 @@
 #pragma once
 
+#include "eeprom/core/types.hpp"
+
 namespace eeprom {
 namespace message {
 
