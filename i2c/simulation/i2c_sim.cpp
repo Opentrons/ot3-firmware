@@ -12,9 +12,11 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
     last_transmitted = std::vector<uint8_t>(size);
     std::copy_n(data, size, last_transmitted.begin());
     transmit_count++;
-
-    auto &i2c_device = device_map.at(dev_address);
-    return i2c_device.handle_write(data, size);
+    if (!device_map.empty()) {
+        auto &i2c_device = device_map.at(dev_address);
+        return i2c_device.handle_write(data, size);
+    }
+    return true;
 }
 
 auto SimI2C::central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
