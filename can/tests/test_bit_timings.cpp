@@ -7,24 +7,24 @@ using can::bit_timings::MHZ;
 SCENARIO("bit timing properties") {
     WHEN("testing standard G4 properties") {
         auto timings =
-            can::bit_timings::BitTimings<85 * MHZ, 240, 250 * KHZ, 883>{};
-        THEN("the clock divider is 20") {
-            REQUIRE(timings.clock_divider == 20);
+            can::bit_timings::BitTimings<170 * MHZ, 100, 500 * KHZ, 800>{};
+        THEN("the clock divider is 17") {
+            REQUIRE(timings.clock_divider == 17);
         }
-        THEN("the time quantum is 235ns") {
-            REQUIRE(timings.actual_time_quantum == 235);
+        THEN("the time quantum is 100ns") {
+            REQUIRE(timings.actual_time_quantum == 100);
         }
-        THEN("there are 17 time quanta in a bit") {
-            REQUIRE(timings.total_time_quanta == 17);
+        THEN("there are 20 time quanta in a bit for a 200ns bit time") {
+            REQUIRE(timings.total_time_quanta == 20);
         }
-        THEN("the bitrate is 250kbaud") {
-            REQUIRE(timings.actual_bitrate == 250312);
+        THEN("the bitrate is 500kbaud") {
+            REQUIRE(timings.actual_bitrate == 500 * KHZ);
         }
-        THEN("the segment 1 block is 73 quanta") {
-            REQUIRE(timings.segment_1_quanta == 14);
+        THEN("the segment 1 block is 15 quanta") {
+            REQUIRE(timings.segment_1_quanta == 15);
         }
-        THEN("the segment 2 block is 11 quanta") {
-            REQUIRE(timings.segment_2_quanta == 2);
+        THEN("the segment 2 block is 4 quanta") {
+            REQUIRE(timings.segment_2_quanta == 4);
         }
         THEN("the sync jump width is 1 quantum") {
             REQUIRE(timings.max_sync_jump_width == 1);
@@ -40,24 +40,24 @@ SCENARIO("bit timing properties") {
     }
     WHEN("testing standard L5 properties") {
         auto timings =
-            can::bit_timings::BitTimings<110 * MHZ, 455, 275330, 875>{};
-        THEN("the clock divider is 50") {
-            REQUIRE(timings.clock_divider == 50);
+            can::bit_timings::BitTimings<100 * MHZ, 100, 500 * KHZ, 800>{};
+        THEN("the clock divider is 11") {
+            REQUIRE(timings.clock_divider == 10);
         }
-        THEN("the time quantum is 50ns") {
-            REQUIRE(timings.actual_time_quantum == 454);
+        THEN("the time quantum is 100ns") {
+            REQUIRE(timings.actual_time_quantum == 100);
         }
-        THEN("the bitrate is 250kbaud") {
-            REQUIRE(timings.actual_bitrate == 275330);
+        THEN("the bitrate is 500kbaud") {
+            REQUIRE(timings.actual_bitrate == 500 * KHZ);
         }
-        THEN("there are 8 time quanta in a bit") {
-            REQUIRE(timings.total_time_quanta == 8);
+        THEN("there are 20 time quanta in a bit") {
+            REQUIRE(timings.total_time_quanta == 20);
         }
-        THEN("the segment 1 block is 6 quanta") {
-            REQUIRE(timings.segment_1_quanta == 6);
+        THEN("the segment 1 block is 15 quanta") {
+            REQUIRE(timings.segment_1_quanta == 15);
         }
-        THEN("the segment 2 block is 1 quantum") {
-            REQUIRE(timings.segment_2_quanta == 1);
+        THEN("the segment 2 block is 4 quanta") {
+            REQUIRE(timings.segment_2_quanta == 4);
         }
         THEN("the sync jump width is 1 quantum") {
             REQUIRE(timings.max_sync_jump_width == 1);

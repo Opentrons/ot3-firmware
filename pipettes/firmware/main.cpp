@@ -146,19 +146,19 @@ static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
 // to be checked against current configuration. However, they are
-// - clock input is 110MHz assuming the CAN is clocked from sysclk
-// - 455ns requested time quantum yields a 454ns actual
-// - 275.33KHz bitrate
-// - 87.5% sample point
+// - clock input is 100MHz assuming the CAN is clocked from sysclk
+// - 100ns time quantum
+// - 500khz bitrate
+// - 80% sample point
 // Should drive
-// segment 1 = 8 quanta
-// segment 2 = 1 quantum
+// segment 1 = 15 quanta
+// segment 2 = 4 quantum
 
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<110 * can::bit_timings::MHZ, 455, 275330,
-                                 875>{};
+    can::bit_timings::BitTimings<100 * can::bit_timings::MHZ, 100,
+                                 250 * can::bit_timings::KHZ, 800>{};
 
 auto main() -> int {
     HardwareInit();
