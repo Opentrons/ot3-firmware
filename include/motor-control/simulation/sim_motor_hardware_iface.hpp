@@ -27,7 +27,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void reset_encoder_pulses() final { test_pulses = 0; }
     uint32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
-    void clear_encoder_SR() final { return false; }
+    bool clear_encoder_SR() final { return false; }
     bool get_encoder_SR_flag() final {
         if (sr_flag) {
             return true;
