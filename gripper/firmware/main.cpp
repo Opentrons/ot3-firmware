@@ -6,12 +6,18 @@
 #include "system_stm32g4xx.h"
 #include "gripper/firmware/i2c_setup.h"
 // clang-format on
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include "stm32g4xx_hal.h"
+#pragma GCC diagnostic pop
 
 #include "can/core/bit_timings.hpp"
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
+#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "gripper/core/interfaces.hpp"
@@ -23,7 +29,12 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**
  * The can bus.
  */
-static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
+static auto canbus = hal_can_bus::HalCanBus(
+    can_get_device_handle(),
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOC,
+                    .pin = GPIO_PIN_6,
+                    .active_setting = GPIO_PIN_RESET});
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -75,10 +86,7 @@ auto main() -> int {
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
 
-    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
-              can_bit_timings.segment_2_quanta,
-              can_bit_timings.max_sync_jump_width);
-
+    canbus.start(can_bit_timings);
     gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
                                grip_motor_iface::get_grip_motor(),
                                z_motor_iface::get_spi(),

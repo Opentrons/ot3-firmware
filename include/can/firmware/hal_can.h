@@ -7,6 +7,19 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Canbus protocol states
+ */
+typedef enum {
+  HAL_CAN_STATE_ERROR_ACTIVE,
+  HAL_CAN_STATE_ERROR_PASSIVE,
+  HAL_CAN_STATE_BUS_OFF
+} hal_can_state_t;
+
+/**
+ * State indication callback
+ */
+typedef void(*can_state_callback)(void* cb_data, hal_can_state_t new_state);
+/**
  * Receive message callback.
  */
 typedef void(*can_message_callback)(void* cb_data, uint32_t identifier, uint8_t* data, uint8_t length);
@@ -67,6 +80,16 @@ void can_send_message(HAL_CAN_HANDLE handle, uint32_t arbitration_id, uint8_t* b
  */
 void can_add_filter(HAL_CAN_HANDLE handle, uint32_t index, CanFilterType type, CanFilterConfig config,
                     uint32_t val1, uint32_t val2);
+
+/**
+ * Register a callback function to handle a change in the CAN hardware state.
+ *
+ * This is called from an ISR
+ *
+ * @param cb_data a value that will be passed to the callback function.
+ * @param callback a callback function.
+ */
+void can_register_state_callback(void * cb_data, can_state_callback callback);
 
 
 
