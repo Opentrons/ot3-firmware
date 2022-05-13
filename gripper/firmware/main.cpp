@@ -75,9 +75,6 @@ auto main() -> int {
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
 
-    // write protect the eeprom.
-    disable_eeprom_write();
-
     can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
               can_bit_timings.segment_2_quanta,
               can_bit_timings.max_sync_jump_width);

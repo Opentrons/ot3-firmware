@@ -173,9 +173,6 @@ auto main() -> int {
     i2c_comms3.set_handle(i2chandler_struct.i2c3);
     i2c_comms1.set_handle(i2chandler_struct.i2c1);
 
-    // Write protect the eeprom
-    disable_eeprom_write();
-
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }

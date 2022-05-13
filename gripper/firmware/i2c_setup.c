@@ -21,7 +21,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
+        GPIO_InitStruct.Alternate = GPIO_AF8_I2C3;
         HAL_GPIO_Init(
             GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
@@ -69,7 +69,7 @@ void eeprom_write_protect_init(void) {
     /*Configure GPIO pin : C12 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = EEPROM_GPIO_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(EEPROM_GPIO_BANK, &GPIO_InitStruct);
 }
@@ -94,4 +94,7 @@ void i2c_setup(I2CHandlerStruct* i2c_handles) {
     HAL_I2C_HANDLE i2c3 = MX_I2C3_Init();
     i2c_handles->i2c3 = i2c3;
     eeprom_write_protect_init();
+
+    // write protect the eeprom.
+    disable_eeprom_write();
 }
