@@ -40,9 +40,9 @@ SCENARIO("bit timing properties") {
     }
     WHEN("testing standard L5 properties") {
         auto timings =
-            can::bit_timings::BitTimings<110 * MHZ, 100, 500 * KHZ, 800>{};
+            can::bit_timings::BitTimings<100 * MHZ, 100, 500 * KHZ, 800>{};
         THEN("the clock divider is 11") {
-            REQUIRE(timings.clock_divider == 11);
+            REQUIRE(timings.clock_divider == 10);
         }
         THEN("the time quantum is 100ns") {
             REQUIRE(timings.actual_time_quantum == 100);
