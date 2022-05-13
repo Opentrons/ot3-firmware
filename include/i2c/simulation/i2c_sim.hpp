@@ -3,8 +3,8 @@
 #include <map>
 #include <vector>
 
-#include "i2c/core/hardware_iface.hpp"
 #include "device.hpp"
+#include "i2c/core/hardware_iface.hpp"
 
 namespace i2c {
 namespace hardware {
@@ -14,9 +14,8 @@ namespace hardware {
  */
 class SimI2C : public I2CBase {
   public:
-    using DeviceMap = std::map<uint16_t, I2CDeviceBase&>;
-    SimI2C(DeviceMap device_map)
-        : device_map{device_map} {}
+    using DeviceMap = std::map<uint16_t, I2CDeviceBase &>;
+    SimI2C(DeviceMap device_map) : device_map{device_map} {}
     SimI2C() : device_map(DeviceMap{}) {}
     auto central_transmit(uint8_t *data, uint16_t size, uint16_t dev_address,
                           uint32_t timeout) -> bool final;

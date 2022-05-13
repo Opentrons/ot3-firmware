@@ -20,8 +20,8 @@ void signal_handler(int signum) {
 static auto canbus = sim_canbus::SimCANBus(can_transport::create());
 
 static auto sim_eeprom = eeprom::simulator::EEProm{};
-static auto i2c_device_map = i2c::hardware::SimI2C::DeviceMap{
-    {sim_eeprom.get_address(), sim_eeprom}};
+static auto i2c_device_map =
+    i2c::hardware::SimI2C::DeviceMap{{sim_eeprom.get_address(), sim_eeprom}};
 static auto i2c3 = i2c::hardware::SimI2C{i2c_device_map};
 
 static auto eeprom_hw_iface =

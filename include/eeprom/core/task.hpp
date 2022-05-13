@@ -5,12 +5,12 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
+#include "eeprom/core/messages.hpp"
+#include "eeprom/core/types.hpp"
 #include "hardware_iface.hpp"
 #include "i2c/core/messages.hpp"
 #include "i2c/core/transaction.hpp"
 #include "i2c/core/writer.hpp"
-#include "eeprom/core/messages.hpp"
-#include "eeprom/core/types.hpp"
 
 namespace eeprom {
 namespace task {
