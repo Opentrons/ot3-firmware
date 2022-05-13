@@ -10,9 +10,9 @@ namespace i2c {
 namespace hardware {
 
 /**
- * Simulation of eeprom on i2c. Read back whatever was written.
+ * Simulation of i2c bus.
  */
-class SimI2C : public I2CDeviceBase {
+class SimI2C : public I2CBase {
   public:
     using SensorMap = std::map<uint16_t, sensor_simulator::SensorType>;
     SimI2C(SensorMap sensor_map)
