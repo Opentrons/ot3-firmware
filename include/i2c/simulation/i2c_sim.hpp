@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "i2c/core/hardware_iface.hpp"
-#include "sensors/simulation/sensors.hpp"
+#include "device.hpp"
 
 namespace i2c {
 namespace hardware {
@@ -14,13 +14,10 @@ namespace hardware {
  */
 class SimI2C : public I2CBase {
   public:
-    using SensorMap = std::map<uint16_t, sensor_simulator::SensorType>;
-    SimI2C(SensorMap sensor_map)
-        : sensor_map{sensor_map},
-          next_register_map(build_next_register_map(sensor_map)) {}
-    SimI2C()
-        : sensor_map(SensorMap{}),
-          next_register_map(std::map<uint16_t, uint8_t>{}) {}
+    using DeviceMap = std::map<uint16_t, I2CDeviceBase&>;
+    SimI2C(DeviceMap device_map)
+        : device_map{device_map} {}
+    SimI2C() : device_map(DeviceMap{}) {}
     auto central_transmit(uint8_t *data, uint16_t size, uint16_t dev_address,
                           uint32_t timeout) -> bool final;
     auto central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
@@ -32,10 +29,7 @@ class SimI2C : public I2CBase {
     auto set_next_received(const std::vector<uint8_t> &to_receive) -> void;
 
   private:
-    using NextRegisterMap = std::map<uint16_t, uint8_t>;
-    static auto build_next_register_map(const SensorMap &sm) -> NextRegisterMap;
-    SensorMap sensor_map;
-    std::map<uint16_t, uint8_t> next_register_map;
+    DeviceMap device_map;
     std::size_t transmit_count = 0;
     std::size_t receive_count = 0;
     std::vector<uint8_t> last_transmitted{};
