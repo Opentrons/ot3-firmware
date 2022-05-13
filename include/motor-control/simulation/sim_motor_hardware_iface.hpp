@@ -32,7 +32,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         if (sr_flag) {
             return true;
         }
-        return = false;
+        return false;
     }
     bool get_encoder_direction() final { return enc_direction; }
 
