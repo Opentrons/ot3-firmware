@@ -15,7 +15,7 @@ class I2CDeviceBase {
     virtual ~I2CDeviceBase() = default;
 
     /** @brief Handle data transmitted to device. */
-    virtual auto handle_write(uint8_t *data, uint16_t size) -> bool = 0;
+    virtual auto handle_write(const uint8_t *data, uint16_t size) -> bool = 0;
 
     /** @brief Handle request to read from the device. */
     virtual auto handle_read(uint8_t *data, uint16_t size) -> bool = 0;
@@ -42,7 +42,7 @@ class I2CRegisterMap : public I2CDeviceBase {
     explicit I2CRegisterMap(uint16_t address, const BackingMap& reg_map) : I2CDeviceBase(address), register_map{reg_map} {}
     I2CRegisterMap(uint16_t address) : I2CRegisterMap(address, {}) {}
 
-    auto handle_write(uint8_t *data, uint16_t size) -> bool {
+    auto handle_write(const uint8_t *data, uint16_t size) -> bool {
         auto* iter = data;
         // Read the register
         iter = bit_utils::bytes_to_int(iter, data + size, current_register);
