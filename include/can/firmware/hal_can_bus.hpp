@@ -35,7 +35,6 @@ class HalCanBus : public CanBus {
     template <can::bit_timings::BitTimingSpec TimingsT>
     void start(TimingsT timings) {
         if (indicator.port != nullptr) {
-            indicator_timer.update_period(BLINK_HALF_PERIOD_ERROR_ACTIVE_MS);
             indicator_timer.start();
         }
         can_start(timings.clock_divider, timings.segment_1_quanta,
