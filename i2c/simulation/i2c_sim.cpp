@@ -5,6 +5,8 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
+
+
 using namespace i2c::hardware;
 auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
                               uint16_t dev_address, uint32_t) -> bool {
@@ -12,7 +14,7 @@ auto SimI2C::central_transmit(uint8_t *data, uint16_t size,
     std::copy_n(data, size, last_transmitted.begin());
     transmit_count++;
 
-    auto i2c_device = device_map.at(dev_address);
+    auto& i2c_device = device_map.at(dev_address);
     return i2c_device.handle_write(data, size);
 }
 
@@ -21,7 +23,7 @@ auto SimI2C::central_receive(uint8_t *data, uint16_t size, uint16_t dev_address,
                              uint32_t) -> bool {
     auto ret_val = true;
     if (!device_map.empty()) {
-        auto i2c_device = device_map.at(dev_address);
+        auto& i2c_device = device_map.at(dev_address);
         ret_val = i2c_device.handle_read(data, size);
     } else {
         std::copy_n(

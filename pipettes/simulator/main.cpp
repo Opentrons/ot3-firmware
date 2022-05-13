@@ -28,7 +28,6 @@
 #include "sensors/simulation/hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
-#include "sensors/simulation/sensors.hpp"
 #include "spi/simulation/spi.hpp"
 #include "task.h"
 
@@ -55,12 +54,12 @@ static auto sim_eeprom_hw_interface =
     eeprom::sim_hardware_iface::SimEEPromHardwareIface{};
 static auto sim_eeprom = eeprom::simulator::EEProm{};
 static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
-std::map<uint16_t, sensor_simulator::SensorType> sensor_map_i2c1 = {
-    {hdcsensor.ADDRESS, hdcsensor},
-    {capsensor.ADDRESS, capsensor},
-    {pressuresensor.ADDRESS, pressuresensor}};
-std::map<uint16_t, sensor_simulator::SensorType> sensor_map_i2c3 = {
-    {sim_eeprom.ADDRESS, sim_eeprom}};
+i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
+    {hdcsensor.get_address(), hdcsensor},
+    {capsensor.get_address(), capsensor},
+    {pressuresensor.get_address(), pressuresensor}};
+i2c::hardware::SimI2C::DeviceMap sensor_map_i2c3 = {
+    {sim_eeprom.get_address(), sim_eeprom}};
 
 static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map_i2c3};
 static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};

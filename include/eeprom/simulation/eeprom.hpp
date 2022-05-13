@@ -1,17 +1,15 @@
 #pragma once
 
-#include "sensors/simulation/sensors.hpp"
+#include "i2c/simulation/device.hpp"
 
 namespace eeprom {
 namespace simulator {
 
-class EEProm : public sensor_simulator::SensorType {
+using namespace i2c::hardware;
+
+class EEProm : public I2CDeviceBase {
   public:
-    EEProm() {
-        DEVICE_ID = 0x0;
-        ADDRESS = 0xA0;
-        REGISTER_MAP = {{0x0, 0}};
-    }
+    EEProm() : I2CDeviceBase(0xA0) {}
 };
 
 }  // namespace simulator

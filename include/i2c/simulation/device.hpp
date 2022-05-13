@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/core/logging.h"
+#include "common/core/bit_utils.hpp"
 
 namespace i2c {
 namespace hardware {
@@ -10,6 +11,7 @@ namespace hardware {
  */
 class I2CDeviceBase {
   public:
+    explicit I2CDeviceBase(uint16_t address): address{address} {}
     virtual ~I2CDeviceBase() = default;
 
     /** @brief Handle data transmitted to device. */
@@ -17,6 +19,12 @@ class I2CDeviceBase {
 
     /** @brief Handle request to read from the device. */
     virtual auto handle_read(uint8_t *data, uint16_t size) -> bool = 0;
+
+    /** @brief Get the device address. */
+    auto get_address() -> uint16_t {return address;}
+
+  protected:
+    uint16_t address;
 };
 
 
@@ -29,6 +37,11 @@ template<typename RegAddressType, typename ValueType>
 requires std::is_integral_v<ValueType> && std::is_integral_v<RegAddressType>
 class I2CRegisterMap : public I2CDeviceBase {
   public:
+    using BackingMap = std::map<RegAddressType, ValueType>;
+
+    explicit I2CRegisterMap(uint16_t address, const BackingMap& reg_map) : I2CDeviceBase(address), register_map{reg_map} {}
+    I2CRegisterMap(uint16_t address) : I2CRegisterMap(address, {}) {}
+
     auto handle_write(uint8_t *data, uint16_t size) -> bool {
         auto* iter = data;
         // Read the register
@@ -49,14 +62,14 @@ class I2CRegisterMap : public I2CDeviceBase {
 
     virtual auto handle_read(uint8_t *data, uint16_t size) -> bool {
         auto value = register_map.at(current_register);
-        bit_utils::int_to_bytes(value, data, data + size);
+        data = bit_utils::int_to_bytes(value, data, data + size);
 
         LOG("Read %X from register %X.", value, current_register);
         return true;
     }
 
   private:
-    std::map<RegAddressType, ValueType> register_map{};
+    BackingMap register_map;
     RegAddressType current_register{0};
 };
 
