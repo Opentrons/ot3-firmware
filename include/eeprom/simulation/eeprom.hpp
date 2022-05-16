@@ -4,6 +4,7 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
+#include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
 #include "i2c/simulation/device.hpp"
 
@@ -12,7 +13,8 @@ namespace simulator {
 
 using namespace i2c::hardware;
 
-class EEProm : public I2CDeviceBase {
+class EEProm : public I2CDeviceBase,
+               public hardware_iface::EEPromHardwareIface {
   public:
     EEProm() : I2CDeviceBase(types::DEVICE_ADDRESS) { backing.fill(0xFF); }
 
@@ -23,9 +25,14 @@ class EEProm : public I2CDeviceBase {
         auto data_size = size - sizeof(current_address);
 
         if (data_size > 0) {
-            // Let the exception happen. Catch errors!
-            std::copy_n(iter, data_size, backing.begin() + current_address);
-            LOG("Writing %d bytes to address %X", data_size, current_address);
+            if (!write_protected) {
+                // Let the exception happen. Catch errors!
+                std::copy_n(iter, data_size, backing.begin() + current_address);
+                LOG("Writing %d bytes to address %X", data_size,
+                    current_address);
+            } else {
+                LOG("Write protect is enabled. Cannot write.");
+            }
         } else {
             LOG("Updating address to %X", current_address);
         }
@@ -41,9 +48,16 @@ class EEProm : public I2CDeviceBase {
         return true;
     }
 
+    void set_write_protect(bool enabled) final {
+        LOG("Setting write protect enabled to '%s'",
+            enabled ? "enabled" : "disabled");
+        write_protected = enabled;
+    }
+
   private:
     std::array<uint8_t, 256> backing{};
     uint8_t current_address{0};
+    bool write_protected{true};
 };
 
 }  // namespace simulator
