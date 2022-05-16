@@ -11,7 +11,6 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/logging.h"
 #include "eeprom/simulation/eeprom.hpp"
-#include "eeprom/simulation/hardware_iface.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
@@ -50,8 +49,6 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
-static auto sim_eeprom_hw_interface =
-    eeprom::sim_hardware_iface::SimEEPromHardwareIface{};
 static auto sim_eeprom = eeprom::simulator::EEProm{};
 static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
 i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
@@ -118,7 +115,7 @@ int main() {
             peripheral_tasks::get_i2c3_client(),
             peripheral_tasks::get_i2c1_client(),
             peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
-            node_from_env(std::getenv("MOUNT")), sim_eeprom_hw_interface);
+            node_from_env(std::getenv("MOUNT")), sim_eeprom);
 
         linear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
@@ -134,7 +131,7 @@ int main() {
             peripheral_tasks::get_i2c3_client(),
             peripheral_tasks::get_i2c1_client(),
             peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
-            node_from_env(std::getenv("MOUNT")), sim_eeprom_hw_interface);
+            node_from_env(std::getenv("MOUNT")), sim_eeprom);
 
         linear_motor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
