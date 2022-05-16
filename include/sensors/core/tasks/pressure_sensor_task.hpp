@@ -92,6 +92,7 @@ class PressureMessageHandler {
     void visit(const can_messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device info request");
         driver.send_peripheral_response();
+        static_cast<void>(m);
     }
 
     MMR92C04<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
