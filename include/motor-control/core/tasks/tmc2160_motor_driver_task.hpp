@@ -76,7 +76,7 @@ class MotorDriverMessageHandler {
         }
     }
 
-    void handle(const can_messages::SetupRequest& m) {
+    void handle(const can_messages::SetupRequest&) {
         LOG("Received motor setup request");
         driver.write_config();
     }

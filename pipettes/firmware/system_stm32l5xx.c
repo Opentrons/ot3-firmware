@@ -317,15 +317,15 @@ void SystemCoreClockUpdate(void)
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follows :
-  *            System Clock source            = PLL (MSI)
-  *            SYSCLK(Hz)                     = 110000000
-  *            HCLK(Hz)                       = 110000000
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 100000000
+  *            HCLK(Hz)                       = 100000000
   *            AHB Prescaler                  = 1
   *            APB1 Prescaler                 = 1
   *            APB2 Prescaler                 = 1
-  *            MSI Frequency(Hz)              = 4000000
-  *            PLL_M                          = 1
-  *            PLL_N                          = 55
+  *            HSE Frequency(Hz)              = 16000000
+  *            PLL_M                          = 2
+  *            PLL_N                          = 8
   *            PLL_Q                          = 2
   *            PLL_R                          = 2
   *            PLL_P                          = 7

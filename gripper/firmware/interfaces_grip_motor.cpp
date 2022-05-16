@@ -17,12 +17,12 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
     .pwm_1 =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .tim = &htim1,
+            .tim = &htim3,
             .channel = TIM_CHANNEL_1},
     .pwm_2 =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .tim = &htim3,
+            .tim = &htim1,
             .channel = TIM_CHANNEL_1},
     .enable =
         {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)

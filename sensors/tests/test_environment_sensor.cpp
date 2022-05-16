@@ -19,7 +19,7 @@ auto get_message(Queue& q) -> Message {
 
 SCENARIO("read temperature and humidity values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
-    test_mocks::MockMessageQueue<mock_message_writer::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         environment_queue{};
     test_mocks::MockI2CResponseQueue response_queue;
@@ -65,7 +65,7 @@ SCENARIO("read temperature and humidity values") {
                         test_mocks::dummy_response(transact_message, my_buff));
                     sensor.handle_message(response);
 
-                    mock_message_writer::TaskMessage can_msg{};
+                    message_writer_task::TaskMessage can_msg{};
                     can_queue.try_read(&can_msg);
                     auto response_msg =
                         std::get<can_messages::ReadFromSensorResponse>(
@@ -105,7 +105,7 @@ SCENARIO("read temperature and humidity values") {
                         transact_message, response_queue,
                         test_mocks::dummy_response(transact_message, my_buff));
                     sensor.handle_message(response);
-                    mock_message_writer::TaskMessage can_msg{};
+                    message_writer_task::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =

@@ -14,7 +14,7 @@ static I2C_HandleTypeDef hi2c3;
 void eeprom_write_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     if (pipette_type == NINETY_SIX_CHANNEL) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -138,12 +138,26 @@ int data_ready() {
     return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9) == GPIO_PIN_SET;
 }
 
-void enable_eeprom() {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+/**
+ * @brief enable writing to the eeprom.
+ */
+void enable_eeprom_write() {
+    if (get_pipette_type() == NINETY_SIX_CHANNEL) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+    } else {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+    }
 }
 
-void disable_eeprom() {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+/**
+ * @brief disable writing to the eeprom.
+ */
+void disable_eeprom_write() {
+    if (get_pipette_type() == NINETY_SIX_CHANNEL) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+    } else {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+    }
 }
 
 void i2c_setup(I2CHandlerStruct* temp_struct) {
@@ -152,4 +166,7 @@ void i2c_setup(I2CHandlerStruct* temp_struct) {
     eeprom_write_gpio_init();
     HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
     temp_struct->i2c1 = i2c1;
+
+    // Write protect the eeprom
+    disable_eeprom_write();
 }

@@ -7,7 +7,9 @@ include(AddBuildAndTestTarget)
 add_executable(
         eeprom
         test_main.cpp
+        test_message_handler.cpp
         test_eeprom_task.cpp
+        test_hardware_iface.cpp
 )
 
 target_include_directories(eeprom PUBLIC ${CMAKE_SOURCE_DIR}/include)
