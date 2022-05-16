@@ -900,7 +900,8 @@ struct TipActionResponse
     auto operator==(const TipActionResponse& other) const -> bool = default;
 };
 
-struct PeripheralStatusRequest : BaseMessage<MessageId::peripheral_status_request> {
+struct PeripheralStatusRequest
+    : BaseMessage<MessageId::peripheral_status_request> {
     can_ids::SensorType sensor;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -910,7 +911,8 @@ struct PeripheralStatusRequest : BaseMessage<MessageId::peripheral_status_reques
         return PeripheralStatusRequest{
             .sensor = static_cast<can_ids::SensorType>(_sensor)};
     }
-    auto operator==(const PeripheralStatusRequest& other) const -> bool = default;
+    auto operator==(const PeripheralStatusRequest& other) const
+        -> bool = default;
 };
 
 struct PeripheralStatusResponse
