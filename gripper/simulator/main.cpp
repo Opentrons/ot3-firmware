@@ -23,7 +23,6 @@ static auto i2c_device_map =
     i2c::hardware::SimI2C::DeviceMap{{sim_eeprom.get_address(), sim_eeprom}};
 static auto i2c3 = i2c::hardware::SimI2C{i2c_device_map};
 
-
 int main() {
     signal(SIGINT, signal_handler);
 

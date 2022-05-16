@@ -4,8 +4,8 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
-#include "eeprom/core/types.hpp"
 #include "eeprom/core/hardware_iface.hpp"
+#include "eeprom/core/types.hpp"
 #include "i2c/simulation/device.hpp"
 
 namespace eeprom {
@@ -13,7 +13,8 @@ namespace simulator {
 
 using namespace i2c::hardware;
 
-class EEProm : public I2CDeviceBase, public hardware_iface::EEPromHardwareIface {
+class EEProm : public I2CDeviceBase,
+               public hardware_iface::EEPromHardwareIface {
   public:
     EEProm() : I2CDeviceBase(types::DEVICE_ADDRESS) { backing.fill(0xFF); }
 
@@ -48,7 +49,8 @@ class EEProm : public I2CDeviceBase, public hardware_iface::EEPromHardwareIface 
     }
 
     void set_write_protect(bool enabled) final {
-        LOG("Setting write protect enabled to '%s'", enabled ? "enabled" : "disabled");
+        LOG("Setting write protect enabled to '%s'",
+            enabled ? "enabled" : "disabled");
         write_protected = enabled;
     }
 
