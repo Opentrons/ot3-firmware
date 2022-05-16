@@ -33,15 +33,15 @@ static auto spi_task_client =
 static auto spi_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
-void peripheral_tasks::start_tasks(i2c::hardware::I2CDeviceBase& i2c3_device,
-                                   i2c::hardware::I2CDeviceBase& i2c1_device,
+void peripheral_tasks::start_tasks(i2c::hardware::I2CBase& i2c3_interface,
+                                   i2c::hardware::I2CBase& i2c1_interface,
                                    spi::hardware::SpiDeviceBase& spi_device) {
     auto& queues = peripheral_tasks::get_queues();
     auto& tasks = peripheral_tasks::get_tasks();
 
-    auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3_device);
+    auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3_interface);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
-    auto& i2c1_task = i2c1_task_builder.start(5, "i2c1", i2c1_device);
+    auto& i2c1_task = i2c1_task_builder.start(5, "i2c1", i2c1_interface);
     i2c1_task_client.set_queue(&i2c1_task.get_queue());
 
     auto& i2c3_poller_task =

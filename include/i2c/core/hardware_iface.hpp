@@ -6,16 +6,16 @@ namespace i2c {
 
 namespace hardware {
 /**
- * Abstract i2c device.
+ * Abstract i2c interfacew.
  */
-class I2CDeviceBase {
+class I2CBase {
   public:
-    I2CDeviceBase() = default;
-    virtual ~I2CDeviceBase() = default;
-    I2CDeviceBase(const I2CDeviceBase&) = default;
-    auto operator=(const I2CDeviceBase&) -> I2CDeviceBase& = default;
-    I2CDeviceBase(I2CDeviceBase&&) = default;
-    auto operator=(I2CDeviceBase&&) -> I2CDeviceBase& = default;
+    I2CBase() = default;
+    virtual ~I2CBase() = default;
+    I2CBase(const I2CBase&) = default;
+    auto operator=(const I2CBase&) -> I2CBase& = default;
+    I2CBase(I2CBase&&) = default;
+    auto operator=(I2CBase&&) -> I2CBase& = default;
 
     /**
      * Abstract transmit function

@@ -5,12 +5,12 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/message_utils.hpp"
+#include "eeprom/core/messages.hpp"
+#include "eeprom/core/types.hpp"
 #include "hardware_iface.hpp"
 #include "i2c/core/messages.hpp"
 #include "i2c/core/transaction.hpp"
 #include "i2c/core/writer.hpp"
-#include "messages.hpp"
-#include "types.hpp"
 
 namespace eeprom {
 namespace task {
@@ -35,7 +35,6 @@ class EEPromMessageHandler {
         -> EEPromMessageHandler && = delete;
     ~EEPromMessageHandler() = default;
 
-    static constexpr uint16_t DEVICE_ADDRESS = 0xA0;
     static constexpr auto WRITE_TOKEN = static_cast<uint32_t>(-1);
     static constexpr auto MAX_INFLIGHT_READS = 10;
 
@@ -99,7 +98,7 @@ class EEPromMessageHandler {
 
         // A write transaction.
         auto transaction = i2c::messages::Transaction{
-            .address = DEVICE_ADDRESS,
+            .address = types::DEVICE_ADDRESS,
             .bytes_to_read = 0,
             .bytes_to_write = static_cast<std::size_t>(iter - buffer.begin()),
             .write_buffer = buffer};
@@ -136,7 +135,7 @@ class EEPromMessageHandler {
         // The transaction will write the memory address, then read the
         // data.
         auto transaction =
-            i2c::messages::Transaction{.address = DEVICE_ADDRESS,
+            i2c::messages::Transaction{.address = types::DEVICE_ADDRESS,
                                        .bytes_to_read = m.length,
                                        .bytes_to_write = 1,
                                        .write_buffer{m.memory_address}};
