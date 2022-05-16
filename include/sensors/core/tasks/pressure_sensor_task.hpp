@@ -89,7 +89,7 @@ class PressureMessageHandler {
         static_cast<void>(m);
     }
 
-    void visit(const can_messages::PeripheralInfoRequest &m) {
+    void visit(const can_messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device info request");
         driver.send_peripheral_response();
     }

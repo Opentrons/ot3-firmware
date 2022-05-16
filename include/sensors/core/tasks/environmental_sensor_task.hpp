@@ -122,11 +122,11 @@ class EnvironmentSensorMessageHandler {
         LOG("Received non-supported BindSensorOutputRequest");
     }
 
-    void visit(const can_messages::PeripheralInfoRequest &m) {
+    void visit(const can_messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device status request");
         can_client.send_can_message(
             can_ids::NodeId::host,
-            can_messages::PeripheralInfoResponse{
+            can_messages::PeripheralStatusResponse{
                 .sensor = m.sensor,
                 .status = static_cast<uint8_t>(is_initialized)});
     }
