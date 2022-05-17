@@ -39,4 +39,25 @@ SCENARIO("Writing serial number") {
             }
         }
     }
+
+    GIVEN("A request to read the serial number") {
+        WHEN("reading the serial number") {
+            subject.start_read();
+
+            THEN("there are two eeprom reads") {
+                REQUIRE(queue_client.messages.size() == 2);
+
+                auto write_message = std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+                REQUIRE(write_message.memory_address==0);
+                REQUIRE(write_message.length==8);
+                REQUIRE(write_message.callback_param == &subject);
+
+                write_message = std::get<message::ReadEepromMessage>(queue_client.messages[1]);
+                REQUIRE(write_message.memory_address==8);
+                REQUIRE(write_message.length==4);
+                REQUIRE(write_message.callback_param == &subject);
+            }
+        }
+    }
+
 }

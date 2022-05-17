@@ -5,8 +5,8 @@
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
-#include "gripper/core/gripper_info.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
 
 namespace can_bus {
