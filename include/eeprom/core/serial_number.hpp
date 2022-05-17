@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <concepts>
 #include <cstdint>
 
 #include "task.hpp"
@@ -13,11 +14,27 @@ constexpr auto SERIAL_NUMBER_LENGTH = 12;
 
 using SerialNumberType = std::array<uint8_t, SERIAL_NUMBER_LENGTH>;
 
-template <task::TaskClient EEPromTaskClient>
+/**
+ * Concept describing an object that listens for read serial numbers.
+ * @tparam Listener
+ */
+template <typename Listener>
+concept ReadListener = requires(Listener listener, const SerialNumberType& sn) {
+    {listener.on_read(sn)};
+};
+
+
+/**
+ * Class that reads and writes serial numbers.
+ * @tparam EEPromTaskClient client of eeprom task
+ * @tparam Listener listener for read serial numbers.
+ */
+template <task::TaskClient EEPromTaskClient, ReadListener Listener>
 class SerialNumberAccessor {
   public:
-    explicit SerialNumberAccessor(EEPromTaskClient& eeprom_client)
-        : eeprom_client{eeprom_client} {}
+    explicit SerialNumberAccessor(EEPromTaskClient& eeprom_client,
+                                  Listener& listener)
+        : eeprom_client{eeprom_client}, read_listener{listener} {}
 
     /**
      * Begin a read of the serial number.
@@ -62,6 +79,7 @@ class SerialNumberAccessor {
     static void callback(const eeprom::message::EepromMessage&, void*) {}
     EEPromTaskClient& eeprom_client;
     SerialNumberType serial_number{};
+    Listener& read_listener;
 };
 
 }  // namespace serial_number

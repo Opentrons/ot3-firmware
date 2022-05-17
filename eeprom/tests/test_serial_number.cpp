@@ -13,10 +13,16 @@ struct MockEEPromTaskClient {
 };
 
 
+struct MockListener {
+    void on_read(const serial_number::SerialNumberType&) {}
+};
+
+
 SCENARIO("Writing serial number") {
     auto queue_client =MockEEPromTaskClient{};
+    auto read_listener = MockListener{};
     auto subject =
-        serial_number::SerialNumberAccessor{queue_client};
+        serial_number::SerialNumberAccessor{queue_client, read_listener};
 
     GIVEN("A serial number to write") {
         auto data = serial_number::SerialNumberType{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
