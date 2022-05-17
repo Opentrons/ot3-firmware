@@ -15,7 +15,7 @@ static auto spi_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto spi_task_builder =
-    freertos_task::TaskStarter<512, spi::tasks::Task>{};
+    freertos_task::TaskStarter<1048, spi::tasks::Task>{};
 
 static auto mc_task_builder =
     freertos_task::TaskStarter<512,
@@ -56,6 +56,7 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     z_queues.move_group_queue = &move_group.get_queue();
     z_queues.move_status_report_queue = &move_status_reporter.get_queue();
     z_queues.spi_queue = &spi_task.get_queue();
+    spi_task_client.set_queue(&spi_task.get_queue());
 }
 
 z_tasks::QueueClient::QueueClient()
