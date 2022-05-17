@@ -97,7 +97,7 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto driver_configs = interfaces::driver_config_by_axis(PIPETTE_TYPE);
+static auto driver_configs = interfaces::driver_config(PIPETTE_TYPE);
 
 int main() {
     signal(SIGINT, signal_handler);
@@ -117,14 +117,16 @@ int main() {
             peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
             node_from_env(std::getenv("MOUNT")), sim_eeprom);
 
-        linear_motor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
-            driver_configs, node_from_env(std::getenv("MOUNT")));
-        gear_motor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
-            driver_configs, node_from_env(std::getenv("MOUNT")));
+        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                        pipette_motor.motion_controller,
+                                        peripheral_tasks::get_spi_client(),
+                                        driver_configs.high_throughput_motor,
+                                        node_from_env(std::getenv("MOUNT")));
+        gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                      pipette_motor.motion_controller,
+                                      peripheral_tasks::get_spi_client(),
+                                      driver_configs.right_gear_motor,
+                                      node_from_env(std::getenv("MOUNT")));
     } else {
         sensor_tasks::start_tasks(
             *central_tasks::get_tasks().can_writer,
@@ -133,10 +135,11 @@ int main() {
             peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
             node_from_env(std::getenv("MOUNT")), sim_eeprom);
 
-        linear_motor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
-            driver_configs, node_from_env(std::getenv("MOUNT")));
+        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                        pipette_motor.motion_controller,
+                                        peripheral_tasks::get_spi_client(),
+                                        driver_configs.low_throughput_motor,
+                                        node_from_env(std::getenv("MOUNT")));
     }
 
     vTaskStartScheduler();

@@ -78,35 +78,10 @@ class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
 };
 static auto eeprom_hardware_iface = EEPromHardwareIface();
 
-struct motion_controller::HardwareConfig plunger_pins {
-    .direction =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_3,
-            .active_setting = GPIO_PIN_SET},
-    .step =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_SET},
-    .enable =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_SET},
-    .limit_switch =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_2,
-            .active_setting = GPIO_PIN_SET},
-    .led = {},
-};
+static auto hw_config = interfaces::hardware_config(PIPETTE_TYPE);
 
-static motor_hardware::MotorHardware plunger_hw(plunger_pins, &htim7, &htim2);
+static motor_hardware::MotorHardware plunger_hw(hw_config.low_throughput_motor,
+                                                &htim7, &htim2);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
 
@@ -124,7 +99,7 @@ static motor_class::Motor pipette_motor{
                                       .max_acceleration = 2},
     motor_queue};
 
-static auto driver_configs = interfaces::driver_config_by_axis(PIPETTE_TYPE);
+static auto driver_configs = interfaces::driver_config(PIPETTE_TYPE);
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
@@ -195,15 +170,15 @@ auto main() -> int {
 
         initialize_linear_timer(plunger_callback);
         initialize_gear_timer(gear_callback);
-        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                        pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_client(),
-                                        driver_configs, id);
+        linear_motor_tasks::start_tasks(
+            *central_tasks::get_tasks().can_writer,
+            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
+            driver_configs.high_throughput_motor, id);
         // todo update with correct motion controller.
         gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                       pipette_motor.motion_controller,
                                       peripheral_tasks::get_spi_client(),
-                                      driver_configs, id);
+                                      driver_configs.right_gear_motor, id);
     } else {
         sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                   peripheral_tasks::get_i2c3_client(),
@@ -213,10 +188,10 @@ auto main() -> int {
                                   eeprom_hardware_iface);
 
         initialize_linear_timer(plunger_callback);
-        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                        pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_client(),
-                                        driver_configs, id);
+        linear_motor_tasks::start_tasks(
+            *central_tasks::get_tasks().can_writer,
+            pipette_motor.motion_controller, peripheral_tasks::get_spi_client(),
+            driver_configs.low_throughput_motor, id);
     }
 
     iWatchdog.start(6);
