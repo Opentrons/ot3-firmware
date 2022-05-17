@@ -6,13 +6,12 @@
 
 #include "task.hpp"
 #include "types.hpp"
+#include "addresses.hpp"
 
 namespace eeprom {
 namespace serial_number {
 
-constexpr auto SERIAL_NUMBER_LENGTH = 12;
-
-using SerialNumberType = std::array<uint8_t, SERIAL_NUMBER_LENGTH>;
+using SerialNumberType = std::array<uint8_t, addresses::serial_number_length>;
 
 /**
  * Concept describing an object that listens for read serial numbers.
@@ -43,10 +42,10 @@ class SerialNumberAccessor {
         // The serial number might be larger than the amount that can be read
         // one shot. Create the number of reads required to read the full serial
         // number.
-        for (types::address i = 0; i < SERIAL_NUMBER_LENGTH;
+        for (types::address i = addresses::serial_number_address_begin; i < addresses::serial_number_address_end;
              i += types::max_data_length) {
             auto amount_to_read =
-                std::min(static_cast<types::address>(SERIAL_NUMBER_LENGTH - i),
+                std::min(static_cast<types::address>(addresses::serial_number_length - i),
                          types::max_data_length);
             eeprom_client.send_eeprom_queue(
                 eeprom::message::ReadEepromMessage{.memory_address = i,
@@ -63,7 +62,7 @@ class SerialNumberAccessor {
         // The serial number might be larger than the amount that can be written
         // one shot. Create the number of writes messages required to
         // write the full serial number.
-        for (types::address i = 0; i < sn.size(); i += types::max_data_length) {
+        for (types::address i = addresses::serial_number_address_begin; i < addresses::serial_number_address_end; i += types::max_data_length) {
             auto amount_to_write =
                 std::min(static_cast<types::address>(sn.size() - i),
                          types::max_data_length);
@@ -76,10 +75,30 @@ class SerialNumberAccessor {
     }
 
   private:
-    static void callback(const eeprom::message::EepromMessage&, void*) {}
+
+    /**
+     * Handle a completed read.
+     * @param msg The message
+     */
+    void callback(const eeprom::message::EepromMessage& msg) {
+        std::copy_n(msg.data.cbegin(), msg.length, serial_number.begin() + msg.memory_address);
+        read_listener.on_read(serial_number);
+    }
+
+    /**
+     * Handle a completed read.
+     * @param msg The message
+     * @param param This pointer.
+     */
+    static void callback(const eeprom::message::EepromMessage& msg, void* param) {
+        auto* self = reinterpret_cast<SerialNumberAccessor<EEPromTaskClient, Listener>*>(param);
+        self->callback(msg);
+    }
+
     EEPromTaskClient& eeprom_client;
     SerialNumberType serial_number{};
     Listener& read_listener;
+
 };
 
 }  // namespace serial_number
