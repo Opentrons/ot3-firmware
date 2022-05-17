@@ -10,6 +10,7 @@ bool BrushedMotorDriver::stop_digital_analog_converter() {
     return motor_hardware_stop_dac(dac.dac_handle, dac.channel);
 }
 bool BrushedMotorDriver::set_reference_voltage(float val) {
+    conf.vref = val;
     auto vref_val =
         static_cast<uint32_t>(val * DAC_DATA_MULTIPLIER / VOLTAGE_REFERENCE);
     return motor_hardware_set_dac_value(dac.dac_handle, dac.channel,
