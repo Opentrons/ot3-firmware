@@ -1,6 +1,7 @@
 #include <array>
 
 #include<variant>
+#include<algorithm>
 
 /*
  * A generic pool allocator class that can be used to statically allocate memory
@@ -60,8 +61,9 @@ class PoolAllocator {
     }
 
     pointer allocate(size_t, const void * = 0) {
-        return nullptr;
-
+        auto iter = std::find_if(backing_flag.begin(), backing_flag.end(), [](auto&i) {return !i;});
+        *iter = true;
+        return &backing[iter - backing_flag.begin()];
     }
 
     void reset() {
@@ -79,8 +81,10 @@ class PoolAllocator {
 //    void * start_ptr = nullptr;
 
     using ElementType = std::variant<std::monostate, Element>;
-    using MemoryType = std::array<ElementType, MaxElements>;
+    using MemoryType = std::array<Element, MaxElements>;
+    using FlagMemoryType = std::array<bool, MaxElements>;
     MemoryType backing{};
+    FlagMemoryType backing_flag{};
 };
 
 

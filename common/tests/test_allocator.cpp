@@ -9,8 +9,17 @@ TEST_CASE("Ordered Map Object") {
     std::map<std::string, int, std::less<std::string>, PoolAllocator<std::pair<const std::string, int>, max_entries>> subject{};
     GIVEN("an entry added to the map") {
         subject["a"] = 12;
+        subject["b"] = 2;
         THEN("it should be in the map") {
             REQUIRE( subject["a"] == 12);
+            REQUIRE( subject["b"] == 2);
+
+        }
+        THEN("we should be able to remove an element") {
+            subject.erase("a");
+            REQUIRE(subject.size() == 1);
+            REQUIRE(!subject.contains("a"));
+            REQUIRE(subject.contains("b"));
         }
     }
 }
