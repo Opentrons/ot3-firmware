@@ -182,9 +182,7 @@ auto interfaces::hardware_config_by_axis(PipetteAxisType which)
                 .limit_switch = {.port = GPIOC,
                                  .pin = GPIO_PIN_2,
                                  .active_setting = GPIO_PIN_SET},
-                .led = {.port = GPIOA,
-                        .pin = GPIO_PIN_8,
-                        .active_setting = GPIO_PIN_RESET},
+                .led = {},
             };
     }
 }
