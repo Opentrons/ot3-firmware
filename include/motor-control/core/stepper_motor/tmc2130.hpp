@@ -13,7 +13,6 @@
 #include <concepts>
 #include <cstdint>
 
-#include "motor-control/core/stepper_motor/utils.hpp"
 #include "spi/core/utils.hpp"
 
 namespace tmc2130 {
@@ -474,7 +473,7 @@ struct TMC2130MotorCurrentConfig {
     float v_sf;
 };
 
-struct TMC2130DriverConfig : public driver_utils::DriverConfigType {
+struct TMC2130DriverConfig {
     registers::TMC2130RegisterMap registers{};
     TMC2130MotorCurrentConfig current_config{};
     spi::utils::ChipSelectInterface chip_select{};

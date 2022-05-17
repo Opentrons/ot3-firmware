@@ -2,7 +2,6 @@
 
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
-#include "motor-control/core/stepper_motor/utils.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/pipette_type.h"
 
@@ -32,8 +31,10 @@ struct PipetteMotorHardware {
     motor_hardware::HardwareConfig high_throughput_motor;
 };
 
-auto driver_config_by_axis(PipetteAxisType which)
-    -> driver_utils::DriverConfigType;
+auto tmc2130_driver_config_by_axis(PipetteAxisType which)
+    -> tmc2130::configs::TMC2130DriverConfig;
+
+auto tmc2160_driver_config_by_axis() -> tmc2160::configs::TMC2160DriverConfig;
 
 auto hardware_config_by_axis(PipetteAxisType which)
     -> motor_hardware::HardwareConfig;
