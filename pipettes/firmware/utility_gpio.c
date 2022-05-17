@@ -22,6 +22,7 @@ void tip_sense_gpio_init() {
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+        __HAL_RCC_GPIOH_CLK_ENABLE();
         /*Configure GPIO pin : PH1, front tip sense */
         GPIO_InitStruct.Pin = GPIO_PIN_1;
         HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
@@ -52,7 +53,6 @@ void limit_switch_gpio_init() {
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     if (pipette_type == NINETY_SIX_CHANNEL) {
-        // Enable Gear sense switches
         /*
          * Right gear -> PC14
          * Left gear -> PA10
