@@ -97,8 +97,10 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto lt_driver_configs = interfaces::driver_config<PipetteType::SINGLE_CHANNEL>();
-static auto ht_driver_configs = interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>();
+static auto lt_driver_configs =
+    interfaces::driver_config<PipetteType::SINGLE_CHANNEL>();
+static auto ht_driver_configs =
+    interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>();
 
 int main() {
     signal(SIGINT, signal_handler);

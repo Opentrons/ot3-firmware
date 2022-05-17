@@ -4,25 +4,25 @@ int dummy_gpio = 0x1000;
 #define GPIO_C_DEF ((void *)(&dummy_gpio))
 
 auto interfaces::driver_config_by_axis(TMC2160PipetteAxis which)
--> tmc2160::configs::TMC2160DriverConfig {
+    -> tmc2160::configs::TMC2160DriverConfig {
     switch (which) {
         case TMC2160PipetteAxis::linear_motor:
         default:
             return tmc2160::configs::TMC2160DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
-                    .ihold_irun = {.hold_current = 0x2,
-                        .run_current = 0x10,
-                        .hold_current_delay = 0x7},
-                    .tpowerdown = {},
-                    .tcoolthrs = {.threshold = 0},
-                    .thigh = {.threshold = 0xFFFFF},
-                    .chopconf = {.toff = 0x5,
-                        .hstrt = 0x5,
-                        .hend = 0x3,
-                        .tbl = 0x2,
-                        .mres = 0x3},
-                    .coolconf = {.sgt = 0x6},
-                    .glob_scale = {.global_scaler = 0x70}},
+                              .ihold_irun = {.hold_current = 0x2,
+                                             .run_current = 0x10,
+                                             .hold_current_delay = 0x7},
+                              .tpowerdown = {},
+                              .tcoolthrs = {.threshold = 0},
+                              .thigh = {.threshold = 0xFFFFF},
+                              .chopconf = {.toff = 0x5,
+                                           .hstrt = 0x5,
+                                           .hend = 0x3,
+                                           .tbl = 0x2,
+                                           .mres = 0x3},
+                              .coolconf = {.sgt = 0x6},
+                              .glob_scale = {.global_scaler = 0x70}},
                 .current_config =
                     {
                         .r_sense = 0.1,
@@ -36,21 +36,21 @@ auto interfaces::driver_config_by_axis(TMC2160PipetteAxis which)
 }
 
 auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
--> tmc2130::configs::TMC2130DriverConfig {
+    -> tmc2130::configs::TMC2130DriverConfig {
     tmc2130::configs::TMC2130DriverConfig tmc2130_conf{
         .registers = {.gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x2,
-                .run_current = 0x10,
-                .hold_current_delay = 0x7},
-            .tpowerdown = {},
-            .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0xFFFFF},
-            .chopconf = {.toff = 0x5,
-                .hstrt = 0x5,
-                .hend = 0x3,
-                .tbl = 0x2,
-                .mres = 0x3},
-            .coolconf = {.sgt = 0x6}},
+                      .ihold_irun = {.hold_current = 0x2,
+                                     .run_current = 0x10,
+                                     .hold_current_delay = 0x7},
+                      .tpowerdown = {},
+                      .tcoolthrs = {.threshold = 0},
+                      .thigh = {.threshold = 0xFFFFF},
+                      .chopconf = {.toff = 0x5,
+                                   .hstrt = 0x5,
+                                   .hend = 0x3,
+                                   .tbl = 0x2,
+                                   .mres = 0x3},
+                      .coolconf = {.sgt = 0x6}},
         .current_config =
             {
                 .r_sense = 0.1,
@@ -81,20 +81,20 @@ auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
 
 template <>
 auto interfaces::driver_config<PipetteType::SINGLE_CHANNEL>()
--> interfaces::LowThroughputPipetteDriverHardware {
+    -> interfaces::LowThroughputPipetteDriverHardware {
     return interfaces::LowThroughputPipetteDriverHardware{
         .linear_motor =
-        driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
+            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
 }
 
 template <>
 auto interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>()
--> interfaces::HighThroughputPipetteDriverHardware {
+    -> interfaces::HighThroughputPipetteDriverHardware {
     return interfaces::HighThroughputPipetteDriverHardware{
         .right_gear_motor =
-        driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
+            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
         .left_gear_motor =
-        driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
+            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
         .linear_motor =
-        driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
+            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
 }
