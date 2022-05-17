@@ -97,7 +97,8 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto driver_configs = interfaces::driver_config(PIPETTE_TYPE);
+static auto lt_driver_configs = interfaces::driver_config<PipetteType::SINGLE_CHANNEL>();
+static auto ht_driver_configs = interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>();
 
 int main() {
     signal(SIGINT, signal_handler);
@@ -120,12 +121,12 @@ int main() {
         linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                         pipette_motor.motion_controller,
                                         peripheral_tasks::get_spi_client(),
-                                        driver_configs.high_throughput_motor,
+                                        ht_driver_configs.linear_motor,
                                         node_from_env(std::getenv("MOUNT")));
         gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                       pipette_motor.motion_controller,
                                       peripheral_tasks::get_spi_client(),
-                                      driver_configs.right_gear_motor,
+                                      ht_driver_configs.right_gear_motor,
                                       node_from_env(std::getenv("MOUNT")));
     } else {
         sensor_tasks::start_tasks(
@@ -138,7 +139,7 @@ int main() {
         linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                                         pipette_motor.motion_controller,
                                         peripheral_tasks::get_spi_client(),
-                                        driver_configs.low_throughput_motor,
+                                        lt_driver_configs.linear_motor,
                                         node_from_env(std::getenv("MOUNT")));
     }
 
