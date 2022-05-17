@@ -222,8 +222,13 @@ class MotorInterruptHandler {
     }
 
     auto get_encoder_pulses() {
-        if (get_encoder_overflow_status() == true) {
-            hardware.clear_encoder_SR();
+              /* This function fixes the overflow issue for each motor.
+        Check whether the UIEF interrupt bit in the Status register gets
+        triggered. If it gets triggered we save the previous state of the
+        triggered flag and clear the status register interrupt bit.
+        */
+        if (hardware.get_encoder_SR_flag() == true) {
+            hardware.clear_encoder_SR;
             if (enc_overflow_future_flag) {
                 enc_position_tracker = hardware.get_encoder_pulses();
                 enc_overflow_future_flag = false;
@@ -236,20 +241,9 @@ class MotorInterruptHandler {
             enc_position_tracker = hardware.get_encoder_pulses();
         }
         return enc_position_tracker;
-        /* This function fixes the overflow issue for each motor.
-        Check whether the UIEF interrupt bit in the Status register gets
-        triggered. If it gets triggered we save the previous state of the
-        triggered flag and clear the status register interrupt bit.
-        */
     }
 
     void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
-
-    void clear_encoder_overflow_flag() { hardware.clear_encoder_SR(); }
-
-    auto get_encoder_overflow_status() -> bool {
-        return hardware.get_encoder_SR_flag();
-    }
 
     void reset() {
         /*

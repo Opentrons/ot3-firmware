@@ -11,6 +11,6 @@ TEST_CASE("Linear motion system using a belt") {
         };
         REQUIRE(linearConfig.get_steps_per_mm() == 160.40813f);
         REQUIRE(linearConfig.get_encoder_pulses_per_mm() ==
-                100.25508f);  // 25.063770566
+                100.25508f);
     }
 }
