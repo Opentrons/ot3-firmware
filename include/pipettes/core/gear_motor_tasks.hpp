@@ -5,7 +5,9 @@
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
-#include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "pipettes/core/tasks/motion_controller_task.hpp"
+#include "pipettes/core/tasks/move_group_task.hpp"
+#include "pipettes/core/tasks/gear_move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/writer.hpp"
 
@@ -25,7 +27,7 @@ using SPIWriterClient =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
 void start_tasks(CanWriterTask& can_writer,
-                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                 pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>&
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2130::configs::TMC2130DriverConfig& gear_driver_configs,
@@ -38,9 +40,15 @@ struct Tasks {
     tmc2130::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* driver{nullptr};
 
-    motion_controller_task::MotionControllerTask<
+    pipettes::tasks::motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
+
+    pipettes::tasks::gear_move_status::MoveStatusReporterTask<
+    freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
+        nullptr};
+    pipettes::tasks::move_group_task::MoveGroupTask<
+    freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
 };
 
 /**
@@ -50,15 +58,26 @@ struct QueueClient : can_message_writer::MessageWriter {
     QueueClient();
 
     void send_motion_controller_queue(
-        const motion_controller_task::TaskMessage& m);
+        const pipettes::tasks::motion_controller_task::TaskMessage& m);
 
     void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
 
-    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
-        driver_queue{nullptr};
+    void send_move_group_queue(const pipettes::tasks::move_group_task::TaskMessage& m);
+
+    void send_move_status_reporter_queue(
+        const pipettes::tasks::gear_move_status::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<
-        motion_controller_task::TaskMessage>* motion_queue{nullptr};
+        pipettes::tasks::motion_controller_task::TaskMessage>* motion_queue{nullptr};
+
+    freertos_message_queue::FreeRTOSMessageQueue<
+        pipettes::tasks::move_group_task::TaskMessage>* move_group_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        pipettes::tasks::gear_move_status::TaskMessage>* move_status_report_queue{
+        nullptr};
+
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+        driver_queue{nullptr};
 };
 
 /**

@@ -58,7 +58,6 @@ class MotionController {
                  .seq_id = can_msg.seq_id,
                  .stop_condition = static_cast<MoveStopCondition>(
                      can_msg.request_stop_condition)};
-
         queue.try_write(msg);
     }
 
@@ -110,3 +109,54 @@ class MotionController {
 };
 
 }  // namespace motion_controller
+
+namespace pipette_motion_controller {
+
+using namespace motor_messages;
+using namespace motor_hardware;
+
+template <lms::MotorMechanicalConfig MEConfig>
+class PipetteMotionController : public motion_controller::MotionController<MEConfig> {
+  public:
+    using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
+    using BaseController = motion_controller::MotionController<MEConfig>;
+    explicit PipetteMotionController(
+        lms::LinearMotionSystemConfig<MEConfig> lms_config,
+        PipetteStepperMotorHardwareIface& hardware_iface,
+        MotionConstraints constraints, GenericQueue& queue
+        ) : BaseController(
+                lms_config,
+                hardware_iface,
+                constraints,
+                queue)
+    {}
+
+    auto operator=(const PipetteMotionController&) -> PipetteMotionController& = delete;
+    auto operator=(PipetteMotionController&&) -> PipetteMotionController&& = delete;
+    PipetteMotionController(PipetteMotionController&) = delete;
+    PipetteMotionController(PipetteMotionController&&) = delete;
+
+    ~PipetteMotionController() = default;
+
+    void move(const can_messages::TipActionRequest& can_msg) {
+        steps_per_tick velocity_steps =
+            fixed_point_multiply(BaseController::steps_per_mm, can_msg.velocity);
+        auto stop_condition = MoveStopCondition::none;
+        if (check_tip_sense()) {
+            stop_condition = MoveStopCondition::limit_switch;
+        }
+        Move msg{
+            .duration = can_msg.duration,
+            .velocity = velocity_steps,
+            .acceleration = 0,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = stop_condition};
+        BaseController::queue.try_write(msg);
+    }
+
+    auto check_tip_sense() -> bool { return BaseController::hardware.check_tip_sense(); }
+
+};
+
+}

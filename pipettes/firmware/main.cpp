@@ -20,9 +20,9 @@
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/pipette_motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
@@ -56,7 +56,11 @@ static auto can_bus_1 = hal_can_bus::HalCanBus(
                     .active_setting = GPIO_PIN_RESET});
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
-    motor_queue("Motor Queue");
+    linear_motor_queue("Linear Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
+    right_gear_motor_queue("Right Gear Motor Queue");
+static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
+    left_gear_motor_queue("Left Gear Motor Queue");
 
 spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
 
@@ -84,26 +88,44 @@ static pipette_motor_hardware::MotorHardware plunger_hw(
     motor_config.hardware_pins.linear_motor, &htim7, &htim2);
 
 static motor_handler::MotorInterruptHandler plunger_interrupt(
-    motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
+    linear_motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
 
-/**
- * TODO: This motor class is only used in motor handler and should be
- * instantiated inside of the MotorHandler class. However, some refactors
- * should be made to avoid a pretty gross template signature.
- */
+// TODO put this in a function
+static motor_handler::MotorInterruptHandler gear_interrupt_left(
+    left_gear_motor_queue, gear_motor_tasks::get_queues(), left_gear_hw);
+static motor_handler::MotorInterruptHandler gear_interrupt_right(
+    right_gear_motor_queue, gear_motor_tasks::get_queues(), right_gear_hw);
 
-static motor_class::Motor pipette_motor{
+
+// TODO pull out of main
+static motion_controller::MotionController plunger_motion_control{
     configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), plunger_hw,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    linear_motor_queue};
+static pipette_motion_controller::PipetteMotionController left_gear_motion_control{
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), left_gear_hw,
+    motor_messages::MotionConstraints{.min_velocity = 1,
+        .max_velocity = 2,
+        .min_acceleration = 1,
+        .max_acceleration = 2},
+    left_gear_motor_queue};
+
+static pipette_motion_controller::PipetteMotionController right_gear_motion_control{
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), right_gear_hw,
+    motor_messages::MotionConstraints{.min_velocity = 1,
+        .max_velocity = 2,
+        .min_acceleration = 1,
+        .max_acceleration = 2},
+    right_gear_motor_queue};
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
 extern "C" void gear_callback() {
-    // TODO implement the motor handler for the 96 channel
+    gear_interrupt_left.run_interrupt();
+    gear_interrupt_right.run_interrupt();
 }
 
 static auto pins_for_sensor = interfaces::sensor_configurations<PIPETTE_TYPE>();
