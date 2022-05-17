@@ -6,36 +6,40 @@
 #include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic pop
 
-auto interfaces::tmc2160_driver_config_by_axis()
+auto interfaces::driver_config_by_axis(TMC2160PipetteAxis which)
     -> tmc2160::configs::TMC2160DriverConfig {
-    return tmc2160::configs::TMC2160DriverConfig{
-        .registers = {.gconfig = {.en_pwm_mode = 1},
-                      .ihold_irun = {.hold_current = 0x2,
-                                     .run_current = 0x10,
-                                     .hold_current_delay = 0x7},
-                      .tpowerdown = {},
-                      .tcoolthrs = {.threshold = 0},
-                      .thigh = {.threshold = 0xFFFFF},
-                      .chopconf = {.toff = 0x5,
-                                   .hstrt = 0x5,
-                                   .hend = 0x3,
-                                   .tbl = 0x2,
-                                   .mres = 0x3},
-                      .coolconf = {.sgt = 0x6},
-                      .glob_scale = {.global_scaler = 0x70}},
-        .current_config =
-            {
-                .r_sense = 0.1,
-                .v_sf = 0.325,
-            },
-        .chip_select = {
-            .cs_pin = GPIO_PIN_6,
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .GPIO_handle = GPIOC,
-        }};
+    switch (which) {
+        case TMC2160PipetteAxis::linear_motor:
+        default:
+            return tmc2160::configs::TMC2160DriverConfig{
+                .registers = {.gconfig = {.en_pwm_mode = 1},
+                              .ihold_irun = {.hold_current = 0x2,
+                                             .run_current = 0x10,
+                                             .hold_current_delay = 0x7},
+                              .tpowerdown = {},
+                              .tcoolthrs = {.threshold = 0},
+                              .thigh = {.threshold = 0xFFFFF},
+                              .chopconf = {.toff = 0x5,
+                                           .hstrt = 0x5,
+                                           .hend = 0x3,
+                                           .tbl = 0x2,
+                                           .mres = 0x3},
+                              .coolconf = {.sgt = 0x6},
+                              .glob_scale = {.global_scaler = 0x70}},
+                .current_config =
+                    {
+                        .r_sense = 0.1,
+                        .v_sf = 0.325,
+                    },
+                .chip_select = {
+                    .cs_pin = GPIO_PIN_6,
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .GPIO_handle = GPIOC,
+                }};
+    }
 }
 
-auto interfaces::tmc2130_driver_config_by_axis(PipetteAxisType which)
+auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
     -> tmc2130::configs::TMC2130DriverConfig {
     tmc2130::configs::TMC2130DriverConfig tmc2130_conf{
         .registers = {.gconfig = {.en_pwm_mode = 1},
@@ -62,16 +66,16 @@ auto interfaces::tmc2130_driver_config_by_axis(PipetteAxisType which)
             .GPIO_handle = GPIOC,
         }};
     switch (which) {
-        case PipetteAxisType::left_gear_motor:
+        case TMC2130PipetteAxis::left_gear_motor:
             return tmc2130_conf;
-        case PipetteAxisType::right_gear_motor:
+        case TMC2130PipetteAxis::right_gear_motor:
             tmc2130_conf.chip_select = {
                 .cs_pin = GPIO_PIN_10,
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .GPIO_handle = GPIOC,
             };
             return tmc2130_conf;
-        case PipetteAxisType::linear_motor_low_throughput:
+        case TMC2130PipetteAxis::linear_motor:
         default:
             tmc2130_conf.chip_select = {
                 .cs_pin = GPIO_PIN_6,
@@ -82,10 +86,10 @@ auto interfaces::tmc2130_driver_config_by_axis(PipetteAxisType which)
     }
 }
 
-auto interfaces::hardware_config_by_axis(PipetteAxisType which)
+auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
     -> motor_hardware::HardwareConfig {
     switch (which) {
-        case PipetteAxisType::right_gear_motor:
+        case TMC2130PipetteAxis::right_gear_motor:
             return motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -110,7 +114,7 @@ auto interfaces::hardware_config_by_axis(PipetteAxisType which)
                 // LED PIN C11, active setting low
                 .led = {},
             };
-        case PipetteAxisType::left_gear_motor:
+        case TMC2130PipetteAxis::left_gear_motor:
             return motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -135,7 +139,8 @@ auto interfaces::hardware_config_by_axis(PipetteAxisType which)
                 // LED PIN C11, active setting low
                 .led = {},
             };
-        case PipetteAxisType::linear_motor_high_throughput:
+        case TMC2130PipetteAxis::linear_motor:
+        default:
             return motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -160,7 +165,13 @@ auto interfaces::hardware_config_by_axis(PipetteAxisType which)
                 // LED PIN C11, active setting low
                 .led = {},
             };
-        case PipetteAxisType::linear_motor_low_throughput:
+    }
+}
+
+auto interfaces::hardware_config_by_axis(TMC2160PipetteAxis which)
+    -> motor_hardware::HardwareConfig {
+    switch (which) {
+        case TMC2160PipetteAxis::linear_motor:
         default:
             return motor_hardware::HardwareConfig{
                 .direction =
@@ -189,35 +200,43 @@ auto interfaces::hardware_config_by_axis(PipetteAxisType which)
     }
 }
 
-auto interfaces::driver_config(PipetteType pipette)
-    -> interfaces::PipetteDriverHardware {
-    if (pipette == NINETY_SIX_CHANNEL) {
-        return interfaces::PipetteDriverHardware{
-            .right_gear_motor = tmc2130_driver_config_by_axis(
-                PipetteAxisType::right_gear_motor),
-            .left_gear_motor =
-                tmc2130_driver_config_by_axis(PipetteAxisType::left_gear_motor),
-            .high_throughput_motor = tmc2160_driver_config_by_axis(),
-        };
-    }
-    return interfaces::PipetteDriverHardware{
-        .low_throughput_motor = tmc2130_driver_config_by_axis(
-            PipetteAxisType::linear_motor_low_throughput)};
+template <>
+auto interfaces::driver_config<PipetteType::SINGLE_CHANNEL>()
+    -> interfaces::LowThroughputPipetteDriverHardware {
+    return interfaces::LowThroughputPipetteDriverHardware{
+        .linear_motor =
+            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
 }
 
-auto interfaces::hardware_config(PipetteType pipette)
-    -> interfaces::PipetteMotorHardware {
-    if (pipette == NINETY_SIX_CHANNEL) {
-        return interfaces::PipetteMotorHardware{
-            .right_gear_motor =
-                hardware_config_by_axis(PipetteAxisType::right_gear_motor),
-            .left_gear_motor =
-                hardware_config_by_axis(PipetteAxisType::left_gear_motor),
-            .high_throughput_motor = hardware_config_by_axis(
-                PipetteAxisType::linear_motor_high_throughput),
-        };
-    }
-    return interfaces::PipetteMotorHardware{
-        .low_throughput_motor = hardware_config_by_axis(
-            PipetteAxisType::linear_motor_low_throughput)};
+template <>
+auto interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>()
+    -> interfaces::HighThroughputPipetteDriverHardware {
+    return interfaces::HighThroughputPipetteDriverHardware{
+        .right_gear_motor =
+            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
+        .left_gear_motor =
+            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
+        .linear_motor =
+            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
+}
+
+template <>
+auto interfaces::hardware_config<PipetteType::SINGLE_CHANNEL>()
+    -> interfaces::LowThroughputPipetteMotorHardware {
+    return interfaces::LowThroughputPipetteMotorHardware{
+        .linear_motor =
+            hardware_config_by_axis(TMC2130PipetteAxis::linear_motor)};
+}
+
+template <>
+auto interfaces::hardware_config<PipetteType::NINETY_SIX_CHANNEL>()
+    -> interfaces::HighThroughputPipetteMotorHardware {
+    return interfaces::HighThroughputPipetteMotorHardware{
+        .right_gear_motor =
+            hardware_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
+        .left_gear_motor =
+            hardware_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
+        .linear_motor =
+            hardware_config_by_axis(TMC2160PipetteAxis::linear_motor),
+    };
 }
