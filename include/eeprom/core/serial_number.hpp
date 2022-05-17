@@ -23,39 +23,39 @@ class SerialNumberAccessor {
      * Begin a read of the serial number.
      */
     auto start_read() -> void {
-        eeprom_client.send_eeprom_queue(
-            eeprom::message::ReadEepromMessage{.memory_address = 0,
-                                               .length = types::max_data_length,
-                                               .callback = callback,
-                                               .callback_param = this});
-        eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
-            .memory_address = 8,
-            .length = types::max_data_length - 4,
-            .callback = callback,
-            .callback_param = this});
+        // The serial number might be larger than the amount that can be read
+        // one shot. Create the number of reads required to read the full serial
+        // number.
+        for (types::address i = 0; i < SERIAL_NUMBER_LENGTH;
+             i += types::max_data_length) {
+            auto amount_to_read =
+                std::min(static_cast<types::address>(SERIAL_NUMBER_LENGTH - i),
+                         types::max_data_length);
+            eeprom_client.send_eeprom_queue(
+                eeprom::message::ReadEepromMessage{.memory_address = i,
+                                                   .length = amount_to_read,
+                                                   .callback = callback,
+                                                   .callback_param = this});
+        }
     }
 
     /**
      * Write serial number to eeprom
      */
     auto write(const SerialNumberType& sn) -> void {
-        auto first_write = types::EepromData{};
-        auto second_write = types::EepromData{};
+        // The serial number might be larger than the amount that can be written
+        // one shot. Create the number of writes messages required to
+        // write the full serial number.
+        for (types::address i = 0; i < sn.size(); i += types::max_data_length) {
+            auto amount_to_write =
+                std::min(static_cast<types::address>(sn.size() - i),
+                         types::max_data_length);
+            auto write = types::EepromData{};
+            std::copy_n(sn.cbegin() + i, amount_to_write, write.begin());
 
-        std::copy_n(sn.cbegin(), first_write.size(), first_write.begin());
-        std::copy_n(sn.cbegin() + first_write.size(),
-                    sn.size() - first_write.size(), second_write.begin());
-
-        eeprom_client.send_eeprom_queue(
-            eeprom::message::WriteEepromMessage{.memory_address = 0,
-                                                .length = first_write.size(),
-                                                .data = first_write});
-
-        eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
-            .memory_address = first_write.size(),
-            .length =
-                static_cast<types::data_length>(sn.size() - first_write.size()),
-            .data = second_write});
+            eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
+                .memory_address = i, .length = amount_to_write, .data = write});
+        }
     }
 
   private:
