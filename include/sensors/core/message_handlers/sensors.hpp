@@ -46,6 +46,10 @@ class SensorHandler {
         send_to_queue(can_ids::SensorType(m.sensor), m);
     }
 
+    void visit(const can_messages::PeripheralStatusRequest &m) {
+        send_to_queue(can_ids::SensorType(m.sensor), m);
+    }
+
     void send_to_queue(can_ids::SensorType type, const utils::TaskMessage &m) {
         switch (type) {
             case can_ids::SensorType::temperature: {

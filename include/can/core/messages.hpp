@@ -905,6 +905,38 @@ struct TipActionResponse
     auto operator==(const TipActionResponse& other) const -> bool = default;
 };
 
+struct PeripheralStatusRequest
+    : BaseMessage<MessageId::peripheral_status_request> {
+    can_ids::SensorType sensor;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> PeripheralStatusRequest {
+        uint8_t _sensor = 0;
+        body = bit_utils::bytes_to_int(body, limit, _sensor);
+        return PeripheralStatusRequest{
+            .sensor = static_cast<can_ids::SensorType>(_sensor)};
+    }
+    auto operator==(const PeripheralStatusRequest& other) const
+        -> bool = default;
+};
+
+struct PeripheralStatusResponse
+    : BaseMessage<MessageId::peripheral_status_response> {
+    can_ids::SensorType sensor;
+    uint8_t status;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(status, body, limit);
+        return iter - body;
+    }
+
+    auto operator==(const PeripheralStatusResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -917,6 +949,6 @@ using ResponseMessageType = std::variant<
     ReadFromSensorResponse, FirmwareUpdateStatusResponse,
     SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
     PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
-    TipActionResponse>;
+    TipActionResponse, PeripheralStatusResponse>;
 
 }  // namespace can_messages

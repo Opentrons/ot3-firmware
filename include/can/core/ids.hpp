@@ -87,6 +87,8 @@ enum class MessageId {
     sensor_diagnostic_response = 0x89,
     bind_sensor_output_request = 0x8a,
     bind_sensor_output_response = 0x8b,
+    peripheral_status_request = 0x8c,
+    peripheral_status_response = 0x8d
 };
 
 /** Can bus arbitration id node id. */
