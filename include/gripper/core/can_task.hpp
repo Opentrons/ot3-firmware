@@ -1,15 +1,13 @@
 #pragma once
 
-#include "can/core/can_writer_task.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
-#include "common/core/freertos_message_queue.hpp"
 #include "gripper/core/gripper_info.hpp"
+#include "common/core/freertos_message_queue.hpp"
 #include "gripper/core/tasks.hpp"
-#include "motor-control/core/stepper_motor/motor.hpp"
 
 namespace can_bus {
 class CanBus;
