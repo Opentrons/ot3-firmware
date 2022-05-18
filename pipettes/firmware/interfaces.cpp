@@ -113,12 +113,11 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .tip_sense = {
-                    // Located on the back sensor board
-                    .port = GPIOC,
-                    .pin = GPIO_PIN_12,
-                    .active_setting = GPIO_PIN_SET
-                },
+                .tip_sense =
+                    {// Located on the back sensor board
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_12,
+                     .active_setting = GPIO_PIN_SET},
             };
         case TMC2130PipetteAxis::left_gear_motor:
             return pipette_motor_hardware::HardwareConfig{
@@ -144,12 +143,11 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .tip_sense = {
-                    // Located on the front sensor board
-                    .port = GPIOH,
-                    .pin = GPIO_PIN_1,
-                    .active_setting = GPIO_PIN_SET
-                },
+                .tip_sense =
+                    {// Located on the front sensor board
+                     .port = GPIOH,
+                     .pin = GPIO_PIN_1,
+                     .active_setting = GPIO_PIN_SET},
             };
         case TMC2130PipetteAxis::linear_motor:
         default:
@@ -176,11 +174,9 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .tip_sense = {
-                    .port = GPIOA,
-                    .pin = GPIO_PIN_10,
-                    .active_setting = GPIO_PIN_SET
-                },
+                .tip_sense = {.port = GPIOA,
+                              .pin = GPIO_PIN_10,
+                              .active_setting = GPIO_PIN_SET},
             };
     }
 }

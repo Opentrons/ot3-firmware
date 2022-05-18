@@ -29,7 +29,8 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void set_LED(bool status) = 0;
 };
 
-class PipetteStepperMotorHardwareIface : virtual public StepperMotorHardwareIface {
+class PipetteStepperMotorHardwareIface
+    : virtual public StepperMotorHardwareIface {
   public:
     virtual auto check_tip_sense() -> bool = 0;
 };

@@ -40,7 +40,7 @@ class MotorHardware : public PipetteStepperMotorHardwareIface {
     auto check_sync_in() -> bool final;
     auto get_encoder_pulses() -> uint32_t final;
     void reset_encoder_pulses() final;
-    void check_tip_sense() -> bool final;
+    void check_tip_sense()->bool final;
 
   private:
     HardwareConfig pins;
