@@ -38,7 +38,8 @@ uint16_t get_model();
  * @tparam CanClient can writer task client
  * @tparam EEPromClient eeprom task client
  */
-template <message_writer_task::TaskClient CanClient, eeprom::task::TaskClient EEPromClient>
+template <message_writer_task::TaskClient CanClient,
+          eeprom::task::TaskClient EEPromClient>
 class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
   public:
     /**
@@ -47,9 +48,9 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
      * @param writer A message writer for sending the response
      * @param eeprom_client An eeprom task client
      */
-    explicit PipetteInfoMessageHandler(CanClient &writer, EEPromClient &eeprom_client)
-        : writer(writer), serial_number_accessor{eeprom_client, *this} {
-    }
+    explicit PipetteInfoMessageHandler(CanClient &writer,
+                                       EEPromClient &eeprom_client)
+        : writer(writer), serial_number_accessor{eeprom_client, *this} {}
     PipetteInfoMessageHandler(const PipetteInfoMessageHandler &) = delete;
     PipetteInfoMessageHandler(const PipetteInfoMessageHandler &&) = delete;
     auto operator=(const PipetteInfoMessageHandler &)
@@ -68,16 +69,18 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
-    void on_read(const eeprom::serial_number::SerialNumberType& sn) final {
-        writer.send_can_message(can_ids::NodeId::host, can_messages::PipetteInfoResponse{.name=static_cast<uint16_t>(get_name()),.model=get_model(),  .serial=sn});
+    void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
+        writer.send_can_message(can_ids::NodeId::host,
+                                can_messages::PipetteInfoResponse{
+                                    .name = static_cast<uint16_t>(get_name()),
+                                    .model = get_model(),
+                                    .serial = sn});
     }
 
   private:
     void visit(std::monostate &) {}
 
-    void visit(PipetteInfoRequest &) {
-        serial_number_accessor.start_read();
-    }
+    void visit(PipetteInfoRequest &) { serial_number_accessor.start_read(); }
 
     CanClient &writer;
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>

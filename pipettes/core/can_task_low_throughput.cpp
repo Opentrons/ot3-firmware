@@ -33,8 +33,8 @@ static auto system_message_handler = system_handler::SystemMessageHandler{
 static auto sensor_handler =
     sensors::handlers::SensorHandler{sensor_queue_client};
 
-static auto pipette_info_handler =
-    pipette_info::PipetteInfoMessageHandler{central_queue_client, sensor_queue_client};
+static auto pipette_info_handler = pipette_info::PipetteInfoMessageHandler{
+    central_queue_client, sensor_queue_client};
 
 /** The connection between the motor handler and message buffer */
 static auto motor_dispatch_target =
