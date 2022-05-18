@@ -30,7 +30,7 @@
 #include "spi/simulation/spi.hpp"
 #include "task.h"
 
-static auto PIPETTE_TYPE = get_pipette_type();
+constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 
@@ -97,10 +97,36 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto lt_driver_configs =
-    interfaces::driver_config<PipetteType::SINGLE_CHANNEL>();
-static auto ht_driver_configs =
-    interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>();
+static auto motor_configs = interfaces::motor_configurations<PIPETTE_TYPE>();
+
+auto initialize_motor_tasks(
+    can_ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+    sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                              peripheral_tasks::get_i2c3_client(),
+                              peripheral_tasks::get_i2c1_client(),
+                              peripheral_tasks::get_i2c1_poller_client(),
+                              fake_sensor_hw, id, sim_eeprom);
+
+    linear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
+    // todo update with correct motion controller.
+    gear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
+}
+
+auto initialize_motor_tasks(
+    can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
+    sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                              peripheral_tasks::get_i2c3_client(),
+                              peripheral_tasks::get_i2c1_client(),
+                              peripheral_tasks::get_i2c1_poller_client(),
+                              fake_sensor_hw, id, sim_eeprom);
+    linear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
+}
 
 int main() {
     signal(SIGINT, signal_handler);
@@ -111,39 +137,8 @@ int main() {
 
     central_tasks::start_tasks(can_bus_1, node_from_env(std::getenv("MOUNT")));
     peripheral_tasks::start_tasks(i2c3_comms, i2c1_comms, spi_comms);
-
-    if (PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
-        sensor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_client(),
-            peripheral_tasks::get_i2c1_client(),
-            peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
-            node_from_env(std::getenv("MOUNT")), sim_eeprom);
-
-        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                        pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_client(),
-                                        ht_driver_configs.linear_motor,
-                                        node_from_env(std::getenv("MOUNT")));
-        gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                      pipette_motor.motion_controller,
-                                      peripheral_tasks::get_spi_client(),
-                                      ht_driver_configs.right_gear_motor,
-                                      node_from_env(std::getenv("MOUNT")));
-    } else {
-        sensor_tasks::start_tasks(
-            *central_tasks::get_tasks().can_writer,
-            peripheral_tasks::get_i2c3_client(),
-            peripheral_tasks::get_i2c1_client(),
-            peripheral_tasks::get_i2c1_poller_client(), fake_sensor_hw,
-            node_from_env(std::getenv("MOUNT")), sim_eeprom);
-
-        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                        pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_client(),
-                                        lt_driver_configs.linear_motor,
-                                        node_from_env(std::getenv("MOUNT")));
-    }
+    initialize_motor_tasks(node_from_env(std::getenv("MOUNT")),
+                           motor_configs.driver_configs);
 
     vTaskStartScheduler();
 }

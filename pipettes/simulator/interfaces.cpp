@@ -80,21 +80,53 @@ auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
 }
 
 template <>
-auto interfaces::driver_config<PipetteType::SINGLE_CHANNEL>()
-    -> interfaces::LowThroughputPipetteDriverHardware {
-    return interfaces::LowThroughputPipetteDriverHardware{
+auto interfaces::motor_configurations<PipetteType::SINGLE_CHANNEL>()
+    -> interfaces::LowThroughputMotorConfigurations {
+    auto configs = interfaces::LowThroughputPipetteDriverHardware{
         .linear_motor =
             driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
+    auto pins = interfaces::LowThroughputPipetteMotorHardware{};
+    return interfaces::LowThroughputMotorConfigurations{
+        .hardware_pins = pins, .driver_configs = configs};
 }
 
 template <>
-auto interfaces::driver_config<PipetteType::NINETY_SIX_CHANNEL>()
-    -> interfaces::HighThroughputPipetteDriverHardware {
-    return interfaces::HighThroughputPipetteDriverHardware{
+auto interfaces::motor_configurations<PipetteType::EIGHT_CHANNEL>()
+    -> interfaces::LowThroughputMotorConfigurations {
+    auto configs = interfaces::LowThroughputPipetteDriverHardware{
+        .linear_motor =
+            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
+    auto pins = interfaces::LowThroughputPipetteMotorHardware{};
+    return interfaces::LowThroughputMotorConfigurations{
+        .hardware_pins = pins, .driver_configs = configs};
+}
+
+template <>
+auto interfaces::motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
+    -> interfaces::HighThroughputMotorConfigurations {
+    auto configs = interfaces::HighThroughputPipetteDriverHardware{
         .right_gear_motor =
             driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
         .left_gear_motor =
             driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
         .linear_motor =
             driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
+    auto pins = interfaces::HighThroughputPipetteMotorHardware{};
+    return interfaces::HighThroughputMotorConfigurations{
+        .hardware_pins = pins, .driver_configs = configs};
+}
+
+template <>
+auto interfaces::motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
+    -> interfaces::HighThroughputMotorConfigurations {
+    auto configs = interfaces::HighThroughputPipetteDriverHardware{
+        .right_gear_motor =
+            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
+        .left_gear_motor =
+            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
+        .linear_motor =
+            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
+    auto pins = interfaces::HighThroughputPipetteMotorHardware{};
+    return interfaces::HighThroughputMotorConfigurations{
+        .hardware_pins = pins, .driver_configs = configs};
 }
