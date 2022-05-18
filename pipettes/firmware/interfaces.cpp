@@ -176,11 +176,11 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .tip_sense = {
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOA,
-                    .pin = GPIO_PIN_10,
-                    .active_setting = GPIO_PIN_SET},
+                .tip_sense =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_10,
+                     .active_setting = GPIO_PIN_SET},
             };
     }
 }
