@@ -135,7 +135,8 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<100 * can::bit_timings::MHZ, 100,
                                  250 * can::bit_timings::KHZ, 800>{};
 
-auto initialize_motor_tasks(can_ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+auto initialize_motor_tasks(
+    can_ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -148,26 +149,23 @@ auto initialize_motor_tasks(can_ids::NodeId id, interfaces::HighThroughputPipett
         *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
     // todo update with correct motion controller.
-    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  pipette_motor.motion_controller,
-                                  peripheral_tasks::get_spi_client(),
-                                  conf.right_gear_motor, id);
+    gear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
 }
-auto initialize_motor_tasks(can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
-        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  peripheral_tasks::get_i2c3_client(),
-                                  peripheral_tasks::get_i2c1_client(),
-                                  peripheral_tasks::get_i2c1_poller_client(),
-                                  pins_for_sensor_lt, id,
-                                  eeprom_hardware_iface);
+auto initialize_motor_tasks(
+    can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
+    sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                              peripheral_tasks::get_i2c3_client(),
+                              peripheral_tasks::get_i2c1_client(),
+                              peripheral_tasks::get_i2c1_poller_client(),
+                              pins_for_sensor_lt, id, eeprom_hardware_iface);
 
-        initialize_linear_timer(plunger_callback);
-        linear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                        pipette_motor.motion_controller,
-                                        peripheral_tasks::get_spi_client(),
-                                        conf.linear_motor, id);
+    initialize_linear_timer(plunger_callback);
+    linear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 }
-
 
 auto main() -> int {
     HardwareInit();
@@ -193,8 +191,6 @@ auto main() -> int {
     central_tasks::start_tasks(can_bus_1, id);
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms1, spi_comms);
     initialize_motor_tasks(id, motor_config.driver_configs);
-
-
 
     iWatchdog.start(6);
 

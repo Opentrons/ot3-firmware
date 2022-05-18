@@ -1,7 +1,7 @@
 #include "pipettes/core/pipette_info.hpp"
 //#include "pipettes/core/pipette_type.h"
 
-//extern "C" const auto get_pipette_type() -> PipetteType {
+// extern "C" const auto get_pipette_type() -> PipetteType {
 //    return THREE_EIGHTY_FOUR_CHANNEL;
 //}
 

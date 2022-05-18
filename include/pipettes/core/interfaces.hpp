@@ -65,20 +65,24 @@ auto hardware_config_by_axis(TMC2160PipetteAxis which)
     -> pipette_motor_hardware::HardwareConfig;
 
 template <PipetteType P>
-auto motor_configurations() -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
-                                                LowThroughputMotorConfigurations>;
+auto motor_configurations()
+    -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
+                        LowThroughputMotorConfigurations>;
 
 template <PipetteType P>
-auto motor_configurations() -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL,
-    LowThroughputMotorConfigurations>;
+auto motor_configurations()
+    -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL,
+                        LowThroughputMotorConfigurations>;
 
 template <PipetteType P>
-auto motor_configurations() -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
-                                                HighThroughputMotorConfigurations>;
+auto motor_configurations()
+    -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
+                        HighThroughputMotorConfigurations>;
 
 template <PipetteType P>
-auto motor_configurations() -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
-    HighThroughputMotorConfigurations>;
+auto motor_configurations()
+    -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
+                        HighThroughputMotorConfigurations>;
 
 template <>
 auto motor_configurations<PipetteType::SINGLE_CHANNEL>()
@@ -86,11 +90,10 @@ auto motor_configurations<PipetteType::SINGLE_CHANNEL>()
 
 template <>
 auto motor_configurations<PipetteType::EIGHT_CHANNEL>()
--> LowThroughputMotorConfigurations;
+    -> LowThroughputMotorConfigurations;
 
 template <>
 auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputMotorConfigurations;
-
 
 }  // namespace interfaces
