@@ -56,7 +56,7 @@ using SensorDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::BindSensorOutputRequest>;
 
 using PipetteInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    pipette_info::PipetteInfoMessageHandler<central_tasks::QueueClient>,
+    pipette_info::PipetteInfoMessageHandler<central_tasks::QueueClient, sensor_tasks::QueueClient>,
     can_messages::PipetteInfoRequest>;
 
 using EEPromDispatchTarget = can_dispatch::DispatchParseTarget<

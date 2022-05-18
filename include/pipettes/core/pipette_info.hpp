@@ -8,7 +8,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
-#include "motor-control/core/motor_hardware_interface.hpp"
+#include "eeprom/core/serial_number.hpp"
 
 namespace pipette_info {
 using namespace can_ids;
@@ -36,31 +36,19 @@ uint16_t get_model();
  * A HandlesMessages implementing class that will respond to system messages.
  *
  * @tparam CanClient can writer task client
+ * @tparam EEPromClient eeprom task client
  */
-template <message_writer_task::TaskClient CanClient>
-class PipetteInfoMessageHandler {
+template <message_writer_task::TaskClient CanClient, eeprom::task::TaskClient EEPromClient>
+class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
   public:
     /**
      * Constructor
      *
      * @param writer A message writer for sending the response
+     * @param eeprom_client An eeprom task client
      */
-    explicit PipetteInfoMessageHandler(CanClient &writer)
-        : PipetteInfoMessageHandler(
-              writer, PipetteInfo{.name = get_name(),
-                                  .model = get_model(),
-                                  .serial = std::array{'2', '0', '2', '2', '0',
-                                                       '3', '2', '1', 'A', '0',
-                                                       '5', '\0'}}) {}
-    PipetteInfoMessageHandler(CanClient &writer,
-                              const PipetteInfo &pipette_info)
-        : writer(writer),
-          response{.name = static_cast<uint16_t>(pipette_info.name),
-                   .model = pipette_info.model} {
-        std::copy_n(
-            pipette_info.serial.cbegin(),
-            std::min(pipette_info.serial.size(), response.serial.size()),
-            response.serial.begin());
+    explicit PipetteInfoMessageHandler(CanClient &writer, EEPromClient &eeprom_client)
+        : writer(writer), serial_number_accessor{eeprom_client, *this} {
     }
     PipetteInfoMessageHandler(const PipetteInfoMessageHandler &) = delete;
     PipetteInfoMessageHandler(const PipetteInfoMessageHandler &&) = delete;
@@ -80,14 +68,19 @@ class PipetteInfoMessageHandler {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
+    void on_read(const eeprom::serial_number::SerialNumberType& sn) final {
+        writer.send_can_message(can_ids::NodeId::host, can_messages::PipetteInfoResponse{.name=static_cast<uint16_t>(get_name()),.model=get_model(),  .serial=sn});
+    }
+
   private:
     void visit(std::monostate &) {}
 
     void visit(PipetteInfoRequest &) {
-        writer.send_can_message(can_ids::NodeId::host, response);
+        serial_number_accessor.start_read();
     }
 
     CanClient &writer;
-    can_messages::PipetteInfoResponse response;
+    eeprom::serial_number::SerialNumberAccessor<EEPromClient>
+        serial_number_accessor;
 };
 };  // namespace pipette_info
