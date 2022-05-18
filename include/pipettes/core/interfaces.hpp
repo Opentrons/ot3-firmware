@@ -43,13 +43,13 @@ struct HighThroughputPipetteMotorHardware {
 };
 
 struct LowThroughputMotorConfigurations {
-    LowThroughputPipetteMotorHardware hardware_pins;
-    LowThroughputPipetteDriverHardware driver_configs;
+    LowThroughputPipetteMotorHardware hardware_pins{};
+    LowThroughputPipetteDriverHardware driver_configs{};
 };
 
 struct HighThroughputMotorConfigurations {
-    HighThroughputPipetteMotorHardware hardware_pins;
-    HighThroughputPipetteDriverHardware driver_configs;
+    HighThroughputPipetteMotorHardware hardware_pins{};
+    HighThroughputPipetteDriverHardware driver_configs{};
 };
 
 auto driver_config_by_axis(TMC2130PipetteAxis which)
