@@ -20,6 +20,6 @@ consteval auto get_pipette_type() -> PipetteType { return PIPETTE_TYPE_DEFINE; }
 
 #else
 
-// this happens if included from a .c file
-inline PipetteType get_pipette_type() { return PIPETTE_TYPE_DEFINE; }
+static inline PipetteType get_pipette_type() { return PIPETTE_TYPE_DEFINE; }
+
 #endif  // __cplusplus
