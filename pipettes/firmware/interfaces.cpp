@@ -115,6 +115,7 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                 .led = {},
                 .tip_sense =
                     {// Located on the back sensor board
+                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_12,
                      .active_setting = GPIO_PIN_SET},
@@ -145,6 +146,7 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                 .led = {},
                 .tip_sense =
                     {// Located on the front sensor board
+                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOH,
                      .pin = GPIO_PIN_1,
                      .active_setting = GPIO_PIN_SET},
@@ -174,9 +176,11 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .tip_sense = {.port = GPIOA,
-                              .pin = GPIO_PIN_10,
-                              .active_setting = GPIO_PIN_SET},
+                .tip_sense = {
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOA,
+                    .pin = GPIO_PIN_10,
+                    .active_setting = GPIO_PIN_SET},
             };
     }
 }
