@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "eeprom/core/serial_number.hpp"
+//#include "eeprom/core/addresses.hpp"
 #include <vector>
 
 
@@ -28,26 +29,20 @@ SCENARIO("Writing serial number") {
 
     GIVEN("A serial number to write") {
         auto data = serial_number::SerialNumberType{1, 2, 3, 4,  5,  6,
-                                                    7, 8, 9, 10, 11, 12};
+                                                    7, 8};
 
         WHEN("the writing serial number") {
             subject.write(data);
 
-            THEN("there are two eeprom writes") {
-                REQUIRE(queue_client.messages.size() == 2);
+            THEN("there is an eeprom write") {
+                REQUIRE(queue_client.messages.size() == 1);
 
                 auto write_message = std::get<message::WriteEepromMessage>(
                     queue_client.messages[0]);
-                REQUIRE(write_message.memory_address == 0);
-                REQUIRE(write_message.length == 8);
+                REQUIRE(write_message.memory_address == addresses::serial_number_address_begin);
+                REQUIRE(write_message.length == data.size());
                 REQUIRE(write_message.data ==
                         types::EepromData{1, 2, 3, 4, 5, 6, 7, 8});
-
-                write_message = std::get<message::WriteEepromMessage>(
-                    queue_client.messages[1]);
-                REQUIRE(write_message.memory_address == 8);
-                REQUIRE(write_message.length == 4);
-                REQUIRE(write_message.data == types::EepromData{9, 10, 11, 12});
             }
         }
     }
@@ -64,17 +59,12 @@ SCENARIO("Reading serial number") {
         WHEN("reading the serial number") {
             subject.start_read();
 
-            THEN("there are two eeprom reads") {
-                REQUIRE(queue_client.messages.size() == 2);
+            THEN("there is an eeprom read") {
+                REQUIRE(queue_client.messages.size() == 1);
 
                 auto read_message = std::get<message::ReadEepromMessage>(queue_client.messages[0]);
-                REQUIRE(read_message.memory_address==0);
-                REQUIRE(read_message.length==8);
-                REQUIRE(read_message.callback_param == &subject);
-
-                read_message = std::get<message::ReadEepromMessage>(queue_client.messages[1]);
-                REQUIRE(read_message.memory_address==8);
-                REQUIRE(read_message.length==4);
+                REQUIRE(read_message.memory_address==addresses::serial_number_address_begin);
+                REQUIRE(read_message.length==addresses::serial_number_length);
                 REQUIRE(read_message.callback_param == &subject);
             }
         }
@@ -84,7 +74,7 @@ SCENARIO("Reading serial number") {
         subject.start_read();
 
         WHEN("the read completes") {
-            auto sn = serial_number::SerialNumberType{12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+            auto sn = serial_number::SerialNumberType{8, 7, 6, 5, 4, 3, 2, 1};
 
             for (auto m = queue_client.messages.cbegin(); m < queue_client.messages.cend(); m++) {
                 auto read_message = std::get<message::ReadEepromMessage>(*m);
