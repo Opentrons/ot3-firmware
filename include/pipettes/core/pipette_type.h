@@ -1,9 +1,5 @@
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
-
 typedef enum Type {
     SINGLE_CHANNEL,
     EIGHT_CHANNEL,
@@ -11,14 +7,19 @@ typedef enum Type {
     THREE_EIGHTY_FOUR_CHANNEL
 } PipetteType;
 
+#ifdef __cplusplus
+
+
 /**
  * Get the current pipette type
  *
  * @return a pipette type
  */
-PipetteType get_pipette_type();
+consteval auto get_pipette_type() -> PipetteType { return PIPETTE_TYPE_DEFINE; }
 
 
-#ifdef __cplusplus
-}  // extern "C"
+#else
+
+// this happens if included from a .c file
+inline PipetteType get_pipette_type() { return PIPETTE_TYPE_DEFINE; }
 #endif  // __cplusplus

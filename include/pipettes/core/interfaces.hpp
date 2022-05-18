@@ -42,6 +42,16 @@ struct HighThroughputPipetteMotorHardware {
     pipette_motor_hardware::HardwareConfig linear_motor;
 };
 
+struct LowThroughputMotorConfigurations {
+    LowThroughputPipetteMotorHardware hardware_pins;
+    LowThroughputPipetteDriverHardware driver_configs;
+};
+
+struct HighThroughputMotorConfigurations {
+    HighThroughputPipetteMotorHardware hardware_pins;
+    HighThroughputPipetteDriverHardware driver_configs;
+};
+
 auto driver_config_by_axis(TMC2130PipetteAxis which)
     -> tmc2130::configs::TMC2130DriverConfig;
 
@@ -55,35 +65,32 @@ auto hardware_config_by_axis(TMC2160PipetteAxis which)
     -> pipette_motor_hardware::HardwareConfig;
 
 template <PipetteType P>
-auto hardware_config() -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
-                                           LowThroughputPipetteMotorHardware>;
+auto motor_configurations() -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
+                                                LowThroughputMotorConfigurations>;
 
 template <PipetteType P>
-auto hardware_config() -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
-                                           HighThroughputPipetteMotorHardware>;
-
-template <>
-auto hardware_config<PipetteType::SINGLE_CHANNEL>()
-    -> LowThroughputPipetteMotorHardware;
-
-template <>
-auto hardware_config<PipetteType::NINETY_SIX_CHANNEL>()
-    -> HighThroughputPipetteMotorHardware;
+auto motor_configurations() -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL,
+    LowThroughputMotorConfigurations>;
 
 template <PipetteType P>
-auto driver_config() -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
-                                         LowThroughputPipetteDriverHardware>;
+auto motor_configurations() -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
+                                                HighThroughputMotorConfigurations>;
 
 template <PipetteType P>
-auto driver_config() -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
-                                         HighThroughputPipetteDriverHardware>;
+auto motor_configurations() -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
+    HighThroughputMotorConfigurations>;
 
 template <>
-auto driver_config<PipetteType::SINGLE_CHANNEL>()
-    -> LowThroughputPipetteDriverHardware;
+auto motor_configurations<PipetteType::SINGLE_CHANNEL>()
+    -> LowThroughputMotorConfigurations;
 
 template <>
-auto driver_config<PipetteType::NINETY_SIX_CHANNEL>()
-    -> HighThroughputPipetteDriverHardware;
+auto motor_configurations<PipetteType::EIGHT_CHANNEL>()
+-> LowThroughputMotorConfigurations;
+
+template <>
+auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
+    -> HighThroughputMotorConfigurations;
+
 
 }  // namespace interfaces
