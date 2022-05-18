@@ -17,7 +17,7 @@ struct HardwareConfig {
     gpio::PinConfig tip_sense;
 };
 
-class MotorHardware : public PipetteStepperMotorHardwareIface {
+class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;

@@ -31,7 +31,7 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
 
 class PipetteStepperMotorHardwareIface : virtual public StepperMotorHardwareIface {
   public:
-    virtual void check_tip_sense() = 0;
+    virtual auto check_tip_sense() -> bool = 0;
 };
 
 class BrushedMotorHardwareIface : virtual public MotorHardwareIface {

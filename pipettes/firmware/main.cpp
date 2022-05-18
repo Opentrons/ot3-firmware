@@ -81,8 +81,8 @@ static auto eeprom_hardware_iface = EEPromHardwareIface();
 static auto lt_hw_config =
     interfaces::hardware_config<PipetteType::SINGLE_CHANNEL>();
 
-static motor_hardware::MotorHardware plunger_hw(lt_hw_config.linear_motor,
-                                                &htim7, &htim2);
+static pipette_motor_hardware::MotorHardware plunger_hw(
+    lt_hw_config.linear_motor, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
 

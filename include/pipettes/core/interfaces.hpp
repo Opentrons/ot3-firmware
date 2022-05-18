@@ -4,7 +4,7 @@
 
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/pipette_motor_hardware.hpp"
 #include "pipettes/core/pipette_type.h"
 
 namespace interfaces {
@@ -33,13 +33,13 @@ struct HighThroughputPipetteDriverHardware {
 };
 
 struct LowThroughputPipetteMotorHardware {
-    motor_hardware::HardwareConfig linear_motor;
+    pipette_motor_hardware::HardwareConfig linear_motor;
 };
 
 struct HighThroughputPipetteMotorHardware {
-    motor_hardware::HardwareConfig right_gear_motor;
-    motor_hardware::HardwareConfig left_gear_motor;
-    motor_hardware::HardwareConfig linear_motor;
+    pipette_motor_hardware::HardwareConfig right_gear_motor;
+    pipette_motor_hardware::HardwareConfig left_gear_motor;
+    pipette_motor_hardware::HardwareConfig linear_motor;
 };
 
 auto driver_config_by_axis(TMC2130PipetteAxis which)
@@ -49,10 +49,10 @@ auto driver_config_by_axis(TMC2160PipetteAxis which)
     -> tmc2160::configs::TMC2160DriverConfig;
 
 auto hardware_config_by_axis(TMC2130PipetteAxis which)
-    -> motor_hardware::HardwareConfig;
+    -> pipette_motor_hardware::HardwareConfig;
 
 auto hardware_config_by_axis(TMC2160PipetteAxis which)
-    -> motor_hardware::HardwareConfig;
+    -> pipette_motor_hardware::HardwareConfig;
 
 template <PipetteType P>
 auto hardware_config() -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,

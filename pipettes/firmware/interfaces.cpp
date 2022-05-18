@@ -87,10 +87,10 @@ auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
 }
 
 auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
-    -> motor_hardware::HardwareConfig {
+    -> pipette_motor_hardware::HardwareConfig {
     switch (which) {
         case TMC2130PipetteAxis::right_gear_motor:
-            return motor_hardware::HardwareConfig{
+            return pipette_motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
@@ -113,9 +113,15 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
+                .tip_sense = {
+                    // Located on the back sensor board
+                    .port = GPIOC,
+                    .pin = GPIO_PIN_12,
+                    .active_setting = GPIO_PIN_SET
+                },
             };
         case TMC2130PipetteAxis::left_gear_motor:
-            return motor_hardware::HardwareConfig{
+            return pipette_motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
@@ -138,10 +144,16 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
+                .tip_sense = {
+                    // Located on the front sensor board
+                    .port = GPIOH,
+                    .pin = GPIO_PIN_1,
+                    .active_setting = GPIO_PIN_SET
+                },
             };
         case TMC2130PipetteAxis::linear_motor:
         default:
-            return motor_hardware::HardwareConfig{
+            return pipette_motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOA,
@@ -164,16 +176,21 @@ auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
+                .tip_sense = {
+                    .port = GPIOA,
+                    .pin = GPIO_PIN_10,
+                    .active_setting = GPIO_PIN_SET
+                },
             };
     }
 }
 
 auto interfaces::hardware_config_by_axis(TMC2160PipetteAxis which)
-    -> motor_hardware::HardwareConfig {
+    -> pipette_motor_hardware::HardwareConfig {
     switch (which) {
         case TMC2160PipetteAxis::linear_motor:
         default:
-            return motor_hardware::HardwareConfig{
+            return pipette_motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
@@ -196,6 +213,10 @@ auto interfaces::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
+                // tip sense will be checked on the two pipette
+                // tip pick up motors.
+                // TODO need to think further about force pick up of tips
+                .tip_sense = {},
             };
     }
 }
