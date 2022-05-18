@@ -39,7 +39,7 @@ SCENARIO("Writing serial number") {
                 auto write_message = std::get<message::WriteEepromMessage>(
                     queue_client.messages[0]);
                 REQUIRE(write_message.memory_address == addresses::serial_number_address_begin);
-                REQUIRE(write_message.length == data.size());
+                REQUIRE(write_message.length == types::max_data_length);
                 REQUIRE(write_message.data ==
                         types::EepromData{1, 2, 3, 4, 5, 6, 7, 8});
             }
@@ -63,7 +63,7 @@ SCENARIO("Reading serial number") {
 
                 auto read_message = std::get<message::ReadEepromMessage>(queue_client.messages[0]);
                 REQUIRE(read_message.memory_address==addresses::serial_number_address_begin);
-                REQUIRE(read_message.length==addresses::serial_number_length);
+                REQUIRE(read_message.length==types::max_data_length);
                 REQUIRE(read_message.callback_param == &subject);
             }
         }
