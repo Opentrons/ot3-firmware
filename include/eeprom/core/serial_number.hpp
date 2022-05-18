@@ -14,24 +14,23 @@ namespace serial_number {
 using SerialNumberType = std::array<uint8_t, addresses::serial_number_length>;
 
 /**
- * Concept describing an object that listens for read serial numbers.
- * @tparam Listener
+ * Interface of an object that listens for read serial numbers.
  */
-template <typename Listener>
-concept ReadListener = requires(Listener listener, const SerialNumberType& sn) {
-    {listener.on_read(sn)};
+class ReadListener {
+  public:
+    virtual ~ReadListener() =default;
+    virtual void on_read(const SerialNumberType&) = 0;
 };
 
 /**
  * Class that reads and writes serial numbers.
  * @tparam EEPromTaskClient client of eeprom task
- * @tparam Listener listener for read serial numbers.
  */
-template <task::TaskClient EEPromTaskClient, ReadListener Listener>
+template <task::TaskClient EEPromTaskClient>
 class SerialNumberAccessor {
   public:
     explicit SerialNumberAccessor(EEPromTaskClient& eeprom_client,
-                                  Listener& listener)
+                                  ReadListener& listener)
         : eeprom_client{eeprom_client}, read_listener{listener} {}
 
     /**
@@ -84,13 +83,13 @@ class SerialNumberAccessor {
     static void callback(const eeprom::message::EepromMessage& msg,
                          void* param) {
         auto* self =
-            reinterpret_cast<SerialNumberAccessor<EEPromTaskClient, Listener>*>(
+            reinterpret_cast<SerialNumberAccessor<EEPromTaskClient>*>(
                 param);
         self->callback(msg);
     }
 
     EEPromTaskClient& eeprom_client;
-    Listener& read_listener;
+    ReadListener& read_listener;
 };
 
 }  // namespace serial_number

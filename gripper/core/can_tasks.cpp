@@ -25,7 +25,7 @@ static auto can_brushed_motion_handler =
 static auto can_brushed_move_group_handler =
     move_group_handler::BrushedMoveGroupHandler{g_queues};
 static auto gripper_info_handler =
-    gripper_info::GripperInfoMessageHandler{main_queues};
+    gripper_info::GripperInfoMessageHandler{main_queues, main_queues};
 
 /** Handler of system messages. */
 static auto system_message_handler = system_handler::SystemMessageHandler{

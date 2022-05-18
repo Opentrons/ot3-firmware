@@ -1,6 +1,5 @@
 #include "catch2/catch.hpp"
 #include "eeprom/core/serial_number.hpp"
-//#include "eeprom/core/addresses.hpp"
 #include <vector>
 
 
@@ -14,7 +13,7 @@ struct MockEEPromTaskClient {
 };
 
 
-struct MockListener {
+struct MockListener: serial_number::ReadListener {
     void on_read(const serial_number::SerialNumberType& sn) {this->sn = sn; call_count++;}
     serial_number::SerialNumberType sn{};
     int call_count{0};
