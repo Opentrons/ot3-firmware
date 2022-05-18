@@ -4,8 +4,8 @@
 
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
-#include "motor-control/firmware/stepper_motor/pipette_motor_hardware.hpp"
 #include "pipettes/core/pipette_type.h"
+#include "pipettes/firmware/pipette_motor_hardware.hpp"
 
 namespace interfaces {
 
