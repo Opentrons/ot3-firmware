@@ -18,7 +18,7 @@ using SerialNumberType = std::array<uint8_t, addresses::serial_number_length>;
  */
 class ReadListener {
   public:
-    virtual ~ReadListener() =default;
+    virtual ~ReadListener() = default;
     virtual void on_read(const SerialNumberType&) = 0;
 };
 
@@ -83,8 +83,7 @@ class SerialNumberAccessor {
     static void callback(const eeprom::message::EepromMessage& msg,
                          void* param) {
         auto* self =
-            reinterpret_cast<SerialNumberAccessor<EEPromTaskClient>*>(
-                param);
+            reinterpret_cast<SerialNumberAccessor<EEPromTaskClient>*>(param);
         self->callback(msg);
     }
 

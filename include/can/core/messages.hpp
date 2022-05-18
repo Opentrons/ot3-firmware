@@ -8,8 +8,8 @@
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
-#include "eeprom/core/types.hpp"
 #include "eeprom/core/serial_number.hpp"
+#include "eeprom/core/types.hpp"
 #include "parse.hpp"
 
 namespace can_messages {
