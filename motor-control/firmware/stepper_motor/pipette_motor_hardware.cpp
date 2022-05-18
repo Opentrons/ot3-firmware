@@ -1,9 +1,9 @@
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/pipette_motor_hardware.hpp"
 
 #include "common/firmware/gpio.hpp"
 #include "motor-control/firmware/motor_control_hardware.h"
 
-using namespace motor_hardware;
+using namespace pipette_motor_hardware;
 
 void MotorHardware::step() { gpio::set(pins.step); }
 
@@ -24,6 +24,7 @@ bool MotorHardware::check_limit_switch() {
 }
 
 bool MotorHardware::check_sync_in() { return gpio::is_set(pins.sync_in); }
+bool MotorHardware::check_tip_sense() { return gpio::is_set(pins.tip_sense); }
 
 void MotorHardware::set_LED(bool status) {
     if (status) {
