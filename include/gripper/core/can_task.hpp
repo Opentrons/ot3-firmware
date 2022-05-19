@@ -53,7 +53,7 @@ using BrushedMoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
 using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
                                             gripper_tasks::QueueClient>,
-    can_messages::GripperInfoRequest, can_messages::SetSerialNumber>;
+    can_messages::GripperInfoRequest>;
 
 auto constexpr reader_message_buffer_size = 1024;
 

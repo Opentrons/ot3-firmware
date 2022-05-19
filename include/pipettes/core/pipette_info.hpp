@@ -70,10 +70,6 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
-    /**
-     * A serial number read has completed.
-     * @param sn The serial number.
-     */
     void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
         writer.send_can_message(can_ids::NodeId::host,
                                 can_messages::PipetteInfoResponse{
@@ -85,22 +81,7 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
   private:
     void visit(std::monostate &) {}
 
-    /**
-     * Handle a request to get pipette info.
-     */
-    void visit(const PipetteInfoRequest &) {
-        // Start a serial number read. Respond with CAN message when read
-        // completes.
-        serial_number_accessor.start_read();
-    }
-
-    /**
-     * Handle request to set the serial number.
-     * @param m
-     */
-    void visit(const SetSerialNumber &m) {
-        serial_number_accessor.write(m.serial);
-    }
+    void visit(PipetteInfoRequest &) { serial_number_accessor.start_read(); }
 
     CanClient &writer;
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>
