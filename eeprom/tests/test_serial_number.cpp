@@ -77,7 +77,8 @@ SCENARIO("Reading serial number") {
         WHEN("the read completes") {
             auto sn = serial_number::SerialNumberType{8, 7, 6, 5, 4, 3, 2, 1};
 
-            auto read_message = std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            auto read_message =
+                std::get<message::ReadEepromMessage>(queue_client.messages[0]);
             auto data = types::EepromData{};
             std::copy_n(sn.cbegin() + read_message.memory_address,
                         read_message.length, data.begin());
