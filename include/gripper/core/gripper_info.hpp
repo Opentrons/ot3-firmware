@@ -41,7 +41,8 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
         -> GripperInfoMessageHandler && = delete;
     ~GripperInfoMessageHandler() final = default;
 
-    using MessageType = std::variant<std::monostate, GripperInfoRequest>;
+    using MessageType =
+        std::variant<std::monostate, GripperInfoRequest, SetSerialNumber>;
 
     /**
      * Message handler
@@ -56,6 +57,7 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
      * @param sn Serial number
      */
     void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
+        // TODO (al, 2022-05-19): Define model.
         writer.send_can_message(can_ids::NodeId::host,
                                 GripperInfoResponse{.model = 1, .serial = sn});
     }
@@ -63,7 +65,22 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
   private:
     void visit(std::monostate &) {}
 
-    void visit(GripperInfoRequest &) { serial_number_accessor.start_read(); }
+    /**
+     * Handle request for gripper info.
+     */
+    void visit(const GripperInfoRequest &) {
+        // Start a serial number read. Respond with CAN message when read
+        // completes.
+        serial_number_accessor.start_read();
+    }
+
+    /**
+     * Handle request to set the serial number.
+     * @param m The message
+     */
+    void visit(const SetSerialNumber &m) {
+        serial_number_accessor.write(m.serial);
+    }
 
     CanClient &writer;
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>

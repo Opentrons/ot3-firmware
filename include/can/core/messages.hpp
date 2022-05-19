@@ -760,6 +760,22 @@ struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     auto operator==(const GripperInfoResponse& other) const -> bool = default;
 };
 
+struct SetSerialNumber : BaseMessage<MessageId::set_serial_number> {
+    eeprom::serial_number::SerialNumberType serial{};
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetSerialNumber {
+        eeprom::serial_number::SerialNumberType serial{};
+        std::copy_n(
+            body,
+            std::min(static_cast<std::size_t>(limit - body), serial.size()),
+            serial.begin());
+        return SetSerialNumber{.serial = serial};
+    }
+
+    auto operator==(const SetSerialNumber& other) const -> bool = default;
+};
+
 struct SensorDiagnosticRequest
     : BaseMessage<MessageId::sensor_diagnostic_request> {
     uint8_t sensor;
