@@ -69,7 +69,8 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
      * Handle request for gripper info.
      */
     void visit(const GripperInfoRequest &) {
-        // Start a serial number read. Respond with CAN message when read completes.
+        // Start a serial number read. Respond with CAN message when read
+        // completes.
         serial_number_accessor.start_read();
     }
 
