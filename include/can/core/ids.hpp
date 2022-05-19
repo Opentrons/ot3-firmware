@@ -153,4 +153,3 @@ enum class SensorOutputBinding {
 };
 
 }  // namespace can_ids
-
