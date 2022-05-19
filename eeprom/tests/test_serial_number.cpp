@@ -77,19 +77,16 @@ SCENARIO("Reading serial number") {
         WHEN("the read completes") {
             auto sn = serial_number::SerialNumberType{8, 7, 6, 5, 4, 3, 2, 1};
 
-            for (auto m = queue_client.messages.cbegin();
-                 m < queue_client.messages.cend(); m++) {
-                auto read_message = std::get<message::ReadEepromMessage>(*m);
-                auto data = types::EepromData{};
-                std::copy_n(sn.cbegin() + read_message.memory_address,
-                            read_message.length, data.begin());
+            auto read_message = std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            auto data = types::EepromData{};
+            std::copy_n(sn.cbegin() + read_message.memory_address,
+                        read_message.length, data.begin());
 
-                read_message.callback(
-                    {.memory_address = read_message.memory_address,
-                     .length = read_message.length,
-                     .data = data},
-                    read_message.callback_param);
-            }
+            read_message.callback(
+                {.memory_address = read_message.memory_address,
+                 .length = read_message.length,
+                 .data = data},
+                read_message.callback_param);
 
             THEN("then the listener is called once") {
                 REQUIRE(read_listener.call_count == 1);
