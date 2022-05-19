@@ -131,7 +131,7 @@ static uint16_t get_motor_driver_pins_lt(GPIO_TypeDef* for_handle) {
 }
 
 
-PipetteHardwarePin pipette_hardware_get_gpio(PipetteType pipette_type, PipetteHardwareDevice device) {
+PipetteHardwarePin pipette_hardware_get_gpio(const PipetteType pipette_type, PipetteHardwareDevice device) {
     switch (pipette_type) {
         case NINETY_SIX_CHANNEL:
         case THREE_EIGHTY_FOUR_CHANNEL:
@@ -144,7 +144,7 @@ PipetteHardwarePin pipette_hardware_get_gpio(PipetteType pipette_type, PipetteHa
 }
 
 
-uint16_t pipette_hardware_spi_pins(PipetteType pipette_type, GPIO_TypeDef* for_handle) {
+uint16_t pipette_hardware_spi_pins(const PipetteType pipette_type, GPIO_TypeDef* for_handle) {
     switch (pipette_type) {
         case NINETY_SIX_CHANNEL:
         case THREE_EIGHTY_FOUR_CHANNEL:
@@ -156,7 +156,7 @@ uint16_t pipette_hardware_spi_pins(PipetteType pipette_type, GPIO_TypeDef* for_h
     }
 }
 
-uint16_t pipette_hardware_motor_driver_pins(PipetteType pipette_type, GPIO_TypeDef* for_handle) {
+uint16_t pipette_hardware_motor_driver_pins(const PipetteType pipette_type, GPIO_TypeDef* for_handle) {
     switch (pipette_type) {
         case NINETY_SIX_CHANNEL:
         case THREE_EIGHTY_FOUR_CHANNEL:

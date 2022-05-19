@@ -1,4 +1,5 @@
 #include "platform_specific_hal_conf.h"
+#include "pipettes/core/pipette_type.h"
 #include "pipettes/firmware/i2c_setup.h"
 #include "common/firmware/errors.h"
 
