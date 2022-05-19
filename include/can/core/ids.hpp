@@ -29,6 +29,7 @@ enum class MessageId {
     pipette_info_response = 0x307,
     gripper_info_request = 0x308,
     gripper_info_response = 0x309,
+    set_serial_number = 0x30a,
     stop_request = 0x0,
     get_status_request = 0x1,
     get_status_response = 0x5,
@@ -88,7 +89,7 @@ enum class MessageId {
     bind_sensor_output_request = 0x8a,
     bind_sensor_output_response = 0x8b,
     peripheral_status_request = 0x8c,
-    peripheral_status_response = 0x8d
+    peripheral_status_response = 0x8d,
 };
 
 /** Can bus arbitration id node id. */
@@ -146,8 +147,10 @@ enum class SensorType {
 
 /** Links sensor threshold triggers to pins. */
 enum class SensorOutputBinding {
+    none = 0x0,
     sync = 0x1,
     report = 0x2,
 };
 
 }  // namespace can_ids
+
