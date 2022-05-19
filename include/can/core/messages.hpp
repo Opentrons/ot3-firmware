@@ -8,6 +8,7 @@
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
+#include "eeprom/core/serial_number.hpp"
 #include "eeprom/core/types.hpp"
 #include "parse.hpp"
 
@@ -744,7 +745,7 @@ using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint16_t model;
-    std::array<char, 12> serial{};
+    eeprom::serial_number::SerialNumberType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -802,7 +803,7 @@ using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     uint16_t name;
     uint16_t model;
-    std::array<char, 12> serial{};
+    eeprom::serial_number::SerialNumberType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
