@@ -5,6 +5,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/stepper_motor/encoder_handler.hpp"
 
 namespace motor_handler {
 
@@ -104,7 +105,7 @@ class MotorInterruptHandler {
             update_move();
             return false;
         }
-        if (has_active_move) {
+        if (has_active_move) { 
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 homing_stopped()) {
@@ -143,8 +144,8 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             position_tracker = 0;
+            encoder.reset_encoder_pulses();
             finish_current_move(AckMessageId::stopped_by_condition);
-            reset_encoder_pulses();
             return true;
         }
         return false;
@@ -171,7 +172,8 @@ class MotorInterruptHandler {
         }
         // check to see when motor should step using velocity & tick count
         return bool((old_position ^ position_tracker) & tick_flag);
-    }
+    }         
+
 
     [[nodiscard]] auto has_messages() const -> bool {
         return queue.has_message_isr();
@@ -196,8 +198,6 @@ class MotorInterruptHandler {
         // pin configurations out of motion controller.
     }
 
-    auto update_encoder_position() -> uint32_t { return get_encoder_pulses(); }
-
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
     }
@@ -212,7 +212,7 @@ class MotorInterruptHandler {
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = update_encoder_position(),
+                .encoder_position = encoder.get_encoder_pulses(),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -220,30 +220,6 @@ class MotorInterruptHandler {
         }
         set_buffered_move(Move{});
     }
-
-    auto get_encoder_pulses() {
-              /* This function fixes the overflow issue for each motor.
-        Check whether the UIEF interrupt bit in the Status register gets
-        triggered. If it gets triggered we save the previous state of the
-        triggered flag and clear the status register interrupt bit.
-        */
-        if (hardware.get_encoder_SR_flag() == true) {
-            hardware.clear_encoder_SR;
-            if (enc_overflow_future_flag) {
-                enc_position_tracker = hardware.get_encoder_pulses();
-                enc_overflow_future_flag = false;
-            } else {
-                enc_position_tracker =
-                    UINT16_MAX + hardware.get_encoder_pulses();
-                enc_overflow_future_flag = true;
-            }
-        } else {
-            enc_position_tracker = hardware.get_encoder_pulses();
-        }
-        return enc_position_tracker;
-    }
-
-    void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
 
     void reset() {
         /*
@@ -261,7 +237,7 @@ class MotorInterruptHandler {
          * Check whether the position has overflowed. Return true if this has
          * happened, and false otherwise.
          *
-         * (TODO lc): If an overflow has happened, we should probably notify the
+         * (TODO lc): If an overflEncoderHandlerow has happened, we should probably notify the
          * server somehow that the position needed to be capped.
          * Note: could not get the built-ins to work as expected.
          */
@@ -286,11 +262,10 @@ class MotorInterruptHandler {
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     q31_31 position_tracker = 0x0;  // in steps
-    bool enc_overflow_future_flag = false;
-    uint32_t enc_position_tracker = 0x0;
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
     Move buffered_move = Move{};
+    encoder_handler::EncoderHandler encoder{hardware};
 };
 }  // namespace motor_handler
