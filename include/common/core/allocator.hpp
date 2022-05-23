@@ -49,21 +49,7 @@ class PoolAllocator {
     PoolAllocator(PoolAllocator&&) = delete;
     ~PoolAllocator() = default;
 
-    void free_block(void *ptr) {
-//        free(ptr);
-    }
-
-//    void build() {
-//        // Create a linked-list with all free positions
-//        for (int i = 0; i < total_blocks; ++i) {
-//            std::size_t address = (std::size_t) start_ptr + i * block;
-//            free_memory_list.push((Node *) address);
-//        }
-//    }
-
     void deallocate(pointer loc, size_t elm_size) {
-//        mem_used -= block;
-//        free_memory_list.push((Node *) ptr);
        auto index = (loc - backing.begin()) / elm_size;
        backing_flag[index] = false;
     }
@@ -88,21 +74,3 @@ class PoolAllocator {
     MemoryType backing{};
     FlagMemoryType backing_flag{};
 };
-
-
-//template<typename Alloc = std::allocator<void>>
-//class CustomAllocator {
-//  public:
-//    using MemorySize;
-//    auto operator=(CustomAllocator&) -> CustomAllocator& = delete;
-//    auto operator=(CustomAllocator&&) -> CustomAllocator&& = delete;
-//    Allocator(CustomAllocator&) = delete;
-//    Allocator(CustomAllocator&&) = delete;
-//
-//    void deallocate(T * ptr, size_t size) {pAlloc->free_block(); }
-//    pointer allocate(size_t size, const void * = 0) {
-//        return pAlloc->next_block();
-//    }
-//  private:
-//    Allocator<T> *pAlloc;
-//};
