@@ -1,7 +1,7 @@
 #include <map>
 #include <unordered_map>
 #include "catch2/catch.hpp"
-
+#include "common/core/logging.h"
 #include "common/core/allocator.hpp"
 
 TEST_CASE("Ordered Map Object") {
@@ -24,9 +24,15 @@ TEST_CASE("Ordered Map Object") {
     }
 }
 
-TEST_CASE("Unordered Map Object") {
-
-//    std::unordered_map<std::string, int, Allocator=PoolAllocator<200, 5>> task_map {};
+TEST_CASE("Vector Object") {
+//    auto constexpr max_entries=5;
+//    std::vector subject{1, 2, 3, 4, 5};
+//    std::vector expected{1, 2, 3, 4, 5};
+////    std::vector<int, PoolAllocator<int, max_entries>> subject{1, 2, 3, 4, 5};
+//    GIVEN("too many elements in a vector") {
+//        subject.push_back(6);
+//
+//    }
 }
 
 TEST_CASE("") {

@@ -19,6 +19,12 @@
 //    {m / b} -> std::convertable_to<int>;
 //};
 
+template<typename Element>
+struct AllocatorElement {
+    Element element = nullptr;
+    bool used = false;
+};
+
 // should have type of object and max number of.
 // should have backing be an array and/or pointer to array. Do not use malloc!
 //only support allocating memory for one type of object at a time.
@@ -55,32 +61,28 @@ class PoolAllocator {
 //        }
 //    }
 
-    void deallocate(void *, size_t) {
+    void deallocate(pointer loc, size_t elm_size) {
 //        mem_used -= block;
 //        free_memory_list.push((Node *) ptr);
+       auto index = (loc - backing.begin()) / elm_size;
+       backing_flag[index] = false;
     }
 
     pointer allocate(size_t, const void * = 0) {
         auto iter = std::find_if(backing_flag.begin(), backing_flag.end(), [](auto&i) {return !i;});
-        *iter = true;
-        return &backing[iter - backing_flag.begin()];
-    }
-
-    void reset() {
-//        mem_used = 0;
+        if (iter) {
+            *iter = true;
+            return &backing[iter - backing_flag.begin()];
+        }
+        return nullptr;
     }
 
     template <class U>
     struct rebind { typedef PoolAllocator<U, MaxElements> other; };
 
   private:
-//    int memory;
-//    int block;
-//    int total_blocks;
-//    int mem_used = 0;
-//    void * start_ptr = nullptr;
-
-    using ElementType = std::variant<std::monostate, Element>;
+    // Use a struct allocator element and then can return the exact address
+    // to the element!
     using MemoryType = std::array<Element, MaxElements>;
     using FlagMemoryType = std::array<bool, MaxElements>;
     MemoryType backing{};
