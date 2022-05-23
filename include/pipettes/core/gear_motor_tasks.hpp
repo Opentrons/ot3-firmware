@@ -92,4 +92,16 @@ struct QueueClient : can_message_writer::MessageWriter {
  */
 [[nodiscard]] auto get_queues() -> QueueClient&;
 
+/**
+ * Access to the left gear motor tasks queues singleton
+ * @return
+ */
+[[nodiscard]] auto get_right_gear_queues() -> MotorQueueClient&;
+
+/**
+ * Access to the right gear motor tasks queues singleton
+ * @return
+ */
+[[nodiscard]] auto get_left_gear_queues() -> MotorQueueClient&;
+
 }  // namespace gear_motor_tasks

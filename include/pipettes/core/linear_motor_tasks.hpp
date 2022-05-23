@@ -9,7 +9,6 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
-#include "motor-control/core/stepper_motor/utils.hpp"
 #include "spi/core/writer.hpp"
 
 /**

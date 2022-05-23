@@ -16,7 +16,7 @@ namespace tasks {
 
 namespace gear_move_status {
 
-using TaskMessage = pipettes::motor_control_task_messages::MoveStatusReporterTaskMessage;
+using TaskMessage = pipettes::task_messages::motor_control_task_messages::MoveStatusReporterTaskMessage;
 
 template <message_writer_task::TaskClient CanClient,
         lms::MotorMechanicalConfig LmsConfig>

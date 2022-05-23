@@ -22,7 +22,7 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/stepper_motor/pipette_motor_hardware.hpp"
+
 #include "mount_detection.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
@@ -32,6 +32,7 @@
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
+#include "pipettes/firmware/pipette_motor_hardware.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -84,8 +85,17 @@ static auto eeprom_hardware_iface = EEPromHardwareIface();
 
 static auto motor_config = interfaces::motor_configurations<PIPETTE_TYPE>();
 
+// overloaded function that returns required motor hardware.
 static pipette_motor_hardware::MotorHardware plunger_hw(
     motor_config.hardware_pins.linear_motor, &htim7, &htim2);
+
+static pipette_motor_hardware::MotorHardware left_gear_hw(
+    motor_config.hardware_pins.left_gear_motor, &htim6, &htim2);
+static pipette_motor_hardware::MotorHardware right_gear_hw(
+    motor_config.hardware_pins.right_gear_motor, &htim6, &htim2);
+
+// needs timers
+static auto motor_hardware_control = interfaces::get_motor_hardware_control(motor_config.hardware_pins);
 
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     linear_motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
@@ -164,10 +174,12 @@ auto initialize_motor_tasks(
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
-    // todo update with correct motion controller.
     gear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
         peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
+    gear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        peripheral_tasks::get_spi_client(), conf.left_gear_motor, id);
 }
 auto initialize_motor_tasks(
     can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {

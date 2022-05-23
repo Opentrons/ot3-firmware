@@ -15,7 +15,7 @@ namespace tasks {
 
 namespace motion_controller_task {
 
-using TaskMessage = pipettes::motor_control_task_messages::MotionControlTaskMessage;
+using TaskMessage = pipettes::task_messages::motor_control_task_messages::MotionControlTaskMessage;
 
 /**
  * The message queue message handler.
@@ -80,21 +80,6 @@ class MotionControllerMessageHandler {
             m.min_velocity, m.max_velocity, m.min_acceleration,
             m.max_acceleration);
         controller.set_motion_constraints(m);
-    }
-
-    void handle(const can_messages::AddLinearMoveRequest& m) {
-        LOG("Received add linear move request: velocity=%d, acceleration=%d, "
-            "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
-            m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
-            m.request_stop_condition);
-        controller.move(m);
-    }
-
-    void handle(const can_messages::HomeRequest& m) {
-        LOG("Motion Controller Received home request: velocity=%d, "
-            "groupid=%d, seqid=%d\n",
-            m.velocity, m.group_id, m.seq_id);
-        controller.move(m);
     }
 
     void handle(const can_messages::TipActionRequest& m) {

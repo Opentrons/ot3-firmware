@@ -22,11 +22,9 @@ constexpr std::size_t max_moves_per_group = 5;
 
 using MoveGroupType =
 move_group::MoveGroupManager<max_groups, max_moves_per_group,
-    can_messages::AddLinearMoveRequest,
-    can_messages::HomeRequest,
     can_messages::TipActionRequest>;
 
-using TaskMessage = pipettes::move_group_task_messages::MoveGroupTaskMessage;
+using TaskMessage = pipettes::task_messages::move_group_task_messages::MoveGroupTaskMessage;
 
 /**
  * The handler of move group messages
@@ -57,18 +55,6 @@ class MoveGroupMessageHandler {
 
   private:
     void handle(std::monostate&) {}
-
-    void handle(const can_messages::AddLinearMoveRequest& m) {
-        LOG("Received add linear move request: groupid=%d, seqid=%d",
-            m.group_id, m.seq_id);
-        static_cast<void>(move_groups[m.group_id].set_move(m));
-    }
-
-    void handle(const can_messages::HomeRequest& m) {
-        LOG("Move Group Received home request: groupid=%d, seqid=%d\n",
-            m.group_id, m.seq_id);
-        static_cast<void>(move_groups[m.group_id].set_move(m));
-    }
 
     // TODO inherit from move group task for pipettes specifically
     void handle(const can_messages::TipActionRequest& m) {
@@ -103,14 +89,6 @@ class MoveGroupMessageHandler {
     }
 
     void visit_move(const std::monostate&) {}
-
-    void visit_move(const can_messages::AddLinearMoveRequest& m) {
-        mc_client.send_motion_controller_queue(m);
-    }
-
-    void visit_move(const can_messages::HomeRequest& m) {
-        mc_client.send_motion_controller_queue(m);
-    }
 
     void visit_move(const can_messages::TipActionRequest& m) {
         mc_client.send_motion_controller_queue(m);
