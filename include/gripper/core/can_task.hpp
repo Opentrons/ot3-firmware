@@ -1,6 +1,5 @@
 #pragma once
 
-#include "can/core/can_writer_task.hpp"
 #include "can/core/freertos_can_dispatch.hpp"
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
@@ -9,7 +8,6 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
-#include "motor-control/core/stepper_motor/motor.hpp"
 
 namespace can_bus {
 class CanBus;
@@ -53,8 +51,9 @@ using BrushedMoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
     can_messages::GripperGripRequest, can_messages::GripperHomeRequest>;
 using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient>,
-    can_messages::GripperInfoRequest>;
+    gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
+                                            gripper_tasks::QueueClient>,
+    can_messages::GripperInfoRequest, can_messages::SetSerialNumber>;
 
 auto constexpr reader_message_buffer_size = 1024;
 

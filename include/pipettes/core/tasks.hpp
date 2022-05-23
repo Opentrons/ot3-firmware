@@ -30,8 +30,8 @@ namespace pipettes_tasks {
 void start_tasks(can_bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      motion_controller,
-                 i2c::hardware::I2CDeviceBase& i2c3_device,
-                 i2c::hardware::I2CDeviceBase& i2c1_device,
+                 i2c::hardware::I2CBase& i2c3_interface,
+                 i2c::hardware::I2CBase& i2c1_interface,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
                  spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,

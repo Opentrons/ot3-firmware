@@ -7,7 +7,7 @@
 
 namespace i2c {
 namespace hardware {
-class I2C : public I2CDeviceBase {
+class I2C : public I2CBase {
   public:
     explicit I2C() = default;
     ~I2C() final = default;

@@ -8,6 +8,7 @@
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
+#include "eeprom/core/serial_number.hpp"
 #include "eeprom/core/types.hpp"
 #include "parse.hpp"
 
@@ -760,7 +761,7 @@ using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint16_t model;
-    std::array<char, 12> serial{};
+    eeprom::serial_number::SerialNumberType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -773,6 +774,22 @@ struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     }
 
     auto operator==(const GripperInfoResponse& other) const -> bool = default;
+};
+
+struct SetSerialNumber : BaseMessage<MessageId::set_serial_number> {
+    eeprom::serial_number::SerialNumberType serial{};
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> SetSerialNumber {
+        eeprom::serial_number::SerialNumberType serial{};
+        std::copy_n(
+            body,
+            std::min(static_cast<std::size_t>(limit - body), serial.size()),
+            serial.begin());
+        return SetSerialNumber{.serial = serial};
+    }
+
+    auto operator==(const SetSerialNumber& other) const -> bool = default;
 };
 
 struct SensorDiagnosticRequest
@@ -818,7 +835,7 @@ using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     uint16_t name;
     uint16_t model;
-    std::array<char, 12> serial{};
+    eeprom::serial_number::SerialNumberType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -921,6 +938,38 @@ struct TipActionResponse
     auto operator==(const TipActionResponse& other) const -> bool = default;
 };
 
+struct PeripheralStatusRequest
+    : BaseMessage<MessageId::peripheral_status_request> {
+    can_ids::SensorType sensor;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> PeripheralStatusRequest {
+        uint8_t _sensor = 0;
+        body = bit_utils::bytes_to_int(body, limit, _sensor);
+        return PeripheralStatusRequest{
+            .sensor = static_cast<can_ids::SensorType>(_sensor)};
+    }
+    auto operator==(const PeripheralStatusRequest& other) const
+        -> bool = default;
+};
+
+struct PeripheralStatusResponse
+    : BaseMessage<MessageId::peripheral_status_response> {
+    can_ids::SensorType sensor;
+    uint8_t status;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(status, body, limit);
+        return iter - body;
+    }
+
+    auto operator==(const PeripheralStatusResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -930,9 +979,10 @@ using ResponseMessageType = std::variant<
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    EncoderPositionResponse, ReadFromSensorResponse,
-    FirmwareUpdateStatusResponse, SensorThresholdResponse,
-    SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
-    BindSensorOutputResponse, GripperInfoResponse, TipActionResponse>;
+    EncoderPositionResponse,
+    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
+    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
+    TipActionResponse, PeripheralStatusResponse>;
 
 }  // namespace can_messages

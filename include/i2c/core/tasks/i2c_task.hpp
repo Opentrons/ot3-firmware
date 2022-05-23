@@ -12,8 +12,8 @@ using namespace messages;
 
 class I2CMessageHandler {
   public:
-    I2CMessageHandler(hardware::I2CDeviceBase &i2c_device)
-        : i2c_device{i2c_device} {}
+    I2CMessageHandler(hardware::I2CBase &i2c_interface)
+        : i2c_interface{i2c_interface} {}
     I2CMessageHandler(const I2CMessageHandler &) = delete;
     I2CMessageHandler(const I2CMessageHandler &&) = delete;
     auto operator=(const I2CMessageHandler &) -> I2CMessageHandler & = delete;
@@ -30,14 +30,14 @@ class I2CMessageHandler {
     void visit(Transact &m) {
         messages::MaxMessageBuffer read_buf{};
         if (m.transaction.bytes_to_write != 0) {
-            i2c_device.central_transmit(
+            i2c_interface.central_transmit(
                 m.transaction.write_buffer.data(),
                 std::min(m.transaction.bytes_to_write,
                          m.transaction.write_buffer.size()),
                 m.transaction.address, TIMEOUT);
         }
         if (m.transaction.bytes_to_read != 0) {
-            i2c_device.central_receive(
+            i2c_interface.central_receive(
                 read_buf.data(),
                 std::min(m.transaction.bytes_to_read, read_buf.size()),
                 m.transaction.address, TIMEOUT);
@@ -48,7 +48,7 @@ class I2CMessageHandler {
                                 .read_buffer = read_buf}));
     }
 
-    i2c::hardware::I2CDeviceBase &i2c_device;
+    i2c::hardware::I2CBase &i2c_interface;
 
     // Default timeout should be 60 seconds
     // freertos expects this time to be in milliseconds
@@ -74,7 +74,7 @@ class I2CTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(i2c::hardware::I2CDeviceBase *driver) {
+    [[noreturn]] void operator()(i2c::hardware::I2CBase *driver) {
         auto handler = I2CMessageHandler{*driver};
         // Figure out task messages for I2C queue
         writer::TaskMessage message{};

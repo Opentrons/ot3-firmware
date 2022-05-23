@@ -32,6 +32,8 @@ class EnvironmentSensorMessageHandler {
         -> EnvironmentSensorMessageHandler && = delete;
     ~EnvironmentSensorMessageHandler() = default;
 
+    // TODO(cm): we should move this to the env sensor driver when that's
+    // complete
     void initialize() {
         std::array reg_buf{static_cast<uint8_t>(hdc2080::DEVICE_ID_REGISTER)};
         writer.transact(
@@ -49,6 +51,7 @@ class EnvironmentSensorMessageHandler {
         configuration_data = (hdc2080::MEASURE_REGISTER << 8) |
                              (hdc2080::BEGIN_MEASUREMENT_RECORDING);
         writer.write(hdc2080::ADDRESS, configuration_data);
+        is_initialized = true;
     }
 
     void handle_message(const utils::TaskMessage &m) {
@@ -119,9 +122,19 @@ class EnvironmentSensorMessageHandler {
         LOG("Received non-supported BindSensorOutputRequest");
     }
 
+    void visit(const can_messages::PeripheralStatusRequest &m) {
+        LOG("received peripheral device status request");
+        can_client.send_can_message(
+            can_ids::NodeId::host,
+            can_messages::PeripheralStatusResponse{
+                .sensor = m.sensor,
+                .status = static_cast<uint8_t>(is_initialized)});
+    }
+
     I2CQueueWriter &writer;
     CanClient &can_client;
     OwnQueue &own_queue;
+    bool is_initialized = false;
 };
 
 /**

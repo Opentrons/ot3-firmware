@@ -4,6 +4,7 @@
 #include "can/firmware/hal_can.h"
 #include "can/firmware/hal_can_bus.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces.hpp"
@@ -61,12 +62,7 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_11,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
@@ -99,12 +95,7 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_11,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
@@ -175,7 +166,12 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_config =
 /**
  * The can bus.
  */
-static auto canbus = hal_can_bus::HalCanBus(can_get_device_handle());
+static auto canbus = hal_can_bus::HalCanBus(
+    can_get_device_handle(),
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_11,
+                    .active_setting = GPIO_PIN_RESET});
 
 /**
  * The pending move queue
@@ -211,19 +207,19 @@ extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 // to be checked against current configuration. However, they are
 // - clock input is 85MHz assuming the CAN is clocked from PCLK1
 // which has a clock divider of 2, and the system clock is 170MHZ
-// - 240ns requested time quantum yields a 235ns actual
+// - 50ns time quantum
 // - 250KHz bitrate requested yields 250312KHz actual
-// - 88.3% sample point
+// - 88.2% sample point
 // Should drive
-// segment 1 = 14 quanta
-// segment 2 = 2 quanta
+// segment 1 = 73 quanta
+// segment 2 = 11 quanta
 
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<85 * can::bit_timings::MHZ, 240,
-                                 250 * can::bit_timings::KHZ, 883>{};
+    can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
+                                 500 * can::bit_timings::KHZ, 800>{};
 
 void interfaces::initialize() {
     // Initialize SPI
@@ -234,9 +230,7 @@ void interfaces::initialize() {
     initialize_timer(call_motor_handler);
 
     // Start the can bus
-    can_start(can_bit_timings.clock_divider, can_bit_timings.segment_1_quanta,
-              can_bit_timings.segment_2_quanta,
-              can_bit_timings.max_sync_jump_width);
+    canbus.start(can_bit_timings);
 
     iWatchdog.start(6);
 }

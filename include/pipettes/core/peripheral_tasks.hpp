@@ -27,8 +27,8 @@ using I2CPollerClient =
 using SPIClient =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
-void start_tasks(i2c::hardware::I2CDeviceBase& i2c3_device,
-                 i2c::hardware::I2CDeviceBase& i2c1_device,
+void start_tasks(i2c::hardware::I2CBase& i2c3_interface,
+                 i2c::hardware::I2CBase& i2c1_interface,
                  spi::hardware::SpiDeviceBase& spi_device);
 
 /**

@@ -1,9 +1,9 @@
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "pipettes/firmware/pipette_motor_hardware.hpp"
 
 #include "common/firmware/gpio.hpp"
 #include "motor-control/firmware/motor_control_hardware.h"
 
-using namespace motor_hardware;
+using namespace pipette_motor_hardware;
 
 void MotorHardware::step() { gpio::set(pins.step); }
 
@@ -19,11 +19,16 @@ void MotorHardware::start_timer_interrupt() {
 void MotorHardware::stop_timer_interrupt() {
     motor_hardware_stop_timer(tim_handle);
 }
-bool MotorHardware::check_limit_switch() {
+auto MotorHardware::check_limit_switch() -> bool {
     return gpio::is_set(pins.limit_switch);
 }
 
-bool MotorHardware::check_sync_in() { return gpio::is_set(pins.sync_in); }
+auto MotorHardware::check_sync_in() -> bool {
+    return gpio::is_set(pins.sync_in);
+}
+auto MotorHardware::check_tip_sense() -> bool {
+    return gpio::is_set(pins.tip_sense);
+}
 
 void MotorHardware::set_LED(bool status) {
     if (status) {
@@ -33,22 +38,10 @@ void MotorHardware::set_LED(bool status) {
     }
 }
 
-uint32_t MotorHardware::get_encoder_pulses() {
+auto MotorHardware::get_encoder_pulses() -> uint32_t {
     return motor_hardware_encoder_pulse_count(enc_handle);
 }
 
 void MotorHardware::reset_encoder_pulses() {
     motor_hardware_reset_encoder_count(enc_handle);
-}
-
-void MotorHardware::clear_encoder_SR() {
-    motor_hardware_clear_status_register(enc_handle);
-}
-
-bool MotorHardware::get_encoder_SR_flag() {
-    return motor_hardware_encoder_get_status_register(enc_handle);
-}
-
-bool MotorHardware::get_encoder_direction() {
-    return motor_hardware_encoder_get_direction(enc_handle);
 }

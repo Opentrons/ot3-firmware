@@ -1,4 +1,5 @@
 #include "platform_specific_hal_conf.h"
+#include "pipettes/core/pipette_type.h"
 #include "pipettes/firmware/i2c_setup.h"
 #include "common/firmware/errors.h"
 
@@ -14,7 +15,7 @@ static I2C_HandleTypeDef hi2c3;
 void eeprom_write_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     if (pipette_type == NINETY_SIX_CHANNEL) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -166,4 +167,7 @@ void i2c_setup(I2CHandlerStruct* temp_struct) {
     eeprom_write_gpio_init();
     HAL_I2C_HANDLE i2c1 = MX_I2C1_Init();
     temp_struct->i2c1 = i2c1;
+
+    // Write protect the eeprom
+    disable_eeprom_write();
 }

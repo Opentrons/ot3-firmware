@@ -17,5 +17,4 @@ bool hal_i2c_master_transmit(HAL_I2C_HANDLE handle, uint16_t DevAddress, uint8_t
 bool hal_i2c_master_receive(HAL_I2C_HANDLE handle, uint16_t DevAddress, uint8_t *data, uint16_t size, uint32_t timeout){
     return HAL_I2C_Master_Receive(handle, DevAddress, data, size,
                                   timeout) == HAL_OK;
-    return 0;
 }

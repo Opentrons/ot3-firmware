@@ -30,7 +30,7 @@ void start_tasks(can_bus::CanBus& can_bus,
                  brushed_motor::BrushedMotor& grip_motor,
                  spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                 i2c::hardware::I2CDeviceBase& i2c3,
+                 i2c::hardware::I2CBase& i2c3,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
 
 /**

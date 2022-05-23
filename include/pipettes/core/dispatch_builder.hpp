@@ -53,11 +53,13 @@ using SensorDispatchTarget = can_dispatch::DispatchParseTarget<
     can_messages::ReadFromSensorRequest, can_messages::WriteToSensorRequest,
     can_messages::BaselineSensorRequest,
     can_messages::SetSensorThresholdRequest,
-    can_messages::BindSensorOutputRequest>;
+    can_messages::BindSensorOutputRequest,
+    can_messages::PeripheralStatusRequest>;
 
 using PipetteInfoDispatchTarget = can_dispatch::DispatchParseTarget<
-    pipette_info::PipetteInfoMessageHandler<central_tasks::QueueClient>,
-    can_messages::PipetteInfoRequest>;
+    pipette_info::PipetteInfoMessageHandler<central_tasks::QueueClient,
+                                            sensor_tasks::QueueClient>,
+    can_messages::PipetteInfoRequest, can_messages::SetSerialNumber>;
 
 using EEPromDispatchTarget = can_dispatch::DispatchParseTarget<
     eeprom::message_handler::EEPromHandler<sensor_tasks::QueueClient,

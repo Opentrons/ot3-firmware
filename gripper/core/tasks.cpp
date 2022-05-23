@@ -31,7 +31,7 @@ void gripper_tasks::start_tasks(
     brushed_motor::BrushedMotor& grip_motor,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
-    i2c::hardware::I2CDeviceBase& i2c3,
+    i2c::hardware::I2CBase& i2c3,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);

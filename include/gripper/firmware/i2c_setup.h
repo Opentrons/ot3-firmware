@@ -1,6 +1,5 @@
 #pragma once
 #include "i2c/firmware/i2c.h"
-#include "pipettes/core/pipette_type.h"
 
 #ifdef __cplusplus
 extern "C" {
