@@ -32,7 +32,7 @@ function(add_simulator_executable TARGET)
             ${TARGET}
             ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/motor_configurations.cpp
             )
     target_include_directories(${TARGET} PUBLIC ${PIPETTE_SIM_INCLUDE})
     target_i2c_simlib(${TARGET})

@@ -1,426 +1,168 @@
-#include "pipettes/core/interfaces.hpp"
+#include "pipettes/firmware/interfaces.hpp"
 
-#pragma GCC diagnostic push
-// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#pragma GCC diagnostic ignored "-Wvolatile"
-#include "platform_specific_hal_conf.h"
-#pragma GCC diagnostic pop
+#include "pipettes/core/configs.hpp"
 
-auto interfaces::driver_config_by_axis(TMC2160PipetteAxis which)
-    -> tmc2160::configs::TMC2160DriverConfig {
-    switch (which) {
-        case TMC2160PipetteAxis::linear_motor:
-        default:
-            return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1},
-                              .ihold_irun = {.hold_current = 0x2,
-                                             .run_current = 0x10,
-                                             .hold_current_delay = 0x7},
-                              .tpowerdown = {},
-                              .tcoolthrs = {.threshold = 0},
-                              .thigh = {.threshold = 0xFFFFF},
-                              .chopconf = {.toff = 0x5,
-                                           .hstrt = 0x5,
-                                           .hend = 0x3,
-                                           .tbl = 0x2,
-                                           .mres = 0x3},
-                              .coolconf = {.sgt = 0x6},
-                              .glob_scale = {.global_scaler = 0x70}},
-                .current_config =
-                    {
-                        .r_sense = 0.1,
-                        .v_sf = 0.325,
-                    },
-                .chip_select = {
-                    .cs_pin = GPIO_PIN_6,
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .GPIO_handle = GPIOC,
-                }};
-    }
-}
+using namespace interfaces;
 
-auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
-    -> tmc2130::configs::TMC2130DriverConfig {
-    tmc2130::configs::TMC2130DriverConfig tmc2130_conf{
-        .registers = {.gconfig = {.en_pwm_mode = 1},
-                      .ihold_irun = {.hold_current = 0x2,
-                                     .run_current = 0x10,
-                                     .hold_current_delay = 0x7},
-                      .tpowerdown = {},
-                      .tcoolthrs = {.threshold = 0},
-                      .thigh = {.threshold = 0xFFFFF},
-                      .chopconf = {.toff = 0x5,
-                                   .hstrt = 0x5,
-                                   .hend = 0x3,
-                                   .tbl = 0x2,
-                                   .mres = 0x3},
-                      .coolconf = {.sgt = 0x6}},
-        .current_config =
-            {
-                .r_sense = 0.1,
-                .v_sf = 0.325,
-            },
-        .chip_select = {
-            .cs_pin = GPIO_PIN_9,
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .GPIO_handle = GPIOC,
-        }};
-    switch (which) {
-        case TMC2130PipetteAxis::left_gear_motor:
-            return tmc2130_conf;
-        case TMC2130PipetteAxis::right_gear_motor:
-            tmc2130_conf.chip_select = {
-                .cs_pin = GPIO_PIN_10,
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .GPIO_handle = GPIOC,
-            };
-            return tmc2130_conf;
-        case TMC2130PipetteAxis::linear_motor:
-        default:
-            tmc2130_conf.chip_select = {
-                .cs_pin = GPIO_PIN_6,
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .GPIO_handle = GPIOC,
-            };
-            return tmc2130_conf;
-    }
-}
-
-auto interfaces::hardware_config_by_axis(TMC2130PipetteAxis which)
-    -> pipette_motor_hardware::HardwareConfig {
-    switch (which) {
-        case TMC2130PipetteAxis::right_gear_motor:
-            return pipette_motor_hardware::HardwareConfig{
-                .direction =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_13,
-                     .active_setting = GPIO_PIN_SET},
-                .step =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_8,
-                     .active_setting = GPIO_PIN_SET},
-                .enable =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_SET},
-                .limit_switch =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_14,
-                     .active_setting = GPIO_PIN_SET},
-                // LED PIN C11, active setting low
-                .led = {},
-                .tip_sense =
-                    {// Located on the back sensor board
-                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_12,
-                     .active_setting = GPIO_PIN_SET},
-            };
-        case TMC2130PipetteAxis::left_gear_motor:
-            return pipette_motor_hardware::HardwareConfig{
-                .direction =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_7,
-                     .active_setting = GPIO_PIN_SET},
-                .step =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_8,
-                     .active_setting = GPIO_PIN_SET},
-                .enable =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_SET},
-                .limit_switch =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
-                     .pin = GPIO_PIN_10,
-                     .active_setting = GPIO_PIN_SET},
-                // LED PIN C11, active setting low
-                .led = {},
-                .tip_sense =
-                    {// Located on the front sensor board
-                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOH,
-                     .pin = GPIO_PIN_1,
-                     .active_setting = GPIO_PIN_SET},
-            };
-        case TMC2130PipetteAxis::linear_motor:
-        default:
-            return pipette_motor_hardware::HardwareConfig{
-                .direction =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
-                     .pin = GPIO_PIN_7,
-                     .active_setting = GPIO_PIN_SET},
-                .step =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_10,
-                     .active_setting = GPIO_PIN_SET},
-                .enable =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_SET},
-                .limit_switch =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_SET},
-                // LED PIN C11, active setting low
-                .led = {},
-                .tip_sense =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
-                     .pin = GPIO_PIN_10,
-                     .active_setting = GPIO_PIN_SET},
-            };
-    }
-}
-
-auto interfaces::hardware_config_by_axis(TMC2160PipetteAxis which)
-    -> pipette_motor_hardware::HardwareConfig {
-    switch (which) {
-        case TMC2160PipetteAxis::linear_motor:
-        default:
-            return pipette_motor_hardware::HardwareConfig{
-                .direction =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_3,
-                     .active_setting = GPIO_PIN_SET},
-                .step =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_7,
-                     .active_setting = GPIO_PIN_SET},
-                .enable =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_8,
-                     .active_setting = GPIO_PIN_SET},
-                .limit_switch =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_SET},
-                // LED PIN C11, active setting low
-                .led = {},
-                // tip sense will be checked on the two pipette
-                // tip pick up motors.
-                // TODO need to think further about force pick up of tips
-                .tip_sense = {},
-            };
-    }
+template <>
+auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
+    -> LowThroughputInterruptQueues {
+    return LowThroughputInterruptQueues{.motor_queue =
+                                            MoveQueue{"Linear Motor Queue"}};
 }
 
 template <>
-auto interfaces::motor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> interfaces::LowThroughputMotorConfigurations {
-    auto configs = interfaces::LowThroughputPipetteDriverHardware{
-        .linear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
-    auto pins = interfaces::LowThroughputPipetteMotorHardware{
-        .linear_motor =
-            hardware_config_by_axis(TMC2130PipetteAxis::linear_motor)};
-    return interfaces::LowThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
+auto interfaces::get_interrupt_queues<PipetteType::EIGHT_CHANNEL>()
+    -> LowThroughputInterruptQueues {
+    return LowThroughputInterruptQueues{.motor_queue =
+                                            MoveQueue{"Linear Motor Queue"}};
 }
 
 template <>
-auto interfaces::motor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> interfaces::LowThroughputMotorConfigurations {
-    auto configs = interfaces::LowThroughputPipetteDriverHardware{
-        .linear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
-    auto pins = interfaces::LowThroughputPipetteMotorHardware{
-        .linear_motor =
-            hardware_config_by_axis(TMC2130PipetteAxis::linear_motor)};
-    return interfaces::LowThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
-}
+auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
+    -> HighThroughputInterruptQueues {
+    return HighThroughputInterruptQueues{
+        .linear_motor_queue = MoveQueue{"Linear Motor Queue"},
+        .right_motor_queue = MoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = MoveQueue{"Left Gear Motor Queue"}
 
-template <>
-auto interfaces::motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> interfaces::HighThroughputMotorConfigurations {
-    auto configs = interfaces::HighThroughputPipetteDriverHardware{
-        .right_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
-        .left_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
-        .linear_motor =
-            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
-    auto pins = interfaces::HighThroughputPipetteMotorHardware{
-        .right_gear_motor =
-            hardware_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
-        .left_gear_motor =
-            hardware_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
-        .linear_motor =
-            hardware_config_by_axis(TMC2160PipetteAxis::linear_motor),
     };
-    return interfaces::HighThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
 }
 
 template <>
-auto interfaces::motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
-    -> interfaces::HighThroughputMotorConfigurations {
-    auto configs = interfaces::HighThroughputPipetteDriverHardware{
-        .right_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
-        .left_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
-        .linear_motor =
-            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
-    auto pins = interfaces::HighThroughputPipetteMotorHardware{
-        .right_gear_motor =
-            hardware_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
-        .left_gear_motor =
-            hardware_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
-        .linear_motor =
-            hardware_config_by_axis(TMC2160PipetteAxis::linear_motor),
-    };
-    return interfaces::HighThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
+auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
+    -> HighThroughputInterruptQueues {
+    return HighThroughputInterruptQueues{
+        .linear_motor_queue = MoveQueue{"Linear Motor Queue"},
+        .right_motor_queue = MoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = MoveQueue{"Left Gear Motor Queue"}};
 }
 
-template <>
-auto interfaces::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> interfaces::LowThroughputSensorHardware {
-    auto pins = interfaces::LowThroughputSensorHardware{
-        .primary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_5,
-                 .active_setting = GPIO_PIN_RESET},
-            .sync_out =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_4,
-                 .active_setting = GPIO_PIN_RESET},
-            .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOC,
-                 .pin = GPIO_PIN_9,
-                 .active_setting = GPIO_PIN_RESET},
-        }};
-    return pins;
+auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+                                 LowThroughputInterruptQueues& queues)
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
+    return motor_handler::MotorInterruptHandler(
+        queues.motor_queue, linear_motor_tasks::get_queues(), hw);
 }
 
-// TODO (06/02/22 CM): change up the hardware grouping to accommodate both
-//  pressure sensors on the EIGHT CHANNEL pipette
-template <>
-auto interfaces::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> interfaces::LowThroughputSensorHardware {
-    auto pins = interfaces::LowThroughputSensorHardware{
-        .primary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_5,
-                 .active_setting = GPIO_PIN_RESET},
-            .sync_out =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_4,
-                 .active_setting = GPIO_PIN_RESET},
-            .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOC,
-                 .pin = GPIO_PIN_9,
-                 .active_setting = GPIO_PIN_RESET},
-        }};
-    return pins;
+auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+                                 HighThroughputInterruptQueues& queues)
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
+    return motor_handler::MotorInterruptHandler(
+        queues.linear_motor_queue, linear_motor_tasks::get_queues(), hw);
 }
 
-template <>
-auto interfaces::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> interfaces::HighThroughputSensorHardware {
-    auto pins = interfaces::HighThroughputSensorHardware{
-        .primary =
-            sensors::hardware::SensorHardwareConfiguration{
-                .sync_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_4,
-                     .active_setting = GPIO_PIN_RESET},
-                .sync_out =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_5,
-                     .active_setting = GPIO_PIN_RESET},
-                .data_ready =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_15,
-                     .active_setting = GPIO_PIN_RESET},
-            },
-        .secondary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_4,
-                 .active_setting = GPIO_PIN_RESET},
-            .sync_out =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_5,
-                 .active_setting = GPIO_PIN_RESET},
-            .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOA,
-                 .pin = GPIO_PIN_8,
-                 .active_setting = GPIO_PIN_RESET},
-        }};
-    return pins;
+auto linear_motor::get_motor_hardware(
+    motor_configs::LowThroughputPipetteMotorHardware pins)
+    -> pipette_motor_hardware::MotorHardware {
+    return pipette_motor_hardware::MotorHardware(pins.linear_motor, &htim7,
+                                                 &htim2);
 }
 
-template <>
-auto interfaces::sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
-    -> interfaces::HighThroughputSensorHardware {
-    auto pins = interfaces::HighThroughputSensorHardware{
-        .primary =
-            sensors::hardware::SensorHardwareConfiguration{
-                .sync_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_4,
-                     .active_setting = GPIO_PIN_RESET},
-                .sync_out =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_5,
-                     .active_setting = GPIO_PIN_RESET},
-                .data_ready =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_15,
-                     .active_setting = GPIO_PIN_RESET},
-            },
-        .secondary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_4,
-                 .active_setting = GPIO_PIN_RESET},
-            .sync_out =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_5,
-                 .active_setting = GPIO_PIN_RESET},
-            .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOA,
-                 .pin = GPIO_PIN_8,
-                 .active_setting = GPIO_PIN_RESET},
-        }};
-    return pins;
+auto linear_motor::get_motor_hardware(
+    motor_configs::HighThroughputPipetteMotorHardware pins)
+    -> pipette_motor_hardware::MotorHardware {
+    return pipette_motor_hardware::MotorHardware(pins.linear_motor, &htim7,
+                                                 &htim2);
+}
+
+auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
+                                      LowThroughputInterruptQueues& queues)
+    -> MotionControlType {
+    return motion_controller::MotionController{
+        configs::linear_motion_sys_config_by_axis(PipetteType::SINGLE_CHANNEL),
+        hw,
+        motor_messages::MotionConstraints{.min_velocity = 1,
+                                          .max_velocity = 2,
+                                          .min_acceleration = 1,
+                                          .max_acceleration = 2},
+        queues.motor_queue};
+}
+
+auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
+                                      HighThroughputInterruptQueues& queues)
+    -> MotionControlType {
+    return motion_controller::MotionController{
+        configs::linear_motion_sys_config_by_axis(
+            PipetteType::NINETY_SIX_CHANNEL),
+        hw,
+        motor_messages::MotionConstraints{.min_velocity = 1,
+                                          .max_velocity = 2,
+                                          .min_acceleration = 1,
+                                          .max_acceleration = 2},
+        queues.linear_motor_queue};
+}
+
+auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
+                                HighThroughputInterruptQueues& queues)
+    -> gear_motor::GearInterruptHandlers {
+    return gear_motor::GearInterruptHandlers{
+        .left = motor_handler::MotorInterruptHandler(
+            queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
+            hw.left),
+        .right = motor_handler::MotorInterruptHandler(
+            queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
+            hw.right)};
+}
+
+auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,
+                                LowThroughputInterruptQueues&)
+    -> gear_motor::UnavailableGearInterrupts {
+    return gear_motor::UnavailableGearInterrupts{};
+}
+
+auto gear_motor::get_motor_hardware(
+    motor_configs::LowThroughputPipetteMotorHardware)
+    -> gear_motor::UnavailableGearHardware {
+    return gear_motor::UnavailableGearHardware{};
+}
+
+auto gear_motor::get_motor_hardware(
+    motor_configs::HighThroughputPipetteMotorHardware pins)
+    -> gear_motor::GearHardware {
+    return gear_motor::GearHardware{
+        .left = pipette_motor_hardware::MotorHardware(pins.left_gear_motor,
+                                                      &htim6, &htim2),
+        .right = pipette_motor_hardware::MotorHardware(pins.right_gear_motor,
+                                                       &htim6, &htim2)};
+}
+
+auto gear_motor::get_motion_control(gear_motor::GearHardware hw,
+                                    HighThroughputInterruptQueues& queues)
+    -> gear_motor::GearMotionControl {
+    return gear_motor::GearMotionControl{
+        .left =
+            pipette_motion_controller::PipetteMotionController{
+                configs::linear_motion_sys_config_by_axis(
+                    PipetteType::NINETY_SIX_CHANNEL),
+                hw.left,
+                motor_messages::MotionConstraints{.min_velocity = 1,
+                                                  .max_velocity = 2,
+                                                  .min_acceleration = 1,
+                                                  .max_acceleration = 2},
+                queues.left_motor_queue},
+        .right = pipette_motion_controller::PipetteMotionController{
+            configs::linear_motion_sys_config_by_axis(
+                PipetteType::NINETY_SIX_CHANNEL),
+            hw.right,
+            motor_messages::MotionConstraints{.min_velocity = 1,
+                                              .max_velocity = 2,
+                                              .min_acceleration = 1,
+                                              .max_acceleration = 2},
+            queues.right_motor_queue}};
+}
+
+auto gear_motor::get_motion_control(gear_motor::UnavailableGearHardware&,
+                                    LowThroughputInterruptQueues&)
+    -> gear_motor::UnavailableGearMotionControl {
+    return gear_motor::UnavailableGearMotionControl{};
+}
+
+auto gear_motor::gear_callback(gear_motor::GearInterruptHandlers& interrupts)
+    -> void {
+    interrupts.left.run_interrupt();
+    interrupts.right.run_interrupt();
+}
+
+auto gear_motor::gear_callback(gear_motor::UnavailableGearInterrupts&) -> void {
 }

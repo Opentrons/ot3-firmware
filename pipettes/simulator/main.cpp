@@ -19,8 +19,8 @@
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
-#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
+#include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
 #include "sensors/simulation/fdc1004.hpp"
@@ -97,10 +97,11 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto motor_configs = interfaces::motor_configurations<PIPETTE_TYPE>();
+static auto motor_configs = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+    can_ids::NodeId id,
+    motor_configs::HighThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -117,7 +118,8 @@ auto initialize_motor_tasks(
 }
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
+    can_ids::NodeId id,
+    motor_configs::LowThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),

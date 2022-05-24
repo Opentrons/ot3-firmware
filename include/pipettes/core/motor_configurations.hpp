@@ -9,8 +9,7 @@
 #include "pipettes/firmware/pipette_motor_hardware.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 
-namespace interfaces {
-
+namespace motor_configs {
 using namespace tmc2130::configs;
 using namespace tmc2160::configs;
 
@@ -107,6 +106,10 @@ template <>
 auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputMotorConfigurations;
 
+template <>
+auto motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
+-> HighThroughputMotorConfigurations;
+
 template <PipetteType P>
 auto sensor_configurations()
     -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
@@ -143,4 +146,6 @@ template <>
 auto sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputSensorHardware;
 
-};  // namespace interfaces
+};
+
+}  // namespace motor_configs
