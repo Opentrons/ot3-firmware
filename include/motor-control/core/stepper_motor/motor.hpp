@@ -46,34 +46,4 @@ struct Motor {
     ~Motor() = default;
 };
 
-template <lms::MotorMechanicalConfig MEConfig>
-struct GearMotor {
-    using GenericQueue = FreeRTOSMessageQueue<Move>;
-
-    /**
-     * Construct a motor
-     *
-     * @param lms_config Linear motion system configuration
-     * @param hardware_iface Hardware interface
-     * @param constraints Motion constraints
-     * @param queue Input message queue containing motion commands.
-     * commands.
-     */
-    Motor(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-          motor_hardware::PipetteStepperMotorHardwareIface& hardware_iface,
-          MotionConstraints constraints, GenericQueue& queue)
-
-        : pending_move_queue(queue),
-          motion_controller{lms_config, hardware_iface, constraints,
-                            pending_move_queue} {}
-    GenericQueue& pending_move_queue;
-    pipette_motion_controller::PipetteMotionController<MEConfig> motion_controller;
-
-    GearMotor(const GearMotor&) = delete;
-    auto operator=(const GearMotor&) -> GearMotor& = delete;
-    GearMotor(GearMotor&&) = delete;
-    auto operator=(GearMotor&&) -> GearMotor&& = delete;
-    ~GearMotor() = default;
-};
-
 }  // namespace motor_class
