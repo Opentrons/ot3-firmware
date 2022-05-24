@@ -47,7 +47,7 @@ requires MessageQueue<QueueImpl<Move>, Move>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
-
+    
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
@@ -106,6 +106,7 @@ class MotorInterruptHandler {
             return false;
         }
         if (has_active_move) { 
+
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 homing_stopped()) {
@@ -256,7 +257,7 @@ class MotorInterruptHandler {
         return buffered_move;
     }
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
-
+    
   private:
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
@@ -266,6 +267,7 @@ class MotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
     Move buffered_move = Move{};
+  public:
     encoder_handler::EncoderHandler encoder{hardware};
 };
 }  // namespace motor_handler

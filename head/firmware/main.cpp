@@ -142,8 +142,8 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0xB,
-                           .run_current = 0x19,
+            .ihold_irun = {.hold_current = 0x08,
+                           .run_current = 0x10,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
@@ -169,8 +169,8 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0xB,
-                           .run_current = 0x19,
+            .ihold_irun = {.hold_current = 0x08,
+                           .run_current = 0x10,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
@@ -234,9 +234,17 @@ static motor_class::Motor motor_left{
                                       .max_acceleration = 2},
     motor_queue_left};
 
+
+
+
 extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
+}
+
+extern "C" void enc_direction_callback_glue() {
+    motor_interrupt_left.encoder.get_enc_direction();
+    motor_interrupt_right.encoder.get_enc_direction();
 }
 
 static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
@@ -278,7 +286,7 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    initialize_timer(motor_callback_glue);
+    initialize_timer(motor_callback_glue, enc_direction_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();

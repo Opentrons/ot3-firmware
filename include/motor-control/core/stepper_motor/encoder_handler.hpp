@@ -24,16 +24,6 @@ class EncoderHandler {
             triggered. If it gets triggered we save the previous state of the
             triggered flag and clear the status register interrupt bit.
             */
-            if (hardware.get_encoder_SR_flag() == true){
-                hardware.clear_encoder_SR();
-                if (direction) {
-                    enc_overflow_counter --;
-                }
-                else {
-                    enc_overflow_counter ++;
-                    
-                }
-            }
             enc_position_tracker = 
                 hardware.get_encoder_pulses() + static_cast<uint32_t>(enc_overflow_counter*UINT16_MAX);
             return enc_position_tracker;
@@ -45,14 +35,26 @@ class EncoderHandler {
             hardware.reset_encoder_pulses();
             get_encoder_pulses(); }
 
-        void get_direction(bool dir){
-            direction = dir;
+        auto overflow_handler(){
+            if (hardware.get_encoder_SR_flag() == true){
+                hardware.clear_encoder_SR();
+                if (enc_direction) {
+                    enc_overflow_counter --;
+                }
+                else {
+                    enc_overflow_counter ++;
+                }
+            }
+        }
+
+        void get_enc_direction(){
+            enc_direction = hardware.get_encoder_direction();
         }
 
     private:
         motor_hardware::StepperMotorHardwareIface& hardware;
-        uint8_t enc_overflow_counter = 0x0;
+        uint16_t enc_overflow_counter = 0x0;
         uint32_t enc_position_tracker = 0x0;
-        bool direction = false;
+        bool enc_direction = 0x0;
 }; 
 };  // namespace encoder_handler 

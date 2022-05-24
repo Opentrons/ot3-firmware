@@ -7,6 +7,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 motor_interrupt_callback motor_callback = NULL;
+encoder_direction_callback enc_direction_callback = NULL;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -176,6 +177,7 @@ HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi) {
 
 void Encoder_GPIO_Init(void){
     /* Peripheral clock enable */
+    // HAL_TIM_Encoder_MspInit();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
@@ -277,6 +279,7 @@ void TIM2_EncoderZR_Init(void){
     {
     Error_Handler();
     }
+    
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim2, 0);
      /* Clear interrupt flag bit */
@@ -285,8 +288,11 @@ void TIM2_EncoderZR_Init(void){
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim2);
+    HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(TIM2_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
+    
 }
 
 
@@ -338,8 +344,11 @@ void TIM3_EncoderZL_Init(void){
     __HAL_TIM_ENABLE_IT(&htim3,TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim3);
+    HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
+    
 }
 
 void MX_TIM7_Init(void) {
@@ -368,6 +377,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
+void HAL_TIMEx_DirectionChangeCallback(TIM_HandleTypeDef *htim) {
+    // Check Direction of encoder timer
+    if ((htim == &htim2) && enc_direction_callback) {
+        enc_direction_callback();
+    }
+    else if(htim == &htim3 && enc_direction_callback){
+        enc_direction_callback();
+    }
+}
+
+
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim7) {
         /* Peripheral clock enable */
@@ -375,11 +395,28 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
         /* TIM7 interrupt Init */
         HAL_NVIC_SetPriority(TIM7_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM7_IRQn);
+    } 
+}
+
+void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim){
+    if (htim == &htim2){
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM2_CLK_ENABLE();
+        /* TIM2 interrupt Init */
+        HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(TIM2_IRQn);
+    } else if (htim == &htim3){
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM3_CLK_ENABLE();
+        /* TIM3 interrupt Init */
+        HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(TIM3_IRQn);
     }
 }
 
-void initialize_timer(motor_interrupt_callback callback) {
+void initialize_timer(motor_interrupt_callback callback, encoder_direction_callback enc_dir_callback) {
     motor_callback = callback;
+    enc_direction_callback = enc_dir_callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
     TIM2_EncoderZR_Init();
