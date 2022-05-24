@@ -1,9 +1,7 @@
 #pragma once
 
-#include "common/core/freertos_message_queue.hpp"
-#include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
@@ -12,26 +10,12 @@
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 
 namespace interfaces {
-using MoveQueue =
-freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
-using MotionControlType =
-motion_controller::MotionController<lms::LeadScrewConfig>;
-using PipetteMotionControlType =
-pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
+
 
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client>;
 
-struct LowThroughputInterruptQueues {
-    MoveQueue plunger_queue;
-};
-
-struct HighThroughputInterruptQueues {
-    MoveQueue plunger_queue;
-    MoveQueue right_motor_queue;
-    MoveQueue left_motor_queue;
-};
 
 template <PipetteType P>
 auto get_interrupt_queues()
