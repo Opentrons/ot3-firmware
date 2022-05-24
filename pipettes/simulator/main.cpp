@@ -12,10 +12,8 @@
 #include "common/core/logging.h"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
-#include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
-#include "motor-control/simulation/motor_interrupt_driver.hpp"
-#include "motor-control/simulation/sim_motor_hardware_iface.hpp"
+
+#include "pipettes/simulator/interfaces.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
@@ -34,18 +32,30 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
-    motor_queue("Motor Queue");
 
 static spi::hardware::SimSpiDeviceBase spi_comms{};
 
-static sim_motor_hardware_iface::SimMotorHardwareIface plunger_hw{};
+static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
-static motor_handler::MotorInterruptHandler plunger_interrupt(
-    motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
+static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
 
-static motor_interrupt_driver::MotorInterruptDriver sim_interrupt(
-    motor_queue, plunger_interrupt, plunger_hw);
+static auto linear_motor_hardware =
+    interfaces::linear_motor::get_motor_hardware();
+static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
+    linear_motor_hardware, interrupt_queues.plunger_queue);
+static auto plunger_interrupt_driver = interfaces::linear_motor::get_interrupt_driver(
+    linear_motor_hardware, interrupt_queues.plunger_queue, plunger_interrupt);
+static auto linear_motion_control =
+    interfaces::linear_motor::get_motion_control(linear_motor_hardware,
+                                                 interrupt_queues);
+
+static auto gear_hardware =
+    interfaces::gear_motor::get_motor_hardware(motor_config.hardware_pins);
+static auto gear_interrupts =
+    interfaces::gear_motor::get_interrupts(gear_hardware, interrupt_queues);
+static auto gear_motion_control =
+    interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
+
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
@@ -62,14 +72,6 @@ static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map_i2c3};
 static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};
 
 static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
-
-static motor_class::Motor pipette_motor{
-    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), plunger_hw,
-    motor_messages::MotionConstraints{.min_velocity = 1,
-                                      .max_velocity = 2,
-                                      .min_acceleration = 1,
-                                      .max_acceleration = 2},
-    motor_queue};
 
 static auto node_from_env(const char* env) -> can_ids::NodeId {
     if (!env) {
@@ -97,11 +99,11 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-static auto motor_configs = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
 auto initialize_motor_tasks(
     can_ids::NodeId id,
-    motor_configs::HighThroughputPipetteDriverHardware& conf) {
+    motor_configs::HighThroughputPipetteDriverHardware& conf,
+    interfaces::gear_motor::GearMotionControl& gear_motion) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -109,24 +111,26 @@ auto initialize_motor_tasks(
                               fake_sensor_hw, id, sim_eeprom);
 
     linear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
-    // todo update with correct motion controller.
+
+    // TODO Convert gear motor tasks
     gear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        *central_tasks::get_tasks().can_writer, gear_motion.right,
         peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
 }
 
 auto initialize_motor_tasks(
     can_ids::NodeId id,
-    motor_configs::LowThroughputPipetteDriverHardware& conf) {
+    motor_configs::LowThroughputPipetteDriverHardware& conf,
+    interfaces::gear_motor::UnavailableGearMotionControl&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               fake_sensor_hw, id, sim_eeprom);
     linear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 }
 
@@ -140,7 +144,8 @@ int main() {
     central_tasks::start_tasks(can_bus_1, node_from_env(std::getenv("MOUNT")));
     peripheral_tasks::start_tasks(i2c3_comms, i2c1_comms, spi_comms);
     initialize_motor_tasks(node_from_env(std::getenv("MOUNT")),
-                           motor_configs.driver_configs);
+                           motor_config.driver_configs,
+                           gear_motion_control);
 
     vTaskStartScheduler();
 }
