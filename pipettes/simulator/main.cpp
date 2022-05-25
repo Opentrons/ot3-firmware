@@ -12,8 +12,6 @@
 #include "common/core/logging.h"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
-
-#include "pipettes/simulator/interfaces.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
@@ -21,6 +19,7 @@
 #include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
+#include "pipettes/simulator/interfaces.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
@@ -32,7 +31,6 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
 
-
 static spi::hardware::SimSpiDeviceBase spi_comms{};
 
 static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
@@ -43,8 +41,10 @@ static auto linear_motor_hardware =
     interfaces::linear_motor::get_motor_hardware();
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
     linear_motor_hardware, interrupt_queues.plunger_queue);
-static auto plunger_interrupt_driver = interfaces::linear_motor::get_interrupt_driver(
-    linear_motor_hardware, interrupt_queues.plunger_queue, plunger_interrupt);
+static auto plunger_interrupt_driver =
+    interfaces::linear_motor::get_interrupt_driver(
+        linear_motor_hardware, interrupt_queues.plunger_queue,
+        plunger_interrupt);
 static auto linear_motion_control =
     interfaces::linear_motor::get_motion_control(linear_motor_hardware,
                                                  interrupt_queues);
@@ -55,7 +55,6 @@ static auto gear_interrupts =
     interfaces::gear_motor::get_interrupts(gear_hardware, interrupt_queues);
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
-
 
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
@@ -99,7 +98,6 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
-
 auto initialize_motor_tasks(
     can_ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
@@ -121,8 +119,7 @@ auto initialize_motor_tasks(
 }
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id,
-    motor_configs::LowThroughputPipetteDriverHardware& conf,
+    can_ids::NodeId id, motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -144,8 +141,7 @@ int main() {
     central_tasks::start_tasks(can_bus_1, node_from_env(std::getenv("MOUNT")));
     peripheral_tasks::start_tasks(i2c3_comms, i2c1_comms, spi_comms);
     initialize_motor_tasks(node_from_env(std::getenv("MOUNT")),
-                           motor_config.driver_configs,
-                           gear_motion_control);
+                           motor_config.driver_configs, gear_motion_control);
 
     vTaskStartScheduler();
 }

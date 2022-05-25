@@ -62,7 +62,8 @@ class SimBrushedMotorHardwareIface
     uint32_t test_pulses = 0;
 };
 
-class SimGearMotorHardwareIface : public motor_hardware::PipetteStepperMotorHardwareIface {
+class SimGearMotorHardwareIface
+    : public motor_hardware::PipetteStepperMotorHardwareIface {
   public:
     void step() final {}
     void unstep() final {}

@@ -84,7 +84,7 @@ class GearMotorInterruptDriver {
     struct TaskEntry {
         TaskEntry(
             freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>&
-            q,
+                q,
             motor_handler::MotorInterruptHandler<
                 freertos_message_queue::FreeRTOSMessageQueue, StatusClient>& h,
             sim_motor_hardware_iface::SimGearMotorHardwareIface& motor_iface)
@@ -101,7 +101,7 @@ class GearMotorInterruptDriver {
                         if (queue.peek(&move, 0)) {
                             if (move.stop_condition ==
                                 motor_messages::MoveStopCondition::
-                                limit_switch) {
+                                    limit_switch) {
                                 iface.trigger_limit_switch();
                                 LOG("Received Home Request, triggering limit "
                                     "switch\n");

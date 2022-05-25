@@ -50,7 +50,8 @@ void gear_motor_tasks::start_tasks(
     auto& motion_left = mc_task_builder_left.start(
         5, "motion controller", motion_controllers.left, left_queues);
     auto& tmc2130_driver_left = tmc2130_driver_task_builder_left.start(
-        5, "tmc2130 driver", gear_driver_configs.left_gear_motor, left_queues, spi_writer);
+        5, "tmc2130 driver", gear_driver_configs.left_gear_motor, left_queues,
+        spi_writer);
     auto& move_group_left = move_group_task_builder_left.start(
         5, "move group", left_queues, left_queues);
     auto& move_status_reporter_left = move_status_task_builder_left.start(
@@ -73,7 +74,8 @@ void gear_motor_tasks::start_tasks(
     auto& motion_right = mc_task_builder_right.start(
         5, "motion controller", motion_controllers.right, right_queues);
     auto& tmc2130_driver_right = tmc2130_driver_task_builder_right.start(
-        5, "tmc2130 driver", gear_driver_configs.right_gear_motor, right_queues, spi_writer);
+        5, "tmc2130 driver", gear_driver_configs.right_gear_motor, right_queues,
+        spi_writer);
     auto& move_group_right = move_group_task_builder_right.start(
         5, "move group", right_queues, right_queues);
     auto& move_status_reporter_right = move_status_task_builder_right.start(

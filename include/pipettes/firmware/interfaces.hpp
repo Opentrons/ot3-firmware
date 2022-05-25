@@ -2,9 +2,9 @@
 
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
+#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
-#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/firmware/pipette_motor_hardware.hpp"
 
@@ -20,7 +20,6 @@ namespace interfaces {
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client>;
-
 
 template <PipetteType P>
 auto get_interrupt_queues()

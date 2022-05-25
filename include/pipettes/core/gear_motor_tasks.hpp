@@ -6,12 +6,11 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "pipettes/core/interfaces.hpp"
+#include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/tasks/gear_move_status_reporter_task.hpp"
 #include "pipettes/core/tasks/motion_controller_task.hpp"
 #include "pipettes/core/tasks/move_group_task.hpp"
-
-#include "pipettes/core/motor_configurations.hpp"
-#include "pipettes/core/interfaces.hpp"
 #include "spi/core/writer.hpp"
 
 /**

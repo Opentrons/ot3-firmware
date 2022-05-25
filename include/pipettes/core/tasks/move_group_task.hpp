@@ -4,7 +4,6 @@
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
-
 #include "common/core/logging.h"
 #include "motor-control/core/move_group.hpp"
 #include "pipettes/core/tasks/messages.hpp"
@@ -16,21 +15,21 @@ namespace tasks {
 
 namespace move_group_task {
 
-
 constexpr std::size_t max_groups = 6;
 constexpr std::size_t max_moves_per_group = 5;
 
 using MoveGroupType =
-move_group::MoveGroupManager<max_groups, max_moves_per_group,
-    can_messages::TipActionRequest>;
+    move_group::MoveGroupManager<max_groups, max_moves_per_group,
+                                 can_messages::TipActionRequest>;
 
-using TaskMessage = pipettes::task_messages::move_group_task_messages::MoveGroupTaskMessage;
+using TaskMessage =
+    pipettes::task_messages::move_group_task_messages::MoveGroupTaskMessage;
 
 /**
  * The handler of move group messages
  */
 template <motion_controller_task::TaskClient MotionControllerClient,
-    message_writer_task::TaskClient CanClient>
+          message_writer_task::TaskClient CanClient>
 class MoveGroupMessageHandler {
   public:
     MoveGroupMessageHandler(MoveGroupType& move_group_manager,
@@ -119,7 +118,7 @@ class MoveGroupTask {
      * Task entry point.
      */
     template <motion_controller_task::TaskClient MotionControllerClient,
-        message_writer_task::TaskClient CanClient>
+              message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(MotionControllerClient* mc_client,
                                  CanClient* can_client) {
         auto handler =
@@ -148,7 +147,6 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_move_group_queue(m)};
 };
 
-        } // namespace move_group
-    } // namespace tasks
-} // namespace pipettes
-
+}  // namespace move_group_task
+}  // namespace tasks
+}  // namespace pipettes

@@ -7,7 +7,6 @@
 #include "can/core/messages.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/utils.hpp"
-
 #include "pipettes/core/tasks/messages.hpp"
 
 namespace pipettes {
@@ -16,10 +15,11 @@ namespace tasks {
 
 namespace gear_move_status {
 
-using TaskMessage = pipettes::task_messages::motor_control_task_messages::MoveStatusReporterTaskMessage;
+using TaskMessage = pipettes::task_messages::motor_control_task_messages::
+    MoveStatusReporterTaskMessage;
 
 template <message_writer_task::TaskClient CanClient,
-        lms::MotorMechanicalConfig LmsConfig>
+          lms::MotorMechanicalConfig LmsConfig>
 class MoveStatusMessageHandler {
   public:
     MoveStatusMessageHandler(
@@ -36,8 +36,8 @@ class MoveStatusMessageHandler {
     ~MoveStatusMessageHandler() = default;
 
     /**
-    * Handle Ack message
-    */
+     * Handle Ack message
+     */
     void handle_message(const TaskMessage& message) {
         can_messages::TipActionResponse msg = {
             .group_id = message.group_id,
@@ -75,7 +75,7 @@ class MoveStatusReporterTask {
      * Task entry point.
      */
     template <message_writer_task::TaskClient CanClient,
-        lms::MotorMechanicalConfig LmsConfig>
+              lms::MotorMechanicalConfig LmsConfig>
     [[noreturn]] void operator()(
         CanClient* can_client,
         const lms::LinearMotionSystemConfig<LmsConfig>* config) {
@@ -103,7 +103,6 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_move_status_reporter_queue(m)};
 };
 
-        } // namespace gear_move_status
-    } // namespace tasks
-} // namespace pipettes
-
+}  // namespace gear_move_status
+}  // namespace tasks
+}  // namespace pipettes

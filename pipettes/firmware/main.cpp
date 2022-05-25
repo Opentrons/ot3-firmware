@@ -133,9 +133,9 @@ auto initialize_motor_tasks(
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
-    gear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, gear_motion,
-        peripheral_tasks::get_spi_client(), conf, id);
+    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  gear_motion,
+                                  peripheral_tasks::get_spi_client(), conf, id);
 }
 auto initialize_motor_tasks(
     can_ids::NodeId id, motor_configs::LowThroughputPipetteDriverHardware& conf,

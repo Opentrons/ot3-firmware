@@ -15,7 +15,8 @@ namespace tasks {
 
 namespace motion_controller_task {
 
-using TaskMessage = pipettes::task_messages::motor_control_task_messages::MotionControlTaskMessage;
+using TaskMessage = pipettes::task_messages::motor_control_task_messages::
+    MotionControlTaskMessage;
 
 /**
  * The message queue message handler.
@@ -24,14 +25,15 @@ template <lms::MotorMechanicalConfig MEConfig,
           message_writer_task::TaskClient CanClient>
 class MotionControllerMessageHandler {
   public:
-    using MotorControllerType = pipette_motion_controller::PipetteMotionController<MEConfig>;
+    using MotorControllerType =
+        pipette_motion_controller::PipetteMotionController<MEConfig>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
-    delete;
+        delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
-    delete;
+        delete;
     auto operator=(const MotionControllerMessageHandler& c) = delete;
     auto operator=(const MotionControllerMessageHandler&& c) = delete;
     ~MotionControllerMessageHandler() = default;
@@ -120,9 +122,10 @@ class MotionControllerTask {
      * Task entry point.
      */
     template <lms::MotorMechanicalConfig MEConfig,
-        message_writer_task::TaskClient CanClient>
+              message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
-        pipette_motion_controller::PipetteMotionController<MEConfig>* controller,
+        pipette_motion_controller::PipetteMotionController<MEConfig>*
+            controller,
         CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
@@ -148,6 +151,6 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_motion_controller_queue(m)};
 };
 
-        } // namespace motion_controller
-    } // namespace tasks
+}  // namespace motion_controller_task
+}  // namespace tasks
 }  // namespace pipettes

@@ -153,7 +153,8 @@ class PipetteMotionController {
         if (check_tip_sense()) {
             stop_condition = MoveStopCondition::limit_switch;
             velocity_steps *= -1;
-            // set the direction of the velocity to be negative.
+            // set the direction of the velocity to be negative because
+            // we should drop tips
         }
         Move msg{.duration = can_msg.duration,
                  .velocity = velocity_steps,
