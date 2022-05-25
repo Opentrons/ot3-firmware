@@ -35,15 +35,13 @@ class EncoderHandler {
             hardware.reset_encoder_pulses();
             get_encoder_pulses(); }
 
-        auto overflow_handler(){
-            if (hardware.get_encoder_SR_flag() == true){
-                hardware.clear_encoder_SR();
-                if (enc_direction) {
-                    enc_overflow_counter --;
-                }
-                else {
-                    enc_overflow_counter ++;
-                }
+        void encoder_overflow(){
+            // hardware.clear_encoder_SR();
+            if (enc_direction) {
+                enc_overflow_counter ++;
+            }
+            else {
+                enc_overflow_counter --;
             }
         }
 

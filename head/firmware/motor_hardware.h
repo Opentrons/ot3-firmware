@@ -14,9 +14,11 @@ extern TIM_HandleTypeDef htim3;
 
 typedef void (*motor_interrupt_callback)();
 typedef void (*encoder_direction_callback)();
+typedef void (*encoder_overflow_callback)();
 HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi);
 void initialize_timer(motor_interrupt_callback callback, 
-                        encoder_direction_callback enc_dir_callback);
+                        encoder_direction_callback enc_dir_callback,
+                        encoder_overflow_callback enc_overflow_callback);
 
 #ifdef __cplusplus
 }  // extern "C"

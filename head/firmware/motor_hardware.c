@@ -8,6 +8,7 @@ TIM_HandleTypeDef htim3;
 
 motor_interrupt_callback motor_callback = NULL;
 encoder_direction_callback enc_direction_callback = NULL;
+encoder_overflow_callback enc_overflow_callback = NULL;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -288,11 +289,12 @@ void TIM2_EncoderZR_Init(void){
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim2);
+    // __HAL_TIM_UIFREMAP_ENABLE(&htim2);
     HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
-    
+    HAL_TIM_Base_Start_IT(&htim2);
 }
 
 
@@ -344,10 +346,12 @@ void TIM3_EncoderZL_Init(void){
     __HAL_TIM_ENABLE_IT(&htim3,TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim3);
+    // __HAL_TIM_UIFREMAP_ENABLE(&htim3);
     HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(TIM3_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
+    HAL_TIM_Base_Start_IT(&htim3);
     
 }
 
@@ -375,9 +379,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if ((htim == &htim7) && motor_callback) {
         motor_callback();
     }
+    else if(htim == &htim2 && enc_overflow_callback){
+        enc_overflow_callback();
+    }
+    else if(htim == &htim3 && enc_overflow_callback){
+        enc_overflow_callback();
+    }
 }
 
-void HAL_TIMEx_DirectionChangeCallback(TIM_HandleTypeDef *htim) {
+void DirectionChangeCallback(TIM_HandleTypeDef *htim) {
     // Check Direction of encoder timer
     if ((htim == &htim2) && enc_direction_callback) {
         enc_direction_callback();
@@ -387,6 +397,22 @@ void HAL_TIMEx_DirectionChangeCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
+// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+// {
+    
+//  	/*  An update operation has occurred , Judge whether it is underflow or overflow  */
+// 	/* Judge TIM Whether to count down , True is counting down , False is counting up */
+// 	if(__HAL_TIM_IS_TIM_COUNTING_DOWN(htim))
+// 	{
+    
+// 		encoder_overflow_callback--;// Overflow during inversion 
+// 	}
+// 	else	
+// 	{
+    
+// 		encoder_overflow_callback++;// Overflow during forward rotation 
+// 	}
+// }
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim7) {
@@ -414,9 +440,12 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim){
     }
 }
 
-void initialize_timer(motor_interrupt_callback callback, encoder_direction_callback enc_dir_callback) {
+void initialize_timer(motor_interrupt_callback callback, 
+                        encoder_direction_callback enc_dir_callback, 
+                        encoder_overflow_callback f_callback) {
     motor_callback = callback;
     enc_direction_callback = enc_dir_callback;
+    enc_overflow_callback = f_callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
     TIM2_EncoderZR_Init();

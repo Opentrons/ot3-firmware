@@ -213,7 +213,7 @@ class MotorInterruptHandler {
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = encoder.get_encoder_pulses(),
+                .encoder_position = static_cast<uint32_t>(encoder.get_encoder_pulses()),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
