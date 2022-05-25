@@ -12,6 +12,9 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
         sync_state = false;
         sync_reset_calls++;
     }
+    auto check_data_ready() -> void override {
+        return true;
+    }
 
     auto get_sync_state_mock() const -> bool { return sync_state; }
     auto get_sync_set_calls() const -> uint32_t { return sync_set_calls; }
