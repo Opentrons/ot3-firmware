@@ -79,6 +79,11 @@ auto get_motion_control(pipette_motor_hardware::MotorHardware hw,
 
 namespace gear_motor {
 
+struct GearHardware {
+    pipette_motor_hardware::MotorHardware left;
+    pipette_motor_hardware::MotorHardware right;
+};
+
 struct GearInterruptHandlers {
     MotorInterruptHandlerType<gear_motor_tasks::QueueClient> left;
     MotorInterruptHandlerType<gear_motor_tasks::QueueClient> right;

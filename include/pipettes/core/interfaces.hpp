@@ -25,11 +25,6 @@ struct HighThroughputInterruptQueues {
 
 namespace gear_motor {
 
-struct GearHardware {
-    pipette_motor_hardware::MotorHardware left;
-    pipette_motor_hardware::MotorHardware right;
-};
-
 struct UnavailableGearHardware {};
 struct UnavailableGearMotionControl {};
 struct UnavailableGearInterrupts {};
