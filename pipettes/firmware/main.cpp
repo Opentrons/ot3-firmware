@@ -83,6 +83,34 @@ static auto motor_config = interfaces::motor_configurations<PIPETTE_TYPE>();
 static pipette_motor_hardware::MotorHardware plunger_hw(
     motor_config.hardware_pins.linear_motor, &htim7, &htim2);
 
+struct motion_controller::HardwareConfig plunger_pins {
+    .direction =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_3,
+            .active_setting = GPIO_PIN_SET},
+    .step =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_7,
+            .active_setting = GPIO_PIN_SET},
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_SET},
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_2,
+            .active_setting = GPIO_PIN_SET},
+    .led = {},
+};
+
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
 
@@ -115,6 +143,21 @@ static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     .port = GPIOB,
     .pin = GPIO_PIN_5,
+    .active_setting = GPIO_PIN_RESET});
+static sensors::hardware::SensorHardware data_ready_front(gpio::PinConfig{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .port = GPIOC,
+    .pin = GPIO_PIN_15,
+    .active_setting = GPIO_PIN_RESET});
+static sensors::hardware::SensorHardware data_ready_rear(gpio::PinConfig{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .port = GPIOA,
+    .pin = GPIO_PIN_8,
+    .active_setting = GPIO_PIN_RESET});
+static sensors::hardware::SensorHardware data_ready_lt(gpio::PinConfig{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .port = GPIOC,
+    .pin = GPIO_PIN_9,
     .active_setting = GPIO_PIN_RESET});
 
 // Unfortunately, these numbers need to be literals or defines
