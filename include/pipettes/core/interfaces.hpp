@@ -7,11 +7,11 @@
 namespace interfaces {
 
 using MoveQueue =
-freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
+    freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
 using MotionControlType =
-motion_controller::MotionController<lms::LeadScrewConfig>;
+    motion_controller::MotionController<lms::LeadScrewConfig>;
 using PipetteMotionControlType =
-pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
+    pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
 
 struct LowThroughputInterruptQueues {
     MoveQueue motor_queue;
@@ -39,6 +39,6 @@ struct GearMotionControl {
     PipetteMotionControlType right;
 };
 
-}
+}  // namespace gear_motor
 
-}
+}  // namespace interfaces

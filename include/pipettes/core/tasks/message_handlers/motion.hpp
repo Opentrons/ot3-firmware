@@ -9,22 +9,23 @@ namespace gear_motion_handler {
 
 using namespace can_messages;
 
-template <pipettes::tasks::motion_controller_task::TaskClient GearMotionTaskClient>
+template <
+    pipettes::tasks::motion_controller_task::TaskClient GearMotionTaskClient>
 class GearMotorMotionHandler {
   public:
     using MessageType =
-    std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
-        GetMotionConstraintsRequest, SetMotionConstraints,
-        StopRequest, ReadLimitSwitchRequest, TipActionRequest>;
+        std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
+                     GetMotionConstraintsRequest, SetMotionConstraints,
+                     StopRequest, ReadLimitSwitchRequest, TipActionRequest>;
 
     GearMotorMotionHandler(GearMotionTaskClient &motion_client)
         : motion_client{motion_client} {}
     GearMotorMotionHandler(const GearMotorMotionHandler &) = delete;
     GearMotorMotionHandler(const GearMotorMotionHandler &&) = delete;
     auto operator=(const GearMotorMotionHandler &)
-    -> GearMotorMotionHandler & = delete;
+        -> GearMotorMotionHandler & = delete;
     auto operator=(const GearMotorMotionHandler &&)
-    -> GearMotorMotionHandler && = delete;
+        -> GearMotorMotionHandler && = delete;
     ~GearMotorMotionHandler() = default;
 
     void handle(MessageType &m) {
@@ -41,4 +42,4 @@ class GearMotorMotionHandler {
     GearMotionTaskClient &motion_client;
 };
 
-} // namespace gear_motion_handler
+}  // namespace gear_motion_handler
