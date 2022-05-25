@@ -167,8 +167,11 @@ class CapacitiveMessageHandler {
     SensorHardwareBase &hardware;
     CanClient &can_client;
     OwnQueue &own_queue;
-    ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
     bool is_initialized = false;
+
+  public:
+    // Kept public for testability
+    ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
 };
 
 /**
