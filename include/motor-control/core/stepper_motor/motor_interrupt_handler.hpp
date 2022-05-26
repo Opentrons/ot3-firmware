@@ -4,8 +4,8 @@
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/stepper_motor/encoder_handler.hpp"
+#include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 namespace motor_handler {
 
@@ -47,7 +47,7 @@ requires MessageQueue<QueueImpl<Move>, Move>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<Move>;
-    
+
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
@@ -67,8 +67,10 @@ class MotorInterruptHandler {
     void run_interrupt() {
         if (set_direction_pin()) {
             hardware.positive_direction();
+            encoder.set_positive_direction();
         } else {
             hardware.negative_direction();
+            encoder.set_negative_direction();
         }
         if (pulse()) {
             hardware.step();
@@ -105,8 +107,7 @@ class MotorInterruptHandler {
             update_move();
             return false;
         }
-        if (has_active_move) { 
-
+        if (has_active_move) {
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 homing_stopped()) {
@@ -173,8 +174,7 @@ class MotorInterruptHandler {
         }
         // check to see when motor should step using velocity & tick count
         return bool((old_position ^ position_tracker) & tick_flag);
-    }         
-
+    }
 
     [[nodiscard]] auto has_messages() const -> bool {
         return queue.has_message_isr();
@@ -213,7 +213,8 @@ class MotorInterruptHandler {
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = static_cast<uint32_t>(encoder.get_encoder_pulses()),
+                .encoder_position =
+                    static_cast<uint32_t>(encoder.get_encoder_pulses()),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -231,6 +232,7 @@ class MotorInterruptHandler {
         position_tracker = 0x0;
         tick_count = 0x0;
         has_active_move = false;
+        encoder.reset();
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -238,9 +240,9 @@ class MotorInterruptHandler {
          * Check whether the position has overflowed. Return true if this has
          * happened, and false otherwise.
          *
-         * (TODO lc): If an overflEncoderHandlerow has happened, we should probably notify the
-         * server somehow that the position needed to be capped.
-         * Note: could not get the built-ins to work as expected.
+         * (TODO lc): If an overflEncoderHandlerow has happened, we should
+         * probably notify the server somehow that the position needed to be
+         * capped. Note: could not get the built-ins to work as expected.
          */
         return bool((current ^ future) & overflow_flag);
     }
@@ -257,7 +259,7 @@ class MotorInterruptHandler {
         return buffered_move;
     }
     void set_buffered_move(Move new_move) { buffered_move = new_move; }
-    
+
   private:
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
@@ -267,6 +269,7 @@ class MotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
     Move buffered_move = Move{};
+
   public:
     encoder_handler::EncoderHandler encoder{hardware};
 };

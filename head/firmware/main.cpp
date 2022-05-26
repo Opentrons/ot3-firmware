@@ -234,21 +234,24 @@ static motor_class::Motor motor_left{
                                       .max_acceleration = 2},
     motor_queue_left};
 
-
-
-
 extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
 }
 
-extern "C" void enc_direction_callback_glue() {
+extern "C" void left_enc_direction_callback_glue() {
     motor_interrupt_left.encoder.get_enc_direction();
+}
+
+extern "C" void left_enc_overflow_callback_glue() {
+    motor_interrupt_left.encoder.encoder_overflow();
+}
+
+extern "C" void right_enc_direction_callback_glue() {
     motor_interrupt_right.encoder.get_enc_direction();
 }
 
-extern "C" void enc_overflow_callback_glue() {
-    motor_interrupt_left.encoder.encoder_overflow();
+extern "C" void right_enc_overflow_callback_glue() {
     motor_interrupt_right.encoder.encoder_overflow();
 }
 
@@ -291,7 +294,10 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    initialize_timer(motor_callback_glue, enc_direction_callback_glue, enc_overflow_callback_glue);
+    initialize_timer(motor_callback_glue, left_enc_direction_callback_glue,
+                     left_enc_overflow_callback_glue,
+                     right_enc_direction_callback_glue,
+                     right_enc_overflow_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();

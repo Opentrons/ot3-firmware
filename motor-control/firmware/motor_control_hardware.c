@@ -88,17 +88,22 @@ uint32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
 void motor_hardware_reset_encoder_count(void* enc_htim) {
     if (enc_htim != NULL) {
         __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
+        __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
+        __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_DIR);
     }
 }
 
 /*
-* These functions will be used to determine the counter overflow on the encoder
-* We need a way to clear the status register and getting the status register flag bit
-*/
-void motor_hardware_clear_status_register(void *enc_htim){
-    if (enc_htim != NULL){
+ * These functions will be used to determine the counter overflow on the encoder
+ * We need a way to clear the status register and getting the status register
+ * flag bit
+ */
+void motor_hardware_clear_status_register(void* enc_htim) {
+    if (enc_htim != NULL) {
         /* Clear interrupt flag bit */
-        __HAL_TIM_CLEAR_IT((TIM_HandleTypeDef*)enc_htim, TIM_IT_UPDATE);
+        __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
+        //        __HAL_TIM_CLEAR_IT((TIM_HandleTypeDef*)enc_htim,
+        //        TIM_IT_UPDATE);
         //  /* The update event of the enable timer is interrupted */
         // __HAL_TIM_ENABLE_IT((TIM_HandleTypeDef*)enc_htim, TIM_IT_UPDATE);
         // /* Set update event request source as: counter overflow */
@@ -106,23 +111,23 @@ void motor_hardware_clear_status_register(void *enc_htim){
     }
 }
 
-bool motor_hardware_encoder_get_status_register(void *enc_htim){
+bool motor_hardware_encoder_get_status_register(void* enc_htim) {
     bool status_register;
-    if (enc_htim != NULL){
-        status_register = __HAL_TIM_GET_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
-    }
-    else{
+    if (enc_htim != NULL) {
+        status_register =
+            __HAL_TIM_GET_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
+    } else {
         status_register = 0;
     }
     return status_register;
 }
 
-bool motor_hardware_encoder_get_direction(void *enc_htim){
+bool motor_hardware_encoder_get_direction(void* enc_htim) {
     bool direction;
-    if (enc_htim != NULL){
-        direction = __HAL_TIM_IS_TIM_COUNTING_DOWN((TIM_HandleTypeDef*)enc_htim);
-    }
-    else{
+    if (enc_htim != NULL) {
+        direction =
+            __HAL_TIM_IS_TIM_COUNTING_DOWN((TIM_HandleTypeDef*)enc_htim);
+    } else {
         direction = 0;
     }
     return direction;
