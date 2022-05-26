@@ -57,6 +57,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.ToolType, output)
         write_enum_cpp(constants_mod.SensorType, output)
         write_enum_cpp(constants_mod.SensorOutputBinding, output)
+        write_enum_cpp(constants_mod.SensorThresholdMode, output)
 
 
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
