@@ -284,18 +284,16 @@ void TIM2_EncoderZR_Init(void) {
     /* Reset counter */
     //    __HAL_TIM_SET_COUNTER(&htim2, 0);
     /* Clear interrupt flag bit */
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
+    __HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_DIR);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim2);
-    // __HAL_TIM_UIFREMAP_ENABLE(&htim2);
     HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0);
     HAL_NVIC_EnableIRQ(TIM2_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
-    HAL_TIM_Base_Start_IT(&htim2);
 }
 
 void TIM3_EncoderZL_Init(void) {
