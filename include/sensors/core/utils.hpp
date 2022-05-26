@@ -41,6 +41,7 @@ enum class ResponseTag : size_t {
     IS_PART_OF_POLL = 0,
     IS_BASELINE = 1,
     POLL_IS_CONTINUOUS = 2,
+    IS_THRESHOLD_SENSE = 4,
 };
 
 [[nodiscard]] constexpr auto byte_from_tag(ResponseTag tag) -> uint8_t {
