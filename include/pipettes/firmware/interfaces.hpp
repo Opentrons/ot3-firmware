@@ -1,5 +1,6 @@
 #pragma once
 
+#include "motor-control/core/stepper_motor/gear_motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
@@ -19,6 +20,9 @@ namespace interfaces {
 
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
+    freertos_message_queue::FreeRTOSMessageQueue, Client>;
+template <typename Client>
+using GearMotorInterruptHandlerType = gear_motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client>;
 
 template <PipetteType P>
@@ -85,8 +89,8 @@ struct GearHardware {
 };
 
 struct GearInterruptHandlers {
-    MotorInterruptHandlerType<gear_motor_tasks::QueueClient> left;
-    MotorInterruptHandlerType<gear_motor_tasks::QueueClient> right;
+    GearMotorInterruptHandlerType<gear_motor_tasks::QueueClient> left;
+    GearMotorInterruptHandlerType<gear_motor_tasks::QueueClient> right;
 };
 
 auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware)

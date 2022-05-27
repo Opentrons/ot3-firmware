@@ -121,7 +121,8 @@ using namespace motor_hardware;
 template <lms::MotorMechanicalConfig MEConfig>
 class PipetteMotionController {
   public:
-    using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
+    using GenericQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<GearMotorMove>;
     PipetteMotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                             PipetteStepperMotorHardwareIface& hardware_iface,
                             MotionConstraints constraints, GenericQueue& queue)
@@ -149,19 +150,14 @@ class PipetteMotionController {
     void move(const can_messages::TipActionRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
-        auto stop_condition = MoveStopCondition::none;
-        if (check_tip_sense()) {
-            stop_condition = MoveStopCondition::limit_switch;
-            velocity_steps *= -1;
-            // set the direction of the velocity to be negative because
-            // we should drop tips
-        }
-        Move msg{.duration = can_msg.duration,
-                 .velocity = velocity_steps,
-                 .acceleration = 0,
-                 .group_id = can_msg.group_id,
-                 .seq_id = can_msg.seq_id,
-                 .stop_condition = stop_condition};
+        GearMotorMove msg{
+            can_msg.duration,
+            velocity_steps,
+            0,
+            can_msg.group_id,
+            can_msg.seq_id,
+            static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            can_msg.action};
         queue.try_write(msg);
     }
 

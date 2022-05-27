@@ -23,8 +23,8 @@ auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .linear_motor_queue = MoveQueue{"Linear Motor Queue"},
-        .right_motor_queue = MoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = MoveQueue{"Left Gear Motor Queue"}
+        .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}
 
     };
 }
@@ -34,8 +34,8 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .linear_motor_queue = MoveQueue{"Linear Motor Queue"},
-        .right_motor_queue = MoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = MoveQueue{"Left Gear Motor Queue"}};
+        .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
 }
 
 auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
@@ -97,10 +97,10 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
                                 HighThroughputInterruptQueues& queues)
     -> gear_motor::GearInterruptHandlers {
     return gear_motor::GearInterruptHandlers{
-        .left = motor_handler::MotorInterruptHandler(
+        .left = gear_motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
             hw.left),
-        .right = motor_handler::MotorInterruptHandler(
+        .right = gear_motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
             hw.right)};
 }

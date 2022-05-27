@@ -44,8 +44,8 @@ class MoveStatusMessageHandler {
             .seq_id = message.seq_id,
             .encoder_position = message.encoder_position,
             .ack_id = static_cast<uint8_t>(message.ack_id),
-            // How to get tip info into here
-            .success = true};
+            .success = static_cast<uint8_t>(message.success),
+            .action = message.action};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }
 

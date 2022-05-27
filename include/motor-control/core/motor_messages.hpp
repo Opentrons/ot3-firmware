@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/types.hpp"
 
@@ -32,6 +33,10 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     MoveStopCondition stop_condition = MoveStopCondition::none;
 };
 
+struct GearMotorMove : public Move {
+    can_ids::PipetteTipActionType action;
+};
+
 struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     /**
      * Note that brushed timer tick at a different frequency from the stepper
@@ -60,6 +65,11 @@ struct Ack {
     uint32_t current_position_steps;
     uint32_t encoder_position;
     AckMessageId ack_id;
+};
+
+struct GearMotorAck : public Ack {
+    bool success;
+    can_ids::PipetteTipActionType action;
 };
 
 constexpr const int RADIX = 31;
