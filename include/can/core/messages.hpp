@@ -613,17 +613,22 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 
 struct SetSensorThresholdRequest
     : BaseMessage<MessageId::set_sensor_threshold_request> {
-    uint8_t sensor;
+    can_ids::SensorType sensor;
     int32_t threshold;
+    can_ids::SensorThresholdMode mode;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSensorThresholdRequest {
         uint8_t sensor = 0;
         int32_t threshold = 0;
+        uint8_t mode = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, threshold);
-        return SetSensorThresholdRequest{.sensor = sensor,
-                                         .threshold = threshold};
+        body = bit_utils::bytes_to_int(body, limit, mode);
+        return SetSensorThresholdRequest{
+            .sensor = static_cast<can_ids::SensorType>(sensor),
+            .threshold = threshold,
+            .mode = static_cast<can_ids::SensorThresholdMode>(mode)};
     }
 
     auto operator==(const SetSensorThresholdRequest& other) const
@@ -634,12 +639,14 @@ struct SensorThresholdResponse
     : BaseMessage<MessageId::set_sensor_threshold_response> {
     can_ids::SensorType sensor{};
     int32_t threshold = 0;
+    can_ids::SensorThresholdMode mode{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
         iter = bit_utils::int_to_bytes(threshold, iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(mode), iter, limit);
         return iter - body;
     }
     auto operator==(const SensorThresholdResponse& other) const

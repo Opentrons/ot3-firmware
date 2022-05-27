@@ -118,15 +118,17 @@ class CapacitiveMessageHandler {
     void visit(can_messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor",
             m.threshold, m.sensor);
-        if (m.threshold != 0) {
+        if (m.mode == can_ids::SensorThresholdMode::absolute) {
             capacitance_handler.set_threshold(
-                fixed_point_to_float(m.threshold, 15));
+                fixed_point_to_float(m.threshold, 15), m.mode);
         } else {
             capacitance_handler.reset_limited();
             capacitance_handler.set_number_of_reads(10);
             std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                             utils::ResponseTag::IS_BASELINE,
                             utils::ResponseTag::IS_THRESHOLD_SENSE};
+            capacitance_handler.prime_autothreshold(
+                fixed_point_to_float(m.threshold, 15));
             poller.multi_register_poll(
                 ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2,
                 uint16_t(10), DELAY, own_queue,

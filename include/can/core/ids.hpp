@@ -152,4 +152,10 @@ enum class SensorOutputBinding {
     report = 0x2,
 };
 
+/** How a sensor's threshold should be interpreted. */
+enum class SensorThresholdMode {
+    absolute = 0x0,
+    auto_baseline = 0x1,
+};
+
 }  // namespace can_ids

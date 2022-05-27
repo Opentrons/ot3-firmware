@@ -406,7 +406,8 @@ SCENARIO("capacitance callback tests") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-            callback_host.set_threshold(10);
+            callback_host.set_threshold(10,
+                                        can_ids::SensorThresholdMode::absolute);
             can_queue.reset();
             callback_host.handle_ongoing_response(first);
             callback_host.handle_ongoing_response(second);
@@ -452,7 +453,9 @@ SCENARIO("threshold configuration") {
         int NUM_READS = 10;
         auto autothreshold =
             sensors::utils::TaskMessage(can_messages::SetSensorThresholdRequest(
-                {}, static_cast<uint8_t>(can_ids::SensorType::capacitive), 0));
+                {}, can_ids::SensorType::capacitive,
+                convert_to_fixed_point(0.375, 15),
+                can_ids::SensorThresholdMode::auto_baseline));
         WHEN("the message is received") {
             sensor.handle_message(autothreshold);
             THEN("the poller queue is populated with a poll request") {
@@ -510,7 +513,7 @@ SCENARIO("threshold configuration") {
                     sensor.handle_message(final_response_b);
                     THEN("the threshold is set to the proper value") {
                         REQUIRE(sensor.capacitance_handler.get_threshold() ==
-                                16);
+                                Approx(15.375).epsilon(1e-4));
                     }
                     THEN(
                         "a message is sent on can informing that the threshold "
@@ -525,8 +528,10 @@ SCENARIO("threshold configuration") {
                         float check_data = signed_fixed_point_to_float(
                             response_msg.threshold, 15);
                         // the average value + 1
-                        float expected = 16;
+                        float expected = 15.375;
                         REQUIRE(check_data == Approx(expected).epsilon(1e-4));
+                        REQUIRE(response_msg.mode ==
+                                can_ids::SensorThresholdMode::auto_baseline);
                     }
                 }
             }
@@ -536,8 +541,9 @@ SCENARIO("threshold configuration") {
     GIVEN("A request to set a specific threshold") {
         auto specific_threshold =
             sensors::utils::TaskMessage(can_messages::SetSensorThresholdRequest(
-                {}, static_cast<uint8_t>(can_ids::SensorType::capacitive),
-                convert_to_fixed_point(10, 15)));
+                {}, can_ids::SensorType::capacitive,
+                convert_to_fixed_point(10, 15),
+                can_ids::SensorThresholdMode::absolute));
         WHEN("the message is received") {
             sensor.handle_message(specific_threshold);
 
@@ -552,6 +558,8 @@ SCENARIO("threshold configuration") {
                         can_ids::SensorType::capacitive);
                 REQUIRE(threshold_response.threshold ==
                         convert_to_fixed_point(10, 15));
+                REQUIRE(threshold_response.mode ==
+                        can_ids::SensorThresholdMode::absolute);
             }
             THEN("the sensor's threshold should be set") {
                 REQUIRE(sensor.capacitance_handler.get_threshold() == 10);
