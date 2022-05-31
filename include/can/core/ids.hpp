@@ -160,4 +160,3 @@ enum class SensorThresholdMode {
 };
 
 }  // namespace can_ids
-
