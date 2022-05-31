@@ -9,18 +9,18 @@ namespace interfaces {
 using MoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
 using GearMoveQueue =
-freertos_message_queue::FreeRTOSMessageQueue<motor_messages::GearMotorMove>;
+    freertos_message_queue::FreeRTOSMessageQueue<motor_messages::GearMotorMove>;
 using MotionControlType =
     motion_controller::MotionController<lms::LeadScrewConfig>;
 using PipetteMotionControlType =
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
 
 struct LowThroughputInterruptQueues {
-    MoveQueue motor_queue;
+    MoveQueue plunger_queue;
 };
 
 struct HighThroughputInterruptQueues {
-    MoveQueue linear_motor_queue;
+    MoveQueue plunger_queue;
     GearMoveQueue right_motor_queue;
     GearMoveQueue left_motor_queue;
 };

@@ -113,9 +113,9 @@ auto initialize_motor_tasks(
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 
     // TODO Convert gear motor tasks
-    gear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, gear_motion.right,
-        peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
+    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  gear_motion,
+                                  peripheral_tasks::get_spi_client(), conf, id);
 }
 
 auto initialize_motor_tasks(

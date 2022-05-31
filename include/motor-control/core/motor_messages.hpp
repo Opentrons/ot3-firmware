@@ -65,15 +65,9 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 struct GearMotorMove : public Move {
     can_ids::PipetteTipActionType action;
 
-    GearMotorAck build_ack(uint32_t position, uint32_t pulses, AckMessageId _id) {
-        return GearMotorAck{
-            group_id,
-            seq_id,
-            position,
-            pulses,
-            _id,
-            action
-        };
+    GearMotorAck build_ack(uint32_t position, uint32_t pulses,
+                           AckMessageId _id) {
+        return GearMotorAck{group_id, seq_id, position, pulses, _id, action};
     }
 };
 

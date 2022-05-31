@@ -1,7 +1,7 @@
 #pragma once
 
-#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
@@ -23,7 +23,8 @@ using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move>;
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::GearMotorMove>;
+    freertos_message_queue::FreeRTOSMessageQueue, Client,
+    motor_messages::GearMotorMove>;
 
 template <PipetteType P>
 auto get_interrupt_queues()

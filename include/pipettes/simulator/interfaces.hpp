@@ -13,7 +13,12 @@ namespace interfaces {
 
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client>;
+    freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move>;
+
+template <typename Client>
+using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
+    freertos_message_queue::FreeRTOSMessageQueue, Client,
+    motor_messages::GearMotorMove>;
 
 template <PipetteType P>
 auto get_interrupt_queues()
@@ -60,7 +65,8 @@ auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient>;
+        linear_motor_tasks::QueueClient, motor_messages::Move,
+        sim_motor_hardware_iface::SimMotorHardwareIface>;
 
 auto get_motor_hardware() -> sim_motor_hardware_iface::SimMotorHardwareIface;
 
@@ -76,31 +82,24 @@ auto get_motion_control(sim_motor_hardware_iface::SimMotorHardwareIface hw,
 namespace gear_motor {
 
 struct GearInterruptHandlers {
-    MotorInterruptHandlerType<gear_motor_tasks::QueueClient> left;
-    MotorInterruptHandlerType<gear_motor_tasks::QueueClient> right;
+    GearMotorInterruptHandlerType<gear_motor_tasks::QueueClient> left;
+    GearMotorInterruptHandlerType<gear_motor_tasks::QueueClient> right;
 };
 
 struct GearInterruptDrivers {
-    motor_interrupt_driver::GearMotorInterruptDriver<
-        gear_motor_tasks::QueueClient>
+    motor_interrupt_driver::MotorInterruptDriver<
+        gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
+        sim_motor_hardware_iface::SimGearMotorHardwareIface>
         left;
-    motor_interrupt_driver::GearMotorInterruptDriver<
-        gear_motor_tasks::QueueClient>
+    motor_interrupt_driver::MotorInterruptDriver<
+        gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
+        sim_motor_hardware_iface::SimGearMotorHardwareIface>
         right;
 };
 
 struct GearHardware {
     sim_motor_hardware_iface::SimGearMotorHardwareIface left;
     sim_motor_hardware_iface::SimGearMotorHardwareIface right;
-};
-
-struct UnavailableGearHardware {};
-struct UnavailableGearMotionControl {};
-struct UnavailableGearInterrupts {};
-
-struct GearMotionControl {
-    PipetteMotionControlType left;
-    PipetteMotionControlType right;
 };
 
 auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware)

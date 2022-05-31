@@ -23,8 +23,8 @@ auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
-        .right_motor_queue = MoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = MoveQueue{"Left Gear Motor Queue"}
+        .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}
 
     };
 }
@@ -34,8 +34,8 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
-        .right_motor_queue = MoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = MoveQueue{"Left Gear Motor Queue"}};
+        .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
 }
 
 auto linear_motor::get_interrupt(
@@ -49,7 +49,8 @@ auto linear_motor::get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
     MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient> {
+        linear_motor_tasks::QueueClient, motor_messages::Move,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
     return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw);
 }
 
@@ -103,9 +104,9 @@ auto gear_motor::get_interrupt_drivers(
     HighThroughputInterruptQueues& queues, GearHardware& hw)
     -> gear_motor::GearInterruptDrivers {
     return gear_motor::GearInterruptDrivers{
-        .left = motor_interrupt_driver::GearMotorInterruptDriver(
+        .left = motor_interrupt_driver::MotorInterruptDriver(
             queues.left_motor_queue, interrupts.left, hw.left),
-        .right = motor_interrupt_driver::GearMotorInterruptDriver(
+        .right = motor_interrupt_driver::MotorInterruptDriver(
             queues.left_motor_queue, interrupts.right, hw.right)};
 }
 

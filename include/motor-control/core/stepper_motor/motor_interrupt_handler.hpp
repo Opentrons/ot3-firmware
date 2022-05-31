@@ -40,8 +40,7 @@ using namespace motor_messages;
 // (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl,
-          class StatusClient,
+template <template <class> class QueueImpl, class StatusClient,
           typename MotorMoveMessage>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
@@ -208,15 +207,13 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                get_encoder_pulses(),
-                ack_msg_id);
+                get_encoder_pulses(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
         }
         set_buffered_move(MotorMoveMessage{});
     }
-
 
     auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
 
@@ -255,7 +252,9 @@ class MotorInterruptHandler {
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }
-    void set_buffered_move(MotorMoveMessage new_move) { buffered_move = new_move; }
+    void set_buffered_move(MotorMoveMessage new_move) {
+        buffered_move = new_move;
+    }
 
   private:
     uint64_t tick_count = 0x0;
