@@ -3,8 +3,8 @@
 namespace eeprom {
 namespace types {
 
-// 0-255
-using address = uint8_t;
+// 0-65535
+using address = uint16_t;
 
 // 0-8
 using data_length = uint8_t;
