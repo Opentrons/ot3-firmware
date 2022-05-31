@@ -45,7 +45,7 @@ class SerialNumberAccessor {
     auto start_read() -> void {
         auto amount_to_read = std::min(
             static_cast<types::data_length>(addresses::serial_number_length),
-            static_cast<types::address>(addresses::serial_number_length),
+            types::max_data_length);
         eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
             .memory_address = addresses::serial_number_address_begin,
             .length = amount_to_read,
@@ -57,8 +57,8 @@ class SerialNumberAccessor {
      * Write serial number to eeprom
      */
     auto write(const SerialNumberType& sn) -> void {
-        auto amount_to_write = std::min(static_cast<types::address>(sn.size()),
-                                        types::max_data_length);
+        auto amount_to_write = std::min(
+            static_cast<types::data_length>(sn.size()), types::max_data_length);
         auto write = types::EepromData{};
         std::copy_n(sn.cbegin(), amount_to_write, write.begin());
 
