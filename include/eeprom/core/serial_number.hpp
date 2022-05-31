@@ -57,8 +57,8 @@ class SerialNumberAccessor {
      * Write serial number to eeprom
      */
     auto write(const SerialNumberType& sn) -> void {
-        auto amount_to_write = std::min(static_cast<types::data_length>(sn.size()),
-                                        types::max_data_length);
+        auto amount_to_write = std::min(
+            static_cast<types::data_length>(sn.size()), types::max_data_length);
         auto write = types::EepromData{};
         std::copy_n(sn.cbegin(), amount_to_write, write.begin());
 

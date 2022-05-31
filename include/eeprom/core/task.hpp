@@ -135,10 +135,12 @@ class EEPromMessageHandler {
         // The transaction will write the memory address, then read the
         // data.
         auto write_buffer = i2c::messages::MaxMessageBuffer{};
-        // TODO (amit, 2022-05-31): Current board revisions' eeprom has 8-bit addressing.
+        // TODO (amit, 2022-05-31): Current board revisions' eeprom has 8-bit
+        // addressing.
         //  To use the newer 16-bit addressing, remove this static_cast.
         auto address = static_cast<uint8_t>(m.memory_address);
-        static_cast<void>(bit_utils::int_to_bytes(address, write_buffer.begin(), write_buffer.end()));
+        static_cast<void>(bit_utils::int_to_bytes(address, write_buffer.begin(),
+                                                  write_buffer.end()));
 
         auto transaction =
             i2c::messages::Transaction{.address = types::DEVICE_ADDRESS,
