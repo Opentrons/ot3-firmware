@@ -7,14 +7,14 @@ using namespace interfaces;
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
     -> LowThroughputInterruptQueues {
-    return LowThroughputInterruptQueues{.motor_queue =
+    return LowThroughputInterruptQueues{.plunger_queue =
                                             MoveQueue{"Linear Motor Queue"}};
 }
 
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::EIGHT_CHANNEL>()
     -> LowThroughputInterruptQueues {
-    return LowThroughputInterruptQueues{.motor_queue =
+    return LowThroughputInterruptQueues{.plunger_queue =
                                             MoveQueue{"Linear Motor Queue"}};
 }
 
@@ -22,7 +22,7 @@ template <>
 auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
-        .linear_motor_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}
 
@@ -33,7 +33,7 @@ template <>
 auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
-        .linear_motor_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
 }
@@ -42,14 +42,14 @@ auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.motor_queue, linear_motor_tasks::get_queues(), hw);
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw);
 }
 
 auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.linear_motor_queue, linear_motor_tasks::get_queues(), hw);
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw);
 }
 
 auto linear_motor::get_motor_hardware(
@@ -76,7 +76,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
                                           .max_velocity = 2,
                                           .min_acceleration = 1,
                                           .max_acceleration = 2},
-        queues.motor_queue};
+        queues.plunger_queue};
 }
 
 auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
@@ -90,7 +90,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
                                           .max_velocity = 2,
                                           .min_acceleration = 1,
                                           .max_acceleration = 2},
-        queues.linear_motor_queue};
+        queues.plunger_queue};
 }
 
 auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
