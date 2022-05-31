@@ -44,7 +44,9 @@ class MoveStatusMessageHandler {
             .seq_id = message.seq_id,
             .encoder_position = message.encoder_position,
             .ack_id = static_cast<uint8_t>(message.ack_id),
-            .success = static_cast<uint8_t>(message.success),
+            // TODO: In a follow-up PR, tip sense reporting will
+            // actually update this value to true or false.
+            .success = static_cast<uint8_t>(true),
             .action = message.action};
         can_client.send_can_message(can_ids::NodeId::host, msg);
     }

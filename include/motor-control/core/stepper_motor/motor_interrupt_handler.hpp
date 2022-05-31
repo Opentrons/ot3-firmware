@@ -41,11 +41,12 @@ using namespace motor_messages;
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
 template <template <class> class QueueImpl,
-          move_status_reporter_task::TaskClient StatusClient>
-requires MessageQueue<QueueImpl<Move>, Move>
+          class StatusClient,
+          typename MotorMoveMessage>
+requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
   public:
-    using GenericQueue = QueueImpl<Move>;
+    using GenericQueue = QueueImpl<MotorMoveMessage>;
 
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(
@@ -204,22 +205,18 @@ class MotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
-        uint32_t pulses = 0x0;
-        pulses = get_encoder_pulses();
         if (buffered_move.group_id != NO_GROUP) {
-            auto ack = Ack{
-                .group_id = buffered_move.group_id,
-                .seq_id = buffered_move.seq_id,
-                .current_position_steps =
-                    static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = pulses,
-                .ack_id = ack_msg_id,
-            };
+            auto ack = buffered_move.build_ack(
+                static_cast<uint32_t>(position_tracker >> 31),
+                get_encoder_pulses(),
+                ack_msg_id);
+
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
         }
-        set_buffered_move(Move{});
+        set_buffered_move(MotorMoveMessage{});
     }
+
 
     auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
 
@@ -255,10 +252,10 @@ class MotorInterruptHandler {
         position_tracker = pos_tracker;
     }
     bool has_active_move = false;
-    [[nodiscard]] auto get_buffered_move() const -> Move {
+    [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }
-    void set_buffered_move(Move new_move) { buffered_move = new_move; }
+    void set_buffered_move(MotorMoveMessage new_move) { buffered_move = new_move; }
 
   private:
     uint64_t tick_count = 0x0;
@@ -268,6 +265,6 @@ class MotorInterruptHandler {
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
-    Move buffered_move = Move{};
+    MotorMoveMessage buffered_move = MotorMoveMessage{};
 };
 }  // namespace motor_handler

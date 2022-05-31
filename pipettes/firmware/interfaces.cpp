@@ -97,10 +97,10 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
                                 HighThroughputInterruptQueues& queues)
     -> gear_motor::GearInterruptHandlers {
     return gear_motor::GearInterruptHandlers{
-        .left = gear_motor_handler::MotorInterruptHandler(
+        .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
             hw.left),
-        .right = gear_motor_handler::MotorInterruptHandler(
+        .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
             hw.right)};
 }
