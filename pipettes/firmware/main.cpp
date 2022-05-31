@@ -134,31 +134,10 @@ extern "C" void gear_callback() {
     // TODO implement the motor handler for the 96 channel
 }
 
-static sensors::hardware::SensorHardware pins_for_sensor_lt(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOB,
-    .pin = GPIO_PIN_4,
-    .active_setting = GPIO_PIN_RESET});
-static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOB,
-    .pin = GPIO_PIN_5,
-    .active_setting = GPIO_PIN_RESET});
-static sensors::hardware::SensorHardware data_ready_front(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOC,
-    .pin = GPIO_PIN_15,
-    .active_setting = GPIO_PIN_RESET});
-static sensors::hardware::SensorHardware data_ready_rear(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOA,
-    .pin = GPIO_PIN_8,
-    .active_setting = GPIO_PIN_RESET});
-static sensors::hardware::SensorHardware data_ready_lt(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOC,
-    .pin = GPIO_PIN_9,
-    .active_setting = GPIO_PIN_RESET});
+static auto pins_for_sensor = interfaces::sensor_configurations<PIPETTE_TYPE>();
+
+auto sensor_hardware =
+    sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
@@ -184,7 +163,7 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              pins_for_sensor_96, id, eeprom_hardware_iface);
+                              sensor_hardware, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback);
@@ -202,7 +181,7 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              pins_for_sensor_lt, id, eeprom_hardware_iface);
+                              sensor_hardware, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     linear_motor_tasks::start_tasks(

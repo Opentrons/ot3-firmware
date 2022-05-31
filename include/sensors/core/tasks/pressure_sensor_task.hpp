@@ -9,6 +9,7 @@
 #include "i2c/core/writer.hpp"
 #include "pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 namespace sensors {
 namespace tasks {
@@ -19,8 +20,10 @@ class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
                                     I2CQueuePoller &i2c_poller,
-                                    CanClient &can_client, OwnQueue &own_queue)
-        : driver{i2c_writer, i2c_poller, can_client, own_queue} {}
+                                    CanClient &can_client,
+                                    SensorHardwareBase &hardware,
+                                    OwnQueue &own_queue)
+        : driver{i2c_writer, i2c_poller, can_client, hardware, own_queue} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -120,9 +123,10 @@ class PressureSensorTask {
     template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  i2c::poller::Poller<QueueImpl> *poller,
-                                 CanClient *can_client) {
-        auto handler =
-            PressureMessageHandler{*writer, *poller, *can_client, get_queue()};
+                                 CanClient *can_client,
+                                 SensorHardwareBase *hardware) {
+        auto handler = PressureMessageHandler{*writer, *poller, *can_client,
+                                              *hardware, get_queue()};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

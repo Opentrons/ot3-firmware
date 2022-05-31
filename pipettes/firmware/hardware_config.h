@@ -11,9 +11,7 @@ typedef enum {
     pipette_hardware_device_LED_drive,
     pipette_hardware_device_sync_in,
     pipette_hardware_device_sync_out,
-    pipette_hardware_device_data_ready_lt,
-    pipette_hardware_device_data_ready_front,
-    pipette_hardware_device_data_ready_rear
+    pipette_hardware_device_data_ready,
 }PipetteHardwareDevice;
 
 uint16_t pipette_hardware_spi_pins(const PipetteType pipette_type, GPIO_TypeDef* which_handle);

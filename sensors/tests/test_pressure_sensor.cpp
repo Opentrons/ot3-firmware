@@ -41,12 +41,13 @@ SCENARIO("read pressure sensor values") {
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
+    test_mocks::MockSensorHardware mock_hw{};
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
 
     auto sensor = sensors::tasks::PressureMessageHandler{
-        writer, poller, queue_client, response_queue};
+        writer, poller, mock_hw, queue_client, response_queue};
     constexpr uint8_t pressure_id = 0x4;
     constexpr uint8_t pressure_temperature_id = 0x5;
 

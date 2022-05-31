@@ -128,16 +128,15 @@ void data_ready_gpio_init() {
     {
         hardware =
             pipette_hardware_get_gpio(
-                pipette_type, pipette_hardware_device_data_ready_lt);
+                pipette_type, pipette_hardware_device_data_ready);
     }
     else {
         hardware =
             pipette_hardware_get_gpio(
-        pipette_type, pipette_hardware_device_data_ready_front);
+        pipette_type, pipette_hardware_device_data_ready);
         PipetteHardwarePin hardware_rear =
         pipette_hardware_get_gpio(
-            pipette_type, pipette_hardware_device_data_ready_rear
-            );
+            pipette_type, pipette_hardware_device_data_ready);
 
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /*Configure GPIO pin*/

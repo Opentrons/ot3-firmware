@@ -6,6 +6,7 @@
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/firmware/pipette_motor_hardware.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 namespace interfaces {
 
@@ -30,6 +31,15 @@ struct HighThroughputPipetteDriverHardware {
     TMC2130DriverConfig right_gear_motor;
     TMC2130DriverConfig left_gear_motor;
     TMC2160DriverConfig linear_motor;
+};
+
+struct HighThroughputSensorHardware {
+    sensors::hardware::SensorHardwareConfiguration primary;
+    sensors::hardware::SensorHardwareConfiguration secondary;
+};
+
+struct LowThroughputSensorHardware {
+    sensors::hardware::SensorHardwareConfiguration primary;
 };
 
 struct LowThroughputPipetteMotorHardware {
@@ -84,6 +94,26 @@ auto motor_configurations()
     -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
                         HighThroughputMotorConfigurations>;
 
+template <PipetteType P>
+auto sensor_configurations()
+    -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
+                        LowThroughputSensorHardware>;
+
+template <PipetteType P>
+auto sensor_configurations()
+    -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL,
+                        LowThroughputSensorHardware>;
+
+template <PipetteType P>
+auto sensor_configurations()
+    -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
+                        HighThroughputSensorHardware>;
+
+template <PipetteType P>
+auto sensor_configurations()
+    -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
+                        HighThroughputSensorHardware>;
+
 template <>
 auto motor_configurations<PipetteType::SINGLE_CHANNEL>()
     -> LowThroughputMotorConfigurations;
@@ -96,4 +126,20 @@ template <>
 auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputMotorConfigurations;
 
-}  // namespace interfaces
+template <>
+auto sensor_configurations<PipetteType::SINGLE_CHANNEL>()
+    -> LowThroughputSensorHardware;
+
+template <>
+auto sensor_configurations<PipetteType::EIGHT_CHANNEL>()
+    -> LowThroughputSensorHardware;
+
+template <>
+auto sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
+    -> HighThroughputSensorHardware;
+
+template <>
+auto sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
+    -> HighThroughputSensorHardware;
+
+};  // namespace interfaces
