@@ -59,8 +59,8 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
         -> PipetteInfoMessageHandler && = delete;
     ~PipetteInfoMessageHandler() = default;
 
-    using MessageType =
-        std::variant<std::monostate, PipetteInfoRequest, SetSerialNumber>;
+    using MessageType = std::variant<std::monostate, PipetteInfoRequest,
+                                     InstrumentInfoRequest, SetSerialNumber>;
 
     /**
      * Message handler
@@ -89,6 +89,15 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
      * Handle a request to get pipette info.
      */
     void visit(const PipetteInfoRequest &) {
+        // Start a serial number read. Respond with CAN message when read
+        // completes.
+        serial_number_accessor.start_read();
+    }
+
+    /**
+     * Handle a request to get instrument info.
+     */
+    void visit(const InstrumentInfoRequest &) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
         serial_number_accessor.start_read();

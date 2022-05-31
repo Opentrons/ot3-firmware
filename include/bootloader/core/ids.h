@@ -28,6 +28,7 @@ typedef enum {
     can_messageid_gripper_info_request = 0x308,
     can_messageid_gripper_info_response = 0x309,
     can_messageid_set_serial_number = 0x30a,
+    can_messageid_instrument_info_request = 0x30b,
     can_messageid_stop_request = 0x0,
     can_messageid_get_status_request = 0x1,
     can_messageid_get_status_response = 0x5,

@@ -961,6 +961,8 @@ struct PeripheralStatusResponse
         -> bool = default;
 };
 
+using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
+
 /**
  * A variant of all message types we might send..
  */
