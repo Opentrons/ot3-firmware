@@ -44,12 +44,12 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a write to eeprom message") {
-        auto arr = std::array<uint8_t, 9>{// Address
-                                          0x12,
-                                          // Data Length
-                                          7,
-                                          // Data
-                                          1, 2, 3, 4, 5, 6, 7};
+        auto arr = std::array<uint8_t, 10>{// Address
+                                           0x0, 0x12,
+                                           // Data Length
+                                           7,
+                                           // Data
+                                           1, 2, 3, 4, 5, 6, 7};
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
@@ -74,7 +74,7 @@ SCENARIO("message deserializing works") {
 
     GIVEN("a write to eeprom message with too large data length") {
         auto arr = std::array<uint8_t, 35>{// Address
-                                           0x5,
+                                           0x0, 0x5,
                                            // Data Length
                                            122,
                                            // Data
@@ -189,32 +189,34 @@ SCENARIO("message serializing works") {
         }
 
         WHEN("serialized into too small a buffer") {
-            auto arr = std::array<uint8_t, 5>{};
+            auto arr = std::array<uint8_t, 6>{};
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer.") {
-                REQUIRE(arr[0] == 13);
-                REQUIRE(arr[1] == 0x5);
-                REQUIRE(arr[2] == 0x0);
-                REQUIRE(arr[3] == 0x1);
-                REQUIRE(arr[4] == 0x2);
+                REQUIRE(arr[0] == 0);
+                REQUIRE(arr[1] == 13);
+                REQUIRE(arr[2] == 0x5);
+                REQUIRE(arr[3] == 0x0);
+                REQUIRE(arr[4] == 0x1);
+                REQUIRE(arr[5] == 0x2);
             }
-            THEN("size is correct") { REQUIRE(size == 5); }
+            THEN("size is correct") { REQUIRE(size == 6); }
         }
 
         WHEN("serialized into too large a buffer") {
             auto arr = std::array<uint8_t, ReadFromEEPromResponse::SIZE + 5>{};
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is written into the buffer.") {
-                REQUIRE(arr[0] == 13);
-                REQUIRE(arr[1] == 0x5);
-                REQUIRE(arr[2] == 0x0);
-                REQUIRE(arr[3] == 0x1);
-                REQUIRE(arr[4] == 0x2);
-                REQUIRE(arr[5] == 0x3);
-                REQUIRE(arr[6] == 0x4);
-                REQUIRE(arr[7] == 0x0);
+                REQUIRE(arr[0] == 0);
+                REQUIRE(arr[1] == 13);
+                REQUIRE(arr[2] == 0x5);
+                REQUIRE(arr[3] == 0x0);
+                REQUIRE(arr[4] == 0x1);
+                REQUIRE(arr[5] == 0x2);
+                REQUIRE(arr[6] == 0x3);
+                REQUIRE(arr[7] == 0x4);
                 REQUIRE(arr[8] == 0x0);
                 REQUIRE(arr[9] == 0x0);
+                REQUIRE(arr[10] == 0x0);
             }
             THEN("size is correct") {
                 REQUIRE(size == ReadFromEEPromResponse::SIZE);

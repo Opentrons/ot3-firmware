@@ -85,6 +85,7 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./i2c/*.hpp ./i2c/*.cpp
         ./sensors/*.hpp ./sensors/*.cpp
         ./spi/*.hpp ./spi/*.cpp
+        ./eeprom/*.hpp ./eeprom/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
