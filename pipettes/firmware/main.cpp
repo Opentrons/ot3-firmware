@@ -83,34 +83,6 @@ static auto motor_config = interfaces::motor_configurations<PIPETTE_TYPE>();
 static pipette_motor_hardware::MotorHardware plunger_hw(
     motor_config.hardware_pins.linear_motor, &htim7, &htim2);
 
-struct motion_controller::HardwareConfig plunger_pins {
-    .direction =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_3,
-            .active_setting = GPIO_PIN_SET},
-    .step =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_SET},
-    .enable =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_SET},
-    .limit_switch =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_2,
-            .active_setting = GPIO_PIN_SET},
-    .led = {},
-};
-
 static motor_handler::MotorInterruptHandler plunger_interrupt(
     motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
 
