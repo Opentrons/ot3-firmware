@@ -35,6 +35,7 @@ SCENARIO("read pressure sensor values") {
     test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
+    test_mocks::MockSensorHardware mock_hw{};
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
