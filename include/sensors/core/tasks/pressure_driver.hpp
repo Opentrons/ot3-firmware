@@ -260,7 +260,6 @@ class MMR92C04 {
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
     CanClient &can_client;
-    hardware::SensorHardwareBase &hardware;
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
 
