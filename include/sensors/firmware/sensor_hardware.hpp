@@ -7,11 +7,14 @@ namespace hardware {
 
 class SensorHardware : public SensorHardwareBase {
   public:
-    SensorHardware(SensorHardwareConfiguration hardware) : hardware(hardware) {}
-    auto set_sync() -> void override;
-    auto reset_sync() -> void override;
-    auto check_data_ready() -> bool override;
-    SensorHardwareConfiguration hardware;
+    SensorHardware(sensors::hardware::SensorHardwareConfiguration hardware)
+        : hardware(hardware) {}
+    auto set_sync() -> void override { gpio::set(hardware.sync_out); }
+    auto reset_sync() -> void override { gpio::reset(hardware.sync_out); }
+    auto check_data_ready() -> bool override {
+        return gpio::is_set(hardware.sync_in);
+    }
+    sensors::hardware::SensorHardwareConfiguration hardware;
 };
 
 };  // namespace hardware
