@@ -5,12 +5,22 @@
 
 namespace sensors {
 namespace hardware {
+
+struct SensorHardwareConfiguration {
+    gpio::PinConfig sync_in;
+    gpio::PinConfig sync_out;
+    gpio::PinConfig data_ready;
+};
+
 class SensorHardware : public SensorHardwareBase {
   public:
-    explicit SensorHardware(gpio::PinConfig sync) : sync_pin(sync) {}
-    auto set_sync() -> void override { gpio::set(sync_pin); }
-    auto reset_sync() -> void override { gpio::reset(sync_pin); }
-    gpio::PinConfig sync_pin;
+    SensorHardware(SensorHardwareConfiguration hardware) : hardware(hardware) {}
+    auto set_sync_out() -> void override { gpio::set(hardware.sync_in); }
+    auto reset_sync_out() -> void override { gpio::reset(hardware.sync_in); }
+    auto check_data_ready() -> bool override {
+        return gpio::is_set(hardware.data_ready);
+    }
+    SensorHardwareConfiguration hardware;
 };
 };  // namespace hardware
 };  // namespace sensors
