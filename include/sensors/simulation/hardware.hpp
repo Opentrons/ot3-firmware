@@ -8,7 +8,7 @@ class SimulatedSensorHardware : public SensorHardwareBase {
   public:
     auto set_sync_out() -> void override {}
     auto reset_sync_out() -> void override {}
-    auto check_data_ready() -> void override {}
+    auto check_data_ready() -> bool override {}
 };
 };  // namespace hardware
 };  // namespace sensors
