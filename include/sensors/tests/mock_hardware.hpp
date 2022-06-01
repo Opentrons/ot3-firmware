@@ -4,11 +4,11 @@
 namespace test_mocks {
 class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
-    auto set_sync_out() -> void override {
+    auto set_sync() -> void override {
         sync_state = true;
         sync_set_calls++;
     }
-    auto reset_sync_out() -> void override {
+    auto reset_sync() -> void override {
         sync_state = false;
         sync_reset_calls++;
     }
