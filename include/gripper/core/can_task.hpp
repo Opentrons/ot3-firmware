@@ -9,10 +9,6 @@
 #include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
 
-namespace can_bus {
-class CanBus;
-}
-
 namespace can_task {
 
 using namespace gripper_tasks;
