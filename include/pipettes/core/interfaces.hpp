@@ -95,6 +95,18 @@ auto motor_configurations()
     -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
                         HighThroughputMotorConfigurations>;
 
+template <>
+auto motor_configurations<PipetteType::SINGLE_CHANNEL>()
+    -> LowThroughputMotorConfigurations;
+
+template <>
+auto motor_configurations<PipetteType::EIGHT_CHANNEL>()
+    -> LowThroughputMotorConfigurations;
+
+template <>
+auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
+    -> HighThroughputMotorConfigurations;
+
 template <PipetteType P>
 auto sensor_configurations()
     -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
@@ -114,18 +126,6 @@ template <PipetteType P>
 auto sensor_configurations()
     -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
                         HighThroughputSensorHardware>;
-
-template <>
-auto motor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> LowThroughputMotorConfigurations;
-
-template <>
-auto motor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> LowThroughputMotorConfigurations;
-
-template <>
-auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> HighThroughputMotorConfigurations;
 
 template <>
 auto sensor_configurations<PipetteType::SINGLE_CHANNEL>()
