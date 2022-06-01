@@ -45,9 +45,9 @@ struct ReadCapacitanceCallback {
         set_offset(new_offset);
         if (bind_sync) {
             if (capacitance > zero_threshold_pf) {
-                hardware.set_sync_in();
+                hardware.set_sync_out();
             } else {
-                hardware.reset_sync_in();
+                hardware.reset_sync_out();
             }
         }
         if (echoing) {
@@ -102,7 +102,7 @@ struct ReadCapacitanceCallback {
 
     void set_bind_sync(bool should_bind) {
         bind_sync = should_bind;
-        hardware.reset_sync_in();
+        hardware.reset_sync_out();
     }
 
     void set_offset(float new_offset) {
