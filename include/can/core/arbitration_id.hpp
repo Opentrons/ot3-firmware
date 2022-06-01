@@ -6,7 +6,7 @@
 
 namespace can::arbitration_id {
 
-using namespace can_ids;
+using namespace can::ids;
 
 /**
  * A class that represents our 29-bit arbitration id.

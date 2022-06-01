@@ -8,11 +8,11 @@
 namespace mock_message_writer {
 
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<message_writer_task::TaskMessage>,
-                      message_writer_task::TaskMessage>
+requires MessageQueue<QueueImpl<can::message_writer_task::TaskMessage>,
+                      can::message_writer_task::TaskMessage>
 class MockMessageWriter {
   public:
-    using QueueType = QueueImpl<message_writer_task::TaskMessage>;
+    using QueueType = QueueImpl<can::message_writer_task::TaskMessage>;
 
     /**
      * Write a message to the can bus
@@ -22,8 +22,8 @@ class MockMessageWriter {
      * @param message The message to send
      */
     template <message_core::CanResponseMessage ResponseMessage>
-    void send_can_message(can_ids::NodeId, ResponseMessage&& message) {
-        message_writer_task::TaskMessage task_msg{.arbitration_id = 0x1,
+    void send_can_message(can::ids::NodeId, ResponseMessage&& message) {
+        can::message_writer_task::TaskMessage task_msg{.arbitration_id = 0x1,
                                                   .message = message};
         queue->try_write(task_msg);
     }

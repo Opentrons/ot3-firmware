@@ -6,9 +6,9 @@
 #include "catch2/catch.hpp"
 #include "common/core/bit_utils.hpp"
 
-using namespace can_dispatch;
-using namespace can_messages;
-using namespace can_arbitration_id;
+using namespace can::dispatch;
+using namespace can::messages;
+using namespace can::arbitration_id;
 using namespace mock_message_buffer;
 
 SCENARIO("Dispatcher") {

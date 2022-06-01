@@ -18,7 +18,7 @@
 namespace can::sim::transport::socketcan {
 
 template <synchronization::LockableProtocol CriticalSection>
-class SocketCanTransport : public can_transport::BusTransportBase {
+class SocketCanTransport : public can::sim::transport::BusTransportBase {
   public:
     explicit SocketCanTransport(const char *address) : address{address} {}
     ~SocketCanTransport() { close(); };

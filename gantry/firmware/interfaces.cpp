@@ -166,7 +166,7 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_config =
 /**
  * The can bus.
  */
-static auto canbus = hal_can_bus::HalCanBus(
+static auto canbus = can::hal::busHalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOB,
@@ -235,7 +235,7 @@ void interfaces::initialize() {
     iWatchdog.start(6);
 }
 
-auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
+auto interfaces::get_can_bus() -> can::bus::CanBus& { return canbus; }
 
 auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
     return spi_comms;

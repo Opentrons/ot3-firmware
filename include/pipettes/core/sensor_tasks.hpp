@@ -24,7 +24,7 @@
  */
 namespace sensor_tasks {
 
-using CanWriterTask = message_writer_task::MessageWriterTask<
+using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 using I2CClient =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
@@ -35,7 +35,7 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  I2CClient& i2c1_task_client,
                  I2CPollerClient& i2c1_poller_client,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
-                 can_ids::NodeId id,
+                 can::ids::NodeId id,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
@@ -58,7 +58,7 @@ struct Tasks {
 /**
  * Access to all sensor/eeprom task queues.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
 
     void send_eeprom_queue(const eeprom::task::TaskMessage& m);

@@ -10,7 +10,7 @@
 
 namespace can::bus {
 
-using namespace can_ids;
+using namespace can::ids;
 
 /**
  * Abstract base class of a CAN bus.

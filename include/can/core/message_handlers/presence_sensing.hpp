@@ -6,7 +6,7 @@
 
 namespace can::message_handlers::presence_sensing {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <
     presence_sensing_driver_task::TaskClient PresenceSensingDriverTaskClient>

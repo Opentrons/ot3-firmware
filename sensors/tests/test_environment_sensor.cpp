@@ -19,7 +19,7 @@ auto get_message(Queue& q) -> Message {
 
 SCENARIO("read temperature and humidity values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
-    test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         environment_queue{};
     test_mocks::MockI2CResponseQueue response_queue;
@@ -38,7 +38,7 @@ SCENARIO("read temperature and humidity values") {
 
     GIVEN("a request to read the humidity of the sensor") {
         auto read_humidity = sensors::utils::TaskMessage(
-            can_messages::ReadFromSensorRequest({}, humidity_id));
+            can::messages::ReadFromSensorRequest({}, humidity_id));
         sensor.handle_message(read_humidity);
         WHEN("the handler function receives the message in LSB mode") {
             THEN("the i2c queue is populated with a transact command") {
@@ -65,10 +65,10 @@ SCENARIO("read temperature and humidity values") {
                         test_mocks::dummy_response(transact_message, my_buff));
                     sensor.handle_message(response);
 
-                    message_writer_task::TaskMessage can_msg{};
+                    can::message_writer_task::TaskMessage can_msg{};
                     can_queue.try_read(&can_msg);
                     auto response_msg =
-                        std::get<can_messages::ReadFromSensorResponse>(
+                        std::get<can::messages::ReadFromSensorResponse>(
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);
@@ -80,7 +80,7 @@ SCENARIO("read temperature and humidity values") {
     }
     GIVEN("a request to read the temperature of the sensor") {
         auto read_temperature = sensors::utils::TaskMessage(
-            can_messages::ReadFromSensorRequest({}, temperature_id));
+            can::messages::ReadFromSensorRequest({}, temperature_id));
         sensor.handle_message(read_temperature);
         WHEN("the handler function receives the message in LSB mode") {
             THEN("the i2c queue is populated with a transact command") {
@@ -105,11 +105,11 @@ SCENARIO("read temperature and humidity values") {
                         transact_message, response_queue,
                         test_mocks::dummy_response(transact_message, my_buff));
                     sensor.handle_message(response);
-                    message_writer_task::TaskMessage can_msg{};
+                    can::message_writer_task::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =
-                        std::get<can_messages::ReadFromSensorResponse>(
+                        std::get<can::messages::ReadFromSensorResponse>(
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);

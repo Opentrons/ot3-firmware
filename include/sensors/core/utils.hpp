@@ -9,12 +9,12 @@
 namespace sensors {
 namespace utils {
 
-using CanMessageTuple = std::tuple<can_messages::ReadFromSensorRequest,
-                                   can_messages::WriteToSensorRequest,
-                                   can_messages::BaselineSensorRequest,
-                                   can_messages::SetSensorThresholdRequest,
-                                   can_messages::BindSensorOutputRequest,
-                                   can_messages::PeripheralStatusRequest>;
+using CanMessageTuple = std::tuple<can::messages::ReadFromSensorRequest,
+                                   can::messages::WriteToSensorRequest,
+                                   can::messages::BaselineSensorRequest,
+                                   can::messages::SetSensorThresholdRequest,
+                                   can::messages::BindSensorOutputRequest,
+                                   can::messages::PeripheralStatusRequest>;
 using OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
 using CanMessage =
     typename ::utils::TuplesToVariants<std::tuple<std::monostate>,

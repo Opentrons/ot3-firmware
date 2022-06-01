@@ -60,7 +60,7 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
 }
 
 z_tasks::QueueClient::QueueClient()
-    : can_message_writer::MessageWriter{can_ids::NodeId::gripper_z} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::gripper_z} {}
 
 void z_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

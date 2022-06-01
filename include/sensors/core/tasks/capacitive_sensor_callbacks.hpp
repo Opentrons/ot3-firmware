@@ -13,7 +13,7 @@
 namespace sensors {
 namespace tasks {
 using namespace fdc1004;
-using namespace can_ids;
+using namespace can::ids;
 
 /*
  * ReadCapacitanceCallback.
@@ -22,7 +22,7 @@ using namespace can_ids;
  * data is stored in the MSB register and the second part is in the
  * LSB register. The size of the data is 24 bits.
  */
-template <message_writer_task::TaskClient CanClient, class I2CQueueWriter>
+template <can::message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
@@ -52,9 +52,9 @@ struct ReadCapacitanceCallback {
         }
         if (echoing) {
             can_client.send_can_message(
-                can_ids::NodeId::host,
-                can_messages::ReadFromSensorResponse{
-                    .sensor = can_ids::SensorType::capacitive,
+                can::ids::NodeId::host,
+                can::messages::ReadFromSensorResponse{
+                    .sensor = can::ids::SensorType::capacitive,
                     .sensor_data = convert_to_fixed_point(capacitance, 15)});
         }
     }
@@ -76,12 +76,12 @@ struct ReadCapacitanceCallback {
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::IS_THRESHOLD_SENSE)) {
             set_threshold(capacitance + next_autothreshold_pf,
-                          can_ids::SensorThresholdMode::auto_baseline);
+                          can::ids::SensorThresholdMode::auto_baseline);
         } else {
-            auto message = can_messages::ReadFromSensorResponse{
+            auto message = can::messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
                 .sensor_data = convert_to_fixed_point(capacitance, 15)};
-            can_client.send_can_message(can_ids::NodeId::host, message);
+            can_client.send_can_message(can::ids::NodeId::host, message);
         }
         auto new_offset = update_offset(capacitance, current_offset_pf);
         set_offset(new_offset);
@@ -129,13 +129,13 @@ struct ReadCapacitanceCallback {
     }
 
     auto set_threshold(float threshold_pf,
-                       can_ids::SensorThresholdMode from_mode) -> void {
+                       can::ids::SensorThresholdMode from_mode) -> void {
         zero_threshold_pf = threshold_pf;
-        auto message = can_messages::SensorThresholdResponse{
+        auto message = can::messages::SensorThresholdResponse{
             .sensor = SensorType::capacitive,
             .threshold = convert_to_fixed_point(zero_threshold_pf, 15),
             .mode = from_mode};
-        can_client.send_can_message(can_ids::NodeId::host, message);
+        can_client.send_can_message(can::ids::NodeId::host, message);
     }
 
     [[nodiscard]] auto get_threshold() const -> float {

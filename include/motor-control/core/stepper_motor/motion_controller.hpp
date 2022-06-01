@@ -46,7 +46,7 @@ class MotionController {
         return linear_motion_sys_config;
     }
 
-    void move(const can_messages::AddLinearMoveRequest& can_msg) {
+    void move(const can::messages::AddLinearMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         steps_per_tick_sq acceleration_steps =
@@ -62,7 +62,7 @@ class MotionController {
         queue.try_write(msg);
     }
 
-    void move(const can_messages::HomeRequest& can_msg) {
+    void move(const can::messages::HomeRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         Move msg{.duration = can_msg.duration,
@@ -89,7 +89,7 @@ class MotionController {
     void disable_motor() { hardware.deactivate_motor(); }
 
     void set_motion_constraints(
-        const can_messages::SetMotionConstraints& can_msg) {
+        const can::messages::SetMotionConstraints& can_msg) {
         motion_constraints =
             MotionConstraints{.min_velocity = can_msg.min_velocity,
                               .max_velocity = can_msg.max_velocity,

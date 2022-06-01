@@ -8,7 +8,7 @@
 
 namespace can::message_handlers::motor {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <tmc2130::tasks::TaskClient Client>
 class MotorHandler {

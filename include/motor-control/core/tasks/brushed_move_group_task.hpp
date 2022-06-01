@@ -17,8 +17,8 @@ constexpr std::size_t max_moves_per_group = 5;
 
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
-                                 can_messages::GripperGripRequest,
-                                 can_messages::GripperHomeRequest>;
+                                 can::messages::GripperGripRequest,
+                                 can::messages::GripperHomeRequest>;
 
 using TaskMessage = motor_control_task_messages::BrushedMoveGroupTaskMessage;
 
@@ -26,7 +26,7 @@ using TaskMessage = motor_control_task_messages::BrushedMoveGroupTaskMessage;
  * The handler of move group messages
  */
 template <brushed_motion_controller_task::TaskClient MotionControllerClient,
-          message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient>
 class MoveGroupMessageHandler {
   public:
     MoveGroupMessageHandler(MoveGroupType& move_group_manager,
@@ -52,36 +52,36 @@ class MoveGroupMessageHandler {
   private:
     void handle(std::monostate&) {}
 
-    void handle(const can_messages::GripperHomeRequest& m) {
+    void handle(const can::messages::GripperHomeRequest& m) {
         LOG("Received gripper home request: groupid=%d, seqid=%d\n", m.group_id,
             m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
-    void handle(const can_messages::GripperGripRequest& m) {
+    void handle(const can::messages::GripperGripRequest& m) {
         LOG("Received gripper grip request: groupid=%d, seqid=%d\n", m.group_id,
             m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
-    void handle(const can_messages::GetMoveGroupRequest& m) {
+    void handle(const can::messages::GetMoveGroupRequest& m) {
         LOG("Received get move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
-        auto response = can_messages::GetMoveGroupResponse{
+        auto response = can::messages::GetMoveGroupResponse{
             .group_id = m.group_id,
             .num_moves = static_cast<uint8_t>(group.size()),
             .total_duration = group.get_duration()};
-        can_client.send_can_message(can_ids::NodeId::host, response);
+        can_client.send_can_message(can::ids::NodeId::host, response);
     }
 
-    void handle(const can_messages::ClearAllMoveGroupsRequest&) {
+    void handle(const can::messages::ClearAllMoveGroupsRequest&) {
         LOG("Received clear move groups request");
         for (auto& group : move_groups) {
             group.clear();
         }
     }
 
-    void handle(const can_messages::ExecuteMoveGroupRequest& m) {
+    void handle(const can::messages::ExecuteMoveGroupRequest& m) {
         LOG("Received execute move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
         for (std::size_t i = 0; i < max_moves_per_group; i++) {
@@ -92,11 +92,11 @@ class MoveGroupMessageHandler {
 
     void visit_move(const std::monostate& m) { static_cast<void>(m); }
 
-    void visit_move(const can_messages::GripperGripRequest& m) {
+    void visit_move(const can::messages::GripperGripRequest& m) {
         mc_client.send_brushed_motion_controller_queue(m);
     }
 
-    void visit_move(const can_messages::GripperHomeRequest& m) {
+    void visit_move(const can::messages::GripperHomeRequest& m) {
         mc_client.send_brushed_motion_controller_queue(m);
     }
 
@@ -125,7 +125,7 @@ class MoveGroupTask {
      * Task entry point.
      */
     template <brushed_motion_controller_task::TaskClient MotionControllerClient,
-              message_writer_task::TaskClient CanClient>
+              can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(MotionControllerClient* mc_client,
                                  CanClient* can_client) {
         auto handler =

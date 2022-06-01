@@ -9,13 +9,13 @@
 // Filter tests - no BDD here because these macros don't have
 // BDD equivalents
 TEMPLATE_TEST_CASE_SIG("tool list by pipette type", "",
-                       ((can_ids::ToolType TT), TT),
-                       (can_ids::ToolType::pipette_96_chan),
-                       (can_ids::ToolType::pipette_384_chan),
-                       (can_ids::ToolType::pipette_single_chan),
-                       (can_ids::ToolType::pipette_multi_chan),
-                       (can_ids::ToolType::gripper),
-                       (can_ids::ToolType::nothing_attached)) {
+                       ((can::ids::ToolType TT), TT),
+                       (can::ids::ToolType::pipette_96_chan),
+                       (can::ids::ToolType::pipette_384_chan),
+                       (can::ids::ToolType::pipette_single_chan),
+                       (can::ids::ToolType::pipette_multi_chan),
+                       (can::ids::ToolType::gripper),
+                       (can::ids::ToolType::nothing_attached)) {
     SECTION("lookup table filtering") {
         auto tool_only = tool_detection::lookup_table_filtered(TT);
         bool checked_anything = false;
@@ -55,7 +55,7 @@ SCENARIO("ot3 tools list for tool detection") {
             uint16_t reading = 0;
             THEN("the tool and carrier are undefined") {
                 REQUIRE(tool_detection::tooltype_from_reading(reading) ==
-                        can_ids::ToolType::undefined_tool);
+                        can::ids::ToolType::undefined_tool);
                 REQUIRE(tool_detection::carrier_from_reading(reading) ==
                         tool_detection::Carrier::UNKNOWN);
             }
@@ -88,11 +88,11 @@ SCENARIO("ot3 tools list for tool detection") {
                 // Just above the upper range of the first
                 REQUIRE(tool_detection::tooltype_from_reading(
                             trailer_it->bounds.upper, filtered) ==
-                        can_ids::ToolType::undefined_tool);
+                        can::ids::ToolType::undefined_tool);
                 // Just below the lower range of the second
                 REQUIRE(tool_detection::tooltype_from_reading(
                             leader_it->bounds.lower - 1, filtered) ==
-                        can_ids::ToolType::undefined_tool);
+                        can::ids::ToolType::undefined_tool);
                 // Dead-on in the middle
                 auto mid_value =
                     (trailer_it->bounds.upper + leader_it->bounds.lower) / 2;
@@ -100,7 +100,7 @@ SCENARIO("ot3 tools list for tool detection") {
                                              << " matched to a tool");
                 REQUIRE(tool_detection::tooltype_from_reading(mid_value,
                                                               filtered) ==
-                        can_ids::ToolType::undefined_tool);
+                        can::ids::ToolType::undefined_tool);
             }
         }
     }

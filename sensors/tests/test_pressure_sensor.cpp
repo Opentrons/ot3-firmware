@@ -31,7 +31,7 @@ auto get_message(Queue& q) -> Message {
 SCENARIO("read pressure sensor values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
-    test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
 
@@ -52,7 +52,7 @@ SCENARIO("read pressure sensor values") {
 
     GIVEN("a request to take a single read of the pressure sensor") {
         auto single_read = sensors::utils::TaskMessage(
-            can_messages::ReadFromSensorRequest({}, pressure_id));
+            can::messages::ReadFromSensorRequest({}, pressure_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a transact command") {
@@ -73,7 +73,7 @@ SCENARIO("read pressure sensor values") {
     }
     GIVEN("a request to take a single read of the temperature sensor") {
         auto single_read = sensors::utils::TaskMessage(
-            can_messages::ReadFromSensorRequest({}, pressure_temperature_id));
+            can::messages::ReadFromSensorRequest({}, pressure_temperature_id));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a transact command") {
@@ -97,7 +97,7 @@ SCENARIO("read pressure sensor values") {
     GIVEN("a request to take a baseline reading of the pressure sensor") {
         int NUM_READS = 30;
         auto multi_read = sensors::utils::TaskMessage(
-            can_messages::BaselineSensorRequest({}, pressure_id, NUM_READS));
+            can::messages::BaselineSensorRequest({}, pressure_id, NUM_READS));
         sensor.handle_message(multi_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a write and read command") {
@@ -123,11 +123,11 @@ SCENARIO("read pressure sensor values") {
                         test_mocks::dummy_single_response(read_message, true,
                                                           buffer_a));
                     sensor.handle_message(response);
-                    message_writer_task::TaskMessage can_msg{};
+                    can::message_writer_task::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
                     auto response_msg =
-                        std::get<can_messages::ReadFromSensorResponse>(
+                        std::get<can::messages::ReadFromSensorResponse>(
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);

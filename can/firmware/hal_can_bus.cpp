@@ -2,7 +2,7 @@
 
 #include "common/firmware/gpio.hpp"
 
-using namespace hal_can_bus;
+using namespace can::hal::bus;
 
 void HalCanBus::hal_state_callback(void* data, hal_can_state_t state) {
     if (data == nullptr) {

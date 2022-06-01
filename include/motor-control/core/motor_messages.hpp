@@ -7,8 +7,8 @@
 
 namespace motor_messages {
 
-using um_per_tick = can_messages::um_per_tick;
-using um_per_tick_sq = can_messages::um_per_tick_sq;
+using um_per_tick = can::messages::um_per_tick;
+using um_per_tick_sq = can::messages::um_per_tick_sq;
 
 struct MotionConstraints {
     um_per_tick min_velocity;

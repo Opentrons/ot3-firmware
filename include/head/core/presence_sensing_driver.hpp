@@ -9,7 +9,7 @@
 #include "head/core/attached_tools.hpp"
 
 namespace presence_sensing_driver {
-using namespace can_ids;
+using namespace can::ids;
 
 class PresenceSensingDriver {
   public:
@@ -62,9 +62,9 @@ class PresenceSensingDriver {
 
   private:
     [[nodiscard]] constexpr static auto should_use_new_value(
-        can_ids::ToolType old_tool, can_ids::ToolType new_tool) -> bool {
+        can::ids::ToolType old_tool, can::ids::ToolType new_tool) -> bool {
         return (old_tool != new_tool) &&
-               (new_tool != can_ids::ToolType::undefined_tool);
+               (new_tool != can::ids::ToolType::undefined_tool);
     }
 
     [[nodiscard]] constexpr static auto should_update(
@@ -74,10 +74,10 @@ class PresenceSensingDriver {
                should_use_new_value(old_tools.a_motor, new_tools.a_motor) ||
                should_use_new_value(old_tools.gripper, new_tools.gripper);
     }
-    [[nodiscard]] constexpr static auto update_tool(can_ids::ToolType old_tool,
-                                                    can_ids::ToolType new_tool)
-        -> can_ids::ToolType {
-        return (new_tool == can_ids::ToolType::undefined_tool) ? old_tool
+    [[nodiscard]] constexpr static auto update_tool(can::ids::ToolType old_tool,
+                                                    can::ids::ToolType new_tool)
+        -> can::ids::ToolType {
+        return (new_tool == can::ids::ToolType::undefined_tool) ? old_tool
                                                                : new_tool;
     }
     [[nodiscard]] constexpr static auto update_tools(

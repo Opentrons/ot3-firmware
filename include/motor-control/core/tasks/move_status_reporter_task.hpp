@@ -16,7 +16,7 @@ using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
 /**
  * The handler of move status messages
  */
-template <message_writer_task::TaskClient CanClient,
+template <can::message_writer_task::TaskClient CanClient,
           lms::MotorMechanicalConfig LmsConfig>
 class MoveStatusMessageHandler {
   public:
@@ -38,14 +38,14 @@ class MoveStatusMessageHandler {
      * @param message
      */
     void handle_message(const TaskMessage& message) {
-        can_messages::MoveCompleted msg = {
+        can::messages::MoveCompleted msg = {
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .current_position_um = fixed_point_multiply(
                 um_per_step, message.current_position_steps),
             .encoder_position = message.encoder_position,
             .ack_id = static_cast<uint8_t>(message.ack_id)};
-        can_client.send_can_message(can_ids::NodeId::host, msg);
+        can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
   private:
@@ -54,7 +54,7 @@ class MoveStatusMessageHandler {
     sq31_31 um_per_step;
 };
 
-template <message_writer_task::TaskClient CanClient>
+template <can::message_writer_task::TaskClient CanClient>
 class BrushedMoveStatusMessageHandler {
   public:
     BrushedMoveStatusMessageHandler(CanClient& can_client)
@@ -72,13 +72,13 @@ class BrushedMoveStatusMessageHandler {
      * @param message
      */
     void handle_message(const TaskMessage& message) {
-        can_messages::MoveCompleted msg = {
+        can::messages::MoveCompleted msg = {
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .current_position_um = 0,
             .encoder_position = message.encoder_position,
             .ack_id = static_cast<uint8_t>(message.ack_id)};
-        can_client.send_can_message(can_ids::NodeId::host, msg);
+        can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
   private:
@@ -104,7 +104,7 @@ class MoveStatusReporterTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient,
+    template <can::message_writer_task::TaskClient CanClient,
               lms::MotorMechanicalConfig LmsConfig>
     [[noreturn]] void operator()(
         CanClient* can_client,
@@ -121,7 +121,7 @@ class MoveStatusReporterTask {
     /**
      * Brushed task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(CanClient* can_client) {
         auto handler = BrushedMoveStatusMessageHandler{*can_client};
         TaskMessage message{};

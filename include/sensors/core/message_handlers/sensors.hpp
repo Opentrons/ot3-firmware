@@ -26,45 +26,45 @@ class SensorHandler {
 
     void visit(const std::monostate &) {}
 
-    void visit(const can_messages::SetSensorThresholdRequest &m) {
-        send_to_queue(can_ids::SensorType(m.sensor), m);
+    void visit(const can::messages::SetSensorThresholdRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor), m);
     }
 
-    void visit(const can_messages::BaselineSensorRequest &m) {
-        send_to_queue(can_ids::SensorType(m.sensor), m);
+    void visit(const can::messages::BaselineSensorRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor), m);
     }
 
-    void visit(const can_messages::WriteToSensorRequest &m) {
-        send_to_queue(can_ids::SensorType(m.sensor), m);
+    void visit(const can::messages::WriteToSensorRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor), m);
     }
 
-    void visit(const can_messages::ReadFromSensorRequest &m) {
-        send_to_queue(can_ids::SensorType(m.sensor), m);
+    void visit(const can::messages::ReadFromSensorRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor), m);
     }
 
-    void visit(const can_messages::BindSensorOutputRequest &m) {
-        send_to_queue(can_ids::SensorType(m.sensor), m);
+    void visit(const can::messages::BindSensorOutputRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor), m);
     }
 
-    void visit(const can_messages::PeripheralStatusRequest &m) {
-        send_to_queue(can_ids::SensorType(m.sensor), m);
+    void visit(const can::messages::PeripheralStatusRequest &m) {
+        send_to_queue(can::ids::SensorType(m.sensor), m);
     }
 
-    void send_to_queue(can_ids::SensorType type, const utils::TaskMessage &m) {
+    void send_to_queue(can::ids::SensorType type, const utils::TaskMessage &m) {
         switch (type) {
-            case can_ids::SensorType::temperature: {
+            case can::ids::SensorType::temperature: {
                 client.send_environment_sensor_queue(m);
                 break;
             }
-            case can_ids::SensorType::humidity: {
+            case can::ids::SensorType::humidity: {
                 client.send_environment_sensor_queue(m);
                 break;
             }
-            case can_ids::SensorType::capacitive: {
+            case can::ids::SensorType::capacitive: {
                 client.send_capacitive_sensor_queue(m);
                 break;
             }
-            case can_ids::SensorType::pressure: {
+            case can::ids::SensorType::pressure: {
                 client.send_pressure_sensor_queue(m);
                 break;
             }

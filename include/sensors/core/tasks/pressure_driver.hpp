@@ -12,7 +12,7 @@ namespace sensors {
 
 namespace tasks {
 
-using namespace can_ids;
+using namespace can::ids;
 
 /**
  * Pressure sensor driver class. It takes in a i2c writer queue and
@@ -23,7 +23,7 @@ using namespace can_ids;
  */
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient, class OwnQueue>
+          can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class MMR92C04 {
   public:
     MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
@@ -175,7 +175,7 @@ class MMR92C04 {
         LOG("Pressure reading = %d", _registers.pressure.reading);
         auto pressure =
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
-        auto message = can_messages::ReadFromSensorResponse{
+        auto message = can::messages::ReadFromSensorResponse{
             .sensor = get_sensor_id(), .sensor_data = pressure};
         can_client.send_can_message(get_host_id(), message);
     }
@@ -183,7 +183,7 @@ class MMR92C04 {
     auto send_pressure_low_pass() -> void {
         auto pressure = mmr920C04::LowPassPressure::to_pressure(
             _registers.low_pass_pressure.reading);
-        auto message = can_messages::ReadFromSensorResponse{
+        auto message = can::messages::ReadFromSensorResponse{
             .sensor = get_sensor_id(), .sensor_data = pressure};
         can_client.send_can_message(get_host_id(), message);
     }
@@ -191,27 +191,27 @@ class MMR92C04 {
     auto send_temperature() -> void {
         auto temperature = mmr920C04::Temperature::to_temperature(
             _registers.low_pass_pressure.reading);
-        auto message = can_messages::ReadFromSensorResponse{
+        auto message = can::messages::ReadFromSensorResponse{
             .sensor = get_sensor_id(), .sensor_data = temperature};
         can_client.send_can_message(get_host_id(), message);
     }
 
     auto send_status() -> void {
         auto status = mmr920C04::Status::to_status(_registers.status.reading);
-        auto message = can_messages::ReadFromSensorResponse{
+        auto message = can::messages::ReadFromSensorResponse{
             .sensor = get_sensor_id(),
             .sensor_data = static_cast<int32_t>(status)};
         can_client.send_can_message(get_host_id(), message);
     }
 
     auto send_threshold() -> void {
-        auto message = can_messages::SensorThresholdResponse{
+        auto message = can::messages::SensorThresholdResponse{
             .sensor = get_sensor_id(), .threshold = get_threshold()};
         can_client.send_can_message(get_host_id(), message);
     }
 
     auto send_peripheral_response() -> void {
-        auto message = can_messages::PeripheralStatusResponse{
+        auto message = can::messages::PeripheralStatusResponse{
             .sensor = get_sensor_id(), .status = initialized()};
         can_client.send_can_message(get_host_id(), message);
     }

@@ -7,7 +7,7 @@
 #include "head/tests/mock_presence_sensing_client.hpp"
 
 using namespace presence_sensing_message_handler;
-using namespace can_messages;
+using namespace can::messages;
 
 SCENARIO(
     "Presence sensing handler gets ReadPresenceSensingVoltageRequest msgs") {

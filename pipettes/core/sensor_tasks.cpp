@@ -20,7 +20,7 @@ void sensor_tasks::start_tasks(
     sensor_tasks::I2CClient& i2c3_task_client,
     sensor_tasks::I2CClient& i2c1_task_client,
     sensor_tasks::I2CPollerClient& i2c1_poller_client,
-    sensors::hardware::SensorHardwareBase& sensor_hardware, can_ids::NodeId id,
+    sensors::hardware::SensorHardwareBase& sensor_hardware, can::ids::NodeId id,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
@@ -51,7 +51,7 @@ void sensor_tasks::start_tasks(
 sensor_tasks::QueueClient::QueueClient()
     // This gets overridden in start_tasks, needs to be static here since this
     // is free-store allocated
-    : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 void sensor_tasks::QueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {

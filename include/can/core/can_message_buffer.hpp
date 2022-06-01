@@ -8,7 +8,7 @@
 
 namespace can::message_buffer {
 
-using namespace message_buffer;
+using namespace ::message_buffer;
 
 /**
  * Class to write can arbitration ids and data payload into a MessageBuffer.

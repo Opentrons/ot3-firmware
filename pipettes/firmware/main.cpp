@@ -48,7 +48,7 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
-static auto can_bus_1 = hal_can_bus::HalCanBus(
+static auto can_bus_1 = can::hal::busHalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOA,
@@ -136,7 +136,7 @@ static constexpr auto can_bit_timings =
                                  500 * can::bit_timings::KHZ, 800>{};
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -154,7 +154,7 @@ auto initialize_motor_tasks(
         peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
 }
 auto initialize_motor_tasks(
-    can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),

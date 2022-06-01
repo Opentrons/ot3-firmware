@@ -19,7 +19,7 @@
  */
 namespace gear_motor_tasks {
 
-using CanWriterTask = message_writer_task::MessageWriterTask<
+using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 using SPIWriterClient =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
@@ -29,7 +29,7 @@ void start_tasks(CanWriterTask& can_writer,
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2130::configs::TMC2130DriverConfig& gear_driver_configs,
-                 can_ids::NodeId id);
+                 can::ids::NodeId id);
 
 /**
  * Access to all the gear motion tasks.
@@ -46,7 +46,7 @@ struct Tasks {
 /**
  * Access to all the gear motion task queues.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
 
     void send_motion_controller_queue(

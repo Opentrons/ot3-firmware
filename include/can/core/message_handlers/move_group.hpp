@@ -6,7 +6,7 @@
 
 namespace can::message_handlers::move_group {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <move_group_task::TaskClient Client>
 class MoveGroupHandler {

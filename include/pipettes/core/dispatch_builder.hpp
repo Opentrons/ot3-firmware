@@ -16,55 +16,55 @@
 
 namespace dispatch_builder {
 
-using TMC2130MotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::MotorHandler<
+using TMC2130MotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::MotorHandler<
         linear_motor_tasks::tmc2130_driver::QueueClient>,
-    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister,
-    can_messages::WriteMotorCurrentRequest>;
+    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::WriteMotorDriverRegister,
+    can::messages::WriteMotorCurrentRequest>;
 
-using TMC2160MotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::MotorHandler<
+using TMC2160MotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::MotorHandler<
         linear_motor_tasks::tmc2160_driver::QueueClient>,
-    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister,
-    can_messages::WriteMotorCurrentRequest>;
+    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::WriteMotorDriverRegister,
+    can::messages::WriteMotorCurrentRequest>;
 
-using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
-    move_group_handler::MoveGroupHandler<linear_motor_tasks::QueueClient>,
-    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
-    can_messages::HomeRequest>;
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<linear_motor_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest, can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest>;
 
-using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::MotionHandler<linear_motor_tasks::QueueClient>,
-    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::ReadLimitSwitchRequest>;
+using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motion::MotionHandler<linear_motor_tasks::QueueClient>,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::ReadLimitSwitchRequest>;
 
-using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
-    system_handler::SystemMessageHandler<central_tasks::QueueClient>,
-    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
-    can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
+using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::system::SystemMessageHandler<central_tasks::QueueClient>,
+    can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
+    can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 
-using SensorDispatchTarget = can_dispatch::DispatchParseTarget<
+using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<sensor_tasks::QueueClient>,
-    can_messages::ReadFromSensorRequest, can_messages::WriteToSensorRequest,
-    can_messages::BaselineSensorRequest,
-    can_messages::SetSensorThresholdRequest,
-    can_messages::BindSensorOutputRequest,
-    can_messages::PeripheralStatusRequest>;
+    can::messages::ReadFromSensorRequest, can::messages::WriteToSensorRequest,
+    can::messages::BaselineSensorRequest,
+    can::messages::SetSensorThresholdRequest,
+    can::messages::BindSensorOutputRequest,
+    can::messages::PeripheralStatusRequest>;
 
-using PipetteInfoDispatchTarget = can_dispatch::DispatchParseTarget<
+using PipetteInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     pipette_info::PipetteInfoMessageHandler<central_tasks::QueueClient,
                                             sensor_tasks::QueueClient>,
-    can_messages::PipetteInfoRequest, can_messages::SetSerialNumber>;
+    can::messages::PipetteInfoRequest, can::messages::SetSerialNumber>;
 
-using EEPromDispatchTarget = can_dispatch::DispatchParseTarget<
+using EEPromDispatchTarget = can::dispatch::DispatchParseTarget<
     eeprom::message_handler::EEPromHandler<sensor_tasks::QueueClient,
                                            sensor_tasks::QueueClient>,
-    can_messages::WriteToEEPromRequest, can_messages::ReadFromEEPromRequest>;
+    can::messages::WriteToEEPromRequest, can::messages::ReadFromEEPromRequest>;
 
 // TODO update with the proper message handler for pipette pick up tip
 // motion handler.

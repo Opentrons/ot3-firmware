@@ -18,7 +18,7 @@ namespace gantry_tasks {
  * Start gantry tasks.
  */
 void start_tasks(
-    can_bus::CanBus& can_bus,
+    can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs);
@@ -26,8 +26,8 @@ void start_tasks(
 /**
  * Access to all the message queues in the system.
  */
-struct QueueClient : can_message_writer::MessageWriter {
-    QueueClient(can_ids::NodeId this_fw);
+struct QueueClient : can::message_writer::MessageWriter {
+    QueueClient(can::ids::NodeId this_fw);
 
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);
@@ -56,7 +56,7 @@ struct QueueClient : can_message_writer::MessageWriter {
  * Access to all tasks in the system.
  */
 struct AllTask {
-    message_writer_task::MessageWriterTask<
+    can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     tmc2130::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};

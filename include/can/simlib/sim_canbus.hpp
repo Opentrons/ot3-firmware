@@ -46,7 +46,7 @@ class SimCANBus : public CanBus {
      */
     void add_filter(CanFilterType type, CanFilterConfig config, uint32_t val1,
                     uint32_t val2) {
-        filters.push_back(sim_filter::Filter(type, config, val1, val2));
+        filters.push_back(can::sim::filter::Filter(type, config, val1, val2));
     }
 
     /**
@@ -131,7 +131,7 @@ class SimCANBus : public CanBus {
     void* new_message_callback_data{nullptr};
     IncomingMessageCallback new_message_callback{nullptr};
     FreeRTOSTask<256, Reader> reader_task;
-    std::vector<sim_filter::Filter> filters{};
+    std::vector<can::sim::filter::Filter> filters{};
 };
 
 }  // namespace sim_canbus

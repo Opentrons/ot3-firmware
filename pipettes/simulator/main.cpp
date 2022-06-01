@@ -32,7 +32,7 @@
 
 constexpr auto PIPETTE_TYPE = get_pipette_type();
 
-static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
+static auto can_bus_1 = can::sim::bus::SimCANBus{can::sim::transport::create()};
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
@@ -71,20 +71,20 @@ static motor_class::Motor pipette_motor{
                                       .max_acceleration = 2},
     motor_queue};
 
-static auto node_from_env(const char* env) -> can_ids::NodeId {
+static auto node_from_env(const char* env) -> can::ids::NodeId {
     if (!env) {
         LOG("On left mount by default");
-        return can_ids::NodeId::pipette_left;
+        return can::ids::NodeId::pipette_left;
     }
     if (strncmp(env, "left", strlen("left")) == 0) {
         LOG("On left mount from env var");
-        return can_ids::NodeId::pipette_left;
+        return can::ids::NodeId::pipette_left;
     } else if (strncmp(env, "right", strlen("right")) == 0) {
         LOG("On right mount from env var");
-        return can_ids::NodeId::pipette_right;
+        return can::ids::NodeId::pipette_right;
     } else {
         LOG("On left mount from invalid env var");
-        return can_ids::NodeId::pipette_left;
+        return can::ids::NodeId::pipette_left;
     }
 }
 
@@ -100,7 +100,7 @@ static const char* PipetteTypeString[] = {
 static auto motor_configs = interfaces::motor_configurations<PIPETTE_TYPE>();
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -117,7 +117,7 @@ auto initialize_motor_tasks(
 }
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),

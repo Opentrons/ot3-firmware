@@ -5,9 +5,9 @@
 #include "can/core/parse.hpp"
 #include "catch2/catch.hpp"
 
-using namespace can_ids;
-using namespace can_messages;
-using namespace can_parse;
+using namespace can::ids;
+using namespace can::messages;
+using namespace can::parse;
 
 SCENARIO("can parse works") {
     auto parser = Parser<HeartbeatRequest>{};
