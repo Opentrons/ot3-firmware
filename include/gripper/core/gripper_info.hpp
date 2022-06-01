@@ -41,8 +41,8 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
         -> GripperInfoMessageHandler && = delete;
     ~GripperInfoMessageHandler() final = default;
 
-    using MessageType = std::variant<std::monostate, GripperInfoRequest,
-                                     InstrumentInfoRequest, SetSerialNumber>;
+    using MessageType =
+        std::variant<std::monostate, InstrumentInfoRequest, SetSerialNumber>;
 
     /**
      * Message handler
@@ -64,15 +64,6 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
 
   private:
     void visit(std::monostate &) {}
-
-    /**
-     * Handle request for gripper info.
-     */
-    void visit(const GripperInfoRequest &) {
-        // Start a serial number read. Respond with CAN message when read
-        // completes.
-        serial_number_accessor.start_read();
-    }
 
     /**
      * Handle request for instrument info.

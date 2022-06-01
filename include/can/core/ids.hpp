@@ -25,12 +25,10 @@ enum class MessageId {
     device_info_response = 0x303,
     task_info_request = 0x304,
     task_info_response = 0x305,
-    pipette_info_request = 0x306,
+    instrument_info_request = 0x306,
     pipette_info_response = 0x307,
-    gripper_info_request = 0x308,
-    gripper_info_response = 0x309,
+    gripper_info_response = 0x308,
     set_serial_number = 0x30a,
-    instrument_info_request = 0x30b,
     stop_request = 0x0,
     get_status_request = 0x1,
     get_status_response = 0x5,
@@ -160,3 +158,4 @@ enum class SensorThresholdMode {
 };
 
 }  // namespace can_ids
+
