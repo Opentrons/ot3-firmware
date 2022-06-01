@@ -48,7 +48,7 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
-static auto can_bus_1 = can::hal::busHalCanBus(
+static auto can_bus_1 = can::hal::bus::HalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOA,

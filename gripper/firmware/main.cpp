@@ -29,7 +29,7 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**
  * The can bus.
  */
-static auto canbus = can::hal::busHalCanBus(
+static auto canbus = can::hal::bus::HalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOC,

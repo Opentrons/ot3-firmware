@@ -166,7 +166,7 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_config =
 /**
  * The can bus.
  */
-static auto canbus = can::hal::busHalCanBus(
+static auto canbus = can::hal::bus::HalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOB,
