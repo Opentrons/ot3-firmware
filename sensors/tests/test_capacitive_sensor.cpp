@@ -406,7 +406,9 @@ SCENARIO("capacitance callback tests") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-            callback_host.set_threshold(10);
+            callback_host.set_threshold(10,
+                                        can_ids::SensorThresholdMode::absolute);
+            can_queue.reset();
             callback_host.handle_ongoing_response(first);
             callback_host.handle_ongoing_response(second);
             THEN("it should not send can messages") {
@@ -418,6 +420,149 @@ SCENARIO("capacitance callback tests") {
                 // this call is still the one from setting up
                 // when we started the bind
                 REQUIRE(mock_hw.get_sync_reset_calls() == 1);
+            }
+        }
+    }
+}
+
+SCENARIO("threshold configuration") {
+    test_mocks::MockSensorHardware mock_hw{};
+    test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
+    test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
+
+    test_mocks::MockMessageQueue<message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
+        capacitive_queue{};
+
+    i2c::writer::TaskMessage empty_msg{};
+    i2c::poller::TaskMessage empty_poll_msg{};
+
+    test_mocks::MockI2CResponseQueue response_queue{};
+    auto queue_client =
+        mock_client::QueueClient{.capacitive_sensor_queue = &capacitive_queue};
+    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
+    auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
+    queue_client.set_queue(&can_queue);
+    writer.set_queue(&i2c_queue);
+    poller.set_queue(&poller_queue);
+
+    auto sensor = sensors::tasks::CapacitiveMessageHandler{
+        writer, poller, mock_hw, queue_client, response_queue};
+
+    GIVEN("A request to set an autothreshold") {
+        int NUM_READS = 10;
+        auto autothreshold =
+            sensors::utils::TaskMessage(can_messages::SetSensorThresholdRequest(
+                {}, can_ids::SensorType::capacitive,
+                convert_to_fixed_point(0.375, 15),
+                can_ids::SensorThresholdMode::auto_baseline));
+        WHEN("the message is received") {
+            sensor.handle_message(autothreshold);
+            THEN("the poller queue is populated with a poll request") {
+                REQUIRE(poller_queue.get_size() == 1);
+            }
+            AND_WHEN("we read the messages from the queue") {
+                auto read_message =
+                    get_message<i2c::messages::MultiRegisterPollRead>(
+                        poller_queue);
+
+                THEN("The write and read command addresses are correct") {
+                    REQUIRE(read_message.first.address ==
+                            sensors::fdc1004::ADDRESS);
+                    REQUIRE(read_message.first.write_buffer[0] ==
+                            sensors::fdc1004::MSB_MEASUREMENT_1);
+                    REQUIRE(read_message.first.bytes_to_write == 1);
+                    REQUIRE(read_message.second.address ==
+                            sensors::fdc1004::ADDRESS);
+                    REQUIRE(read_message.second.write_buffer[0] ==
+                            sensors::fdc1004::LSB_MEASUREMENT_1);
+                    REQUIRE(read_message.second.bytes_to_write == 1);
+                    REQUIRE(read_message.delay_ms == 20);
+                    REQUIRE(read_message.polling == NUM_READS);
+                }
+                AND_WHEN("using the callback with data") {
+                    auto buffer_a =
+                        i2c::messages::MaxMessageBuffer{0x7f, 0xff, 0, 0, 0};
+                    auto buffer_b =
+                        i2c::messages::MaxMessageBuffer{0xff, 0, 0, 0, 0};
+                    for (int i = 0; i < NUM_READS - 1; i++) {
+                        auto response_a = sensors::utils::TaskMessage(
+                            test_mocks::launder_response(
+                                read_message, response_queue,
+                                test_mocks::dummy_multi_response(
+                                    read_message, 0, false, buffer_a)));
+                        sensor.handle_message(response_a);
+                        auto response_b = sensors::utils::TaskMessage(
+                            test_mocks::launder_response(
+                                read_message, response_queue,
+                                test_mocks::dummy_multi_response(
+                                    read_message, 1, false, buffer_b)));
+                        sensor.handle_message(response_b);
+                    }
+                    auto final_response_a = sensors::utils::TaskMessage(
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 0,
+                                                             true, buffer_a)));
+                    auto final_response_b = sensors::utils::TaskMessage(
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_multi_response(read_message, 1,
+                                                             true, buffer_b)));
+                    sensor.handle_message(final_response_a);
+                    sensor.handle_message(final_response_b);
+                    THEN("the threshold is set to the proper value") {
+                        REQUIRE(sensor.capacitance_handler.get_threshold() ==
+                                Approx(15.375).epsilon(1e-4));
+                    }
+                    THEN(
+                        "a message is sent on can informing that the threshold "
+                        "is set") {
+                        REQUIRE(can_queue.get_size() == 1);
+                        message_writer_task::TaskMessage can_msg{};
+                        can_queue.try_read(&can_msg);
+
+                        auto response_msg =
+                            std::get<can_messages::SensorThresholdResponse>(
+                                can_msg.message);
+                        float check_data = signed_fixed_point_to_float(
+                            response_msg.threshold, 15);
+                        // the average value + 1
+                        float expected = 15.375;
+                        REQUIRE(check_data == Approx(expected).epsilon(1e-4));
+                        REQUIRE(response_msg.mode ==
+                                can_ids::SensorThresholdMode::auto_baseline);
+                    }
+                }
+            }
+        }
+    }
+
+    GIVEN("A request to set a specific threshold") {
+        auto specific_threshold =
+            sensors::utils::TaskMessage(can_messages::SetSensorThresholdRequest(
+                {}, can_ids::SensorType::capacitive,
+                convert_to_fixed_point(10, 15),
+                can_ids::SensorThresholdMode::absolute));
+        WHEN("the message is received") {
+            sensor.handle_message(specific_threshold);
+
+            THEN("the sensor should send a response with the same threshold") {
+                REQUIRE(can_queue.get_size() == 1);
+                message_writer_task::TaskMessage can_response{};
+                REQUIRE(can_queue.try_read(&can_response) == true);
+                auto threshold_response =
+                    std::get<can_messages::SensorThresholdResponse>(
+                        can_response.message);
+                REQUIRE(threshold_response.sensor ==
+                        can_ids::SensorType::capacitive);
+                REQUIRE(threshold_response.threshold ==
+                        convert_to_fixed_point(10, 15));
+                REQUIRE(threshold_response.mode ==
+                        can_ids::SensorThresholdMode::absolute);
+            }
+            THEN("the sensor's threshold should be set") {
+                REQUIRE(sensor.capacitance_handler.get_threshold() == 10);
             }
         }
     }
