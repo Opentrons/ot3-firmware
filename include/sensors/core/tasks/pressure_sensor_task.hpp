@@ -9,7 +9,6 @@
 #include "i2c/core/writer.hpp"
 #include "pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
-#include "sensors/firmware/sensor_hardware.hpp"
 
 namespace sensors {
 namespace tasks {

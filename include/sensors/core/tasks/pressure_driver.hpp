@@ -8,7 +8,6 @@
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
-#include "sensors/firmware/sensor_hardware.hpp"
 
 namespace sensors {
 

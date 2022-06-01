@@ -3,6 +3,12 @@
 namespace sensors {
 namespace hardware {
 
+struct SensorHardwareConfiguration {
+    gpio::PinConfig sync_in;
+    gpio::PinConfig sync_out;
+    gpio::PinConfig data_ready;
+};
+
 /** abstract sensor hardware device for a sync line */
 class SensorHardwareBase {
   public:
