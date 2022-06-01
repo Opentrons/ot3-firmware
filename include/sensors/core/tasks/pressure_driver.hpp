@@ -23,7 +23,8 @@ using namespace can_ids;
  */
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient, class OwnQueue>
+          message_writer_task::TaskClient CanClient,
+          class OwnQueue>
 class MMR92C04 {
   public:
     MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,

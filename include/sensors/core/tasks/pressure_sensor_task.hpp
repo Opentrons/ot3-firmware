@@ -9,18 +9,22 @@
 #include "i2c/core/writer.hpp"
 #include "pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 namespace sensors {
 namespace tasks {
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient, class OwnQueue>
+          message_writer_task::TaskClient CanClient,
+          class OwnQueue>
 class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
                                     I2CQueuePoller &i2c_poller,
-                                    CanClient &can_client, OwnQueue &own_queue)
-        : driver{i2c_writer, i2c_poller, can_client, own_queue} {}
+                                    CanClient &can_client,
+                                    OwnQueue &own_queue,
+                                    sensors::hardware::SensorHardwareBase &hardware)
+        : driver{i2c_writer, i2c_poller, can_client, hardware, own_queue} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -95,7 +99,8 @@ class PressureMessageHandler {
         static_cast<void>(m);
     }
 
-    MMR92C04<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    MMR92C04<I2CQueueWriter, I2CQueuePoller, CanClient,
+             OwnQueue> driver;
 };
 
 /**
@@ -115,14 +120,17 @@ class PressureSensorTask {
     ~PressureSensorTask() = default;
 
     /**
+/home/caila/ot3-firmware/sensors/tests/test_pressure_sensor.cpp:18:6: note: constraints not satisfied
+
      * Task entry point.
      */
     template <message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  i2c::poller::Poller<QueueImpl> *poller,
-                                 CanClient *can_client) {
-        auto handler =
-            PressureMessageHandler{*writer, *poller, *can_client, get_queue()};
+                                 CanClient *can_client,
+                                 sensors::hardware::SensorHardwareBase *hardware) {
+        auto handler = PressureMessageHandler{*writer, *poller, *can_client,
+                                              get_queue(), *hardware};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {
