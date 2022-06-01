@@ -12,9 +12,9 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 
-namespace sim_canbus {
+namespace can::sim::bus {
 
-using namespace can_bus;
+using namespace can::bus;
 using namespace freertos_task;
 
 /**
@@ -22,7 +22,7 @@ using namespace freertos_task;
  */
 class SimCANBus : public CanBus {
   public:
-    using TransportType = std::shared_ptr<can_transport::BusTransportBase>;
+    using TransportType = std::shared_ptr<can::sim::transport::BusTransportBase>;
 
     explicit SimCANBus(TransportType transport)
         : transport{transport}, reader_task{reader} {

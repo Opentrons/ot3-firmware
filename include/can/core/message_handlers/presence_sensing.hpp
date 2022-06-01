@@ -1,11 +1,10 @@
 #pragma once
 
-//#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/message_queue.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
 
-namespace presence_sensing_message_handler {
+namespace can::message_handlers::presence_sensing {
 
 using namespace can_messages;
 

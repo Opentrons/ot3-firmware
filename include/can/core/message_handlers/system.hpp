@@ -7,7 +7,7 @@
 #include "can/core/messages.hpp"
 #include "common/core/app_update.h"
 
-namespace system_handler {
+namespace can::message_handlers::system {
 
 using namespace can_ids;
 using namespace can_messages;

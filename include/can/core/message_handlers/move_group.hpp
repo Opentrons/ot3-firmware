@@ -4,7 +4,7 @@
 #include "motor-control/core/tasks/brushed_move_group_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 
-namespace move_group_handler {
+namespace can::message_handlers::move_group {
 
 using namespace can_messages;
 

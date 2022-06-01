@@ -8,7 +8,7 @@
 #include "parse.hpp"
 #include "types.h"
 
-namespace can_bus {
+namespace can::bus {
 
 using namespace can_ids;
 

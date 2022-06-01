@@ -15,7 +15,7 @@
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
 
-namespace socketcan_transport {
+namespace can::sim::transport::socketcan {
 
 template <synchronization::LockableProtocol CriticalSection>
 class SocketCanTransport : public can_transport::BusTransportBase {

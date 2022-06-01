@@ -2,7 +2,7 @@
 
 #include "can/core/types.h"
 
-namespace sim_filter {
+namespace can::sim::filter {
 
 /**
  * A filtering callable

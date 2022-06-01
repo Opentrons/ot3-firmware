@@ -8,7 +8,7 @@
 #include "dispatch.hpp"
 #include "message_core.hpp"
 
-namespace freertos_can_dispatch {
+namespace can::freertos_dispatch {
 
 using namespace message_core;
 using namespace message_buffer;

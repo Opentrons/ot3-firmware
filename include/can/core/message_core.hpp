@@ -5,9 +5,9 @@
 
 #include "can/core/ids.hpp"
 
-namespace message_core {
+namespace can::message_core {
 
-using namespace can_ids;
+using namespace can::ids;
 
 /**
  * Maximum bytes in can message payload

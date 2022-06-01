@@ -12,7 +12,7 @@
 #include "eeprom/core/types.hpp"
 #include "parse.hpp"
 
-namespace can_messages {
+namespace can::messages {
 
 using namespace can_ids;
 

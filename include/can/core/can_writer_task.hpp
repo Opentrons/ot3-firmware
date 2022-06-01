@@ -9,7 +9,7 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 
-namespace message_writer_task {
+namespace can::message_writer_task {
 
 struct TaskMessage {
     uint32_t arbitration_id;

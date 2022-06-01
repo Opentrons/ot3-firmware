@@ -9,7 +9,7 @@
 #include "message_core.hpp"
 #include "types.h"
 
-namespace can_message_writer {
+namespace can::message_writer {
 
 /**
  * A helper class for writing CAN messages into the CAN tests message queue.
@@ -19,7 +19,7 @@ class MessageWriter {
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
         message_writer_task::TaskMessage>;
 
-    explicit MessageWriter(can_ids::NodeId node_id) : node_id(node_id) {}
+    explicit MessageWriter(can::ids::NodeId node_id) : node_id(node_id) {}
 
     /**
      * Write a message to the can bus
@@ -44,10 +44,10 @@ class MessageWriter {
     }
 
     void set_queue(QueueType* q) { queue = q; }
-    void set_node_id(can_ids::NodeId id) { node_id = id; }
+    void set_node_id(can::ids::NodeId id) { node_id = id; }
 
   private:
-    can_ids::NodeId node_id;
+    can::ids::NodeId node_id;
     QueueType* queue{nullptr};
 };
 }  // namespace can_message_writer

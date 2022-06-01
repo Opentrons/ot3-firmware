@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace can_transport {
+namespace can::sim::transport {
 
 /**
  * Abstract base class for communicating with a can bus.

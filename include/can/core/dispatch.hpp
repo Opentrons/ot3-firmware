@@ -9,7 +9,7 @@
 #include "common/core/message_buffer.hpp"
 #include "parse.hpp"
 
-namespace can_dispatch {
+namespace can::dispatch {
 
 using namespace can_parse;
 using namespace can_message_buffer;

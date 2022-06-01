@@ -4,7 +4,7 @@
 
 #include "can/core/ids.hpp"
 
-namespace can_arbitration_id {
+namespace can::arbitration_id {
 
 using namespace can_ids;
 
