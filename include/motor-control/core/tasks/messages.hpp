@@ -22,7 +22,8 @@ using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,
                  can::messages::ClearAllMoveGroupsRequest,
                  can::messages::ExecuteMoveGroupRequest,
-                 can::messages::GetMoveGroupRequest, can::messages::HomeRequest>;
+                 can::messages::GetMoveGroupRequest,
+                 can::messages::HomeRequest>;
 
 using MoveStatusReporterTaskMessage = motor_messages::Ack;
 

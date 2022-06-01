@@ -45,4 +45,4 @@ class Parser {
     }
 };
 
-}
+}  // namespace can::parse

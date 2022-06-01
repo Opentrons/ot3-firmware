@@ -35,9 +35,11 @@ static auto can_motion_handler =
     can::message_handlers::motion::MotionHandler{queue_client};
 
 /** Handler of system messages. */
-static auto system_message_handler = can::message_handlers::system::SystemMessageHandler{
-    queue_client, version_get()->version, version_get()->flags,
-    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
+static auto system_message_handler =
+    can::message_handlers::system::SystemMessageHandler{
+        queue_client, version_get()->version, version_get()->flags,
+        std::span(std::cbegin(version_get()->sha),
+                  std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
 

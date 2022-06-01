@@ -24,7 +24,8 @@ SCENARIO("read capacitance sensor values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
-    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
+        can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         capacitive_queue{};
 
@@ -258,7 +259,8 @@ SCENARIO("capacitance callback tests") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
-    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
+        can_queue{};
 
     auto queue_client = mock_client::QueueClient{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
@@ -406,8 +408,8 @@ SCENARIO("capacitance callback tests") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-            callback_host.set_threshold(10,
-                                        can::ids::SensorThresholdMode::absolute);
+            callback_host.set_threshold(
+                10, can::ids::SensorThresholdMode::absolute);
             can_queue.reset();
             callback_host.handle_ongoing_response(first);
             callback_host.handle_ongoing_response(second);
@@ -430,7 +432,8 @@ SCENARIO("threshold configuration") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> poller_queue{};
 
-    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
+        can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         capacitive_queue{};
 
@@ -451,8 +454,8 @@ SCENARIO("threshold configuration") {
 
     GIVEN("A request to set an autothreshold") {
         int NUM_READS = 10;
-        auto autothreshold =
-            sensors::utils::TaskMessage(can::messages::SetSensorThresholdRequest(
+        auto autothreshold = sensors::utils::TaskMessage(
+            can::messages::SetSensorThresholdRequest(
                 {}, can::ids::SensorType::capacitive,
                 convert_to_fixed_point(0.375, 15),
                 can::ids::SensorThresholdMode::auto_baseline));
@@ -539,8 +542,8 @@ SCENARIO("threshold configuration") {
     }
 
     GIVEN("A request to set a specific threshold") {
-        auto specific_threshold =
-            sensors::utils::TaskMessage(can::messages::SetSensorThresholdRequest(
+        auto specific_threshold = sensors::utils::TaskMessage(
+            can::messages::SetSensorThresholdRequest(
                 {}, can::ids::SensorType::capacitive,
                 convert_to_fixed_point(10, 15),
                 can::ids::SensorThresholdMode::absolute));

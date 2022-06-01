@@ -134,4 +134,4 @@ class CanMessageBufferReader {
     Listener& listener;
 };
 
-}  // namespace can_message_buffer
+}  // namespace can::message_buffer

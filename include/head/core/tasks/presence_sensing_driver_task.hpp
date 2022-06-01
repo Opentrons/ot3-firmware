@@ -64,12 +64,13 @@ class PresenceSensingDriverMessageHandler {
         LOG("Received attached tools request");
         auto tools = driver.update_tools();
         auto new_tools = tools.second;
-        can_client.send_can_message(can::ids::NodeId::host,
-                                    can::messages::PushToolsDetectedNotification{
-                                        .z_motor = (new_tools.z_motor),
-                                        .a_motor = (new_tools.a_motor),
-                                        .gripper = (new_tools.gripper),
-                                    });
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::PushToolsDetectedNotification{
+                .z_motor = (new_tools.z_motor),
+                .a_motor = (new_tools.a_motor),
+                .gripper = (new_tools.gripper),
+            });
     }
 
     void visit(presence_sensing_driver_task_messages::CheckForToolChange&) {

@@ -13,7 +13,8 @@ auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     can::message_writer_task::TaskMessage>{};
 
 /** The parsed message handler */
-static auto can_motor_handler = can::message_handlers::motor::MotorHandler{z_queues};
+static auto can_motor_handler =
+    can::message_handlers::motor::MotorHandler{z_queues};
 static auto can_move_group_handler =
     can::message_handlers::move_group::MoveGroupHandler{z_queues};
 static auto can_motion_handler =
@@ -28,9 +29,11 @@ static auto gripper_info_handler =
     gripper_info::GripperInfoMessageHandler{main_queues, main_queues};
 
 /** Handler of system messages. */
-static auto system_message_handler = can::message_handlers::system::SystemMessageHandler{
-    main_queues, version_get()->version, version_get()->flags,
-    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
+static auto system_message_handler =
+    can::message_handlers::system::SystemMessageHandler{
+        main_queues, version_get()->version, version_get()->flags,
+        std::span(std::cbegin(version_get()->sha),
+                  std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
 
@@ -39,8 +42,8 @@ static auto eeprom_message_handler =
     eeprom::message_handler::EEPromHandler{main_queues, main_queues};
 static auto eeprom_dispatch_target =
     can::dispatch::DispatchParseTarget<decltype(eeprom_message_handler),
-                                      can::messages::WriteToEEPromRequest,
-                                      can::messages::ReadFromEEPromRequest>{
+                                       can::messages::WriteToEEPromRequest,
+                                       can::messages::ReadFromEEPromRequest>{
         eeprom_message_handler};
 
 static auto motor_dispatch_target =

@@ -35,7 +35,8 @@ class MessageWriter {
 
         arbitration_id.message_id(message.id);
         // TODO (al 2021-08-03): populate this from Message?
-        arbitration_id.function_code(can::ids::FunctionCode::network_management);
+        arbitration_id.function_code(
+            can::ids::FunctionCode::network_management);
         arbitration_id.node_id(node);
         arbitration_id.originating_node_id(node_id);
         task_message.arbitration_id = arbitration_id;
@@ -50,4 +51,4 @@ class MessageWriter {
     can::ids::NodeId node_id;
     QueueType* queue{nullptr};
 };
-}  // namespace can_message_writer
+}  // namespace can::message_writer

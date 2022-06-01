@@ -28,7 +28,8 @@ SCENARIO("get_tool called on presence sensing driver") {
             THEN("Tools mapped to voltage reading") {
                 REQUIRE(updated);
                 REQUIRE(tools.gripper == can::ids::ToolType::gripper);
-                REQUIRE(tools.a_motor == can::ids::ToolType::pipette_multi_chan);
+                REQUIRE(tools.a_motor ==
+                        can::ids::ToolType::pipette_multi_chan);
                 REQUIRE(tools.z_motor == can::ids::ToolType::pipette_384_chan);
                 AND_WHEN("Tools switch to invalid voltages") {
                     adc_comms.get_z_channel().mock_set_reading_by_voltage(3300);

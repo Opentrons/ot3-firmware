@@ -20,7 +20,8 @@ static auto spi3_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto left_tasks = head_tasks::MotorTasks{};
-static auto left_queues = head_tasks::MotorQueueClient{can::ids::NodeId::head_l};
+static auto left_queues =
+    head_tasks::MotorQueueClient{can::ids::NodeId::head_l};
 static auto right_tasks = head_tasks::MotorTasks{};
 static auto right_queues =
     head_tasks::MotorQueueClient{can::ids::NodeId::head_r};

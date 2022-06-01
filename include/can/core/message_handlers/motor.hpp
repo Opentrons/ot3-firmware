@@ -59,4 +59,4 @@ class BrushedMotorHandler {
     BrushedMotorDriverTaskClient &motor_client;
 };
 
-}  // namespace motor_message_handler
+}  // namespace can::message_handlers::motor

@@ -136,7 +136,8 @@ static constexpr auto can_bit_timings =
                                  500 * can::bit_timings::KHZ, 800>{};
 
 auto initialize_motor_tasks(
-    can::ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id,
+    interfaces::HighThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),

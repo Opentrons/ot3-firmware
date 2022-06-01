@@ -53,4 +53,4 @@ class BrushedMoveGroupHandler {
     Brushed_Client &task_client;
 };
 
-}  // namespace move_group_handler
+}  // namespace can::message_handlers::move_group

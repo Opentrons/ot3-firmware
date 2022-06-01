@@ -78,4 +78,4 @@ concept TaskClient = requires(Client client, can::ids::NodeId node_id,
     {client.send_can_message(node_id, m)};
 };
 
-}  // namespace message_writer_task
+}  // namespace can::message_writer_task

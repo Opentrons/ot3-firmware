@@ -19,7 +19,8 @@ auto get_message(Queue& q) -> Message {
 
 SCENARIO("read temperature and humidity values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
-    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
+        can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         environment_queue{};
     test_mocks::MockI2CResponseQueue response_queue;

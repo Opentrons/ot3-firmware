@@ -67,4 +67,4 @@ class CanBus {
     virtual ~CanBus() = default;
 };
 
-}  // namespace can_bus
+}  // namespace can::bus

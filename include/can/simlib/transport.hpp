@@ -51,4 +51,4 @@ class BusTransportBase {
  */
 auto create() -> std::shared_ptr<BusTransportBase>;
 
-}  // namespace can_transport
+}  // namespace can::sim::transport

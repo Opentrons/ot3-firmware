@@ -138,4 +138,4 @@ class Dispatcher {
     ArbitrationIdTest test;
 };
 
-}  // namespace can_dispatch
+}  // namespace can::dispatch

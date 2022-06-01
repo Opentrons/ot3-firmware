@@ -22,8 +22,10 @@ using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::move_group::MoveGroupHandler<gantry_tasks::QueueClient>,
-    can::messages::AddLinearMoveRequest, can::messages::ClearAllMoveGroupsRequest,
+    can::message_handlers::move_group::MoveGroupHandler<
+        gantry_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest>;
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
@@ -33,19 +35,20 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::system::SystemMessageHandler<gantry_tasks::QueueClient>,
+    can::message_handlers::system::SystemMessageHandler<
+        gantry_tasks::QueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 
 using GantryDispatcherType =
     can::dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
-                             MotionControllerDispatchTarget,
-                             SystemDispatchTarget>;
+                              MotionControllerDispatchTarget,
+                              SystemDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =
     can::freertos_dispatch::FreeRTOSCanReader<reader_message_buffer_size,
-                                             GantryDispatcherType>;
+                                              GantryDispatcherType>;
 
 /**
  * Create the can message reader task.

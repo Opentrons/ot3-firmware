@@ -115,4 +115,4 @@ class FreeRTOSCanReader {
     Control& message_buffer;
 };
 
-}  // namespace freertos_can_dispatch
+}  // namespace can::freertos_dispatch

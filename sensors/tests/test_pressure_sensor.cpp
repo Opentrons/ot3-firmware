@@ -31,7 +31,8 @@ auto get_message(Queue& q) -> Message {
 SCENARIO("read pressure sensor values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
-    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage> can_queue{};
+    test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
+        can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
 

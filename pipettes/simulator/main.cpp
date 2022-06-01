@@ -100,7 +100,8 @@ static const char* PipetteTypeString[] = {
 static auto motor_configs = interfaces::motor_configurations<PIPETTE_TYPE>();
 
 auto initialize_motor_tasks(
-    can::ids::NodeId id, interfaces::HighThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id,
+    interfaces::HighThroughputPipetteDriverHardware& conf) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),

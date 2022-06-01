@@ -29,8 +29,10 @@ using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::move_group::MoveGroupHandler<head_tasks::MotorQueueClient>,
-    can::messages::AddLinearMoveRequest, can::messages::ClearAllMoveGroupsRequest,
+    can::message_handlers::move_group::MoveGroupHandler<
+        head_tasks::MotorQueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest>;
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
@@ -40,7 +42,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::system::SystemMessageHandler<head_tasks::HeadQueueClient>,
+    can::message_handlers::system::SystemMessageHandler<
+        head_tasks::HeadQueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 using PresenceSensingDispatchTarget = can::dispatch::DispatchParseTarget<
@@ -51,7 +54,8 @@ using PresenceSensingDispatchTarget = can::dispatch::DispatchParseTarget<
 
 /** The parsed message handler */
 static auto presence_sensing_handler =
-    can::message_handlers::presence_sensing::PresenceSensingHandler{common_queues};
+    can::message_handlers::presence_sensing::PresenceSensingHandler{
+        common_queues};
 static auto can_motor_handler_right =
     can::message_handlers::motor::MotorHandler{right_queues};
 static auto can_motor_handler_left =
@@ -68,9 +72,11 @@ static auto can_move_group_handler_left =
     can::message_handlers::move_group::MoveGroupHandler(left_queues);
 
 /** Handler of system messages. */
-static auto system_message_handler = can::message_handlers::system::SystemMessageHandler(
-    common_queues, version_get()->version, version_get()->flags,
-    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha)));
+static auto system_message_handler =
+    can::message_handlers::system::SystemMessageHandler(
+        common_queues, version_get()->version, version_get()->flags,
+        std::span(std::cbegin(version_get()->sha),
+                  std::cend(version_get()->sha)));
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 

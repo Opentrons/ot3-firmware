@@ -104,4 +104,4 @@ class ArbitrationId {
     uint32_t id{0};
 };
 
-}  // namespace can_arbitration_id
+}  // namespace can::arbitration_id

@@ -49,4 +49,4 @@ class Filter {
     uint32_t val2;
 };
 
-}  // namespace sim_filter
+}  // namespace can::sim::filter

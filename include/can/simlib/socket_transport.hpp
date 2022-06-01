@@ -118,4 +118,4 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     return true;
 }
 
-}  // namespace socket_transport
+}  // namespace can::sim::transport::socket

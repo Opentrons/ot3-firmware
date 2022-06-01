@@ -37,4 +37,4 @@ class PresenceSensingHandler {
     }
 };
 
-}  // namespace can::message_handler:presence
+}  // namespace can::message_handlers::presence_sensing

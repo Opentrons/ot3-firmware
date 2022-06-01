@@ -17,20 +17,23 @@ static auto& gear_queue_client = gear_motor_tasks::get_queues();
 static auto& central_queue_client = central_tasks::get_queues();
 
 /** The parsed message handler */
-static auto can_motor_handler =
-    can::message_handlers::motor::MotorHandler{linear_motor_driver_queue_client};
+static auto can_motor_handler = can::message_handlers::motor::MotorHandler{
+    linear_motor_driver_queue_client};
 static auto can_motion_handler =
     can::message_handlers::motion::MotionHandler{linear_motor_queue_client};
 
 static auto can_move_group_handler =
-    can::message_handlers::move_group::MoveGroupHandler(linear_motor_queue_client);
+    can::message_handlers::move_group::MoveGroupHandler(
+        linear_motor_queue_client);
 
 static auto eeprom_handler = eeprom::message_handler::EEPromHandler{
     sensor_queue_client, sensor_queue_client};
 
-static auto system_message_handler = can::message_handlers::system::SystemMessageHandler{
-    central_queue_client, version_get()->version, version_get()->flags,
-    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
+static auto system_message_handler =
+    can::message_handlers::system::SystemMessageHandler{
+        central_queue_client, version_get()->version, version_get()->flags,
+        std::span(std::cbegin(version_get()->sha),
+                  std::cend(version_get()->sha))};
 
 static auto sensor_handler =
     sensors::handlers::SensorHandler{sensor_queue_client};

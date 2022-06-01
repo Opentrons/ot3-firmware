@@ -48,8 +48,8 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
         }
     }
     GIVEN("A ReadFromEEPromRequest message") {
-        auto can_msg =
-            can::messages::ReadFromEEPromRequest{.address = 5, .data_length = 8};
+        auto can_msg = can::messages::ReadFromEEPromRequest{.address = 5,
+                                                            .data_length = 8};
         auto msg = eeprom::message_handler::MessageType{can_msg};
 
         WHEN("the message is received") {
@@ -77,8 +77,8 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
     }
 
     GIVEN("A complete read message transaction") {
-        auto can_msg =
-            can::messages::ReadFromEEPromRequest{.address = 5, .data_length = 4};
+        auto can_msg = can::messages::ReadFromEEPromRequest{.address = 5,
+                                                            .data_length = 4};
         auto msg = eeprom::message_handler::MessageType{can_msg};
         subject.handle(msg);
 

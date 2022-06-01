@@ -22,7 +22,8 @@ using namespace freertos_task;
  */
 class SimCANBus : public CanBus {
   public:
-    using TransportType = std::shared_ptr<can::sim::transport::BusTransportBase>;
+    using TransportType =
+        std::shared_ptr<can::sim::transport::BusTransportBase>;
 
     explicit SimCANBus(TransportType transport)
         : transport{transport}, reader_task{reader} {
@@ -134,4 +135,4 @@ class SimCANBus : public CanBus {
     std::vector<can::sim::filter::Filter> filters{};
 };
 
-}  // namespace sim_canbus
+}  // namespace can::sim::bus

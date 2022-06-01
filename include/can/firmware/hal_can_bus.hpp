@@ -82,4 +82,4 @@ class HalCanBus : public CanBus {
     gpio::PinConfig indicator;
 };
 
-}  // namespace hal_can_bus
+}  // namespace can::hal::bus

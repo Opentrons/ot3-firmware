@@ -27,7 +27,8 @@ static auto i2c3_task_builder =
  * Start gripper tasks.
  */
 void gripper_tasks::start_tasks(
-    can::bus::CanBus& can_bus, motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+    can::bus::CanBus& can_bus,
+    motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     brushed_motor::BrushedMotor& grip_motor,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,

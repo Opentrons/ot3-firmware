@@ -18,10 +18,10 @@ SCENARIO("Testing a move group") {
         WHEN("set_move is called") {
             auto linear_move =
                 can::messages::AddLinearMoveRequest{.group_id = 0,
-                                                   .seq_id = 1,
-                                                   .duration = 2,
-                                                   .acceleration = 3,
-                                                   .velocity = 4};
+                                                    .seq_id = 1,
+                                                    .duration = 2,
+                                                    .acceleration = 3,
+                                                    .velocity = 4};
             auto result = group.set_move(linear_move);
             auto read_group = group.get_move(linear_move.seq_id);
 
@@ -42,10 +42,10 @@ SCENARIO("Testing a move group") {
         WHEN("set_move is called with too high a seq_id") {
             auto linear_move =
                 can::messages::AddLinearMoveRequest{.group_id = 0,
-                                                   .seq_id = 123,
-                                                   .duration = 2,
-                                                   .acceleration = 3,
-                                                   .velocity = 4};
+                                                    .seq_id = 123,
+                                                    .duration = 2,
+                                                    .acceleration = 3,
+                                                    .velocity = 4};
             auto result = group.set_move(linear_move);
             THEN("result is false.") { REQUIRE(result == false); }
         }
@@ -72,10 +72,10 @@ SCENARIO("Testing a move group") {
         WHEN("clear is called") {
             auto linear_move =
                 can::messages::AddLinearMoveRequest{.group_id = 0,
-                                                   .seq_id = 1,
-                                                   .duration = 2,
-                                                   .acceleration = 3,
-                                                   .velocity = 4};
+                                                    .seq_id = 1,
+                                                    .duration = 2,
+                                                    .acceleration = 3,
+                                                    .velocity = 4};
             CHECK(group.set_move(linear_move));
             group.clear();
 
@@ -87,15 +87,15 @@ SCENARIO("Testing a move group") {
     GIVEN("a move group with multiple moves") {
         auto moves =
             std::array{can::messages::AddLinearMoveRequest{.group_id = 0,
-                                                          .seq_id = 0,
-                                                          .duration = 100,
-                                                          .acceleration = 3,
-                                                          .velocity = 4},
+                                                           .seq_id = 0,
+                                                           .duration = 100,
+                                                           .acceleration = 3,
+                                                           .velocity = 4},
                        can::messages::AddLinearMoveRequest{.group_id = 0,
-                                                          .seq_id = 1,
-                                                          .duration = 200,
-                                                          .acceleration = 3,
-                                                          .velocity = 4}};
+                                                           .seq_id = 1,
+                                                           .duration = 200,
+                                                           .acceleration = 3,
+                                                           .velocity = 4}};
         for (can::messages::AddLinearMoveRequest m : moves) {
             CHECK(group.set_move(m));
         }

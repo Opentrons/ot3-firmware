@@ -73,4 +73,4 @@ concept CanResponseMessage = requires(T& t) {
     {Serializable<T>};
 };
 
-}  // namespace message_core
+}  // namespace can::message_core

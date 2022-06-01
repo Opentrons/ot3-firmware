@@ -88,4 +88,4 @@ class SystemMessageHandler {
     can::messages::DeviceInfoResponse response;
 };
 
-}  // namespace system_handler
+}  // namespace can::message_handlers::system
