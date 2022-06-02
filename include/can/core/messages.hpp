@@ -747,8 +747,6 @@ struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
     auto operator==(const GripperHomeRequest& other) const -> bool = default;
 };
 
-using GripperInfoRequest = Empty<MessageId::gripper_info_request>;
-
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint16_t model;
@@ -819,8 +817,6 @@ struct SensorDiagnosticResponse
     auto operator==(const SensorDiagnosticResponse& other) const
         -> bool = default;
 };
-
-using PipetteInfoRequest = Empty<MessageId::pipette_info_request>;
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
@@ -960,6 +956,8 @@ struct PeripheralStatusResponse
     auto operator==(const PeripheralStatusResponse& other) const
         -> bool = default;
 };
+
+using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
 
 /**
  * A variant of all message types we might send..
