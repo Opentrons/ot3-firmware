@@ -315,6 +315,8 @@ auto interfaces::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
     return pins;
 }
 
+// TODO (06/02/22 CM): change up the hardware grouping to accommodate both
+//  pressure sensors on the EIGHT CHANNEL pipette
 template <>
 auto interfaces::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
     -> interfaces::LowThroughputSensorHardware {
