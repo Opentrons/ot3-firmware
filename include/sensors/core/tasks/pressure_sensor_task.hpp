@@ -116,9 +116,6 @@ class PressureSensorTask {
     ~PressureSensorTask() = default;
 
     /**
-/home/caila/ot3-firmware/sensors/tests/test_pressure_sensor.cpp:18:6: note:
-constraints not satisfied
-
      * Task entry point.
      */
     template <message_writer_task::TaskClient CanClient>
