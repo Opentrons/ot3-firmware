@@ -68,7 +68,6 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
     }
 }
 
-
 static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
     /*
      * SPI Bus 2
