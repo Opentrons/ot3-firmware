@@ -47,8 +47,8 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     generate_file_comment(output)
     with block(
         output=output,
-        start="namespace can_ids {\n\n",
-        terminate="}  // namespace can_ids\n\n",
+        start="namespace can::ids {\n\n",
+        terminate="}  // namespace can::ids\n\n",
     ):
         write_enum_cpp(constants_mod.FunctionCode, output)
         write_enum_cpp(constants_mod.MessageId, output)

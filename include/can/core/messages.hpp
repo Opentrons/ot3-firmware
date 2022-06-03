@@ -12,9 +12,9 @@
 #include "eeprom/core/types.hpp"
 #include "parse.hpp"
 
-namespace can_messages {
+namespace can::messages {
 
-using namespace can_ids;
+using namespace can::ids;
 
 using stepper_timer_ticks = uint32_t;
 using brushed_timer_ticks = uint32_t;
@@ -494,9 +494,9 @@ struct ReadPresenceSensingVoltageResponse
 
 struct PushToolsDetectedNotification
     : BaseMessage<MessageId::tools_detected_notification> {
-    can_ids::ToolType z_motor{};
-    can_ids::ToolType a_motor{};
-    can_ids::ToolType gripper{};
+    can::ids::ToolType z_motor{};
+    can::ids::ToolType a_motor{};
+    can::ids::ToolType gripper{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -597,7 +597,7 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
 };
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
-    can_ids::SensorType sensor{};
+    can::ids::SensorType sensor{};
     int32_t sensor_data = 0;
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -613,9 +613,9 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 
 struct SetSensorThresholdRequest
     : BaseMessage<MessageId::set_sensor_threshold_request> {
-    can_ids::SensorType sensor;
+    can::ids::SensorType sensor;
     int32_t threshold;
-    can_ids::SensorThresholdMode mode;
+    can::ids::SensorThresholdMode mode;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSensorThresholdRequest {
@@ -626,9 +626,9 @@ struct SetSensorThresholdRequest
         body = bit_utils::bytes_to_int(body, limit, threshold);
         body = bit_utils::bytes_to_int(body, limit, mode);
         return SetSensorThresholdRequest{
-            .sensor = static_cast<can_ids::SensorType>(sensor),
+            .sensor = static_cast<can::ids::SensorType>(sensor),
             .threshold = threshold,
-            .mode = static_cast<can_ids::SensorThresholdMode>(mode)};
+            .mode = static_cast<can::ids::SensorThresholdMode>(mode)};
     }
 
     auto operator==(const SetSensorThresholdRequest& other) const
@@ -637,9 +637,9 @@ struct SetSensorThresholdRequest
 
 struct SensorThresholdResponse
     : BaseMessage<MessageId::set_sensor_threshold_response> {
-    can_ids::SensorType sensor{};
+    can::ids::SensorType sensor{};
     int32_t threshold = 0;
-    can_ids::SensorThresholdMode mode{};
+    can::ids::SensorThresholdMode mode{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -802,7 +802,7 @@ struct SensorDiagnosticRequest
 
 struct SensorDiagnosticResponse
     : BaseMessage<MessageId::sensor_diagnostic_response> {
-    can_ids::SensorType sensor;
+    can::ids::SensorType sensor;
     uint8_t reg_address;
     uint32_t data;
 
@@ -840,8 +840,8 @@ struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
 
 struct BindSensorOutputRequest
     : BaseMessage<MessageId::bind_sensor_output_request> {
-    can_ids::SensorType sensor;
-    uint8_t binding;  // a bitfield of can_ids::SensorOutputBinding
+    can::ids::SensorType sensor;
+    uint8_t binding;  // a bitfield of can::ids::SensorOutputBinding
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BindSensorOutputRequest {
@@ -850,7 +850,7 @@ struct BindSensorOutputRequest
         body = bit_utils::bytes_to_int(body, limit, _sensor);
         body = bit_utils::bytes_to_int(body, limit, _binding);
         return BindSensorOutputRequest{
-            .sensor = static_cast<can_ids::SensorType>(_sensor),
+            .sensor = static_cast<can::ids::SensorType>(_sensor),
             .binding = _binding};
     }
 
@@ -860,8 +860,8 @@ struct BindSensorOutputRequest
 
 struct BindSensorOutputResponse
     : BaseMessage<MessageId::bind_sensor_output_response> {
-    can_ids::SensorType sensor{};
-    uint8_t binding{};  // a bitfield of can_ids::SensorOutputBinding
+    can::ids::SensorType sensor{};
+    uint8_t binding{};  // a bitfield of can::ids::SensorOutputBinding
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -881,7 +881,7 @@ struct TipActionRequest
     uint8_t seq_id;
     stepper_timer_ticks duration;
     um_per_tick velocity;
-    can_ids::PipetteTipActionType action;
+    can::ids::PipetteTipActionType action;
     uint8_t request_stop_condition;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -904,7 +904,7 @@ struct TipActionRequest
             .seq_id = seq_id,
             .duration = duration,
             .velocity = velocity,
-            .action = static_cast<can_ids::PipetteTipActionType>(_action),
+            .action = static_cast<can::ids::PipetteTipActionType>(_action),
             .request_stop_condition = request_stop_condition};
     }
 
@@ -919,7 +919,7 @@ struct TipActionResponse
     uint32_t encoder_position;
     uint8_t ack_id;
     uint8_t success;
-    can_ids::PipetteTipActionType action;
+    can::ids::PipetteTipActionType action;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -937,14 +937,14 @@ struct TipActionResponse
 
 struct PeripheralStatusRequest
     : BaseMessage<MessageId::peripheral_status_request> {
-    can_ids::SensorType sensor;
+    can::ids::SensorType sensor;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> PeripheralStatusRequest {
         uint8_t _sensor = 0;
         body = bit_utils::bytes_to_int(body, limit, _sensor);
         return PeripheralStatusRequest{
-            .sensor = static_cast<can_ids::SensorType>(_sensor)};
+            .sensor = static_cast<can::ids::SensorType>(_sensor)};
     }
     auto operator==(const PeripheralStatusRequest& other) const
         -> bool = default;
@@ -952,7 +952,7 @@ struct PeripheralStatusRequest
 
 struct PeripheralStatusResponse
     : BaseMessage<MessageId::peripheral_status_response> {
-    can_ids::SensorType sensor;
+    can::ids::SensorType sensor;
     uint8_t status;
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -983,4 +983,4 @@ using ResponseMessageType = std::variant<
     PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
     TipActionResponse, PeripheralStatusResponse>;
 
-}  // namespace can_messages
+}  // namespace can::messages

@@ -28,7 +28,7 @@
 
 constexpr auto PIPETTE_TYPE = get_pipette_type();
 
-static auto can_bus_1 = sim_canbus::SimCANBus{can_transport::create()};
+static auto can_bus_1 = can::sim::bus::SimCANBus{can::sim::transport::create()};
 
 static spi::hardware::SimSpiDeviceBase spi_comms{};
 
@@ -71,20 +71,20 @@ static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};
 
 static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
 
-static auto node_from_env(const char* env) -> can_ids::NodeId {
+static auto node_from_env(const char* env) -> can::ids::NodeId {
     if (!env) {
         LOG("On left mount by default");
-        return can_ids::NodeId::pipette_left;
+        return can::ids::NodeId::pipette_left;
     }
     if (strncmp(env, "left", strlen("left")) == 0) {
         LOG("On left mount from env var");
-        return can_ids::NodeId::pipette_left;
+        return can::ids::NodeId::pipette_left;
     } else if (strncmp(env, "right", strlen("right")) == 0) {
         LOG("On right mount from env var");
-        return can_ids::NodeId::pipette_right;
+        return can::ids::NodeId::pipette_right;
     } else {
         LOG("On left mount from invalid env var");
-        return can_ids::NodeId::pipette_left;
+        return can::ids::NodeId::pipette_left;
     }
 }
 
@@ -98,7 +98,7 @@ static const char* PipetteTypeString[] = {
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id,
+    can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl& gear_motion) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
@@ -118,7 +118,8 @@ auto initialize_motor_tasks(
 }
 
 auto initialize_motor_tasks(
-    can_ids::NodeId id, motor_configs::LowThroughputPipetteDriverHardware& conf,
+    can::ids::NodeId id,
+    motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),

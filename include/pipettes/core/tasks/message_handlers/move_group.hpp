@@ -4,7 +4,7 @@
 
 namespace gear_move_group_handler {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <pipettes::tasks::move_group_task::TaskClient Client>
 class GearMoveGroupHandler {

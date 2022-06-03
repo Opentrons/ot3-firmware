@@ -16,7 +16,7 @@ CANNodeId get_node_id(void) { return can_nodeid_pipette_left_bootloader; }
 /**
  * The CAN bus.
  */
-static auto canbus = sim_canbus::SimCANBus(can_transport::create());
+static auto canbus = can::sim::bus::SimCANBus(can::sim::transport::create());
 
 /**
  * Handle a new can message
@@ -66,7 +66,7 @@ int main() {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
 
-    canbus.setup_node_id_filter(static_cast<can_ids::NodeId>(get_node_id()));
+    canbus.setup_node_id_filter(static_cast<can::ids::NodeId>(get_node_id()));
     canbus.set_incoming_message_callback(nullptr, on_can_message);
 
     vTaskStartScheduler();

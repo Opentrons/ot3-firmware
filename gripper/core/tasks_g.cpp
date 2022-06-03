@@ -46,7 +46,7 @@ void g_tasks::start_task(brushed_motor::BrushedMotor& grip_motor,
 }
 
 g_tasks::QueueClient::QueueClient()
-    : can_message_writer::MessageWriter{can_ids::NodeId::gripper_g} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::gripper_g} {}
 
 void g_tasks::QueueClient::send_brushed_motor_driver_queue(
     const brushed_motor_driver_task::TaskMessage& m) {

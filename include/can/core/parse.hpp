@@ -6,10 +6,10 @@
 #include "common/core/bit_utils.hpp"
 #include "message_core.hpp"
 
-namespace can_parse {
+namespace can::parse {
 
-using namespace can_ids;
-using namespace message_core;
+using namespace can::ids;
+using namespace can::message_core;
 
 /**
  * Parser of can message bodies.
@@ -45,4 +45,4 @@ class Parser {
     }
 };
 
-}  // namespace can_parse
+}  // namespace can::parse

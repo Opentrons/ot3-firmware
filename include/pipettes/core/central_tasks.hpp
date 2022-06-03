@@ -16,24 +16,24 @@ namespace central_tasks {
 /**
  * Start central tasks.
  */
-void start_tasks(can_bus::CanBus& can_bus, can_ids::NodeId id);
+void start_tasks(can::bus::CanBus& can_bus, can::ids::NodeId id);
 
 /**
  * Access to central CAN bus tasks. This will be a singleton.
  */
 struct Tasks {
-    message_writer_task::MessageWriterTask<
+    can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
 };
 
 /**
  * Access to the can writer message queue.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
 
     freertos_message_queue::FreeRTOSMessageQueue<
-        message_writer_task::TaskMessage>* can_writer{nullptr};
+        can::message_writer_task::TaskMessage>* can_writer{nullptr};
 };
 
 /**

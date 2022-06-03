@@ -17,27 +17,29 @@
 #include "gantry/core/tasks.hpp"
 #include "gantry/core/utils.hpp"
 
-using namespace can_dispatch;
+using namespace can::dispatch;
 
 static auto& queue_client = gantry_tasks::get_queues();
 
 static auto my_node_id = utils::get_node_id();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
-    message_writer_task::TaskMessage>{};
+    can::message_writer_task::TaskMessage>{};
 
 /** The parsed message handler */
 static auto can_motor_handler =
-    motor_message_handler::MotorHandler{queue_client};
+    can::message_handlers::motor::MotorHandler{queue_client};
 static auto can_move_group_handler =
-    move_group_handler::MoveGroupHandler{queue_client};
+    can::message_handlers::move_group::MoveGroupHandler{queue_client};
 static auto can_motion_handler =
-    motion_message_handler::MotionHandler{queue_client};
+    can::message_handlers::motion::MotionHandler{queue_client};
 
 /** Handler of system messages. */
-static auto system_message_handler = system_handler::SystemMessageHandler{
-    queue_client, version_get()->version, version_get()->flags,
-    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha))};
+static auto system_message_handler =
+    can::message_handlers::system::SystemMessageHandler{
+        queue_client, version_get()->version, version_get()->flags,
+        std::span(std::cbegin(version_get()->sha),
+                  std::cend(version_get()->sha))};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
 
@@ -57,7 +59,7 @@ static auto dispatcher = can_task::GantryDispatcherType(
     system_dispatch_target);
 
 auto static reader_message_buffer =
-    freertos_can_dispatch::FreeRTOSCanBufferControl<
+    can::freertos_dispatch::FreeRTOSCanBufferControl<
         can_task::reader_message_buffer_size, decltype(dispatcher)>{dispatcher};
 
 auto static reader_task = can_task::CanMessageReaderTask{reader_message_buffer};
@@ -75,7 +77,7 @@ auto static writer_task_control =
  * @param canbus The can bus reference
  * @return The task entry point.
  */
-auto can_task::start_reader(can_bus::CanBus& canbus)
+auto can_task::start_reader(can::bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask& {
     LOG("Starting the CAN reader task");
 
@@ -91,7 +93,7 @@ auto can_task::start_reader(can_bus::CanBus& canbus)
  * @param canbus The can bus reference
  * @return The task entry point
  */
-auto can_task::start_writer(can_bus::CanBus& canbus)
+auto can_task::start_writer(can::bus::CanBus& canbus)
     -> can_task::CanMessageWriterTask& {
     LOG("Starting the CAN writer task");
 

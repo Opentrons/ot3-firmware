@@ -4,7 +4,7 @@
 #include "can/tests/mock_message_buffer.hpp"
 #include "catch2/catch.hpp"
 
-using namespace can_message_buffer;
+using namespace can::message_buffer;
 using namespace mock_message_buffer;
 
 SCENARIO("can message buffer writer send works") {

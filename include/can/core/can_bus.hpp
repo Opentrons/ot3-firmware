@@ -8,9 +8,9 @@
 #include "parse.hpp"
 #include "types.h"
 
-namespace can_bus {
+namespace can::bus {
 
-using namespace can_ids;
+using namespace can::ids;
 
 /**
  * Abstract base class of a CAN bus.
@@ -67,4 +67,4 @@ class CanBus {
     virtual ~CanBus() = default;
 };
 
-}  // namespace can_bus
+}  // namespace can::bus

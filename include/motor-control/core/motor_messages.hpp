@@ -8,8 +8,8 @@
 
 namespace motor_messages {
 
-using um_per_tick = can_messages::um_per_tick;
-using um_per_tick_sq = can_messages::um_per_tick_sq;
+using um_per_tick = can::messages::um_per_tick;
+using um_per_tick_sq = can::messages::um_per_tick_sq;
 
 struct MotionConstraints {
     um_per_tick min_velocity;
@@ -40,7 +40,7 @@ struct Ack {
 };
 
 struct GearMotorAck : public Ack {
-    can_ids::PipetteTipActionType action;
+    can::ids::PipetteTipActionType action;
 };
 
 struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -64,7 +64,7 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 
 struct GearMotorMove : public Move {
-    can_ids::PipetteTipActionType action;
+    can::ids::PipetteTipActionType action;
 
     auto build_ack(uint32_t position, uint32_t pulses, AckMessageId _id)
         -> GearMotorAck {

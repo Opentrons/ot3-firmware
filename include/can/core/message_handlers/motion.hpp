@@ -6,9 +6,9 @@
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 
-namespace motion_message_handler {
+namespace can::message_handlers::motion {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <motion_controller_task::TaskClient MotionTaskClient>
 class MotionHandler {
@@ -71,4 +71,4 @@ class BrushedMotionHandler {
     BrushedMotionTaskClient &motion_client;
 };
 
-}  // namespace motion_message_handler
+}  // namespace can::message_handlers::motion

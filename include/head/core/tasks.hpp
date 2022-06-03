@@ -19,7 +19,7 @@ namespace head_tasks {
  */
 
 void start_tasks(
-    can_bus::CanBus& can_bus,
+    can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         left_motion_controller,
     motion_controller::MotionController<lms::LeadScrewConfig>&
@@ -34,7 +34,7 @@ void start_tasks(
  * The client for all head message queues not associated with a single motor.
  * This will be a singleton.
  */
-struct HeadQueueClient : can_message_writer::MessageWriter {
+struct HeadQueueClient : can::message_writer::MessageWriter {
     HeadQueueClient();
 
     void send_presence_sensing_driver_queue(
@@ -49,7 +49,7 @@ struct HeadQueueClient : can_message_writer::MessageWriter {
  * Access to all tasks not associated with a motor. This will be a singleton.
  */
 struct HeadTasks {
-    message_writer_task::MessageWriterTask<
+    can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     presence_sensing_driver_task::PresenceSensingDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
@@ -60,8 +60,8 @@ struct HeadTasks {
  * The client for all the per motor message queues. There will be one for the
  * left and one for the right.
  */
-struct MotorQueueClient : can_message_writer::MessageWriter {
-    MotorQueueClient(can_ids::NodeId this_fw);
+struct MotorQueueClient : can::message_writer::MessageWriter {
+    MotorQueueClient(can::ids::NodeId this_fw);
 
     void send_motion_controller_queue(
         const motion_controller_task::TaskMessage& m);

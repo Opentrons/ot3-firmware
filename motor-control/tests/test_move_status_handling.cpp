@@ -16,10 +16,10 @@ using namespace move_status_reporter_task;
 using namespace lms;
 
 struct MockCanClient {
-    std::deque<std::pair<can_ids::NodeId, can_messages::ResponseMessageType>>
+    std::deque<std::pair<can::ids::NodeId, can::messages::ResponseMessageType>>
         queue{};
-    auto send_can_message(can_ids::NodeId node_id,
-                          const can_messages::ResponseMessageType& m) -> void {
+    auto send_can_message(can::ids::NodeId node_id,
+                          const can::messages::ResponseMessageType& m) -> void {
         queue.push_back(std::make_pair(node_id, m));
     }
 };
@@ -40,7 +40,7 @@ SCENARIO("testing move status position translation") {
             CHECK(mcc.queue.size() == 1);
 
             auto resp = mcc.queue.front();
-            auto resp_msg = std::get<can_messages::MoveCompleted>(resp.second);
+            auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
             THEN("the non-position values should be passed through") {
                 REQUIRE(resp_msg.group_id == 11);
                 REQUIRE(resp_msg.seq_id == 8);
@@ -58,7 +58,7 @@ SCENARIO("testing move status position translation") {
                     .ack_id = AckMessageId::complete_without_condition});
             CHECK(mcc.queue.size() == 1);
             auto resp = mcc.queue.front();
-            auto resp_msg = std::get<can_messages::MoveCompleted>(resp.second);
+            auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
             THEN("the position value should not be clipped") {
                 REQUIRE(
                     resp_msg.current_position_um ==
@@ -74,7 +74,7 @@ SCENARIO("testing move status position translation") {
                                        .ack_id = AckMessageId::position_error});
             CHECK(mcc.queue.size() == 1);
             auto resp = mcc.queue.front();
-            auto resp_msg = std::get<can_messages::MoveCompleted>(resp.second);
+            auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
             THEN("the position in micrometers should be accurate") {
                 REQUIRE(resp_msg.current_position_um == 3125);
             }

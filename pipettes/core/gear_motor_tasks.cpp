@@ -37,7 +37,7 @@ void gear_motor_tasks::start_tasks(
     interfaces::gear_motor::GearMotionControl& motion_controllers,
     gear_motor_tasks::SPIWriterClient& spi_writer,
     motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
-    can_ids::NodeId id) {
+    can::ids::NodeId id) {
     left_queue_client.set_node_id(id);
     right_queue_client.set_node_id(id);
 
@@ -98,7 +98,7 @@ void gear_motor_tasks::start_tasks(
 gear_motor_tasks::QueueClient::QueueClient()
     // This gets overridden in start_tasks, needs to be static here since this
     // is free-store allocated
-    : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 void gear_motor_tasks::QueueClient::send_motion_controller_queue(
     const pipettes::tasks::motion_controller_task::TaskMessage& m) {

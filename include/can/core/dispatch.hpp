@@ -9,11 +9,11 @@
 #include "common/core/message_buffer.hpp"
 #include "parse.hpp"
 
-namespace can_dispatch {
+namespace can::dispatch {
 
-using namespace can_parse;
-using namespace can_message_buffer;
-using namespace can_arbitration_id;
+using namespace can::parse;
+using namespace can::message_buffer;
+using namespace can::arbitration_id;
 
 /**
  * A message id lookup.
@@ -35,12 +35,12 @@ class MessageIdCollection {
      * @param id message id
      * @return True if present
      */
-    [[nodiscard]] auto in(can_ids::MessageId id) const -> bool {
+    [[nodiscard]] auto in(can::ids::MessageId id) const -> bool {
         return std::binary_search(arr.cbegin(), arr.cend(), id);
     }
 
   private:
-    std::array<can_ids::MessageId, sizeof...(T)> arr{};
+    std::array<can::ids::MessageId, sizeof...(T)> arr{};
 };
 
 /**
@@ -138,4 +138,4 @@ class Dispatcher {
     ArbitrationIdTest test;
 };
 
-}  // namespace can_dispatch
+}  // namespace can::dispatch

@@ -11,7 +11,7 @@ struct CheckForToolChange {};
 
 using TaskMessage =
     std::variant<std::monostate,
-                 can_messages::ReadPresenceSensingVoltageRequest,
-                 can_messages::AttachedToolsRequest, CheckForToolChange>;
+                 can::messages::ReadPresenceSensingVoltageRequest,
+                 can::messages::AttachedToolsRequest, CheckForToolChange>;
 
 }  // namespace presence_sensing_driver_task_messages

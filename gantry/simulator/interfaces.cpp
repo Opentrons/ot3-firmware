@@ -12,7 +12,7 @@
 /**
  * The CAN bus.
  */
-static auto canbus = sim_canbus::SimCANBus(can_transport::create());
+static auto canbus = can::sim::bus::SimCANBus(can::sim::transport::create());
 
 /**
  * The SPI bus.
@@ -79,7 +79,7 @@ static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
 
 void interfaces::initialize() {}
 
-auto interfaces::get_can_bus() -> can_bus::CanBus& { return canbus; }
+auto interfaces::get_can_bus() -> can::bus::CanBus& { return canbus; }
 
 auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
     return spi_comms;

@@ -4,7 +4,7 @@
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 
-using namespace can_messages;
+using namespace can::messages;
 
 SCENARIO("message deserializing works") {
     GIVEN("a set motion constraints request body") {

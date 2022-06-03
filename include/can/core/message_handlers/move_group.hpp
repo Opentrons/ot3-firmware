@@ -4,9 +4,9 @@
 #include "motor-control/core/tasks/brushed_move_group_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 
-namespace move_group_handler {
+namespace can::message_handlers::move_group {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <move_group_task::TaskClient Client>
 class MoveGroupHandler {
@@ -53,4 +53,4 @@ class BrushedMoveGroupHandler {
     Brushed_Client &task_client;
 };
 
-}  // namespace move_group_handler
+}  // namespace can::message_handlers::move_group

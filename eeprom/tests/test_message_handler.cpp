@@ -7,7 +7,7 @@
 
 SCENARIO("Sending messages to Eeprom CAN message handler") {
     auto can_write_queue =
-        test_mocks::MockMessageQueue<message_writer_task::TaskMessage>{};
+        test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>{};
     auto eeprom_queue =
         test_mocks::MockMessageQueue<eeprom::task::TaskMessage>{};
     auto queue_client = mock_client::QueueClient{};
@@ -21,7 +21,7 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
     GIVEN("A WriteToEEPromRequest message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
 
-        auto can_msg = can_messages::WriteToEEPromRequest{
+        auto can_msg = can::messages::WriteToEEPromRequest{
             .address = 22, .data_length = data.size(), .data = data};
         auto msg = eeprom::message_handler::MessageType{can_msg};
         WHEN("the message is received") {
@@ -48,8 +48,8 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
         }
     }
     GIVEN("A ReadFromEEPromRequest message") {
-        auto can_msg =
-            can_messages::ReadFromEEPromRequest{.address = 5, .data_length = 8};
+        auto can_msg = can::messages::ReadFromEEPromRequest{.address = 5,
+                                                            .data_length = 8};
         auto msg = eeprom::message_handler::MessageType{can_msg};
 
         WHEN("the message is received") {
@@ -77,8 +77,8 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
     }
 
     GIVEN("A complete read message transaction") {
-        auto can_msg =
-            can_messages::ReadFromEEPromRequest{.address = 5, .data_length = 4};
+        auto can_msg = can::messages::ReadFromEEPromRequest{.address = 5,
+                                                            .data_length = 4};
         auto msg = eeprom::message_handler::MessageType{can_msg};
         subject.handle(msg);
 
@@ -99,9 +99,9 @@ SCENARIO("Sending messages to Eeprom CAN message handler") {
                 REQUIRE(can_write_queue.get_size() == 1);
             }
 
-            auto can_queue_message = message_writer_task::TaskMessage{};
+            auto can_queue_message = can::message_writer_task::TaskMessage{};
             can_write_queue.try_read(&can_queue_message);
-            auto can_message = std::get<can_messages::ReadFromEEPromResponse>(
+            auto can_message = std::get<can::messages::ReadFromEEPromResponse>(
                 can_queue_message.message);
 
             THEN(

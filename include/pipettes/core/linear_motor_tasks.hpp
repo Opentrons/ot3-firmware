@@ -21,7 +21,7 @@
  */
 namespace linear_motor_tasks {
 
-using CanWriterTask = message_writer_task::MessageWriterTask<
+using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 using SPIWriterClient =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
@@ -32,7 +32,7 @@ void start_tasks(CanWriterTask& can_writer,
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-                 can_ids::NodeId);
+                 can::ids::NodeId);
 
 // 96/384 linear motor tasks
 void start_tasks(CanWriterTask& can_writer,
@@ -40,12 +40,12 @@ void start_tasks(CanWriterTask& can_writer,
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-                 can_ids::NodeId);
+                 can::ids::NodeId);
 
 /**
  * Access to all the linear motion task queues on the pipette.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
 
     void send_motion_controller_queue(
@@ -106,9 +106,9 @@ struct Tasks {
 /**
  * Queues related specifically to the the tmc2130 driver.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient()
-        : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
+        : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
     void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m) const {
         driver_queue->try_write(m);
@@ -145,9 +145,9 @@ struct Tasks {
 /**
  * Queues related specifically to the the tmc2160 driver.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient()
-        : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
+        : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
     void send_motor_driver_queue(const tmc2160::tasks::TaskMessage& m) const {
         driver_queue->try_write(m);

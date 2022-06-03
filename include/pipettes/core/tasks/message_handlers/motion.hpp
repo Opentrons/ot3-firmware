@@ -7,7 +7,7 @@
 
 namespace gear_motion_handler {
 
-using namespace can_messages;
+using namespace can::messages;
 
 template <
     pipettes::tasks::motion_controller_task::TaskClient GearMotionTaskClient>

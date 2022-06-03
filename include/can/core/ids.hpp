@@ -3,7 +3,7 @@
  ********************************************/
 #pragma once
 
-namespace can_ids {
+namespace can::ids {
 
 /** Can bus arbitration id function code. */
 enum class FunctionCode {
@@ -163,4 +163,4 @@ enum class PipetteTipActionType {
     drop = 0x1,
 };
 
-}  // namespace can_ids
+}  // namespace can::ids

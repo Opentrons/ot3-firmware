@@ -9,7 +9,7 @@
 #include "message_core.hpp"
 #include "types.h"
 
-namespace can_message_writer {
+namespace can::message_writer {
 
 /**
  * A helper class for writing CAN messages into the CAN tests message queue.
@@ -17,9 +17,9 @@ namespace can_message_writer {
 class MessageWriter {
   public:
     using QueueType = freertos_message_queue::FreeRTOSMessageQueue<
-        message_writer_task::TaskMessage>;
+        can::message_writer_task::TaskMessage>;
 
-    explicit MessageWriter(can_ids::NodeId node_id) : node_id(node_id) {}
+    explicit MessageWriter(can::ids::NodeId node_id) : node_id(node_id) {}
 
     /**
      * Write a message to the can bus
@@ -29,13 +29,14 @@ class MessageWriter {
      * @param message The message to send
      */
     template <message_core::CanResponseMessage ResponseMessage>
-    void send_can_message(can_ids::NodeId node, ResponseMessage&& message) {
-        auto arbitration_id = can_arbitration_id::ArbitrationId{};
-        auto task_message = message_writer_task::TaskMessage{};
+    void send_can_message(can::ids::NodeId node, ResponseMessage&& message) {
+        auto arbitration_id = can::arbitration_id::ArbitrationId{};
+        auto task_message = can::message_writer_task::TaskMessage{};
 
         arbitration_id.message_id(message.id);
         // TODO (al 2021-08-03): populate this from Message?
-        arbitration_id.function_code(can_ids::FunctionCode::network_management);
+        arbitration_id.function_code(
+            can::ids::FunctionCode::network_management);
         arbitration_id.node_id(node);
         arbitration_id.originating_node_id(node_id);
         task_message.arbitration_id = arbitration_id;
@@ -44,10 +45,10 @@ class MessageWriter {
     }
 
     void set_queue(QueueType* q) { queue = q; }
-    void set_node_id(can_ids::NodeId id) { node_id = id; }
+    void set_node_id(can::ids::NodeId id) { node_id = id; }
 
   private:
-    can_ids::NodeId node_id;
+    can::ids::NodeId node_id;
     QueueType* queue{nullptr};
 };
-}  // namespace can_message_writer
+}  // namespace can::message_writer

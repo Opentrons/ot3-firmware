@@ -20,7 +20,7 @@ constexpr std::size_t max_moves_per_group = 5;
 
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
-                                 can_messages::TipActionRequest>;
+                                 can::messages::TipActionRequest>;
 
 using TaskMessage =
     pipettes::task_messages::move_group_task_messages::MoveGroupTaskMessage;
@@ -29,7 +29,7 @@ using TaskMessage =
  * The handler of move group messages
  */
 template <motion_controller_task::TaskClient MotionControllerClient,
-          message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient>
 class MoveGroupMessageHandler {
   public:
     MoveGroupMessageHandler(MoveGroupType& move_group_manager,
@@ -56,29 +56,29 @@ class MoveGroupMessageHandler {
     void handle(std::monostate&) {}
 
     // TODO inherit from move group task for pipettes specifically
-    void handle(const can_messages::TipActionRequest& m) {
+    void handle(const can::messages::TipActionRequest& m) {
         LOG("Received a tip action request: groupid=%d", m.group_id, m.seq_id);
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
-    void handle(const can_messages::GetMoveGroupRequest& m) {
+    void handle(const can::messages::GetMoveGroupRequest& m) {
         LOG("Received get move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
-        auto response = can_messages::GetMoveGroupResponse{
+        auto response = can::messages::GetMoveGroupResponse{
             .group_id = m.group_id,
             .num_moves = static_cast<uint8_t>(group.size()),
             .total_duration = group.get_duration()};
-        can_client.send_can_message(can_ids::NodeId::host, response);
+        can_client.send_can_message(can::ids::NodeId::host, response);
     }
 
-    void handle(const can_messages::ClearAllMoveGroupsRequest&) {
+    void handle(const can::messages::ClearAllMoveGroupsRequest&) {
         LOG("Received clear move groups request");
         for (auto& group : move_groups) {
             group.clear();
         }
     }
 
-    void handle(const can_messages::ExecuteMoveGroupRequest& m) {
+    void handle(const can::messages::ExecuteMoveGroupRequest& m) {
         LOG("Received execute move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
         for (std::size_t i = 0; i < max_moves_per_group; i++) {
@@ -89,7 +89,7 @@ class MoveGroupMessageHandler {
 
     void visit_move(const std::monostate&) {}
 
-    void visit_move(const can_messages::TipActionRequest& m) {
+    void visit_move(const can::messages::TipActionRequest& m) {
         mc_client.send_motion_controller_queue(m);
     }
 
@@ -118,7 +118,7 @@ class MoveGroupTask {
      * Task entry point.
      */
     template <motion_controller_task::TaskClient MotionControllerClient,
-              message_writer_task::TaskClient CanClient>
+              can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(MotionControllerClient* mc_client,
                                  CanClient* can_client) {
         auto handler =

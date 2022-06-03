@@ -14,7 +14,7 @@ namespace sensors {
 namespace tasks {
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient, class OwnQueue>
+          can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class PressureMessageHandler {
   public:
     explicit PressureMessageHandler(
@@ -50,16 +50,16 @@ class PressureMessageHandler {
         driver.handle_response(m);
     }
 
-    void visit(const can_messages::ReadFromSensorRequest &m) {
+    void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
-        if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
+        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             driver.get_pressure(mmr920C04::Registers::PRESSURE_READ);
         } else {
             driver.get_temperature();
         }
     }
 
-    void visit(const can_messages::WriteToSensorRequest &m) {
+    void visit(const can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor\n", m.data,
             m.sensor);
         if (mmr920C04::is_valid_address(m.reg_address)) {
@@ -67,10 +67,10 @@ class PressureMessageHandler {
         }
     }
 
-    void visit(const can_messages::BaselineSensorRequest &m) {
+    void visit(const can::messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
-        if (can_ids::SensorType(m.sensor) == can_ids::SensorType::pressure) {
+        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             driver.get_pressure(mmr920C04::Registers::PRESSURE_READ, true,
                                 m.sample_rate);
         } else {
@@ -78,19 +78,19 @@ class PressureMessageHandler {
         }
     }
 
-    void visit(const can_messages::SetSensorThresholdRequest &m) {
+    void visit(const can::messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
         driver.set_threshold(m.threshold);
         driver.send_threshold();
     }
 
-    void visit(const can_messages::BindSensorOutputRequest &m) {
+    void visit(const can::messages::BindSensorOutputRequest &m) {
         LOG("received bind request but not implemented");
         static_cast<void>(m);
     }
 
-    void visit(const can_messages::PeripheralStatusRequest &m) {
+    void visit(const can::messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device info request");
         driver.send_peripheral_response();
         static_cast<void>(m);
@@ -118,7 +118,7 @@ class PressureSensorTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
         i2c::writer::Writer<QueueImpl> *writer,
         i2c::poller::Poller<QueueImpl> *poller, CanClient *can_client,

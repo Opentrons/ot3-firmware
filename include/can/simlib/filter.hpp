@@ -2,7 +2,7 @@
 
 #include "can/core/types.h"
 
-namespace sim_filter {
+namespace can::sim::filter {
 
 /**
  * A filtering callable
@@ -49,4 +49,4 @@ class Filter {
     uint32_t val2;
 };
 
-}  // namespace sim_filter
+}  // namespace can::sim::filter

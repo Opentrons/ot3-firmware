@@ -18,7 +18,7 @@ namespace gear_move_status {
 using TaskMessage = pipettes::task_messages::motor_control_task_messages::
     MoveStatusReporterTaskMessage;
 
-template <message_writer_task::TaskClient CanClient,
+template <can::message_writer_task::TaskClient CanClient,
           lms::MotorMechanicalConfig LmsConfig>
 class MoveStatusMessageHandler {
   public:
@@ -39,7 +39,7 @@ class MoveStatusMessageHandler {
      * Handle Ack message
      */
     void handle_message(const TaskMessage& message) {
-        can_messages::TipActionResponse msg = {
+        can::messages::TipActionResponse msg = {
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .encoder_position = message.encoder_position,
@@ -48,7 +48,7 @@ class MoveStatusMessageHandler {
             // actually update this value to true or false.
             .success = static_cast<uint8_t>(true),
             .action = message.action};
-        can_client.send_can_message(can_ids::NodeId::host, msg);
+        can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
   private:
@@ -76,7 +76,7 @@ class MoveStatusReporterTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient,
+    template <can::message_writer_task::TaskClient CanClient,
               lms::MotorMechanicalConfig LmsConfig>
     [[noreturn]] void operator()(
         CanClient* can_client,

@@ -20,10 +20,11 @@ static auto spi3_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto left_tasks = head_tasks::MotorTasks{};
-static auto left_queues = head_tasks::MotorQueueClient{can_ids::NodeId::head_l};
+static auto left_queues =
+    head_tasks::MotorQueueClient{can::ids::NodeId::head_l};
 static auto right_tasks = head_tasks::MotorTasks{};
 static auto right_queues =
-    head_tasks::MotorQueueClient{can_ids::NodeId::head_r};
+    head_tasks::MotorQueueClient{can::ids::NodeId::head_r};
 
 static auto left_mc_task_builder =
     freertos_task::TaskStarter<512,
@@ -59,7 +60,7 @@ static auto spi3_task_builder =
  * Start head tasks.
  */
 void head_tasks::start_tasks(
-    can_bus::CanBus& can_bus,
+    can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         left_motion_controller,
     motion_controller::MotionController<lms::LeadScrewConfig>&
@@ -147,7 +148,7 @@ void head_tasks::start_tasks(
 // Implementation of HeadQueueClient
 
 head_tasks::HeadQueueClient::HeadQueueClient()
-    : can_message_writer::MessageWriter{can_ids::NodeId::head} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::head} {}
 
 void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
     const presence_sensing_driver_task::TaskMessage& m) {
@@ -156,8 +157,8 @@ void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
 
 // Implementation of MotorQueueClient
 
-head_tasks::MotorQueueClient::MotorQueueClient(can_ids::NodeId this_fw)
-    : can_message_writer::MessageWriter{this_fw} {}
+head_tasks::MotorQueueClient::MotorQueueClient(can::ids::NodeId this_fw)
+    : can::message_writer::MessageWriter{this_fw} {}
 
 void head_tasks::MotorQueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

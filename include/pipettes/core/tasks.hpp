@@ -27,7 +27,7 @@ namespace pipettes_tasks {
 /**
  * Start pipettes tasks.
  */
-void start_tasks(can_bus::CanBus& can_bus,
+void start_tasks(can::bus::CanBus& can_bus,
                  motion_controller::MotionController<lms::LeadScrewConfig>&
                      motion_controller,
                  i2c::hardware::I2CBase& i2c3_interface,
@@ -35,13 +35,13 @@ void start_tasks(can_bus::CanBus& can_bus,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
                  spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                 can_ids::NodeId id,
+                 can::ids::NodeId id,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all the message queues in the system.
  */
-struct QueueClient : can_message_writer::MessageWriter {
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
 
     void send_motion_controller_queue(
@@ -95,7 +95,7 @@ struct QueueClient : can_message_writer::MessageWriter {
  * Access to all tasks in the system.
  */
 struct AllTask {
-    message_writer_task::MessageWriterTask<
+    can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
     tmc2130::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};

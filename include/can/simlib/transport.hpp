@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace can_transport {
+namespace can::sim::transport {
 
 /**
  * Abstract base class for communicating with a can bus.
@@ -51,4 +51,4 @@ class BusTransportBase {
  */
 auto create() -> std::shared_ptr<BusTransportBase>;
 
-}  // namespace can_transport
+}  // namespace can::sim::transport

@@ -15,7 +15,7 @@
 namespace sensors {
 namespace tasks {
 
-template <class I2CQueueWriter, message_writer_task::TaskClient CanClient,
+template <class I2CQueueWriter, can::message_writer_task::TaskClient CanClient,
           class OwnQueue>
 class EnvironmentSensorMessageHandler {
   public:
@@ -69,20 +69,20 @@ class EnvironmentSensorMessageHandler {
             case hdc2080::LSB_HUMIDITY_REGISTER:
                 LOG("Handling humidity data received %d", data);
                 can_client.send_can_message(
-                    can_ids::NodeId::host,
-                    can_messages::ReadFromSensorResponse{
-                        .sensor = can_ids::SensorType::humidity,
+                    can::ids::NodeId::host,
+                    can::messages::ReadFromSensorResponse{
+                        .sensor = can::ids::SensorType::humidity,
                         .sensor_data = hdc2080::convert(
-                            data, can_ids::SensorType::humidity)});
+                            data, can::ids::SensorType::humidity)});
                 break;
             case hdc2080::LSB_TEMPERATURE_REGISTER:
                 LOG("Handling temperature data recieved %d", data);
                 can_client.send_can_message(
-                    can_ids::NodeId::host,
-                    can_messages::ReadFromSensorResponse{
-                        .sensor = can_ids::SensorType::temperature,
+                    can::ids::NodeId::host,
+                    can::messages::ReadFromSensorResponse{
+                        .sensor = can::ids::SensorType::temperature,
                         .sensor_data = hdc2080::convert(
-                            data, can_ids::SensorType::temperature)});
+                            data, can::ids::SensorType::temperature)});
                 break;
             default:
                 // do nothing
@@ -90,22 +90,22 @@ class EnvironmentSensorMessageHandler {
         }
     }
 
-    void visit(const can_messages::BaselineSensorRequest &) {
+    void visit(const can::messages::BaselineSensorRequest &) {
         LOG("Received non-supported BaselineSensorRequest");
     }
 
-    void visit(const can_messages::SetSensorThresholdRequest &) {
+    void visit(const can::messages::SetSensorThresholdRequest &) {
         LOG("Received non-supported SetSensorThresholdRequest");
     }
 
-    void visit(const can_messages::WriteToSensorRequest &m) {
+    void visit(const can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(hdc2080::ADDRESS, m.data);
     }
 
-    void visit(const can_messages::ReadFromSensorRequest &m) {
+    void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
-        if (can_ids::SensorType(m.sensor) == can_ids::SensorType::humidity) {
+        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::humidity) {
             std::array reg_buf{hdc2080::LSB_HUMIDITY_REGISTER};
             writer.transact(hdc2080::ADDRESS, reg_buf, 2, own_queue,
                             utils::build_id(hdc2080::ADDRESS,
@@ -118,15 +118,15 @@ class EnvironmentSensorMessageHandler {
         }
     }
 
-    void visit(const can_messages::BindSensorOutputRequest &) {
+    void visit(const can::messages::BindSensorOutputRequest &) {
         LOG("Received non-supported BindSensorOutputRequest");
     }
 
-    void visit(const can_messages::PeripheralStatusRequest &m) {
+    void visit(const can::messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device status request");
         can_client.send_can_message(
-            can_ids::NodeId::host,
-            can_messages::PeripheralStatusResponse{
+            can::ids::NodeId::host,
+            can::messages::PeripheralStatusResponse{
                 .sensor = m.sensor,
                 .status = static_cast<uint8_t>(is_initialized)});
     }
@@ -156,7 +156,7 @@ class EnvironmentSensorTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  CanClient *can_client) {
         auto handler =

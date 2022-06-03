@@ -6,9 +6,9 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/message_buffer.hpp"
 
-namespace can_message_buffer {
+namespace can::message_buffer {
 
-using namespace message_buffer;
+using namespace ::message_buffer;
 
 /**
  * Class to write can arbitration ids and data payload into a MessageBuffer.
@@ -134,4 +134,4 @@ class CanMessageBufferReader {
     Listener& listener;
 };
 
-}  // namespace can_message_buffer
+}  // namespace can::message_buffer
