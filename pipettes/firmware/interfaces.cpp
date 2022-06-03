@@ -66,7 +66,7 @@ auto linear_motor::get_motor_hardware(
                                                  &htim2);
 }
 
-auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
+auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
                                       LowThroughputInterruptQueues& queues)
     -> MotionControlType {
     return motion_controller::MotionController{
@@ -79,7 +79,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
         queues.plunger_queue};
 }
 
-auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware hw,
+auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
                                       HighThroughputInterruptQueues& queues)
     -> MotionControlType {
     return motion_controller::MotionController{
@@ -127,7 +127,7 @@ auto gear_motor::get_motor_hardware(
                                                        &htim6, &htim2)};
 }
 
-auto gear_motor::get_motion_control(gear_motor::GearHardware hw,
+auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                     HighThroughputInterruptQueues& queues)
     -> gear_motor::GearMotionControl {
     return gear_motor::GearMotionControl{

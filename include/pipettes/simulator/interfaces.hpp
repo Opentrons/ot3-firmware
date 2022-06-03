@@ -70,10 +70,10 @@ auto get_interrupt_driver(
 
 auto get_motor_hardware() -> sim_motor_hardware_iface::SimMotorHardwareIface;
 
-auto get_motion_control(sim_motor_hardware_iface::SimMotorHardwareIface hw,
+auto get_motion_control(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
                         LowThroughputInterruptQueues& queues)
     -> MotionControlType;
-auto get_motion_control(sim_motor_hardware_iface::SimMotorHardwareIface hw,
+auto get_motion_control(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
                         HighThroughputInterruptQueues& queues)
     -> MotionControlType;
 
@@ -124,7 +124,7 @@ auto get_interrupt_drivers(UnavailableGearHardware&,
 auto get_motion_control(UnavailableGearHardware&,
                         LowThroughputInterruptQueues& queues)
     -> UnavailableGearMotionControl;
-auto get_motion_control(GearHardware hw, HighThroughputInterruptQueues& queues)
+auto get_motion_control(GearHardware& hw, HighThroughputInterruptQueues& queues)
     -> GearMotionControl;
 
 }  // namespace gear_motor

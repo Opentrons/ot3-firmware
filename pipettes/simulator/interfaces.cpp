@@ -60,7 +60,7 @@ auto linear_motor::get_motor_hardware()
 }
 
 auto linear_motor::get_motion_control(
-    sim_motor_hardware_iface::SimMotorHardwareIface hw,
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     LowThroughputInterruptQueues& queues) -> MotionControlType {
     return motion_controller::MotionController{
         configs::linear_motion_sys_config_by_axis(PipetteType::SINGLE_CHANNEL),
@@ -73,7 +73,7 @@ auto linear_motor::get_motion_control(
 }
 
 auto linear_motor::get_motion_control(
-    sim_motor_hardware_iface::SimMotorHardwareIface hw,
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     HighThroughputInterruptQueues& queues) -> MotionControlType {
     return motion_controller::MotionController{
         configs::linear_motion_sys_config_by_axis(
@@ -137,7 +137,7 @@ auto gear_motor::get_motor_hardware(
         .right = sim_motor_hardware_iface::SimGearMotorHardwareIface{}};
 }
 
-auto gear_motor::get_motion_control(gear_motor::GearHardware hw,
+auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                     HighThroughputInterruptQueues& queues)
     -> gear_motor::GearMotionControl {
     return gear_motor::GearMotionControl{

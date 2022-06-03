@@ -14,7 +14,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
             return tmc2160::configs::TMC2160DriverConfig{
                 .registers = {.gconfig = {.en_pwm_mode = 1},
                               .ihold_irun = {.hold_current = 0x2,
-                                             .run_current = 0x10,
+                                             .run_current = 0x19,
                                              .hold_current_delay = 0x7},
                               .tpowerdown = {},
                               .tcoolthrs = {.threshold = 0},
@@ -203,8 +203,8 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 .enable =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_8,
+                     .port = GPIOD,
+                     .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_SET},
                 .limit_switch =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)

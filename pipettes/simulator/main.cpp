@@ -2,7 +2,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 
 #include "FreeRTOS.h"
 #include "can/core/ids.hpp"

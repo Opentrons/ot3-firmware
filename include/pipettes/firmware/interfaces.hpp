@@ -73,10 +73,10 @@ auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware pins)
     -> pipette_motor_hardware::MotorHardware;
 auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)
     -> pipette_motor_hardware::MotorHardware;
-auto get_motion_control(pipette_motor_hardware::MotorHardware hw,
+auto get_motion_control(pipette_motor_hardware::MotorHardware& hw,
                         LowThroughputInterruptQueues& queues)
     -> MotionControlType;
-auto get_motion_control(pipette_motor_hardware::MotorHardware hw,
+auto get_motion_control(pipette_motor_hardware::MotorHardware& hw,
                         HighThroughputInterruptQueues& queues)
     -> MotionControlType;
 
@@ -108,7 +108,7 @@ auto get_interrupts(GearHardware& hw, HighThroughputInterruptQueues& queues)
 auto get_motion_control(UnavailableGearHardware&,
                         LowThroughputInterruptQueues& queues)
     -> UnavailableGearMotionControl;
-auto get_motion_control(GearHardware hw, HighThroughputInterruptQueues& queues)
+auto get_motion_control(GearHardware& hw, HighThroughputInterruptQueues& queues)
     -> GearMotionControl;
 
 auto gear_callback(GearInterruptHandlers& interrupts) -> void;
