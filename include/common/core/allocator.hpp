@@ -8,21 +8,7 @@
  * A generic pool allocator class that can be used to statically allocate memory
  * for typically dynamic objects (such as maps).
  *
- * Example Use-Case:
- *
- *
  */
-
-template <typename Element>
-struct AllocatorElement {
-    // The address of element member must be the same as the address of an
-    // AllocatorElement.
-    // Thus, element must be first member of this struct. And there can be no
-    // member functions and no private variables.
-    // See https://en.cppreference.com/w/cpp/types/is_standard_layout
-    Element element{};
-    bool used = false;
-};
 
 // should have type of object and max number of.
 // should have backing be an array and/or pointer to array. Do not use malloc!
@@ -47,28 +33,71 @@ class PoolAllocator {
     PoolAllocator(PoolAllocator&&) = delete;
     ~PoolAllocator() = default;
 
-    void deallocate(pointer loc, size_t) {
+    void deallocate(pointer loc, size_t num_blocks) {
         // Find index into backing array using the fact that loc is the first
         // item in the AllocatorElement struct and so has the same address.
-        auto index = (reinterpret_cast<AllocatorElement<Element>*>(loc) -
-                      backing.begin()) /
-                     sizeof(AllocatorElement<Element>);
-        LOG("Deallocating %d", index);
-
-        if (index < MaxElements) {
-            backing[index].used = false;
-        }
+        if (loc < backing.begin()) return;
+        if ((loc - backing.begin()) % sizeof(*loc) != 0) return;
+//        auto index = (reinterpret_cast<AllocatorElement<Element>*>(loc) -
+//                      backing.begin()) /
+//                     sizeof(AllocatorElement<Element>);
+//        LOG("Deallocating %d", index);
+//
+//        if (index < MaxElements) {
+//            backing[index].used = false;
+//        }
+//        auto starting_loc = &backing_flag[loc - backing.begin()];
+//        std::fill(starting_loc, starting_loc + num_blocks, false);
+        auto index = (loc - backing.begin()) / num_blocks;
+        backing_flag[index] = false;
+        LOG("Calling contiguous block deallocate and index starting %d", index);
+        largest_contiguous_block();
     }
 
-    pointer allocate(size_t, const void* = 0) {
-        auto iter = std::find_if_not(backing.begin(), backing.end(),
-                                     [](auto& i) { return i.used; });
-        LOG("Returned %d", iter != std::end(backing));
-        if (iter != std::end(backing)) {
-            iter->used = true;
-            return &iter->element;
+    pointer allocate(size_t num_blocks, const void* = 0) {
+        if (max_size() < num_blocks) {
+            // not sure if we need this
+            throw std::bad_alloc();
+        }
+
+        if (current_available) {
+            std::fill(current_available, current_available + num_blocks, true);
+            auto pointer_alloc = &backing[current_available - backing_flag.begin()];
+//            current_available += num_blocks;
+            LOG("Calling contiguous allocate");
+            largest_contiguous_block();
+            return pointer_alloc;
         }
         throw std::bad_alloc();
+    }
+
+    void largest_contiguous_block() {
+        // find next true from current available
+        // if current available goes to end, do a reverse search.
+        // TODO Can we make this slightly better than O(n)
+        auto running_max_length = 0;
+        auto max_length = 0;
+        for (flag_pointer pt_loc = backing_flag.begin(); pt_loc < backing_flag.end(); pt_loc++) {
+            if (*pt_loc == false) {
+                if (max_length == 0 && pt_loc != current_available) {
+                    current_available = pt_loc;
+                }
+                max_length++;
+            } else if (*pt_loc == true) {
+                max_length = 0;
+            }
+            running_max_length = std::max(max_length, running_max_length);
+        }
+
+        max_available_blocks = running_max_length;
+        if (max_available_blocks == 0) {
+            current_available = nullptr;
+        }
+
+    }
+
+    size_type max_size() {
+        return max_available_blocks;
     }
 
     template <class U>
@@ -77,8 +106,11 @@ class PoolAllocator {
     };
 
   private:
-    // Use a struct allocator element and then can return the exact address
-    // to the element!
-    using MemoryType = std::array<AllocatorElement<Element>, MaxElements>;
+    using MemoryType = std::array<Element, MaxElements>;
+    using FlagMemoryType = std::array<bool, MaxElements>;
+    using flag_pointer = bool*;
     MemoryType backing{};
+    FlagMemoryType backing_flag{};
+    std::size_t max_available_blocks = MaxElements;
+    flag_pointer current_available = backing_flag.begin();
 };

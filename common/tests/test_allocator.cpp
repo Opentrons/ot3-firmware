@@ -10,12 +10,12 @@ TEST_CASE("Allocator reuses address") {
     auto subject = PoolAllocator<int, 2>{};
 
     GIVEN("a call allocate.") {
-        auto first = subject.allocate(sizeof(int));
+        auto first = subject.allocate(1);
 
         WHEN("allocated pointer is deallocated.") {
-            subject.deallocate(first, sizeof(int));
+            subject.deallocate(first, 1);
             THEN("the slot is reused") {
-                auto second = subject.allocate(sizeof(int));
+                auto second = subject.allocate(1);
                 REQUIRE(first == second);
             }
         }
@@ -29,18 +29,18 @@ TEST_CASE("Deallocate using invalid address") {
         int i = 0;
 
         WHEN("deallocating a bad pointer.") {
-            subject.deallocate(&i, sizeof(int));
+            subject.deallocate(&i, 1);
             THEN("nothing bad happens") {}
         }
     }
 
     GIVEN("a call allocate.") {
-        auto first = subject.allocate(sizeof(int));
+        auto first = subject.allocate(1);
 
         WHEN("deallocating a bad address and allocating another element") {
             int i = 0;
-            subject.deallocate(&i, sizeof(i));
-            auto second = subject.allocate(sizeof(int));
+            subject.deallocate(&i, 1);
+            auto second = subject.allocate(1);
 
             THEN("the allocated elements have different addresses.") {
                 REQUIRE(first != second);
@@ -76,6 +76,20 @@ TEST_CASE("Ordered Map Object") {
 TEST_CASE("List Object") {
     auto constexpr max_entries = 2;
     std::list<int, PoolAllocator<int, max_entries>> subject;
+    GIVEN("a vector with max capacity") {
+        subject.insert(subject.begin(), 1);
+        subject.insert(subject.begin(), 2);
+        THEN("adding another element will raise bad_alloc") {
+            REQUIRE_THROWS_AS(subject.insert(subject.begin(), 3),
+                              std::bad_alloc);
+        }
+    }
+}
+
+
+TEST_CASE("Vector Object") {
+    auto constexpr max_entries = 2;
+    std::vector<int, PoolAllocator<int, max_entries>> subject;
     GIVEN("a vector with max capacity") {
         subject.insert(subject.begin(), 1);
         subject.insert(subject.begin(), 2);
