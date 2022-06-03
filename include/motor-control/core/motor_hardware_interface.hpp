@@ -7,10 +7,10 @@ namespace motor_hardware {
 class MotorHardwareIface {
   public:
     MotorHardwareIface() = default;
-    MotorHardwareIface(const MotorHardwareIface&) = delete;
+    MotorHardwareIface(const MotorHardwareIface&) = default;
     MotorHardwareIface(MotorHardwareIface&&) = default;
     auto operator=(MotorHardwareIface&&) -> MotorHardwareIface& = default;
-    auto operator=(const MotorHardwareIface&) -> MotorHardwareIface& = delete;
+    auto operator=(const MotorHardwareIface&) -> MotorHardwareIface& = default;
     virtual ~MotorHardwareIface() = default;
     virtual void positive_direction() = 0;
     virtual void negative_direction() = 0;
