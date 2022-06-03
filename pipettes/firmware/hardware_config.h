@@ -10,7 +10,6 @@ typedef struct {
 typedef enum {
     pipette_hardware_device_LED_drive,
     pipette_hardware_device_sync_in,
-    pipette_hardware_device_sync_out,
     pipette_hardware_device_data_ready,
 }PipetteHardwareDevice;
 
