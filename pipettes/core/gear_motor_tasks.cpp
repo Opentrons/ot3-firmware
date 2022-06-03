@@ -2,39 +2,97 @@
 
 #include "common/core/freertos_task.hpp"
 
-static auto tasks = gear_motor_tasks::Tasks{};
-static auto queue_client = gear_motor_tasks::QueueClient{};
+// using namespace pipettes::tasks;
 
-static auto mc_task_builder =
-    freertos_task::TaskStarter<512,
-                               motion_controller_task::MotionControllerTask>{};
-static auto tmc2130_driver_task_builder =
+static auto left_gear_tasks = gear_motor_tasks::Tasks{};
+static auto left_queue_client = gear_motor_tasks::QueueClient{};
+
+static auto right_gear_tasks = gear_motor_tasks::Tasks{};
+static auto right_queue_client = gear_motor_tasks::QueueClient{};
+
+// left gear motor tasks
+static auto mc_task_builder_left = freertos_task::TaskStarter<
+    512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
+static auto tmc2130_driver_task_builder_left =
     freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
+
+static auto move_group_task_builder_left = freertos_task::TaskStarter<
+    512, pipettes::tasks::move_group_task::MoveGroupTask>{};
+static auto move_status_task_builder_left = freertos_task::TaskStarter<
+    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+
+// right gear motor tasks
+static auto mc_task_builder_right = freertos_task::TaskStarter<
+    512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
+static auto tmc2130_driver_task_builder_right =
+    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
+
+static auto move_group_task_builder_right = freertos_task::TaskStarter<
+    512, pipettes::tasks::move_group_task::MoveGroupTask>{};
+static auto move_status_task_builder_right = freertos_task::TaskStarter<
+    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
 
 void gear_motor_tasks::start_tasks(
     gear_motor_tasks::CanWriterTask& can_writer,
-    motion_controller::MotionController<lms::LeadScrewConfig>&
-        motion_controller,
+    interfaces::gear_motor::GearMotionControl& motion_controllers,
     gear_motor_tasks::SPIWriterClient& spi_writer,
-    tmc2130::configs::TMC2130DriverConfig& gear_driver_configs,
+    motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
     can_ids::NodeId id) {
-    queue_client.set_node_id(id);
+    left_queue_client.set_node_id(id);
+    right_queue_client.set_node_id(id);
 
-    auto& queues = gear_motor_tasks::get_queues();
-    auto& tasks = gear_motor_tasks::get_tasks();
+    auto& right_queues = gear_motor_tasks::get_right_gear_queues();
+    auto& left_queues = gear_motor_tasks::get_left_gear_queues();
+    auto& left_tasks = gear_motor_tasks::get_left_gear_tasks();
+    auto& right_tasks = gear_motor_tasks::get_right_gear_tasks();
 
-    // Gear Motor Tasks
-    auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues);
-    auto& tmc2130_driver = tmc2130_driver_task_builder.start(
-        5, "tmc2130 driver", gear_driver_configs, queues, spi_writer);
+    // Left Gear Motor Tasks
+    auto& motion_left = mc_task_builder_left.start(
+        5, "motion controller", motion_controllers.left, left_queues);
+    auto& tmc2130_driver_left = tmc2130_driver_task_builder_left.start(
+        5, "tmc2130 driver", gear_driver_configs.left_gear_motor, left_queues,
+        spi_writer);
+    auto& move_group_left = move_group_task_builder_left.start(
+        5, "move group", left_queues, left_queues);
+    auto& move_status_reporter_left = move_status_task_builder_left.start(
+        5, "move status", left_queues,
+        motion_controllers.left.get_mechanical_config());
 
-    tasks.driver = &tmc2130_driver;
-    tasks.motion_controller = &motion;
+    left_tasks.driver = &tmc2130_driver_left;
+    left_tasks.motion_controller = &motion_left;
+    left_tasks.move_group = &move_group_left;
+    left_tasks.move_status_reporter = &move_status_reporter_left;
 
-    queues.set_queue(&can_writer.get_queue());
-    queues.driver_queue = &tmc2130_driver.get_queue();
-    queues.motion_queue = &motion.get_queue();
+    left_queues.set_queue(&can_writer.get_queue());
+    left_queues.driver_queue = &tmc2130_driver_left.get_queue();
+    left_queues.motion_queue = &motion_left.get_queue();
+    left_queues.move_group_queue = &move_group_left.get_queue();
+    left_queues.move_status_report_queue =
+        &move_status_reporter_left.get_queue();
+
+    // Right Gear Motor Tasks
+    auto& motion_right = mc_task_builder_right.start(
+        5, "motion controller", motion_controllers.right, right_queues);
+    auto& tmc2130_driver_right = tmc2130_driver_task_builder_right.start(
+        5, "tmc2130 driver", gear_driver_configs.right_gear_motor, right_queues,
+        spi_writer);
+    auto& move_group_right = move_group_task_builder_right.start(
+        5, "move group", right_queues, right_queues);
+    auto& move_status_reporter_right = move_status_task_builder_right.start(
+        5, "move status", right_queues,
+        motion_controllers.right.get_mechanical_config());
+
+    right_tasks.driver = &tmc2130_driver_left;
+    right_tasks.motion_controller = &motion_left;
+    right_tasks.move_group = &move_group_left;
+    right_tasks.move_status_reporter = &move_status_reporter_left;
+
+    right_queues.set_queue(&can_writer.get_queue());
+    right_queues.driver_queue = &tmc2130_driver_right.get_queue();
+    right_queues.motion_queue = &motion_right.get_queue();
+    right_queues.move_group_queue = &move_group_right.get_queue();
+    right_queues.move_status_report_queue =
+        &move_status_reporter_right.get_queue();
 }
 
 gear_motor_tasks::QueueClient::QueueClient()
@@ -43,7 +101,7 @@ gear_motor_tasks::QueueClient::QueueClient()
     : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
 
 void gear_motor_tasks::QueueClient::send_motion_controller_queue(
-    const motion_controller_task::TaskMessage& m) {
+    const pipettes::tasks::motion_controller_task::TaskMessage& m) {
     motion_queue->try_write(m);
 }
 
@@ -52,6 +110,28 @@ void gear_motor_tasks::QueueClient::send_motor_driver_queue(
     driver_queue->try_write(m);
 }
 
-auto gear_motor_tasks::get_tasks() -> Tasks& { return tasks; }
+void gear_motor_tasks::QueueClient::send_move_group_queue(
+    const pipettes::tasks::move_group_task::TaskMessage& m) {
+    move_group_queue->try_write(m);
+}
 
-auto gear_motor_tasks::get_queues() -> QueueClient& { return queue_client; }
+void gear_motor_tasks::QueueClient::send_move_status_reporter_queue(
+    const pipettes::tasks::gear_move_status::TaskMessage& m) {
+    static_cast<void>(move_status_report_queue->try_write_isr(m));
+}
+
+auto gear_motor_tasks::get_right_gear_tasks() -> Tasks& {
+    return right_gear_tasks;
+}
+
+auto gear_motor_tasks::get_right_gear_queues() -> QueueClient& {
+    return right_queue_client;
+}
+
+auto gear_motor_tasks::get_left_gear_tasks() -> Tasks& {
+    return left_gear_tasks;
+}
+
+auto gear_motor_tasks::get_left_gear_queues() -> QueueClient& {
+    return left_queue_client;
+}

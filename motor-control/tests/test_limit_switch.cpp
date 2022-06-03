@@ -14,7 +14,7 @@ struct HandlerContainer {
     test_mocks::MockMessageQueue<motor_messages::Move> queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
-                          test_mocks::MockMoveStatusReporterClient>
+                          test_mocks::MockMoveStatusReporterClient, Move>
         handler{queue, reporter, hw};
 };
 

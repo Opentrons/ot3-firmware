@@ -12,8 +12,9 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 static auto& linear_motor_queue_client = linear_motor_tasks::get_queues();
 static auto& linear_motor_driver_queue_client =
     linear_motor_tasks::tmc2160_driver::get_queues();
-// TODO add message handler for gear queue client.
-static auto& gear_queue_client = gear_motor_tasks::get_queues();
+static auto& gear_left_queue_client = gear_motor_tasks::get_left_gear_queues();
+static auto& gear_right_queue_client =
+    gear_motor_tasks::get_right_gear_queues();
 static auto& central_queue_client = central_tasks::get_queues();
 
 /** The parsed message handler */
@@ -24,6 +25,21 @@ static auto can_motion_handler =
 
 static auto can_move_group_handler =
     move_group_handler::MoveGroupHandler(linear_motor_queue_client);
+
+static auto gear_motor_handler_left =
+    motor_message_handler::MotorHandler{gear_left_queue_client};
+static auto gear_motor_handler_right =
+    motor_message_handler::MotorHandler{gear_right_queue_client};
+
+static auto gear_motion_handler_left =
+    gear_motion_handler::GearMotorMotionHandler{gear_left_queue_client};
+static auto gear_motion_handler_right =
+    gear_motion_handler::GearMotorMotionHandler{gear_right_queue_client};
+
+static auto gear_move_group_handler_left =
+    gear_move_group_handler::GearMoveGroupHandler(gear_left_queue_client);
+static auto gear_move_group_handler_right =
+    gear_move_group_handler::GearMoveGroupHandler(gear_right_queue_client);
 
 static auto eeprom_handler = eeprom::message_handler::EEPromHandler{
     sensor_queue_client, sensor_queue_client};
@@ -48,6 +64,24 @@ static auto motion_controller_dispatch_target =
 static auto motion_group_dispatch_target =
     dispatch_builder::MoveGroupDispatchTarget{can_move_group_handler};
 
+static auto gear_motor_dispatch_target_left =
+    dispatch_builder::GearMotorDispatchTarget{gear_motor_handler_left};
+static auto gear_motor_dispatch_target_right =
+    dispatch_builder::GearMotorDispatchTarget{gear_motor_handler_right};
+
+static auto gear_motion_controller_dispatch_target_left =
+    dispatch_builder::GearMotionControllerDispatchTarget{
+        gear_motion_handler_left};
+static auto gear_motion_controller_dispatch_target_right =
+    dispatch_builder::GearMotionControllerDispatchTarget{
+        gear_motion_handler_right};
+
+static auto gear_motion_group_dispatch_target_left =
+    dispatch_builder::GearMoveGroupDispatchTarget{gear_move_group_handler_left};
+static auto gear_motion_group_dispatch_target_right =
+    dispatch_builder::GearMoveGroupDispatchTarget{
+        gear_move_group_handler_right};
+
 static auto eeprom_dispatch_target =
     dispatch_builder::EEPromDispatchTarget{eeprom_handler};
 
@@ -60,13 +94,16 @@ static auto sensor_dispatch_target =
 static auto pipette_info_target =
     dispatch_builder::PipetteInfoDispatchTarget{pipette_info_handler};
 
-// TODO add dispatch target handler for gear queue client.
 /** Dispatcher to the various handlers */
 static auto dispatcher = can_dispatch::Dispatcher(
     [](auto) -> bool { return true; }, motor_dispatch_target,
     motion_group_dispatch_target, motion_controller_dispatch_target,
     sensor_dispatch_target, eeprom_dispatch_target, pipette_info_target,
-    system_dispatch_target);
+    system_dispatch_target, gear_motor_dispatch_target_left,
+    gear_motion_controller_dispatch_target_left,
+    gear_motion_group_dispatch_target_left, gear_motor_dispatch_target_right,
+    gear_motion_controller_dispatch_target_right,
+    gear_motion_group_dispatch_target_right);
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     message_writer_task::TaskMessage>{};
