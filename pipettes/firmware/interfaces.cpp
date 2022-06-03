@@ -290,3 +290,137 @@ auto interfaces::motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     return interfaces::HighThroughputMotorConfigurations{
         .hardware_pins = pins, .driver_configs = configs};
 }
+
+template <>
+auto interfaces::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
+    -> interfaces::LowThroughputSensorHardware {
+    auto pins = interfaces::LowThroughputSensorHardware{
+        .primary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_in =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_5,
+                 .active_setting = GPIO_PIN_RESET},
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_4,
+                 .active_setting = GPIO_PIN_RESET},
+            .data_ready =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOC,
+                 .pin = GPIO_PIN_9,
+                 .active_setting = GPIO_PIN_RESET},
+        }};
+    return pins;
+}
+
+// TODO (06/02/22 CM): change up the hardware grouping to accommodate both
+//  pressure sensors on the EIGHT CHANNEL pipette
+template <>
+auto interfaces::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
+    -> interfaces::LowThroughputSensorHardware {
+    auto pins = interfaces::LowThroughputSensorHardware{
+        .primary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_in =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_5,
+                 .active_setting = GPIO_PIN_RESET},
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_4,
+                 .active_setting = GPIO_PIN_RESET},
+            .data_ready =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOC,
+                 .pin = GPIO_PIN_9,
+                 .active_setting = GPIO_PIN_RESET},
+        }};
+    return pins;
+}
+
+template <>
+auto interfaces::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
+    -> interfaces::HighThroughputSensorHardware {
+    auto pins = interfaces::HighThroughputSensorHardware{
+        .primary =
+            sensors::hardware::SensorHardwareConfiguration{
+                .sync_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_4,
+                     .active_setting = GPIO_PIN_RESET},
+                .sync_out =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_5,
+                     .active_setting = GPIO_PIN_RESET},
+                .data_ready =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_15,
+                     .active_setting = GPIO_PIN_RESET},
+            },
+        .secondary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_in =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_4,
+                 .active_setting = GPIO_PIN_RESET},
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_5,
+                 .active_setting = GPIO_PIN_RESET},
+            .data_ready =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOA,
+                 .pin = GPIO_PIN_8,
+                 .active_setting = GPIO_PIN_RESET},
+        }};
+    return pins;
+}
+
+template <>
+auto interfaces::sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
+    -> interfaces::HighThroughputSensorHardware {
+    auto pins = interfaces::HighThroughputSensorHardware{
+        .primary =
+            sensors::hardware::SensorHardwareConfiguration{
+                .sync_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_4,
+                     .active_setting = GPIO_PIN_RESET},
+                .sync_out =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_5,
+                     .active_setting = GPIO_PIN_RESET},
+                .data_ready =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_15,
+                     .active_setting = GPIO_PIN_RESET},
+            },
+        .secondary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_in =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_4,
+                 .active_setting = GPIO_PIN_RESET},
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_5,
+                 .active_setting = GPIO_PIN_RESET},
+            .data_ready =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOA,
+                 .pin = GPIO_PIN_8,
+                 .active_setting = GPIO_PIN_RESET},
+        }};
+    return pins;
+}
