@@ -18,12 +18,15 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_5;
             return pinout;
+        case pipette_hardware_device_data_ready:
+            pinout.port = GPIOC;
+            pinout.pin = GPIO_PIN_15;
+            return pinout;
         default:
             pinout.port = 0;
             pinout.pin = 0;
             return pinout;
     }
-
 }
 
 static uint16_t get_spi_pins_ht(GPIO_TypeDef* for_handle) {
@@ -61,12 +64,17 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_4;
             return pinout;
+        case pipette_hardware_device_data_ready:
+            pinout.port = GPIOC;
+            pinout.pin = GPIO_PIN_9;
+            return pinout;
         default:
             pinout.port = 0;
             pinout.pin = 0;
             return pinout;
     }
 }
+
 
 static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
     /*
