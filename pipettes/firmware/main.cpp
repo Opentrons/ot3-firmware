@@ -95,7 +95,8 @@ extern "C" void gear_callback_wrapper() {
     interfaces::gear_motor::gear_callback(gear_interrupts);
 }
 
-static auto pins_for_sensor = interfaces::sensor_configurations<PIPETTE_TYPE>();
+static auto pins_for_sensor =
+    motor_configs::sensor_configurations<PIPETTE_TYPE>();
 
 auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);

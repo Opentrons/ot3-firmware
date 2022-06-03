@@ -108,7 +108,7 @@ auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
 
 template <>
 auto motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
--> HighThroughputMotorConfigurations;
+    -> HighThroughputMotorConfigurations;
 
 template <PipetteType P>
 auto sensor_configurations()
@@ -145,7 +145,5 @@ auto sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
 template <>
 auto sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputSensorHardware;
-
-};
 
 }  // namespace motor_configs
