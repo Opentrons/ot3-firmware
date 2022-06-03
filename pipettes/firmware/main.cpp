@@ -18,29 +18,24 @@
 
 // todo check if needed
 #include "i2c/firmware/i2c_comms.hpp"
-#include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/central_tasks.hpp"
-#include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
-#include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
+#include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
+#include "pipettes/firmware/interfaces.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "motor_encoder_hardware.h"
+//#include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
-#include "motor_timer_hardware.h"
+//#include "motor_timer_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
@@ -54,9 +49,6 @@ static auto can_bus_1 = can::hal::bus::HalCanBus(
                     .port = GPIOA,
                     .pin = GPIO_PIN_8,
                     .active_setting = GPIO_PIN_RESET});
-
-static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
-    motor_queue("Motor Queue");
 
 spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
 
@@ -78,44 +70,36 @@ class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
 };
 static auto eeprom_hardware_iface = EEPromHardwareIface();
 
-static auto motor_config = interfaces::motor_configurations<PIPETTE_TYPE>();
+static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
-static pipette_motor_hardware::MotorHardware plunger_hw(
-    motor_config.hardware_pins.linear_motor, &htim7, &htim2);
+static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
 
-static motor_handler::MotorInterruptHandler plunger_interrupt(
-    motor_queue, linear_motor_tasks::get_queues(), plunger_hw);
+static auto linear_motor_hardware =
+    interfaces::linear_motor::get_motor_hardware(motor_config.hardware_pins);
+static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
+    linear_motor_hardware, interrupt_queues);
+static auto linear_motion_control =
+    interfaces::linear_motor::get_motion_control(linear_motor_hardware,
+                                                 interrupt_queues);
 
-/**
- * TODO: This motor class is only used in motor handler and should be
- * instantiated inside of the MotorHandler class. However, some refactors
- * should be made to avoid a pretty gross template signature.
- */
-
-static motor_class::Motor pipette_motor{
-    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE), plunger_hw,
-    motor_messages::MotionConstraints{.min_velocity = 1,
-                                      .max_velocity = 2,
-                                      .min_acceleration = 1,
-                                      .max_acceleration = 2},
-    motor_queue};
+static auto gear_hardware =
+    interfaces::gear_motor::get_motor_hardware(motor_config.hardware_pins);
+static auto gear_interrupts =
+    interfaces::gear_motor::get_interrupts(gear_hardware, interrupt_queues);
+static auto gear_motion_control =
+    interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 
 extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
-extern "C" void gear_callback() {
-    // TODO implement the motor handler for the 96 channel
+extern "C" void gear_callback_wrapper() {
+    interfaces::gear_motor::gear_callback(gear_interrupts);
 }
 
-static sensors::hardware::SensorHardware pins_for_sensor_lt(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOB,
-    .pin = GPIO_PIN_4,
-    .active_setting = GPIO_PIN_RESET});
-static sensors::hardware::SensorHardware pins_for_sensor_96(gpio::PinConfig{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOB,
-    .pin = GPIO_PIN_5,
-    .active_setting = GPIO_PIN_RESET});
+static auto pins_for_sensor =
+    motor_configs::sensor_configurations<PIPETTE_TYPE>();
+
+auto sensor_hardware =
+    sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
@@ -137,34 +121,36 @@ static constexpr auto can_bit_timings =
 
 auto initialize_motor_tasks(
     can::ids::NodeId id,
-    interfaces::HighThroughputPipetteDriverHardware& conf) {
+    motor_configs::HighThroughputPipetteDriverHardware& conf,
+    interfaces::gear_motor::GearMotionControl& gear_motion) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              pins_for_sensor_96, id, eeprom_hardware_iface);
+                              sensor_hardware, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
-    initialize_gear_timer(gear_callback);
+    initialize_gear_timer(gear_callback_wrapper);
     linear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
-    // todo update with correct motion controller.
-    gear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
-        peripheral_tasks::get_spi_client(), conf.right_gear_motor, id);
+    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  gear_motion,
+                                  peripheral_tasks::get_spi_client(), conf, id);
 }
 auto initialize_motor_tasks(
-    can::ids::NodeId id, interfaces::LowThroughputPipetteDriverHardware& conf) {
+    can::ids::NodeId id,
+    motor_configs::LowThroughputPipetteDriverHardware& conf,
+    interfaces::gear_motor::UnavailableGearMotionControl&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              pins_for_sensor_lt, id, eeprom_hardware_iface);
+                              sensor_hardware, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     linear_motor_tasks::start_tasks(
-        *central_tasks::get_tasks().can_writer, pipette_motor.motion_controller,
+        *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 }
 
@@ -191,7 +177,8 @@ auto main() -> int {
 
     central_tasks::start_tasks(can_bus_1, id);
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms1, spi_comms);
-    initialize_motor_tasks(id, motor_config.driver_configs);
+    initialize_motor_tasks(id, motor_config.driver_configs,
+                           gear_motion_control);
 
     iWatchdog.start(6);
 

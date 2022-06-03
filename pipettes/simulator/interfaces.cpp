@@ -1,132 +1,169 @@
-#include "pipettes/core/interfaces.hpp"
+#include "pipettes/simulator/interfaces.hpp"
 
-int dummy_gpio = 0x1000;
-#define GPIO_C_DEF ((void *)(&dummy_gpio))
+#include "pipettes/core/configs.hpp"
 
-auto interfaces::driver_config_by_axis(TMC2160PipetteAxis which)
-    -> tmc2160::configs::TMC2160DriverConfig {
-    switch (which) {
-        case TMC2160PipetteAxis::linear_motor:
-        default:
-            return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1},
-                              .ihold_irun = {.hold_current = 0x2,
-                                             .run_current = 0x10,
-                                             .hold_current_delay = 0x7},
-                              .tpowerdown = {},
-                              .tcoolthrs = {.threshold = 0},
-                              .thigh = {.threshold = 0xFFFFF},
-                              .chopconf = {.toff = 0x5,
-                                           .hstrt = 0x5,
-                                           .hend = 0x3,
-                                           .tbl = 0x2,
-                                           .mres = 0x3},
-                              .coolconf = {.sgt = 0x6},
-                              .glob_scale = {.global_scaler = 0x70}},
-                .current_config =
-                    {
-                        .r_sense = 0.1,
-                        .v_sf = 0.325,
-                    },
-                .chip_select = {
-                    .cs_pin = 64,
-                    .GPIO_handle = GPIO_C_DEF,
-                }};
-    }
-}
+using namespace interfaces;
 
-auto interfaces::driver_config_by_axis(TMC2130PipetteAxis which)
-    -> tmc2130::configs::TMC2130DriverConfig {
-    tmc2130::configs::TMC2130DriverConfig tmc2130_conf{
-        .registers = {.gconfig = {.en_pwm_mode = 1},
-                      .ihold_irun = {.hold_current = 0x2,
-                                     .run_current = 0x10,
-                                     .hold_current_delay = 0x7},
-                      .tpowerdown = {},
-                      .tcoolthrs = {.threshold = 0},
-                      .thigh = {.threshold = 0xFFFFF},
-                      .chopconf = {.toff = 0x5,
-                                   .hstrt = 0x5,
-                                   .hend = 0x3,
-                                   .tbl = 0x2,
-                                   .mres = 0x3},
-                      .coolconf = {.sgt = 0x6}},
-        .current_config =
-            {
-                .r_sense = 0.1,
-                .v_sf = 0.325,
-            },
-        .chip_select = {
-            .cs_pin = 512,
-            .GPIO_handle = GPIO_C_DEF,
-        }};
-    switch (which) {
-        case TMC2130PipetteAxis::left_gear_motor:
-            return tmc2130_conf;
-        case TMC2130PipetteAxis::right_gear_motor:
-            tmc2130_conf.chip_select = {
-                .cs_pin = 64,
-                .GPIO_handle = GPIO_C_DEF,
-            };
-            return tmc2130_conf;
-        case TMC2130PipetteAxis::linear_motor:
-        default:
-            tmc2130_conf.chip_select = {
-                .cs_pin = 64,
-                .GPIO_handle = GPIO_C_DEF,
-            };
-            return tmc2130_conf;
-    }
+template <>
+auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
+    -> LowThroughputInterruptQueues {
+    return LowThroughputInterruptQueues{.plunger_queue =
+                                            MoveQueue{"Linear Motor Queue"}};
 }
 
 template <>
-auto interfaces::motor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> interfaces::LowThroughputMotorConfigurations {
-    auto configs = interfaces::LowThroughputPipetteDriverHardware{
-        .linear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
-    auto pins = interfaces::LowThroughputPipetteMotorHardware{};
-    return interfaces::LowThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
+auto interfaces::get_interrupt_queues<PipetteType::EIGHT_CHANNEL>()
+    -> LowThroughputInterruptQueues {
+    return LowThroughputInterruptQueues{.plunger_queue =
+                                            MoveQueue{"Linear Motor Queue"}};
 }
 
 template <>
-auto interfaces::motor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> interfaces::LowThroughputMotorConfigurations {
-    auto configs = interfaces::LowThroughputPipetteDriverHardware{
-        .linear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::linear_motor)};
-    auto pins = interfaces::LowThroughputPipetteMotorHardware{};
-    return interfaces::LowThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
+auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
+    -> HighThroughputInterruptQueues {
+    return HighThroughputInterruptQueues{
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}
+
+    };
 }
 
 template <>
-auto interfaces::motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> interfaces::HighThroughputMotorConfigurations {
-    auto configs = interfaces::HighThroughputPipetteDriverHardware{
-        .right_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
-        .left_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
-        .linear_motor =
-            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
-    auto pins = interfaces::HighThroughputPipetteMotorHardware{};
-    return interfaces::HighThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
+auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
+    -> HighThroughputInterruptQueues {
+    return HighThroughputInterruptQueues{
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
 }
 
-template <>
-auto interfaces::motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
-    -> interfaces::HighThroughputMotorConfigurations {
-    auto configs = interfaces::HighThroughputPipetteDriverHardware{
-        .right_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::right_gear_motor),
-        .left_gear_motor =
-            driver_config_by_axis(TMC2130PipetteAxis::left_gear_motor),
-        .linear_motor =
-            driver_config_by_axis(TMC2160PipetteAxis::linear_motor)};
-    auto pins = interfaces::HighThroughputPipetteMotorHardware{};
-    return interfaces::HighThroughputMotorConfigurations{
-        .hardware_pins = pins, .driver_configs = configs};
+auto linear_motor::get_interrupt(
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue)
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
+    return motor_handler::MotorInterruptHandler(
+        queue, linear_motor_tasks::get_queues(), hw);
+}
+
+auto linear_motor::get_interrupt_driver(
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
+    -> motor_interrupt_driver::MotorInterruptDriver<
+        linear_motor_tasks::QueueClient, motor_messages::Move,
+        sim_motor_hardware_iface::SimMotorHardwareIface> {
+    return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw);
+}
+
+auto linear_motor::get_motor_hardware()
+    -> sim_motor_hardware_iface::SimMotorHardwareIface {
+    return sim_motor_hardware_iface::SimMotorHardwareIface{};
+}
+
+auto linear_motor::get_motion_control(
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
+    LowThroughputInterruptQueues& queues) -> MotionControlType {
+    return motion_controller::MotionController{
+        configs::linear_motion_sys_config_by_axis(PipetteType::SINGLE_CHANNEL),
+        hw,
+        motor_messages::MotionConstraints{.min_velocity = 1,
+                                          .max_velocity = 2,
+                                          .min_acceleration = 1,
+                                          .max_acceleration = 2},
+        queues.plunger_queue};
+}
+
+auto linear_motor::get_motion_control(
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw,
+    HighThroughputInterruptQueues& queues) -> MotionControlType {
+    return motion_controller::MotionController{
+        configs::linear_motion_sys_config_by_axis(
+            PipetteType::NINETY_SIX_CHANNEL),
+        hw,
+        motor_messages::MotionConstraints{.min_velocity = 1,
+                                          .max_velocity = 2,
+                                          .min_acceleration = 1,
+                                          .max_acceleration = 2},
+        queues.plunger_queue};
+}
+
+auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
+                                HighThroughputInterruptQueues& queues)
+    -> gear_motor::GearInterruptHandlers {
+    return gear_motor::GearInterruptHandlers{
+        .left = motor_handler::MotorInterruptHandler(
+            queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
+            hw.left),
+        .right = motor_handler::MotorInterruptHandler(
+            queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
+            hw.right),
+    };
+}
+
+auto gear_motor::get_interrupt_drivers(
+    gear_motor::GearInterruptHandlers& interrupts,
+    HighThroughputInterruptQueues& queues, GearHardware& hw)
+    -> gear_motor::GearInterruptDrivers {
+    return gear_motor::GearInterruptDrivers{
+        .left = motor_interrupt_driver::MotorInterruptDriver(
+            queues.left_motor_queue, interrupts.left, hw.left),
+        .right = motor_interrupt_driver::MotorInterruptDriver(
+            queues.left_motor_queue, interrupts.right, hw.right)};
+}
+
+auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,
+                                LowThroughputInterruptQueues&)
+    -> gear_motor::UnavailableGearInterrupts {
+    return gear_motor::UnavailableGearInterrupts{};
+}
+
+auto gear_motor::get_interrupt_drivers(gear_motor::UnavailableGearHardware&,
+                                       LowThroughputInterruptQueues&,
+                                       GearHardware&)
+    -> gear_motor::UnavailableGearInterrupts {
+    return gear_motor::UnavailableGearInterrupts{};
+}
+
+auto gear_motor::get_motor_hardware(
+    motor_configs::LowThroughputPipetteMotorHardware)
+    -> gear_motor::UnavailableGearHardware {
+    return gear_motor::UnavailableGearHardware{};
+}
+
+auto gear_motor::get_motor_hardware(
+    motor_configs::HighThroughputPipetteMotorHardware)
+    -> gear_motor::GearHardware {
+    return gear_motor::GearHardware{
+        .left = sim_motor_hardware_iface::SimGearMotorHardwareIface{},
+        .right = sim_motor_hardware_iface::SimGearMotorHardwareIface{}};
+}
+
+auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
+                                    HighThroughputInterruptQueues& queues)
+    -> gear_motor::GearMotionControl {
+    return gear_motor::GearMotionControl{
+        .left =
+            pipette_motion_controller::PipetteMotionController{
+                configs::linear_motion_sys_config_by_axis(
+                    PipetteType::NINETY_SIX_CHANNEL),
+                hw.left,
+                motor_messages::MotionConstraints{.min_velocity = 1,
+                                                  .max_velocity = 2,
+                                                  .min_acceleration = 1,
+                                                  .max_acceleration = 2},
+                queues.left_motor_queue},
+        .right = pipette_motion_controller::PipetteMotionController{
+            configs::linear_motion_sys_config_by_axis(
+                PipetteType::NINETY_SIX_CHANNEL),
+            hw.right,
+            motor_messages::MotionConstraints{.min_velocity = 1,
+                                              .max_velocity = 2,
+                                              .min_acceleration = 1,
+                                              .max_acceleration = 2},
+            queues.right_motor_queue}};
+}
+
+auto gear_motor::get_motion_control(gear_motor::UnavailableGearHardware&,
+                                    LowThroughputInterruptQueues&)
+    -> gear_motor::UnavailableGearMotionControl {
+    return gear_motor::UnavailableGearMotionControl{};
 }

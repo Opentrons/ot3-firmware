@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/types.hpp"
 
@@ -23,6 +24,25 @@ enum class MoveStopCondition : uint8_t {
     cap_sensor = 0x2
 };
 
+enum class AckMessageId : uint8_t {
+    complete_without_condition = 0x1,
+    stopped_by_condition = 0x2,
+    timeout = 0x3,
+    position_error = 0x4
+};
+
+struct Ack {
+    uint8_t group_id;
+    uint8_t seq_id;
+    uint32_t current_position_steps;
+    uint32_t encoder_position;
+    AckMessageId ack_id;
+};
+
+struct GearMotorAck : public Ack {
+    can::ids::PipetteTipActionType action;
+};
+
 struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     stepper_timer_ticks duration;  // in stepper timer ticks
     steps_per_tick velocity;
@@ -30,6 +50,26 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t group_id;
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
+
+    auto build_ack(uint32_t position, uint32_t pulses, AckMessageId _id)
+        -> Ack {
+        return Ack{
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .current_position_steps = position,
+            .encoder_position = pulses,
+            .ack_id = _id,
+        };
+    }
+};
+
+struct GearMotorMove : public Move {
+    can::ids::PipetteTipActionType action;
+
+    auto build_ack(uint32_t position, uint32_t pulses, AckMessageId _id)
+        -> GearMotorAck {
+        return GearMotorAck{group_id, seq_id, position, pulses, _id, action};
+    }
 };
 
 struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -46,21 +86,6 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 
 const uint8_t NO_GROUP = 0xff;
-
-enum class AckMessageId : uint8_t {
-    complete_without_condition = 0x1,
-    stopped_by_condition = 0x2,
-    timeout = 0x3,
-    position_error = 0x4
-};
-
-struct Ack {
-    uint8_t group_id;
-    uint8_t seq_id;
-    uint32_t current_position_steps;
-    uint32_t encoder_position;
-    AckMessageId ack_id;
-};
 
 constexpr const int RADIX = 31;
 

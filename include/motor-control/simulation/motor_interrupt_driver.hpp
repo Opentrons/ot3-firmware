@@ -9,31 +9,30 @@
 
 namespace motor_interrupt_driver {
 
-template <move_status_reporter_task::TaskClient StatusClient>
+template <class StatusClient, typename MotorMoveMessage, class MotorHardware>
 class MotorInterruptDriver {
+    using InterruptQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<MotorMoveMessage>;
+    using InterruptHandler = motor_handler::MotorInterruptHandler<
+        freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
+        MotorMoveMessage>;
+
   public:
-    MotorInterruptDriver(
-        freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>& q,
-        motor_handler::MotorInterruptHandler<
-            freertos_message_queue::FreeRTOSMessageQueue, StatusClient>& h,
-        sim_motor_hardware_iface::SimMotorHardwareIface& iface)
+    MotorInterruptDriver(InterruptQueue& q, InterruptHandler& h,
+                         MotorHardware& iface)
         : task_entry{q, h, iface}, task(task_entry) {
         task.start(5, "sim_motor_isr");
     }
 
   private:
     struct TaskEntry {
-        TaskEntry(
-            freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>&
-                q,
-            motor_handler::MotorInterruptHandler<
-                freertos_message_queue::FreeRTOSMessageQueue, StatusClient>& h,
-            sim_motor_hardware_iface::SimMotorHardwareIface& motor_iface)
+        TaskEntry(InterruptQueue& q, InterruptHandler& h,
+                  MotorHardware& motor_iface)
             : queue{q}, handler{h}, iface{motor_iface} {}
 
         void operator()() {
             while (true) {
-                auto move = motor_messages::Move{};
+                auto move = MotorMoveMessage{};
                 if (queue.peek(&move, queue.max_delay)) {
                     LOG("Enabling motor interrupt handler for group %d, seq "
                         "%d, duration %ld",
@@ -55,12 +54,9 @@ class MotorInterruptDriver {
                 }
             }
         }
-        freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>&
-            queue;
-        motor_handler::MotorInterruptHandler<
-            freertos_message_queue::FreeRTOSMessageQueue, StatusClient>&
-            handler;
-        sim_motor_hardware_iface::SimMotorHardwareIface& iface;
+        InterruptQueue& queue;
+        InterruptHandler& handler;
+        MotorHardware& iface;
     };
 
     TaskEntry task_entry;

@@ -31,7 +31,8 @@ void sensor_tasks::start_tasks(
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c1_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
-        5, "pressure sensor", i2c1_task_client, i2c1_poller_client, queues);
+        5, "pressure sensor", i2c1_task_client, i2c1_poller_client, queues,
+        sensor_hardware);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
         5, "capacitive sensor", i2c1_task_client, i2c1_poller_client,
         sensor_hardware, queues);

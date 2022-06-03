@@ -12,6 +12,8 @@
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_info.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
+#include "pipettes/core/tasks/message_handlers/motion.hpp"
+#include "pipettes/core/tasks/message_handlers/move_group.hpp"
 #include "sensors/core/message_handlers/sensors.hpp"
 
 namespace dispatch_builder {
@@ -30,25 +32,42 @@ using TMC2160MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 
+using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::MotorHandler<gear_motor_tasks::QueueClient>,
+    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::WriteMotorDriverRegister,
+    can::messages::WriteMotorCurrentRequest>;
+
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::move_group::MoveGroupHandler<
-        linear_motor_tasks::QueueClient>,
+    can::message_handlers::move_group::MoveGroupHandler<linear_motor_tasks::QueueClient>,
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest>;
 
+using GearMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    gear_move_group_handler::GearMoveGroupHandler<
+        gear_motor_tasks::QueueClient>,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::TipActionRequest>;
+
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::motion::MotionHandler<
-        linear_motor_tasks::QueueClient>,
+    can::message_handlers::motion::MotionHandler<linear_motor_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest>;
 
+using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
+    gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest>;
+
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::system::SystemMessageHandler<
-        central_tasks::QueueClient>,
+    can::message_handlers::system::SystemMessageHandler<central_tasks::QueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 
@@ -69,8 +88,5 @@ using EEPromDispatchTarget = can::dispatch::DispatchParseTarget<
     eeprom::message_handler::EEPromHandler<sensor_tasks::QueueClient,
                                            sensor_tasks::QueueClient>,
     can::messages::WriteToEEPromRequest, can::messages::ReadFromEEPromRequest>;
-
-// TODO update with the proper message handler for pipette pick up tip
-// motion handler.
 
 }  // namespace dispatch_builder

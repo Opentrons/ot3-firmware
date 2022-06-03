@@ -8,4 +8,7 @@ namespace configs {
 auto linear_motion_sys_config_by_axis(PipetteType which)
     -> lms::LinearMotionSystemConfig<lms::LeadScrewConfig>;
 
+auto gear_motion_sys_config()
+    -> lms::LinearMotionSystemConfig<lms::LeadScrewConfig>;
+
 }  // namespace configs

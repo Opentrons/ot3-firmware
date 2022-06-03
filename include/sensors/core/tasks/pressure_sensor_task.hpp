@@ -17,10 +17,11 @@ template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class PressureMessageHandler {
   public:
-    explicit PressureMessageHandler(I2CQueueWriter &i2c_writer,
-                                    I2CQueuePoller &i2c_poller,
-                                    CanClient &can_client, OwnQueue &own_queue)
-        : driver{i2c_writer, i2c_poller, can_client, own_queue} {}
+    explicit PressureMessageHandler(
+        I2CQueueWriter &i2c_writer, I2CQueuePoller &i2c_poller,
+        CanClient &can_client, OwnQueue &own_queue,
+        sensors::hardware::SensorHardwareBase &hardware)
+        : driver{i2c_writer, i2c_poller, can_client, own_queue, hardware} {}
     PressureMessageHandler(const PressureMessageHandler &) = delete;
     PressureMessageHandler(const PressureMessageHandler &&) = delete;
     auto operator=(const PressureMessageHandler &)
@@ -118,11 +119,12 @@ class PressureSensorTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
-                                 i2c::poller::Poller<QueueImpl> *poller,
-                                 CanClient *can_client) {
-        auto handler =
-            PressureMessageHandler{*writer, *poller, *can_client, get_queue()};
+    [[noreturn]] void operator()(
+        i2c::writer::Writer<QueueImpl> *writer,
+        i2c::poller::Poller<QueueImpl> *poller, CanClient *can_client,
+        sensors::hardware::SensorHardwareBase *hardware) {
+        auto handler = PressureMessageHandler{*writer, *poller, *can_client,
+                                              get_queue(), *hardware};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

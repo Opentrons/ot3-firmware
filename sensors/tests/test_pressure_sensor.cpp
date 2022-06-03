@@ -11,6 +11,7 @@
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
+#include "sensors/tests/mock_hardware.hpp"
 
 template <typename Message, typename Queue>
 requires std::constructible_from<i2c::poller::TaskMessage, Message>
@@ -35,6 +36,7 @@ SCENARIO("read pressure sensor values") {
         can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage> pressure_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
+    test_mocks::MockSensorHardware mock_hw{};
 
     i2c::writer::TaskMessage empty_msg{};
     i2c::poller::TaskMessage empty_poll_msg{};
@@ -47,7 +49,7 @@ SCENARIO("read pressure sensor values") {
     poller.set_queue(&i2c_poll_queue);
 
     auto sensor = sensors::tasks::PressureMessageHandler{
-        writer, poller, queue_client, response_queue};
+        writer, poller, queue_client, response_queue, mock_hw};
     constexpr uint8_t pressure_id = 0x4;
     constexpr uint8_t pressure_temperature_id = 0x5;
 

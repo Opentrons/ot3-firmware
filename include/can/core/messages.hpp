@@ -881,6 +881,8 @@ struct TipActionRequest
     uint8_t seq_id;
     stepper_timer_ticks duration;
     um_per_tick velocity;
+    can::ids::PipetteTipActionType action;
+    uint8_t request_stop_condition;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> TipActionRequest {
@@ -888,15 +890,22 @@ struct TipActionRequest
         uint8_t seq_id = 0;
         stepper_timer_ticks duration = 0;
         um_per_tick velocity = 0;
+        uint8_t _action = 0;
+        uint8_t request_stop_condition = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, velocity);
+        body = bit_utils::bytes_to_int(body, limit, _action);
+        body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
 
-        return TipActionRequest{.group_id = group_id,
-                                .seq_id = seq_id,
-                                .duration = duration,
-                                .velocity = velocity};
+        return TipActionRequest{
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .duration = duration,
+            .velocity = velocity,
+            .action = static_cast<can::ids::PipetteTipActionType>(_action),
+            .request_stop_condition = request_stop_condition};
     }
 
     auto operator==(const TipActionRequest& other) const -> bool = default;
@@ -910,6 +919,7 @@ struct TipActionResponse
     uint32_t encoder_position;
     uint8_t ack_id;
     uint8_t success;
+    can::ids::PipetteTipActionType action;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {

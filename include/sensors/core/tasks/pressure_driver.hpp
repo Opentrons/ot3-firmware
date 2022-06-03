@@ -6,6 +6,7 @@
 #include "common/core/logging.h"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/mmr920C04.hpp"
+#include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 
 namespace sensors {
@@ -27,11 +28,13 @@ template <class I2CQueueWriter, class I2CQueuePoller,
 class MMR92C04 {
   public:
     MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
-             CanClient &can_client, OwnQueue &own_queue)
+             CanClient &can_client, OwnQueue &own_queue,
+             sensors::hardware::SensorHardwareBase &hardware)
         : writer(writer),
           poller(poller),
           can_client(can_client),
-          own_queue(own_queue) {}
+          own_queue(own_queue),
+          hardware(hardware) {}
 
     /**
      * @brief Check if the MMR92C04 has been initialized.
@@ -257,6 +260,7 @@ class MMR92C04 {
     I2CQueuePoller &poller;
     CanClient &can_client;
     OwnQueue &own_queue;
+    hardware::SensorHardwareBase &hardware;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>

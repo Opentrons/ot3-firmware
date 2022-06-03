@@ -121,6 +121,45 @@ void sync_drive_gpio_init() {
     HAL_GPIO_WritePin(sync_out_hardware.port, sync_out_hardware.pin, GPIO_PIN_SET);
 }
 
+void data_ready_gpio_init() {
+    PipetteType pipette_type = get_pipette_type();
+    PipetteHardwarePin hardware;
+    if (pipette_type == SINGLE_CHANNEL || pipette_type == EIGHT_CHANNEL)
+    {
+        hardware =
+            pipette_hardware_get_gpio(
+                pipette_type, pipette_hardware_device_data_ready);
+    }
+    else {
+        hardware =
+            pipette_hardware_get_gpio(
+        pipette_type, pipette_hardware_device_data_ready);
+        PipetteHardwarePin hardware_rear =
+        pipette_hardware_get_gpio(
+            pipette_type, pipette_hardware_device_data_ready);
+
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /*Configure GPIO pin*/
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
+        GPIO_InitStruct.Pin = hardware_rear.pin;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+    }
+
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+
+    /*Configure GPIO pin*/
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = hardware.pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+}
+
 int tip_present() {
     return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET;
 }

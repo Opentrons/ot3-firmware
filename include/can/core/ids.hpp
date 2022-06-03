@@ -157,4 +157,10 @@ enum class SensorThresholdMode {
     auto_baseline = 0x1,
 };
 
+/** Tip action types. */
+enum class PipetteTipActionType {
+    pick_up = 0x0,
+    drop = 0x1,
+};
+
 }  // namespace can::ids
