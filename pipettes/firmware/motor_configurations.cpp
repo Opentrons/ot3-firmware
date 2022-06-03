@@ -156,18 +156,18 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
             return pipette_motor_hardware::HardwareConfig{
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
-                     .pin = GPIO_PIN_7,
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_3,
                      .active_setting = GPIO_PIN_SET},
                 .step =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_10,
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_7,
                      .active_setting = GPIO_PIN_SET},
                 .enable =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_8,
                      .active_setting = GPIO_PIN_SET},
                 .limit_switch =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
