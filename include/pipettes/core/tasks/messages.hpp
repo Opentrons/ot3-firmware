@@ -11,7 +11,8 @@ namespace motor_control_task_messages {
 
 using MotionControlTaskMessage = std::variant<
     std::monostate, can::messages::DisableMotorRequest,
-    can::messages::EnableMotorRequest, can::messages::GetMotionConstraintsRequest,
+    can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest>;
 

@@ -39,7 +39,8 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::WriteMotorCurrentRequest>;
 
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::move_group::MoveGroupHandler<linear_motor_tasks::QueueClient>,
+    can::message_handlers::move_group::MoveGroupHandler<
+        linear_motor_tasks::QueueClient>,
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
@@ -53,7 +54,8 @@ using GearMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::TipActionRequest>;
 
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::motion::MotionHandler<linear_motor_tasks::QueueClient>,
+    can::message_handlers::motion::MotionHandler<
+        linear_motor_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
@@ -67,7 +69,8 @@ using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest>;
 
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::system::SystemMessageHandler<central_tasks::QueueClient>,
+    can::message_handlers::system::SystemMessageHandler<
+        central_tasks::QueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 
