@@ -5,15 +5,13 @@ namespace encoder_handler {
 class EncoderHandler {
   public:
     EncoderHandler() = delete;
-    EncoderHandler(motor_hardware::StepperMotorHardwareIface& hardware_iface)
+    EncoderHandler(motor_hardware::BrushedMotorHardwareIface& hardware_iface)
         : hardware(hardware_iface) {}
     ~EncoderHandler() = default;
     auto operator=(EncoderHandler&) -> EncoderHandler& = delete;
     auto operator=(EncoderHandler&&) -> EncoderHandler&& = delete;
     EncoderHandler(EncoderHandler&) = delete;
     EncoderHandler(EncoderHandler&&) = delete;
-
-    
 
     auto get_encoder_pulses() {
         auto extra_pulses =
@@ -40,7 +38,7 @@ class EncoderHandler {
             if (home_triggered){
                 enc_overflow_counter = 0x0;
                 hardware.clear_encoder_SR();
-                reset_home_flah();
+                reset_home_flag();
             }
         } 
         else if (enc_overflow_counter > 0) {
@@ -60,10 +58,10 @@ class EncoderHandler {
 
     void set_home_flag_triggered() {  home_triggered = 0x1; }
 
-    void reset_home_flah() { home_triggered = 0x0; }
+    void reset_home_flag() { home_triggered = 0x0; }
 
   private:
-    motor_hardware::StepperMotorHardwareIface& hardware;
+    motor_hardware::BrushedMotorHardwareIface& hardware;
     uint8_t enc_overflow_counter = 0;
     int32_t enc_position_tracker = 0x0;
     bool enc_direction = 0x0;

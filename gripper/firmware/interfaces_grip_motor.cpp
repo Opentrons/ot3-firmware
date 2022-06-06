@@ -8,6 +8,8 @@
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_hardware.h"
+#include "motor_encoder_hardware.h"
+
 #pragma GCC diagnostic pop
 
 /**
@@ -76,10 +78,17 @@ extern "C" void call_brushed_motor_handler(void) {
     brushed_motor_interrupt.run_interrupt();
 }
 
+
+extern "C" void gripper_enc_overflow_callback_glue() {
+    brushed_motor_interrupt.encoder.encoder_overflow();
+}
+
 void grip_motor_iface::initialize() {
     // Initialize DAC
     initialize_dac();
-    set_brushed_motor_timer_callback(call_brushed_motor_handler);
+    initialize_enc();
+    set_brushed_motor_timer_callback(call_brushed_motor_handler,
+                                    gripper_enc_overflow_callback_glue);
 }
 
 auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {

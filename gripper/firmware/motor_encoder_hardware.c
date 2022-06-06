@@ -1,4 +1,6 @@
 #include "motor_encoder_hardware.h"
+#include "common/firmware/errors.h"
+#include "stm32g4xx_hal.h"
 
 TIM_HandleTypeDef htim2;
 
@@ -67,10 +69,33 @@ void TIM2_EncoderG_Init(void){
     {
     Error_Handler();
     }
+    HAL_TIMEx_EnableEncoderIndex(&htim2);
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim2, 0);
+    /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    /* Enable the update event for the Direction interrupted */
+    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_DIR);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim2);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
-void initialize_enc() {Encoder_GPIO_Init(); TIM2_EncoderG_Init();}
+void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
+    if (htim == &htim2) {
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM2_CLK_ENABLE();
+        /* TIM2 interrupt Init */
+        HAL_NVIC_SetPriority(TIM2_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(TIM2_IRQn);
+    }
+}
+
+void initialize_enc() 
+{
+    Encoder_GPIO_Init(); 
+    TIM2_EncoderG_Init();
+}

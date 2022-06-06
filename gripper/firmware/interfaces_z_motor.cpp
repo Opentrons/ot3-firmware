@@ -134,9 +134,6 @@ void z_motor_iface::initialize() {
     }
 
     initialize_timer(call_motor_handler);
-
-    // Initialize Encoder
-    initialize_enc();
 }
 
 auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {

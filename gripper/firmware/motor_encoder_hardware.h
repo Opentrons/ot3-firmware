@@ -11,6 +11,7 @@ extern "C" {
 #endif  // __cplusplus
 
 extern TIM_HandleTypeDef htim2;
+typedef void (*encoder_overflow_callback)();
 
 void initialize_enc();
 
