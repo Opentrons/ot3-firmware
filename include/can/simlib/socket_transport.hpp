@@ -10,12 +10,12 @@
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
 
-namespace socket_transport {
+namespace can::sim::transport::socket {
 
 using boost::asio::ip::tcp;
 
 template <synchronization::LockableProtocol CriticalSection>
-class SocketTransport : public can_transport::BusTransportBase {
+class SocketTransport : public can::sim::transport::BusTransportBase {
   public:
     explicit SocketTransport(const char *host, uint32_t port)
         : host{host}, port{port}, socket{context} {}
@@ -118,4 +118,4 @@ auto SocketTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     return true;
 }
 
-}  // namespace socket_transport
+}  // namespace can::sim::transport::socket

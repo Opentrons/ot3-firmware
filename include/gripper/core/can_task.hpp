@@ -9,56 +9,55 @@
 #include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
 
-namespace can_bus {
-class CanBus;
-}
-
 namespace can_task {
 
 using namespace gripper_tasks;
 
-using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::MotorHandler<z_tasks::QueueClient>,
-    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister,
-    can_messages::WriteMotorCurrentRequest>;
-using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
-    move_group_handler::MoveGroupHandler<z_tasks::QueueClient>,
-    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
-    can_messages::HomeRequest>;
-using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::MotionHandler<z_tasks::QueueClient>,
-    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::ReadLimitSwitchRequest, can_messages::EncoderPositionRequest>;
-using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
-    system_handler::SystemMessageHandler<gripper_tasks::QueueClient>,
-    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
-    can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
-using BrushedMotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::BrushedMotorHandler<g_tasks::QueueClient>,
-    can_messages::SetupRequest, can_messages::SetBrushedMotorVrefRequest,
-    can_messages::SetBrushedMotorPwmRequest>;
-using BrushedMotionDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::BrushedMotionHandler<g_tasks::QueueClient>,
-    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
-    can_messages::StopRequest, can_messages::ReadLimitSwitchRequest>;
-using BrushedMoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
-    move_group_handler::BrushedMoveGroupHandler<g_tasks::QueueClient>,
-    can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
-    can_messages::GripperGripRequest, can_messages::GripperHomeRequest>;
-using GripperInfoDispatchTarget = can_dispatch::DispatchParseTarget<
+using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::MotorHandler<z_tasks::QueueClient>,
+    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::WriteMotorDriverRegister,
+    can::messages::WriteMotorCurrentRequest>;
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<z_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest>;
+using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motion::MotionHandler<z_tasks::QueueClient>,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::ReadLimitSwitchRequest, can::messages::EncoderPositionRequest>;
+using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::system::SystemMessageHandler<
+        gripper_tasks::QueueClient>,
+    can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
+    can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
+using BrushedMotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::BrushedMotorHandler<g_tasks::QueueClient>,
+    can::messages::SetupRequest, can::messages::SetBrushedMotorVrefRequest,
+    can::messages::SetBrushedMotorPwmRequest>;
+using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::StopRequest, can::messages::ReadLimitSwitchRequest>;
+using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::BrushedMoveGroupHandler<
+        g_tasks::QueueClient>,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::GripperGripRequest, can::messages::GripperHomeRequest>;
+using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
                                             gripper_tasks::QueueClient>,
-    can_messages::GripperInfoRequest, can_messages::SetSerialNumber>;
+    can::messages::InstrumentInfoRequest, can::messages::SetSerialNumber>;
 
 auto constexpr reader_message_buffer_size = 1024;
 
 struct CanMessageReaderTask {
-    [[noreturn]] void operator()(can_bus::CanBus* can_bus);
+    [[noreturn]] void operator()(can::bus::CanBus* can_bus);
 };
 
 /**
@@ -67,9 +66,9 @@ struct CanMessageReaderTask {
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_reader(can_bus::CanBus& canbus) -> CanMessageReaderTask&;
+auto start_reader(can::bus::CanBus& canbus) -> CanMessageReaderTask&;
 
-using CanMessageWriterTask = message_writer_task::MessageWriterTask<
+using CanMessageWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
@@ -78,6 +77,6 @@ using CanMessageWriterTask = message_writer_task::MessageWriterTask<
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask&;
+auto start_writer(can::bus::CanBus& canbus) -> CanMessageWriterTask&;
 
 }  // namespace can_task

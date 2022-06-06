@@ -12,11 +12,11 @@ class CanBus;
 namespace can_task {
 
 struct CanMessageReaderTask {
-    [[noreturn]] void operator()(can_bus::CanBus* can_bus);
+    [[noreturn]] void operator()(can::bus::CanBus* can_bus);
     // For value injection; this object is created at static-ctor time but we
     // wont know the value until we get to runtime, so we have to defer it like
     // this
-    can_ids::NodeId listen_id;
+    can::ids::NodeId listen_id;
 };
 
 /**
@@ -25,10 +25,10 @@ struct CanMessageReaderTask {
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_reader(can_bus::CanBus& canbus, can_ids::NodeId id)
+auto start_reader(can::bus::CanBus& canbus, can::ids::NodeId id)
     -> CanMessageReaderTask&;
 
-using CanMessageWriterTask = message_writer_task::MessageWriterTask<
+using CanMessageWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
@@ -37,6 +37,6 @@ using CanMessageWriterTask = message_writer_task::MessageWriterTask<
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask&;
+auto start_writer(can::bus::CanBus& canbus) -> CanMessageWriterTask&;
 
 }  // namespace can_task

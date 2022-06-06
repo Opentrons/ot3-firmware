@@ -16,36 +16,39 @@ class CanBus;
 
 namespace can_task {
 
-using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::MotorHandler<gantry_tasks::QueueClient>,
-    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister,
-    can_messages::WriteMotorCurrentRequest>;
-using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
-    move_group_handler::MoveGroupHandler<gantry_tasks::QueueClient>,
-    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
-    can_messages::HomeRequest>;
-using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::MotionHandler<gantry_tasks::QueueClient>,
-    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::ReadLimitSwitchRequest, can_messages::EncoderPositionRequest>;
-using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
-    system_handler::SystemMessageHandler<gantry_tasks::QueueClient>,
-    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
-    can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
+using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::MotorHandler<gantry_tasks::QueueClient>,
+    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::WriteMotorDriverRegister,
+    can::messages::WriteMotorCurrentRequest>;
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<
+        gantry_tasks::QueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest>;
+using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motion::MotionHandler<gantry_tasks::QueueClient>,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::ReadLimitSwitchRequest, can::messages::EncoderPositionRequest>;
+using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::system::SystemMessageHandler<
+        gantry_tasks::QueueClient>,
+    can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
+    can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 
 using GantryDispatcherType =
-    can_dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
-                             MotionControllerDispatchTarget,
-                             SystemDispatchTarget>;
+    can::dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
+                              MotionControllerDispatchTarget,
+                              SystemDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =
-    freertos_can_dispatch::FreeRTOSCanReader<reader_message_buffer_size,
-                                             GantryDispatcherType>;
+    can::freertos_dispatch::FreeRTOSCanReader<reader_message_buffer_size,
+                                              GantryDispatcherType>;
 
 /**
  * Create the can message reader task.
@@ -53,9 +56,9 @@ using CanMessageReaderTask =
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_reader(can_bus::CanBus& canbus) -> CanMessageReaderTask&;
+auto start_reader(can::bus::CanBus& canbus) -> CanMessageReaderTask&;
 
-using CanMessageWriterTask = message_writer_task::MessageWriterTask<
+using CanMessageWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
@@ -64,6 +67,6 @@ using CanMessageWriterTask = message_writer_task::MessageWriterTask<
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask&;
+auto start_writer(can::bus::CanBus& canbus) -> CanMessageWriterTask&;
 
 }  // namespace can_task

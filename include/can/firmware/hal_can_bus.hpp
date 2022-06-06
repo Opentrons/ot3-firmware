@@ -5,10 +5,10 @@
 #include "can/firmware/hal_can.h"
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/gpio.hpp"
-namespace hal_can_bus {
+namespace can::hal::bus {
 
-using namespace can_bus;
-using namespace can_ids;
+using namespace can::bus;
+using namespace can::ids;
 
 /**
  * HAL FD CAN wrapper.
@@ -82,4 +82,4 @@ class HalCanBus : public CanBus {
     gpio::PinConfig indicator;
 };
 
-}  // namespace hal_can_bus
+}  // namespace can::hal::bus

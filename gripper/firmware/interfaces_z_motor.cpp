@@ -105,7 +105,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
  */
 static motor_class::Motor z_motor{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
         .microstep = 16,
         .encoder_ppr = 0,

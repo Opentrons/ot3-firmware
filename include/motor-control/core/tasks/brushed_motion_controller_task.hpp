@@ -18,7 +18,7 @@ using TaskMessage =
 /**
  * The handler of brushed motion controller messages
  */
-template <message_writer_task::TaskClient CanClient>
+template <can::message_writer_task::TaskClient CanClient>
 class MotionControllerMessageHandler {
   public:
     MotionControllerMessageHandler(
@@ -44,34 +44,34 @@ class MotionControllerMessageHandler {
   private:
     void handle(std::monostate&) {}
 
-    void handle(const can_messages::EnableMotorRequest&) {
+    void handle(const can::messages::EnableMotorRequest&) {
         LOG("Received enable motor request");
         controller.enable_motor();
     }
 
-    void handle(const can_messages::DisableMotorRequest&) {
+    void handle(const can::messages::DisableMotorRequest&) {
         LOG("Received disable motor request");
         controller.disable_motor();
     }
 
-    void handle(const can_messages::StopRequest&) {
+    void handle(const can::messages::StopRequest&) {
         LOG("Received stop request");
         controller.stop();
     }
 
-    void handle(const can_messages::GripperGripRequest& m) {
+    void handle(const can::messages::GripperGripRequest& m) {
         controller.move(m);
     }
 
-    void handle(const can_messages::GripperHomeRequest& m) {
+    void handle(const can::messages::GripperHomeRequest& m) {
         controller.move(m);
     }
 
-    void handle(const can_messages::ReadLimitSwitchRequest&) {
+    void handle(const can::messages::ReadLimitSwitchRequest&) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
-        can_messages::ReadLimitSwitchResponse msg{{}, response};
-        can_client.send_can_message(can_ids::NodeId::host, msg);
+        can::messages::ReadLimitSwitchResponse msg{{}, response};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
     brushed_motion_controller::MotionController& controller;
@@ -97,7 +97,7 @@ class MotionControllerTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
         brushed_motion_controller::MotionController* controller,
         CanClient* can_client) {

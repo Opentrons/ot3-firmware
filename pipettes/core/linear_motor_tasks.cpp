@@ -31,7 +31,7 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-    can_ids::NodeId id) {
+    can::ids::NodeId id) {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -69,7 +69,7 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-    can_ids::NodeId id) {
+    can::ids::NodeId id) {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -105,7 +105,7 @@ void linear_motor_tasks::start_tasks(
 linear_motor_tasks::QueueClient::QueueClient()
     // This gets overridden in start_tasks, needs to be static here since this
     // is free-store allocated
-    : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 void linear_motor_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

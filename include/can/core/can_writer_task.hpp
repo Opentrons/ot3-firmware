@@ -9,11 +9,11 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 
-namespace message_writer_task {
+namespace can::message_writer_task {
 
 struct TaskMessage {
     uint32_t arbitration_id;
-    can_messages::ResponseMessageType message;
+    can::messages::ResponseMessageType message;
 };
 
 /**
@@ -41,7 +41,7 @@ class MessageWriterTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(can_bus::CanBus* can) {
+    [[noreturn]] void operator()(can::bus::CanBus* can) {
         TaskMessage message{};
         while (true) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -58,7 +58,7 @@ class MessageWriterTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
-    void handle(can_bus::CanBus* can, uint32_t arbitration_id,
+    void handle(can::bus::CanBus* can, uint32_t arbitration_id,
                 const auto& message) {
         auto length = message.serialize(data.begin(), data.end());
         can->send(arbitration_id, data.begin(), to_canfd_length(length));
@@ -73,9 +73,9 @@ class MessageWriterTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, can_ids::NodeId node_id,
-                              const can_messages::ResponseMessageType& m) {
+concept TaskClient = requires(Client client, can::ids::NodeId node_id,
+                              const can::messages::ResponseMessageType& m) {
     {client.send_can_message(node_id, m)};
 };
 
-}  // namespace message_writer_task
+}  // namespace can::message_writer_task

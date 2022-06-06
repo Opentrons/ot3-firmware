@@ -17,7 +17,7 @@ void initialize();
  * Get the CAN bus interface.
  * @return the can bus
  */
-auto get_can_bus() -> can_bus::CanBus &;
+auto get_can_bus() -> can::bus::CanBus &;
 
 /**
  * Get the SPI interface

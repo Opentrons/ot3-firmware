@@ -1,8 +1,8 @@
 #include "can/core/arbitration_id.hpp"
 #include "catch2/catch.hpp"
 
-using namespace can_arbitration_id;
-using namespace can_ids;
+using namespace can::arbitration_id;
+using namespace can::ids;
 
 SCENARIO("Arbitration ID") {
     GIVEN("an arbitration id object") {

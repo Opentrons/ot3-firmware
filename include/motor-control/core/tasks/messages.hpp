@@ -6,42 +6,43 @@
 namespace motor_control_task_messages {
 
 using MotionControlTaskMessage = std::variant<
-    std::monostate, can_messages::AddLinearMoveRequest,
-    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::EncoderPositionRequest, can_messages::ReadLimitSwitchRequest,
-    can_messages::HomeRequest>;
+    std::monostate, can::messages::AddLinearMoveRequest,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::EncoderPositionRequest, can::messages::ReadLimitSwitchRequest,
+    can::messages::HomeRequest>;
 
 using MotorDriverTaskMessage =
-    std::variant<std::monostate, can_messages::ReadMotorDriverRegister,
-                 can_messages::SetupRequest,
-                 can_messages::WriteMotorDriverRegister,
-                 can_messages::WriteMotorCurrentRequest>;
+    std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
+                 can::messages::SetupRequest,
+                 can::messages::WriteMotorDriverRegister,
+                 can::messages::WriteMotorCurrentRequest>;
 
 using MoveGroupTaskMessage =
-    std::variant<std::monostate, can_messages::AddLinearMoveRequest,
-                 can_messages::ClearAllMoveGroupsRequest,
-                 can_messages::ExecuteMoveGroupRequest,
-                 can_messages::GetMoveGroupRequest, can_messages::HomeRequest>;
+    std::variant<std::monostate, can::messages::AddLinearMoveRequest,
+                 can::messages::ClearAllMoveGroupsRequest,
+                 can::messages::ExecuteMoveGroupRequest,
+                 can::messages::GetMoveGroupRequest,
+                 can::messages::HomeRequest>;
 
 using MoveStatusReporterTaskMessage = motor_messages::Ack;
 
 using BrushedMotorDriverTaskMessage =
-    std::variant<std::monostate, can_messages::SetupRequest,
-                 can_messages::SetBrushedMotorVrefRequest,
-                 can_messages::SetBrushedMotorPwmRequest>;
+    std::variant<std::monostate, can::messages::SetupRequest,
+                 can::messages::SetBrushedMotorVrefRequest,
+                 can::messages::SetBrushedMotorPwmRequest>;
 
 using BrushedMotionControllerTaskMessage =
-    std::variant<std::monostate, can_messages::DisableMotorRequest,
-                 can_messages::EnableMotorRequest,
-                 can_messages::GripperHomeRequest,
-                 can_messages::GripperGripRequest, can_messages::StopRequest,
-                 can_messages::ReadLimitSwitchRequest>;
+    std::variant<std::monostate, can::messages::DisableMotorRequest,
+                 can::messages::EnableMotorRequest,
+                 can::messages::GripperHomeRequest,
+                 can::messages::GripperGripRequest, can::messages::StopRequest,
+                 can::messages::ReadLimitSwitchRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
-    std::monostate, can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
-    can_messages::GripperGripRequest, can_messages::GripperHomeRequest>;
+    std::monostate, can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::GripperGripRequest, can::messages::GripperHomeRequest>;
 
 }  // namespace motor_control_task_messages

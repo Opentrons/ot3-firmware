@@ -3,7 +3,7 @@
 #include "can/core/can_bus.hpp"
 #include "catch2/catch.hpp"
 
-using namespace can_bus;
+using namespace can::bus;
 
 SCENARIO("to_canfd_length works") {
     GIVEN("an array of integer lengths") {

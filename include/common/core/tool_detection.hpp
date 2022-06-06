@@ -27,7 +27,7 @@ enum Carrier : uint8_t {
 
 // A full specification of an attached tool, including its bounds
 struct Tool {
-    can_ids::ToolType tool_type;
+    can::ids::ToolType tool_type;
     Carrier tool_carrier;
     ToolCheckBounds bounds;
     [[nodiscard]] auto within_bounds(millivolts_t reading) const -> bool {
@@ -59,7 +59,7 @@ auto lookup_table() -> std::span<Tool>;
 // Limit filter options to one of the two available pieces of metadata
 template <typename T>
 concept ToolOrCarrier =
-    std::is_same_v<T, Carrier> || std::is_same_v<T, can_ids::ToolType>;
+    std::is_same_v<T, Carrier> || std::is_same_v<T, can::ids::ToolType>;
 
 // Looks like a linear container and contains a Tool
 template <typename T>
@@ -82,7 +82,7 @@ auto lookup_table_filtered(FilterTarget filter_by) {
 // overloading handles the two different filter types, which need to access
 // different struct members
 template <ToolList Lookup>
-auto filter_lookup_table(can_ids::ToolType filter_by, Lookup from_table) {
+auto filter_lookup_table(can::ids::ToolType filter_by, Lookup from_table) {
     return std::views::filter(from_table, [filter_by](const auto& elem) {
         return elem.tool_type == filter_by;
     });
@@ -104,7 +104,7 @@ auto tool_from_reading(millivolts_t reading, Lookup with_lookup) -> Tool {
             return element;
         }
     }
-    return Tool{.tool_type = can_ids::ToolType::undefined_tool,
+    return Tool{.tool_type = can::ids::ToolType::undefined_tool,
                 .tool_carrier = Carrier::UNKNOWN,
                 .bounds = {0, 0}};
 }
@@ -127,11 +127,11 @@ inline auto carrier_from_reading(millivolts_t reading) -> Carrier {
 // lookup table isn't specified, the full built in table is used.
 template <ToolList Lookup>
 auto tooltype_from_reading(millivolts_t reading, Lookup with_lookup)
-    -> can_ids::ToolType {
+    -> can::ids::ToolType {
     return tool_from_reading(reading, with_lookup).tool_type;
 };
 
-inline auto tooltype_from_reading(millivolts_t reading) -> can_ids::ToolType {
+inline auto tooltype_from_reading(millivolts_t reading) -> can::ids::ToolType {
     return tooltype_from_reading(reading, lookup_table());
 }
 #else   // defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)
@@ -141,7 +141,7 @@ auto lookup_table_filtered(FilterTarget filter_by) {
 }
 
 template <typename Lookup>
-auto filter_lookup_table(can_ids::ToolType filter_by, Lookup from_table) {
+auto filter_lookup_table(can::ids::ToolType filter_by, Lookup from_table) {
     return from_table;
 };
 
@@ -157,7 +157,7 @@ auto tool_from_reading(millivolts_t reading, Lookup with_lookup) -> Tool {
             return element;
         }
     }
-    return Tool{.tool_type = can_ids::ToolType::undefined_tool,
+    return Tool{.tool_type = can::ids::ToolType::undefined_tool,
                 .tool_carrier = Carrier::UNKNOWN,
                 .bounds = {0, 0}};
 }
@@ -176,11 +176,11 @@ inline auto carrier_from_reading(millivolts_t reading) -> Carrier {
 
 template <typename Lookup>
 auto tooltype_from_reading(millivolts_t reading, Lookup with_lookup)
-    -> can_ids::ToolType {
+    -> can::ids::ToolType {
     return tool_from_reading(reading, with_lookup).tool_type;
 };
 
-inline auto tooltype_from_reading(millivolts_t reading) -> can_ids::ToolType {
+inline auto tooltype_from_reading(millivolts_t reading) -> can::ids::ToolType {
     return tooltype_from_reading(reading, lookup_table());
 }
 #endif  // defined(OPENTRONS_CLANG_TIDY_WORKAROUND_44178)

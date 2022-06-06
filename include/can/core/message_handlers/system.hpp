@@ -7,17 +7,17 @@
 #include "can/core/messages.hpp"
 #include "common/core/app_update.h"
 
-namespace system_handler {
+namespace can::message_handlers::system {
 
-using namespace can_ids;
-using namespace can_messages;
+using namespace can::ids;
+using namespace can::messages;
 
 /**
  * A HandlesMessages implementing class that will respond to system messages.
  *
  * @tparam CanClient can writer task client
  */
-template <message_writer_task::TaskClient CanClient>
+template <can::message_writer_task::TaskClient CanClient>
 class SystemMessageHandler {
   public:
     /**
@@ -57,7 +57,7 @@ class SystemMessageHandler {
     void visit(std::monostate &) {}
 
     void visit(DeviceInfoRequest &) {
-        writer.send_can_message(can_ids::NodeId::host, response);
+        writer.send_can_message(can::ids::NodeId::host, response);
     }
 
     void visit(InitiateFirmwareUpdate &) { app_update_start(); }
@@ -65,7 +65,7 @@ class SystemMessageHandler {
     void visit(FirmwareUpdateStatusRequest &) {
         auto status_response =
             FirmwareUpdateStatusResponse{.flags = app_update_flags()};
-        writer.send_can_message(can_ids::NodeId::host, status_response);
+        writer.send_can_message(can::ids::NodeId::host, status_response);
     }
 
     void visit(TaskInfoRequest &) {
@@ -80,12 +80,12 @@ class SystemMessageHandler {
             r.stack_high_water_mark = tasks[i].usStackHighWaterMark;  // NOLINT
             r.state = tasks[i].eCurrentState;                         // NOLINT
             r.priority = tasks[i].uxCurrentPriority;                  // NOLINT
-            writer.send_can_message(can_ids::NodeId::host, r);
+            writer.send_can_message(can::ids::NodeId::host, r);
         }
     }
 
     CanClient &writer;
-    can_messages::DeviceInfoResponse response;
+    can::messages::DeviceInfoResponse response;
 };
 
-}  // namespace system_handler
+}  // namespace can::message_handlers::system

@@ -16,7 +16,7 @@ void signal_handler(int signum) {
 /**
  * The CAN bus.
  */
-static auto canbus = sim_canbus::SimCANBus(can_transport::create());
+static auto canbus = can::sim::bus::SimCANBus(can::sim::transport::create());
 
 static auto sim_eeprom = eeprom::simulator::EEProm{};
 static auto i2c_device_map =

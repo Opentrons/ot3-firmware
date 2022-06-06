@@ -19,7 +19,7 @@ namespace tasks {
 using namespace hardware;
 
 template <class I2CQueueWriter, class I2CQueuePoller,
-          message_writer_task::TaskClient CanClient, class OwnQueue>
+          can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class CapacitiveMessageHandler {
   public:
     explicit CapacitiveMessageHandler(I2CQueueWriter &i2c_writer,
@@ -73,7 +73,7 @@ class CapacitiveMessageHandler {
         }
     }
 
-    void visit(can_messages::ReadFromSensorRequest &m) {
+    void visit(can::messages::ReadFromSensorRequest &m) {
         /**
          * The FDC1004 sensor has an offset register and
          * a measurement register. The CAPDAC offset is used
@@ -83,11 +83,11 @@ class CapacitiveMessageHandler {
          */
         LOG("Received request to read from %d sensor", m.sensor);
         if (bool(m.offset_reading)) {
-            auto message = can_messages::ReadFromSensorResponse{
+            auto message = can::messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
                 .sensor_data = convert_to_fixed_point(
                     capacitance_handler.get_offset(), 15)};
-            can_client.send_can_message(can_ids::NodeId::host, message);
+            can_client.send_can_message(can::ids::NodeId::host, message);
         } else {
             capacitance_handler.reset_limited();
             capacitance_handler.set_number_of_reads(1);
@@ -97,12 +97,12 @@ class CapacitiveMessageHandler {
         }
     }
 
-    void visit(can_messages::WriteToSensorRequest &m) {
+    void visit(can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(ADDRESS, m.data);
     }
 
-    void visit(can_messages::BaselineSensorRequest &m) {
+    void visit(can::messages::BaselineSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
         capacitance_handler.reset_limited();
         capacitance_handler.set_number_of_reads(m.sample_rate);
@@ -115,10 +115,10 @@ class CapacitiveMessageHandler {
                             utils::byte_from_tags(tags)));
     }
 
-    void visit(can_messages::SetSensorThresholdRequest &m) {
+    void visit(can::messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor",
             m.threshold, m.sensor);
-        if (m.mode == can_ids::SensorThresholdMode::absolute) {
+        if (m.mode == can::ids::SensorThresholdMode::absolute) {
             capacitance_handler.set_threshold(
                 fixed_point_to_float(m.threshold, 15), m.mode);
         } else {
@@ -137,13 +137,13 @@ class CapacitiveMessageHandler {
         }
     }
 
-    void visit(can_messages::BindSensorOutputRequest &m) {
+    void visit(can::messages::BindSensorOutputRequest &m) {
         capacitance_handler.set_echoing(
             m.binding &
-            static_cast<uint8_t>(can_ids::SensorOutputBinding::report));
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::report));
         capacitance_handler.set_bind_sync(
             m.binding &
-            static_cast<uint8_t>(can_ids::SensorOutputBinding::sync));
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
         poller.continuous_multi_register_poll(
@@ -153,11 +153,11 @@ class CapacitiveMessageHandler {
                             utils::byte_from_tags(tags)));
     }
 
-    void visit(can_messages::PeripheralStatusRequest &m) {
+    void visit(can::messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device status request");
         can_client.send_can_message(
-            can_ids::NodeId::host,
-            can_messages::PeripheralStatusResponse{
+            can::ids::NodeId::host,
+            can::messages::PeripheralStatusResponse{
                 .sensor = m.sensor,
                 .status = static_cast<uint8_t>(is_initialized)});
     }
@@ -195,7 +195,7 @@ class CapacitiveSensorTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  i2c::poller::Poller<QueueImpl> *poller,
                                  SensorHardwareBase *hardware,

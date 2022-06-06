@@ -45,15 +45,15 @@ constexpr uint8_t SAMPLE_RATE =
 constexpr uint8_t SET_DATARDY = 1 << 7;
 constexpr uint8_t BEGIN_MEASUREMENT_RECORDING = 1;
 
-inline auto convert(uint16_t data, can_ids::SensorType type) -> sq15_16 {
+inline auto convert(uint16_t data, can::ids::SensorType type) -> sq15_16 {
     switch (type) {
-        case can_ids::SensorType::humidity: {
+        case can::ids::SensorType::humidity: {
             // returns humidity in relative humidity percentage
             float calculated_humidity =
                 HUMIDITY_CONST * ((float)data / MAX_SIZE);
             return convert_to_fixed_point(calculated_humidity, 16);
         }
-        case can_ids::SensorType::temperature: {
+        case can::ids::SensorType::temperature: {
             // returns temperature in celsius
             float calculated_temp =
                 TEMP_CONST_MULTIPLIER * ((float)data / MAX_SIZE) - TEMP_CONST;

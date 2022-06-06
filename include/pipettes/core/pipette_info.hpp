@@ -11,8 +11,8 @@
 #include "eeprom/core/serial_number.hpp"
 
 namespace pipette_info {
-using namespace can_ids;
-using namespace can_messages;
+using namespace can::ids;
+using namespace can::messages;
 
 enum class PipetteName {
     P1000_SINGLE = 0,
@@ -38,7 +38,7 @@ uint16_t get_model();
  * @tparam CanClient can writer task client
  * @tparam EEPromClient eeprom task client
  */
-template <message_writer_task::TaskClient CanClient,
+template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
 class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
   public:
@@ -60,7 +60,7 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
     ~PipetteInfoMessageHandler() = default;
 
     using MessageType =
-        std::variant<std::monostate, PipetteInfoRequest, SetSerialNumber>;
+        std::variant<std::monostate, InstrumentInfoRequest, SetSerialNumber>;
 
     /**
      * Message handler
@@ -75,8 +75,8 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
      * @param sn The serial number.
      */
     void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
-        writer.send_can_message(can_ids::NodeId::host,
-                                can_messages::PipetteInfoResponse{
+        writer.send_can_message(can::ids::NodeId::host,
+                                can::messages::PipetteInfoResponse{
                                     .name = static_cast<uint16_t>(get_name()),
                                     .model = get_model(),
                                     .serial = sn});
@@ -86,9 +86,9 @@ class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
     void visit(std::monostate &) {}
 
     /**
-     * Handle a request to get pipette info.
+     * Handle a request to get instrument info.
      */
-    void visit(const PipetteInfoRequest &) {
+    void visit(const InstrumentInfoRequest &) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
         serial_number_accessor.start_read();

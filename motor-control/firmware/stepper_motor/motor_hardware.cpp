@@ -1,5 +1,6 @@
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
+#include "common/core/logging.h"
 #include "common/firmware/gpio.hpp"
 #include "motor-control/firmware/motor_control_hardware.h"
 
@@ -14,6 +15,7 @@ void MotorHardware::negative_direction() { gpio::reset(pins.direction); }
 void MotorHardware::activate_motor() { gpio::set(pins.enable); }
 void MotorHardware::deactivate_motor() { gpio::reset(pins.enable); }
 void MotorHardware::start_timer_interrupt() {
+    LOG("Starting timer interrupt")
     motor_hardware_start_timer(tim_handle);
 }
 void MotorHardware::stop_timer_interrupt() {

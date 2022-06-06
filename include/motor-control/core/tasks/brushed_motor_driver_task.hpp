@@ -17,7 +17,7 @@ using TaskMessage = motor_control_task_messages::BrushedMotorDriverTaskMessage;
 /**
  * The handler of brushed motor driver messages
  */
-template <message_writer_task::TaskClient CanClient>
+template <can::message_writer_task::TaskClient CanClient>
 class MotorDriverMessageHandler {
   public:
     MotorDriverMessageHandler(
@@ -41,18 +41,18 @@ class MotorDriverMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can_messages::SetupRequest&) {
+    void handle(const can::messages::SetupRequest&) {
         LOG("Received motor setup request");
         driver.setup();
     }
 
-    void handle(const can_messages::SetBrushedMotorVrefRequest& m) {
+    void handle(const can::messages::SetBrushedMotorVrefRequest& m) {
         auto val = fixed_point_to_float(m.v_ref, 16);
         LOG("Received set motor reference voltage request,  vref=%f", val);
         driver.set_reference_voltage(val);
     }
 
-    void handle(const can_messages::SetBrushedMotorPwmRequest& m) {
+    void handle(const can::messages::SetBrushedMotorPwmRequest& m) {
         LOG("Received set motor PWM request, freq=%d, duty_cycle=%d", m.freq,
             m.duty_cycle);
         driver.update_pwm_settings(m.freq, m.duty_cycle);
@@ -81,7 +81,7 @@ class MotorDriverTask {
     /**
      * Task entry point.
      */
-    template <message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
         brushed_motor_driver::BrushedMotorDriverIface* driver,
         CanClient* can_client) {

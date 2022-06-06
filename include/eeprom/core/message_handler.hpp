@@ -10,11 +10,11 @@ namespace eeprom {
 namespace message_handler {
 
 using MessageType =
-    std::variant<std::monostate, can_messages::WriteToEEPromRequest,
-                 can_messages::ReadFromEEPromRequest>;
+    std::variant<std::monostate, can::messages::WriteToEEPromRequest,
+                 can::messages::ReadFromEEPromRequest>;
 
 template <eeprom::task::TaskClient EEPromTaskClient,
-          message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient>
 class EEPromHandler {
   public:
     explicit EEPromHandler(EEPromTaskClient &client, CanClient &can_client)
@@ -36,7 +36,7 @@ class EEPromHandler {
      * Handle a request to write to eeprom
      * @param can_msg The CAN message
      */
-    void visit(can_messages::WriteToEEPromRequest &can_msg) {
+    void visit(can::messages::WriteToEEPromRequest &can_msg) {
         auto msg = eeprom::message::WriteEepromMessage{
             .memory_address = can_msg.address,
             .length = can_msg.data_length,
@@ -48,7 +48,7 @@ class EEPromHandler {
      * Handle a request to read from eeprom
      * @param can_msg The CAN message
      */
-    void visit(can_messages::ReadFromEEPromRequest &can_msg) {
+    void visit(can::messages::ReadFromEEPromRequest &can_msg) {
         auto msg = eeprom::message::ReadEepromMessage{
             .memory_address = can_msg.address,
             .length = can_msg.data_length,
@@ -67,10 +67,10 @@ class EEPromHandler {
         auto *self =
             reinterpret_cast<EEPromHandler<EEPromTaskClient, CanClient> *>(
                 param);
-        auto message = can_messages::ReadFromEEPromResponse::create(
+        auto message = can::messages::ReadFromEEPromResponse::create(
             msg.memory_address, msg.data.cbegin(),
             msg.data.cbegin() + msg.length);
-        self->can_client.send_can_message(can_ids::NodeId::host, message);
+        self->can_client.send_can_message(can::ids::NodeId::host, message);
     }
 
     EEPromTaskClient &client;

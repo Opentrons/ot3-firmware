@@ -17,10 +17,10 @@ namespace tmc2160 {
 namespace tasks {
 
 using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using CanMessageTuple = std::tuple<can_messages::ReadMotorDriverRegister,
-                                   can_messages::SetupRequest,
-                                   can_messages::WriteMotorDriverRegister,
-                                   can_messages::WriteMotorCurrentRequest>;
+using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
+                                   can::messages::SetupRequest,
+                                   can::messages::WriteMotorDriverRegister,
+                                   can::messages::WriteMotorCurrentRequest>;
 using CanMessage =
     typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
                                        CanMessageTuple>::type;
@@ -32,7 +32,7 @@ using TaskMessage = typename ::utils::VariantCat<
 /**
  * The handler of motor driver messages
  */
-template <class Writer, message_writer_task::TaskClient CanClient,
+template <class Writer, can::message_writer_task::TaskClient CanClient,
           class TaskQueue>
 class MotorDriverMessageHandler {
   public:
@@ -68,20 +68,20 @@ class MotorDriverMessageHandler {
             auto data = driver.handle_spi_read(
                 tmc2160::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
-            can_messages::ReadMotorDriverRegisterResponse response_msg{
+            can::messages::ReadMotorDriverRegisterResponse response_msg{
                 .reg_address = static_cast<uint8_t>(m.id.token),
                 .data = data,
             };
-            can_client.send_can_message(can_ids::NodeId::host, response_msg);
+            can_client.send_can_message(can::ids::NodeId::host, response_msg);
         }
     }
 
-    void handle(const can_messages::SetupRequest&) {
+    void handle(const can::messages::SetupRequest&) {
         LOG("Received motor setup request");
         driver.write_config();
     }
 
-    void handle(const can_messages::WriteMotorDriverRegister& m) {
+    void handle(const can::messages::WriteMotorDriverRegister& m) {
         LOG("Received write motor driver request: addr=%d, data=%d",
             m.reg_address, m.data);
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
@@ -89,7 +89,7 @@ class MotorDriverMessageHandler {
         }
     }
 
-    void handle(const can_messages::ReadMotorDriverRegister& m) {
+    void handle(const can::messages::ReadMotorDriverRegister& m) {
         LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
@@ -97,7 +97,7 @@ class MotorDriverMessageHandler {
         }
     }
 
-    void handle(const can_messages::WriteMotorCurrentRequest& m) {
+    void handle(const can::messages::WriteMotorCurrentRequest& m) {
         LOG("Received write motor current request: hold_current=%d, "
             "run_current=%d",
             m.hold_current, m.run_current);
@@ -137,7 +137,7 @@ class MotorDriverTask {
      * Task entry point.
      */
 
-    template <message_writer_task::TaskClient CanClient,
+    template <can::message_writer_task::TaskClient CanClient,
               class MotorDriverConfigs, class SpiWriter>
     [[noreturn]] void operator()(MotorDriverConfigs* configs,
                                  CanClient* can_client, SpiWriter* writer) {

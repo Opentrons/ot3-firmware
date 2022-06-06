@@ -12,7 +12,7 @@
 #include "spi/core/writer.hpp"
 
 static auto tasks = gripper_tasks::AllTask{};
-static auto queues = gripper_tasks::QueueClient{can_ids::NodeId::gripper};
+static auto queues = gripper_tasks::QueueClient{can::ids::NodeId::gripper};
 
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
@@ -27,7 +27,8 @@ static auto i2c3_task_builder =
  * Start gripper tasks.
  */
 void gripper_tasks::start_tasks(
-    can_bus::CanBus& can_bus, motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+    can::bus::CanBus& can_bus,
+    motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     brushed_motor::BrushedMotor& grip_motor,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
@@ -55,8 +56,8 @@ void gripper_tasks::start_tasks(
     g_tasks::get_queues().set_queue(&can_writer.get_queue());
 }
 
-gripper_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)
-    : can_message_writer::MessageWriter{this_fw} {}
+gripper_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)
+    : can::message_writer::MessageWriter{this_fw} {}
 
 void gripper_tasks::QueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {

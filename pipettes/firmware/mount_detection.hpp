@@ -10,7 +10,7 @@ class MountDetectADCChannel : public adc::BaseADCChannel<3300, 4095> {
     auto get_reading() -> uint16_t override { return adc_read(); }
 };
 
-inline auto detect_id() -> can_ids::NodeId {
+inline auto detect_id() -> can::ids::NodeId {
     return decide_id(MountDetectADCChannel().get_voltage());
 }
 

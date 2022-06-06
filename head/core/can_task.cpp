@@ -21,56 +21,62 @@ static auto& left_queues = head_tasks::get_left_queues();
 static auto& common_queues = head_tasks::get_queue_client();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
-    message_writer_task::TaskMessage>{};
+    can::message_writer_task::TaskMessage>{};
 
-using MotorDispatchTarget = can_dispatch::DispatchParseTarget<
-    motor_message_handler::MotorHandler<head_tasks::MotorQueueClient>,
-    can_messages::ReadMotorDriverRegister, can_messages::SetupRequest,
-    can_messages::WriteMotorDriverRegister,
-    can_messages::WriteMotorCurrentRequest>;
-using MoveGroupDispatchTarget = can_dispatch::DispatchParseTarget<
-    move_group_handler::MoveGroupHandler<head_tasks::MotorQueueClient>,
-    can_messages::AddLinearMoveRequest, can_messages::ClearAllMoveGroupsRequest,
-    can_messages::ExecuteMoveGroupRequest, can_messages::GetMoveGroupRequest,
-    can_messages::HomeRequest>;
-using MotionControllerDispatchTarget = can_dispatch::DispatchParseTarget<
-    motion_message_handler::MotionHandler<head_tasks::MotorQueueClient>,
-    can_messages::DisableMotorRequest, can_messages::EnableMotorRequest,
-    can_messages::GetMotionConstraintsRequest,
-    can_messages::SetMotionConstraints, can_messages::StopRequest,
-    can_messages::ReadLimitSwitchRequest, can_messages::EncoderPositionRequest>;
-using SystemDispatchTarget = can_dispatch::DispatchParseTarget<
-    system_handler::SystemMessageHandler<head_tasks::HeadQueueClient>,
-    can_messages::DeviceInfoRequest, can_messages::InitiateFirmwareUpdate,
-    can_messages::FirmwareUpdateStatusRequest, can_messages::TaskInfoRequest>;
-using PresenceSensingDispatchTarget = can_dispatch::DispatchParseTarget<
-    presence_sensing_message_handler::PresenceSensingHandler<
+using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motor::MotorHandler<head_tasks::MotorQueueClient>,
+    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::WriteMotorDriverRegister,
+    can::messages::WriteMotorCurrentRequest>;
+using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::move_group::MoveGroupHandler<
+        head_tasks::MotorQueueClient>,
+    can::messages::AddLinearMoveRequest,
+    can::messages::ClearAllMoveGroupsRequest,
+    can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
+    can::messages::HomeRequest>;
+using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::motion::MotionHandler<head_tasks::MotorQueueClient>,
+    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::ReadLimitSwitchRequest, can::messages::EncoderPositionRequest>;
+using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::system::SystemMessageHandler<
         head_tasks::HeadQueueClient>,
-    can_messages::ReadPresenceSensingVoltageRequest,
-    can_messages::AttachedToolsRequest>;
+    can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
+    can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
+using PresenceSensingDispatchTarget = can::dispatch::DispatchParseTarget<
+    can::message_handlers::presence_sensing::PresenceSensingHandler<
+        head_tasks::HeadQueueClient>,
+    can::messages::ReadPresenceSensingVoltageRequest,
+    can::messages::AttachedToolsRequest>;
 
 /** The parsed message handler */
 static auto presence_sensing_handler =
-    presence_sensing_message_handler::PresenceSensingHandler{common_queues};
+    can::message_handlers::presence_sensing::PresenceSensingHandler{
+        common_queues};
 static auto can_motor_handler_right =
-    motor_message_handler::MotorHandler{right_queues};
+    can::message_handlers::motor::MotorHandler{right_queues};
 static auto can_motor_handler_left =
-    motor_message_handler::MotorHandler{left_queues};
+    can::message_handlers::motor::MotorHandler{left_queues};
 
 static auto can_motion_handler_right =
-    motion_message_handler::MotionHandler{right_queues};
+    can::message_handlers::motion::MotionHandler{right_queues};
 static auto can_motion_handler_left =
-    motion_message_handler::MotionHandler{left_queues};
+    can::message_handlers::motion::MotionHandler{left_queues};
 
 static auto can_move_group_handler_right =
-    move_group_handler::MoveGroupHandler(right_queues);
+    can::message_handlers::move_group::MoveGroupHandler(right_queues);
 static auto can_move_group_handler_left =
-    move_group_handler::MoveGroupHandler(left_queues);
+    can::message_handlers::move_group::MoveGroupHandler(left_queues);
 
 /** Handler of system messages. */
-static auto system_message_handler = system_handler::SystemMessageHandler(
-    common_queues, version_get()->version, version_get()->flags,
-    std::span(std::cbegin(version_get()->sha), std::cend(version_get()->sha)));
+static auto system_message_handler =
+    can::message_handlers::system::SystemMessageHandler(
+        common_queues, version_get()->version, version_get()->flags,
+        std::span(std::cbegin(version_get()->sha),
+                  std::cend(version_get()->sha)));
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 
@@ -97,31 +103,31 @@ static auto move_group_dispatch_target_left =
  */
 
 struct CheckForNodeId {
-    can_ids::NodeId node_id;
+    can::ids::NodeId node_id;
     auto operator()(uint32_t arbitration_id) const {
-        auto arb = can_arbitration_id::ArbitrationId(arbitration_id);
+        auto arb = can::arbitration_id::ArbitrationId(arbitration_id);
         auto _node_id = arb.node_id();
         return ((_node_id == node_id) ||
-                (_node_id == can_ids::NodeId::broadcast) ||
-                (_node_id == can_ids::NodeId::head));
+                (_node_id == can::ids::NodeId::broadcast) ||
+                (_node_id == can::ids::NodeId::head));
     }
 };
 
-CheckForNodeId check_for_node_id_left{.node_id = can_ids::NodeId::head_l};
+CheckForNodeId check_for_node_id_left{.node_id = can::ids::NodeId::head_l};
 
-CheckForNodeId check_for_node_id_right{.node_id = can_ids::NodeId::head_r};
+CheckForNodeId check_for_node_id_right{.node_id = can::ids::NodeId::head_r};
 
 /** Dispatcher to the various right motor handlers */
-static auto dispatcher_right_motor = can_dispatch::Dispatcher(
+static auto dispatcher_right_motor = can::dispatch::Dispatcher(
     check_for_node_id_right, motor_dispatch_target_right,
     motion_dispatch_target_right, move_group_dispatch_target_right);
 
 /** Dispatcher to the various left motor handlers */
-static auto dispatcher_left_motor = can_dispatch::Dispatcher(
+static auto dispatcher_left_motor = can::dispatch::Dispatcher(
     check_for_node_id_left, motor_dispatch_target_left,
     motion_dispatch_target_left, move_group_dispatch_target_left);
 
-static auto main_dispatcher = can_dispatch::Dispatcher(
+static auto main_dispatcher = can::dispatch::Dispatcher(
     [](auto) -> bool { return true; }, dispatcher_right_motor,
     dispatcher_left_motor, presence_sensing_disptach_target,
     system_dispatch_target);
@@ -132,7 +138,7 @@ static auto main_dispatcher = can_dispatch::Dispatcher(
 static auto read_can_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
 static auto read_can_message_buffer_writer =
-    can_message_buffer::CanMessageBufferWriter(read_can_message_buffer);
+    can::message_buffer::CanMessageBufferWriter(read_can_message_buffer);
 
 /**
  * New CAN message callback.
@@ -152,35 +158,35 @@ void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
  *  when we move to separate motor tasks.
  */
 [[noreturn]] void can_task::CanMessageReaderTask::operator()(
-    can_bus::CanBus* can_bus) {
+    can::bus::CanBus* can_bus) {
     can_bus->set_incoming_message_callback(nullptr, callback);
 
-    auto filter = can_arbitration_id::ArbitrationId();
+    auto filter = can::arbitration_id::ArbitrationId();
 
     // Accept broadcast
-    filter.node_id(can_ids::NodeId::broadcast);
+    filter.node_id(can::ids::NodeId::broadcast);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
-                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
+                        can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept any head
-    filter.node_id(can_ids::NodeId::head);
+    filter.node_id(can::ids::NodeId::head);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
+                        can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head right
-    filter.node_id(can_ids::NodeId::head_r);
+    filter.node_id(can::ids::NodeId::head_r);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
+                        can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Accept head left
-    filter.node_id(can_ids::NodeId::head_l);
+    filter.node_id(can::ids::NodeId::head_l);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                        can_arbitration_id::ArbitrationId::node_id_bit_mask);
+                        can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // Reject everything else.
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::reject, 0, 0);
 
-    auto poller = freertos_can_dispatch::FreeRTOSCanBufferPoller(
+    auto poller = can::freertos_dispatch::FreeRTOSCanBufferPoller(
         read_can_message_buffer, main_dispatcher);
     poller();
 }
@@ -195,13 +201,13 @@ auto static writer_task_control =
     freertos_task::FreeRTOSTask<512, can_task::CanMessageWriterTask>{
         writer_task};
 
-auto can_task::start_reader(can_bus::CanBus& canbus)
+auto can_task::start_reader(can::bus::CanBus& canbus)
     -> can_task::CanMessageReaderTask& {
     reader_task_control.start(5, "can reader task", &canbus);
     return reader_task;
 }
 
-auto can_task::start_writer(can_bus::CanBus& canbus)
+auto can_task::start_writer(can::bus::CanBus& canbus)
     -> can_task::CanMessageWriterTask& {
     writer_task_control.start(5, "can writer task", &canbus);
     return writer_task;

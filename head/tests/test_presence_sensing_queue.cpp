@@ -6,8 +6,8 @@
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "head/tests/mock_presence_sensing_client.hpp"
 
-using namespace presence_sensing_message_handler;
-using namespace can_messages;
+using namespace can::message_handlers::presence_sensing;
+using namespace can::messages;
 
 SCENARIO(
     "Presence sensing handler gets ReadPresenceSensingVoltageRequest msgs") {

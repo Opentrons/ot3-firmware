@@ -47,8 +47,8 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     generate_file_comment(output)
     with block(
         output=output,
-        start="namespace can_ids {\n\n",
-        terminate="}  // namespace can_ids\n\n",
+        start="namespace can::ids {\n\n",
+        terminate="}  // namespace can::ids\n\n",
     ):
         write_enum_cpp(constants_mod.FunctionCode, output)
         write_enum_cpp(constants_mod.MessageId, output)
@@ -58,6 +58,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.SensorType, output)
         write_enum_cpp(constants_mod.SensorOutputBinding, output)
         write_enum_cpp(constants_mod.SensorThresholdMode, output)
+        write_enum_cpp(constants_mod.PipetteTipActionType, output)
 
 
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:

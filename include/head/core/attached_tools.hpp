@@ -11,9 +11,9 @@ namespace attached_tools {
 using namespace tool_detection;
 
 struct AttachedTools {
-    can_ids::ToolType z_motor = can_ids::ToolType::undefined_tool;
-    can_ids::ToolType a_motor = can_ids::ToolType::undefined_tool;
-    can_ids::ToolType gripper = can_ids::ToolType::undefined_tool;
+    can::ids::ToolType z_motor = can::ids::ToolType::undefined_tool;
+    can::ids::ToolType a_motor = can::ids::ToolType::undefined_tool;
+    can::ids::ToolType gripper = can::ids::ToolType::undefined_tool;
     AttachedTools() = default;
     AttachedTools(adc::MillivoltsReadings reading)
         : z_motor(tooltype_from_reading(
@@ -30,9 +30,9 @@ struct AttachedTools {
           gripper(tooltype_from_reading(reading.gripper, arr)) {
         {}
     }
-    constexpr AttachedTools(can_ids::ToolType z_motor_in,
-                            can_ids::ToolType a_motor_in,
-                            can_ids::ToolType gripper_in)
+    constexpr AttachedTools(can::ids::ToolType z_motor_in,
+                            can::ids::ToolType a_motor_in,
+                            can::ids::ToolType gripper_in)
         : z_motor(z_motor_in), a_motor(a_motor_in), gripper(gripper_in) {}
 };
 

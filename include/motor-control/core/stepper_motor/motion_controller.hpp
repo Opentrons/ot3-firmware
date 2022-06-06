@@ -48,7 +48,7 @@ class MotionController {
         return linear_motion_sys_config;
     }
 
-    void move(const can_messages::AddLinearMoveRequest& can_msg) {
+    void move(const can::messages::AddLinearMoveRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         steps_per_tick_sq acceleration_steps =
@@ -60,11 +60,10 @@ class MotionController {
                  .seq_id = can_msg.seq_id,
                  .stop_condition = static_cast<MoveStopCondition>(
                      can_msg.request_stop_condition)};
-
         queue.try_write(msg);
     }
 
-    void move(const can_messages::HomeRequest& can_msg) {
+    void move(const can::messages::HomeRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         Move msg{.duration = can_msg.duration,
@@ -96,7 +95,7 @@ class MotionController {
     void disable_motor() { hardware.deactivate_motor(); }
 
     void set_motion_constraints(
-        const can_messages::SetMotionConstraints& can_msg) {
+        const can::messages::SetMotionConstraints& can_msg) {
         motion_constraints =
             MotionConstraints{.min_velocity = can_msg.min_velocity,
                               .max_velocity = can_msg.max_velocity,
@@ -118,3 +117,92 @@ class MotionController {
 };
 
 }  // namespace motion_controller
+
+namespace pipette_motion_controller {
+
+using namespace motor_messages;
+using namespace motor_hardware;
+
+// TODO(lc 05-22-2022) We should have PipetteMotionController inherit
+// from MotionController, but that will require some template refactoring
+// to make it compile.
+template <lms::MotorMechanicalConfig MEConfig>
+class PipetteMotionController {
+  public:
+    using GenericQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<GearMotorMove>;
+    PipetteMotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
+                            PipetteStepperMotorHardwareIface& hardware_iface,
+                            MotionConstraints constraints, GenericQueue& queue)
+        : linear_motion_sys_config(lms_config),
+          hardware(hardware_iface),
+          motion_constraints(constraints),
+          queue(queue),
+          steps_per_mm(convert_to_fixed_point_64_bit(
+              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
+
+    auto operator=(const PipetteMotionController&)
+        -> PipetteMotionController& = delete;
+    auto operator=(PipetteMotionController&&)
+        -> PipetteMotionController&& = delete;
+    PipetteMotionController(PipetteMotionController&) = delete;
+    PipetteMotionController(PipetteMotionController&&) = delete;
+
+    ~PipetteMotionController() = default;
+
+    [[nodiscard]] auto get_mechanical_config() const
+        -> const lms::LinearMotionSystemConfig<MEConfig>& {
+        return linear_motion_sys_config;
+    }
+
+    void move(const can::messages::TipActionRequest& can_msg) {
+        steps_per_tick velocity_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        GearMotorMove msg{
+            can_msg.duration,
+            velocity_steps,
+            0,
+            can_msg.group_id,
+            can_msg.seq_id,
+            static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            can_msg.action};
+        queue.try_write(msg);
+    }
+
+    void stop() { hardware.stop_timer_interrupt(); }
+
+    auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
+
+    auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
+
+    auto check_tip_sense() -> bool { return hardware.check_tip_sense(); }
+
+    void enable_motor() {
+        hardware.start_timer_interrupt();
+        hardware.activate_motor();
+    }
+
+    void disable_motor() { hardware.deactivate_motor(); }
+
+    void set_motion_constraints(
+        const can::messages::SetMotionConstraints& can_msg) {
+        motion_constraints =
+            MotionConstraints{.min_velocity = can_msg.min_velocity,
+                              .max_velocity = can_msg.max_velocity,
+                              .min_acceleration = can_msg.min_acceleration,
+                              .max_acceleration = can_msg.max_acceleration};
+    }
+
+    [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {
+        return motion_constraints;
+    }
+
+  private:
+    lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
+    PipetteStepperMotorHardwareIface& hardware;
+    MotionConstraints motion_constraints;
+    GenericQueue& queue;
+    sq31_31 steps_per_mm{0};
+};
+
+}  // namespace pipette_motion_controller

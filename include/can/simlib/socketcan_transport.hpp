@@ -15,10 +15,10 @@
 #include "common/core/synchronization.hpp"
 #include "transport.hpp"
 
-namespace socketcan_transport {
+namespace can::sim::transport::socketcan {
 
 template <synchronization::LockableProtocol CriticalSection>
-class SocketCanTransport : public can_transport::BusTransportBase {
+class SocketCanTransport : public can::sim::transport::BusTransportBase {
   public:
     explicit SocketCanTransport(const char *address) : address{address} {}
     ~SocketCanTransport() { close(); };
@@ -118,4 +118,4 @@ auto SocketCanTransport<CriticalSection>::read(uint32_t &arb_id, uint8_t *buff,
     return false;
 }
 
-}  // namespace socketcan_transport
+}  // namespace can::sim::transport::socketcan

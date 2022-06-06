@@ -11,7 +11,7 @@ class CanBus;
 namespace can_task {
 
 struct CanMessageReaderTask {
-    [[noreturn]] void operator()(can_bus::CanBus* can_bus);
+    [[noreturn]] void operator()(can::bus::CanBus* can_bus);
 };
 
 /**
@@ -20,9 +20,9 @@ struct CanMessageReaderTask {
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_reader(can_bus::CanBus& canbus) -> CanMessageReaderTask&;
+auto start_reader(can::bus::CanBus& canbus) -> CanMessageReaderTask&;
 
-using CanMessageWriterTask = message_writer_task::MessageWriterTask<
+using CanMessageWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
@@ -31,6 +31,6 @@ using CanMessageWriterTask = message_writer_task::MessageWriterTask<
  * @param canbus reference to the can bus
  * @return The task.
  */
-auto start_writer(can_bus::CanBus& canbus) -> CanMessageWriterTask&;
+auto start_writer(can::bus::CanBus& canbus) -> CanMessageWriterTask&;
 
 }  // namespace can_task

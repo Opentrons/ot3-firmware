@@ -32,7 +32,7 @@ static auto spi_task_builder =
  * Start gantry tasks.
  */
 void gantry_tasks::start_tasks(
-    can_bus::CanBus& can_bus,
+    can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs) {
@@ -65,8 +65,8 @@ void gantry_tasks::start_tasks(
     queues.spi_queue = &spi_task.get_queue();
 }
 
-gantry_tasks::QueueClient::QueueClient(can_ids::NodeId this_fw)
-    : can_message_writer::MessageWriter{this_fw} {}
+gantry_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)
+    : can::message_writer::MessageWriter{this_fw} {}
 
 void gantry_tasks::QueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

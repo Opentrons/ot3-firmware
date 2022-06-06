@@ -8,13 +8,13 @@
 #include "dispatch.hpp"
 #include "message_core.hpp"
 
-namespace freertos_can_dispatch {
+namespace can::freertos_dispatch {
 
 using namespace message_core;
 using namespace message_buffer;
-using namespace can_bus;
-using namespace can_message_buffer;
-using namespace can_dispatch;
+using namespace can::bus;
+using namespace can::message_buffer;
+using namespace can::dispatch;
 using namespace freertos_message_buffer;
 using namespace freertos_task;
 
@@ -115,4 +115,4 @@ class FreeRTOSCanReader {
     Control& message_buffer;
 };
 
-}  // namespace freertos_can_dispatch
+}  // namespace can::freertos_dispatch

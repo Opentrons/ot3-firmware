@@ -13,7 +13,8 @@
 static auto tasks = central_tasks::Tasks{};
 static auto queue_client = central_tasks::QueueClient{};
 
-void central_tasks::start_tasks(can_bus::CanBus& can_bus, can_ids::NodeId id) {
+void central_tasks::start_tasks(can::bus::CanBus& can_bus,
+                                can::ids::NodeId id) {
     queue_client.set_node_id(id);
     auto& queues = central_tasks::get_queues();
     auto& tasks = central_tasks::get_tasks();
@@ -30,7 +31,7 @@ void central_tasks::start_tasks(can_bus::CanBus& can_bus, can_ids::NodeId id) {
 central_tasks::QueueClient::QueueClient()
     // This gets overridden in start_tasks, needs to be static here since this
     // is free-store allocated
-    : can_message_writer::MessageWriter{can_ids::NodeId::pipette_left} {}
+    : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 auto central_tasks::get_tasks() -> Tasks& { return tasks; }
 

@@ -10,7 +10,7 @@ SCENARIO("Initial mount detection") {
             THEN("the mount should always be left") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==
-                        can_ids::NodeId::pipette_left);
+                        can::ids::NodeId::pipette_left);
             }
         }
         WHEN("Checking right-side voltages") {
@@ -19,7 +19,7 @@ SCENARIO("Initial mount detection") {
             THEN("the mount should always be right") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==
-                        can_ids::NodeId::pipette_right);
+                        can::ids::NodeId::pipette_right);
             }
         }
         WHEN("Checking out of bounds voltages") {
@@ -27,7 +27,7 @@ SCENARIO("Initial mount detection") {
             THEN("the mount should always be left") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==
-                        can_ids::NodeId::pipette_left);
+                        can::ids::NodeId::pipette_left);
             }
         }
     }

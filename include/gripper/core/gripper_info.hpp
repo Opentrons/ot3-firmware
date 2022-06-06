@@ -11,8 +11,8 @@
 #include "eeprom/core/serial_number.hpp"
 
 namespace gripper_info {
-using namespace can_ids;
-using namespace can_messages;
+using namespace can::ids;
+using namespace can::messages;
 
 /**
  * A HandlesMessages implementing class that will respond to system messages.
@@ -20,7 +20,7 @@ using namespace can_messages;
  * @tparam CanClient can writer task client
  * @tparam EEPromClient eeprom task client
  */
-template <message_writer_task::TaskClient CanClient,
+template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
 class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
   public:
@@ -42,7 +42,7 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
     ~GripperInfoMessageHandler() final = default;
 
     using MessageType =
-        std::variant<std::monostate, GripperInfoRequest, SetSerialNumber>;
+        std::variant<std::monostate, InstrumentInfoRequest, SetSerialNumber>;
 
     /**
      * Message handler
@@ -58,7 +58,7 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
      */
     void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
         // TODO (al, 2022-05-19): Define model.
-        writer.send_can_message(can_ids::NodeId::host,
+        writer.send_can_message(can::ids::NodeId::host,
                                 GripperInfoResponse{.model = 1, .serial = sn});
     }
 
@@ -66,9 +66,9 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
     void visit(std::monostate &) {}
 
     /**
-     * Handle request for gripper info.
+     * Handle request for instrument info.
      */
-    void visit(const GripperInfoRequest &) {
+    void visit(const InstrumentInfoRequest &) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
         serial_number_accessor.start_read();

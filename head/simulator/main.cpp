@@ -18,7 +18,7 @@
 /**
  * The CAN bus.
  */
-static auto canbus = sim_canbus::SimCANBus(can_transport::create());
+static auto canbus = can::sim::bus::SimCANBus(can::sim::transport::create());
 
 /**
  * The SPI busses.
