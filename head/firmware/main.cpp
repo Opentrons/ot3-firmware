@@ -142,8 +142,8 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x08,
-                           .run_current = 0x10,
+            .ihold_irun = {.hold_current = 0x04,
+                           .run_current = 0x0D,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
@@ -169,8 +169,8 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x08,
-                           .run_current = 0x10,
+            .ihold_irun = {.hold_current = 0x04,
+                           .run_current = 0x0D,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
@@ -293,8 +293,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
 
     app_update_clear_flags();
-
-    initialize_timer(motor_callback_glue, left_enc_direction_callback_glue,
+    initialize_timer(motor_callback_glue,
+                     left_enc_direction_callback_glue,
                      left_enc_overflow_callback_glue,
                      right_enc_direction_callback_glue,
                      right_enc_overflow_callback_glue);

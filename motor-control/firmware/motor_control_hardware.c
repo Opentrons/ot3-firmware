@@ -75,8 +75,8 @@ bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
  * Note: Eventually we can remove these if statements when we get encoders on XY
  * Axes
  */
-uint32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
-    uint32_t pulses;
+int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
+    int32_t pulses;
     if (enc_htim != NULL) {
         pulses = __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)enc_htim);
     } else {
@@ -86,11 +86,15 @@ uint32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
 }
 
 void motor_hardware_reset_encoder_count(void* enc_htim) {
-    if (enc_htim != NULL) {
-        __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
+    /* Offset the zero position by 10 pulses to eliminate any noise on the system.
+    */
+    __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_DIR);
+    bool overflow_flag = __HAL_TIM_GET_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
+    while(overflow_flag){
         __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
-        __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_DIR);
+        overflow_flag = __HAL_TIM_GET_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
     }
+    __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
 }
 
 /*
@@ -99,16 +103,8 @@ void motor_hardware_reset_encoder_count(void* enc_htim) {
  * flag bit
  */
 void motor_hardware_clear_status_register(void* enc_htim) {
-    if (enc_htim != NULL) {
-        /* Clear interrupt flag bit */
-        __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
-        //        __HAL_TIM_CLEAR_IT((TIM_HandleTypeDef*)enc_htim,
-        //        TIM_IT_UPDATE);
-        //  /* The update event of the enable timer is interrupted */
-        // __HAL_TIM_ENABLE_IT((TIM_HandleTypeDef*)enc_htim, TIM_IT_UPDATE);
-        // /* Set update event request source as: counter overflow */
-        // __HAL_TIM_URS_ENABLE((TIM_HandleTypeDef*)enc_htim);
-    }
+    /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
 }
 
 bool motor_hardware_encoder_get_status_register(void* enc_htim) {

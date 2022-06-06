@@ -338,7 +338,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     uint8_t group_id;
     uint8_t seq_id;
     uint32_t current_position_um;
-    uint32_t encoder_position;
+    int32_t encoder_position;
     uint8_t ack_id;
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -356,7 +356,7 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
 
 struct EncoderPositionResponse
     : BaseMessage<MessageId::encoder_position_response> {
-    uint32_t encoder_position;
+    int32_t encoder_position;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {

@@ -147,6 +147,7 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             encoder.reset();
+            encoder.set_home_flag_triggered();
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -214,7 +215,7 @@ class MotorInterruptHandler {
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
                 .encoder_position =
-                    static_cast<uint32_t>(encoder.get_encoder_pulses()),
+                    static_cast<int32_t>(encoder.get_encoder_pulses()),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(

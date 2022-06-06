@@ -180,7 +180,6 @@ HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef *hspi) {
 
 void Encoder_GPIO_Init(void) {
     /* Peripheral clock enable */
-    // HAL_TIM_Encoder_MspInit();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
@@ -280,18 +279,16 @@ void TIM2_EncoderZR_Init(void) {
         Error_Handler();
     }
     HAL_TIMEx_EnableEncoderIndex(&htim2);
-
     /* Reset counter */
-    //    __HAL_TIM_SET_COUNTER(&htim2, 0);
+    __HAL_TIM_SET_COUNTER(&htim2, 0);
     /* Clear interrupt flag bit */
     __HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
+    /* Enable the update event for the Direction interrupted */
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_DIR);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim2);
-    HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(TIM2_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
@@ -334,20 +331,19 @@ void TIM3_EncoderZL_Init(void) {
     if (HAL_TIMEx_ConfigEncoderIndex(&htim3, &sEncoderIndexConfig) != HAL_OK) {
         Error_Handler();
     }
+    HAL_TIMEx_EnableEncoderIndex(&htim3);
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim3, 0);
     /* Clear interrupt flag bit */
-    __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
+    __HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
+    /* Enable the update event for the Direction interrupted */
+    __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_DIR);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim3);
-    // __HAL_TIM_UIFREMAP_ENABLE(&htim3);
-    HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
-    HAL_TIM_Base_Start_IT(&htim3);
 }
 
 void MX_TIM7_Init(void) {
@@ -382,17 +378,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
-void HAL_TIMEx_DirectionChangeCallback(TIM_HandleTypeDef *htim) {
-    // Check Direction of encoder timer
-    if ((htim == &htim2) && right_enc_direction_callback) {
-        right_enc_direction_callback();
-        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_DIR);
-    } else if (htim == &htim3 && left_enc_direction_callback) {
-        left_enc_direction_callback();
-        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_DIR);
-    }
-}
-
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim7) {
         /* Peripheral clock enable */
@@ -408,16 +393,17 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM2_CLK_ENABLE();
         /* TIM2 interrupt Init */
-        HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0);
+        HAL_NVIC_SetPriority(TIM2_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(TIM2_IRQn);
     } else if (htim == &htim3) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM3_CLK_ENABLE();
         /* TIM3 interrupt Init */
-        HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
+        HAL_NVIC_SetPriority(TIM3_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(TIM3_IRQn);
     }
 }
+
 
 void initialize_timer(motor_interrupt_callback callback,
                       encoder_direction_callback l_enc_dir_callback,

@@ -42,7 +42,7 @@ bool BrushedMotorHardware::check_sync_in() {
     return gpio::is_set(pins.limit_switch);
 }
 
-uint32_t BrushedMotorHardware::get_encoder_pulses() {
+int32_t BrushedMotorHardware::get_encoder_pulses() {
     return motor_hardware_encoder_pulse_count(enc_handle);
 }
 

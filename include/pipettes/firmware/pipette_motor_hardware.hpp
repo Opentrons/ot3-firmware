@@ -39,7 +39,7 @@ class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
     auto check_limit_switch() -> bool final;
     void set_LED(bool status) final;
     auto check_sync_in() -> bool final;
-    auto get_encoder_pulses() -> uint32_t final;
+    auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
     auto check_tip_sense() -> bool final;
 
