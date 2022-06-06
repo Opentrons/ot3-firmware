@@ -35,7 +35,7 @@ struct Ack {
     uint8_t group_id;
     uint8_t seq_id;
     uint32_t current_position_steps;
-    uint32_t encoder_position;
+    int32_t encoder_position;
     AckMessageId ack_id;
 };
 
@@ -66,7 +66,7 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 struct GearMotorMove : public Move {
     can::ids::PipetteTipActionType action;
 
-    auto build_ack(uint32_t position, uint32_t pulses, AckMessageId _id)
+    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id)
         -> GearMotorAck {
         return GearMotorAck{group_id, seq_id, position, pulses, _id, action};
     }
