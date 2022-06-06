@@ -293,8 +293,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
 
     app_update_clear_flags();
-    initialize_timer(motor_callback_glue,
-                     left_enc_direction_callback_glue,
+    initialize_timer(motor_callback_glue, left_enc_direction_callback_glue,
                      left_enc_overflow_callback_glue,
                      right_enc_direction_callback_glue,
                      right_enc_overflow_callback_glue);

@@ -2,11 +2,11 @@
 
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "motor-control/core/brushed_motor/brushed_encoder_handler.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "motor-control/core/brushed_motor/brushed_encoder_handler.hpp"
 
 namespace brushed_motor_handler {
 
@@ -107,7 +107,7 @@ class BrushedMotorInterruptHandler {
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = 
+                .encoder_position =
                     static_cast<int32_t>(get_encoder_pulses() >> 31),
                 .ack_id = ack_msg_id,
             };
@@ -138,6 +138,7 @@ class BrushedMotorInterruptHandler {
     motor_hardware::BrushedMotorHardwareIface& hardware;
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     BrushedMove buffered_move = BrushedMove{};
+
   public:
     encoder_handler::EncoderHandler encoder{hardware};
 };

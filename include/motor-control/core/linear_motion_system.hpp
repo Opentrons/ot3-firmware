@@ -29,7 +29,7 @@ struct LinearMotionSystemConfig {
     MEConfig mech_config{};
     float steps_per_rev{};
     float microstep{};
-    float encoder_ppr{0.0};  
+    float encoder_ppr{0.0};
     float gear_ratio{1.0};
     [[nodiscard]] constexpr auto get_steps_per_mm() const -> float {
         return (steps_per_rev * microstep * gear_ratio) /
@@ -45,11 +45,11 @@ struct LinearMotionSystemConfig {
     }
     [[nodiscard]] constexpr auto get_encoder_um_per_pulse() const -> float {
         // float um_per_pulse = 0;
-        if (!encoder_ppr){
+        if (!encoder_ppr) {
             return 0;
-        }else{
+        } else {
             return (mech_config.get_mm_per_rev()) /
-            (encoder_ppr * 4.0 * gear_ratio) * 1000.0;
+                   (encoder_ppr * 4.0 * gear_ratio) * 1000.0;
         }
         // return um_per_pulse;
     }

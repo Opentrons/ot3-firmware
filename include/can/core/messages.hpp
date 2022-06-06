@@ -994,10 +994,10 @@ using ResponseMessageType = std::variant<
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    EncoderPositionResponse,
-    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
-    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
-    TipActionResponse, PeripheralStatusResponse>;
+    EncoderPositionResponse, ReadFromSensorResponse,
+    FirmwareUpdateStatusResponse, SensorThresholdResponse,
+    SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
+    BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
+    PeripheralStatusResponse>;
 
 }  // namespace can::messages

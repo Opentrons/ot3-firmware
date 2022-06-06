@@ -211,8 +211,7 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                static_cast<int32_t>(encoder.get_encoder_pulses()),
-                ack_msg_id);
+                static_cast<int32_t>(encoder.get_encoder_pulses()), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
@@ -268,7 +267,8 @@ class MotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
- public:
+
+  public:
     encoder_handler::EncoderHandler encoder{hardware};
 };
 }  // namespace motor_handler

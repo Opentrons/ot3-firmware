@@ -51,8 +51,7 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id)
-        -> Ack {
+    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id) -> Ack {
         return Ack{
             .group_id = group_id,
             .seq_id = seq_id,
