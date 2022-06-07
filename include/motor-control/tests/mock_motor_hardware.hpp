@@ -28,7 +28,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void set_finished_ack_id(uint8_t id) { finished_move_id = id; }
     uint8_t get_finished_ack_id() { return finished_move_id; }
     void reset_encoder_pulses() final { test_pulses = 0; }
-    uint32_t get_encoder_pulses() final { return test_pulses; }
+    int32_t get_encoder_pulses() final { return test_pulses; }
     void clear_encoder_SR() final {}
     auto get_encoder_SR_flag() -> bool final { return mock_sr_value; }
     auto get_encoder_direction() -> bool final { return mock_dir_value; }

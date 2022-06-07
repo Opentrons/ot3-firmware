@@ -26,7 +26,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final { return true; }
     void reset_encoder_pulses() final { test_pulses = 0; }
-    uint32_t get_encoder_pulses() final { return test_pulses; }
+    int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
     void clear_encoder_SR() final { sr_flag = false; }
     bool get_encoder_SR_flag() final { return !sr_flag; }
@@ -97,7 +97,7 @@ class SimGearMotorHardwareIface
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final { return true; }
     void reset_encoder_pulses() final { test_pulses = 0; }
-    uint32_t get_encoder_pulses() final { return test_pulses; }
+    int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
     void trigger_tip_sense() { tip_sense_status = true; }
 
