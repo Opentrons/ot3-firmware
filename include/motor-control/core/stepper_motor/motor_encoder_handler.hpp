@@ -52,19 +52,19 @@ class EncoderHandler {
     /*  Due to the sensitivity of the direction bit in the CR1 register
         These functions were created to set which direction the motor is getting
         driven.*/
-    void set_positive_direction() { enc_direction = 0x0; }
+    void set_positive_direction() { enc_direction = false; }
 
-    void set_negative_direction() { enc_direction = 0x1; }
+    void set_negative_direction() { enc_direction = true; }
 
-    void set_home_flag_triggered() {  home_triggered = 0x1; }
+    void set_home_flag_triggered() {  home_triggered = true; }
 
-    void reset_home_flag() { home_triggered = 0x0; }
+    void reset_home_flag() { home_triggered = false; }
 
   private:
     motor_hardware::StepperMotorHardwareIface& hardware;
     uint8_t enc_overflow_counter = 0;
     int32_t enc_position_tracker = 0x0;
-    bool enc_direction = 0x0;
-    bool home_triggered = 0x0;
+    bool enc_direction = false;
+    bool home_triggered = false;
 };
 };  // namespace encoder_handler
