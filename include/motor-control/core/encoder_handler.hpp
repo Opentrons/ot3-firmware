@@ -5,7 +5,7 @@ namespace encoder_handler {
 class EncoderHandler {
   public:
     EncoderHandler() = delete;
-    EncoderHandler(motor_hardware::StepperMotorHardwareIface& hardware_iface)
+    EncoderHandler(motor_hardware::MotorHardwareIface& hardware_iface)
         : hardware(hardware_iface) {}
     ~EncoderHandler() = default;
     auto operator=(EncoderHandler&) -> EncoderHandler& = delete;
@@ -56,12 +56,12 @@ class EncoderHandler {
 
     void set_negative_direction() { enc_direction = true; }
 
-    void set_home_flag_triggered() {  home_triggered = true; }
+    void set_home_flag_triggered() { home_triggered = true; }
 
     void reset_home_flag() { home_triggered = false; }
 
   private:
-    motor_hardware::StepperMotorHardwareIface& hardware;
+    motor_hardware::MotorHardwareIface& hardware;
     uint8_t enc_overflow_counter = 0;
     int32_t enc_position_tracker = 0x0;
     bool enc_direction = false;

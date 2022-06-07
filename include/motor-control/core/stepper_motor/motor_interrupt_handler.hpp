@@ -4,7 +4,7 @@
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
-#include "motor-control/core/stepper_motor/motor_encoder_handler.hpp"
+#include "motor-control/core/encoder_handler.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 namespace motor_handler {

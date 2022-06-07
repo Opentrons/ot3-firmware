@@ -2,7 +2,7 @@
 
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "motor-control/core/brushed_motor/brushed_encoder_handler.hpp"
+#include "motor-control/core/encoder_handler.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
