@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "can/core/ids.hpp"
+#include "ids.hpp"
 
 namespace can::arbitration_id {
 
