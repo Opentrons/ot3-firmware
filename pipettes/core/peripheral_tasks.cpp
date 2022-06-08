@@ -5,7 +5,7 @@
 static auto tasks = peripheral_tasks::Tasks{};
 static auto queue_client = peripheral_tasks::QueueClient{};
 
-static auto i2c1_task_client =
+static auto i2c1_task _client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 static auto i2c3_task_client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();

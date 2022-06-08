@@ -5,13 +5,12 @@
 extern "C" {
 #endif  // __cplusplus
 
-
 typedef struct HandlerStruct {
+    HAL_I2C_HANDLE i2c2;
     HAL_I2C_HANDLE i2c3;
 } I2CHandlerStruct;
 
 void i2c_setup(I2CHandlerStruct* i2c_handles);
-
 
 /**
  * enable writing to the eeprom.
