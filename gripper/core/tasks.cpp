@@ -115,6 +115,12 @@ void gripper_tasks::QueueClient::send_capacitive_sensor_queue(
     capacitive_sensor_queue->try_write(m);
 }
 
+// gripper does not have environment nor pressure sensor
+void gripper_tasks::QueueClient::send_environment_sensor_queue(
+    const sensors::utils::TaskMessage&) {}
+void gripper_tasks::QueueClient::send_pressure_sensor_queue(
+    const sensors::utils::TaskMessage&) {}
+
 /**
  * Access to the tasks singleton
  * @return

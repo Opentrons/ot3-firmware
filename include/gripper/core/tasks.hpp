@@ -57,6 +57,10 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_capacitive_sensor_queue(const sensors::utils::TaskMessage& m);
 
+    void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
+
+    void send_pressure_sensor_queue(const sensors::utils::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
