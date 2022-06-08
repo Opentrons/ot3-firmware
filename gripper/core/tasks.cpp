@@ -1,6 +1,7 @@
 #include "gripper/core/tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "common/core/freertos_timer.hpp"
 #include "gripper/core/can_task.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
@@ -27,6 +28,9 @@ static auto i2c2_task_builder =
 static auto i2c3_task_builder =
     freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
 
+template <template <typename> typename QueueImpl>
+using PollerWithTimer =
+    i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
 static auto i2c2_poll_task_builder =
     freertos_task::TaskStarter<1024, PollerWithTimer>{};
 static auto i2c3_poll_task_builder =
@@ -68,16 +72,16 @@ void gripper_tasks::start_tasks(
     auto& i2c3_poller_task =
         i2c3_poll_task_builder.start(5, "i2c3 poller", i2c3_task_client);
     i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
-    
+
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
 
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, "capacitive sensor", i2c2_task_client, i2c2_poller_client,
+        5, "capacitive sensor", i2c2_task_client, i2c2_poll_client,
         sensor_hardware, queues);
 
     tasks.i2c2_task = &i2c2_task;
-    tasks.i2c3_tasks = &i2c3_task;
+    tasks.i2c3_task = &i2c3_task;
     tasks.i2c2_poller_task = &i2c2_poller_task;
     tasks.i2c3_poller_task = &i2c3_poller_task;
     tasks.eeprom_task = &eeprom_task;
