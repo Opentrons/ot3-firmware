@@ -4,13 +4,33 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Head")
 add_STM32G4_freertos("Head")
 
+find_program(ARM_GDB
+        arm-none-eabi-gdb-py
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
+
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
+
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
+# List of revisions of the head that we support
+set(REVISIONS head-proto head-rev1)
+# The default revision that you'll get if you use targets not qualified
+# by revision (i.e. if you do cmake --build --preset=head --target head
+# rather than cmake --build --preset=head --target head-proto)
+set(DEFAULT_REVISION head-proto)
+
 # Add source files that should be checked by clang-tidy here
 set(HEAD_FW_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/adc/adc_comms.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
@@ -32,40 +52,105 @@ set(HEAD_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
 
-add_executable(head
+add_executable(head-proto
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
+target_head_core_proto(head-proto)
 
-target_head_core(head)
+add_executable(head-rev1
+        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${HEAD_FW_LINTABLE_SRCS}
+        ${HEAD_FW_NON_LINTABLE_SRCS})
+target_head_core_rev1(head-rev1)
 
-target_ot_motor_control(head)
 
-target_link_libraries(head
-        PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Head STM32G4xx_FreeRTOS_Head
-        can-core)
+foreach(REVISION_TARGET IN LISTS REVISIONS )
+  target_ot_motor_control(${REVISION_TARGET})
 
-set_target_properties(head
-        PROPERTIES CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE
-        C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+  target_link_libraries(${REVISION_TARGET}
+          PUBLIC STM32G491RETx
+          STM32G4xx_Drivers_Head STM32G4xx_FreeRTOS_Head
+          can-core)
 
-target_include_directories(head
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
+  set_target_properties(${REVISION_TARGET}
+          PROPERTIES CXX_STANDARD 20
+          CXX_STANDARD_REQUIRED TRUE
+          C_STANDARD 11
+          C_STANDARD_REQUIRED TRUE)
 
-target_compile_options(head
-        PUBLIC
-        -Wall
-        -Werror
-        -Wextra
-        -Wno-missing-field-initializers
-        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+  target_include_directories(${REVISION_TARGET}
+          PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+  target_compile_options(${REVISION_TARGET}
+          PUBLIC
+          -Wall
+          -Werror
+          -Wextra
+          -Wno-missing-field-initializers
+          $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+          $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+  # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
+  # this dir
+  set_target_properties(${REVISION_TARGET}
+          PROPERTIES
+          CROSSCOMPILING_EMULATOR
+          "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+
+  add_custom_command(OUTPUT ${REVISION_TARGET}.hex
+          COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Oihex" ${REVISION_TARGET}.hex
+          DEPENDS ${REVISION_TARGET}
+          VERBATIM)
+
+  add_custom_target(${REVISION_TARGET}-hex ALL
+          DEPENDS ${REVISION_TARGET}.hex)
+
+  add_custom_command(OUTPUT ${REVISION_TARGET}.bin
+          COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Obinary" ${REVISION_TARGET}.bin
+          DEPENDS ${REVISION_TARGET}
+          VERBATIM)
+
+  add_custom_target(${REVISION_TARGET}-bin ALL
+          DEPENDS ${REVISION_TARGET}.bin)
+
+  # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
+  # arguable misuse of the concept) to the appropriate cross-gdb with
+  # remote-target. You should make sure st-util is running; that's not
+  # done here because it won't be multi-os compatible, and also it
+  # should be running the entire time and that's tough to accomplish
+  # in a custom command
+  add_custom_target(${REVISION_TARGET}-debug
+          COMMAND ${REVISION_TARGET}
+          USES_TERMINAL
+          )
+
+  # Targets to create full image hex file containing both bootloader and application
+  add_custom_command(
+          OUTPUT ${REVISION_TARGET}-image.hex
+          DEPENDS ${REVISION_TARGET}-hex bootloader-head-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
+          COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex ${REVISION_TARGET}.hex
+          VERBATIM)
+  add_custom_target(${REVISION_TARGET}-image-hex ALL
+          DEPENDS ${REVISION_TARGET}-image.hex)
+
+  # Targets to flash bootloader and firmware
+  add_custom_target(${REVISION_TARGET}-flash
+          COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.hex;reset;exit"
+          VERBATIM
+          COMMENT "Flashing board"
+          DEPENDS ${REVISION_TARGET}-image-hex)
+endforeach()
+
+# Default targets
+add_custom_target(head-image-hex DEPENDS ${DEFAULT_REVISION}-image-hex)
+add_custom_target(head-debug DEPENDS ${DEFAULT_REVISION}-debug)
+add_custom_target(head DEPENDS ${DEFAULT_REVISION})
+add_custom_target(head-flash DEPENDS ${DEFAULT_REVISION}-flash)
+
 
 target_include_directories(STM32G4xx_Drivers_Head
         PUBLIC .)
@@ -80,38 +165,6 @@ target_compile_definitions(STM32G4xx_FreeRTOS_Head
 set_target_properties(
         STM32G4xx_FreeRTOS_Head
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
-
-find_program(ARM_GDB
-        arm-none-eabi-gdb-py
-        PATHS "${CrossGCC_BINDIR}"
-        NO_DEFAULT_PATH
-        REQUIRED)
-message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
-# Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
-# this dir
-set_target_properties(head
-        PROPERTIES
-        CROSSCOMPILING_EMULATOR
-        "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
-
-find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
-        PATHS "${CrossGCC_BINDIR}"
-        NO_DEFAULT_PATH
-        REQUIRED)
-add_custom_command(OUTPUT head.hex
-        COMMAND ${CROSS_OBJCOPY} ARGS head "-Oihex" head.hex
-        DEPENDS head
-        VERBATIM)
-add_custom_target(head-hex ALL
-        DEPENDS head.hex)
-
-add_custom_command(OUTPUT head.bin
-        COMMAND ${CROSS_OBJCOPY} ARGS head "-Obinary" head.bin
-        DEPENDS head
-        VERBATIM)
-add_custom_target(head-bin ALL
-        DEPENDS head.bin)
-
 
 find_package(Clang)
 
@@ -135,33 +188,3 @@ add_custom_target(head-lint
         COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${HEAD_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
 list(APPEND LINT_TARGETS head-lint)
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
-# Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
-# arguable misuse of the concept) to the appropriate cross-gdb with
-# remote-target. You should make sure st-util is running; that's not
-# done here because it won't be multi-os compatible, and also it
-# should be running the entire time and that's tough to accomplish
-# in a custom command
-add_custom_target(head-debug
-        COMMAND head
-        USES_TERMINAL
-        )
-
-
-# Targets to create full image hex file containing both bootloader and application
-add_custom_command(
-        OUTPUT head-image.hex
-        DEPENDS head-hex bootloader-head-hex head.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
-        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py head-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex head.hex
-        VERBATIM)
-add_custom_target(head-image-hex ALL
-        DEPENDS head-image.hex)
-
-
-set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
-
-# Targets to flash bootloader and firmware
-add_custom_target(head-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/head-image.hex;reset;exit"
-        VERBATIM
-        COMMENT "Flashing board"
-        DEPENDS head-image-hex)
