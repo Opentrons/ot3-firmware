@@ -41,7 +41,7 @@ target_compile_definitions(head-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(head-simulator)
 
-target_head_core(head-simulator)
+target_head_core_proto(head-simulator)
 
 target_ot_motor_control(head-simulator)
 
