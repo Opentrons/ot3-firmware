@@ -25,12 +25,13 @@
 #include "common/firmware/clocking.h"
 #include "common/firmware/gpio.hpp"
 #include "head/core/presence_sensing_driver.hpp"
-#include "head/core/tasks.hpp"
+#include "head/core/queues.hpp"
+#include "head/core/tasks_rev1.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -124,12 +125,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOB,
             .pin = GPIO_PIN_9,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_6,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
@@ -138,7 +134,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 };
 
 // TODO clean up the head main file by using interfaces.
-static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
+static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
@@ -165,7 +161,7 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
         .GPIO_handle = GPIOB,
     }};
 
-static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
+static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},

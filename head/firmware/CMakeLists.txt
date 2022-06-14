@@ -53,13 +53,13 @@ set(HEAD_FW_NON_LINTABLE_SRCS
         )
 
 add_executable(head-proto
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/main_proto.cpp
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 target_head_core_proto(head-proto)
 
 add_executable(head-rev1
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 target_head_core_rev1(head-rev1)

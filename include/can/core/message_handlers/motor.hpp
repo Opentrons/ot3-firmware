@@ -4,16 +4,16 @@
 
 #include "can/core/messages.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 
 namespace can::message_handlers::motor {
 
 using namespace can::messages;
 
-template <tmc2130::tasks::TaskClient Client>
+template <tmc::tasks::TaskClient Client>
 class MotorHandler {
   public:
-    using MessageType = tmc2130::tasks::CanMessage;
+    using MessageType = tmc::tasks::CanMessage;
 
     MotorHandler(Client &motor_client) : motor_client{motor_client} {}
     MotorHandler(const MotorHandler &) = delete;
