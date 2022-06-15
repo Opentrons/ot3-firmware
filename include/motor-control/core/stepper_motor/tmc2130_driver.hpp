@@ -66,7 +66,7 @@ class TMC2130 {
             response = _spi_manager.write(converted_addr, command_data,
                                           _task_queue, _cs_intf, 10);
             if (response) {
-                i = 0;
+                break;
             }
         }
         return response;
