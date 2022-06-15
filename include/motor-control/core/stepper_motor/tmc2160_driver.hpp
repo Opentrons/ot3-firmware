@@ -59,8 +59,16 @@ class TMC2160 {
 
     auto write(Registers addr, uint32_t command_data) -> bool {
         auto converted_addr = static_cast<uint8_t>(addr);
-        return _spi_manager.write(converted_addr, command_data, _task_queue,
-                                  _cs_intf);
+        auto response = false;
+        // setting a 10 ms timeout and 3 repeats.
+        for (int i=3; i>0; i--) {
+            response = _spi_manager.write(
+                converted_addr, command_data, _task_queue, _cs_intf, 10);
+            if (response) {
+                i = 0;
+            }
+        }
+        return response;
     }
 
     /**
