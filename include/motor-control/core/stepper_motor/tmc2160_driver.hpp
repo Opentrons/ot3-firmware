@@ -61,9 +61,9 @@ class TMC2160 {
         auto converted_addr = static_cast<uint8_t>(addr);
         auto response = false;
         // setting a 10 ms timeout and 3 repeats.
-        for (int i=3; i>0; i--) {
-            response = _spi_manager.write(
-                converted_addr, command_data, _task_queue, _cs_intf, 10);
+        for (int i = 3; i > 0; i--) {
+            response = _spi_manager.write(converted_addr, command_data,
+                                          _task_queue, _cs_intf, 10);
             if (response) {
                 i = 0;
             }
