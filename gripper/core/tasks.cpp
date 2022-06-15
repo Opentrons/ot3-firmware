@@ -77,7 +77,7 @@ void gripper_tasks::start_tasks(
                                                   eeprom_hw_iface);
 
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, "capacitive sensor", i2c2_task_client, i2c2_poll_client,
+        5, "capacitive sensor", i2c3_task_client, i2c3_poll_client,
         sensor_hardware, queues);
 
     tasks.i2c2_task = &i2c2_task;
