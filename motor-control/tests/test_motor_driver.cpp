@@ -9,74 +9,77 @@
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
-template<typename DriverType, typename DefaultConfigs, size_t queue_size>
+template <typename DriverType, typename DefaultConfigs, size_t queue_size>
 struct DriverContainer {
     test_mocks::MockMessageQueue<spi::tasks::TaskMessage, queue_size> spi_queue;
     DefaultConfigs driver_config;
     DriverType driver;
 };
 
-template<size_t queue_size = 10>
+template <size_t queue_size = 10>
 struct TMC2130Container {
     test_mocks::MockMessageQueue<tmc2130::tasks::TaskMessage> resp_queue{};
-    test_mocks::MockMessageQueue<spi::tasks::TaskMessage, queue_size> spi_queue{};
+    test_mocks::MockMessageQueue<spi::tasks::TaskMessage, queue_size>
+        spi_queue{};
     spi::writer::Writer<test_mocks::MockMessageQueue> spi_writer{};
     tmc2130::configs::TMC2130DriverConfig driver_config{
         .registers = {.gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x2,
-                .run_current = 0x2,
-                .hold_current_delay = 0x7},
-            .tpowerdown = {},
-            .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0xFFFFF},
-            .chopconf = {.toff = 0x5,
-                .hstrt = 0x5,
-                .hend = 0x3,
-                .tbl = 0x2,
-                .mres = 0x3},
-            .coolconf = {.sgt = 0b110}},
+                      .ihold_irun = {.hold_current = 0x2,
+                                     .run_current = 0x2,
+                                     .hold_current_delay = 0x7},
+                      .tpowerdown = {},
+                      .tcoolthrs = {.threshold = 0},
+                      .thigh = {.threshold = 0xFFFFF},
+                      .chopconf = {.toff = 0x5,
+                                   .hstrt = 0x5,
+                                   .hend = 0x3,
+                                   .tbl = 0x2,
+                                   .mres = 0x3},
+                      .coolconf = {.sgt = 0b110}},
         .current_config = {
             .r_sense = 0.1,
             .v_sf = 0.325,
         }};
-    tmc2130::driver::TMC2130<spi::writer::Writer<test_mocks::MockMessageQueue>, test_mocks::MockMessageQueue<tmc2130::tasks::TaskMessage>> driver{spi_writer, resp_queue, driver_config};
+    tmc2130::driver::TMC2130<
+        spi::writer::Writer<test_mocks::MockMessageQueue>,
+        test_mocks::MockMessageQueue<tmc2130::tasks::TaskMessage>>
+        driver{spi_writer, resp_queue, driver_config};
 
-    TMC2130Container() {
-        spi_writer.set_queue(&spi_queue);
-    }
+    TMC2130Container() { spi_writer.set_queue(&spi_queue); }
 };
 
-template<size_t queue_size = 10>
+template <size_t queue_size = 10>
 struct TMC2160Container {
     test_mocks::MockMessageQueue<tmc2160::tasks::TaskMessage> resp_queue{};
-    test_mocks::MockMessageQueue<spi::tasks::TaskMessage, queue_size> spi_queue{};
+    test_mocks::MockMessageQueue<spi::tasks::TaskMessage, queue_size>
+        spi_queue{};
     spi::writer::Writer<test_mocks::MockMessageQueue> spi_writer{};
     tmc2160::configs::TMC2160DriverConfig driver_config{
         .registers = {.gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x2,
-                .run_current = 0x2,
-                .hold_current_delay = 0x7},
-            .tpowerdown = {},
-            .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0xFFFFF},
-            .chopconf = {.toff = 0x5,
-                .hstrt = 0x5,
-                .hend = 0x3,
-                .tbl = 0x2,
-                .mres = 0x3},
-            .coolconf = {.sgt = 0b110},
-            .glob_scale = {.global_scaler = 112}},
+                      .ihold_irun = {.hold_current = 0x2,
+                                     .run_current = 0x2,
+                                     .hold_current_delay = 0x7},
+                      .tpowerdown = {},
+                      .tcoolthrs = {.threshold = 0},
+                      .thigh = {.threshold = 0xFFFFF},
+                      .chopconf = {.toff = 0x5,
+                                   .hstrt = 0x5,
+                                   .hend = 0x3,
+                                   .tbl = 0x2,
+                                   .mres = 0x3},
+                      .coolconf = {.sgt = 0b110},
+                      .glob_scale = {.global_scaler = 112}},
         .current_config = {
             .r_sense = 0.1,
             .v_sf = 0.325,
         }};
-    tmc2160::driver::TMC2160<spi::writer::Writer<test_mocks::MockMessageQueue>, test_mocks::MockMessageQueue<tmc2160::tasks::TaskMessage>> driver{spi_writer, resp_queue, driver_config};
+    tmc2160::driver::TMC2160<
+        spi::writer::Writer<test_mocks::MockMessageQueue>,
+        test_mocks::MockMessageQueue<tmc2160::tasks::TaskMessage>>
+        driver{spi_writer, resp_queue, driver_config};
 
-    TMC2160Container() {
-        spi_writer.set_queue(&spi_queue);
-    }
+    TMC2160Container() { spi_writer.set_queue(&spi_queue); }
 };
-
 
 TEST_CASE("Setup a tmc2130 motor driver") {
     TMC2130Container subject{};
@@ -88,13 +91,15 @@ TEST_CASE("Setup a tmc2130 motor driver") {
                 auto register_config = subject.driver_config.registers;
                 REQUIRE(subject.driver.get_gconf().value().en_pwm_mode ==
                         register_config.gconfig.en_pwm_mode);
-                REQUIRE(subject.driver.get_register_map().ihold_irun.hold_current ==
-                        register_config.ihold_irun.hold_current);
-                REQUIRE(subject.driver.get_register_map().ihold_irun.run_current ==
-                        register_config.ihold_irun.run_current);
                 REQUIRE(
-                    subject.driver.get_register_map().ihold_irun.hold_current_delay ==
-                    register_config.ihold_irun.hold_current_delay);
+                    subject.driver.get_register_map().ihold_irun.hold_current ==
+                    register_config.ihold_irun.hold_current);
+                REQUIRE(
+                    subject.driver.get_register_map().ihold_irun.run_current ==
+                    register_config.ihold_irun.run_current);
+                REQUIRE(subject.driver.get_register_map()
+                            .ihold_irun.hold_current_delay ==
+                        register_config.ihold_irun.hold_current_delay);
                 REQUIRE(subject.driver.get_chop_config().value().toff ==
                         register_config.chopconf.toff);
                 REQUIRE(subject.driver.get_chop_config().value().hstrt ==
@@ -110,7 +115,6 @@ TEST_CASE("Setup a tmc2130 motor driver") {
             }
         }
     }
-
 }
 
 TEST_CASE("Setup a tmc2160 motor driver") {
@@ -123,13 +127,15 @@ TEST_CASE("Setup a tmc2160 motor driver") {
                 auto register_config = subject.driver_config.registers;
                 REQUIRE(subject.driver.get_gconf().value().en_pwm_mode ==
                         register_config.gconfig.en_pwm_mode);
-                REQUIRE(subject.driver.get_register_map().ihold_irun.hold_current ==
-                        register_config.ihold_irun.hold_current);
-                REQUIRE(subject.driver.get_register_map().ihold_irun.run_current ==
-                        register_config.ihold_irun.run_current);
                 REQUIRE(
-                    subject.driver.get_register_map().ihold_irun.hold_current_delay ==
-                    register_config.ihold_irun.hold_current_delay);
+                    subject.driver.get_register_map().ihold_irun.hold_current ==
+                    register_config.ihold_irun.hold_current);
+                REQUIRE(
+                    subject.driver.get_register_map().ihold_irun.run_current ==
+                    register_config.ihold_irun.run_current);
+                REQUIRE(subject.driver.get_register_map()
+                            .ihold_irun.hold_current_delay ==
+                        register_config.ihold_irun.hold_current_delay);
                 REQUIRE(subject.driver.get_chop_config().value().toff ==
                         register_config.chopconf.toff);
                 REQUIRE(subject.driver.get_chop_config().value().hstrt ==
@@ -142,13 +148,12 @@ TEST_CASE("Setup a tmc2160 motor driver") {
                         register_config.chopconf.mres);
                 REQUIRE(subject.driver.get_register_map().coolconf.sgt ==
                         register_config.coolconf.sgt);
-                REQUIRE(subject.driver.get_register_map().glob_scale.global_scaler ==
+                REQUIRE(subject.driver.get_register_map()
+                            .glob_scale.global_scaler ==
                         register_config.glob_scale.global_scaler);
             }
         }
     }
-
-
 }
 
 TEST_CASE("Test spi timeout routine") {
@@ -159,8 +164,10 @@ TEST_CASE("Test spi timeout routine") {
     uint32_t data = 0;
 
     GIVEN("a request to write to spi via the motor driver") {
-        auto resp1 = tmc2130.driver.write(tmc2130::registers::Registers::CHOPCONF, data);
-        auto resp2 = tmc2160.driver.write(tmc2160::registers::Registers::CHOPCONF, data);
+        auto resp1 =
+            tmc2130.driver.write(tmc2130::registers::Registers::CHOPCONF, data);
+        auto resp2 =
+            tmc2160.driver.write(tmc2160::registers::Registers::CHOPCONF, data);
         WHEN("When response is successful the first time") {
             THEN("The queue is only written to once") {
                 REQUIRE(tmc2130.spi_queue.get_size() == 1);
@@ -171,17 +178,20 @@ TEST_CASE("Test spi timeout routine") {
         }
 
         WHEN("When the response exceeds retries") {
-            for (int i=0; i<=10; i++) {
-                tmc2130.driver.write(tmc2130::registers::Registers::CHOPCONF, data);
-                tmc2160.driver.write(tmc2160::registers::Registers::CHOPCONF, data);
+            for (int i = 0; i <= 10; i++) {
+                tmc2130.driver.write(tmc2130::registers::Registers::CHOPCONF,
+                                     data);
+                tmc2160.driver.write(tmc2160::registers::Registers::CHOPCONF,
+                                     data);
             }
-            auto final_write_1 = tmc2130.driver.write(tmc2130::registers::Registers::CHOPCONF, data);
-            auto final_write_2 = tmc2160.driver.write(tmc2160::registers::Registers::CHOPCONF, data);
+            auto final_write_1 = tmc2130.driver.write(
+                tmc2130::registers::Registers::CHOPCONF, data);
+            auto final_write_2 = tmc2160.driver.write(
+                tmc2160::registers::Registers::CHOPCONF, data);
             THEN("Then the write is not successful") {
                 REQUIRE(final_write_1 == false);
                 REQUIRE(final_write_2 == false);
             }
-
         }
     }
 }

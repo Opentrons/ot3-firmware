@@ -54,7 +54,7 @@ class MotorInterruptHandler {
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface) {}
-    ~MotorInterruptHandler() { }
+    ~MotorInterruptHandler() {}
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
     auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
     MotorInterruptHandler(MotorInterruptHandler&) = delete;

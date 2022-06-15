@@ -28,7 +28,6 @@ class MockMessageQueue {
             return true;
         }
         return false;
-
     }
 
     template <typename OtherMessage>
