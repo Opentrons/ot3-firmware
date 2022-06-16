@@ -411,7 +411,6 @@ SCENARIO("test the limited-count i2c poller") {
         }
     }
 }
-}
 
 SCENARIO("test the ongoing i2c polling") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
