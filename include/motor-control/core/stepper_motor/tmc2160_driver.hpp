@@ -15,7 +15,6 @@
 #include "spi/core/utils.hpp"
 #include "spi/core/writer.hpp"
 #include "tmc2160.hpp"
-#include "common/core/logging.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -384,25 +383,30 @@ class TMC2160 {
         /*
          * From the datasheet (page 62):
          *
-         * For best precision of current setting, it is advised to measure and fine tune the current in the application.
-         * Choose the sense resistors to the next value covering the desired motor current.
-         * Set IRUN to 31 corresponding 100% of the desired motor current and fine-tune motor current using GLOBALSCALER.
-         * IHOLD should be set to a nominal value of 16.
+         * For best precision of current setting, it is advised to measure and
+         * fine tune the current in the application. Choose the sense resistors
+         * to the next value covering the desired motor current. Set IRUN to 31
+         * corresponding 100% of the desired motor current and fine-tune motor
+         * current using GLOBALSCALER. IHOLD should be set to a nominal value
+         * of 16.
          *
          * CURRENT_SCALE_RATIO = run_current_scale + 1 / 32 (should always be 1)
          * INV_SQRT_TWO = 1 / sqrt(2)
          * RMS_CURRENT_RATIO = full scale voltage / resistence
-         * GLOBALSCALAR = (256.0 * CURRENT)/ (CURRENT_SCALE_RATIO*INV_SQRT_TWO*RMS_CURRENT_RATIO)
+         * GLOBALSCALAR = (256.0 * CURRENT)/
+         * (CURRENT_SCALE_RATIO*INV_SQRT_TWO*RMS_CURRENT_RATIO)
          */
         constexpr auto INV_SQRT_TWO = 1.0 / sqrt2;
         constexpr auto GLOB_SCALE_MAX = 256.0;
         auto CURRENT_SCALE_RATIO = (_registers.ihold_irun.run_current + 1) / 32;
         auto RMS_CURRENT_RATIO = _current_config.v_sf / _current_config.r_sense;
-        auto FLOAT_CONSTANT =
-            static_cast<float>(GLOB_SCALE_MAX/(INV_SQRT_TWO * CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO));
+        auto FLOAT_CONSTANT = static_cast<float>(
+            GLOB_SCALE_MAX /
+            (INV_SQRT_TWO * CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO));
         auto fixed_point_constant = static_cast<uint32_t>(
             FLOAT_CONSTANT * static_cast<float>(1LL << 16));
-        uint64_t global_scalar = static_cast<uint64_t>(fixed_point_constant) * static_cast<uint64_t>(c);
+        uint64_t global_scalar = static_cast<uint64_t>(fixed_point_constant) *
+                                 static_cast<uint64_t>(c);
         return static_cast<uint32_t>(global_scalar >> 32) - 1;
     }
 
