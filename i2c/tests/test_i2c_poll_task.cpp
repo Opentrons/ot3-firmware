@@ -346,10 +346,8 @@ SCENARIO("test the limited-count i2c poller") {
                 THEN(
                     "the correct number of transactions were sent to the i2c "
                     "task") {
-                    REQUIRE(response_queue.get_size() ==
-                            (static_cast<uint32_t>(poll_count - 1) * 2));
-                    for (int count = 0; count < ((poll_count - 1) * 2);
-                         count++) {
+                    REQUIRE(response_queue.get_size() == poll_count);
+                    for (int count = 0; count < poll_count; count++) {
                         auto upstream = get_response(response_queue);
                         REQUIRE(upstream.id.token == 12345);
                         REQUIRE(upstream.id.is_completed_poll == false);
