@@ -342,12 +342,12 @@ SCENARIO("test the limited-count i2c poller") {
                     tm = next;
                     poll_handler.handle_message(tm);
                     CHECK(i2c_queue.get_size() == 0);
-                }
-                THEN(
-                    "the correct number of transactions were sent to the i2c "
-                    "task") {
-                    REQUIRE(response_queue.get_size() == poll_count);
-                    for (int count = 0; count < poll_count; count++) {
+                    // For every transaction we should have two messages
+                    // enqueued.
+                    CHECK(response_queue.get_size() == 2);
+                    for (int count = 0; count < 2; count++) {
+                        // check that the reponse is expected for each
+                        // transaction.
                         auto upstream = get_response(response_queue);
                         REQUIRE(upstream.id.token == 12345);
                         REQUIRE(upstream.id.is_completed_poll == false);
@@ -360,59 +360,57 @@ SCENARIO("test the limited-count i2c poller") {
                             REQUIRE(upstream.read_buffer == first_response_buf);
                         }
                     }
-                    AND_WHEN("completing the last transaction") {
-                        poll.timer.fire();
-                        auto txn =
-                            get_message<i2c::messages::Transact>(i2c_queue);
-                        i2c::messages::TransactionResponse first_response{
-                            .id = txn.id,
-                            .bytes_read = 5,
-                            .read_buffer = first_response_buf};
-                        static_cast<void>(
-                            txn.response_writer.write(first_response));
-                        auto next =
-                            get_message<i2c::messages::TransactionResponse>(
-                                poll_queue);
-                        CHECK(next == first_response);
-                        i2c::poller::TaskMessage tm(next);
-                        poll_handler.handle_message(tm);
-                        txn = get_message<i2c::messages::Transact>(i2c_queue);
-                        i2c::messages::TransactionResponse second_response{
-                            .id = txn.id,
-                            .bytes_read = 5,
-                            .read_buffer = second_response_buf};
-                        static_cast<void>(
-                            txn.response_writer.write(second_response));
-                        next = get_message<i2c::messages::TransactionResponse>(
-                            poll_queue);
-                        CHECK(next == second_response);
-                        tm = next;
-                        poll_handler.handle_message(tm);
-                        CHECK(i2c_queue.get_size() == 0);
-                        CHECK(response_queue.get_size() == 2);
-                        THEN("two good messages are passed upstream") {
-                            auto upstream =
-                                test_mocks::get_response(response_queue);
-                            REQUIRE(upstream.id.transaction_index == 0);
-                            REQUIRE(upstream.id.is_completed_poll == false);
-                            REQUIRE(upstream.id.token == 12345);
-                            REQUIRE(upstream.read_buffer == first_response_buf);
-                            upstream = test_mocks::get_response(response_queue);
-                            REQUIRE(upstream.id.transaction_index == 1);
-                            REQUIRE(upstream.id.is_completed_poll == true);
-                            REQUIRE(upstream.id.token == 12345);
-                            REQUIRE(upstream.read_buffer ==
-                                    second_response_buf);
-                        }
-                        THEN("the poll is no longer active") {
-                            REQUIRE(!poll.timer.is_running());
-                            REQUIRE(poll.transactions[0].address == 0);
-                        }
+                }
+                AND_WHEN("completing the last transaction") {
+                    poll.timer.fire();
+                    auto txn = get_message<i2c::messages::Transact>(i2c_queue);
+                    i2c::messages::TransactionResponse first_response{
+                        .id = txn.id,
+                        .bytes_read = 5,
+                        .read_buffer = first_response_buf};
+                    static_cast<void>(
+                        txn.response_writer.write(first_response));
+                    auto next = get_message<i2c::messages::TransactionResponse>(
+                        poll_queue);
+                    CHECK(next == first_response);
+                    i2c::poller::TaskMessage tm(next);
+                    poll_handler.handle_message(tm);
+                    txn = get_message<i2c::messages::Transact>(i2c_queue);
+                    i2c::messages::TransactionResponse second_response{
+                        .id = txn.id,
+                        .bytes_read = 5,
+                        .read_buffer = second_response_buf};
+                    static_cast<void>(
+                        txn.response_writer.write(second_response));
+                    next = get_message<i2c::messages::TransactionResponse>(
+                        poll_queue);
+                    CHECK(next == second_response);
+                    tm = next;
+                    poll_handler.handle_message(tm);
+                    CHECK(i2c_queue.get_size() == 0);
+                    CHECK(response_queue.get_size() == 2);
+                    THEN("two good messages are passed upstream") {
+                        auto upstream =
+                            test_mocks::get_response(response_queue);
+                        REQUIRE(upstream.id.transaction_index == 0);
+                        REQUIRE(upstream.id.is_completed_poll == false);
+                        REQUIRE(upstream.id.token == 12345);
+                        REQUIRE(upstream.read_buffer == first_response_buf);
+                        upstream = test_mocks::get_response(response_queue);
+                        REQUIRE(upstream.id.transaction_index == 1);
+                        REQUIRE(upstream.id.is_completed_poll == true);
+                        REQUIRE(upstream.id.token == 12345);
+                        REQUIRE(upstream.read_buffer == second_response_buf);
+                    }
+                    THEN("the poll is no longer active") {
+                        REQUIRE(!poll.timer.is_running());
+                        REQUIRE(poll.transactions[0].address == 0);
                     }
                 }
             }
         }
     }
+}
 }
 
 SCENARIO("test the ongoing i2c polling") {
