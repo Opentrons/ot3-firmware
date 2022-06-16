@@ -16,9 +16,11 @@ find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
         NO_DEFAULT_PATH
         REQUIRED)
 
+set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
+
 set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
 
-set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
+
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 
