@@ -77,8 +77,8 @@ class Writer {
      */
     template <OriginatingResponseQueue RQType>
     auto write(uint8_t register_addr, uint32_t command_data,
-               RQType& response_queue, utils::ChipSelectInterface cs_intf)
-        -> bool {
+               RQType& response_queue, utils::ChipSelectInterface cs_intf,
+               uint8_t timeout_ms = 1) -> bool {
         auto txBuffer = build_message(register_addr, spi::hardware::Mode::WRITE,
                                       command_data);
         TransactionIdentifier _transaction_id{
@@ -89,7 +89,7 @@ class Writer {
             .id = _transaction_id,
             .transaction = {.txBuffer = txBuffer, .cs_interface = cs_intf},
             .response_writer = ResponseWriter(response_queue)};
-        return queue->try_write(message);
+        return queue->try_write(message, timeout_ms);
     }
 
   private:
