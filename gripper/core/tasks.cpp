@@ -43,9 +43,10 @@ void gripper_tasks::start_tasks(
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
     queues.i2c3_queue = &i2c3_task.get_queue();
 
-    auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
-                                                  eeprom_hw_iface);
-    tasks.eeprom_task = &eeprom_task;
+    auto& eeprom_task =
+        eeprom_task_builder
+            .start(5, "eeprom", i2c3_task_client, eeprom_hw_iface)
+                tasks.eeprom_task = &eeprom_task;
     queues.eeprom_queue = &eeprom_task.get_queue();
 
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks);

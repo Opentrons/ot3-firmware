@@ -26,13 +26,15 @@ class CapacitiveMessageHandler {
                                       I2CQueuePoller &i2c_poller,
                                       SensorHardwareBase &hardware,
                                       CanClient &can_client,
-                                      OwnQueue &own_queue)
+                                      OwnQueue &own_queue,
+                                      can::ids::SensorId id)
         : writer{i2c_writer},
           poller{i2c_poller},
           hardware{hardware},
           can_client{can_client},
           own_queue{own_queue},
-          capacitance_handler{can_client, writer, hardware} {}
+          capacitance_handler{can_client, writer, hardware},
+          sensor_id{id} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
     auto operator=(const CapacitiveMessageHandler &)
@@ -85,6 +87,7 @@ class CapacitiveMessageHandler {
         if (bool(m.offset_reading)) {
             auto message = can::messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
+                .sensor_id = sensor_id,
                 .sensor_data = convert_to_fixed_point(
                     capacitance_handler.get_offset(), 15)};
             can_client.send_can_message(can::ids::NodeId::host, message);
@@ -159,6 +162,7 @@ class CapacitiveMessageHandler {
             can::ids::NodeId::host,
             can::messages::PeripheralStatusResponse{
                 .sensor = m.sensor,
+                .sensor_id = sensor_id,
                 .status = static_cast<uint8_t>(is_initialized)});
     }
 
@@ -169,6 +173,7 @@ class CapacitiveMessageHandler {
     SensorHardwareBase &hardware;
     CanClient &can_client;
     OwnQueue &own_queue;
+    can::ids::SensorId sensor_id;
     bool is_initialized = false;
 
   public:
@@ -199,9 +204,10 @@ class CapacitiveSensorTask {
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  i2c::poller::Poller<QueueImpl> *poller,
                                  SensorHardwareBase *hardware,
-                                 CanClient *can_client) {
-        auto handler = CapacitiveMessageHandler{*writer, *poller, *hardware,
-                                                *can_client, get_queue()};
+                                 CanClient *can_client,
+                                 const can::ids::SensorId *id) {
+        auto handler = CapacitiveMessageHandler{
+            *writer, *poller, *hardware, *can_client, get_queue(), *id};
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {

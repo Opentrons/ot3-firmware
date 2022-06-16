@@ -20,8 +20,12 @@ template <class I2CQueueWriter, can::message_writer_task::TaskClient CanClient,
 class EnvironmentSensorMessageHandler {
   public:
     EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
-                                    CanClient &can_client, OwnQueue &own_queue)
-        : writer{i2c_writer}, can_client{can_client}, own_queue(own_queue) {}
+                                    CanClient &can_client, OwnQueue &own_queue,
+                                    const can::ids::SensorId &id)
+        : writer{i2c_writer},
+          can_client{can_client},
+          own_queue(own_queue),
+          sensor_id(id) {}
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
         delete;
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
@@ -72,6 +76,7 @@ class EnvironmentSensorMessageHandler {
                     can::ids::NodeId::host,
                     can::messages::ReadFromSensorResponse{
                         .sensor = can::ids::SensorType::humidity,
+                        .sensor_id = sensor_id,
                         .sensor_data = hdc2080::convert(
                             data, can::ids::SensorType::humidity)});
                 break;
@@ -81,6 +86,7 @@ class EnvironmentSensorMessageHandler {
                     can::ids::NodeId::host,
                     can::messages::ReadFromSensorResponse{
                         .sensor = can::ids::SensorType::temperature,
+                        .sensor_id = sensor_id,
                         .sensor_data = hdc2080::convert(
                             data, can::ids::SensorType::temperature)});
                 break;
@@ -128,12 +134,14 @@ class EnvironmentSensorMessageHandler {
             can::ids::NodeId::host,
             can::messages::PeripheralStatusResponse{
                 .sensor = m.sensor,
+                .sensor_id = sensor_id,
                 .status = static_cast<uint8_t>(is_initialized)});
     }
 
     I2CQueueWriter &writer;
     CanClient &can_client;
     OwnQueue &own_queue;
+    const can::ids::SensorId &sensor_id;
     bool is_initialized = false;
 };
 
@@ -146,7 +154,8 @@ class EnvironmentSensorTask {
   public:
     using Messages = utils::TaskMessage;
     using QueueType = QueueImpl<utils::TaskMessage>;
-    EnvironmentSensorTask(QueueType &queue) : queue{queue} {}
+    EnvironmentSensorTask(QueueType &queue, can::ids::SensorId id)
+        : queue{queue}, id{id} {}
     EnvironmentSensorTask(const EnvironmentSensorTask &c) = delete;
     EnvironmentSensorTask(const EnvironmentSensorTask &&c) = delete;
     auto operator=(const EnvironmentSensorTask &c) = delete;
@@ -159,8 +168,8 @@ class EnvironmentSensorTask {
     template <can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  CanClient *can_client) {
-        auto handler =
-            EnvironmentSensorMessageHandler(*writer, *can_client, get_queue());
+        auto handler = EnvironmentSensorMessageHandler(*writer, *can_client,
+                                                       get_queue(), id);
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {
@@ -174,6 +183,7 @@ class EnvironmentSensorTask {
 
   private:
     QueueType &queue;
+    can::ids::SensorId id;
 };
 };  // namespace tasks
 

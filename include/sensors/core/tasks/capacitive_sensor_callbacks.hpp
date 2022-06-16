@@ -26,8 +26,12 @@ template <can::message_writer_task::TaskClient CanClient, class I2CQueueWriter>
 struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
-                            hardware::SensorHardwareBase &hardware)
-        : can_client{can_client}, i2c_writer{i2c_writer}, hardware{hardware} {}
+                            hardware::SensorHardwareBase &hardware,
+                            can::ids::SensorId id)
+        : can_client{can_client},
+          i2c_writer{i2c_writer},
+          hardware{hardware},
+          sensor_id{id} {}
 
     void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
         static_cast<void>(bit_utils::bytes_to_int(
@@ -55,6 +59,7 @@ struct ReadCapacitanceCallback {
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
                     .sensor = can::ids::SensorType::capacitive,
+                    .sensor_id = sensor_id,
                     .sensor_data = convert_to_fixed_point(capacitance, 15)});
         }
     }
@@ -80,6 +85,7 @@ struct ReadCapacitanceCallback {
         } else {
             auto message = can::messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
+                .sensor_id = sensor_id,
                 .sensor_data = convert_to_fixed_point(capacitance, 15)};
             can_client.send_can_message(can::ids::NodeId::host, message);
         }
@@ -133,6 +139,7 @@ struct ReadCapacitanceCallback {
         zero_threshold_pf = threshold_pf;
         auto message = can::messages::SensorThresholdResponse{
             .sensor = SensorType::capacitive,
+            .sensor_id = sensor_id,
             .threshold = convert_to_fixed_point(zero_threshold_pf, 15),
             .mode = from_mode};
         can_client.send_can_message(can::ids::NodeId::host, message);
@@ -146,6 +153,7 @@ struct ReadCapacitanceCallback {
     CanClient &can_client;
     I2CQueueWriter &i2c_writer;
     hardware::SensorHardwareBase &hardware;
+    can::ids::SensorId sensor_id;
     float current_offset_pf = 0;
     float zero_threshold_pf = 30;
     float next_autothreshold_pf = 0;

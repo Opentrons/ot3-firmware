@@ -1,5 +1,6 @@
 #include "pipettes/core/sensor_tasks.hpp"
 
+#include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
 
 static auto tasks = sensor_tasks::Tasks{};
@@ -9,7 +10,9 @@ static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>{};
+    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>(
+        can::ids::SensorId::S0);
+
 static auto capacitive_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>{};
 static auto pressure_sensor_task_builder =
@@ -32,10 +35,10 @@ void sensor_tasks::start_tasks(
         5, "enviro sensor", i2c1_task_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
         5, "pressure sensor", i2c1_task_client, i2c1_poller_client, queues,
-        sensor_hardware);
+        sensor_hardware, can::ids::SensorId::S0);
     auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
         5, "capacitive sensor", i2c1_task_client, i2c1_poller_client,
-        sensor_hardware, queues);
+        sensor_hardware, queues, can::ids::SensorId::S0);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
