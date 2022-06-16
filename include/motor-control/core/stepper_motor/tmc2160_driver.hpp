@@ -379,6 +379,14 @@ class TMC2160 {
 
     [[nodiscard]] auto convert_to_tmc2160_current_value(uint32_t c) const
         -> uint32_t {
+        /*
+         * From the datasheet (page 62):
+         *
+         * For best precision of current setting, it is advised to measure and fine tune the current in the application.
+         * Choose the sense resistors to the next value covering the desired motor current.
+         * Set IRUN to 31 corresponding 100% of the desired motor current and fine-tune motor current using GLOBALSCALER.
+         * IHOLD should be set to a nominal value of 16.
+         */
         constexpr auto SQRT_TWO = sqrt2;
         uint32_t CURR_GLOB_SCALE = _registers.glob_scale.global_scaler;
         auto GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
