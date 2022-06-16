@@ -15,6 +15,7 @@ extern TIM_HandleTypeDef htim3;
 typedef void (*motor_interrupt_callback)();
 HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi);
 void initialize_timer(motor_interrupt_callback callback);
+void initialize_rev_specific_pins();
 
 #ifdef __cplusplus
 }  // extern "C"

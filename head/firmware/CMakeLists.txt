@@ -47,7 +47,7 @@ set(HEAD_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_common.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_hardware.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
@@ -56,12 +56,14 @@ set(HEAD_FW_NON_LINTABLE_SRCS
 
 add_executable(head-proto
         ${CMAKE_CURRENT_SOURCE_DIR}/main_proto.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_proto.c
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 target_head_core_proto(head-proto)
 
 add_executable(head-rev1
         ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_rev1.c
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 target_head_core_rev1(head-rev1)
