@@ -103,14 +103,13 @@ class MotorDriverMessageHandler {
             m.hold_current, m.run_current);
 
         if (m.hold_current != 0U) {
-            driver.get_register_map().ihold_irun.hold_current =
+            driver.get_register_map().glob_scale.global_scaler =
                 driver.convert_to_tmc2160_current_value(m.hold_current);
-        };
-        if (m.run_current != 0U) {
-            driver.get_register_map().ihold_irun.run_current =
+        } else if (m.run_current != 0U) {
+            driver.get_register_map().glob_scale.global_scaler =
                 driver.convert_to_tmc2160_current_value(m.run_current);
         }
-        driver.set_current_control(driver.get_register_map().ihold_irun);
+        driver.set_glob_scaler(driver.get_register_map().glob_scale);
     }
 
     tmc2160::driver::TMC2160<Writer, TaskQueue> driver;

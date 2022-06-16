@@ -199,6 +199,19 @@ struct __attribute__((packed, __may_alias__)) GlobalScaler {
      * Hint: Values >128 recommended for best results
      */
     uint32_t global_scaler : 8 = 0;
+
+    static constexpr uint32_t minimum_value = 32;
+
+    auto check_operational_value() -> void {
+        // The minimum operational value (aside from zero) is 32.
+        // We should make sure that we aren't setting this register
+        // below 32 before writing it over spi.
+        if (global_scaler != 0) {
+            if (global_scaler < minimum_value) {
+                global_scaler = minimum_value;
+            }
+        }
+    }
 };
 
 /**
