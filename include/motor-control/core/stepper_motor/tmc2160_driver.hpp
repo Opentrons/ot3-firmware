@@ -275,7 +275,7 @@ class TMC2160 {
      * @return True if new register was set succesfully, false otherwise
      */
     auto set_glob_scaler(GlobalScaler reg) -> bool {
-        reg.check_operational_value();
+        reg.clamp_value();
         if (set_register(reg)) {
             _registers.glob_scale = reg;
             return true;
@@ -396,18 +396,15 @@ class TMC2160 {
          * GLOBALSCALAR = (256.0 * CURRENT)/
          * (CURRENT_SCALE_RATIO*INV_SQRT_TWO*RMS_CURRENT_RATIO)
          */
-        constexpr auto INV_SQRT_TWO = 1.0 / sqrt2;
-        constexpr auto GLOB_SCALE_MAX = 256.0;
-        auto CURRENT_SCALE_RATIO = (_registers.ihold_irun.run_current + 1) / 32;
+        constexpr auto GLOB_FROM_CURRENT = 256.0 * sqrt2;
+        float CURRENT_SCALE_RATIO = (_registers.ihold_irun.run_current + 1.0) / 32.0;
         auto RMS_CURRENT_RATIO = _current_config.v_sf / _current_config.r_sense;
-        auto FLOAT_CONSTANT = static_cast<float>(
-            GLOB_SCALE_MAX /
-            (INV_SQRT_TWO * CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO));
+        auto GLOBAL_SCALE_CONSTANT = GLOB_FROM_CURRENT / (CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO);
         auto fixed_point_constant = static_cast<uint32_t>(
-            FLOAT_CONSTANT * static_cast<float>(1LL << 16));
-        uint64_t global_scalar = static_cast<uint64_t>(fixed_point_constant) *
+            GLOBAL_SCALE_CONSTANT * static_cast<float>(1LL << 16));
+        uint64_t global_scaler = static_cast<uint64_t>(fixed_point_constant) *
                                  static_cast<uint64_t>(c);
-        return static_cast<uint32_t>(global_scalar >> 32) - 1;
+        return static_cast<uint32_t>(global_scaler >> 32) - 1;
     }
 
   private:
