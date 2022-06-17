@@ -26,13 +26,12 @@
  * 1 tab == 4 spaces!
  */
 
-
 /**
-* This file is only present to support the FreeRTOS POSIX Port.
+ * This file is only present to support the FreeRTOS POSIX Port.
  *
-* TODO (AmitL, 2021-08-17): This file is entirely lifted from our FW projects. It should
-*  be specialized for the POSIX port.
-*/
+ * TODO (AmitL, 2021-08-17): This file is entirely lifted from our FW projects.
+ * It should be specialized for the POSIX port.
+ */
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
@@ -83,7 +82,7 @@ extern uint32_t SystemCoreClock;
 #define configUSE_MALLOC_FAILED_HOOK 0
 #define configUSE_APPLICATION_TASK_TAG 0
 #define configUSE_COUNTING_SEMAPHORES 1
-#define configGENERATE_RUN_TIME_STATS 0
+#define configGENERATE_RUN_TIME_STATS 1
 #define configUSE_TASK_NOTIFICATIONS 1
 #define configTASK_NOTIFICATION_ARRAY_ENTRIES 8
 
@@ -92,8 +91,8 @@ extern uint32_t SystemCoreClock;
 #define configMAX_CO_ROUTINE_PRIORITIES (2)
 
 /* Software timer definitions. */
-#define configUSE_TIMERS 0
-#define configTIMER_TASK_PRIORITY (2)
+#define configUSE_TIMERS 1
+#define configTIMER_TASK_PRIORITY (6)
 #define configTIMER_QUEUE_LENGTH 10
 #define configTIMER_TASK_STACK_DEPTH (configMINIMAL_STACK_SIZE * 2)
 
@@ -153,21 +152,21 @@ PRIORITY THAN THIS! (higher priorities are lower numeric values. */
 
 /* Interrupt priorities used by the kernel port layer itself.  These are generic
 to all Cortex-M ports, and do not rely on any particular library functions. */
-#define configKERNEL_INTERRUPT_PRIORITY                                        \
-  (configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS))
+#define configKERNEL_INTERRUPT_PRIORITY \
+    (configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS))
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY                                   \
-  (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS))
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY \
+    (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS))
 
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
-#define configASSERT(x)                                                        \
-  if ((x) == 0) {                                                              \
-    taskDISABLE_INTERRUPTS();                                                  \
-    for (;;)                                                                   \
-      ;                                                                        \
-  }
+#define configASSERT(x)           \
+    if ((x) == 0) {               \
+        taskDISABLE_INTERRUPTS(); \
+        for (;;)                  \
+            ;                     \
+    }
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
    standard names. */

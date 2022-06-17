@@ -30,7 +30,6 @@ using TaskMessage = typename ::utils::VariantCat<
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_environment_sensor_queue(m)};
     {client.send_capacitive_sensor_queue(m)};
 };
 
