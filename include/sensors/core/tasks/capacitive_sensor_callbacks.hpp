@@ -27,7 +27,7 @@ struct ReadCapacitanceCallback {
   public:
     ReadCapacitanceCallback(CanClient &can_client, I2CQueueWriter &i2c_writer,
                             hardware::SensorHardwareBase &hardware,
-                            can::ids::SensorId id)
+                            can::ids::SensorId &id)
         : can_client{can_client},
           i2c_writer{i2c_writer},
           hardware{hardware},

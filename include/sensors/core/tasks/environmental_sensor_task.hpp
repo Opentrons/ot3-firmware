@@ -155,7 +155,7 @@ class EnvironmentSensorTask {
     using Messages = utils::TaskMessage;
     using QueueType = QueueImpl<utils::TaskMessage>;
     EnvironmentSensorTask(QueueType &queue, can::ids::SensorId id)
-        : queue{queue}, id{id} {}
+        : queue{queue}, sensor_id{id} {}
     EnvironmentSensorTask(const EnvironmentSensorTask &c) = delete;
     EnvironmentSensorTask(const EnvironmentSensorTask &&c) = delete;
     auto operator=(const EnvironmentSensorTask &c) = delete;
@@ -169,7 +169,7 @@ class EnvironmentSensorTask {
     [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
                                  CanClient *can_client) {
         auto handler = EnvironmentSensorMessageHandler(*writer, *can_client,
-                                                       get_queue(), id);
+                                                       get_queue(), sensor_id);
         handler.initialize();
         utils::TaskMessage message{};
         for (;;) {
@@ -183,7 +183,7 @@ class EnvironmentSensorTask {
 
   private:
     QueueType &queue;
-    can::ids::SensorId id;
+    can::ids::SensorId sensor_id;
 };
 };  // namespace tasks
 
