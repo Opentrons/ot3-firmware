@@ -118,12 +118,12 @@ class MMR92C04 {
 
     auto get_pressure(mmr920C04::Registers reg) -> void {
         uint32_t data = 0x0;
-        writer.write(mmr920C04::ADDRESS, reg, data);
+        write(reg, data);
     }
 
     auto get_temperature() -> void {
         uint32_t data = 0x0;
-        writer.write(mmr920C04::ADDRESS, mmr920C04::Registers::TEMPERATURE_READ, data);
+        write(mmr920C04::Registers::TEMPERATURE_READ, data);
     }
 
     auto reset(mmr920C04::Reset reg) -> bool {

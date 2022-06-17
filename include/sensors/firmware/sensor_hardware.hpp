@@ -16,16 +16,6 @@ class SensorHardware : public SensorHardwareBase {
     }
 
     sensors::hardware::SensorHardwareConfiguration hardware;
-
-
-    // dont need
-    static bool sensor_hardware_callback() {
-        if (data_ready_callback != nullptr) {
-            data_ready_callback();
-            return true;
-        }
-        else return false;
-    }
 };
 };  // namespace hardware
 };  // namespace sensors
