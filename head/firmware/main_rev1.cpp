@@ -138,8 +138,8 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x3,
-                           .run_current = 0xe,
+            .ihold_irun = {.hold_current = 16,
+                           .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
@@ -166,8 +166,8 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x3,
-                           .run_current = 0xe,
+            .ihold_irun = {.hold_current = 16,
+                           .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
