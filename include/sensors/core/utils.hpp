@@ -30,7 +30,7 @@ using TaskMessage = typename ::utils::VariantCat<
  */
 template <typename Client>
 concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_capacitive_sensor_queue(m)};
+    {client.send_capacitive_sensor_queue_s0(m)};
 };
 
 enum class BitMode : uint8_t { LSB = 0x0, MSB = 0x1 };

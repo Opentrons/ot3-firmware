@@ -13,9 +13,10 @@ static auto environment_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
-static auto capacitive_sensor_task_builder =
+static auto capacitive_sensor_task_builder_s0 =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
+
 static auto pressure_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
@@ -38,19 +39,19 @@ void sensor_tasks::start_tasks(
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
         5, "pressure sensor", i2c1_task_client, i2c1_poller_client, queues,
         sensor_hardware);
-    auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, "capacitive sensor", i2c1_task_client, i2c1_poller_client,
+    auto& capacitive_sensor_task_s0 = capacitive_sensor_task_builder_s0.start(
+        5, "capacitive sensor s0", i2c1_task_client, i2c1_poller_client,
         sensor_hardware, queues);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
-    tasks.capacitive_sensor_task = &capacitive_sensor_task;
+    tasks.capacitive_sensor_task_s0 = &capacitive_sensor_task_s0;
     tasks.pressure_sensor_task = &pressure_sensor_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
     queues.environment_sensor_queue = &environment_sensor_task.get_queue();
-    queues.capacitive_sensor_queue = &capacitive_sensor_task.get_queue();
+    queues.capacitive_sensor_queue_s0 = &capacitive_sensor_task_s0.get_queue();
     queues.pressure_sensor_queue = &pressure_sensor_task.get_queue();
 }
 
@@ -69,9 +70,9 @@ void sensor_tasks::QueueClient::send_environment_sensor_queue(
     environment_sensor_queue->try_write(m);
 }
 
-void sensor_tasks::QueueClient::send_capacitive_sensor_queue(
+void sensor_tasks::QueueClient::send_capacitive_sensor_queue_s0(
     const sensors::utils::TaskMessage& m) {
-    capacitive_sensor_queue->try_write(m);
+    capacitive_sensor_queue_s0->try_write(m);
 }
 
 void sensor_tasks::QueueClient::send_pressure_sensor_queue(
