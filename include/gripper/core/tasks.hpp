@@ -56,7 +56,7 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_eeprom_queue(const eeprom::task::TaskMessage& m);
 
     void send_capacitive_sensor_queue_s0(const sensors::utils::TaskMessage& m);
-    
+
     void send_capacitive_sensor_queue_s1(const sensors::utils::TaskMessage& m);
 
     void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
