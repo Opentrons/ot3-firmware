@@ -29,6 +29,9 @@ auto get_message(Queue& q) -> Message {
     return std::get<Message>(empty_msg);
 }
 
+constexpr auto sensor_id = can::ids::SensorId::S0;
+constexpr uint8_t sensor_id_int = 0x0;
+
 SCENARIO("read pressure sensor values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
@@ -49,13 +52,14 @@ SCENARIO("read pressure sensor values") {
     poller.set_queue(&i2c_poll_queue);
 
     auto sensor = sensors::tasks::PressureMessageHandler{
-        writer, poller, queue_client, response_queue, mock_hw};
+        writer, poller, queue_client, response_queue, mock_hw, sensor_id};
     constexpr uint8_t pressure_id = 0x4;
     constexpr uint8_t pressure_temperature_id = 0x5;
 
     GIVEN("a request to take a single read of the pressure sensor") {
-        auto single_read = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, pressure_id));
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
+                {}, pressure_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a transact command") {
@@ -75,8 +79,9 @@ SCENARIO("read pressure sensor values") {
         }
     }
     GIVEN("a request to take a single read of the temperature sensor") {
-        auto single_read = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, pressure_temperature_id));
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
+                {}, pressure_temperature_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a transact command") {
@@ -99,8 +104,9 @@ SCENARIO("read pressure sensor values") {
     }
     GIVEN("a request to take a baseline reading of the pressure sensor") {
         int NUM_READS = 30;
-        auto multi_read = sensors::utils::TaskMessage(
-            can::messages::BaselineSensorRequest({}, pressure_id, NUM_READS));
+        auto multi_read =
+            sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
+                {}, pressure_id, sensor_id_int, NUM_READS));
         sensor.handle_message(multi_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a write and read command") {
