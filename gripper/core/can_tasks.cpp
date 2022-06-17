@@ -27,6 +27,7 @@ static auto can_brushed_move_group_handler =
     can::message_handlers::move_group::BrushedMoveGroupHandler{g_queues};
 static auto gripper_info_handler =
     gripper_info::GripperInfoMessageHandler{main_queues, main_queues};
+static auto sensor_handler = sensors::handlers::SensorHandler{main_queues};
 
 /** Handler of system messages. */
 static auto system_message_handler =
@@ -67,6 +68,9 @@ static auto brushed_motion_group_dispatch_target =
 static auto gripper_info_dispatch_target =
     can_task::GripperInfoDispatchTarget{gripper_info_handler};
 
+static auto sensor_dispatch_target =
+    can_task::SensorDispatchTarget{sensor_handler};
+
 struct CheckForNodeId {
     can::ids::NodeId node_id;
     auto operator()(uint32_t arbitration_id) const {
@@ -94,7 +98,7 @@ static auto dispatcher_g = can::dispatch::Dispatcher(
 static auto main_dispatcher = can::dispatch::Dispatcher(
     [](auto) -> bool { return true; }, dispatcher_z, dispatcher_g,
     system_dispatch_target, gripper_info_dispatch_target,
-    eeprom_dispatch_target);
+    eeprom_dispatch_target, sensor_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};

@@ -8,6 +8,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
+#include "sensors/core/message_handlers/sensors.hpp"
 
 namespace can_task {
 
@@ -53,6 +54,13 @@ using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
                                             gripper_tasks::QueueClient>,
     can::messages::InstrumentInfoRequest, can::messages::SetSerialNumber>;
+using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
+    sensors::handlers::SensorHandler<gripper_tasks::QueueClient>,
+    can::messages::ReadFromSensorRequest, can::messages::WriteToSensorRequest,
+    can::messages::BaselineSensorRequest,
+    can::messages::SetSensorThresholdRequest,
+    can::messages::BindSensorOutputRequest,
+    can::messages::PeripheralStatusRequest>;
 
 auto constexpr reader_message_buffer_size = 1024;
 
