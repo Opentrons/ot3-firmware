@@ -116,21 +116,14 @@ class MMR92C04 {
         }
     }
 
-    auto get_pressure(mmr920C04::Registers reg, bool poll = false,
-                      uint16_t sample_rate = 0) -> void {
-        if (poll) {
-            poll_read(reg, sample_rate);
-        } else {
-            transact(reg);
-        }
+    auto get_pressure(mmr920C04::Registers reg) -> void {
+        uint32_t data = 0x0;
+        writer.write(mmr920C04::ADDRESS, reg, data);
     }
 
-    auto get_temperature(bool poll = false, uint16_t sample_rate = 0) -> void {
-        if (poll) {
-            poll_read(mmr920C04::Registers::TEMPERATURE_READ, sample_rate);
-        } else {
-            transact(mmr920C04::Registers::TEMPERATURE_READ);
-        }
+    auto get_temperature() -> void {
+        uint32_t data = 0x0;
+        writer.write(mmr920C04::ADDRESS, mmr920C04::Registers::TEMPERATURE_READ, data);
     }
 
     auto reset(mmr920C04::Reset reg) -> bool {
@@ -219,6 +212,11 @@ class MMR92C04 {
         can_client.send_can_message(get_host_id(), message);
     }
 
+    auto drdy_interrupt_response() -> void {
+        uint32_t data = 0x0;
+        writer.read(mmr920C04::Registers::PRESSURE_READ, data, own_queue);
+    }
+
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
         uint32_t data = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
@@ -251,6 +249,8 @@ class MMR92C04 {
         }
     }
 
+    void set_data_ready(bool value) { data_ready = value; }
+
   private:
     mmr920C04::MMR920C04RegisterMap _registers{};
     bool _initialized = false;
@@ -261,6 +261,7 @@ class MMR92C04 {
     CanClient &can_client;
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
+    bool data_ready = false;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>

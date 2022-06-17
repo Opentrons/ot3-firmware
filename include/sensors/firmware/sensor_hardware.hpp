@@ -1,6 +1,6 @@
 #pragma once
-
 #include "sensors/core/sensor_hardware_interface.hpp"
+#include "sensors/firmware/pressure_sensor_callbacks.h"
 
 namespace sensors {
 namespace hardware {
@@ -14,8 +14,18 @@ class SensorHardware : public SensorHardwareBase {
     auto check_data_ready() -> bool override {
         return gpio::is_set(hardware.data_ready);
     }
-    sensors::hardware::SensorHardwareConfiguration hardware;
-};
 
+    sensors::hardware::SensorHardwareConfiguration hardware;
+
+
+    // dont need
+    static bool sensor_hardware_callback() {
+        if (data_ready_callback != nullptr) {
+            data_ready_callback();
+            return true;
+        }
+        else return false;
+    }
+};
 };  // namespace hardware
 };  // namespace sensors

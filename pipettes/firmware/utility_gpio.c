@@ -142,10 +142,12 @@ void data_ready_gpio_init() {
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = hardware_rear.pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+
+        // TODO: call GPIO_EXTI_IRQ_Handler() and implement HAL_GPIO_EXTI_Callback()
     }
 
     /* GPIO Ports Clock Enable */
@@ -154,10 +156,16 @@ void data_ready_gpio_init() {
     /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = hardware.pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+
+    /* EXTI interrupt init*/
+
+    // TODO: figure out which arg is the priority
+    HAL_NVIC_SetPriority(EXTI15_IRQn, 10, 0);
+    HAL_NVIC_EnableIRQ(EXTI15_IRQn);
 }
 
 int tip_present() {
