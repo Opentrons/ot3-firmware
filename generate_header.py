@@ -1,13 +1,15 @@
 """Script to generate c++ header file of canbus constants."""
 from __future__ import annotations
+
 import argparse
-import io
-from enum import Enum
-from typing import Type, Any
-from types import ModuleType
-import sys
-import os.path
 import importlib
+import io
+import os.path
+import sys
+from enum import Enum
+from types import ModuleType
+from typing import Type, Any
+
 
 class block:
     """C block generator."""
@@ -46,9 +48,9 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     """Generate source code into output."""
     generate_file_comment(output)
     with block(
-        output=output,
-        start="namespace can::ids {\n\n",
-        terminate="}  // namespace can::ids\n\n",
+            output=output,
+            start="namespace can::ids {\n\n",
+            terminate="}  // namespace can::ids\n\n",
     ):
         write_enum_cpp(constants_mod.FunctionCode, output)
         write_enum_cpp(constants_mod.MessageId, output)
@@ -56,6 +58,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.ErrorCode, output)
         write_enum_cpp(constants_mod.ToolType, output)
         write_enum_cpp(constants_mod.SensorType, output)
+        write_enum_cpp(constants_mod.SensorId, output)
         write_enum_cpp(constants_mod.SensorOutputBinding, output)
         write_enum_cpp(constants_mod.SensorThresholdMode, output)
         write_enum_cpp(constants_mod.PipetteTipActionType, output)
@@ -65,7 +68,7 @@ def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
     """Generate enum class from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
     with block(
-        output=output, start=f"enum class {e.__name__} {{\n", terminate="};\n\n"
+            output=output, start=f"enum class {e.__name__} {{\n", terminate="};\n\n"
     ):
         for i in e:
             output.write(f"    {i.name} = 0x{i.value:x},\n")
@@ -80,6 +83,11 @@ def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: M
     write_enum_c(constants_mod.NodeId, output, can)
     write_enum_c(constants_mod.ErrorCode, output, can)
     write_enum_c(constants_mod.ToolType, output, can)
+    write_enum_c(constants_mod.SensorType, output, can)
+    write_enum_c(constants_mod.SensorId, output, can)
+    write_enum_c(constants_mod.SensorOutputBinding, output, can)
+    write_enum_c(constants_mod.SensorThresholdMode, output, can)
+    write_enum_c(constants_mod.PipetteTipActionType, output, can)
     write_arbitration_id_c(output, can, arbitration_id)
 
 
@@ -87,9 +95,9 @@ def write_enum_c(e: Type[Enum], output: io.StringIO, prefix: str) -> None:
     """Generate constants from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
     with block(
-        output=output,
-        start="typedef enum {\n",
-        terminate=f"}} {prefix}{e.__name__};\n\n",
+            output=output,
+            start="typedef enum {\n",
+            terminate=f"}} {prefix}{e.__name__};\n\n",
     ):
         for i in e:
             name = "_".join(("can", e.__name__, i.name)).lower()
@@ -100,9 +108,9 @@ def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: Mod
     """Generate C arbitration id code."""
     output.write(f"/** {arbitration_id.ArbitrationIdParts.__doc__} */\n")
     with block(
-        output=output,
-        start="typedef struct {\n",
-        terminate=f"}} {prefix}{arbitration_id.ArbitrationIdParts.__name__};\n\n",
+            output=output,
+            start="typedef struct {\n",
+            terminate=f"}} {prefix}{arbitration_id.ArbitrationIdParts.__name__};\n\n",
     ):
         for i in arbitration_id.ArbitrationIdParts._fields_:
             output.write(f"    unsigned int {i[0]}: {i[2]};\n")
@@ -136,7 +144,6 @@ def main() -> None:
         default="",
         help="a path containing an importable opentrons_hardware. if not specified, will use installed package",
     )
-
 
     parser.add_argument(
         "--language",

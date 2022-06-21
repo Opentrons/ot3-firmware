@@ -144,6 +144,16 @@ enum class SensorType {
     pressure_temperature = 0x5,
 };
 
+/** Sensor IDs available.
+    
+    Not to be confused with SensorType. This is the ID value that separate
+    two or more of the same type of sensor within a system.
+     */
+enum class SensorId {
+    S0 = 0x0,
+    S1 = 0x1,
+};
+
 /** Links sensor threshold triggers to pins. */
 enum class SensorOutputBinding {
     none = 0x0,
@@ -163,11 +173,5 @@ enum class PipetteTipActionType {
     drop = 0x1,
 };
 
-/**
- * Sensor Ids.
- * Not to be confused with SensorType. This is the ID value that separate
- * two or more of the same type of sensor within a system.
- */
-enum class SensorId { S0 = 0x0, S1 = 0x1 };
-
 }  // namespace can::ids
+

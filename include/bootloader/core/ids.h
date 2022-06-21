@@ -132,6 +132,45 @@ typedef enum {
     can_tooltype_nothing_attached = 0x6,
 } CANToolType;
 
+/** Sensor types available. */
+typedef enum {
+    can_sensortype_tip = 0x0,
+    can_sensortype_capacitive = 0x1,
+    can_sensortype_humidity = 0x2,
+    can_sensortype_temperature = 0x3,
+    can_sensortype_pressure = 0x4,
+    can_sensortype_pressure_temperature = 0x5,
+} CANSensorType;
+
+/** Sensor IDs available.
+    
+    Not to be confused with SensorType. This is the ID value that separate
+    two or more of the same type of sensor within a system.
+     */
+typedef enum {
+    can_sensorid_s0 = 0x0,
+    can_sensorid_s1 = 0x1,
+} CANSensorId;
+
+/** Links sensor threshold triggers to pins. */
+typedef enum {
+    can_sensoroutputbinding_none = 0x0,
+    can_sensoroutputbinding_sync = 0x1,
+    can_sensoroutputbinding_report = 0x2,
+} CANSensorOutputBinding;
+
+/** How a sensor's threshold should be interpreted. */
+typedef enum {
+    can_sensorthresholdmode_absolute = 0x0,
+    can_sensorthresholdmode_auto_baseline = 0x1,
+} CANSensorThresholdMode;
+
+/** Tip action types. */
+typedef enum {
+    can_pipettetipactiontype_pick_up = 0x0,
+    can_pipettetipactiontype_drop = 0x1,
+} CANPipetteTipActionType;
+
 /** A bit field of the arbitration id parts. */
 typedef struct {
     unsigned int function_code: 4;
