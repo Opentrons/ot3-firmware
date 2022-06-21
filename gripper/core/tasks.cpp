@@ -41,8 +41,13 @@ static auto i2c2_poll_client =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
-static auto capacitive_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>{};
+static auto capacitive_sensor_task_builder_front =
+    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
+
+static auto capacitive_sensor_task_builder_rear =
+    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S1);
 
 /**
  * Start gripper tasks.
@@ -76,23 +81,32 @@ void gripper_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
 
-    auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, "capacitive sensor", i2c3_task_client, i2c3_poll_client,
-        sensor_hardware, queues);
+    auto& capacitive_sensor_task_front =
+        capacitive_sensor_task_builder_front.start(
+            5, "capacitive sensor S0", i2c2_task_client, i2c2_poll_client,
+            sensor_hardware, queues);
+    auto& capacitive_sensor_task_rear =
+        capacitive_sensor_task_builder_rear.start(
+            5, "capacitive sensor S1", i2c3_task_client, i2c3_poll_client,
+            sensor_hardware, queues);
 
     tasks.i2c2_task = &i2c2_task;
     tasks.i2c3_task = &i2c3_task;
     tasks.i2c2_poller_task = &i2c2_poller_task;
     tasks.i2c3_poller_task = &i2c3_poller_task;
     tasks.eeprom_task = &eeprom_task;
-    tasks.capacitive_sensor_task = &capacitive_sensor_task;
+    tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
+    tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
 
     queues.i2c2_queue = &i2c2_task.get_queue();
     queues.i2c3_queue = &i2c3_task.get_queue();
     queues.i2c2_poller_queue = &i2c2_poller_task.get_queue();
     queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     queues.eeprom_queue = &eeprom_task.get_queue();
-    queues.capacitive_sensor_queue = &capacitive_sensor_task.get_queue();
+    queues.capacitive_sensor_queue_front =
+        &capacitive_sensor_task_front.get_queue();
+    queues.capacitive_sensor_queue_rear =
+        &capacitive_sensor_task_rear.get_queue();
 
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks);
 
@@ -110,9 +124,14 @@ void gripper_tasks::QueueClient::send_eeprom_queue(
     eeprom_queue->try_write(m);
 }
 
-void gripper_tasks::QueueClient::send_capacitive_sensor_queue(
+void gripper_tasks::QueueClient::send_capacitive_sensor_queue_front(
     const sensors::utils::TaskMessage& m) {
-    capacitive_sensor_queue->try_write(m);
+    capacitive_sensor_queue_front->try_write(m);
+}
+
+void gripper_tasks::QueueClient::send_capacitive_sensor_queue_rear(
+    const sensors::utils::TaskMessage& m) {
+    capacitive_sensor_queue_rear->try_write(m);
 }
 
 // gripper does not have environment nor pressure sensor

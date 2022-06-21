@@ -55,7 +55,11 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_eeprom_queue(const eeprom::task::TaskMessage& m);
 
-    void send_capacitive_sensor_queue(const sensors::utils::TaskMessage& m);
+    void send_capacitive_sensor_queue_front(
+        const sensors::utils::TaskMessage& m);
+
+    void send_capacitive_sensor_queue_rear(
+        const sensors::utils::TaskMessage& m);
 
     void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
 
@@ -77,7 +81,9 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
-        capacitive_sensor_queue{nullptr};
+        capacitive_sensor_queue_front{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
+        capacitive_sensor_queue_rear{nullptr};
 };
 
 /**
@@ -123,8 +129,11 @@ struct AllTask {
     eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
     sensors::tasks::CapacitiveSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* capacitive_sensor_task{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        capacitive_sensor_task_front{nullptr};
+    sensors::tasks::CapacitiveSensorTask<
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        capacitive_sensor_task_rear{nullptr};
 };
 
 /**

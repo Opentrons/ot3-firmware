@@ -1,5 +1,6 @@
 #include "pipettes/core/sensor_tasks.hpp"
 
+#include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
 
 static auto tasks = sensor_tasks::Tasks{};
@@ -9,11 +10,16 @@ static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask>{};
-static auto capacitive_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>{};
+    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
+
+static auto capacitive_sensor_task_builder_front =
+    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
+
 static auto pressure_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask>{};
+    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
 
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
@@ -33,19 +39,21 @@ void sensor_tasks::start_tasks(
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
         5, "pressure sensor", i2c1_task_client, i2c1_poller_client, queues,
         sensor_hardware);
-    auto& capacitive_sensor_task = capacitive_sensor_task_builder.start(
-        5, "capacitive sensor", i2c1_task_client, i2c1_poller_client,
-        sensor_hardware, queues);
+    auto& capacitive_sensor_task_front =
+        capacitive_sensor_task_builder_front.start(
+            5, "capacitive sensor s0", i2c1_task_client, i2c1_poller_client,
+            sensor_hardware, queues);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
-    tasks.capacitive_sensor_task = &capacitive_sensor_task;
+    tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
     tasks.pressure_sensor_task = &pressure_sensor_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
     queues.environment_sensor_queue = &environment_sensor_task.get_queue();
-    queues.capacitive_sensor_queue = &capacitive_sensor_task.get_queue();
+    queues.capacitive_sensor_queue_front =
+        &capacitive_sensor_task_front.get_queue();
     queues.pressure_sensor_queue = &pressure_sensor_task.get_queue();
 }
 
@@ -64,9 +72,9 @@ void sensor_tasks::QueueClient::send_environment_sensor_queue(
     environment_sensor_queue->try_write(m);
 }
 
-void sensor_tasks::QueueClient::send_capacitive_sensor_queue(
+void sensor_tasks::QueueClient::send_capacitive_sensor_queue_front(
     const sensors::utils::TaskMessage& m) {
-    capacitive_sensor_queue->try_write(m);
+    capacitive_sensor_queue_front->try_write(m);
 }
 
 void sensor_tasks::QueueClient::send_pressure_sensor_queue(
