@@ -163,5 +163,11 @@ enum class PipetteTipActionType {
     drop = 0x1,
 };
 
-}  // namespace can::ids
+/**
+ * Sensor Ids.
+ * Not to be confused with SensorType. This is the ID value that separate
+ * two or more of the same type of sensor within a system.
+ */
+enum class SensorId { S0 = 0x0, S1 = 0x1 };
 
+}  // namespace can::ids
