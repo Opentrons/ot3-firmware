@@ -105,6 +105,10 @@ class PoolAllocator {
         typedef PoolAllocator<U, MaxElements> other;
     };
 
+    constexpr PoolAllocator select_on_container_copy_construction( const PoolAllocator& a ) {
+        return a;
+    }
+
   private:
     using MemoryType = std::array<Element, MaxElements>;
     using FlagMemoryType = std::array<bool, MaxElements>;

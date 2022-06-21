@@ -89,13 +89,28 @@ TEST_CASE("List Object") {
 
 TEST_CASE("Vector Object") {
     auto constexpr max_entries = 2;
-    std::vector<int, PoolAllocator<int, max_entries>> subject;
     GIVEN("a vector with max capacity") {
+        std::vector<int, PoolAllocator<int, max_entries>> subject;
         subject.insert(subject.begin(), 1);
         subject.insert(subject.begin(), 2);
+        THEN("The elements are in the expected order") {
+            REQUIRE(subject[0] == 2);
+            REQUIRE(subject[1] == 1);
+        }
         THEN("adding another element will raise bad_alloc") {
             REQUIRE_THROWS_AS(subject.insert(subject.begin(), 3),
                               std::bad_alloc);
+        }
+    }
+    GIVEN("a fully initialized vector") {
+        std::vector<int, PoolAllocator<int, max_entries>> subject{2, 3};
+        THEN("The elements are in the expected order") {
+            REQUIRE(subject[0] == 2);
+            REQUIRE(subject[1] == 3);
+        }
+        THEN("adding another element will raise bad_alloc") {
+            REQUIRE_THROWS_AS(subject.insert(subject.begin(), 3),
+                  std::bad_alloc);
         }
     }
 }
