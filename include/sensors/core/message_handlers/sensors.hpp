@@ -70,11 +70,11 @@ class SensorHandler {
             case can::ids::SensorType::capacitive: {
                 switch (id) {
                     case can::ids::SensorId::S1: {
-                        client.send_capacitive_sensor_queue_s1(m);
+                        client.send_capacitive_sensor_queue_rear(m);
                         break;
                     }
                     default:
-                        client.send_capacitive_sensor_queue_s0(m);
+                        client.send_capacitive_sensor_queue_front(m);
                         break;
                 }
                 break;
