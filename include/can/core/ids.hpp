@@ -145,7 +145,7 @@ enum class SensorType {
 };
 
 /** Sensor IDs available.
-    
+
     Not to be confused with SensorType. This is the ID value that separate
     two or more of the same type of sensor within a system.
      */
@@ -174,4 +174,3 @@ enum class PipetteTipActionType {
 };
 
 }  // namespace can::ids
-
