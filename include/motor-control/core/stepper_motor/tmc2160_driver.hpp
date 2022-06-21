@@ -391,10 +391,12 @@ class TMC2160 {
          * of 16.
          *
          * CURRENT_SCALE_RATIO = run_current_scale + 1 / 32 (should always be 1)
-         * INV_SQRT_TWO = 1 / sqrt(2)
          * RMS_CURRENT_RATIO = full scale voltage / resistence
-         * GLOBALSCALAR = (256.0 * CURRENT)/
-         * (CURRENT_SCALE_RATIO*INV_SQRT_TWO*RMS_CURRENT_RATIO)
+         * GLOB_FROM_CURRENT = 256.0 * sqrt(2)
+         * GLOBALSCALAR_CONSTANT = GLOB_FROM_CURRENT / (CURRENT_SCALE_RATIO *
+         * RMS_CURRENT_RATIO)
+         *
+         * new_scalar = current * GLOBALSCALAR_CONSTANT
          */
         constexpr auto GLOB_FROM_CURRENT = 256.0 * sqrt2;
         float CURRENT_SCALE_RATIO =
