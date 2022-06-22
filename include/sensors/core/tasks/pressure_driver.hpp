@@ -35,7 +35,8 @@ class MMR92C04 {
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware) {
-        hardware.add_data_ready_callback([this]() -> void {this->sensor_callback();});
+        hardware.add_data_ready_callback(
+            [this]() -> void { this->sensor_callback(); });
     }
 
     /**
@@ -215,9 +216,13 @@ class MMR92C04 {
     }
 
     auto sensor_callback() -> void {
-        // TODO: try using the pressure driver's transact function and see if that changes
+        // TODO: try using the pressure driver's transact function and see if
+        // that changes
         //      the value of the incoming message
-        writer.transact(mmr920C04::ADDRESS, static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ), 3, own_queue);
+        writer.transact(
+            mmr920C04::ADDRESS,
+            static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ), 3,
+            own_queue);
     }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
@@ -252,8 +257,6 @@ class MMR92C04 {
         }
     }
 
-    void set_data_ready(bool value) { data_ready = value; }
-
   private:
     mmr920C04::MMR920C04RegisterMap _registers{};
     bool _initialized = false;
@@ -264,7 +267,6 @@ class MMR92C04 {
     CanClient &can_client;
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
-    bool data_ready = false;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
