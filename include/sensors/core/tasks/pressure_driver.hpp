@@ -29,12 +29,14 @@ class MMR92C04 {
   public:
     MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
              CanClient &can_client, OwnQueue &own_queue,
-             sensors::hardware::SensorHardwareBase &hardware)
+             sensors::hardware::SensorHardwareBase &hardware,
+             const can::ids::SensorId &id)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
-          hardware(hardware) {
+          hardware(hardware),
+          sensor_id(id) {
         hardware.add_data_ready_callback(
             [this]() -> void { this->sensor_callback(); });
     }
@@ -50,7 +52,7 @@ class MMR92C04 {
         return _registers;
     }
 
-    auto get_sensor_id() -> SensorType { return SensorType::pressure; }
+    auto get_sensor_type() -> SensorType { return SensorType::pressure; }
 
     auto get_host_id() -> NodeId { return NodeId::host; }
 
@@ -175,7 +177,7 @@ class MMR92C04 {
         auto pressure =
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(), .sensor_data = pressure};
+            .sensor = get_sensor_type(), .sensor_data = pressure};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -183,7 +185,7 @@ class MMR92C04 {
         auto pressure = mmr920C04::LowPassPressure::to_pressure(
             _registers.low_pass_pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(), .sensor_data = pressure};
+            .sensor = get_sensor_type(), .sensor_data = pressure};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -191,27 +193,32 @@ class MMR92C04 {
         auto temperature = mmr920C04::Temperature::to_temperature(
             _registers.low_pass_pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(), .sensor_data = temperature};
+            .sensor = get_sensor_type(), .sensor_data = temperature};
         can_client.send_can_message(get_host_id(), message);
     }
 
     auto send_status() -> void {
         auto status = mmr920C04::Status::to_status(_registers.status.reading);
         auto message = can::messages::ReadFromSensorResponse{
-            .sensor = get_sensor_id(),
+            .sensor = get_sensor_type(),
+            .sensor_id = sensor_id,
             .sensor_data = static_cast<int32_t>(status)};
         can_client.send_can_message(get_host_id(), message);
     }
 
     auto send_threshold() -> void {
         auto message = can::messages::SensorThresholdResponse{
-            .sensor = get_sensor_id(), .threshold = get_threshold()};
+            .sensor = get_sensor_type(),
+            .sensor_id = sensor_id,
+            .threshold = get_threshold()};
         can_client.send_can_message(get_host_id(), message);
     }
 
     auto send_peripheral_response() -> void {
-        auto message = can::messages::PeripheralStatusResponse{
-            .sensor = get_sensor_id(), .status = initialized()};
+        auto message =
+            can::messages::PeripheralStatusResponse{.sensor = get_sensor_type(),
+                                                    .sensor_id = sensor_id,
+                                                    .status = initialized()};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -267,6 +274,7 @@ class MMR92C04 {
     CanClient &can_client;
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
+    const can::ids::SensorId &sensor_id;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>

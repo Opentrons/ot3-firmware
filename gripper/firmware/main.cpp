@@ -23,6 +23,7 @@
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
+#include "sensors/firmware/sensor_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -57,6 +58,7 @@ static constexpr auto can_bit_timings =
 /**
  * I2C handles
  */
+static auto i2c_comms2 = i2c::hardware::I2C();
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};
 
@@ -73,6 +75,24 @@ class EEPromHardwareInterface
 };
 static auto eeprom_hw_iface = EEPromHardwareInterface();
 
+struct sensors::hardware::SensorHardwareConfiguration sensor_pins {
+    .sync_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_7,
+            .active_setting = GPIO_PIN_RESET},
+    .sync_out =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_6,
+            .active_setting = GPIO_PIN_RESET},
+    .data_ready = {},
+};
+
+auto sensor_hardware = sensors::hardware::SensorHardware(sensor_pins);
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -84,14 +104,15 @@ auto main() -> int {
     grip_motor_iface::initialize();
 
     i2c_setup(&i2c_handles);
+    i2c_comms2.set_handle(i2c_handles.i2c2);
     i2c_comms3.set_handle(i2c_handles.i2c3);
 
     canbus.start(can_bit_timings);
-    gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
-                               grip_motor_iface::get_grip_motor(),
-                               z_motor_iface::get_spi(),
-                               z_motor_iface::get_tmc2130_driver_configs(),
-                               i2c_comms3, eeprom_hw_iface);
+    gripper_tasks::start_tasks(
+        canbus, z_motor_iface::get_z_motor(),
+        grip_motor_iface::get_grip_motor(), z_motor_iface::get_spi(),
+        z_motor_iface::get_tmc2130_driver_configs(), i2c_comms2, i2c_comms3,
+        sensor_hardware, eeprom_hw_iface);
 
     iWatchdog.start(6);
 

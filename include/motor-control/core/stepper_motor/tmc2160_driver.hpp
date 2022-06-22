@@ -59,8 +59,16 @@ class TMC2160 {
 
     auto write(Registers addr, uint32_t command_data) -> bool {
         auto converted_addr = static_cast<uint8_t>(addr);
-        return _spi_manager.write(converted_addr, command_data, _task_queue,
-                                  _cs_intf);
+        auto response = false;
+        // setting a 10 ms timeout and 3 repeats.
+        for (int i = 3; i > 0; i--) {
+            response = _spi_manager.write(converted_addr, command_data,
+                                          _task_queue, _cs_intf, 10);
+            if (response) {
+                break;
+            }
+        }
+        return response;
     }
 
     /**
@@ -267,6 +275,7 @@ class TMC2160 {
      * @return True if new register was set succesfully, false otherwise
      */
     auto set_glob_scaler(GlobalScaler reg) -> bool {
+        reg.clamp_value();
         if (set_register(reg)) {
             _registers.glob_scale = reg;
             return true;
@@ -371,18 +380,35 @@ class TMC2160 {
 
     [[nodiscard]] auto convert_to_tmc2160_current_value(uint32_t c) const
         -> uint32_t {
-        constexpr auto SQRT_TWO = sqrt2;
-        uint32_t CURR_GLOB_SCALE = _registers.glob_scale.global_scaler;
-        auto GLOB_SCALE = static_cast<float>(CURR_GLOB_SCALE) / 256.0;
-        auto FLOAT_CONSTANT =
-            static_cast<float>(SQRT_TWO * 32.0 * (_current_config.r_sense) /
-                               _current_config.v_sf * GLOB_SCALE);
+        /*
+         * From the datasheet (page 62):
+         *
+         * For best precision of current setting, it is advised to measure and
+         * fine tune the current in the application. Choose the sense resistors
+         * to the next value covering the desired motor current. Set IRUN to 31
+         * corresponding 100% of the desired motor current and fine-tune motor
+         * current using GLOBALSCALER. IHOLD should be set to a nominal value
+         * of 16.
+         *
+         * CURRENT_SCALE_RATIO = run_current_scale + 1 / 32 (should always be 1)
+         * RMS_CURRENT_RATIO = full scale voltage / resistence
+         * GLOB_FROM_CURRENT = 256.0 * sqrt(2)
+         * GLOBALSCALAR_CONSTANT = GLOB_FROM_CURRENT / (CURRENT_SCALE_RATIO *
+         * RMS_CURRENT_RATIO)
+         *
+         * new_scalar = current * GLOBALSCALAR_CONSTANT
+         */
+        constexpr auto GLOB_FROM_CURRENT = 256.0 * sqrt2;
+        float CURRENT_SCALE_RATIO =
+            (_registers.ihold_irun.run_current + 1.0) / 32.0;
+        auto RMS_CURRENT_RATIO = _current_config.v_sf / _current_config.r_sense;
+        auto GLOBAL_SCALE_CONSTANT =
+            GLOB_FROM_CURRENT / (CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO);
         auto fixed_point_constant = static_cast<uint32_t>(
-            FLOAT_CONSTANT * static_cast<float>(1LL << 16));
-        uint64_t val = static_cast<uint64_t>(fixed_point_constant) *
-                       static_cast<uint64_t>(c);
-        auto new_val = static_cast<uint32_t>(val >> 32);
-        return new_val - 1;
+            GLOBAL_SCALE_CONSTANT * static_cast<float>(1LL << 16));
+        uint64_t global_scaler = static_cast<uint64_t>(fixed_point_constant) *
+                                 static_cast<uint64_t>(c);
+        return static_cast<uint32_t>(global_scaler >> 32) - 1;
     }
 
   private:

@@ -1,3 +1,4 @@
+#include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
@@ -18,6 +19,8 @@ auto get_message(Queue& q) -> Message {
     q.try_read(&empty_msg);
     return std::get<Message>(empty_msg);
 }
+auto sensor_id = can::ids::SensorId::S0;
+constexpr uint8_t sensor_id_int = 0x0;
 
 SCENARIO("read capacitance sensor values") {
     test_mocks::MockSensorHardware mock_hw{};
@@ -42,12 +45,13 @@ SCENARIO("read capacitance sensor values") {
     poller.set_queue(&poller_queue);
 
     auto sensor = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue};
+        writer, poller, mock_hw, queue_client, response_queue, sensor_id};
     constexpr uint8_t capacitive_id = 0x1;
 
     GIVEN("a request to take a single read of the capacitive sensor") {
-        auto single_read = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, capacitive_id));
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
+                {}, capacitive_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c poller queue is populated with a poll request") {
@@ -101,8 +105,9 @@ SCENARIO("read capacitance sensor values") {
     }
     GIVEN("a request to take a baseline reading of the capacitance sensor") {
         int NUM_READS = 2;
-        auto multi_read = sensors::utils::TaskMessage(
-            can::messages::BaselineSensorRequest({}, capacitive_id, NUM_READS));
+        auto multi_read =
+            sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
+                {}, capacitive_id, sensor_id_int, NUM_READS));
         sensor.handle_message(multi_read);
         WHEN("the handler function receives the message in LSB mode") {
             THEN("the poller queue is populated with a poll request") {
@@ -212,8 +217,9 @@ SCENARIO("read capacitance sensor values") {
 
     GIVEN("a drifting capacitance reading") {
         int NUM_READS = 30;
-        auto multi_read = sensors::utils::TaskMessage(
-            can::messages::BaselineSensorRequest({}, capacitive_id, NUM_READS));
+        auto multi_read =
+            sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
+                {}, capacitive_id, sensor_id_int, NUM_READS));
         WHEN("we call the capacitance handler") {
             sensor.handle_message(multi_read);
             auto buffer_a = i2c::messages::MaxMessageBuffer{200, 80, 0, 0, 0};
@@ -237,7 +243,8 @@ SCENARIO("read capacitance sensor values") {
             THEN("it should adjust the offset accordingly") {
                 // check for the offset
                 auto read = sensors::utils::TaskMessage(
-                    can::messages::ReadFromSensorRequest({}, capacitive_id, 1));
+                    can::messages::ReadFromSensorRequest({}, capacitive_id,
+                                                         sensor_id_int, 1));
                 sensor.handle_message(read);
                 can::message_writer_task::TaskMessage can_msg{};
 
@@ -267,7 +274,7 @@ SCENARIO("capacitance callback tests") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     sensors::tasks::ReadCapacitanceCallback callback_host(queue_client, writer,
-                                                          mock_hw);
+                                                          mock_hw, sensor_id);
 
     can::message_writer_task::TaskMessage empty_msg{};
 
@@ -450,13 +457,13 @@ SCENARIO("threshold configuration") {
     poller.set_queue(&poller_queue);
 
     auto sensor = sensors::tasks::CapacitiveMessageHandler{
-        writer, poller, mock_hw, queue_client, response_queue};
+        writer, poller, mock_hw, queue_client, response_queue, sensor_id};
 
     GIVEN("A request to set an autothreshold") {
         int NUM_READS = 10;
         auto autothreshold = sensors::utils::TaskMessage(
             can::messages::SetSensorThresholdRequest(
-                {}, can::ids::SensorType::capacitive,
+                {}, can::ids::SensorType::capacitive, sensor_id,
                 convert_to_fixed_point(0.375, 15),
                 can::ids::SensorThresholdMode::auto_baseline));
         WHEN("the message is received") {
@@ -544,7 +551,7 @@ SCENARIO("threshold configuration") {
     GIVEN("A request to set a specific threshold") {
         auto specific_threshold = sensors::utils::TaskMessage(
             can::messages::SetSensorThresholdRequest(
-                {}, can::ids::SensorType::capacitive,
+                {}, can::ids::SensorType::capacitive, sensor_id,
                 convert_to_fixed_point(10, 15),
                 can::ids::SensorThresholdMode::absolute));
         WHEN("the message is received") {
