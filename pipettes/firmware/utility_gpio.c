@@ -124,6 +124,7 @@ void sync_drive_gpio_init() {
 void data_ready_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     PipetteHardwarePin hardware;
+    IRQn_Type exti_line = get_interrupt_line(pipette_type);
     if (pipette_type == SINGLE_CHANNEL || pipette_type == EIGHT_CHANNEL)
     {
         hardware =
@@ -134,9 +135,9 @@ void data_ready_gpio_init() {
         hardware =
             pipette_hardware_get_gpio(
         pipette_type, pipette_hardware_device_data_ready);
-        PipetteHardwarePin hardware_rear =
-        pipette_hardware_get_gpio(
-            pipette_type, pipette_hardware_device_data_ready);
+        PipetteHardwarePin hardware_rear;
+        hardware_rear.port = GPIOA;
+        hardware_rear.pin = GPIO_PIN_8;
 
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /*Configure GPIO pin*/
@@ -147,7 +148,9 @@ void data_ready_gpio_init() {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 
-        // TODO: call GPIO_EXTI_IRQ_Handler() and implement HAL_GPIO_EXTI_Callback()
+        /* EXTI interrupt init*/
+        HAL_NVIC_SetPriority(EXTI8_IRQn, 10, 0);
+        HAL_NVIC_EnableIRQ(EXTI8_IRQn);
     }
 
     /* GPIO Ports Clock Enable */
@@ -162,10 +165,8 @@ void data_ready_gpio_init() {
     HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 
     /* EXTI interrupt init*/
-
-    // TODO: figure out which arg is the priority
-    HAL_NVIC_SetPriority(EXTI15_IRQn, 10, 0);
-    HAL_NVIC_EnableIRQ(EXTI15_IRQn);
+    HAL_NVIC_SetPriority(exti_line, 10, 0);
+    HAL_NVIC_EnableIRQ(exti_line);
 }
 
 int tip_present() {

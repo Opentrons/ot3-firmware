@@ -29,6 +29,22 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
     }
 }
 
+IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
+    switch (pipette_type) {
+        case NINETY_SIX_CHANNEL:
+            return EXTI15_IRQn;
+        case THREE_EIGHTY_FOUR_CHANNEL:
+            return EXTI15_IRQn;
+        case SINGLE_CHANNEL:
+            return EXTI9_IRQn;
+        case EIGHT_CHANNEL:
+            return EXTI9_IRQn;
+        default:
+            return EXTI9_IRQn;
+    }
+}
+
+
 static uint16_t get_spi_pins_ht(GPIO_TypeDef* for_handle) {
     /*
      * SPI Bus 2

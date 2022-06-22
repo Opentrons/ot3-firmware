@@ -34,7 +34,9 @@ class MMR92C04 {
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
-          hardware(hardware) {}
+          hardware(hardware) {
+        hardware.add_data_ready_callback([this]() -> void {this->sensor_callback();});
+    }
 
     /**
      * @brief Check if the MMR92C04 has been initialized.
@@ -212,9 +214,10 @@ class MMR92C04 {
         can_client.send_can_message(get_host_id(), message);
     }
 
-    auto drdy_interrupt_response() -> void {
-        uint32_t data = 0x0;
-        writer.read(mmr920C04::Registers::PRESSURE_READ, data, own_queue);
+    auto sensor_callback() -> void {
+        // TODO: try using the pressure driver's transact function and see if that changes
+        //      the value of the incoming message
+        writer.transact(mmr920C04::ADDRESS, static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ), 3, own_queue);
     }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {

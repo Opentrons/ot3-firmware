@@ -101,6 +101,14 @@ static auto pins_for_sensor =
 auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
+extern "C"
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
+    if ((GPIO_Pin & pins_for_sensor.primary.data_ready.pin) != 0)
+    {
+        sensor_hardware.data_ready();
+    }
+}
+
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
