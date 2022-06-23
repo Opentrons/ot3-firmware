@@ -13,13 +13,12 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/core/version.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 
 using namespace can::dispatch;
 
-static auto& queue_client = gantry_tasks::get_queues();
+static auto& queue_client = gantry::queues::get_queues();
 
 static auto my_node_id = utils::get_node_id();
 

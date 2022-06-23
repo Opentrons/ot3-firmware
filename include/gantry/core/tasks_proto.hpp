@@ -12,7 +12,8 @@
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
-namespace gantry_tasks {
+namespace gantry {
+namespace tasks {
 
 /**
  * Start gantry tasks.
@@ -22,35 +23,6 @@ void start_tasks(
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs);
-
-/**
- * Access to all the message queues in the system.
- */
-struct QueueClient : can::message_writer::MessageWriter {
-    QueueClient(can::ids::NodeId this_fw);
-
-    void send_motion_controller_queue(
-        const motion_controller_task::TaskMessage& m);
-
-    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
-
-    void send_move_group_queue(const move_group_task::TaskMessage& m);
-
-    void send_move_status_reporter_queue(
-        const move_status_reporter_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
-        tmc2130_driver_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
-        move_group_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        move_status_reporter_task::TaskMessage>* move_status_report_queue{
-        nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
-        spi_queue{nullptr};
-};
 
 /**
  * Access to all tasks in the system.
@@ -78,10 +50,5 @@ struct AllTask {
  */
 [[nodiscard]] auto get_tasks() -> AllTask&;
 
-/**
- * Access to the queues singleton
- * @return
- */
-[[nodiscard]] auto get_queues() -> QueueClient&;
-
-}  // namespace gantry_tasks
+};  // namespace tasks
+};  // namespace gantry

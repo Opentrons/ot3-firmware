@@ -1,4 +1,4 @@
-#include "gantry/core/interfaces.hpp"
+#include "gantry/core/interfaces_rev1.hpp"
 
 #include "can/core/bit_timings.hpp"
 #include "can/firmware/hal_can.h"
@@ -7,8 +7,7 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "gantry/core/axis_type.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -194,7 +193,7 @@ static motor_class::Motor motor{
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry_tasks::get_queues(), motor_hardware_iface);
+    motor_queue, gantry::queues::get_queues(), motor_hardware_iface);
 
 /**
  * Timer callback.

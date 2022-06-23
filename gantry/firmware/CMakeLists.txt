@@ -52,15 +52,23 @@ set(AXES x y)
 
 
 # Add source files that should be checked by clang-tidy here
-set(GANTRY_FW_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
-        ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
-        ${CAN_FW_DIR}/hal_can_bus.cpp
-        ${CAN_FW_DIR}/utils.c
-        ${CAN_FW_DIR}/hal_can.c
-        )
+set(GANTRY_FW_LINTABLE_SRCS_COMMON
+    ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+    ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
+    ${CAN_FW_DIR}/hal_can_bus.cpp
+    ${CAN_FW_DIR}/utils.c
+    ${CAN_FW_DIR}/hal_can.c
+)
+
+set(GANTRY_FW_LINTABLE_SRCS_rev1
+    ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/interfaces_rev1.cpp
+)
+set(GANTRY_FW_LINTABLE_SRCS_proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/main_proto.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/interfaces_proto.cpp
+)
+
 
 set(GANTRY_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
@@ -77,7 +85,8 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
 foreach(REV IN LISTS REVISIONS)
   foreach(AXIS IN LISTS AXES)
     add_executable(gantry-${AXIS}-${REV}
-          ${GANTRY_FW_LINTABLE_SRCS}
+            ${GANTRY_FW_LINTABLE_SRCS_COMMON}
+            ${GANTRY_FW_LINTABLE_SRCS_${REV}}
           ${GANTRY_FW_NON_LINTABLE_SRCS}
           ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_${AXIS}_hardware_config.c)
 
@@ -186,6 +195,6 @@ list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
 add_custom_target(gantry-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${GANTRY_X_CORE_SRC} ${GANTRY_Y_CORE_SRC})
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS_COMMON} ${GANTRY_X_CORE_SRC} ${GANTRY_Y_CORE_SRC} ${GANTRY_FW_LINTABLE_SRCS_rev1} ${GANTRY_FW_LINTABLE_SRCS_proto})
 list(APPEND LINT_TARGETS "gantry-lint")
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

@@ -11,8 +11,8 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/utility_gpio.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gantry/core/interfaces_rev1.hpp"
+#include "gantry/core/tasks_rev1.hpp"
 
 auto main() -> int {
     HardwareInit();
@@ -23,7 +23,7 @@ auto main() -> int {
 
     interfaces::initialize();
 
-    gantry_tasks::start_tasks(
+    gantry::tasks::start_tasks(
         interfaces::get_can_bus(), interfaces::get_motor().motion_controller,
         interfaces::get_spi(), interfaces::get_driver_config());
 
