@@ -75,22 +75,13 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         )
 
 foreach(REV IN LISTS REVISIONS)
-  add_executable(gantry-x-${REV}
-          ${GANTRY_FW_LINTABLE_SRCS}
-          ${GANTRY_FW_NON_LINTABLE_SRCS}
-          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_x_hardware_config.c)
-
-
-  add_executable(gantry-y-${REV}
-          ${GANTRY_FW_LINTABLE_SRCS}
-          ${GANTRY_FW_NON_LINTABLE_SRCS}
-          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_y_hardware_config.c)
-
-  target_gantry_core_x(gantry-x-${REV})
-  target_gantry_core_y(gantry-y-${REV})
-
   foreach(AXIS IN LISTS AXES)
+    add_executable(gantry-${AXIS}-${REV}
+          ${GANTRY_FW_LINTABLE_SRCS}
+          ${GANTRY_FW_NON_LINTABLE_SRCS}
+          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_${AXIS}_hardware_config.c)
 
+    target_gantry_core(gantry-${AXIS}-${REV} ${AXIS} ${REV})
     target_ot_motor_control(gantry-${AXIS}-${REV})
 
     target_link_libraries(gantry-${AXIS}-${REV}
