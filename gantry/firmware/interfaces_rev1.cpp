@@ -36,7 +36,7 @@ static spi::hardware::Spi spi_comms(SPI_intf);
 /**
  * Motor pin configuration.
  */
-struct motion_controller::HardwareConfig motor_pins_x {
+struct motion_controller::HardwareConfig motor_pins {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -69,74 +69,23 @@ struct motion_controller::HardwareConfig motor_pins_x {
         .active_setting = GPIO_PIN_RESET}
 };
 
-struct motion_controller::HardwareConfig motor_pins_y {
-    .direction =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_1,
-            .active_setting = GPIO_PIN_SET},
-    .step =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_SET},
-    .enable =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_9,
-            .active_setting = GPIO_PIN_SET},
-    .limit_switch =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_2,
-            .active_setting = GPIO_PIN_SET},
-    .led = {},
-    .sync_in = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_5,
-        .active_setting = GPIO_PIN_RESET}
-};
 
-static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
-    .registers = {.gconfig = {.en_pwm_mode = 1},
-                  .ihold_irun = {.hold_current = 0x2,
-                                 .run_current = 0x18,
-                                 .hold_current_delay = 0x7},
-                  .thigh = {.threshold = 0xFFFFF},
-                  .chopconf = {.toff = 0x5,
-                               .hstrt = 0x5,
-                               .hend = 0x3,
-                               .tbl = 0x2,
-                               .mres = 0x3},
-                  .coolconf = {.sgt = 0x6}},
-    .current_config =
-        {
-            .r_sense = 0.1,
-            .v_sf = 0.325,
-        },
-    .chip_select{
-        .cs_pin = GPIO_PIN_12,
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .GPIO_handle = GPIOB,
-    }};
 
-static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
-    .registers = {.gconfig = {.en_pwm_mode = 1},
-                  .ihold_irun = {.hold_current = 0x2,
-                                 .run_current = 0x18,
-                                 .hold_current_delay = 0x7},
-                  .thigh = {.threshold = 0xFFFFF},
-                  .chopconf = {.toff = 0x5,
-                               .hstrt = 0x5,
-                               .hend = 0x3,
-                               .tbl = 0x2,
-                               .mres = 0x3},
-                  .coolconf = {.sgt = 0x6}},
+static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
+.registers = {.gconfig = {.en_pwm_mode = 1},
+            .ihold_irun = {.hold_current = 16,
+                           .run_current = 31,
+                           .hold_current_delay = 0x7},
+            .tcoolthrs = {.threshold = 0},
+            .thigh = {.threshold = 0xFFFFF},
+            .chopconf = {.toff = 0x3,
+                         .hstrt = 0x5,
+                         .hend = 0x2,
+                         .tbl = 0x2,
+                         .tpfd = 0x4,
+                         .mres = 0x4},
+            .coolconf = {.sgt = 0x6},
+},
     .current_config =
         {
             .r_sense = 0.1,
@@ -152,15 +101,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
  * The motor hardware interface.
  */
 static motor_hardware::MotorHardware motor_hardware_iface(
-    (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
-    nullptr);
-
-/**
- * The motor driver config.
- */
-static tmc2130::configs::TMC2130DriverConfig motor_driver_config =
-    (get_axis_type() == gantry_x) ? gantry_x_driver_configs
-                                  : gantry_y_driver_configs;
+    motor_pins, &htim7, nullptr);
 
 /**
  * The can bus.
@@ -249,6 +190,6 @@ auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
     return motor;
 }
 
-auto interfaces::get_driver_config() -> tmc2130::configs::TMC2130DriverConfig& {
+auto interfaces::get_driver_config() -> tmc2160::configs::TMC2160DriverConfig& {
     return motor_driver_config;
 }

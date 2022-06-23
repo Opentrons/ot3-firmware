@@ -59,7 +59,7 @@ void gantry::tasks::start_tasks(
     ::tasks.spi_task = &spi_task;
 
     ::queues.motion_queue = &motion.get_queue();
-    ::queues.tmc2130_driver_queue = &tmc2130_driver.get_queue();
+    ::queues.motor_driver_queue = &tmc2130_driver.get_queue();
     ::queues.move_group_queue = &move_group.get_queue();
     ::queues.set_queue(&can_writer.get_queue());
     ::queues.move_status_report_queue = &move_status_reporter.get_queue();
@@ -76,7 +76,7 @@ void gantry::queues::QueueClient::send_motion_controller_queue(
 
 void gantry::queues::QueueClient::send_motor_driver_queue(
     const tmc2130::tasks::TaskMessage& m) {
-    tmc2130_driver_queue->try_write(m);
+    motor_driver_queue->try_write(m);
 }
 
 void gantry::queues::QueueClient::send_move_group_queue(

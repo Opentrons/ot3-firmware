@@ -34,7 +34,7 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<tmc::tasks::TaskMessage>*
-        tmc2130_driver_queue{nullptr};
+        motor_driver_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
         move_group_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<

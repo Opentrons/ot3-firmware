@@ -3,11 +3,11 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
 #include "spi/core/spi.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
@@ -22,7 +22,7 @@ void start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
-    tmc2130::configs::TMC2130DriverConfig& driver_configs);
+    tmc2160::configs::TMC2160DriverConfig& driver_configs);
 
 /**
  * Access to all tasks in the system.
@@ -30,8 +30,8 @@ void start_tasks(
 struct AllTask {
     can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
-    tmc2130::tasks::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
+    tmc2160::tasks::MotorDriverTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* tmc2160_driver{nullptr};
     motion_controller_task::MotionControllerTask<
         freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
         nullptr};
