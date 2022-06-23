@@ -4,9 +4,52 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Gantry")
 add_STM32G4_freertos("Gantry")
 
+target_include_directories(STM32G4xx_Drivers_Gantry
+        PUBLIC .)
+target_include_directories(STM32G4xx_FreeRTOS_Gantry
+        PUBLIC .)
+
+target_compile_definitions(STM32G4xx_Drivers_Gantry
+        PUBLIC STM32G491xx)
+target_compile_definitions(STM32G4xx_FreeRTOS_Gantry
+        PUBLIC STM32G491xx)
+
+set_target_properties(
+        STM32G4xx_FreeRTOS_Gantry
+        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
+
+
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
+
+find_program(ARM_GDB
+        arm-none-eabi-gdb-py
+        PATHS "${CrossGCC_BINDIR}"
+        NO_DEFAULT_PATH
+        REQUIRED)
+message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
+
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+          PATHS "${CrossGCC_BINDIR}"
+          NO_DEFAULT_PATH
+          REQUIRED)
+
+# Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
+# this dir
+set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+
+set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
+
+# List of revisions of the gantry boards that we support
+set(REVISIONS proto rev1)
+# The default revision that you'll get if you use targets not qualified
+# by revision (i.e. if you do cmake --build --preset=gantry --target gantry-x
+# rather than cmake --build --preset=gantry --target gantry-x-proto)
+set(DEFAULT_REVISION proto)
+
+set(AXES x y)
+
 
 # Add source files that should be checked by clang-tidy here
 set(GANTRY_FW_LINTABLE_SRCS
@@ -31,155 +74,108 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
 
-add_executable(gantry-x
-        ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS}
-        ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_x_hardware_config.c)
+foreach(REV IN LISTS REVISIONS)
+  add_executable(gantry-x-${REV}
+          ${GANTRY_FW_LINTABLE_SRCS}
+          ${GANTRY_FW_NON_LINTABLE_SRCS}
+          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_x_hardware_config.c)
 
 
-add_executable(gantry-y
-        ${GANTRY_FW_LINTABLE_SRCS}
-        ${GANTRY_FW_NON_LINTABLE_SRCS}
-        ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_y_hardware_config.c)
+  add_executable(gantry-y-${REV}
+          ${GANTRY_FW_LINTABLE_SRCS}
+          ${GANTRY_FW_NON_LINTABLE_SRCS}
+          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_y_hardware_config.c)
 
-target_gantry_core_x(gantry-x)
-target_gantry_core_y(gantry-y)
+  target_gantry_core_x(gantry-x-${REV})
+  target_gantry_core_y(gantry-y-${REV})
 
-target_ot_motor_control(gantry-x)
-target_ot_motor_control(gantry-y)
+  foreach(AXIS IN LISTS AXES)
 
-target_link_libraries(gantry-x
-        PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
-        can-core)
+    target_ot_motor_control(gantry-${AXIS}-${REV})
 
-target_link_libraries(gantry-y
-        PUBLIC STM32G491RETx
-        STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
-        can-core)
+    target_link_libraries(gantry-${AXIS}-${REV}
+            PUBLIC STM32G491RETx
+            STM32G4xx_Drivers_Gantry STM32G4xx_FreeRTOS_Gantry
+            can-core)
 
+    set_target_properties(gantry-${AXIS}-${REV}
+            PROPERTIES
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED TRUE
+            C_STANDARD 11
+            C_STANDARD_REQUIRED TRUE)
 
-set_target_properties(gantry-x
-        PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE
-        C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+    target_include_directories(gantry-${AXIS}-${REV}
+            PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-set_target_properties(gantry-y
-        PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE
-        C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+    target_compile_options(gantry-${AXIS}-${REV}
+            PUBLIC
+            -Wall
+            -Werror
+            -Wextra
+            -Wno-missing-field-initializers
+            $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
+    set_target_properties(gantry-${AXIS}-${REV}
+            PROPERTIES
+            CROSSCOMPILING_EMULATOR
+            "${ARM_GDB};--command=${GDBINIT_FILE}")
 
-target_include_directories(gantry-x
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    add_custom_command(OUTPUT gantry-${AXIS}-${REV}.hex
+            COMMAND ${CROSS_OBJCOPY} ARGS gantry-${AXIS}-${REV} "-Oihex" gantry-${AXIS}-${REV}.hex
+            DEPENDS gantry-${AXIS}-${REV}
+            VERBATIM)
+    add_custom_target(gantry-${AXIS}-${REV}-hex ALL
+            DEPENDS gantry-${AXIS}-${REV}.hex)
 
-target_include_directories(gantry-y
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    add_custom_command(OUTPUT gantry-${AXIS}-${REV}.bin
+            COMMAND ${CROSS_OBJCOPY} ARGS gantry-${AXIS}-${REV} "-Obinary" gantry-${AXIS}-${REV}.bin
+            DEPENDS gantry-${AXIS}-${REV}
+            VERBATIM)
+    add_custom_target(gantry-${AXIS}-${REV}-bin ALL
+            DEPENDS gantry-${AXIS}-${REV}.bin)
 
+    # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
+    # arguable misuse of the concept) to the appropriate cross-gdb with
+    # remote-target. You should make sure st-util is running; that's not
+    # done here because it won't be multi-os compatible, and also it
+    # should be running the entire time and that's tough to accomplish
+    # in a custom command
+    add_custom_target(gantry-debug-${AXIS}-${REV}
+            COMMAND gantry-${AXIS}-${REV}
+            USES_TERMINAL
+            )
 
-target_compile_options(gantry-x
-        PUBLIC
-        -Wall
-        -Werror
-        -Wextra
-        -Wno-missing-field-initializers
-        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+    # Targets to create full image hex file containing both bootloader and application
+    add_custom_command(
+            OUTPUT gantry-${AXIS}-${REV}-image.hex
+            DEPENDS gantry-${AXIS}-${REV}-hex bootloader-gantry-${AXIS}-hex gantry-${AXIS}-${REV}.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex
+            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-${AXIS}-${REV}-image.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex gantry-${AXIS}-${REV}.hex
+            VERBATIM)
+    add_custom_target(gantry-${AXIS}-${REV}-image-hex ALL
+            DEPENDS gantry-${AXIS}-${REV}-image.hex)
 
-target_compile_options(gantry-y
-        PUBLIC
-        -Wall
-        -Werror
-        -Wextra
-        -Wno-missing-field-initializers
-        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+    # Targets to flash bootloader and firmware
+    add_custom_target(gantry-${AXIS}-${REV}-flash
+            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-${AXIS}-${REV}-image.hex;reset;exit"
+            VERBATIM
+            COMMENT "Flashing gantry ${AXIS} ${REV}"
+            DEPENDS gantry-${AXIS}-${REV}-image-hex)
+  endforeach()
+endforeach()
 
-
-target_include_directories(STM32G4xx_Drivers_Gantry
-        PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Gantry
-        PUBLIC .)
-
-target_compile_definitions(STM32G4xx_Drivers_Gantry
-        PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Gantry
-        PUBLIC STM32G491xx)
-
-set_target_properties(
-        STM32G4xx_FreeRTOS_Gantry
-        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
-
-find_program(ARM_GDB
-        arm-none-eabi-gdb-py
-        PATHS "${CrossGCC_BINDIR}"
-        NO_DEFAULT_PATH
-        REQUIRED)
-message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
-# Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
-# this dir
-set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
-set_target_properties(gantry-x
-        PROPERTIES
-        CROSSCOMPILING_EMULATOR
-        "${ARM_GDB};--command=${GDBINIT_FILE}")
-
-set_target_properties(gantry-y
-        PROPERTIES
-        CROSSCOMPILING_EMULATOR
-        "${ARM_GDB};--command=${GDBINIT_FILE}")
-
-
-find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
-        PATHS "${CrossGCC_BINDIR}"
-        NO_DEFAULT_PATH
-        REQUIRED)
-add_custom_command(OUTPUT gantry-x.hex
-        COMMAND ${CROSS_OBJCOPY} ARGS gantry-x "-Oihex" gantry-x.hex
-        DEPENDS gantry-x
-        VERBATIM)
-add_custom_target(gantry-x-hex ALL
-        DEPENDS gantry-x.hex)
-
-add_custom_command(OUTPUT gantry-x.bin
-        COMMAND ${CROSS_OBJCOPY} ARGS gantry-x "-Obinary" gantry-x.bin
-        DEPENDS gantry-x
-        VERBATIM)
-add_custom_target(gantry-x-bin ALL
-        DEPENDS gantry-x.bin)
-
-
-find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
-        PATHS "${CrossGCC_BINDIR}"
-        NO_DEFAULT_PATH
-        REQUIRED)
-add_custom_command(OUTPUT gantry-y.hex
-        COMMAND ${CROSS_OBJCOPY} ARGS gantry-y "-Oihex" gantry-y.hex
-        DEPENDS gantry-y
-        VERBATIM)
-add_custom_target(gantry-y-hex ALL
-        DEPENDS gantry-y.hex)
-
-add_custom_command(OUTPUT gantry-y.bin
-        COMMAND ${CROSS_OBJCOPY} ARGS gantry-y "-Obinary" gantry-y.bin
-        DEPENDS gantry-y
-        VERBATIM)
-add_custom_target(gantry-y-bin ALL
-        DEPENDS gantry-y.bin)
-
-
+#default targets
+foreach(AXIS IN LISTS AXES)
+  add_custom_target(gantry-${AXIS}-image-hex DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-image-hex)
+  add_custom_target(gantry-debug-${AXIS} DEPENDS gantry-debug-${AXIS}-${DEFAULT_REVISION})
+  add_custom_target(gantry-${AXIS} DEPENDS gantry-${AXIS}-${DEFAULT_REVISION})
+  add_custom_target(gantry-${AXIS}-flash DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-flash)
+endforeach()
 find_package(Clang)
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
@@ -202,53 +198,3 @@ add_custom_target(gantry-lint
         COMMAND ${Clang_CLANGTIDY_EXECUTABLE} ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${GANTRY_FW_LINTABLE_SRCS} ${GANTRY_X_CORE_SRC} ${GANTRY_Y_CORE_SRC})
 list(APPEND LINT_TARGETS "gantry-lint")
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
-
-
-# Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
-# arguable misuse of the concept) to the appropriate cross-gdb with
-# remote-target. You should make sure st-util is running; that's not
-# done here because it won't be multi-os compatible, and also it
-# should be running the entire time and that's tough to accomplish
-# in a custom command
-add_custom_target(gantry-debug-x
-        COMMAND gantry-x
-        USES_TERMINAL
-        )
-
-add_custom_target(gantry-debug-y
-        COMMAND gantry-y
-        USES_TERMINAL
-        )
-
-# Targets to create full image hex file containing both bootloader and application
-add_custom_command(
-        OUTPUT gantry-x-image.hex
-        DEPENDS gantry-x-hex bootloader-gantry-x-hex gantry-x.hex $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex
-        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-x-image.hex $<TARGET_FILE_DIR:bootloader-gantry-x>/bootloader-gantry-x.hex gantry-x.hex
-        VERBATIM)
-add_custom_target(gantry-x-image-hex ALL
-        DEPENDS gantry-x-image.hex)
-
-add_custom_command(
-        OUTPUT gantry-y-image.hex
-        DEPENDS gantry-y-hex bootloader-gantry-y-hex gantry-y.hex $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex
-        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-y-image.hex $<TARGET_FILE_DIR:bootloader-gantry-y>/bootloader-gantry-y.hex gantry-y.hex
-        VERBATIM)
-add_custom_target(gantry-y-image-hex ALL
-        DEPENDS gantry-y-image.hex)
-
-
-set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
-
-# Targets to flash bootloader and firmware
-add_custom_target(gantry-x-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-x-image.hex;reset;exit"
-        VERBATIM
-        COMMENT "Flashing board"
-        DEPENDS gantry-x-image-hex)
-
-add_custom_target(gantry-y-flash
-        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-y-image.hex;reset;exit"
-        VERBATIM
-        COMMENT "Flashing board"
-        DEPENDS gantry-y-image-hex)
