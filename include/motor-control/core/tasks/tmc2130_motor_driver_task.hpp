@@ -1,7 +1,5 @@
 #pragma once
 
-#include <variant>
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -10,24 +8,14 @@
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 #include "spi/core/messages.hpp"
 
 namespace tmc2130 {
 
 namespace tasks {
 
-using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
-                                   can::messages::SetupRequest,
-                                   can::messages::WriteMotorDriverRegister,
-                                   can::messages::WriteMotorCurrentRequest>;
-using CanMessage =
-    typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-                                       CanMessageTuple>::type;
-using TaskMessage = typename ::utils::VariantCat<
-    std::variant<std::monostate>,
-    typename ::utils::TuplesToVariants<CanMessageTuple,
-                                       SpiResponseMessage>::type>::type;
+using TaskMessage = tmc::tasks::TaskMessage;
 
 /**
  * The handler of motor driver messages

@@ -31,21 +31,6 @@ void start_tasks(
     tmc2130::configs::TMC2130DriverConfig& right_driver_configs);
 
 /**
- * The client for all head message queues not associated with a single motor.
- * This will be a singleton.
- */
-struct HeadQueueClient : can::message_writer::MessageWriter {
-    HeadQueueClient();
-
-    void send_presence_sensing_driver_queue(
-        const presence_sensing_driver_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        presence_sensing_driver_task::TaskMessage>*
-        presence_sensing_driver_queue{nullptr};
-};
-
-/**
  * Access to all tasks not associated with a motor. This will be a singleton.
  */
 struct HeadTasks {
@@ -54,38 +39,6 @@ struct HeadTasks {
     presence_sensing_driver_task::PresenceSensingDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         presence_sensing_driver_task{nullptr};
-};
-
-/**
- * The client for all the per motor message queues. There will be one for the
- * left and one for the right.
- */
-struct MotorQueueClient : can::message_writer::MessageWriter {
-    MotorQueueClient(can::ids::NodeId this_fw);
-
-    void send_motion_controller_queue(
-        const motion_controller_task::TaskMessage& m);
-
-    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
-
-    void send_move_group_queue(const move_group_task::TaskMessage& m);
-
-    void send_move_status_reporter_queue(
-        const move_status_reporter_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
-        motor_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
-        move_group_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        move_status_reporter_task::TaskMessage>* move_status_report_queue{
-        nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
-        spi2_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
-        spi3_queue{nullptr};
 };
 
 /**
@@ -114,12 +67,6 @@ struct MotorTasks {
 [[nodiscard]] auto get_tasks() -> HeadTasks&;
 
 /**
- * Access to the head queues singleton
- * @return
- */
-[[nodiscard]] auto get_queue_client() -> HeadQueueClient&;
-
-/**
  * Access to the right tasks singleton
  * @return
  */
@@ -130,17 +77,5 @@ struct MotorTasks {
  * @return
  */
 [[nodiscard]] auto get_left_tasks() -> MotorTasks&;
-
-/**
- * Access to the left queues singleton
- * @return
- */
-[[nodiscard]] auto get_left_queues() -> MotorQueueClient&;
-
-/**
- * Access to the right queues singleton
- * @return
- */
-[[nodiscard]] auto get_right_queues() -> MotorQueueClient&;
 
 }  // namespace head_tasks
