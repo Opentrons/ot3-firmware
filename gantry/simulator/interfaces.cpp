@@ -1,7 +1,6 @@
-#include "gantry/core/interfaces_proto.hpp"
-
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
+#include "gantry/core/interfaces_proto.hpp"
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"

@@ -69,10 +69,10 @@ struct motion_controller::HardwareConfig motor_pins {
         .active_setting = GPIO_PIN_RESET}
 };
 
-
-
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
-.registers = {.gconfig = {.en_pwm_mode = 1},
+    .registers =
+        {
+            .gconfig = {.en_pwm_mode = 1},
             .ihold_irun = {.hold_current = 16,
                            .run_current = 31,
                            .hold_current_delay = 0x7},
@@ -85,7 +85,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
                          .tpfd = 0x4,
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
-},
+        },
     .current_config =
         {
             .r_sense = 0.1,
@@ -100,8 +100,8 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware motor_hardware_iface(
-    motor_pins, &htim7, nullptr);
+static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
+                                                          nullptr);
 
 /**
  * The can bus.
