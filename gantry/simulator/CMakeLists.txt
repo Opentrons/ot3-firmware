@@ -1,6 +1,8 @@
 # Load free for the posix port
 find_package(FreeRTOS)
 
+set(AXES x y)
+set(SIM_REV proto)
 # Set up the include directories
 include_directories(
         .
@@ -31,45 +33,29 @@ set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         )
+foreach(AXIS IN LISTS AXES)
+  add_executable(
+          gantry-${AXIS}-simulator
+          ${GANTRY_SIMULATOR_SRC}
+  )
 
-add_executable(
-        gantry-x-simulator
-        ${GANTRY_SIMULATOR_SRC}
-)
+  if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
+      target_compile_definitions(gantry-${AXIS}-simulator PUBLIC USE_SOCKETCAN)
+  endif()
 
-add_executable(
-        gantry-y-simulator
-        ${GANTRY_SIMULATOR_SRC}
-)
+  target_compile_definitions(gantry-${AXIS}-simulator PUBLIC ENABLE_LOGGING)
 
-if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
-    target_compile_definitions(gantry-x-simulator PUBLIC USE_SOCKETCAN)
-    target_compile_definitions(gantry-y-simulator PUBLIC USE_SOCKETCAN)
-endif()
+  target_can_simlib(gantry-${AXIS}-simulator)
 
-target_compile_definitions(gantry-x-simulator PUBLIC ENABLE_LOGGING)
-target_compile_definitions(gantry-y-simulator PUBLIC ENABLE_LOGGING)
+  target_gantry_core(gantry-${AXIS}-simulator ${AXIS} ${SIM_REV})
 
-target_can_simlib(gantry-x-simulator)
-target_can_simlib(gantry-y-simulator)
+  target_ot_motor_control(gantry-${AXIS}-simulator)
 
-target_gantry_core_x(gantry-x-simulator)
-target_gantry_core_y(gantry-y-simulator)
+  target_link_libraries(gantry-${AXIS}-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost)
 
-target_ot_motor_control(gantry-x-simulator)
-target_ot_motor_control(gantry-y-simulator)
-
-target_link_libraries(gantry-x-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost)
-target_link_libraries(gantry-y-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost)
-
-set_target_properties(gantry-x-simulator
+  set_target_properties(gantry-${AXIS}-simulator
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
-
-set_target_properties(gantry-y-simulator
-        PROPERTIES CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED TRUE
-        C_STANDARD 11
-        C_STANDARD_REQUIRED TRUE)
+endforeach()

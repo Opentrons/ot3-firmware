@@ -1,8 +1,7 @@
-#include "gantry/core/interfaces.hpp"
-
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gantry/core/interfaces_proto.hpp"
+#include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
@@ -71,7 +70,7 @@ static motor_class::Motor motor{
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry_tasks::get_queues(), motor_interface);
+    motor_queue, gantry::queues::get_queues(), motor_interface);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,
