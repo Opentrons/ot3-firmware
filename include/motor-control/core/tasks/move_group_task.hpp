@@ -64,12 +64,6 @@ class MoveGroupMessageHandler {
         static_cast<void>(move_groups[m.group_id].set_move(m));
     }
 
-    // TODO inherit from move group task for pipettes specifically
-    void handle(const can::messages::TipActionRequest& m) {
-        LOG("Received a tip action request: groupid=%d", m.group_id, m.seq_id);
-        static_cast<void>(move_groups[m.group_id].set_move(m));
-    }
-
     void handle(const can::messages::GetMoveGroupRequest& m) {
         LOG("Received get move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
@@ -103,11 +97,6 @@ class MoveGroupMessageHandler {
     }
 
     void visit_move(const can::messages::HomeRequest& m) {
-        mc_client.send_motion_controller_queue(m);
-    }
-
-    // TODO move to separate move group task
-    void visit_move(const can::messages::TipActionRequest& m) {
         mc_client.send_motion_controller_queue(m);
     }
 
