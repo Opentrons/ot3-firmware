@@ -67,7 +67,8 @@ add_executable(head-rev1
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 target_head_core_rev1(head-rev1)
-
+set(IMAGES)
+set(EXES head-proto head-rev1)
 
 foreach(REVISION_TARGET IN LISTS REVISIONS )
   target_ot_motor_control(${REVISION_TARGET})
@@ -105,21 +106,15 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
           CROSSCOMPILING_EMULATOR
           "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
 
-  add_custom_command(OUTPUT ${REVISION_TARGET}.hex
-          COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Oihex" ${REVISION_TARGET}.hex
+  add_custom_target(${REVISION_TARGET}.hex
+          ${CROSS_OBJCOPY} ${REVISION_TARGET} "-Oihex" ${REVISION_TARGET}.hex
           DEPENDS ${REVISION_TARGET}
           VERBATIM)
 
-  add_custom_target(${REVISION_TARGET}-hex ALL
-          DEPENDS ${REVISION_TARGET}.hex)
-
-  add_custom_command(OUTPUT ${REVISION_TARGET}.bin
-          COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Obinary" ${REVISION_TARGET}.bin
+  add_custom_target(${REVISION_TARGET}.bin
+          ${CROSS_OBJCOPY} ${REVISION_TARGET} "-Obinary" ${REVISION_TARGET}.bin
           DEPENDS ${REVISION_TARGET}
           VERBATIM)
-
-  add_custom_target(${REVISION_TARGET}-bin ALL
-          DEPENDS ${REVISION_TARGET}.bin)
 
   # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
   # arguable misuse of the concept) to the appropriate cross-gdb with
@@ -133,28 +128,34 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
           )
 
   # Targets to create full image hex file containing both bootloader and application
-  add_custom_command(
-          OUTPUT ${REVISION_TARGET}-image.hex
-          DEPENDS ${REVISION_TARGET}-hex bootloader-head-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
-          COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex ${REVISION_TARGET}.hex
+  add_custom_target(
+          ${REVISION_TARGET}-image.hex
+          ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex ${REVISION_TARGET}.hex
+          DEPENDS ${REVISION_TARGET}.hex bootloader-head-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
           VERBATIM)
-  add_custom_target(${REVISION_TARGET}-image-hex ALL
-          DEPENDS ${REVISION_TARGET}-image.hex)
+  list(APPEND IMAGES ${REVISION_TARGET}-image.hex)
 
   # Targets to flash bootloader and firmware
   add_custom_target(${REVISION_TARGET}-flash
           COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.hex;reset;exit"
           VERBATIM
           COMMENT "Flashing board"
-          DEPENDS ${REVISION_TARGET}-image-hex)
+          DEPENDS ${REVISION_TARGET}-image.hex)
 endforeach()
 
 # Default targets
-add_custom_target(head-image-hex DEPENDS ${DEFAULT_REVISION}-image-hex)
+add_custom_target(head-image.hex
+  ${CMAKE_COMMAND} -E copy ${DEFAULT_REVISION}-image.hex head-image.hex
+  DEPENDS ${DEFAULT_REVISION}-image.hex
+  )
+add_custom_target(head
+  ${CMAKE_COMMAND} -E copy ${DEFAULT_REVISION} head
+  DEPENDS ${DEFAULT_REVISION})
 add_custom_target(head-debug DEPENDS ${DEFAULT_REVISION}-debug)
-add_custom_target(head DEPENDS ${DEFAULT_REVISION})
-add_custom_target(head-flash DEPENDS ${DEFAULT_REVISION}-flash)
 
+add_custom_target(head-flash DEPENDS ${DEFAULT_REVISION}-flash)
+add_custom_target(head-images DEPENDS head-image.hex ${IMAGES})
+add_custom_target(head-exes DEPENDS head ${EXES})
 
 target_include_directories(STM32G4xx_Drivers_Head
         PUBLIC .)
