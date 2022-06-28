@@ -64,9 +64,34 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target gantry-format-ci
       - name: "Build"
-        run: cmake --build --preset=gantry
+        run: cmake --build --preset=gantry --target gantry-images gantry-exes
       - name: "Lint"
         run: cmake --build ./build-cross --target gantry-lint
+      - name: "Upload proto artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: gantry-proto
+          path: |
+            build-cross/gantry/firmware/*-proto-image*.hex
+            build-cross/gantry/firmware/gantry-*-proto
+      - name: "Upload rev1 artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: gantry-rev1
+          path: |
+            build-cross/gantry/firmware/*-rev1-image*.hex
+            build-cross/gantry/firmware/gantry-*-rev1
+      - name: "Upload default artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: gantry
+          path: |
+            build-cross/gantry/firmware/gantry-x
+            build-cross/gantry/firmware/gantry-y
+            build-cross/gantry/firmware/gantry-x-image.hex
+            build-cross/gantry/firmware/gantry-y-image.hex
+
+
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -90,3 +115,9 @@ jobs:
         run: cmake --build ./build-host --target gantry-x-simulator
       - name: 'Build Y simulator'
         run: cmake --build ./build-host --target gantry-y-simulator
+      - name: "Upload simulator artifacts"
+        uses: actions/upload-artifacts@v3
+        with:
+          name: gantry-simulators
+          path: |
+            build-host/gantry/simulator/gantry-*-simulator
