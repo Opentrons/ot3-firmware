@@ -8,7 +8,7 @@ add_STM32L5_freertos("Pipettes")
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
-
+set(IMAGES)
 
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
@@ -66,7 +66,6 @@ find_program(ARM_GDB
 find_package(Clang)
 
 add_custom_target(pipettes)
-add_custom_target(pipettes-images)
 
 function(add_pipettes_executable TARGET)
     add_executable(${TARGET}
@@ -127,14 +126,19 @@ function(add_pipettes_executable TARGET)
             PATHS "${CrossGCC_BINDIR}"
             NO_DEFAULT_PATH
             REQUIRED)
-    add_custom_target(${TARGET}.hex
-            ${CROSS_OBJCOPY} ${TARGET} "-Oihex" ${TARGET}.hex
+    add_custom_command(OUTPUT ${TARGET}.hex
+            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Oihex" ${TARGET}.hex
             DEPENDS ${TARGET}
             VERBATIM)
-    add_custom_target(${TARGET}.bin
-            ${CROSS_OBJCOPY} ${TARGET} "-Obinary" ${TARGET}.bin
+    add_custom_target(${TARGET}-hex ALL
+            DEPENDS ${TARGET}.hex)
+
+    add_custom_command(OUTPUT ${TARGET}.bin
+            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Obinary" ${TARGET}.bin
             DEPENDS ${TARGET}
             VERBATIM)
+    add_custom_target(${TARGET}-bin ALL
+            DEPENDS ${TARGET}.bin)
 
     # # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
     # # which is a catch-all static analyzer/linter
@@ -169,10 +173,14 @@ function(add_pipettes_executable TARGET)
 
 
     # Targets to create full image hex file containing both bootloader and application
-    add_custom_target(${TARGET}-image.hex
-        ${CMAKE_SOURCE_DIR}/hex_combine.py ${TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
-        DEPENDS ${TARGET}.hex bootloader-pipettes-hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
-        VERBATIM)
+    add_custom_command(
+            OUTPUT ${TARGET}-image.hex
+            DEPENDS ${TARGET}-hex bootloader-pipettes-hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
+            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
+            VERBATIM)
+    add_custom_target(${TARGET}-image-hex ALL
+            DEPENDS ${TARGET}-image.hex)
+    list(APPEND IMAGES ${TARGET}-image-hex)
 
     set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
 
@@ -181,11 +189,11 @@ function(add_pipettes_executable TARGET)
             COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-image.hex;reset;exit"
             VERBATIM
             COMMENT "Flashing board"
-            DEPENDS ${TARGET}-image.hex)
+            DEPENDS ${TARGET}-image-hex)
 
     add_dependencies(pipettes ${TARGET})
-    add_dependencies(pipettes-images ${TARGET}-image.hex)
 endfunction()
+add_custom_target(pipettes-images-hex DEPENDS ${IMAGES})
 
 add_pipettes_executable(pipettes-single)
 add_pipettes_executable(pipettes-multi)

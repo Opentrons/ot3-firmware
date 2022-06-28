@@ -79,7 +79,7 @@ jobs:
           name: "gripper"
           path: |
             build-cross/gripper/firmware/gripper
-            build-cross/gripper/firmware/gripper-image.hex
+            build-cross/gripper/firmware/gripper-image-hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

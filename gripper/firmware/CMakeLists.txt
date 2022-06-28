@@ -107,15 +107,20 @@ find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
         PATHS "${CrossGCC_BINDIR}"
         NO_DEFAULT_PATH
         REQUIRED)
-add_custom_target(gripper.hex
-        ${CROSS_OBJCOPY} gripper "-Oihex" gripper.hex
+add_custom_command(OUTPUT gripper.hex
+        COMMAND ${CROSS_OBJCOPY} ARGS gripper "-Oihex" gripper.hex
         DEPENDS gripper
         VERBATIM)
+add_custom_target(gripper-hex ALL
+        DEPENDS gripper.hex)
 
-add_custom_target(gripper.bin
-        ${CROSS_OBJCOPY} gripper "-Obinary" gripper.bin
+add_custom_command(OUTPUT gripper.bin
+        COMMAND ${CROSS_OBJCOPY} ARGS gripper "-Obinary" gripper.bin
         DEPENDS gripper
         VERBATIM)
+add_custom_target(gripper-bin ALL
+        DEPENDS gripper.bin)
+
 
 find_package(Clang)
 
@@ -153,11 +158,13 @@ add_custom_target(gripper-debug
         )
 
 # Targets to create full image hex file containing both bootloader and application
-add_custom_target(
-        gripper-image.hex
-        ${CMAKE_SOURCE_DIR}/hex_combine.py gripper-image.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex gripper.hex
-        DEPENDS gripper.hex bootloader-gripper-hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex
+add_custom_command(
+        OUTPUT gripper-image.hex
+        DEPENDS gripper-hex bootloader-gripper-hex gripper.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex
+        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gripper-image.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex gripper.hex
         VERBATIM)
+add_custom_target(gripper-image-hex ALL
+        DEPENDS gripper-image.hex)
 
 set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
 
@@ -166,4 +173,4 @@ add_custom_target(gripper-flash
         COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gripper-image.hex;reset;exit"
         VERBATIM
         COMMENT "Flashing board"
-        DEPENDS gripper-image.hex)
+        DEPENDS gripper-image-hex)

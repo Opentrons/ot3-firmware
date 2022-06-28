@@ -70,7 +70,7 @@ jobs:
       - name: "Format"
         run: cmake --build --preset=pipettes --target pipettes-format-ci
       - name: "Build"
-        run: cmake --build --preset=pipettes --target pipettes pipettes-images
+        run: cmake --build --preset=pipettes --target pipettes pipettes-images-hex
       - name: "Lint Single Channel"
         run: cmake --build --preset=pipettes --target pipettes-single-lint
       - name: "Lint Multi Channel"
