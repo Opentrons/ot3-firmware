@@ -116,7 +116,7 @@ jobs:
       - name: 'Build Y simulator'
         run: cmake --build ./build-host --target gantry-y-simulator
       - name: "Upload simulator artifacts"
-        uses: actions/upload-artifacts@v3
+        uses: actions/upload-artifact@v3
         with:
           name: gantry-simulators
           path: |
