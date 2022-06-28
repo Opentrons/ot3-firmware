@@ -171,7 +171,7 @@ function(add_pipettes_executable TARGET)
     # Targets to create full image hex file containing both bootloader and application
     add_custom_target(${TARGET}-image.hex
         ${CMAKE_SOURCE_DIR}/hex_combine.py ${TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
-        DEPENDS ${TARGET}-hex bootloader-pipettes-hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
+        DEPENDS ${TARGET}.hex bootloader-pipettes-hex $<TARGET_FILE_DIR:bootloader-pipettes>/bootloader-pipettes.hex ${TARGET}.hex
         VERBATIM)
 
     set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
@@ -181,7 +181,7 @@ function(add_pipettes_executable TARGET)
             COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-image.hex;reset;exit"
             VERBATIM
             COMMENT "Flashing board"
-            DEPENDS ${TARGET}-image-hex)
+            DEPENDS ${TARGET}-image.hex)
 
     add_dependencies(pipettes ${TARGET})
     add_dependencies(pipettes-images ${TARGET}-image.hex)
