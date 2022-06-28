@@ -156,7 +156,7 @@ add_custom_target(gripper-debug
 add_custom_target(
         gripper-image.hex
         ${CMAKE_SOURCE_DIR}/hex_combine.py gripper-image.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex gripper.hex
-        DEPENDS gripper.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex
+        DEPENDS gripper.hex bootloader-gripper-hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex
         VERBATIM)
 
 set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
