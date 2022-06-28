@@ -118,4 +118,4 @@ jobs:
         with:
           name: head-simulator
           path: |
-            build-cross/head/firmware/head-simulator
+            build-cross/head/simulator/head-simulator
