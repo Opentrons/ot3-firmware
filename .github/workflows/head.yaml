@@ -68,9 +68,30 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target head-format-ci
       - name: "Build"
-        run: cmake --build ./build-cross --target head
+        run: cmake --build ./build-cross --target head-exes head-images
       - name: "Lint"
         run: cmake --build ./build-cross --target head-lint
+      - name: "Upload proto artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: head-proto
+          path: |
+            build-cross/head/firmware/head-proto
+            build-cross/head/firmware/head-proto-image.hex
+      - name: "Upload rev1 artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: head-rev1
+          path: |
+            build-cross/head/firmware/head-rev1
+            build-cross/head/firmware/head-rev1-image.hex
+      - name: "Upload default artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: head
+          path: |
+            build-cross/head/firmware/head
+            build-cross/head/firmware/head-image.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -92,3 +113,9 @@ jobs:
         run: cmake --build ./build-host --target head-build-and-test
       - name: 'Build simulator'
         run: cmake --build ./build-host --target head-simulator
+      - name: 'Upload artifacts'
+        uses: actions/upload-artifact@v3
+        with:
+          name: head-simulator
+          path: |
+            build-cross/head/firmware/head-simulator
