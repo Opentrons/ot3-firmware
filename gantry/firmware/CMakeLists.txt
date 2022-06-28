@@ -82,6 +82,8 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
 
+set(IMAGES)
+set(EXECUTABLES)
 foreach(REV IN LISTS REVISIONS)
   foreach(AXIS IN LISTS AXES)
     add_executable(gantry-${AXIS}-${REV}
@@ -89,7 +91,7 @@ foreach(REV IN LISTS REVISIONS)
             ${GANTRY_FW_LINTABLE_SRCS_${REV}}
           ${GANTRY_FW_NON_LINTABLE_SRCS}
           ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_${AXIS}_hardware_config.c)
-
+    list(APPEND EXECUTABLES gantry-${AXIS}-${REV})
     target_gantry_core(gantry-${AXIS}-${REV} ${AXIS} ${REV})
     target_ot_motor_control(gantry-${AXIS}-${REV})
 
@@ -126,19 +128,17 @@ foreach(REV IN LISTS REVISIONS)
             CROSSCOMPILING_EMULATOR
             "${ARM_GDB};--command=${GDBINIT_FILE}")
 
-    add_custom_command(OUTPUT gantry-${AXIS}-${REV}.hex
-            COMMAND ${CROSS_OBJCOPY} ARGS gantry-${AXIS}-${REV} "-Oihex" gantry-${AXIS}-${REV}.hex
+    add_custom_target(gantry-${AXIS}-${REV}.hex
+            COMMAND ${CROSS_OBJCOPY} gantry-${AXIS}-${REV} "-Oihex" gantry-${AXIS}-${REV}.hex
             DEPENDS gantry-${AXIS}-${REV}
+            COMMENT "Building firmware hex image for ${AXIS}-${REV}"
             VERBATIM)
-    add_custom_target(gantry-${AXIS}-${REV}-hex ALL
-            DEPENDS gantry-${AXIS}-${REV}.hex)
 
-    add_custom_command(OUTPUT gantry-${AXIS}-${REV}.bin
-            COMMAND ${CROSS_OBJCOPY} ARGS gantry-${AXIS}-${REV} "-Obinary" gantry-${AXIS}-${REV}.bin
+    add_custom_target(gantry-${AXIS}-${REV}.bin
+            COMMAND ${CROSS_OBJCOPY} gantry-${AXIS}-${REV} "-Obinary" gantry-${AXIS}-${REV}.bin
             DEPENDS gantry-${AXIS}-${REV}
+            COMMENT "Building firmware binary image for ${AXIS}-${REV}"
             VERBATIM)
-    add_custom_target(gantry-${AXIS}-${REV}-bin ALL
-            DEPENDS gantry-${AXIS}-${REV}.bin)
 
     # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
     # arguable misuse of the concept) to the appropriate cross-gdb with
@@ -149,33 +149,41 @@ foreach(REV IN LISTS REVISIONS)
     add_custom_target(gantry-debug-${AXIS}-${REV}
             COMMAND gantry-${AXIS}-${REV}
             USES_TERMINAL
+            COMMENT "Running debugger for ${AXIS}-${REV}"
             )
 
     # Targets to create full image hex file containing both bootloader and application
-    add_custom_command(
-            OUTPUT gantry-${AXIS}-${REV}-image.hex
-            DEPENDS gantry-${AXIS}-${REV}-hex bootloader-gantry-${AXIS}-hex gantry-${AXIS}-${REV}.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex
-            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-${AXIS}-${REV}-image.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex gantry-${AXIS}-${REV}.hex
-            VERBATIM)
-    add_custom_target(gantry-${AXIS}-${REV}-image-hex ALL
-            DEPENDS gantry-${AXIS}-${REV}-image.hex)
-
+    add_custom_target(
+            gantry-${AXIS}-${REV}-image.hex ALL
+            ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-${AXIS}-${REV}-image.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex gantry-${AXIS}-${REV}.hex
+            DEPENDS gantry-${AXIS}-${REV}.hex bootloader-gantry-${AXIS}-hex gantry-${AXIS}-${REV}.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex
+            VERBATIM
+            COMMENT "Building combined bootloader and firmware for ${AXIS}-${REV}")
+    list(APPEND IMAGES gantry-${AXIS}-${REV}-image.hex)
     # Targets to flash bootloader and firmware
     add_custom_target(gantry-${AXIS}-${REV}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-${AXIS}-${REV}-image.hex;reset;exit"
+            "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gantry-${AXIS}-${REV}-image.hex;reset;exit"
             VERBATIM
             COMMENT "Flashing gantry ${AXIS} ${REV}"
-            DEPENDS gantry-${AXIS}-${REV}-image-hex)
+            DEPENDS gantry-${AXIS}-${REV}-image.hex)
   endforeach()
 endforeach()
 
 #default targets
 foreach(AXIS IN LISTS AXES)
-  add_custom_target(gantry-${AXIS}-image-hex DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-image-hex)
+  add_custom_target(gantry-${AXIS}-image.hex
+      ${CMAKE_COMMAND} -E copy gantry-${AXIS}-${DEFAULT_REVISION}-image.hex gantry-${AXIS}-image.hex
+      DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-image.hex)
+  list(APPEND IMAGES gantry-${AXIS}-image.hex)
   add_custom_target(gantry-debug-${AXIS} DEPENDS gantry-debug-${AXIS}-${DEFAULT_REVISION})
-  add_custom_target(gantry-${AXIS} DEPENDS gantry-${AXIS}-${DEFAULT_REVISION})
+  add_custom_target(gantry-${AXIS}
+      COMMAND ${CMAKE_COMMAND} -E copy gantry-${AXIS}-${DEFAULT_REVISION} gantry-${AXIS}
+      DEPENDS gantry-${AXIS}-${DEFAULT_REVISION})
+  list(APPEND EXECUTABLES gantry-${AXIS})
   add_custom_target(gantry-${AXIS}-flash DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-flash)
 endforeach()
+add_custom_target(gantry-images DEPENDS ${IMAGES})
+add_custom_target(gantry-exes DEPENDS ${EXECUTABLES})
 find_package(Clang)
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
