@@ -70,9 +70,16 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target gripper-format-ci
       - name: "Build"
-        run: cmake --build ./build-cross --target gripper
+        run: cmake --build ./build-cross --target gripper gripper-image.hex
       - name: "Lint"
         run: cmake --build ./build-cross --target gripper-lint
+      - name: "Upload artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: "gripper"
+          path: |
+            build-cross/gripper/firmware/gripper
+            build-cross/gripper/firmware/gripper-image.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -94,3 +101,9 @@ jobs:
         run: cmake --build ./build-host --target gripper-build-and-test
       - name: 'Build simulator'
         run: cmake --build ./build-host --target gripper-simulator
+      - name: "Upload artifacts"
+        uses: actions/upload-artifact@v3
+        with:
+          name: "gripper-simulator"
+          path: |
+            build-host/gripper/simulator/gripper-simulator
