@@ -70,11 +70,24 @@ jobs:
       - name: "Format"
         run: cmake --build --preset=pipettes --target pipettes-format-ci
       - name: "Build"
-        run: cmake --build --preset=pipettes --target pipettes
+        run: cmake --build --preset=pipettes --target pipettes pipettes-images
       - name: "Lint Single Channel"
         run: cmake --build --preset=pipettes --target pipettes-single-lint
       - name: "Lint Multi Channel"
         run: cmake --build --preset=pipettes --target pipettes-multi-lint
+      - name: "Upload artifacts"
+        using: actions/upload-artifact@v3
+        with:
+          name: "pipettes"
+          path: |
+            pipettes/firmware/pipettes-single
+            pipettes/firmware/pipettes-multi
+            pipettes/firmware/pipettes-96
+            pipettes/firmware/pipettes-384
+            pipettes/firmware/pipettes-single-image.hex
+            pipettes/firmware/pipettes-multi-image.hex
+            pipettes/firmware/pipettes-96-image.hex
+            pipettes/firmware/pipettes-384-image.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -102,4 +115,9 @@ jobs:
         run: cmake --build ./build-host --target pipettes-96-simulator
       - name: 'Build 384 simulator'
         run: cmake --build ./build-host --target pipettes-384-simulator
-
+      - name: "Upload artifacts"
+        using: actions/upload-artifact@v3
+        with:
+          name: "pipettes-simulators"
+          path: |
+            pipettes/simulator/pipettes-*-simulator
