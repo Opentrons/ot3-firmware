@@ -76,10 +76,10 @@ jobs:
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: "gripper"
+          name: "gripper-${{github.ref_name}}"
           path: |
             build-cross/gripper/firmware/gripper
-            build-cross/gripper/firmware/gripper-image-hex
+            build-cross/gripper/firmware/gripper-image.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -104,6 +104,6 @@ jobs:
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: "gripper-simulator"
+          name: "gripper-simulator-${{github.ref_name}}"
           path: |
             build-host/gripper/simulator/gripper-simulator

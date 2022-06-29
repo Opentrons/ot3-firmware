@@ -74,21 +74,21 @@ jobs:
       - name: "Upload proto artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: head-proto
+          name: "head-proto-${{github.ref_name}}"
           path: |
             build-cross/head/firmware/head-proto
             build-cross/head/firmware/head-proto-image.hex
       - name: "Upload rev1 artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: head-rev1
+          name: "head-rev1-${{github.ref_name}}"
           path: |
             build-cross/head/firmware/head-rev1
             build-cross/head/firmware/head-rev1-image.hex
       - name: "Upload default artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: head
+          name: "head-${{github.ref_name}}"
           path: |
             build-cross/head/firmware/head
             build-cross/head/firmware/head-image.hex
@@ -116,6 +116,6 @@ jobs:
       - name: 'Upload artifacts'
         uses: actions/upload-artifact@v3
         with:
-          name: head-simulator
+          name: "head-simulator-${{github.ref_name}}"
           path: |
             build-cross/head/simulator/head-simulator

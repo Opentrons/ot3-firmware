@@ -78,7 +78,7 @@ jobs:
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: "pipettes"
+          name: "pipettes-${{github.ref_name}}"
           path: |
             build-cross-pipettes/pipettes/firmware/pipettes-single
             build-cross-pipettes/pipettes/firmware/pipettes-multi
@@ -118,6 +118,6 @@ jobs:
       - name: "Upload artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: "pipettes-simulators"
+          name: "pipettes-simulators-${{github.ref_name}}"
           path: |
             build-host/pipettes/simulator/pipettes-*-simulator

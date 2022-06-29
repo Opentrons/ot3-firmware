@@ -70,21 +70,21 @@ jobs:
       - name: "Upload proto artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: gantry-proto
+          name: "gantry-proto-${{github.ref_name}}"
           path: |
             build-cross/gantry/firmware/*-proto-image*.hex
             build-cross/gantry/firmware/gantry-*-proto
       - name: "Upload rev1 artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: gantry-rev1
+          name: "gantry-rev1-${{github.ref_name}}"
           path: |
             build-cross/gantry/firmware/*-rev1-image*.hex
             build-cross/gantry/firmware/gantry-*-rev1
       - name: "Upload default artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: gantry
+          name: "gantry-${{github.ref_name}}"
           path: |
             build-cross/gantry/firmware/gantry-x
             build-cross/gantry/firmware/gantry-y
@@ -118,6 +118,6 @@ jobs:
       - name: "Upload simulator artifacts"
         uses: actions/upload-artifact@v3
         with:
-          name: gantry-simulators
+          name: "gantry-simulators-${{github.ref_name}}"
           path: |
             build-host/gantry/simulator/gantry-*-simulator
