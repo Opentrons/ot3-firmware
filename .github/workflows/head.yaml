@@ -79,6 +79,7 @@ jobs:
             build-cross/head/firmware/head-proto
             build-cross/head/firmware/head-proto-image.hex
       - name: "Upload rev1 artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "head-rev1-${{github.ref_name}}"
@@ -86,6 +87,7 @@ jobs:
             build-cross/head/firmware/head-rev1
             build-cross/head/firmware/head-rev1-image.hex
       - name: "Upload default artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "head-${{github.ref_name}}"
@@ -114,6 +116,7 @@ jobs:
       - name: 'Build simulator'
         run: cmake --build ./build-host --target head-simulator
       - name: 'Upload artifacts'
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "head-simulator-${{github.ref_name}}"

@@ -68,6 +68,7 @@ jobs:
       - name: "Lint"
         run: cmake --build ./build-cross --target gantry-lint
       - name: "Upload proto artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "gantry-proto-${{github.ref_name}}"
@@ -75,6 +76,7 @@ jobs:
             build-cross/gantry/firmware/*-proto-image*.hex
             build-cross/gantry/firmware/gantry-*-proto
       - name: "Upload rev1 artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "gantry-rev1-${{github.ref_name}}"
@@ -82,6 +84,7 @@ jobs:
             build-cross/gantry/firmware/*-rev1-image*.hex
             build-cross/gantry/firmware/gantry-*-rev1
       - name: "Upload default artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "gantry-${{github.ref_name}}"
@@ -116,6 +119,7 @@ jobs:
       - name: 'Build Y simulator'
         run: cmake --build ./build-host --target gantry-y-simulator
       - name: "Upload simulator artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "gantry-simulators-${{github.ref_name}}"

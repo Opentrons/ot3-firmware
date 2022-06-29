@@ -76,6 +76,7 @@ jobs:
       - name: "Lint Multi Channel"
         run: cmake --build --preset=pipettes --target pipettes-multi-lint
       - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "pipettes-${{github.ref_name}}"
@@ -116,6 +117,7 @@ jobs:
       - name: 'Build 384 simulator'
         run: cmake --build ./build-host --target pipettes-384-simulator
       - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "pipettes-simulators-${{github.ref_name}}"

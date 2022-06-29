@@ -74,6 +74,7 @@ jobs:
       - name: "Lint"
         run: cmake --build ./build-cross --target gripper-lint
       - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "gripper-${{github.ref_name}}"
@@ -102,6 +103,7 @@ jobs:
       - name: 'Build simulator'
         run: cmake --build ./build-host --target gripper-simulator
       - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "gripper-simulator-${{github.ref_name}}"
