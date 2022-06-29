@@ -12,13 +12,12 @@ on:
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "gripper/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths_ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "gripper/**"
@@ -31,14 +30,13 @@ on:
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "gripper/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-      - ".github/workflows/head.yaml"
-    paths_ignore:
-      - "cmake/Arduino*"
+      - ".github/workflows/gripper.yaml"
     branches:
       - "*"
     tags:
@@ -70,9 +68,17 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target gripper-format-ci
       - name: "Build"
-        run: cmake --build ./build-cross --target gripper
+        run: cmake --build ./build-cross --target gripper gripper-image-hex
       - name: "Lint"
         run: cmake --build ./build-cross --target gripper-lint
+      - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: "gripper-${{github.ref_name}}"
+          path: |
+            build-cross/gripper/firmware/gripper
+            build-cross/gripper/firmware/gripper-image.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -94,3 +100,10 @@ jobs:
         run: cmake --build ./build-host --target gripper-build-and-test
       - name: 'Build simulator'
         run: cmake --build ./build-host --target gripper-simulator
+      - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: "gripper-simulator-${{github.ref_name}}"
+          path: |
+            build-host/gripper/simulator/gripper-simulator

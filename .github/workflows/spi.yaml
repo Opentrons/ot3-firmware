@@ -6,12 +6,11 @@ on:
       - "common/**"
       - "include/spi/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths_ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "spi/**"
@@ -19,13 +18,12 @@ on:
       - "include/spi/**"
       - "include/common/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/spi.yaml"
-    paths_ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:

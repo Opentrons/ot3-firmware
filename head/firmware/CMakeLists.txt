@@ -67,7 +67,8 @@ add_executable(head-rev1
         ${HEAD_FW_LINTABLE_SRCS}
         ${HEAD_FW_NON_LINTABLE_SRCS})
 target_head_core_rev1(head-rev1)
-
+set(IMAGES)
+set(EXES)
 
 foreach(REVISION_TARGET IN LISTS REVISIONS )
   target_ot_motor_control(${REVISION_TARGET})
@@ -104,6 +105,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
           PROPERTIES
           CROSSCOMPILING_EMULATOR
           "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+  list(APPEND EXES ${REVISION_TARGET})
 
   add_custom_command(OUTPUT ${REVISION_TARGET}.hex
           COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Oihex" ${REVISION_TARGET}.hex
@@ -112,6 +114,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
 
   add_custom_target(${REVISION_TARGET}-hex ALL
           DEPENDS ${REVISION_TARGET}.hex)
+  list(APPEND IMAGES ${REVISION_TARGET}-hex)
 
   add_custom_command(OUTPUT ${REVISION_TARGET}.bin
           COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Obinary" ${REVISION_TARGET}.bin
@@ -150,11 +153,18 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
 endforeach()
 
 # Default targets
-add_custom_target(head-image-hex DEPENDS ${DEFAULT_REVISION}-image-hex)
 add_custom_target(head-debug DEPENDS ${DEFAULT_REVISION}-debug)
-add_custom_target(head DEPENDS ${DEFAULT_REVISION})
+add_custom_target(head
+  ${CMAKE_COMMAND} -E copy ${DEFAULT_REVISION} head
+  DEPENDS ${DEFAULT_REVISION})
+add_custom_command(OUTPUT head-image.hex
+  COMMAND ${CMAKE_COMMAND} -E copy ${DEFAULT_REVISION}-image.hex head-image.hex
+  DEPENDS ${DEFAULT_REVISION}-image-hex
+)
+add_custom_target(head-image-hex DEPENDS head-image.hex)
 add_custom_target(head-flash DEPENDS ${DEFAULT_REVISION}-flash)
-
+add_custom_target(head-exes DEPENDS head ${EXES})
+add_custom_target(head-images DEPENDS head-image-hex ${IMAGES})
 
 target_include_directories(STM32G4xx_Drivers_Head
         PUBLIC .)

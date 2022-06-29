@@ -81,7 +81,8 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
-
+set(IMAGES)
+set(EXES)
 foreach(REV IN LISTS REVISIONS)
   foreach(AXIS IN LISTS AXES)
     add_executable(gantry-${AXIS}-${REV}
@@ -89,7 +90,7 @@ foreach(REV IN LISTS REVISIONS)
             ${GANTRY_FW_LINTABLE_SRCS_${REV}}
           ${GANTRY_FW_NON_LINTABLE_SRCS}
           ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_${AXIS}_hardware_config.c)
-
+    list(APPEND EXES gantry-${AXIS}-${REV})
     target_gantry_core(gantry-${AXIS}-${REV} ${AXIS} ${REV})
     target_ot_motor_control(gantry-${AXIS}-${REV})
 
@@ -159,6 +160,7 @@ foreach(REV IN LISTS REVISIONS)
             VERBATIM)
     add_custom_target(gantry-${AXIS}-${REV}-image-hex ALL
             DEPENDS gantry-${AXIS}-${REV}-image.hex)
+    list(APPEND IMAGES gantry-${AXIS}-${REV}-image.hex)
 
     # Targets to flash bootloader and firmware
     add_custom_target(gantry-${AXIS}-${REV}-flash
@@ -171,11 +173,21 @@ endforeach()
 
 #default targets
 foreach(AXIS IN LISTS AXES)
-  add_custom_target(gantry-${AXIS}-image-hex DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-image-hex)
+  add_custom_command(OUTPUT gantry-${AXIS}-image.hex
+      COMMAND ${CMAKE_COMMAND} -E copy gantry-${AXIS}-${DEFAULT_REVISION}-image.hex gantry-${AXIS}-image.hex
+      DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-image-hex)
+  add_custom_target(gantry-${AXIS}-image-hex DEPENDS gantry-${AXIS}-image.hex)
+  list(APPEND IMAGES gantry-${AXIS}-image-hex)
   add_custom_target(gantry-debug-${AXIS} DEPENDS gantry-debug-${AXIS}-${DEFAULT_REVISION})
-  add_custom_target(gantry-${AXIS} DEPENDS gantry-${AXIS}-${DEFAULT_REVISION})
+  add_custom_target(gantry-${AXIS}
+      ${CMAKE_COMMAND} -E copy gantry-${AXIS}-${DEFAULT_REVISION} gantry-${AXIS}
+      DEPENDS gantry-${AXIS}-${DEFAULT_REVISION})
+  list(APPEND EXES gantry-${AXIS})
   add_custom_target(gantry-${AXIS}-flash DEPENDS gantry-${AXIS}-${DEFAULT_REVISION}-flash)
 endforeach()
+
+add_custom_target(gantry-images DEPENDS ${IMAGES})
+add_custom_target(gantry-exes DEPENDS ${EXES})
 find_package(Clang)
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html

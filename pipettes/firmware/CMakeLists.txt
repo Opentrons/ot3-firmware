@@ -8,7 +8,7 @@ add_STM32L5_freertos("Pipettes")
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
 set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
-
+set(IMAGES)
 
 # Add source files that should be checked by clang-tidy here
 set(PIPETTE_FW_LINTABLE_SRCS
@@ -180,7 +180,7 @@ function(add_pipettes_executable TARGET)
             VERBATIM)
     add_custom_target(${TARGET}-image-hex ALL
             DEPENDS ${TARGET}-image.hex)
-
+    list(APPEND IMAGES ${TARGET}-image-hex)
 
     set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
 
@@ -193,6 +193,7 @@ function(add_pipettes_executable TARGET)
 
     add_dependencies(pipettes ${TARGET})
 endfunction()
+add_custom_target(pipettes-images-hex DEPENDS ${IMAGES})
 
 add_pipettes_executable(pipettes-single)
 add_pipettes_executable(pipettes-multi)
