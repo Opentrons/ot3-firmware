@@ -70,6 +70,7 @@ jobs:
       - name: "Lint"
         run: cmake --build ./build-cross --target head-lint
       - name: "Upload proto artifacts"
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
           name: "head-proto-${{github.ref_name}}"
