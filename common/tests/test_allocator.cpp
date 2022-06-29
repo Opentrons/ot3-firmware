@@ -7,7 +7,7 @@
 #include "common/core/logging.h"
 
 TEST_CASE("Allocator reuses address") {
-    auto subject = PoolAllocator<int, 2>{};
+    auto subject = CustomAllocator<int, 2>{};
 
     GIVEN("a call allocate.") {
         auto first = subject.allocate(1);
@@ -23,7 +23,7 @@ TEST_CASE("Allocator reuses address") {
 }
 
 TEST_CASE("Deallocate using invalid address") {
-    auto subject = PoolAllocator<int, 2>{};
+    auto subject = CustomAllocator<int, 2>{};
 
     GIVEN("a call to deallocate.") {
         int i = 0;
@@ -52,7 +52,7 @@ TEST_CASE("Deallocate using invalid address") {
 TEST_CASE("Ordered Map Object") {
     auto constexpr max_entries = 2;
     std::map<std::string, int, std::less<std::string>,
-             PoolAllocator<std::pair<const std::string, int>, max_entries>>
+             CustomAllocator<std::pair<const std::string, int>, max_entries>>
         subject{};
     GIVEN("an entry added to the map") {
         subject["a"] = 12;
@@ -75,7 +75,7 @@ TEST_CASE("Ordered Map Object") {
 
 TEST_CASE("List Object") {
     auto constexpr max_entries = 2;
-    std::list<int, PoolAllocator<int, max_entries>> subject;
+    std::list<int, CustomAllocator<int, max_entries>> subject;
     GIVEN("a vector with max capacity") {
         subject.insert(subject.begin(), 1);
         subject.insert(subject.begin(), 2);
@@ -86,16 +86,15 @@ TEST_CASE("List Object") {
     }
 }
 
-
-TEST_CASE("Vector Object") {
+TEST_CASE("Vector Object With No Entries") {
     auto constexpr max_entries = 2;
-    GIVEN("a vector with max capacity") {
-        std::vector<int, PoolAllocator<int, max_entries>> subject;
-        subject.insert(subject.begin(), 1);
-        subject.insert(subject.begin(), 2);
+    GIVEN("a vector with no entries") {
+        LOG("STARTING VECTOR W/O entries");
+        std::vector<int, CustomAllocator<int, max_entries>> subject;
+        subject.insert(subject.begin(), {1, 2});
         THEN("The elements are in the expected order") {
-            REQUIRE(subject[0] == 2);
-            REQUIRE(subject[1] == 1);
+            REQUIRE(subject[0] == 1);
+            REQUIRE(subject[1] == 2);
         }
         THEN("adding another element will raise bad_alloc") {
             REQUIRE_THROWS_AS(subject.insert(subject.begin(), 3),
@@ -103,14 +102,14 @@ TEST_CASE("Vector Object") {
         }
     }
     GIVEN("a fully initialized vector") {
-        std::vector<int, PoolAllocator<int, max_entries>> subject{2, 3};
+        std::vector<int, CustomAllocator<int, max_entries>> subject{2, 3};
         THEN("The elements are in the expected order") {
             REQUIRE(subject[0] == 2);
             REQUIRE(subject[1] == 3);
         }
         THEN("adding another element will raise bad_alloc") {
             REQUIRE_THROWS_AS(subject.insert(subject.begin(), 3),
-                  std::bad_alloc);
+                              std::bad_alloc);
         }
     }
 }
