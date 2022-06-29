@@ -70,7 +70,7 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target gripper-format-ci
       - name: "Build"
-        run: cmake --build ./build-cross --target gripper gripper-image.hex
+        run: cmake --build ./build-cross --target gripper gripper-image-hex
       - name: "Lint"
         run: cmake --build ./build-cross --target gripper-lint
       - name: "Upload artifacts"
