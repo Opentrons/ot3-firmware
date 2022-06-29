@@ -120,4 +120,4 @@ jobs:
         with:
           name: "head-simulator-${{github.ref_name}}"
           path: |
-            build-cross/head/simulator/head-simulator
+            build-host/head/simulator/head-simulator
