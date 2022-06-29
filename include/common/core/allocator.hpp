@@ -4,42 +4,39 @@
 
 #include "common/core/logging.h"
 
-/*
- * A generic custom allocator class that can be used to statically allocate
- memory
- * for typically dynamic objects (such as maps).
+/**
+ * A generic custom allocator class that can be used to statically
+ * allocate memory for typically dynamic objects (such as maps).
  *
- * To use this class, you must pass in the CustomAllocator class to the template
- of
- * any stl library you would like to use. For example, to use this class with
- map
+ * To use this class, you must pass in the CustomAllocator class
+ * to the template of any stl library you would like to use.
+ *
+ * For example, to use this class with map
  * you would do the following:
  *
- * std::map<std::string, int, std::less<std::string>,
-        CustomAllocator<std::pair<const std::string, int>, max_entries>>
- subject{};
+ * std::map<
+ *      std::string, int, std::less<std::string>,
+ *      CustomAllocator<std::pair<const std::string, int>, max_entries>
+ * > subject{};
  *
  * Caveats:
- * Any containers that reallocate every time (vectors for example) a new element
- is
- * added can only support fully allocated objects. For example, say you have a
- vector:
+ * Any containers that reallocate every time (vectors for example) a
+ * new element is added can only support fully allocated objects.
+ * For example, say you have a vector:
  *
  * max entries = 2;
  * std::vector<int, CustomAllocator<int, max_entries>> subject{2, 3};
  *
- * You can change the elements of this array, but you cannot dynamically re-size
- it.
+ * You can change the elements of this array, but you cannot
+ * dynamically re-size it.
  *
  * If you tried to insert another element like:
  *
  * subject.push_back(4)
  *
  * it will throw a bad alloc which is expected behavior. However, vectors will
- also
- * throw bad allocs if things haven't previously been allocated. For example,
- say you have a vector
- * defined with no elements:
+ * also throw bad allocs if things haven't previously been allocated.
+ * For example, say you have a vector defined with no elements:
  *
  * max entries = 2;
  * std::vector<int, CustomAllocator<int, max_entries>> subject;
@@ -47,10 +44,10 @@
  * subject.push_back(1);
  * subject.push_back(2); // throws bad alloc
  *
- * This will throw a bad alloc because `subject.push_back(2)` tries to allocate
- memory for
- * both integers 1 and 2 which is more space than available.
- */
+ * This will throw a bad alloc because `subject.push_back(2)` tries
+ * to allocate memory for both integers 1 and 2 which
+ * is more space than available.
+ **/
 
 template <typename Element, std::size_t MaxElements>
 class CustomAllocator {
