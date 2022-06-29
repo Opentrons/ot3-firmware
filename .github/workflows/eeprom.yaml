@@ -15,7 +15,7 @@ on:
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths_ignore:
+    paths-ignore:
       - "cmake/Arduino*"
   push:
     paths:
@@ -33,7 +33,7 @@ on:
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/eeprom.yaml"
-    paths_ignore:
+    paths-ignore:
       - "cmake/Arduino*"
     branches:
       - "*"
