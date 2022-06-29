@@ -163,8 +163,8 @@ add_custom_command(OUTPUT head-image.hex
 )
 add_custom_target(head-image-hex DEPENDS head-image.hex)
 add_custom_target(head-flash DEPENDS ${DEFAULT_REVISION}-flash)
-add_custom_target(head-exes DEPENDS ${EXES})
-add_custom_target(head-images DEPENDS ${IMAGES})
+add_custom_target(head-exes DEPENDS head ${EXES})
+add_custom_target(head-images DEPENDS head-image-hex ${IMAGES})
 
 target_include_directories(STM32G4xx_Drivers_Head
         PUBLIC .)
