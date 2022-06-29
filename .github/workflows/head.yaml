@@ -11,13 +11,12 @@ on:
       - "!include/pipettes/**"
       - "!include/gantry/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "head/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths-ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "head/**"
@@ -29,14 +28,13 @@ on:
       - "!include/pipettes/**"
       - "!include/gantry/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "head/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/head.yaml"
-    paths-ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:

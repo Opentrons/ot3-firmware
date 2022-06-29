@@ -11,12 +11,11 @@ on:
       - "common/**"
       - "include/can/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths-ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "eeprom/**"
@@ -28,13 +27,12 @@ on:
       - "common/**"
       - "include/can/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/eeprom.yaml"
-    paths-ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:

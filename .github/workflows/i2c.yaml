@@ -5,14 +5,13 @@ on:
       - "i2c/**"
       - "include/i2c/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "include/common/**"
       - "common/**"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths-ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "i2c/**"
@@ -20,13 +19,12 @@ on:
       - "include/common/**"
       - "common/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/i2c.yaml"
-    paths-ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:

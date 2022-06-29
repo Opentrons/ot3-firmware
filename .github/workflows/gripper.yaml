@@ -12,13 +12,12 @@ on:
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "gripper/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths-ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "gripper/**"
@@ -31,14 +30,13 @@ on:
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "gripper/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/gripper.yaml"
-    paths-ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:
