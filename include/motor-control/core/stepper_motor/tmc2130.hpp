@@ -98,7 +98,10 @@ template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the 64-bit value before writing to the IC.
-concept TMC2130Register = std::same_as<std::remove_cvref_t<decltype(Reg::address)>, std::remove_cvref_t<Registers&>> && std::integral<decltype(Reg::value_mask)>;
+concept TMC2130Register =
+    std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
+                 std::remove_cvref_t<Registers&>> &&
+    std::integral<decltype(Reg::value_mask)>;
 
 template <typename Reg>
 concept WritableRegister = requires() {

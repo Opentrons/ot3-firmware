@@ -1,8 +1,8 @@
 #include "i2c/simulation/i2c_sim.hpp"
 
+#include <algorithm>
 #include <map>
 #include <vector>
-#include <algorithm>
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"

@@ -69,7 +69,10 @@ template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the value before writing it to the sensor.
-concept MMR920C04Register = std::same_as<std::remove_cvref_t<decltype(Reg::address)>, std::remove_cvref_t<Registers&>> && std::integral<decltype(Reg::value_mask)>;
+concept MMR920C04Register =
+    std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
+                 std::remove_cvref_t<Registers&>> &&
+    std::integral<decltype(Reg::value_mask)>;
 
 struct __attribute__((packed, __may_alias__)) Reset {
     static constexpr Registers address = Registers::RESET;
