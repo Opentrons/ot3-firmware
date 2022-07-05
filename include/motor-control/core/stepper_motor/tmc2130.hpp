@@ -95,13 +95,10 @@ inline auto is_valid_address(const uint8_t add) -> bool {
 
 /** Template concept to constrain what structures encapsulate registers.*/
 template <typename Reg>
-concept TMC2130Register = requires(Reg& r, uint64_t value) {
-    // Struct has a valid register address
-    std::same_as<decltype(Reg::address), Registers&>;
-    // Struct has an integer with the total number of bits in a register.
-    // This is used to mask the 64-bit value before writing to the IC.
-    std::integral<decltype(Reg::value_mask)>;
-};
+// Struct has a valid register address
+// Struct has an integer with the total number of bits in a register.
+// This is used to mask the 64-bit value before writing to the IC.
+concept TMC2130Register = std::same_as<std::remove_cvref_t<decltype(Reg::address)>, std::remove_cvref_t<Registers&>> && std::integral<decltype(Reg::value_mask)>;
 
 template <typename Reg>
 concept WritableRegister = requires() {
