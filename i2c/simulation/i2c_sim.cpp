@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <algorithm>
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
