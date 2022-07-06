@@ -19,6 +19,16 @@ TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 static motor_interrupt_callback timer_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 
+uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
+    if (val < min) {
+        return min;
+    }
+    if (val > max) {
+        return max;
+    }
+    return val;
+}
+
 uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
     return (dividend + (divisor / 2)) / divisor;
 }
@@ -265,15 +275,15 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM7_Init();
 }
 
+
 void update_pwm(uint32_t duty_cycle) {
-    if (duty_cycle < htim1.Init.Period) {
-        htim1.Instance->CCR1 = duty_cycle;
-    }
+    // we allow period + 1 here because that forces an always-high duty
+    // (in pwm mode 1, output is high while cnt < ccr, so we don't want
+    // to let cnt = ccr if the pwm value is 100%)
+    htim1.Instance->CCR1 = clamp(duty_cycle, 0, htim1.Init.Period+1);
     htim1.Instance->EGR = TIM_EGR_UG;
 
-    if (duty_cycle < htim3.Init.Period) {
-        htim3.Instance->CCR1 = duty_cycle;
-    }
+    htim3.Instance->CCR1 = clamp(duty_cycle, 0, htim3.Init.Period+1);
     htim3.Instance->EGR = TIM_EGR_UG;
 }
 
