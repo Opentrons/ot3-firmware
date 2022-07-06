@@ -114,8 +114,8 @@ class MotionController {
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
-        sq31_31 steps_per_mm{0};
-        bool enabled = false;
+    sq31_31 steps_per_mm{0};
+    bool enabled = false;
 };
 
 }  // namespace motion_controller
@@ -141,7 +141,7 @@ class PipetteMotionController {
           motion_constraints(constraints),
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-                           linear_motion_sys_config.get_steps_per_mm(), 31)){}
+              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
 
     auto operator=(const PipetteMotionController&)
         -> PipetteMotionController& = delete;
