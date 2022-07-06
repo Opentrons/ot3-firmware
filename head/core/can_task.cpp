@@ -25,7 +25,7 @@ auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
 
 using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::MotorHandler<head_tasks::MotorQueueClient>,
-    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<

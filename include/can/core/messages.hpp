@@ -125,8 +125,6 @@ using EnableMotorRequest = Empty<MessageId::enable_motor_request>;
 
 using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
 
-using SetupRequest = Empty<MessageId::setup_request>;
-
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {

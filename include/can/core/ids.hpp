@@ -35,7 +35,6 @@ enum class MessageId {
     enable_motor_request = 0x6,
     disable_motor_request = 0x7,
     move_request = 0x10,
-    setup_request = 0x2,
     write_eeprom = 0x201,
     read_eeprom_request = 0x202,
     read_eeprom_response = 0x203,
