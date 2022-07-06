@@ -58,6 +58,9 @@ class MotionController {
                  .seq_id = can_msg.seq_id,
                  .stop_condition = static_cast<MoveStopCondition>(
                      can_msg.request_stop_condition)};
+        if (!enabled) {
+            enable_motor();
+        }
         queue.try_write(msg);
     }
 
@@ -70,7 +73,9 @@ class MotionController {
                  .group_id = can_msg.group_id,
                  .seq_id = can_msg.seq_id,
                  .stop_condition = MoveStopCondition::limit_switch};
-
+        if (!enabled) {
+            enable_motor();
+        }
         queue.try_write(msg);
     }
 
@@ -83,9 +88,13 @@ class MotionController {
     void enable_motor() {
         hardware.start_timer_interrupt();
         hardware.activate_motor();
+        enabled = true;
     }
 
-    void disable_motor() { hardware.deactivate_motor(); }
+    void disable_motor() {
+        hardware.deactivate_motor();
+        enabled = false;
+    }
 
     void set_motion_constraints(
         const can::messages::SetMotionConstraints& can_msg) {
@@ -105,7 +114,8 @@ class MotionController {
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
-    sq31_31 steps_per_mm{0};
+        sq31_31 steps_per_mm{0};
+        bool enabled = false;
 };
 
 }  // namespace motion_controller
@@ -131,7 +141,7 @@ class PipetteMotionController {
           motion_constraints(constraints),
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
+                           linear_motion_sys_config.get_steps_per_mm(), 31)){}
 
     auto operator=(const PipetteMotionController&)
         -> PipetteMotionController& = delete;
@@ -172,9 +182,13 @@ class PipetteMotionController {
     void enable_motor() {
         hardware.start_timer_interrupt();
         hardware.activate_motor();
+        enabled = true;
     }
 
-    void disable_motor() { hardware.deactivate_motor(); }
+    void disable_motor() {
+        hardware.deactivate_motor();
+        enabled = false;
+    }
 
     void set_motion_constraints(
         const can::messages::SetMotionConstraints& can_msg) {
@@ -195,6 +209,7 @@ class PipetteMotionController {
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
+    bool enabled = false;
 };
 
 }  // namespace pipette_motion_controller
