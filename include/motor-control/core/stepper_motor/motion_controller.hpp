@@ -168,6 +168,9 @@ class PipetteMotionController {
             can_msg.seq_id,
             static_cast<MoveStopCondition>(can_msg.request_stop_condition),
             can_msg.action};
+        if (!enabled) {
+            enable_motor();
+        }
         queue.try_write(msg);
     }
 
