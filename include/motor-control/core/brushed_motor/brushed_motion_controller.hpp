@@ -32,6 +32,7 @@ class MotionController {
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
                         .stop_condition = MoveStopCondition::none};
+        enable_motor();
         queue.try_write(msg);
     }
 
@@ -42,17 +43,22 @@ class MotionController {
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
                         .stop_condition = MoveStopCondition::limit_switch};
+        if (!enabled) {
+            enable_motor();
+        }
         queue.try_write(msg);
     }
 
     void enable_motor() {
         hardware.activate_motor();
         hardware.start_timer_interrupt();
+        enabled = true;
     }
 
     void disable_motor() {
         hardware.deactivate_motor();
         hardware.stop_timer_interrupt();
+        enabled = false;
     }
 
     void stop() { hardware.stop_pwm(); }
@@ -62,6 +68,7 @@ class MotionController {
   private:
     BrushedMotorHardwareIface& hardware;
     GenericQueue& queue;
+    bool enabled = false;
 };
 
 }  // namespace brushed_motion_controller
