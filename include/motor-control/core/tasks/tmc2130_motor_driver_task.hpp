@@ -27,7 +27,9 @@ class MotorDriverMessageHandler {
     MotorDriverMessageHandler(Writer& writer, CanClient& can_client,
                               TaskQueue& task_queue,
                               tmc2130::configs::TMC2130DriverConfig& configs)
-        : driver(writer, task_queue, configs), can_client(can_client) {}
+        : driver(writer, task_queue, configs), can_client(can_client) {
+        driver.write_config();
+    }
     MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
     MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
     auto operator=(const MotorDriverMessageHandler& c) = delete;
@@ -62,11 +64,6 @@ class MotorDriverMessageHandler {
             };
             can_client.send_can_message(can::ids::NodeId::host, response_msg);
         }
-    }
-
-    void handle(const can::messages::SetupRequest&) {
-        LOG("Received motor setup request");
-        driver.write_config();
     }
 
     void handle(const can::messages::WriteMotorDriverRegister& m) {

@@ -16,7 +16,7 @@ using namespace gripper_tasks;
 
 using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::MotorHandler<z_tasks::QueueClient>,
-    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
@@ -38,7 +38,7 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 using BrushedMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::BrushedMotorHandler<g_tasks::QueueClient>,
-    can::messages::SetupRequest, can::messages::SetBrushedMotorVrefRequest,
+    can::messages::SetBrushedMotorVrefRequest,
     can::messages::SetBrushedMotorPwmRequest>;
 using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
