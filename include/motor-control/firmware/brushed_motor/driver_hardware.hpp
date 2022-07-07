@@ -19,7 +19,7 @@ struct DriverConfig {
 
 class BrushedMotorDriver : public BrushedMotorDriverIface {
   public:
-    using Callback = std::function<void(uint32_t freq, uint32_t duty_cycle)>;
+    using Callback = std::function<void(uint32_t duty_cycle)>;
     ~BrushedMotorDriver() final = default;
     BrushedMotorDriver() = delete;
     BrushedMotorDriver(const DacConfig& dac_config,
@@ -34,8 +34,8 @@ class BrushedMotorDriver : public BrushedMotorDriverIface {
     auto stop_digital_analog_converter() -> bool final;
     auto set_reference_voltage(float val) -> bool final;
     void setup() final;
-    void update_pwm_settings(uint32_t freq, uint32_t duty_cycle) final {
-        callback(freq, duty_cycle);
+    void update_pwm_settings(uint32_t duty_cycle) final {
+        callback(duty_cycle);
     }
 
   private:

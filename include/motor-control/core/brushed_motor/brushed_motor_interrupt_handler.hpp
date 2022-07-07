@@ -76,9 +76,8 @@ class BrushedMotorInterruptHandler {
 
     void update_and_start_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
-        if (buffered_move.freq != 0U && buffered_move.duty_cycle != 0U) {
-            driver_hardware.update_pwm_settings(buffered_move.freq,
-                                                buffered_move.duty_cycle);
+        if (buffered_move.duty_cycle != 0U) {
+            driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
         if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             hardware.ungrip();

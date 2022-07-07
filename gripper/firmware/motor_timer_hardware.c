@@ -1,4 +1,13 @@
 #include "motor_hardware.h"
+#include "system_stm32g4xx.h"
+
+// The frequency of one full PWM cycle
+#define GRIPPER_JAW_PWM_FREQ_HZ (32000UL)
+// the number of selectable points in the PWM
+#define GRIPPER_JAW_PWM_WIDTH (100UL)
+// the frequency at which the timer should count so that it
+// does a full PWM cycle in the time specified by GRIPPER_JAW_PWM_FREQ_HZ
+#define GRIPPER_JAW_TIMER_FREQ (GRIPPER_JAW_PWM_FREQ_HZ * GRIPPER_JAW_PWM_WIDTH)
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
@@ -9,6 +18,16 @@ TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 
 static motor_interrupt_callback timer_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
+
+uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
+    if (val < min) {
+        return min;
+    }
+    if (val > max) {
+        return max;
+    }
+    return val;
+}
 
 uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
     return (dividend + (divisor / 2)) / divisor;
@@ -63,9 +82,9 @@ static void MX_TIM1_Init(void) {
      * Note that brushed timer tick at a different frequency from the stepper
      * motor timer.
      */
-    htim1.Init.Prescaler = calc_prescaler(1700000, 32000);
+    htim1.Init.Prescaler = calc_prescaler(SystemCoreClock, GRIPPER_JAW_TIMER_FREQ);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = 100 - 1;
+    htim1.Init.Period = GRIPPER_JAW_PWM_WIDTH-1;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim1.Init.RepetitionCounter = 0;
     htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -87,8 +106,8 @@ static void MX_TIM1_Init(void) {
         Error_Handler();
     }
     htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 65% */
-    htim1_sConfigOC.Pulse = 65;
+    /* Set duty cycle at 66% */
+    htim1_sConfigOC.Pulse = GRIPPER_JAW_PWM_WIDTH * 2 / 3;
     htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
     htim1_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -133,9 +152,9 @@ static void MX_TIM3_Init(void) {
      * Note that brushed timer tick at a different frequency from the stepper
      * motor timer.
      */
-    htim3.Init.Prescaler = calc_prescaler(1700000, 32000);
+    htim3.Init.Prescaler = calc_prescaler(SystemCoreClock, GRIPPER_JAW_TIMER_FREQ);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 100 - 1;
+    htim3.Init.Period = GRIPPER_JAW_PWM_WIDTH - 1;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
     if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
@@ -155,8 +174,8 @@ static void MX_TIM3_Init(void) {
         Error_Handler();
     }
     htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 65% */
-    htim3_sConfigOC.Pulse = 65;  // round_closest(htim3.Init.Period, 2);
+    /* Set duty cycle at 66% */
+    htim3_sConfigOC.Pulse = GRIPPER_JAW_PWM_WIDTH * 2 / 3;
     htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     if (HAL_TIM_PWM_ConfigChannel(&htim3, &htim3_sConfigOC, TIM_CHANNEL_1) !=
@@ -256,17 +275,15 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM7_Init();
 }
 
-void update_pwm(uint32_t freq, uint32_t duty_cycle) {
-    htim1.Instance->PSC = calc_prescaler(1700000, freq);
-    if (duty_cycle < htim1.Init.Period) {
-        htim1.Instance->CCR1 = duty_cycle;
-    }
+
+void update_pwm(uint32_t duty_cycle) {
+    // we allow period + 1 here because that forces an always-high duty
+    // (in pwm mode 1, output is high while cnt < ccr, so we don't want
+    // to let cnt = ccr if the pwm value is 100%)
+    htim1.Instance->CCR1 = clamp(duty_cycle, 0, htim1.Init.Period+1);
     htim1.Instance->EGR = TIM_EGR_UG;
 
-    htim3.Instance->PSC = calc_prescaler(1700000, freq);
-    if (duty_cycle < htim3.Init.Period) {
-        htim3.Instance->CCR1 = duty_cycle;
-    }
+    htim3.Instance->CCR1 = clamp(duty_cycle, 0, htim3.Init.Period+1);
     htim3.Instance->EGR = TIM_EGR_UG;
 }
 
@@ -279,7 +296,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7 && timer_callback) {
         timer_callback();
-    } else if (htim == &htim1) {
+    } else if (htim == &htim1 && brushed_timer_callback) {
         brushed_timer_callback();
     }
 }

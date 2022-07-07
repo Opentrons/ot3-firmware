@@ -27,7 +27,6 @@ class MotionController {
 
     void move(const can::messages::GripperGripRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
-                        .freq = can_msg.freq,
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
@@ -38,7 +37,6 @@ class MotionController {
 
     void move(const can::messages::GripperHomeRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
-                        .freq = can_msg.freq,
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
