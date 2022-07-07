@@ -106,7 +106,7 @@ static void MX_TIM1_Init(void) {
         Error_Handler();
     }
     htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 65% */
+    /* Set duty cycle at 66% */
     htim1_sConfigOC.Pulse = GRIPPER_JAW_PWM_WIDTH * 2 / 3;
     htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
@@ -174,7 +174,7 @@ static void MX_TIM3_Init(void) {
         Error_Handler();
     }
     htim3_sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    /* Set duty cycle at 65% */
+    /* Set duty cycle at 66% */
     htim3_sConfigOC.Pulse = GRIPPER_JAW_PWM_WIDTH * 2 / 3;
     htim3_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     htim3_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
