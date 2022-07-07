@@ -14,7 +14,7 @@
 #include "sensors/tests/mock_hardware.hpp"
 
 template <typename Message, typename Queue>
-    requires std::constructible_from<i2c::poller::TaskMessage, Message>
+requires std::constructible_from<i2c::poller::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
     i2c::poller::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
@@ -22,7 +22,7 @@ auto get_message(Queue& q) -> Message {
 }
 
 template <typename Message, typename Queue>
-    requires std::constructible_from<i2c::writer::TaskMessage, Message>
+requires std::constructible_from<i2c::writer::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
     i2c::writer::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
@@ -69,7 +69,8 @@ SCENARIO("read pressure sensor values") {
                 auto transact_message =
                     get_message<i2c::messages::Transact>(i2c_queue);
                 THEN(
-                    "the i2c queue is populated with a MEASURE MODE 4 command") {
+                    "the i2c queue is populated with a MEASURE MODE 4 "
+                    "command") {
                     REQUIRE(transact_message.transaction.address ==
                             sensors::mmr920C04::ADDRESS);
                 }

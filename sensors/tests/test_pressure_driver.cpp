@@ -11,8 +11,8 @@
 #include "sensors/core/tasks/pressure_driver.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-#include "sensors/tests/mock_hardware.hpp"
 #include "sensors/simulation/hardware.hpp"
+#include "sensors/tests/mock_hardware.hpp"
 /*
  * NOTE: pressure_sensor_task.hpp is included here just because
  * the linter throws an unused-function error and NOLINT doesn't
@@ -20,7 +20,7 @@
  * */
 
 template <typename Message, typename Queue>
-    requires std::constructible_from<i2c::poller::TaskMessage, Message>
+requires std::constructible_from<i2c::poller::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
     i2c::poller::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
@@ -28,7 +28,7 @@ auto get_message(Queue& q) -> Message {
 }
 
 template <typename Message, typename Queue>
-    requires std::constructible_from<i2c::writer::TaskMessage, Message>
+requires std::constructible_from<i2c::writer::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
     i2c::writer::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
@@ -59,38 +59,41 @@ SCENARIO("Read a single pressure sensor value") {
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
     sensors::tasks::MMR920C04 driver(writer, poller, queue_client,
-                                     pressure_queue, hardware,
-                                     sensor_id);
-
+                                     pressure_queue, hardware, sensor_id);
 
     GIVEN("A pressure sensor read in progress") {
         WHEN("the sensor_callback function is called") {
             driver.sensor_callback();
-            THEN("the i2c queue is populated with a READ_PRESSURE command and a "
+            THEN(
+                "the i2c queue is populated with a READ_PRESSURE command and a "
                 "RESET command") {
                 REQUIRE(i2c_queue.get_size() == 2);
-                auto read_command = get_message<i2c::messages::Transact>(i2c_queue);
+                auto read_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
                 REQUIRE(read_command.transaction.write_buffer[0] ==
-                        static_cast<uint8_t>(sensors::mmr920C04::Registers::PRESSURE_READ));
-                auto reset_command = get_message<i2c::messages::Transact>(i2c_queue);
-                REQUIRE(reset_command.transaction.write_buffer[0] ==
-                        static_cast<uint8_t>(sensors::mmr920C04::Registers::RESET));
+                        static_cast<uint8_t>(
+                            sensors::mmr920C04::Registers::PRESSURE_READ));
+                auto reset_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
+                REQUIRE(
+                    reset_command.transaction.write_buffer[0] ==
+                    static_cast<uint8_t>(sensors::mmr920C04::Registers::RESET));
             }
             AND_WHEN("the driver receives a response") {
                 auto id = i2c::messages::TransactionIdentifier{
-                    .token = static_cast<uint32_t>(sensors::mmr920C04::Registers::PRESSURE_READ),
+                    .token = static_cast<uint32_t>(
+                        sensors::mmr920C04::Registers::PRESSURE_READ),
                     .is_completed_poll = false,
-                    .transaction_index = static_cast<uint8_t>(0)
-                };
-                auto sensor_response =
-                    i2c::messages::TransactionResponse{
-                        .id = id,
-                        .bytes_read = 3,
-                        .read_buffer = {0x0, 0x85, 0x96, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
-                    };
+                    .transaction_index = static_cast<uint8_t>(0)};
+                auto sensor_response = i2c::messages::TransactionResponse{
+                    .id = id,
+                    .bytes_read = 3,
+                    .read_buffer = {0x0, 0x85, 0x96, 0x0, 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
                 driver.handle_response(sensor_response);
                 THEN(
-                    "the handle_message function sends the correct data via the CAN bus") {
+                    "the handle_message function sends the correct data via "
+                    "the CAN bus") {
                     can::message_writer_task::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);

@@ -53,7 +53,6 @@ class PressureMessageHandler {
 
     void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
-        //        LOG("pressure sensor task queue address = %d", queue);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             if (!driver.get_pressure()) {
                 LOG("Could not send read pressure command");

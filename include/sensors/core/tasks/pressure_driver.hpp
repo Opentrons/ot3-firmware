@@ -30,9 +30,9 @@ template <class I2CQueueWriter, class I2CQueuePoller,
 class MMR920C04 {
   public:
     MMR920C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
-             CanClient &can_client, OwnQueue &own_queue,
-             sensors::hardware::SensorHardwareBase &hardware,
-             const can::ids::SensorId &id)
+              CanClient &can_client, OwnQueue &own_queue,
+              sensors::hardware::SensorHardwareBase &hardware,
+              const can::ids::SensorId &id)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -67,7 +67,6 @@ class MMR920C04 {
     auto write(mmr920C04::Registers reg, uint32_t command_data) -> void {
         writer.write(mmr920C04::ADDRESS, static_cast<uint8_t>(reg),
                      command_data);
-        LOG("writer called");
     }
 
     auto transact(mmr920C04::Registers reg) -> void {
@@ -134,10 +133,7 @@ class MMR920C04 {
     }
 
     auto get_temperature() -> bool {
-        if (!set_measure_mode(mmr920C04::Registers::TEMPERATURE_READ)) {
-            return false;
-        }
-        return true;
+        return !set_measure_mode(mmr920C04::Registers::TEMPERATURE_READ);
     }
 
     auto reset(mmr920C04::Reset reg) -> bool {
