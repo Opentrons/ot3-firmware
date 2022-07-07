@@ -44,9 +44,10 @@ struct MockMessageBuffer {
 
     template <typename Iter, typename Limit>
     auto receive(Iter iter, Limit limit, uint32_t timeout) -> std::size_t {
-        auto buffer_length = limit - iter;
+        auto buffer_length =
+            std::min((size_t)(limit - iter), size_t(buff.size()));
         auto read_iter = buff.begin();
-        for (int i = 0; i < buffer_length; i++) {
+        for (size_t i = 0; i < buffer_length; i++) {
             *(iter++) = *(read_iter++);
         }
         this->timeout = timeout;
