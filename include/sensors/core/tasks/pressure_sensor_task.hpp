@@ -7,7 +7,7 @@
 #include "i2c/core/messages.hpp"
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
-#include "pressure_driver.hpp"
+#include "sensors/core/tasks/pressure_driver.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace sensors {
@@ -53,10 +53,15 @@ class PressureMessageHandler {
 
     void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
+        //        LOG("pressure sensor task queue address = %d", queue);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.get_pressure(mmr920C04::Registers::PRESSURE_READ);
+            if (!driver.get_pressure()) {
+                LOG("Could not send read pressure command");
+            }
         } else {
-            driver.get_temperature();
+            if (!driver.get_temperature()) {
+                LOG("Could not send read temperature command");
+            }
         }
     }
 
@@ -72,7 +77,7 @@ class PressureMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.get_pressure(mmr920C04::Registers::PRESSURE_READ);
+            driver.get_pressure();
         } else {
             driver.get_temperature();
         }
@@ -96,7 +101,7 @@ class PressureMessageHandler {
         static_cast<void>(m);
     }
 
-    MMR92C04<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    MMR920C04<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**

@@ -3,7 +3,9 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
+#include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
@@ -25,9 +27,9 @@ using namespace can::ids;
 
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
-class MMR92C04 {
+class MMR920C04 {
   public:
-    MMR92C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
+    MMR920C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
              CanClient &can_client, OwnQueue &own_queue,
              sensors::hardware::SensorHardwareBase &hardware,
              const can::ids::SensorId &id)
@@ -65,6 +67,7 @@ class MMR92C04 {
     auto write(mmr920C04::Registers reg, uint32_t command_data) -> void {
         writer.write(mmr920C04::ADDRESS, static_cast<uint8_t>(reg),
                      command_data);
+        LOG("writer called");
     }
 
     auto transact(mmr920C04::Registers reg) -> void {
@@ -87,7 +90,7 @@ class MMR92C04 {
         if (!reset(_registers.reset)) {
             return false;
         }
-        if (!set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4)) {
+        if (!set_measure_mode(mmr920C04::Registers::RESET)) {
             return false;
         }
         _initialized = true;
@@ -116,19 +119,25 @@ class MMR92C04 {
                     return true;
                 }
                 return false;
+            case mmr920C04::Registers::TEMPERATURE_READ:
+                if (set_register(_registers.temperature)) {
+                    return true;
+                }
+                return false;
             default:
                 return false;
         }
     }
 
-    auto get_pressure(mmr920C04::Registers reg) -> void {
-        uint32_t data = 0x0;
-        write(reg, data);
+    auto get_pressure() -> bool {
+        return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
-    auto get_temperature() -> void {
-        uint32_t data = 0x0;
-        write(mmr920C04::Registers::TEMPERATURE_READ, data);
+    auto get_temperature() -> bool {
+        if (!set_measure_mode(mmr920C04::Registers::TEMPERATURE_READ)) {
+            return false;
+        }
+        return true;
     }
 
     auto reset(mmr920C04::Reset reg) -> bool {
@@ -173,7 +182,6 @@ class MMR92C04 {
     }
 
     auto send_pressure() -> void {
-        LOG("Pressure reading = %d", _registers.pressure.reading);
         auto pressure =
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
@@ -223,20 +231,24 @@ class MMR92C04 {
     }
 
     auto sensor_callback() -> void {
-        // TODO: try using the pressure driver's transact function and see if
-        // that changes
-        //      the value of the incoming message
-        writer.transact(
+        uint32_t data = 0x0;
+        writer.transact_isr(
             mmr920C04::ADDRESS,
-            static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ), 3,
-            own_queue);
+            static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ),
+            static_cast<std::size_t>(3), own_queue,
+            static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ));
+
+        writer.write_isr(mmr920C04::ADDRESS,
+                         static_cast<uint8_t>(mmr920C04::Registers::RESET),
+                         data);
     }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
-        uint32_t data = 0x0;
+        int32_t data = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
-        switch (utils::reg_from_id<mmr920C04::Registers>(tm.id.token)) {
+        data = data >> 8;
+        switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);
                 send_pressure();

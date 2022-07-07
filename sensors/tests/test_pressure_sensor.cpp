@@ -14,7 +14,7 @@
 #include "sensors/tests/mock_hardware.hpp"
 
 template <typename Message, typename Queue>
-requires std::constructible_from<i2c::poller::TaskMessage, Message>
+    requires std::constructible_from<i2c::poller::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
     i2c::poller::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
@@ -22,7 +22,7 @@ auto get_message(Queue& q) -> Message {
 }
 
 template <typename Message, typename Queue>
-requires std::constructible_from<i2c::writer::TaskMessage, Message>
+    requires std::constructible_from<i2c::writer::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
     i2c::writer::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
@@ -62,18 +62,16 @@ SCENARIO("read pressure sensor values") {
                 {}, pressure_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a transact command") {
+            THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
                 REQUIRE(i2c_queue.get_size() == 1);
             }
-            AND_WHEN("we read the messages from the queue") {
+            AND_WHEN("the data ready interrupt is triggered") {
                 auto transact_message =
                     get_message<i2c::messages::Transact>(i2c_queue);
-                THEN("The command addresses are correct") {
+                THEN(
+                    "the i2c queue is populated with a MEASURE MODE 4 command") {
                     REQUIRE(transact_message.transaction.address ==
                             sensors::mmr920C04::ADDRESS);
-                    REQUIRE(transact_message.transaction.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::mmr920C04::Registers::PRESSURE_READ));
                 }
             }
         }
@@ -102,49 +100,5 @@ SCENARIO("read pressure sensor values") {
             }
         }
     }
-    GIVEN("a request to take a baseline reading of the pressure sensor") {
-        int NUM_READS = 30;
-        auto multi_read =
-            sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
-                {}, pressure_id, sensor_id_int, NUM_READS));
-        sensor.handle_message(multi_read);
-        WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a write and read command") {
-                REQUIRE(i2c_poll_queue.get_size() == 1);
-            }
-            AND_WHEN("we read the messages from the queue") {
-                auto read_message =
-                    get_message<i2c::messages::SingleRegisterPollRead>(
-                        i2c_poll_queue);
-
-                THEN("The write and read command addresses are correct") {
-                    REQUIRE(read_message.first.address ==
-                            sensors::mmr920C04::ADDRESS);
-                    REQUIRE(read_message.delay_ms == 20);
-                    REQUIRE(read_message.polling == NUM_READS);
-                }
-                THEN(
-                    "using the callback with data returns the expected value") {
-                    auto buffer_a =
-                        i2c::messages::MaxMessageBuffer{0, 8, 2, 8, 0};
-                    auto response = test_mocks::launder_response(
-                        read_message, response_queue,
-                        test_mocks::dummy_single_response(read_message, true,
-                                                          buffer_a));
-                    sensor.handle_message(response);
-                    can::message_writer_task::TaskMessage can_msg{};
-
-                    can_queue.try_read(&can_msg);
-                    auto response_msg =
-                        std::get<can::messages::ReadFromSensorResponse>(
-                            can_msg.message);
-                    float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 16);
-                    // pressure value returned in pascals
-                    float expected = 514.66083;
-                    REQUIRE(check_data == Approx(expected).epsilon(1e-4));
-                }
-            }
-        }
-    }
 }
+// TODO: implement and test polling for the pressure sensor

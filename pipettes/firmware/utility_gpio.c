@@ -178,4 +178,5 @@ void utility_gpio_init() {
     tip_sense_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
+    data_ready_gpio_init();
 }
