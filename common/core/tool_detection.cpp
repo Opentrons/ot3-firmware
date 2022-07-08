@@ -34,7 +34,7 @@ constexpr static auto nothing_connected_gripper_bounds =
     ToolCheckBounds{.upper = 54, .lower = 16};
 
 constexpr static auto gripper_bounds =
-    ToolCheckBounds{.upper = 999, .lower = 536};
+    ToolCheckBounds{.upper = 3000, .lower = 55};
 
 constexpr static auto undefined_bounds =
     ToolCheckBounds{.upper = 0, .lower = 0};

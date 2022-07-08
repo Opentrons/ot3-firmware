@@ -77,7 +77,6 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
      * motor timer.
      */
     brushed_timer_ticks duration;  // in brushed timer ticks
-    uint32_t freq;
     uint32_t duty_cycle;
     uint8_t group_id;
     uint8_t seq_id;

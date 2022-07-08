@@ -1,7 +1,5 @@
 #pragma once
 
-#include <variant>
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -10,24 +8,14 @@
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2130_driver.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 #include "spi/core/messages.hpp"
 
 namespace tmc2130 {
 
 namespace tasks {
 
-using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
-                                   can::messages::SetupRequest,
-                                   can::messages::WriteMotorDriverRegister,
-                                   can::messages::WriteMotorCurrentRequest>;
-using CanMessage =
-    typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-                                       CanMessageTuple>::type;
-using TaskMessage = typename ::utils::VariantCat<
-    std::variant<std::monostate>,
-    typename ::utils::TuplesToVariants<CanMessageTuple,
-                                       SpiResponseMessage>::type>::type;
+using TaskMessage = tmc::tasks::TaskMessage;
 
 /**
  * The handler of motor driver messages
@@ -39,7 +27,9 @@ class MotorDriverMessageHandler {
     MotorDriverMessageHandler(Writer& writer, CanClient& can_client,
                               TaskQueue& task_queue,
                               tmc2130::configs::TMC2130DriverConfig& configs)
-        : driver(writer, task_queue, configs), can_client(can_client) {}
+        : driver(writer, task_queue, configs), can_client(can_client) {
+        driver.write_config();
+    }
     MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
     MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
     auto operator=(const MotorDriverMessageHandler& c) = delete;
@@ -74,11 +64,6 @@ class MotorDriverMessageHandler {
             };
             can_client.send_can_message(can::ids::NodeId::host, response_msg);
         }
-    }
-
-    void handle(const can::messages::SetupRequest&) {
-        LOG("Received motor setup request");
-        driver.write_config();
     }
 
     void handle(const can::messages::WriteMotorDriverRegister& m) {

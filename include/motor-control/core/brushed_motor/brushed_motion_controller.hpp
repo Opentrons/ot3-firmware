@@ -27,32 +27,36 @@ class MotionController {
 
     void move(const can::messages::GripperGripRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
-                        .freq = can_msg.freq,
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
                         .stop_condition = MoveStopCondition::none};
+        enable_motor();
         queue.try_write(msg);
     }
 
     void move(const can::messages::GripperHomeRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
-                        .freq = can_msg.freq,
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
                         .stop_condition = MoveStopCondition::limit_switch};
+        if (!enabled) {
+            enable_motor();
+        }
         queue.try_write(msg);
     }
 
     void enable_motor() {
         hardware.activate_motor();
         hardware.start_timer_interrupt();
+        enabled = true;
     }
 
     void disable_motor() {
         hardware.deactivate_motor();
         hardware.stop_timer_interrupt();
+        enabled = false;
     }
 
     void stop() { hardware.stop_pwm(); }
@@ -62,6 +66,7 @@ class MotionController {
   private:
     BrushedMotorHardwareIface& hardware;
     GenericQueue& queue;
+    bool enabled = false;
 };
 
 }  // namespace brushed_motion_controller

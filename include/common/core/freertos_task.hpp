@@ -83,13 +83,15 @@ template <uint32_t StackDepth,
                                           // reified type - a queue type like
                                           // FreeRTOSQueue. Its argument is a
                                           // reified type.
-          typename TaskObj>
+          typename TaskObj,
+          typename... TaskCtorArgs>
 // The complexity of the templating here is required because we don't want the
 // task classes or includes to have to deal with FreeRTOS - we want to leave the
 // exact type of queue, for instance, a template as long as we can. This class
 // is the place where we finally specify the type of queue.
 struct TaskStarter {
-    TaskStarter() : task_entry{queue}, task{task_entry} {}
+    TaskStarter(TaskCtorArgs... args)
+        : task_entry(queue, args...), task(task_entry) {}
     TaskStarter(const TaskStarter&) = delete;
     auto operator=(const TaskStarter&) -> TaskStarter& = delete;
     TaskStarter(TaskStarter&&) = delete;

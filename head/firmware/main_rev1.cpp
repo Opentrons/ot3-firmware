@@ -25,12 +25,13 @@
 #include "common/firmware/clocking.h"
 #include "common/firmware/gpio.hpp"
 #include "head/core/presence_sensing_driver.hpp"
-#include "head/core/tasks.hpp"
+#include "head/core/queues.hpp"
+#include "head/core/tasks_rev1.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -117,19 +118,14 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_11,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = GPIO_PIN_SET},
     .limit_switch =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_9,
             .active_setting = GPIO_PIN_SET},
-    .led =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_6,
-            .active_setting = GPIO_PIN_RESET},
+    .led = {},
     .sync_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
@@ -138,19 +134,20 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 };
 
 // TODO clean up the head main file by using interfaces.
-static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
+static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x04,
-                           .run_current = 0x0D,
+            .ihold_irun = {.hold_current = 16,
+                           .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
-            .chopconf = {.toff = 0x5,
+            .chopconf = {.toff = 0x3,
                          .hstrt = 0x5,
-                         .hend = 0x3,
+                         .hend = 0x2,
                          .tbl = 0x2,
+                         .tpfd = 0x4,
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
         },
@@ -165,19 +162,20 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
         .GPIO_handle = GPIOB,
     }};
 
-static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
+static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
     .registers =
         {
             .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 0x04,
-                           .run_current = 0x0D,
+            .ihold_irun = {.hold_current = 16,
+                           .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
-            .chopconf = {.toff = 0x5,
+            .chopconf = {.toff = 0x3,
                          .hstrt = 0x5,
-                         .hend = 0x3,
+                         .hend = 0x2,
                          .tbl = 0x2,
+                         .tpfd = 0x4,
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
         },
@@ -199,16 +197,15 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
  */
 
 static motor_hardware::MotorHardware motor_hardware_right(
-    pin_configurations_right, &htim7, &htim2);
+    pin_configurations_right, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right);
 
 static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
-        .steps_per_rev = 200.0,
-        .microstep = 16.0,
-        .encoder_ppr = 1000.0},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
+        .steps_per_rev = 200,
+        .microstep = 16},
     motor_hardware_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
@@ -217,16 +214,15 @@ static motor_class::Motor motor_right{
     motor_queue_right};
 
 static motor_hardware::MotorHardware motor_hardware_left(
-    pin_configurations_left, &htim7, &htim3);
+    pin_configurations_left, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left);
 
 static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
-        .steps_per_rev = 200.0,
-        .microstep = 16.0,
-        .encoder_ppr = 1000.0},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
+        .steps_per_rev = 200,
+        .microstep = 16},
     motor_hardware_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
@@ -237,22 +233,6 @@ static motor_class::Motor motor_left{
 extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
-}
-
-extern "C" void left_enc_direction_callback_glue() {
-    motor_interrupt_left.encoder.get_enc_direction();
-}
-
-extern "C" void left_enc_overflow_callback_glue() {
-    motor_interrupt_left.encoder.encoder_overflow();
-}
-
-extern "C" void right_enc_direction_callback_glue() {
-    motor_interrupt_right.encoder.get_enc_direction();
-}
-
-extern "C" void right_enc_overflow_callback_glue() {
-    motor_interrupt_right.encoder.encoder_overflow();
 }
 
 static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
@@ -293,10 +273,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
 
     app_update_clear_flags();
-    initialize_timer(motor_callback_glue, left_enc_direction_callback_glue,
-                     left_enc_overflow_callback_glue,
-                     right_enc_direction_callback_glue,
-                     right_enc_overflow_callback_glue);
+
+    initialize_timer(motor_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();

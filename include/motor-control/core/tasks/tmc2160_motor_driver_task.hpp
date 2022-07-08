@@ -1,7 +1,5 @@
 #pragma once
 
-#include <variant>
-
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -10,25 +8,14 @@
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/stepper_motor/tmc2160_driver.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 #include "spi/core/messages.hpp"
 
 namespace tmc2160 {
 
 namespace tasks {
 
-using SpiResponseMessage = std::tuple<spi::messages::TransactResponse>;
-using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
-                                   can::messages::SetupRequest,
-                                   can::messages::WriteMotorDriverRegister,
-                                   can::messages::WriteMotorCurrentRequest>;
-using CanMessage =
-    typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-                                       CanMessageTuple>::type;
-using TaskMessage = typename ::utils::VariantCat<
-    std::variant<std::monostate>,
-    typename ::utils::TuplesToVariants<CanMessageTuple,
-                                       SpiResponseMessage>::type>::type;
-
+using TaskMessage = tmc::tasks::TaskMessage;
 /**
  * The handler of motor driver messages
  */
@@ -39,7 +26,9 @@ class MotorDriverMessageHandler {
     MotorDriverMessageHandler(Writer& writer, CanClient& can_client,
                               TaskQueue& task_queue,
                               tmc2160::configs::TMC2160DriverConfig& configs)
-        : driver(writer, task_queue, configs), can_client(can_client) {}
+        : driver(writer, task_queue, configs), can_client(can_client) {
+        driver.write_config();
+    }
     MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
     MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
     auto operator=(const MotorDriverMessageHandler& c) = delete;
@@ -76,11 +65,6 @@ class MotorDriverMessageHandler {
         }
     }
 
-    void handle(const can::messages::SetupRequest&) {
-        LOG("Received motor setup request");
-        driver.write_config();
-    }
-
     void handle(const can::messages::WriteMotorDriverRegister& m) {
         LOG("Received write motor driver request: addr=%d, data=%d",
             m.reg_address, m.data);
@@ -103,14 +87,13 @@ class MotorDriverMessageHandler {
             m.hold_current, m.run_current);
 
         if (m.hold_current != 0U) {
-            driver.get_register_map().ihold_irun.hold_current =
+            driver.get_register_map().glob_scale.global_scaler =
                 driver.convert_to_tmc2160_current_value(m.hold_current);
-        };
-        if (m.run_current != 0U) {
-            driver.get_register_map().ihold_irun.run_current =
+        } else if (m.run_current != 0U) {
+            driver.get_register_map().glob_scale.global_scaler =
                 driver.convert_to_tmc2160_current_value(m.run_current);
         }
-        driver.set_current_control(driver.get_register_map().ihold_irun);
+        driver.set_glob_scaler(driver.get_register_map().glob_scale);
     }
 
     tmc2160::driver::TMC2160<Writer, TaskQueue> driver;
@@ -155,15 +138,6 @@ class MotorDriverTask {
 
   private:
     QueueType& queue;
-};
-
-/**
- * Concept describing a class that can message this task.
- * @tparam Client
- */
-template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_motor_driver_queue(m)};
 };
 
 }  // namespace tasks

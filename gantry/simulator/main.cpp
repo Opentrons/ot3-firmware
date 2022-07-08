@@ -2,8 +2,8 @@
 
 #include "FreeRTOS.h"
 #include "gantry/core/axis_type.h"
-#include "gantry/core/interfaces.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gantry/core/interfaces_proto.hpp"
+#include "gantry/core/tasks_proto.hpp"
 #include "task.h"
 
 void signal_handler(int signum) {
@@ -22,7 +22,7 @@ int main() {
 
     interfaces::initialize();
 
-    gantry_tasks::start_tasks(
+    gantry::tasks::start_tasks(
         interfaces::get_can_bus(), interfaces::get_motor().motion_controller,
         interfaces::get_spi(), interfaces::get_driver_config());
 

@@ -8,6 +8,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "gripper/core/gripper_info.hpp"
 #include "gripper/core/tasks.hpp"
+#include "sensors/core/message_handlers/sensors.hpp"
 
 namespace can_task {
 
@@ -15,7 +16,7 @@ using namespace gripper_tasks;
 
 using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::MotorHandler<z_tasks::QueueClient>,
-    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
@@ -38,7 +39,7 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 using BrushedMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::BrushedMotorHandler<g_tasks::QueueClient>,
-    can::messages::SetupRequest, can::messages::SetBrushedMotorVrefRequest,
+    can::messages::SetBrushedMotorVrefRequest,
     can::messages::SetBrushedMotorPwmRequest>;
 using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
@@ -54,6 +55,13 @@ using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
                                             gripper_tasks::QueueClient>,
     can::messages::InstrumentInfoRequest, can::messages::SetSerialNumber>;
+using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
+    sensors::handlers::SensorHandler<gripper_tasks::QueueClient>,
+    can::messages::ReadFromSensorRequest, can::messages::WriteToSensorRequest,
+    can::messages::BaselineSensorRequest,
+    can::messages::SetSensorThresholdRequest,
+    can::messages::BindSensorOutputRequest,
+    can::messages::PeripheralStatusRequest>;
 
 auto constexpr reader_message_buffer_size = 1024;
 

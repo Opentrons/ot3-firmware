@@ -35,7 +35,6 @@ enum class MessageId {
     enable_motor_request = 0x6,
     disable_motor_request = 0x7,
     move_request = 0x10,
-    setup_request = 0x2,
     write_eeprom = 0x201,
     read_eeprom_request = 0x202,
     read_eeprom_response = 0x203,
@@ -144,6 +143,16 @@ enum class SensorType {
     temperature = 0x3,
     pressure = 0x4,
     pressure_temperature = 0x5,
+};
+
+/** Sensor IDs available.
+
+    Not to be confused with SensorType. This is the ID value that separate
+    two or more of the same type of sensor within a system.
+     */
+enum class SensorId {
+    S0 = 0x0,
+    S1 = 0x1,
 };
 
 /** Links sensor threshold triggers to pins. */

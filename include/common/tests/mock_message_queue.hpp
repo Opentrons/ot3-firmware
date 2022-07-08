@@ -23,8 +23,11 @@ class MockMessageQueue {
 
     auto try_write(const Message& message, uint32_t timeout_ticks = 0) -> bool {
         static_cast<void>(timeout_ticks);
-        queue_data_structure.push_back(message);
-        return true;
+        if (get_size() < queue_size) {
+            queue_data_structure.push_back(message);
+            return true;
+        }
+        return false;
     }
 
     template <typename OtherMessage>

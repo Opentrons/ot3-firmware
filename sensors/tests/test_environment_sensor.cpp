@@ -16,6 +16,8 @@ auto get_message(Queue& q) -> Message {
     q.try_read(&empty_msg);
     return std::get<Message>(empty_msg);
 }
+constexpr auto sensor_id = can::ids::SensorId::S0;
+constexpr uint8_t sensor_id_int = 0x0;
 
 SCENARIO("read temperature and humidity values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
@@ -33,7 +35,7 @@ SCENARIO("read temperature and humidity values") {
     writer.set_queue(&i2c_queue);
 
     auto sensor = sensors::tasks::EnvironmentSensorMessageHandler{
-        writer, queue_client, response_queue};
+        writer, queue_client, response_queue, sensor_id};
     constexpr uint8_t humidity_id = 0x2;
     constexpr uint8_t temperature_id = 0x3;
 

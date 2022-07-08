@@ -109,13 +109,13 @@ inline auto is_valid_address(const uint8_t add) -> bool {
 
 /** Template concept to constrain what structures encapsulate registers.*/
 template <typename Reg>
-concept TMC2160Register = requires(Reg& r, uint64_t value) {
-    // Struct has a valid register address
-    std::same_as<decltype(Reg::address), Registers&>;
-    // Struct has an integer with the total number of bits in a register.
-    // This is used to mask the 64-bit value before writing to the IC.
+// Struct has a valid register address
+// Struct has an integer with the total number of bits in a register.
+// This is used to mask the 64-bit value before writing to the IC.
+concept TMC2160Register =
+    std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
+                 std::remove_cvref_t<Registers&>> &&
     std::integral<decltype(Reg::value_mask)>;
-};
 
 template <typename Reg>
 concept WritableRegister = requires() {
@@ -199,6 +199,20 @@ struct __attribute__((packed, __may_alias__)) GlobalScaler {
      * Hint: Values >128 recommended for best results
      */
     uint32_t global_scaler : 8 = 0;
+
+    static constexpr uint32_t minimum_value = 32;
+    static constexpr uint32_t full_scale = 0;
+
+    auto clamp_value() -> void {
+        // The minimum operational value (aside from zero) is 32.
+        // We should make sure that we aren't setting this register
+        // below 32 before writing it over spi.
+        if (global_scaler != full_scale) {
+            if (global_scaler < minimum_value) {
+                global_scaler = minimum_value;
+            }
+        }
+    }
 };
 
 /**

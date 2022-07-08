@@ -7,7 +7,7 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_message_queue.hpp"
-#include "gantry/core/tasks.hpp"
+#include "gantry/core/queues.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 
 namespace can_bus {
@@ -17,19 +17,19 @@ class CanBus;
 namespace can_task {
 
 using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::motor::MotorHandler<gantry_tasks::QueueClient>,
-    can::messages::ReadMotorDriverRegister, can::messages::SetupRequest,
+    can::message_handlers::motor::MotorHandler<gantry::queues::QueueClient>,
+    can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
-        gantry_tasks::QueueClient>,
+        gantry::queues::QueueClient>,
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::HomeRequest>;
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::motion::MotionHandler<gantry_tasks::QueueClient>,
+    can::message_handlers::motion::MotionHandler<gantry::queues::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
@@ -37,7 +37,7 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::EncoderPositionRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
-        gantry_tasks::QueueClient>,
+        gantry::queues::QueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 

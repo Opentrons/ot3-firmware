@@ -12,13 +12,12 @@ on:
       - "!include/head/**"
       - "i2c/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "pipettes/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths_ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "pipettes/**"
@@ -31,14 +30,13 @@ on:
       - "!include/gantry/**"
       - "!include/head/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "pipettes/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/pipettes.yaml"
-    paths_ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:
@@ -70,11 +68,25 @@ jobs:
       - name: "Format"
         run: cmake --build --preset=pipettes --target pipettes-format-ci
       - name: "Build"
-        run: cmake --build --preset=pipettes --target pipettes
+        run: cmake --build --preset=pipettes --target pipettes pipettes-images-hex
       - name: "Lint Single Channel"
         run: cmake --build --preset=pipettes --target pipettes-single-lint
       - name: "Lint Multi Channel"
         run: cmake --build --preset=pipettes --target pipettes-multi-lint
+      - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipettes-${{github.ref_name}}"
+          path: |
+            build-cross-pipettes/pipettes/firmware/pipettes-single
+            build-cross-pipettes/pipettes/firmware/pipettes-multi
+            build-cross-pipettes/pipettes/firmware/pipettes-96
+            build-cross-pipettes/pipettes/firmware/pipettes-384
+            build-cross-pipettes/pipettes/firmware/pipettes-single-image.hex
+            build-cross-pipettes/pipettes/firmware/pipettes-multi-image.hex
+            build-cross-pipettes/pipettes/firmware/pipettes-96-image.hex
+            build-cross-pipettes/pipettes/firmware/pipettes-384-image.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
@@ -102,4 +114,10 @@ jobs:
         run: cmake --build ./build-host --target pipettes-96-simulator
       - name: 'Build 384 simulator'
         run: cmake --build ./build-host --target pipettes-384-simulator
-
+      - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pipettes-simulators-${{github.ref_name}}"
+          path: |
+            build-host/pipettes/simulator/pipettes-*-simulator

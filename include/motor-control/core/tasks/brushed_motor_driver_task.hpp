@@ -23,7 +23,9 @@ class MotorDriverMessageHandler {
     MotorDriverMessageHandler(
         brushed_motor_driver::BrushedMotorDriverIface& driver,
         CanClient& can_client)
-        : driver{driver}, can_client{can_client} {}
+        : driver{driver}, can_client{can_client} {
+        driver.setup();
+    }
     MotorDriverMessageHandler(const MotorDriverMessageHandler& c) = delete;
     MotorDriverMessageHandler(const MotorDriverMessageHandler&& c) = delete;
     auto operator=(const MotorDriverMessageHandler& c) = delete;
@@ -41,21 +43,15 @@ class MotorDriverMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can::messages::SetupRequest&) {
-        LOG("Received motor setup request");
-        driver.setup();
-    }
-
     void handle(const can::messages::SetBrushedMotorVrefRequest& m) {
         auto val = fixed_point_to_float(m.v_ref, 16);
-        LOG("Received set motor reference voltage request,  vref=%f", val);
+        LOG("Received set motor reference voltage request, vref=%f", val);
         driver.set_reference_voltage(val);
     }
 
     void handle(const can::messages::SetBrushedMotorPwmRequest& m) {
-        LOG("Received set motor PWM request, freq=%d, duty_cycle=%d", m.freq,
-            m.duty_cycle);
-        driver.update_pwm_settings(m.freq, m.duty_cycle);
+        LOG("Received set motor PWM request, duty_cycle=%d", m.duty_cycle);
+        driver.update_pwm_settings(m.duty_cycle);
     }
 
     brushed_motor_driver::BrushedMotorDriverIface& driver;
@@ -85,9 +81,6 @@ class MotorDriverTask {
     [[noreturn]] void operator()(
         brushed_motor_driver::BrushedMotorDriverIface* driver,
         CanClient* can_client) {
-        // Set up the motor driver.
-        //        driver->setup();
-
         auto handler = MotorDriverMessageHandler{*driver, *can_client};
         TaskMessage message{};
         for (;;) {

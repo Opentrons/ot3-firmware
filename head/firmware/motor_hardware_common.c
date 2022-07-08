@@ -35,12 +35,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        // Chip select and tmc2130 clock and enable
-        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_0 | GPIO_PIN_11;
+        // Chip select
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
 
         // A motor step and direction
         GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
@@ -74,6 +73,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
         GPIO_InitStruct.Pin = GPIO_PIN_4;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 
         // Ctrl/Dir/Step pin for motor on SPI3 (Z-axis)
         GPIO_InitStruct.Pin = GPIO_PIN_4;
@@ -238,6 +238,7 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOF_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
+    initialize_rev_specific_pins();
 }
 
 void TIM2_EncoderZR_Init(void) {

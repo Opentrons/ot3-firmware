@@ -125,8 +125,6 @@ using EnableMotorRequest = Empty<MessageId::enable_motor_request>;
 
 using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
 
-using SetupRequest = Empty<MessageId::setup_request>;
-
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 using EncoderPositionRequest = Empty<MessageId::encoder_position_request>;
@@ -560,15 +558,19 @@ struct FirmwareUpdateStatusResponse
 
 struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
     uint8_t sensor = 0;
+    uint8_t sensor_id = 0;
     uint8_t offset_reading = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> ReadFromSensorRequest {
         uint8_t sensor = 0;
+        uint8_t sensor_id = 0;
         uint8_t offset_reading = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, offset_reading);
         return ReadFromSensorRequest{.sensor = sensor,
+                                     .sensor_id = sensor_id,
                                      .offset_reading = offset_reading};
     }
 
@@ -577,19 +579,24 @@ struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
 
 struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
     uint8_t sensor;
+    uint8_t sensor_id;
     uint16_t data;
     uint8_t reg_address;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> WriteToSensorRequest {
         uint8_t sensor = 0;
+        uint8_t sensor_id = 0;
         uint16_t data = 0;
         uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, data);
         body = bit_utils::bytes_to_int(body, limit, reg_address);
-        return WriteToSensorRequest{
-            .sensor = sensor, .data = data, .reg_address = reg_address};
+        return WriteToSensorRequest{.sensor = sensor,
+                                    .sensor_id = sensor_id,
+                                    .data = data,
+                                    .reg_address = reg_address};
     }
 
     auto operator==(const WriteToSensorRequest& other) const -> bool = default;
@@ -597,15 +604,19 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
 
 struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
     uint8_t sensor = 0;
+    uint8_t sensor_id = 0;
     uint8_t sample_rate = 1;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BaselineSensorRequest {
         uint8_t sensor = 0;
+        uint8_t sensor_id = 0;
         uint8_t sample_rate = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, sample_rate);
         return BaselineSensorRequest{.sensor = sensor,
+                                     .sensor_id = sensor_id,
                                      .sample_rate = sample_rate};
     }
 
@@ -614,12 +625,15 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
     can::ids::SensorType sensor{};
+    can::ids::SensorId sensor_id{};
     int32_t sensor_data = 0;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
         iter = bit_utils::int_to_bytes(sensor_data, iter, limit);
         return iter - body;
     }
@@ -630,19 +644,23 @@ struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
 struct SetSensorThresholdRequest
     : BaseMessage<MessageId::set_sensor_threshold_request> {
     can::ids::SensorType sensor;
+    can::ids::SensorId sensor_id;
     int32_t threshold;
     can::ids::SensorThresholdMode mode;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSensorThresholdRequest {
         uint8_t sensor = 0;
+        uint8_t sensor_id = 0;
         int32_t threshold = 0;
         uint8_t mode = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, threshold);
         body = bit_utils::bytes_to_int(body, limit, mode);
         return SetSensorThresholdRequest{
             .sensor = static_cast<can::ids::SensorType>(sensor),
+            .sensor_id = static_cast<can::ids::SensorId>(sensor_id),
             .threshold = threshold,
             .mode = static_cast<can::ids::SensorThresholdMode>(mode)};
     }
@@ -654,6 +672,7 @@ struct SetSensorThresholdRequest
 struct SensorThresholdResponse
     : BaseMessage<MessageId::set_sensor_threshold_response> {
     can::ids::SensorType sensor{};
+    can::ids::SensorId sensor_id{};
     int32_t threshold = 0;
     can::ids::SensorThresholdMode mode{};
 
@@ -661,6 +680,8 @@ struct SensorThresholdResponse
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
         iter = bit_utils::int_to_bytes(threshold, iter, limit);
         iter = bit_utils::int_to_bytes(static_cast<uint8_t>(mode), iter, limit);
         return iter - body;
@@ -686,17 +707,13 @@ struct SetBrushedMotorVrefRequest
 
 struct SetBrushedMotorPwmRequest
     : BaseMessage<MessageId::set_brushed_motor_pwm_request> {
-    uint32_t freq;
     uint32_t duty_cycle;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetBrushedMotorPwmRequest {
-        uint32_t freq = 0;
         uint32_t duty_cycle = 0;
-        body = bit_utils::bytes_to_int(body, limit, freq);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
-        return SetBrushedMotorPwmRequest{.freq = freq,
-                                         .duty_cycle = duty_cycle};
+        return SetBrushedMotorPwmRequest{.duty_cycle = duty_cycle};
     }
 
     auto operator==(const SetBrushedMotorPwmRequest& other) const
@@ -707,7 +724,6 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
     uint8_t group_id;
     uint8_t seq_id;
     brushed_timer_ticks duration;
-    uint32_t freq;
     uint32_t duty_cycle;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -715,18 +731,15 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
         brushed_timer_ticks duration = 0;
-        uint32_t freq = 0;
         uint32_t duty_cycle = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
-        body = bit_utils::bytes_to_int(body, limit, freq);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
 
         return GripperGripRequest{.group_id = group_id,
                                   .seq_id = seq_id,
                                   .duration = duration,
-                                  .freq = freq,
                                   .duty_cycle = duty_cycle};
     }
 
@@ -737,7 +750,6 @@ struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
     uint8_t group_id;
     uint8_t seq_id;
     brushed_timer_ticks duration;
-    uint32_t freq;
     uint32_t duty_cycle;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -745,18 +757,15 @@ struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
         brushed_timer_ticks duration = 0;
-        uint32_t freq = 0;
         uint32_t duty_cycle = 0;
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
-        body = bit_utils::bytes_to_int(body, limit, freq);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
 
         return GripperHomeRequest{.group_id = group_id,
                                   .seq_id = seq_id,
                                   .duration = duration,
-                                  .freq = freq,
                                   .duty_cycle = duty_cycle};
     }
 
@@ -800,15 +809,19 @@ struct SetSerialNumber : BaseMessage<MessageId::set_serial_number> {
 struct SensorDiagnosticRequest
     : BaseMessage<MessageId::sensor_diagnostic_request> {
     uint8_t sensor;
+    uint8_t sensor_id;
     uint8_t reg_address;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SensorDiagnosticRequest {
         uint8_t sensor = 0;
+        uint8_t sensor_id = 0;
         uint8_t reg_address = 0;
         body = bit_utils::bytes_to_int(body, limit, sensor);
+        body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, reg_address);
         return SensorDiagnosticRequest{.sensor = sensor,
+                                       .sensor_id = sensor_id,
                                        .reg_address = reg_address};
     }
 
@@ -819,6 +832,7 @@ struct SensorDiagnosticRequest
 struct SensorDiagnosticResponse
     : BaseMessage<MessageId::sensor_diagnostic_response> {
     can::ids::SensorType sensor;
+    can::ids::SensorId sensor_id;
     uint8_t reg_address;
     uint32_t data;
 
@@ -826,6 +840,8 @@ struct SensorDiagnosticResponse
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
         iter = bit_utils::int_to_bytes(reg_address, iter, limit);
         iter = bit_utils::int_to_bytes(data, iter, limit);
         return iter - body;
@@ -857,16 +873,20 @@ struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
 struct BindSensorOutputRequest
     : BaseMessage<MessageId::bind_sensor_output_request> {
     can::ids::SensorType sensor;
+    can::ids::SensorId sensor_id;
     uint8_t binding;  // a bitfield of can::ids::SensorOutputBinding
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BindSensorOutputRequest {
         uint8_t _sensor = 0;
+        uint8_t _id = 0;
         uint8_t _binding = 0;
         body = bit_utils::bytes_to_int(body, limit, _sensor);
+        body = bit_utils::bytes_to_int(body, limit, _id);
         body = bit_utils::bytes_to_int(body, limit, _binding);
         return BindSensorOutputRequest{
             .sensor = static_cast<can::ids::SensorType>(_sensor),
+            .sensor_id = static_cast<can::ids::SensorId>(_id),
             .binding = _binding};
     }
 
@@ -877,12 +897,15 @@ struct BindSensorOutputRequest
 struct BindSensorOutputResponse
     : BaseMessage<MessageId::bind_sensor_output_response> {
     can::ids::SensorType sensor{};
+    can::ids::SensorId sensor_id{};
     uint8_t binding{};  // a bitfield of can::ids::SensorOutputBinding
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
         iter = bit_utils::int_to_bytes(binding, iter, limit);
         return iter - body;
     }
@@ -954,13 +977,17 @@ struct TipActionResponse
 struct PeripheralStatusRequest
     : BaseMessage<MessageId::peripheral_status_request> {
     can::ids::SensorType sensor;
+    can::ids::SensorId sensor_id;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> PeripheralStatusRequest {
         uint8_t _sensor = 0;
+        uint8_t _id = 0;
         body = bit_utils::bytes_to_int(body, limit, _sensor);
+        body = bit_utils::bytes_to_int(body, limit, _id);
         return PeripheralStatusRequest{
-            .sensor = static_cast<can::ids::SensorType>(_sensor)};
+            .sensor = static_cast<can::ids::SensorType>(_sensor),
+            .sensor_id = static_cast<can::ids::SensorId>(_id)};
     }
     auto operator==(const PeripheralStatusRequest& other) const
         -> bool = default;
@@ -969,12 +996,15 @@ struct PeripheralStatusRequest
 struct PeripheralStatusResponse
     : BaseMessage<MessageId::peripheral_status_response> {
     can::ids::SensorType sensor;
+    can::ids::SensorId sensor_id;
     uint8_t status;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter =
             bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), body,
+                                       limit);
         iter = bit_utils::int_to_bytes(status, body, limit);
         return iter - body;
     }

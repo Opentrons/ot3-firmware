@@ -6,27 +6,25 @@ on:
       - "common/**"
       - "include/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "bootloader/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
-    paths_ignore:
-      - "cmake/Arduino*"
   push:
     paths:
       - "bootloader/**"
       - "common/**"
       - "include/**"
       - "cmake/*"
+      - "!cmake/Arduino*"
       - "CMakeLists.txt"
       - "bootloader/CMakeLists.txt"
       - "CMakePresets.json"
       - ".clang-format"
       - ".clang-tidy"
       - ".github/workflows/bootloader.yaml"
-    paths_ignore:
-      - "cmake/Arduino*"
     branches:
       - "*"
     tags:
