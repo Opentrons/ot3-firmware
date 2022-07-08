@@ -23,7 +23,8 @@ class SensorHardwareBase {
 
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
-    virtual auto check_data_ready() -> bool = 0;
+    virtual auto add_data_ready_callback(std::function<void()> callback)
+        -> bool = 0;
 };
 };  // namespace hardware
 };  // namespace sensors

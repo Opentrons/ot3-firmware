@@ -124,6 +124,17 @@ void DebugMon_Handler(void)
 /*  file (startup_stm32l5xx.s).                                               */
 /******************************************************************************/
 
+void EXTI8_IRQHandler(void) {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+}
+
+void EXTI9_IRQHandler(void) {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+}
+
+void EXTI15_IRQHandler(void) {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
+}
 
 void DMA1_Channel2_IRQHandler(void)
 {
