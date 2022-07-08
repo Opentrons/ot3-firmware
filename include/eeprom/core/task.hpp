@@ -85,11 +85,15 @@ class EEPromMessageHandler {
         if (m.length <= 0) {
             return;
         }
+        // TODO (Ryan, 2022-07-08): Current board revisions' eeprom has 8-bit
+        // addressing.
+        //  To use the newer 16-bit addressing, remove this static_cast.
+        auto address = static_cast<uint8_t>(m.memory_address);
 
         auto buffer = i2c::messages::MaxMessageBuffer{};
         auto *iter = buffer.begin();
-        // First byte is address
-        iter = std::copy_n(&m.memory_address, 1, iter);
+        // First byte(s) is address
+        iter = std::copy_n(&address, sizeof(address), iter);
         // Remainder is data
         iter = std::copy_n(
             m.data.cbegin(),
@@ -135,7 +139,7 @@ class EEPromMessageHandler {
         // The transaction will write the memory address, then read the
         // data.
         auto write_buffer = i2c::messages::MaxMessageBuffer{};
-        // TODO (amit, 2022-05-31): Current board revisions' eeprom has 8-bit
+        // TODO (Ryan, 2022-07-08): Current board revisions' eeprom has 8-bit
         // addressing.
         //  To use the newer 16-bit addressing, remove this static_cast.
         auto address = static_cast<uint8_t>(m.memory_address);
