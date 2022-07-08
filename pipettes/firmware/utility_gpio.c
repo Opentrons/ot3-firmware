@@ -134,7 +134,7 @@ void data_ready_gpio_init() {
     else {
         hardware =
             pipette_hardware_get_gpio(
-        pipette_type, pipette_hardware_cmakedevice_data_ready_front);
+        pipette_type, pipette_hardware_device_data_ready_front);
         PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(pipette_type,
                                                                      pipette_hardware_device_data_ready_rear);
 
