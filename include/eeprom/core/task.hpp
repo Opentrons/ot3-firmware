@@ -90,6 +90,20 @@ class EEPromMessageHandler {
         //  To use the newer 16-bit addressing, remove this static_cast.
         auto address = static_cast<uint8_t>(m.memory_address);
 
+        // On the Microchip variant of the eeprom if you attempt to write
+        // that crosses the page boundry (8 Bytes) it will wrap and overwrite
+        // the begining of the current page instead of moving to the next page
+
+        if (hw_iface.get_eeprom_addr_bytes() && ((m.memory_address % 8) + m.length)) {
+            LOG("Warning: write request will overrun page");
+        }
+
+        // The ST eeprom has a page write function but that requires driving
+        // the write enable pin differently which would require us to change
+        // how we use enable_eeprom_write disable_eeprom_write calls in each
+        // firmware implementation however this would allow us to write 64
+        // bytes/cycle which may be performance boost.
+
         auto buffer = i2c::messages::MaxMessageBuffer{};
         auto *iter = buffer.begin();
         // First byte(s) is address
