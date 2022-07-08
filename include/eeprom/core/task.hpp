@@ -85,10 +85,6 @@ class EEPromMessageHandler {
         if (m.length <= 0) {
             return;
         }
-        // TODO (Ryan, 2022-07-08): Current board revisions' eeprom has 8-bit
-        // addressing.
-        //  To use the newer 16-bit addressing, remove this static_cast.
-        auto address = static_cast<uint8_t>(m.memory_address);
 
         // On the Microchip variant of the eeprom if you attempt to write
         // that crosses the page boundry (8 Bytes) it will wrap and overwrite
@@ -106,8 +102,13 @@ class EEPromMessageHandler {
 
         auto buffer = i2c::messages::MaxMessageBuffer{};
         auto *iter = buffer.begin();
-        // First byte(s) is address
-        iter = std::copy_n(&address, sizeof(address), iter);
+
+        // Older boards use 1 byte addresses, if we're on an older board we
+        // need to drop the higher byte of the memory address when sending the
+        // the message over i2c
+        iter = std::copy_n((&m.memory_address),
+                           hw_iface.get_eeprom_addr_bytes(), iter);
+
         // Remainder is data
         iter = std::copy_n(
             m.data.cbegin(),
@@ -153,18 +154,20 @@ class EEPromMessageHandler {
         // The transaction will write the memory address, then read the
         // data.
         auto write_buffer = i2c::messages::MaxMessageBuffer{};
-        // TODO (Ryan, 2022-07-08): Current board revisions' eeprom has 8-bit
-        // addressing.
-        //  To use the newer 16-bit addressing, remove this static_cast.
-        auto address = static_cast<uint8_t>(m.memory_address);
-        static_cast<void>(bit_utils::int_to_bytes(address, write_buffer.begin(),
-                                                  write_buffer.end()));
+        auto *iter = write_buffer.begin();
 
-        auto transaction =
-            i2c::messages::Transaction{.address = types::DEVICE_ADDRESS,
-                                       .bytes_to_read = m.length,
-                                       .bytes_to_write = sizeof(address),
-                                       .write_buffer{write_buffer}};
+        // Older boards use 1 byte addresses, if we're on an older board we
+        // need to drop the higher byte of the memory address when sending the
+        // the message over i2c
+        iter = std::copy_n((&m.memory_address),
+                           hw_iface.get_eeprom_addr_bytes(), iter);
+
+        auto transaction = i2c::messages::Transaction{
+            .address = types::DEVICE_ADDRESS,
+            .bytes_to_read = m.length,
+            .bytes_to_write =
+                static_cast<std::size_t>(iter - write_buffer.begin()),
+            .write_buffer{write_buffer}};
         // The transaction identifier uses the token returned from id_map.add
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = token.value()};
