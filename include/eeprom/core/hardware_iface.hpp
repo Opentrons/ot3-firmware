@@ -5,10 +5,15 @@ namespace hardware_iface {
 
 /**
  * Interface to eeprom. Must be implemented in FW and Simulation
+ *
+ * Consecutive write requests will want to have write protection disabled. The
+ * enable should happen when all the write transactions have completed.
+ *
  */
 class EEPromHardwareIface {
   public:
     EEPromHardwareIface() = default;
+    EEPromHardwareIface(size_t addr_bytes) : eeprom_addr_bytes(addr_bytes) {}
     EEPromHardwareIface(const EEPromHardwareIface&) = default;
     EEPromHardwareIface(EEPromHardwareIface&&) = default;
     auto operator=(EEPromHardwareIface&&) -> EEPromHardwareIface& = default;
@@ -21,32 +26,13 @@ class EEPromHardwareIface {
      * @param enabled true to inhibit writing
      */
     virtual void set_write_protect(bool) = 0;
-};
-
-/**
- * Class to manages the state of the write protect pin across multiple
- * transactions.
- *
- * Consecutive write requests will want to have write protection disabled. The
- * enable should happen when all the write transactions have completed.
- *
- * This class keeps the eeprom from having to keep track of the write protection
- * state.
- */
-class WriteProtector {
-  public:
-    /**
-     * Constructor
-     * @param pin
-     */
-    explicit WriteProtector(EEPromHardwareIface& pin) : pin{pin} {}
 
     /**
      * Disable the write protect
      */
     void disable() {
         if (count++ == 0) {
-            pin.set_write_protect(false);
+            set_write_protect(false);
         }
     }
 
@@ -56,17 +42,20 @@ class WriteProtector {
     void enable() {
         if (count > 0) {
             if (--count == 0) {
-                pin.set_write_protect(true);
+                set_write_protect(true);
             }
         } else {
-            pin.set_write_protect(true);
+            set_write_protect(true);
         }
     }
+    size_t get_eeprom_addr_bytes() { return eeprom_addr_bytes; }
 
   private:
-    // THe number of times that disable has been called.
+    // The number of times that disable has been called.
     uint32_t count{0};
-    EEPromHardwareIface& pin;
+    // How many bytes the EEProm memory address is. default to old boards 1 byte
+    // address
+    size_t eeprom_addr_bytes = sizeof(uint8_t);
 };
 
 }  // namespace hardware_iface

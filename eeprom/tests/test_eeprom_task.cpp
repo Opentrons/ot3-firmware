@@ -7,7 +7,8 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 
-struct MockHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+class MockHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+  public:
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };

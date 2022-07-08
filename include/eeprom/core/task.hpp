@@ -25,8 +25,8 @@ class EEPromMessageHandler {
   public:
     explicit EEPromMessageHandler(
         I2CQueueWriter &i2c_writer, OwnQueue &own_queue,
-        eeprom::hardware_iface::EEPromHardwareIface &wp_pin)
-        : writer{i2c_writer}, own_queue{own_queue}, write_protector{wp_pin} {}
+        eeprom::hardware_iface::EEPromHardwareIface &hw_iface)
+        : writer{i2c_writer}, own_queue{own_queue}, hw_iface{hw_iface} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -53,7 +53,7 @@ class EEPromMessageHandler {
         LOG("Transaction with token %ud has completed.", m.id.token);
         if (m.id.token == WRITE_TOKEN) {
             // A write has completed
-            write_protector.enable();
+            hw_iface.enable();
         } else {
             // A read has completed
             auto id_map_entry = id_map.remove(m.id.token);
@@ -110,10 +110,10 @@ class EEPromMessageHandler {
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
 
-        write_protector.disable();
+        hw_iface.disable();
         if (!writer.transact(transaction, transaction_id, own_queue)) {
             // Failed to write transaction. Re-enable write protection.
-            write_protector.enable();
+            hw_iface.enable();
         }
     }
 
@@ -166,7 +166,7 @@ class EEPromMessageHandler {
     i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
                             MAX_INFLIGHT_READS>
         id_map{};
-    eeprom::hardware_iface::WriteProtector write_protector;
+    eeprom::hardware_iface::EEPromHardwareIface &hw_iface;
 };
 
 /**
