@@ -13,7 +13,9 @@ class SensorHardware : public SensorHardwareBase {
         : hardware(hardware) {}
     auto set_sync() -> void override { gpio::set(hardware.sync_out); }
     auto reset_sync() -> void override { gpio::reset(hardware.sync_out); }
-
+    // TODO: change data_ready's input parameter to an std::map object, so that
+    //  the function being called is definitely the callback corresponding to
+    //  the correct GPIO interrupt
     auto data_ready() -> void {
         for (auto &callback_function : data_ready_callbacks) {
             if (callback_function) {

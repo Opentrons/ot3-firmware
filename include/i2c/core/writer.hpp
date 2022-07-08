@@ -8,7 +8,6 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/buffer_type.hpp"
-#include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
 
@@ -96,7 +95,6 @@ class Writer {
         auto* iter = max_buffer.begin();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         *iter++ = reg;
-        LOG("writer queue mem address = %d", queue);
         static_cast<void>(
             bit_utils::int_to_bytes(data, iter, max_buffer.end()));
         return do_write_isr(device_address, sizeof(data) + 1, max_buffer);
