@@ -107,9 +107,9 @@ class EEPromMessageHandler {
         // Older boards use 1 byte addresses, if we're on an older board we
         // need to drop the higher byte of the memory address when sending the
         // the message over i2c
-        iter = std::copy_n((&m.memory_address),
-                           hw_iface.get_eeprom_addr_bytes(), iter);
 
+        iter = bit_utils::int_to_bytes(m.memory_address, iter,
+                                           (iter + hw_iface.get_eeprom_addr_bytes()));
         // Remainder is data
         iter = std::copy_n(
             m.data.cbegin(),
