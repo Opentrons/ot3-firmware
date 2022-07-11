@@ -8,7 +8,8 @@
 #include "i2c/tests/mock_response_queue.hpp"
 
 class MockHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
-  using eeprom::hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
+    using eeprom::hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
+
   public:
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
@@ -24,6 +25,11 @@ SCENARIO("Sending messages to Eeprom task") {
     auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue,
                                                      hardware_iface};
 
+    auto hardware_iface_16 =
+        MockHardwareIface(eeprom::hardware_iface::EEPROM_ADDR_16_BIT);
+
+    auto eeprom_16 = eeprom::task::EEPromMessageHandler{writer, response_queue,
+                                                       hardware_iface_16};
     GIVEN("A write message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
         eeprom::types::address address = 12;
@@ -44,8 +50,10 @@ SCENARIO("Sending messages to Eeprom task") {
                     std::get<i2c::messages::Transact>(i2c_message);
                 REQUIRE(transact_message.transaction.address == 0xA0);
                 REQUIRE(transact_message.transaction.bytes_to_read == 0);
-                REQUIRE(transact_message.transaction.bytes_to_write ==
-                        static_cast<std::size_t>(data_length + 1));
+                REQUIRE(
+                    transact_message.transaction.bytes_to_write ==
+                    static_cast<std::size_t>(
+                        data_length + hardware_iface.get_eeprom_addr_bytes()));
                 REQUIRE(transact_message.transaction.write_buffer[0] ==
                         address);
                 REQUIRE(transact_message.transaction.write_buffer[1] ==
@@ -55,6 +63,46 @@ SCENARIO("Sending messages to Eeprom task") {
                 REQUIRE(transact_message.transaction.write_buffer[3] ==
                         data[2]);
                 REQUIRE(transact_message.transaction.write_buffer[4] ==
+                        data[3]);
+                REQUIRE(transact_message.id.token == eeprom.WRITE_TOKEN);
+            }
+        }
+    }
+    GIVEN("A 16 bit write message") {
+        auto data = eeprom::types::EepromData{1, 2, 3, 4};
+        eeprom::types::address address = 0xabcd;
+        eeprom::types::data_length data_length = 4;
+        auto write_msg = eeprom::task::TaskMessage(
+            eeprom::message::WriteEepromMessage{.memory_address = address,
+                                                .length = data_length,
+                                                .data = data});
+        WHEN("the message is sent") {
+            eeprom_16.handle_message(write_msg);
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
+
+                auto i2c_message = i2c::writer::TaskMessage{};
+                i2c_queue.try_read(&i2c_message);
+
+                auto transact_message =
+                    std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address == 0xA0);
+                REQUIRE(transact_message.transaction.bytes_to_read == 0);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        static_cast<std::size_t>(
+                            data_length +
+                            hardware_iface_16.get_eeprom_addr_bytes()));
+                REQUIRE(transact_message.transaction.write_buffer[0] ==
+                        ((address >> 8) & 0xff));
+				REQUIRE(transact_message.transaction.write_buffer[1] ==
+                        (address & 0xff));
+                REQUIRE(transact_message.transaction.write_buffer[2] ==
+                        data[0]);
+                REQUIRE(transact_message.transaction.write_buffer[3] ==
+                        data[1]);
+                REQUIRE(transact_message.transaction.write_buffer[4] ==
+                        data[2]);
+                REQUIRE(transact_message.transaction.write_buffer[5] ==
                         data[3]);
                 REQUIRE(transact_message.id.token == eeprom.WRITE_TOKEN);
             }
@@ -94,7 +142,8 @@ SCENARIO("Sending messages to Eeprom task") {
                 REQUIRE(transact_message.transaction.address == 0xA0);
                 REQUIRE(transact_message.transaction.bytes_to_read ==
                         data_length);
-                REQUIRE(transact_message.transaction.bytes_to_write == 1);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        hardware_iface.get_eeprom_addr_bytes());
                 REQUIRE(transact_message.transaction.write_buffer[0] ==
                         address);
                 REQUIRE(transact_message.id.token == 0);
