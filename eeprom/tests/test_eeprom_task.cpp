@@ -150,6 +150,35 @@ SCENARIO("Sending messages to Eeprom task") {
             }
         }
     }
+     GIVEN("A 16 bit read message") {
+        eeprom::types::address address = 0xabcd;
+        eeprom::types::data_length data_length = 5;
+        auto read_msg =
+            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
+                .memory_address = address, .length = data_length});
+        eeprom_16.handle_message(read_msg);
+        WHEN("the message is sent") {
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
+
+                auto i2c_message = i2c::writer::TaskMessage{};
+                i2c_queue.try_read(&i2c_message);
+
+                auto transact_message =
+                    std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address == 0xA0);
+                REQUIRE(transact_message.transaction.bytes_to_read ==
+                        data_length);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        hardware_iface_16.get_eeprom_addr_bytes());
+                REQUIRE(transact_message.transaction.write_buffer[0] ==
+                        ((address >> 8) & 0xff));
+				REQUIRE(transact_message.transaction.write_buffer[1] ==
+                        (address & 0xff));
+                REQUIRE(transact_message.id.token == 0);
+            }
+        }
+    }
     GIVEN("A read message with zero length") {
         eeprom::types::address address = 14;
         eeprom::types::data_length data_length = 0;
