@@ -5,10 +5,40 @@
 
 class MockEepromHardwareIface
     : public eeprom::hardware_iface::EEPromHardwareIface {
+    using eeprom::hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
+
   public:
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
 };
+
+SCENARIO("Configuring EEProm Address Length") {
+    GIVEN("EEProm hw interface constructor") {
+        WHEN("Default constructor used") {
+            auto hw_default = MockEepromHardwareIface{};
+            THEN("address setting is 8 bit") {
+                REQUIRE(hw_default.get_eeprom_addr_bytes() ==
+                        eeprom::hardware_iface::EEPROM_ADDR_8_BIT);
+            }
+        }
+        WHEN("Explicit 8 bit contructor used") {
+            auto hw_8_bit_explicit = MockEepromHardwareIface(
+                eeprom::hardware_iface::EEPROM_ADDR_8_BIT);
+            THEN("address setting is 8 bit") {
+                REQUIRE(hw_8_bit_explicit.get_eeprom_addr_bytes() ==
+                        eeprom::hardware_iface::EEPROM_ADDR_8_BIT);
+            }
+        }
+        WHEN("Explicit 16 bit contructor used") {
+            auto hw_16_bit_explicit = MockEepromHardwareIface(
+                eeprom::hardware_iface::EEPROM_ADDR_16_BIT);
+            THEN("address setting is 16 bit") {
+                REQUIRE(hw_16_bit_explicit.get_eeprom_addr_bytes() ==
+                        eeprom::hardware_iface::EEPROM_ADDR_16_BIT);
+            }
+        }
+    }
+}
 
 SCENARIO("WriteProtector class") {
     GIVEN("A write protector") {
