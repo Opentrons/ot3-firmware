@@ -235,12 +235,12 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_right.run_interrupt();
 }
 
-extern "C" void left_enc_overflow_callback_glue() {
-    motor_interrupt_left.encoder.encoder_overflow();
+extern "C" void left_enc_overflow_callback_glue(int32_t direction) {
+    motor_hardware_left.encoder_overflow(direction);
 }
 
-extern "C" void right_enc_overflow_callback_glue() {
-    motor_interrupt_right.encoder.encoder_overflow();
+extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
+    motor_hardware_right.encoder_overflow(direction);
 }
 
 static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());

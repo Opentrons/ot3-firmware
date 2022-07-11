@@ -36,21 +36,15 @@ void MotorHardware::set_LED(bool status) {
 }
 
 int32_t MotorHardware::get_encoder_pulses() {
-    return motor_hardware_encoder_pulse_count(enc_handle);
+    return (motor_encoder_overflow_count * static_cast<int32_t>(UINT16_MAX)) + motor_hardware_encoder_pulse_count(enc_handle);
 }
 
 void MotorHardware::reset_encoder_pulses() {
     motor_hardware_reset_encoder_count(enc_handle);
+    motor_encoder_overflow_count = 0;
 }
 
-void MotorHardware::clear_encoder_SR() {
-    motor_hardware_clear_status_register(enc_handle);
-}
-
-bool MotorHardware::get_encoder_SR_flag() {
-    return motor_hardware_encoder_get_status_register(enc_handle);
-}
-
-bool MotorHardware::get_encoder_direction() {
-    return motor_hardware_encoder_get_direction(enc_handle);
+void MotorHardware::encoder_overflow(int32_t direction) {
+    motor_encoder_overflow_count += direction;
+    overflow_interrupts = overflow_interrupts + 1;
 }

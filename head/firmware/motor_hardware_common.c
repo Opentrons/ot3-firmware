@@ -369,10 +369,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if ((htim == &htim7) && motor_callback) {
         motor_callback();
     } else if (htim == &htim2 && right_enc_overflow_callback) {
-        right_enc_overflow_callback();
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        right_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     } else if (htim == &htim3 && left_enc_overflow_callback) {
-        left_enc_overflow_callback();
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        left_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }

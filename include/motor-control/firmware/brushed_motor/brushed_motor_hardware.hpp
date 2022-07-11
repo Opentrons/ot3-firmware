@@ -43,9 +43,6 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     auto check_sync_in() -> bool final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
-    void clear_encoder_SR() final;
-    auto get_encoder_SR_flag() -> bool final;
-    auto get_encoder_direction() -> bool final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
 

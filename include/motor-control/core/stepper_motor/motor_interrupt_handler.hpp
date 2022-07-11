@@ -67,10 +67,8 @@ class MotorInterruptHandler {
     void run_interrupt() {
         if (set_direction_pin()) {
             hardware.positive_direction();
-            encoder.set_positive_direction();
         } else {
             hardware.negative_direction();
-            encoder.set_negative_direction();
         }
         if (pulse()) {
             hardware.step();
@@ -211,7 +209,7 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                static_cast<int32_t>(encoder.get_encoder_pulses()), ack_msg_id);
+                encoder.get_encoder_pulses(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
