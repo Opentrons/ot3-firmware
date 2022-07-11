@@ -3,6 +3,8 @@
 namespace eeprom {
 namespace hardware_iface {
 
+static const size_t EEPROM_ADDR_8_BIT = sizeof(uint8_t);
+static const size_t EEPROM_ADDR_16_BIT = sizeof(uint16_t);
 /**
  * Interface to eeprom. Must be implemented in FW and Simulation
  *
@@ -55,7 +57,7 @@ class EEPromHardwareIface {
     uint32_t count{0};
     // How many bytes the EEProm memory address is. default to old boards 1 byte
     // address
-    size_t eeprom_addr_bytes = sizeof(uint8_t);
+    size_t eeprom_addr_bytes = EEPROM_ADDR_8_BIT;
 };
 
 }  // namespace hardware_iface
