@@ -51,7 +51,9 @@ class EEPromHardwareIface {
             set_write_protect(true);
         }
     }
-    size_t get_eeprom_addr_bytes() { return eeprom_addr_bytes; }
+    [[nodiscard]] auto get_eeprom_addr_bytes() const -> size_t {
+        return eeprom_addr_bytes;
+    }
 
   private:
     // The number of times that disable has been called.

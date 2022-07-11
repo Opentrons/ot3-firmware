@@ -90,7 +90,8 @@ class EEPromMessageHandler {
         // that crosses the page boundry (8 Bytes) it will wrap and overwrite
         // the begining of the current page instead of moving to the next page
 
-        if (hw_iface.get_eeprom_addr_bytes() == eeprom::hardware_iface::EEPROM_ADDR_8_BIT &&
+        if (hw_iface.get_eeprom_addr_bytes() ==
+                eeprom::hardware_iface::EEPROM_ADDR_8_BIT &&
             ((m.memory_address % 8) + m.length) > 8) {
             LOG("Warning: write request will overrun page");
         }
@@ -112,6 +113,7 @@ class EEPromMessageHandler {
             m.memory_address = m.memory_address << 8;
         }
         iter = bit_utils::int_to_bytes(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
         // Remainder is data
         iter = std::copy_n(
@@ -165,7 +167,9 @@ class EEPromMessageHandler {
             eeprom::hardware_iface::EEPROM_ADDR_8_BIT) {
             m.memory_address = m.memory_address << 8;
         }
+
         iter = bit_utils::int_to_bytes(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
 
         auto transaction = i2c::messages::Transaction{
