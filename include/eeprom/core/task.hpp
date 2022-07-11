@@ -107,15 +107,17 @@ class EEPromMessageHandler {
         // Older boards use 1 byte addresses, if we're on an older board we
         // need to drop the higher byte of the memory address when sending the
         // the message over i2c
-
-        iter = bit_utils::int_to_bytes(m.memory_address, iter,
-                                           (iter + hw_iface.get_eeprom_addr_bytes()));
+        if (hw_iface.get_eeprom_addr_bytes() ==
+            eeprom::hardware_iface::EEPROM_ADDR_8_BIT) {
+            m.memory_address = m.memory_address << 8;
+        }
+        iter = bit_utils::int_to_bytes(
+            m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
         // Remainder is data
         iter = std::copy_n(
             m.data.cbegin(),
             std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
             iter);
-
         // A write transaction.
         auto transaction = i2c::messages::Transaction{
             .address = types::DEVICE_ADDRESS,
@@ -125,7 +127,6 @@ class EEPromMessageHandler {
         // Use the WRITE_TOKEN to disambiguate from the reads.
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
-
         hw_iface.disable();
         if (!writer.transact(transaction, transaction_id, own_queue)) {
             // Failed to write transaction. Re-enable write protection.
