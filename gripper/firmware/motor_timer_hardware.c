@@ -303,7 +303,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     } else if (htim == &htim1 && brushed_timer_callback) {
         brushed_timer_callback();
     }else if (htim == &htim2 && gripper_enc_overflow_callback) {
-        gripper_enc_overflow_callback();
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        gripper_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }

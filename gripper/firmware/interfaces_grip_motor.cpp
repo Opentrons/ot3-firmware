@@ -78,8 +78,8 @@ extern "C" void call_brushed_motor_handler(void) {
     brushed_motor_interrupt.run_interrupt();
 }
 
-extern "C" void gripper_enc_overflow_callback_glue() {
-    brushed_motor_interrupt.encoder.encoder_overflow();
+extern "C" void gripper_enc_overflow_callback_glue(int32_t direction) {
+    brushed_motor_hardware_iface.encoder_overflow(direction);
 }
 
 void grip_motor_iface::initialize() {

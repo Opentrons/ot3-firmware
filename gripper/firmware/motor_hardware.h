@@ -18,7 +18,7 @@ extern DAC_HandleTypeDef hdac1;
 
 typedef void (*motor_interrupt_callback)();
 typedef void (*brushed_motor_interrupt_callback)();
-typedef void (*encoder_overflow_callback)();
+typedef void (*encoder_overflow_callback)(int32_t);
 
 HAL_StatusTypeDef initialize_spi();
 

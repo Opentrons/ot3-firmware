@@ -46,9 +46,12 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
 
+    void encoder_overflow(int32_t direction);
+
   private:
     BrushedHardwareConfig pins;
     void* enc_handle;
+    int32_t motor_encoder_overflow_count = 0;
 };
 
 };  // namespace motor_hardware
