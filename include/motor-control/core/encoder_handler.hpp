@@ -13,13 +13,9 @@ class EncoderHandler {
     EncoderHandler(EncoderHandler&) = delete;
     EncoderHandler(EncoderHandler&&) = delete;
 
-    auto get_encoder_pulses() {
-        return hardware.get_encoder_pulses();
-    }
+    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
 
-    void reset() {
-        hardware.reset_encoder_pulses();
-    }
+    void reset() { hardware.reset_encoder_pulses(); }
 
     void set_home_flag_triggered() { home_triggered = true; }
 

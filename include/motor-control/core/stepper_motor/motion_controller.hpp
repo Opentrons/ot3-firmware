@@ -86,9 +86,10 @@ class MotionController {
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
     auto read_encoder_pulses() {
-        return hardware.get_encoder_pulses();/*fixed_point_multiply(um_per_encoder_pulse,
-                                    hardware.get_encoder_pulses(),
-                                    radix_offset_0{});*/
+        return hardware
+            .get_encoder_pulses(); /*fixed_point_multiply(um_per_encoder_pulse,
+                          hardware.get_encoder_pulses(),
+                          radix_offset_0{});*/
     }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }

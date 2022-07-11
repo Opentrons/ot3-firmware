@@ -48,8 +48,8 @@ class MotorHardware : public StepperMotorHardwareIface {
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
-        int32_t motor_encoder_overflow_count = 0;
-        volatile uint32_t overflow_interrupts = 0;
+    int32_t motor_encoder_overflow_count = 0;
+    volatile uint32_t overflow_interrupts = 0;
 };
 
 };  // namespace motor_hardware
