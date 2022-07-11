@@ -8,6 +8,7 @@
 #include "i2c/tests/mock_response_queue.hpp"
 
 class MockHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+  using eeprom::hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
   public:
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
     std::vector<bool> set_calls{};
