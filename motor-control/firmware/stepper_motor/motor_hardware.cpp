@@ -36,7 +36,7 @@ void MotorHardware::set_LED(bool status) {
 }
 
 int32_t MotorHardware::get_encoder_pulses() {
-    return (motor_encoder_overflow_count * static_cast<int32_t>(UINT16_MAX)) + motor_hardware_encoder_pulse_count(enc_handle);
+    return (motor_encoder_overflow_count << 16) + motor_hardware_encoder_pulse_count(enc_handle);
 }
 
 void MotorHardware::reset_encoder_pulses() {
