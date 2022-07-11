@@ -90,7 +90,8 @@ class EEPromMessageHandler {
         // that crosses the page boundry (8 Bytes) it will wrap and overwrite
         // the begining of the current page instead of moving to the next page
 
-        if (hw_iface.get_eeprom_addr_bytes() && ((m.memory_address % 8) + m.length)) {
+        if (hw_iface.get_eeprom_addr_bytes() &&
+            ((m.memory_address % 8) + m.length)) {
             LOG("Warning: write request will overrun page");
         }
 

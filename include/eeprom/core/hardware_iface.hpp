@@ -15,7 +15,8 @@ static const size_t EEPROM_ADDR_16_BIT = sizeof(uint16_t);
 class EEPromHardwareIface {
   public:
     EEPromHardwareIface() = default;
-    EEPromHardwareIface(size_t addr_bytes) : eeprom_addr_bytes(addr_bytes) {}
+    EEPromHardwareIface(const size_t addr_bytes)
+        : eeprom_addr_bytes(addr_bytes) {}
     EEPromHardwareIface(const EEPromHardwareIface&) = default;
     EEPromHardwareIface(EEPromHardwareIface&&) = default;
     auto operator=(EEPromHardwareIface&&) -> EEPromHardwareIface& = default;
