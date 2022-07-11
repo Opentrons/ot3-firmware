@@ -53,12 +53,10 @@ class BrushedMotorInterruptHandler {
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 limit_switch_triggered()) {
-                hardware.stop_pwm();
                 homing_stopped();
             } else {
                 tick_count++;
                 if (!should_continue()) {
-                    hardware.stop_pwm();
                     finish_current_move(
                         AckMessageId::complete_without_condition);
                 }
