@@ -84,46 +84,63 @@
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "pipettes-single",
-        "pipettes-multi",
-        "pipettes-96",
-        "pipettes-384"
+        "pipettes-single-proto",
+        "pipettes-multi-proto",
+        "pipettes-96-proto",
+        "pipettes-384-proto"
+      ]
+    },
+    {
+      "name": "pipettes-rev1",
+      "displayName": "pipettes binary",
+      "description": "Build the pipettes cross binary",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": [
+        "pipettes-single-rev1",
+        "pipettes-multi-rev1",
+        "pipettes-96-rev1",
+        "pipettes-384-rev1"
       ]
     },
     {
       "name": "pipettes-single",
-      "inherits": "pipettes",
+      "inherits": ["pipettes", "pipettes-rev1"],
       "displayName": "pipettes single binary",
       "description": "Build the single channel pipettes cross binary",
       "targets": [
-        "pipettes-single"
+        "pipettes-single-proto",
+        "pipettes-single-rev1"
       ]
     },
     {
       "name": "pipettes-multi",
-      "inherits": "pipettes",
+      "inherits": ["pipettes", "pipettes-rev1"],
       "displayName": "pipettes multi binary",
       "description": "Build the multi channel pipettes cross binary",
       "targets": [
-        "pipettes-multi"
+        "pipettes-multi-proto",
+        "pipettes-multi-rev1"
       ]
     },
     {
       "name": "pipettes-96",
-      "inherits": "pipettes",
+      "inherits": ["pipettes", "pipettes-rev1"],
       "displayName": "pipettes 96 channel binary",
       "description": "Build the 96 channel pipettes cross binary",
       "targets": [
-        "pipettes-96"
+        "pipettes-96-proto",
+        "pipettes-96-rev1"
       ]
     },
     {
       "name": "pipettes-384",
-      "inherits": "pipettes",
+      "inherits": ["pipettes", "pipettes-rev1"],
       "displayName": "pipettes 384 channel binary",
       "description": "Build the 384 channel pipettes cross binary",
       "targets": [
-        "pipettes-384"
+        "pipettes-384-proto",
+        "pipettes-96-rev1"
       ]
     },
     {
@@ -208,7 +225,7 @@
       "name": "bootloader-pipettes",
       "displayName": "pipettes bootloader binary",
       "description": "build the pipettes bootloader binary targets",
-      "configurePreset": "cross-pipettes",
+      "configurePreset": "cross",
       "jobs": 4,
       "targets": [
         "bootloader-pipettes"

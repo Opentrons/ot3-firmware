@@ -1,9 +1,9 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
 
-find_package(STM32G4xx)
-add_STM32G4_driver("Pipettes")
-add_STM32G4_freertos("Pipettes")
+find_package(STM32L5xx)
+add_STM32L5_driver("Pipettes")
+add_STM32L5_freertos("Pipettes")
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
@@ -24,8 +24,8 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CAN_FW_DIR}/utils.c)
 
 set(PIPETTE_FW_NON_LINTABLE_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/stm32l5xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
@@ -42,18 +42,18 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     )
 
 
-target_include_directories(STM32G4xx_Drivers_Pipettes
+target_include_directories(STM32L5xx_Drivers_Pipettes
         PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Pipettes
+target_include_directories(STM32L5xx_FreeRTOS_Pipettes
         PUBLIC .)
 
-target_compile_definitions(STM32G4xx_Drivers_Pipettes
-        PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Pipettes
-        PUBLIC STM32G491xx)
+target_compile_definitions(STM32L5xx_Drivers_Pipettes
+        PUBLIC STM32L562xx)
+target_compile_definitions(STM32L5xx_FreeRTOS_Pipettes
+        PUBLIC STM32L562xx)
 
 set_target_properties(
-        STM32G4xx_FreeRTOS_Pipettes
+        STM32L5xx_FreeRTOS_Pipettes
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 
@@ -65,7 +65,7 @@ find_program(ARM_GDB
 
 find_package(Clang)
 
-add_custom_target(pipettes-rev1)
+add_custom_target(pipettes)
 
 function(add_pipettes_executable TARGET)
     add_executable(${TARGET}
@@ -75,8 +75,8 @@ function(add_pipettes_executable TARGET)
     target_ot_motor_control(${TARGET})
 
     target_link_libraries(${TARGET}
-            PUBLIC STM32G491RETx
-            STM32G4xx_Drivers_Pipettes STM32G4xx_FreeRTOS_Pipettes
+            PUBLIC STM32L562RETx
+            STM32L5xx_Drivers_Pipettes STM32L5xx_FreeRTOS_Pipettes
             can-core common-core
             )
 
@@ -103,13 +103,13 @@ function(add_pipettes_executable TARGET)
             $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
             $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
 
-    if(${TARGET} STREQUAL "pipettes-single-rev1")
+    if(${TARGET} STREQUAL "pipettes-single-proto")
             target_pipettes_core_single(${TARGET})
-    elseif(${TARGET} STREQUAL "pipettes-multi-rev1")
+    elseif(${TARGET} STREQUAL "pipettes-multi-proto")
             target_pipettes_core_multi(${TARGET})
-    elseif(${TARGET} STREQUAL "pipettes-96-rev1")
+    elseif(${TARGET} STREQUAL "pipettes-96-proto")
             target_pipettes_core_96(${TARGET})
-    elseif(${TARGET} STREQUAL "pipettes-384-rev1")
+    elseif(${TARGET} STREQUAL "pipettes-384-proto")
             target_pipettes_core_384(${TARGET})
     else ()
         message(FATAL_ERROR "Invalid pipette target provided.")
@@ -120,7 +120,7 @@ function(add_pipettes_executable TARGET)
     set_target_properties(${TARGET}
             PROPERTIES
             CROSSCOMPILING_EMULATOR
-            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L562RETx/gdbinit")
 
     find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
             PATHS "${CrossGCC_BINDIR}"
@@ -182,21 +182,21 @@ function(add_pipettes_executable TARGET)
             DEPENDS ${TARGET}-image.hex)
     list(APPEND IMAGES ${TARGET}-image-hex)
 
-    set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
+    set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
 
-    # Targets to flash bootloader and firmware
+    # Targets to flash bootloader and firmware_l5
     add_custom_target(${TARGET}-flash
             COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-image.hex;reset;exit"
             VERBATIM
             COMMENT "Flashing board"
             DEPENDS ${TARGET}-image-hex)
 
-    add_dependencies(pipettes-rev1 ${TARGET})
+    add_dependencies(pipettes ${TARGET})
 endfunction()
 add_custom_target(pipettes-images-hex DEPENDS ${IMAGES})
 
-add_pipettes_executable(pipettes-single-rev1)
-add_pipettes_executable(pipettes-multi-rev1)
-add_pipettes_executable(pipettes-96-rev1)
-add_pipettes_executable(pipettes-384-rev1)
+add_pipettes_executable(pipettes-single-proto)
+add_pipettes_executable(pipettes-multi-proto)
+add_pipettes_executable(pipettes-96-proto)
+add_pipettes_executable(pipettes-384-proto)
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)

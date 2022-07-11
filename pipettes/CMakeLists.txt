@@ -3,8 +3,10 @@
 add_subdirectory(core)
 
 if (${CMAKE_CROSSCOMPILING})
-  if (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
-    add_subdirectory(firmware)
+  if(${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
+      add_subdirectory(firmware_l5)
+  elseif(${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
+      add_subdirectory(firmware)
   endif()
 else()
    add_subdirectory(simulator)
@@ -14,7 +16,7 @@ endif()
 file(GLOB_RECURSE PIPETTES_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/pipettes/*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
-# the ones in tests/ or firmware/) because they don't have semantic reasoning involved and
+# the ones in tests/ or firmware_l5/) because they don't have semantic reasoning involved and
 # can therefore operate on file globs, unlike lint/static analysis
 
 # Target for use during dev - edits files

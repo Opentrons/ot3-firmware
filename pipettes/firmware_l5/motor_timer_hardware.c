@@ -1,5 +1,5 @@
 #include "common/firmware/errors.h"
-#include "stm32g4xx_hal_conf.h"
+#include "stm32l5xx_hal.h"
 
 #include "motor_timer_hardware.h"
 #include "pipettes/core/pipette_type.h"
@@ -70,11 +70,9 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM6_CLK_ENABLE();
 
-        /* TIM6 interrupt Init */
-        // TODO I do not like that we need this to go through
-        // DAC. Might want to switch timers.
-        HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 6, 0);
-        HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+        /* TIM7 interrupt Init */
+        HAL_NVIC_SetPriority(TIM6_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(TIM6_IRQn);
     }
 }
 

@@ -1,5 +1,5 @@
 #include "common/firmware/utility_gpio.h"
-#include "stm32g4xx_hal_conf.h"
+#include "platform_specific_hal_conf.h"
 #include "hardware_config.h"
 #include "pipettes/core/pipette_type.h"
 
@@ -22,10 +22,10 @@ void tip_sense_gpio_init() {
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+        __HAL_RCC_GPIOH_CLK_ENABLE();
         /*Configure GPIO pin : PH1, front tip sense */
-        // TODO put correct pin configuration here
         GPIO_InitStruct.Pin = GPIO_PIN_1;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
     } else {
         /* GPIO Ports Clock Enable */
@@ -148,8 +148,8 @@ void data_ready_gpio_init() {
         HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 
         /* EXTI interrupt init*/
-        HAL_NVIC_SetPriority(exti_line, 10, 0);
-        HAL_NVIC_EnableIRQ(exti_line);
+        HAL_NVIC_SetPriority(EXTI8_IRQn, 10, 0);
+        HAL_NVIC_EnableIRQ(EXTI8_IRQn);
     }
 
     /* GPIO Ports Clock Enable */
