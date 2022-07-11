@@ -9,7 +9,7 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/writer.hpp"
-#include "sensors/core/hdc2080.hpp"
+#include "sensors/core/tasks/environment_driver.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace sensors {
@@ -22,10 +22,7 @@ class EnvironmentSensorMessageHandler {
     EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
                                     CanClient &can_client, OwnQueue &own_queue,
                                     const can::ids::SensorId &id)
-        : writer{i2c_writer},
-          can_client{can_client},
-          own_queue(own_queue),
-          sensor_id(id) {}
+        : driver{i2c_writer, i2c_poller, can_client, own_queue, hardware, id} {}
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
         delete;
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
@@ -138,11 +135,7 @@ class EnvironmentSensorMessageHandler {
                 .status = static_cast<uint8_t>(is_initialized)});
     }
 
-    I2CQueueWriter &writer;
-    CanClient &can_client;
-    OwnQueue &own_queue;
-    const can::ids::SensorId &sensor_id;
-    bool is_initialized = false;
+    HDC3020<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**
