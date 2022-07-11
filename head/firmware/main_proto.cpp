@@ -240,16 +240,8 @@ extern "C" void motor_callback_glue() {
     motor_interrupt_right.run_interrupt();
 }
 
-extern "C" void left_enc_direction_callback_glue() {
-    motor_interrupt_left.encoder.get_enc_direction();
-}
-
 extern "C" void left_enc_overflow_callback_glue() {
     motor_interrupt_left.encoder.encoder_overflow();
-}
-
-extern "C" void right_enc_direction_callback_glue() {
-    motor_interrupt_right.encoder.get_enc_direction();
 }
 
 extern "C" void right_enc_overflow_callback_glue() {
@@ -294,9 +286,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
 
     app_update_clear_flags();
-    initialize_timer(motor_callback_glue, left_enc_direction_callback_glue,
-                     left_enc_overflow_callback_glue,
-                     right_enc_direction_callback_glue,
+    initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
                      right_enc_overflow_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {

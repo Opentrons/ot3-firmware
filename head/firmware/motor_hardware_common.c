@@ -8,9 +8,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 motor_interrupt_callback motor_callback = NULL;
-encoder_direction_callback left_enc_direction_callback = NULL;
 encoder_overflow_callback left_enc_overflow_callback = NULL;
-encoder_direction_callback right_enc_direction_callback = NULL;
 encoder_overflow_callback right_enc_overflow_callback = NULL;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
@@ -407,14 +405,10 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
 
 
 void initialize_timer(motor_interrupt_callback callback,
-                      encoder_direction_callback l_enc_dir_callback,
                       encoder_overflow_callback l_f_callback,
-                      encoder_direction_callback r_enc_dir_callback,
                       encoder_overflow_callback r_f_callback) {
     motor_callback = callback;
-    left_enc_direction_callback = l_enc_dir_callback;
     left_enc_overflow_callback = l_f_callback;
-    right_enc_direction_callback = r_enc_dir_callback;
     right_enc_overflow_callback = r_f_callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();

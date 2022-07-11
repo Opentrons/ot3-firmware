@@ -35,14 +35,13 @@ class EncoderHandler {
         hardware.clear_encoder_SR();
         if (!enc_direction) {
             enc_overflow_counter++;
-            if (home_triggered){
+            if (home_triggered) {
                 enc_overflow_counter = 0x0;
                 hardware.clear_encoder_SR();
                 reset_home_flag();
             }
-        } 
-        else if (enc_overflow_counter > 0) {
-            enc_overflow_counter--;   
+        } else if (enc_overflow_counter > 0) {
+            enc_overflow_counter--;
         }
     }
 
