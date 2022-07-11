@@ -2,7 +2,6 @@
 
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "motor-control/core/encoder_handler.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -144,8 +143,7 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             position_tracker = 0;
-            encoder.reset();
-            encoder.set_home_flag_triggered();
+            hardware.reset_encoder_pulses();
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -209,7 +207,7 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                encoder.get_encoder_pulses(), ack_msg_id);
+                hardware.get_encoder_pulses(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
@@ -226,7 +224,7 @@ class MotorInterruptHandler {
         position_tracker = 0x0;
         tick_count = 0x0;
         has_active_move = false;
-        encoder.reset();
+        hardware.reset_encoder_pulses();
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -265,8 +263,5 @@ class MotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
-
-  public:
-    encoder_handler::EncoderHandler encoder{hardware};
 };
 }  // namespace motor_handler

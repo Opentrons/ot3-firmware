@@ -3,7 +3,6 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
-#include "motor-control/core/encoder_handler.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -89,7 +88,7 @@ class BrushedMotorInterruptHandler {
 
     void homing_stopped() {
         finish_current_move(AckMessageId::stopped_by_condition);
-        reset_encoder_pulses();
+        hardware.reset_encoder_pulses();
     }
 
     auto limit_switch_triggered() -> bool {
@@ -107,7 +106,7 @@ class BrushedMotorInterruptHandler {
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
                 .encoder_position =
-                    static_cast<int32_t>(get_encoder_pulses() >> 31),
+                    static_cast<int32_t>(hardware.get_encoder_pulses() >> 31),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -116,10 +115,6 @@ class BrushedMotorInterruptHandler {
         }
         set_buffered_move(BrushedMove{});
     }
-
-    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
-
-    void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
 
     void set_buffered_move(BrushedMove new_move) { buffered_move = new_move; }
 
@@ -137,8 +132,5 @@ class BrushedMotorInterruptHandler {
     motor_hardware::BrushedMotorHardwareIface& hardware;
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     BrushedMove buffered_move = BrushedMove{};
-
-  public:
-    encoder_handler::EncoderHandler encoder{hardware};
 };
 }  // namespace brushed_motor_handler
