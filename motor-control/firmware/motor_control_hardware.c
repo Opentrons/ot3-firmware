@@ -87,8 +87,7 @@ int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
 
 void motor_hardware_reset_encoder_count(void* enc_htim) {
     /* Offset the zero position by 10 pulses to eliminate any noise on the system.
-    */
-    __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_DIR);
+     */
     bool overflow_flag = __HAL_TIM_GET_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
     while(overflow_flag){
         __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
