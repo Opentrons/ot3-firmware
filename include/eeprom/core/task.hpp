@@ -161,13 +161,13 @@ class EEPromMessageHandler {
         // Older boards use 1 byte addresses, if we're on an older board we
         // need to drop the higher byte of the memory address when sending the
         // the message over i2c
-         if (hw_iface.get_eeprom_addr_bytes() ==
+        if (hw_iface.get_eeprom_addr_bytes() ==
             eeprom::hardware_iface::EEPROM_ADDR_8_BIT) {
             m.memory_address = m.memory_address << 8;
         }
         iter = bit_utils::int_to_bytes(
             m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
-            
+
         auto transaction = i2c::messages::Transaction{
             .address = types::DEVICE_ADDRESS,
             .bytes_to_read = m.length,

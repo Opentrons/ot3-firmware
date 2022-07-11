@@ -29,7 +29,7 @@ SCENARIO("Sending messages to Eeprom task") {
         MockHardwareIface(eeprom::hardware_iface::EEPROM_ADDR_16_BIT);
 
     auto eeprom_16 = eeprom::task::EEPromMessageHandler{writer, response_queue,
-                                                       hardware_iface_16};
+                                                        hardware_iface_16};
     GIVEN("A write message") {
         auto data = eeprom::types::EepromData{1, 2, 3, 4};
         eeprom::types::address address = 12;
@@ -94,7 +94,7 @@ SCENARIO("Sending messages to Eeprom task") {
                             hardware_iface_16.get_eeprom_addr_bytes()));
                 REQUIRE(transact_message.transaction.write_buffer[0] ==
                         ((address >> 8) & 0xff));
-				REQUIRE(transact_message.transaction.write_buffer[1] ==
+                REQUIRE(transact_message.transaction.write_buffer[1] ==
                         (address & 0xff));
                 REQUIRE(transact_message.transaction.write_buffer[2] ==
                         data[0]);
@@ -150,7 +150,7 @@ SCENARIO("Sending messages to Eeprom task") {
             }
         }
     }
-     GIVEN("A 16 bit read message") {
+    GIVEN("A 16 bit read message") {
         eeprom::types::address address = 0xabcd;
         eeprom::types::data_length data_length = 5;
         auto read_msg =
@@ -173,7 +173,7 @@ SCENARIO("Sending messages to Eeprom task") {
                         hardware_iface_16.get_eeprom_addr_bytes());
                 REQUIRE(transact_message.transaction.write_buffer[0] ==
                         ((address >> 8) & 0xff));
-				REQUIRE(transact_message.transaction.write_buffer[1] ==
+                REQUIRE(transact_message.transaction.write_buffer[1] ==
                         (address & 0xff));
                 REQUIRE(transact_message.id.token == 0);
             }
