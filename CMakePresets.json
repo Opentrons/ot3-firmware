@@ -218,17 +218,18 @@
         "bootloader-head",
         "bootloader-gantry-x",
         "bootloader-gantry-y",
-        "bootloader-gripper"
+        "bootloader-gripper",
+        "bootloader-pipettes-rev1"
       ]
     },
     {
       "name": "bootloader-pipettes",
       "displayName": "pipettes bootloader binary",
       "description": "build the pipettes bootloader binary targets",
-      "configurePreset": "cross",
+      "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "bootloader-pipettes"
+        "bootloader-pipettes-proto"
       ]
     },
     {

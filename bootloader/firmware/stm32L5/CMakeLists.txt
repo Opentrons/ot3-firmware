@@ -101,7 +101,7 @@ add_executable(bootloader-pipettes
 
 target_compile_definitions(bootloader-pipettes PUBLIC node_id_pipette_dynamic)
 
-target_stm32L5(bootloader-pipettes)
+target_stm32L5(bootloader-pipettes-proto)
 
 target_include_directories(STM32L5xx_Drivers_Bootloader
         PUBLIC .)

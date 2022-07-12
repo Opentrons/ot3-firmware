@@ -137,7 +137,7 @@ add_executable(bootloader-pipettes
 
 target_compile_definitions(bootloader-pipettes PUBLIC node_id_pipette_dynamic)
 
-target_stm32G4(bootloader-pipettes)
+target_stm32G4(bootloader-pipettes-rev1)
 
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)
