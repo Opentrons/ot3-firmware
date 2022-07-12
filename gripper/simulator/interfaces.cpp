@@ -62,7 +62,8 @@ static motor_class::Motor motor{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
-        .microstep = 16},
+        .microstep = 16,
+        .encoder_ppr = 0},
     motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
