@@ -20,7 +20,11 @@ class EEPromHardwareIface {
   public:
     EEPromHardwareIface() = default;
     EEPromHardwareIface(const size_t addr_bytes)
-        : eeprom_addr_bytes(addr_bytes) {}
+        : eeprom_addr_bytes(addr_bytes) {
+        if (addr_bytes == EEPROM_ADDR_16_BIT) {
+            eeprom_mem_size = ST_16KByte;
+        }
+    }
     EEPromHardwareIface(const EEPromHardwareIface&) = default;
     EEPromHardwareIface(EEPromHardwareIface&&) = default;
     auto operator=(EEPromHardwareIface&&) -> EEPromHardwareIface& = default;
@@ -65,6 +69,7 @@ class EEPromHardwareIface {
     // How many bytes the EEProm memory address is. default to old boards 1 byte
     // address
     size_t eeprom_addr_bytes = EEPROM_ADDR_8_BIT;
+    size_t eeprom_mem_size = MICROCHIP_256Byte;
 };
 
 }  // namespace hardware_iface
