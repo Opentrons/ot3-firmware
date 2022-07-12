@@ -143,8 +143,8 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             position_tracker = 0;
+            hardware.reset_encoder_pulses();
             finish_current_move(AckMessageId::stopped_by_condition);
-            reset_encoder_pulses();
             return true;
         }
         return false;
@@ -207,7 +207,7 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                get_encoder_pulses(), ack_msg_id);
+                hardware.get_encoder_pulses(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
@@ -215,9 +215,6 @@ class MotorInterruptHandler {
         set_buffered_move(MotorMoveMessage{});
     }
 
-    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
-
-    void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
     void reset() {
         /*
          * Reset the position and all queued moves to the motor interrupt
@@ -227,6 +224,7 @@ class MotorInterruptHandler {
         position_tracker = 0x0;
         tick_count = 0x0;
         has_active_move = false;
+        hardware.reset_encoder_pulses();
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -234,9 +232,9 @@ class MotorInterruptHandler {
          * Check whether the position has overflowed. Return true if this has
          * happened, and false otherwise.
          *
-         * (TODO lc): If an overflow has happened, we should probably notify the
-         * server somehow that the position needed to be capped.
-         * Note: could not get the built-ins to work as expected.
+         * (TODO lc): If an overflEncoderHandlerow has happened, we should
+         * probably notify the server somehow that the position needed to be
+         * capped. Note: could not get the built-ins to work as expected.
          */
         return bool((current ^ future) & overflow_flag);
     }

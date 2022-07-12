@@ -32,7 +32,9 @@ class MotionController {
           motion_constraints(constraints),
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
+              linear_motion_sys_config.get_steps_per_mm(), 31)),
+          um_per_encoder_pulse(convert_to_fixed_point_64_bit(
+              linear_motion_sys_config.get_encoder_um_per_pulse(), 31)) {}
 
     auto operator=(const MotionController&) -> MotionController& = delete;
     auto operator=(MotionController&&) -> MotionController&& = delete;
@@ -83,6 +85,12 @@ class MotionController {
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
+    auto read_encoder_pulses() {
+        return fixed_point_multiply(um_per_encoder_pulse,
+                                    hardware.get_encoder_pulses(),
+                                    radix_offset_0{});
+    }
+
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
     void enable_motor() {
@@ -115,6 +123,7 @@ class MotionController {
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
+    sq31_31 um_per_encoder_pulse{0};
     bool enabled = false;
 };
 

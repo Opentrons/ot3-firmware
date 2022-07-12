@@ -88,7 +88,7 @@ class BrushedMotorInterruptHandler {
 
     void homing_stopped() {
         finish_current_move(AckMessageId::stopped_by_condition);
-        reset_encoder_pulses();
+        hardware.reset_encoder_pulses();
     }
 
     auto limit_switch_triggered() -> bool {
@@ -99,15 +99,14 @@ class BrushedMotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         tick_count = 0x0;
         has_active_move = false;
-        uint32_t pulses = 0x0;
-        pulses = get_encoder_pulses();
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = Ack{
                 .group_id = buffered_move.group_id,
                 .seq_id = buffered_move.seq_id,
                 .current_position_steps =
                     static_cast<uint32_t>(position_tracker >> 31),
-                .encoder_position = pulses,
+                .encoder_position =
+                    static_cast<int32_t>(hardware.get_encoder_pulses() >> 31),
                 .ack_id = ack_msg_id,
             };
             static_cast<void>(
@@ -116,10 +115,6 @@ class BrushedMotorInterruptHandler {
         }
         set_buffered_move(BrushedMove{});
     }
-
-    auto get_encoder_pulses() { return hardware.get_encoder_pulses(); }
-
-    void reset_encoder_pulses() { hardware.reset_encoder_pulses(); }
 
     void set_buffered_move(BrushedMove new_move) { buffered_move = new_move; }
 
