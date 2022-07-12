@@ -193,7 +193,7 @@ function(add_pipettes_executable TARGET)
 
     add_dependencies(pipettes-rev1 ${TARGET})
 endfunction()
-add_custom_target(pipettes-images-hex DEPENDS ${IMAGES})
+add_custom_target(pipettes-rev1-images-hex DEPENDS ${IMAGES})
 
 add_pipettes_executable(pipettes-single-rev1)
 add_pipettes_executable(pipettes-multi-rev1)
