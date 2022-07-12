@@ -94,12 +94,12 @@ macro(target_stm32L5 TARGET)
 
 endmacro()
 
-add_executable(bootloader-pipettes
+add_executable(bootloader-pipettes-proto
         ${BOOTLOADER_FW_LINTABLE_SRCS}
         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
         ${BOOTLOADER_L5_FW_NON_LINTABLE_SRCS})
 
-target_compile_definitions(bootloader-pipettes PUBLIC node_id_pipette_dynamic)
+target_compile_definitions(bootloader-pipettes-proto PUBLIC node_id_pipette_dynamic)
 
 target_stm32L5(bootloader-pipettes-proto)
 
