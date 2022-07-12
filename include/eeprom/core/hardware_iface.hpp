@@ -7,6 +7,8 @@ enum EEPromAddressType {
     EEPROM_ADDR_8_BIT = sizeof(uint8_t),
     EEPROM_ADDR_16_BIT = sizeof(uint16_t)
 };
+
+enum EEpromMemorySize { MICROCHIP_256Byte = 256, ST_16KByte = 16384 };
 /**
  * Interface to eeprom. Must be implemented in FW and Simulation
  *
