@@ -42,10 +42,16 @@ bool BrushedMotorHardware::check_sync_in() {
     return gpio::is_set(pins.limit_switch);
 }
 
-uint32_t BrushedMotorHardware::get_encoder_pulses() {
-    return motor_hardware_encoder_pulse_count(enc_handle);
+int32_t BrushedMotorHardware::get_encoder_pulses() {
+    return (motor_encoder_overflow_count << 16) +
+           motor_hardware_encoder_pulse_count(enc_handle);
 }
 
 void BrushedMotorHardware::reset_encoder_pulses() {
     motor_hardware_reset_encoder_count(enc_handle);
+    motor_encoder_overflow_count = 0;
+}
+
+void BrushedMotorHardware::encoder_overflow(int32_t direction) {
+    motor_encoder_overflow_count += direction;
 }
