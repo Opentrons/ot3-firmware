@@ -3,8 +3,10 @@
 namespace eeprom {
 namespace hardware_iface {
 
-static const size_t EEPROM_ADDR_8_BIT = sizeof(uint8_t);
-static const size_t EEPROM_ADDR_16_BIT = sizeof(uint16_t);
+enum EEPromAddressType {
+	EEPROM_ADDR_8_BIT = sizeof(uint8_t),
+	EEPROM_ADDR_16_BIT = sizeof(uint16_t)
+};
 /**
  * Interface to eeprom. Must be implemented in FW and Simulation
  *
