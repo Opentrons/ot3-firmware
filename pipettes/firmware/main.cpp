@@ -45,9 +45,11 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 static auto can_bus_1 = can::hal::bus::HalCanBus(
     can_get_device_handle(),
+    // TODO we need to modify this based on pipette type as well since
+    // LED pin changes from board to board
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOA,
-                    .pin = GPIO_PIN_8,
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_11,
                     .active_setting = GPIO_PIN_RESET});
 
 spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
@@ -55,7 +57,7 @@ spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
 static spi::hardware::Spi spi_comms(SPI_intf);
 
 static auto i2c_comms3 = i2c::hardware::I2C();
-static auto i2c_comms1 = i2c::hardware::I2C();
+static auto i2c_comms2 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
 class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
@@ -170,7 +172,7 @@ auto main() -> int {
 
     i2c_setup(&i2chandler_struct);
     i2c_comms3.set_handle(i2chandler_struct.i2c3);
-    i2c_comms1.set_handle(i2chandler_struct.i2c1);
+    i2c_comms2.set_handle(i2chandler_struct.i2c2);
 
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
@@ -181,7 +183,7 @@ auto main() -> int {
     can_bus_1.start(can_bit_timings);
 
     central_tasks::start_tasks(can_bus_1, id);
-    peripheral_tasks::start_tasks(i2c_comms3, i2c_comms1, spi_comms);
+    peripheral_tasks::start_tasks(i2c_comms3, i2c_comms2, spi_comms);
     initialize_motor_tasks(id, motor_config.driver_configs,
                            gear_motion_control);
 
