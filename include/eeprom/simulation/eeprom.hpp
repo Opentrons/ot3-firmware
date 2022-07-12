@@ -17,6 +17,11 @@ class EEProm : public I2CDeviceBase,
                public hardware_iface::EEPromHardwareIface {
   public:
     EEProm() : I2CDeviceBase(types::DEVICE_ADDRESS) { backing.fill(0xFF); }
+    EEProm(const size_t address_size)
+        : I2CDeviceBase(types::DEVICE_ADDRESS),
+          hardware_iface::EEPromHardwareIface(address_size) {
+        backing.fill(0xFF);
+    }
 
     auto handle_write(const uint8_t *data, uint16_t size) -> bool {
         auto *iter = data;
@@ -55,8 +60,8 @@ class EEProm : public I2CDeviceBase,
     }
 
   private:
-    std::array<uint8_t, 256> backing{};
-    uint8_t current_address{0};
+    std::array<uint8_t, hardware_iface::EEpromMemorySize::ST_16KByte> backing{};
+    uint16_t current_address{0};
     bool write_protected{true};
 };
 
