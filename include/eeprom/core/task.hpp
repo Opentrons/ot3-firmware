@@ -16,16 +16,15 @@ namespace eeprom {
 namespace task {
 
 using TaskMessage =
-    std::variant<eeprom::message::WriteEepromMessage,
-                 eeprom::message::ReadEepromMessage,
+    std::variant<message::WriteEepromMessage, message::ReadEepromMessage,
                  i2c::messages::TransactionResponse, std::monostate>;
 
 template <class I2CQueueWriter, class OwnQueue>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(
-        I2CQueueWriter &i2c_writer, OwnQueue &own_queue,
-        eeprom::hardware_iface::EEPromHardwareIface &hw_iface)
+    explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
+                                  OwnQueue &own_queue,
+                                  hardware_iface::EEPromHardwareIface &hw_iface)
         : writer{i2c_writer}, own_queue{own_queue}, hw_iface{hw_iface} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
@@ -59,13 +58,12 @@ class EEPromMessageHandler {
             auto id_map_entry = id_map.remove(m.id.token);
             if (id_map_entry) {
                 auto read_message = id_map_entry.value();
-                auto data = eeprom::types::EepromData{};
+                auto data = types::EepromData{};
                 std::copy_n(m.read_buffer.cbegin(),
                             std::min(m.bytes_read, data.size()), data.begin());
-                auto v = eeprom::message::EepromMessage{
+                auto v = message::EepromMessage{
                     .memory_address = read_message.memory_address,
-                    .length =
-                        static_cast<eeprom::types::data_length>(m.bytes_read),
+                    .length = static_cast<types::data_length>(m.bytes_read),
                     .data = data};
                 read_message.callback(v, read_message.callback_param);
             } else {
@@ -78,7 +76,7 @@ class EEPromMessageHandler {
      * Handle a request to write to eeprom.
      * @param m THe message
      */
-    void visit(eeprom::message::WriteEepromMessage &m) {
+    void visit(message::WriteEepromMessage &m) {
         LOG("Received request to write %d bytes to address %x", m.length,
             m.memory_address);
 
@@ -141,7 +139,7 @@ class EEPromMessageHandler {
      * Handle a request to read from the eeprom
      * @param m The message
      */
-    void visit(eeprom::message::ReadEepromMessage &m) {
+    void visit(message::ReadEepromMessage &m) {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
 
@@ -192,10 +190,9 @@ class EEPromMessageHandler {
 
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
-    i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
-                            MAX_INFLIGHT_READS>
+    i2c::transaction::IdMap<message::ReadEepromMessage, MAX_INFLIGHT_READS>
         id_map{};
-    eeprom::hardware_iface::EEPromHardwareIface &hw_iface;
+    hardware_iface::EEPromHardwareIface &hw_iface;
 };
 
 /**

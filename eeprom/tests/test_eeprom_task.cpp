@@ -6,9 +6,10 @@
 #include "eeprom/core/types.hpp"
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
+namespace eeprom {
 
-class MockHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
-    using eeprom::hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
+class MockHardwareIface : public hardware_iface::EEPromHardwareIface {
+    using hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
 
   public:
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
@@ -22,16 +23,14 @@ SCENARIO("Sending messages to Eeprom task") {
     writer.set_queue(&i2c_queue);
     auto hardware_iface = MockHardwareIface{};
 
-    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue,
-                                                     hardware_iface};
+    auto eeprom =
+        task::EEPromMessageHandler{writer, response_queue, hardware_iface};
     GIVEN("A write message") {
-        auto data = eeprom::types::EepromData{1, 2, 3, 4};
-        eeprom::types::address address = 12;
-        eeprom::types::data_length data_length = 4;
-        auto write_msg = eeprom::task::TaskMessage(
-            eeprom::message::WriteEepromMessage{.memory_address = address,
-                                                .length = data_length,
-                                                .data = data});
+        auto data = types::EepromData{1, 2, 3, 4};
+        types::address address = 12;
+        types::data_length data_length = 4;
+        auto write_msg = task::TaskMessage(message::WriteEepromMessage{
+            .memory_address = address, .length = data_length, .data = data});
         WHEN("the message is sent") {
             eeprom.handle_message(write_msg);
             THEN("the i2c queue is populated with a transact command") {
@@ -63,13 +62,11 @@ SCENARIO("Sending messages to Eeprom task") {
         }
     }
     GIVEN("A write message with zero length") {
-        auto data = eeprom::types::EepromData{};
-        eeprom::types::address address = 14;
-        eeprom::types::data_length data_length = 0;
-        auto write_msg = eeprom::task::TaskMessage(
-            eeprom::message::WriteEepromMessage{.memory_address = address,
-                                                .length = data_length,
-                                                .data = data});
+        auto data = types::EepromData{};
+        types::address address = 14;
+        types::data_length data_length = 0;
+        auto write_msg = task::TaskMessage(message::WriteEepromMessage{
+            .memory_address = address, .length = data_length, .data = data});
         WHEN("the message is sent") {
             eeprom.handle_message(write_msg);
             THEN("the i2c queue is not populated with a transact command") {
@@ -78,11 +75,10 @@ SCENARIO("Sending messages to Eeprom task") {
         }
     }
     GIVEN("A read message") {
-        eeprom::types::address address = 14;
-        eeprom::types::data_length data_length = 5;
-        auto read_msg =
-            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
-                .memory_address = address, .length = data_length});
+        types::address address = 14;
+        types::data_length data_length = 5;
+        auto read_msg = task::TaskMessage(message::ReadEepromMessage{
+            .memory_address = address, .length = data_length});
         eeprom.handle_message(read_msg);
         WHEN("the message is sent") {
             THEN("the i2c queue is populated with a transact command") {
@@ -105,11 +101,10 @@ SCENARIO("Sending messages to Eeprom task") {
         }
     }
     GIVEN("A read message with zero length") {
-        eeprom::types::address address = 14;
-        eeprom::types::data_length data_length = 0;
-        auto read_msg =
-            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
-                .memory_address = address, .length = data_length});
+        types::address address = 14;
+        types::data_length data_length = 0;
+        auto read_msg = task::TaskMessage(message::ReadEepromMessage{
+            .memory_address = address, .length = data_length});
         eeprom.handle_message(read_msg);
         WHEN("the message is sent") {
             THEN("the i2c queue is not populated with a transact command") {
@@ -125,18 +120,16 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
     writer.set_queue(&i2c_queue);
 
     auto hardware_iface_16 =
-        MockHardwareIface(eeprom::hardware_iface::EEPromChipType::ST_M24128);
+        MockHardwareIface(hardware_iface::EEPromChipType::ST_M24128);
 
-    auto eeprom_16 = eeprom::task::EEPromMessageHandler{writer, response_queue,
-                                                        hardware_iface_16};
+    auto eeprom_16 =
+        task::EEPromMessageHandler{writer, response_queue, hardware_iface_16};
     GIVEN("A 16 bit write message") {
-        auto data = eeprom::types::EepromData{1, 2, 3, 4};
-        eeprom::types::address address = 0xabcd;
-        eeprom::types::data_length data_length = 4;
-        auto write_msg = eeprom::task::TaskMessage(
-            eeprom::message::WriteEepromMessage{.memory_address = address,
-                                                .length = data_length,
-                                                .data = data});
+        auto data = types::EepromData{1, 2, 3, 4};
+        types::address address = 0xabcd;
+        types::data_length data_length = 4;
+        auto write_msg = task::TaskMessage(message::WriteEepromMessage{
+            .memory_address = address, .length = data_length, .data = data});
         WHEN("the message is sent") {
             eeprom_16.handle_message(write_msg);
             THEN("the i2c queue is populated with a transact command") {
@@ -170,11 +163,10 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
         }
     }
     GIVEN("A 16 bit read message") {
-        eeprom::types::address address = 0xabcd;
-        eeprom::types::data_length data_length = 5;
-        auto read_msg =
-            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
-                .memory_address = address, .length = data_length});
+        types::address address = 0xabcd;
+        types::data_length data_length = 5;
+        auto read_msg = task::TaskMessage(message::ReadEepromMessage{
+            .memory_address = address, .length = data_length});
         eeprom_16.handle_message(read_msg);
         WHEN("the message is sent") {
             THEN("the i2c queue is populated with a transact command") {
@@ -201,12 +193,11 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
 }
 
 struct ReadResponseHandler {
-    static void callback(const eeprom::message::EepromMessage& msg,
-                         void* param) {
+    static void callback(const message::EepromMessage& msg, void* param) {
         reinterpret_cast<ReadResponseHandler*>(param)->_callback(msg);
     }
-    void _callback(const eeprom::message::EepromMessage& msg) { message = msg; }
-    eeprom::message::EepromMessage message;
+    void _callback(const message::EepromMessage& msg) { message = msg; }
+    message::EepromMessage message;
 };
 
 SCENARIO("Transaction response handling.") {
@@ -216,24 +207,23 @@ SCENARIO("Transaction response handling.") {
     writer.set_queue(&i2c_queue);
     auto hardware_iface = MockHardwareIface{};
 
-    auto eeprom = eeprom::task::EEPromMessageHandler{writer, response_queue,
-                                                     hardware_iface};
+    auto eeprom =
+        task::EEPromMessageHandler{writer, response_queue, hardware_iface};
 
     GIVEN("A read request") {
-        eeprom::types::address address = 14;
-        eeprom::types::data_length data_length = 5;
+        types::address address = 14;
+        types::data_length data_length = 5;
         auto read_response_handler = ReadResponseHandler{};
-        auto read_msg =
-            eeprom::task::TaskMessage(eeprom::message::ReadEepromMessage{
-                .memory_address = address,
-                .length = data_length,
-                .callback = ReadResponseHandler::callback,
-                .callback_param = &read_response_handler});
+        auto read_msg = task::TaskMessage(message::ReadEepromMessage{
+            .memory_address = address,
+            .length = data_length,
+            .callback = ReadResponseHandler::callback,
+            .callback_param = &read_response_handler});
         eeprom.handle_message(read_msg);
 
         WHEN("a transaction response is sent") {
             auto transaction_response =
-                eeprom::task::TaskMessage(i2c::messages::TransactionResponse{
+                task::TaskMessage(i2c::messages::TransactionResponse{
                     .id = i2c::messages::TransactionIdentifier{.token = 0},
                     .bytes_read = data_length,
                     .read_buffer =
@@ -242,27 +232,25 @@ SCENARIO("Transaction response handling.") {
             eeprom.handle_message(transaction_response);
             THEN("the callback is called") {
                 REQUIRE(read_response_handler.message ==
-                        eeprom::message::EepromMessage{
+                        message::EepromMessage{
                             .memory_address = address,
                             .length = data_length,
-                            .data = eeprom::types::EepromData{1, 2, 3, 4, 5}});
+                            .data = types::EepromData{1, 2, 3, 4, 5}});
             }
         }
     }
 
     GIVEN("A write request") {
-        auto data = eeprom::types::EepromData{1, 2, 3};
-        eeprom::types::address address = 14;
-        eeprom::types::data_length data_length = 3;
-        auto write_msg = eeprom::task::TaskMessage(
-            eeprom::message::WriteEepromMessage{.memory_address = address,
-                                                .length = data_length,
-                                                .data = data});
+        auto data = types::EepromData{1, 2, 3};
+        types::address address = 14;
+        types::data_length data_length = 3;
+        auto write_msg = task::TaskMessage(message::WriteEepromMessage{
+            .memory_address = address, .length = data_length, .data = data});
         eeprom.handle_message(write_msg);
 
         WHEN("a transaction response is sent") {
             auto transaction_response =
-                eeprom::task::TaskMessage(i2c::messages::TransactionResponse{
+                task::TaskMessage(i2c::messages::TransactionResponse{
                     .id =
                         i2c::messages::TransactionIdentifier{
                             .token = static_cast<uint32_t>(-1)},
@@ -277,3 +265,4 @@ SCENARIO("Transaction response handling.") {
         }
     }
 }
+}  // namespace eeprom

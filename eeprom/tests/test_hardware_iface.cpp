@@ -3,9 +3,11 @@
 #include "catch2/catch.hpp"
 #include "eeprom/core/hardware_iface.hpp"
 
-class MockEepromHardwareIface
-    : public eeprom::hardware_iface::EEPromHardwareIface {
-    using eeprom::hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
+namespace eeprom {
+namespace hardware_iface {
+
+class MockEepromHardwareIface : public EEPromHardwareIface {
+    using EEPromHardwareIface::EEPromHardwareIface;
 
   public:
     void set_write_protect(bool enabled) { set_calls.push_back(enabled); }
@@ -17,30 +19,27 @@ SCENARIO("Configuring EEProm Address Length") {
         WHEN("Default constructor used") {
             auto hw_default = MockEepromHardwareIface{};
             THEN("address setting is 8 bit") {
-                REQUIRE(hw_default.get_eeprom_addr_bytes() ==
-                        static_cast<size_t>(
-                            eeprom::hardware_iface::EEPromAddressType::
-                                EEPROM_ADDR_8_BIT));
+                REQUIRE(
+                    hw_default.get_eeprom_addr_bytes() ==
+                    static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_8_BIT));
             }
         }
         WHEN("Explicit 8 bit contructor used") {
-            auto hw_8_bit_explicit = MockEepromHardwareIface(
-                eeprom::hardware_iface::EEPromChipType::MICROCHIP_24AA02T);
+            auto hw_8_bit_explicit =
+                MockEepromHardwareIface(EEPromChipType::MICROCHIP_24AA02T);
             THEN("address setting is 8 bit") {
-                REQUIRE(hw_8_bit_explicit.get_eeprom_addr_bytes() ==
-                        static_cast<size_t>(
-                            eeprom::hardware_iface::EEPromAddressType::
-                                EEPROM_ADDR_8_BIT));
+                REQUIRE(
+                    hw_8_bit_explicit.get_eeprom_addr_bytes() ==
+                    static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_8_BIT));
             }
         }
         WHEN("Explicit 16 bit contructor used") {
-            auto hw_16_bit_explicit = MockEepromHardwareIface(
-                eeprom::hardware_iface::EEPromChipType::ST_M24128);
+            auto hw_16_bit_explicit =
+                MockEepromHardwareIface(EEPromChipType::ST_M24128);
             THEN("address setting is 16 bit") {
-                REQUIRE(hw_16_bit_explicit.get_eeprom_addr_bytes() ==
-                        static_cast<size_t>(
-                            eeprom::hardware_iface::EEPromAddressType::
-                                EEPROM_ADDR_16_BIT));
+                REQUIRE(
+                    hw_16_bit_explicit.get_eeprom_addr_bytes() ==
+                    static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_16_BIT));
             }
         }
     }
@@ -100,3 +99,6 @@ SCENARIO("WriteProtector class") {
         }
     }
 }
+
+}  // namespace hardware_iface
+}  // namespace eeprom
