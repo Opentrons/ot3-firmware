@@ -127,6 +127,8 @@ using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
 
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
+using EncoderPositionRequest = Empty<MessageId::encoder_position_request>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     eeprom::types::address address;
     eeprom::types::data_length data_length;
@@ -348,6 +350,20 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     }
 
     auto operator==(const MoveCompleted& other) const -> bool = default;
+};
+
+struct EncoderPositionResponse
+    : BaseMessage<MessageId::encoder_position_response> {
+    int32_t encoder_position;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(encoder_position, body, limit);
+        return iter - body;
+    }
+
+    auto operator==(const EncoderPositionResponse& other) const
+        -> bool = default;
 };
 
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
@@ -1008,9 +1024,10 @@ using ResponseMessageType = std::variant<
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
-    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
-    TipActionResponse, PeripheralStatusResponse>;
+    EncoderPositionResponse, ReadFromSensorResponse,
+    FirmwareUpdateStatusResponse, SensorThresholdResponse,
+    SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
+    BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
+    PeripheralStatusResponse>;
 
 }  // namespace can::messages
