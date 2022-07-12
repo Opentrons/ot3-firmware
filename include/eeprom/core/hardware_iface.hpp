@@ -3,12 +3,14 @@
 namespace eeprom {
 namespace hardware_iface {
 
-enum EEPromAddressType {
+enum class EEPromChipType { MICROCHIP_24AA02T, ST_M24128 };
+
+enum class EEPromAddressType {
     EEPROM_ADDR_8_BIT = sizeof(uint8_t),
     EEPROM_ADDR_16_BIT = sizeof(uint16_t)
 };
 
-enum EEpromMemorySize { MICROCHIP_256Byte = 256, ST_16KByte = 16384 };
+enum class EEpromMemorySize { MICROCHIP_256_BYTE = 256, ST_16_KBYTE = 16384 };
 /**
  * Interface to eeprom. Must be implemented in FW and Simulation
  *
@@ -19,11 +21,22 @@ enum EEpromMemorySize { MICROCHIP_256Byte = 256, ST_16KByte = 16384 };
 class EEPromHardwareIface {
   public:
     EEPromHardwareIface() = default;
-    EEPromHardwareIface(const size_t addr_bytes)
-        : eeprom_addr_bytes(addr_bytes) {
-        if (addr_bytes == EEPROM_ADDR_16_BIT) {
-            eeprom_mem_size = ST_16KByte;
+    EEPromHardwareIface(EEPromChipType chip) {
+        switch (chip) {
+            case EEPromChipType::MICROCHIP_24AA02T:
+                eeprom_addr_bytes =
+                    static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_8_BIT);
+                eeprom_mem_size =
+                    static_cast<size_t>(EEpromMemorySize::MICROCHIP_256_BYTE);
+                break;
+            case EEPromChipType::ST_M24128:
+                eeprom_addr_bytes =
+                    static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_16_BIT);
+                eeprom_mem_size =
+                    static_cast<size_t>(EEpromMemorySize::ST_16_KBYTE);
+                break;
         }
+        eeprom_chip_type = chip;
     }
     EEPromHardwareIface(const EEPromHardwareIface&) = default;
     EEPromHardwareIface(EEPromHardwareIface&&) = default;
@@ -62,14 +75,20 @@ class EEPromHardwareIface {
     [[nodiscard]] auto get_eeprom_addr_bytes() const -> size_t {
         return eeprom_addr_bytes;
     }
+    [[nodiscard]] auto get_eeprom_chip_type() const -> EEPromChipType {
+        return eeprom_chip_type;
+    }
 
   private:
     // The number of times that disable has been called.
     uint32_t count{0};
     // How many bytes the EEProm memory address is. default to old boards 1 byte
     // address
-    size_t eeprom_addr_bytes = EEPROM_ADDR_8_BIT;
-    size_t eeprom_mem_size = MICROCHIP_256Byte;
+    size_t eeprom_addr_bytes =
+        static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_8_BIT);
+    size_t eeprom_mem_size =
+        static_cast<size_t>(EEpromMemorySize::MICROCHIP_256_BYTE);
+    EEPromChipType eeprom_chip_type = EEPromChipType::MICROCHIP_24AA02T;
 };
 
 }  // namespace hardware_iface

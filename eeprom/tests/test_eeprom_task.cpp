@@ -125,7 +125,7 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
     writer.set_queue(&i2c_queue);
 
     auto hardware_iface_16 =
-        MockHardwareIface(eeprom::hardware_iface::EEPROM_ADDR_16_BIT);
+        MockHardwareIface(eeprom::hardware_iface::EEPromChipType::ST_M24128);
 
     auto eeprom_16 = eeprom::task::EEPromMessageHandler{writer, response_queue,
                                                         hardware_iface_16};

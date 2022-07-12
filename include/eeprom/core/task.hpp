@@ -90,8 +90,8 @@ class EEPromMessageHandler {
         // that crosses the page boundry (8 Bytes) it will wrap and overwrite
         // the begining of the current page instead of moving to the next page
 
-        if (hw_iface.get_eeprom_addr_bytes() ==
-                eeprom::hardware_iface::EEPROM_ADDR_8_BIT &&
+        if (hw_iface.get_eeprom_chip_type() ==
+                hardware_iface::EEPromChipType::MICROCHIP_24AA02T &&
             ((m.memory_address % 8) + m.length) > 8) {
             LOG("Warning: write request will overrun page");
         }
@@ -109,7 +109,8 @@ class EEPromMessageHandler {
         // need to drop the higher byte of the memory address when sending the
         // the message over i2c
         if (hw_iface.get_eeprom_addr_bytes() ==
-            eeprom::hardware_iface::EEPROM_ADDR_8_BIT) {
+            static_cast<size_t>(
+                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
             m.memory_address = m.memory_address << 8;
         }
         iter = bit_utils::int_to_bytes(
@@ -164,7 +165,8 @@ class EEPromMessageHandler {
         // need to drop the higher byte of the memory address when sending the
         // the message over i2c
         if (hw_iface.get_eeprom_addr_bytes() ==
-            eeprom::hardware_iface::EEPROM_ADDR_8_BIT) {
+            static_cast<size_t>(
+                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
             m.memory_address = m.memory_address << 8;
         }
 
