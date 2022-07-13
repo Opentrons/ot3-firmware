@@ -32,12 +32,11 @@ void Encoder_GPIO_Init(void){
 void TIM2_EncoderG_Init(void){
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
     __HAL_RCC_TIM2_CLK_ENABLE();
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = UINT32_MAX;
+    htim2.Init.Period = UINT16_MAX;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
@@ -59,25 +58,12 @@ void TIM2_EncoderG_Init(void){
     {
     Error_Handler();
     }
-    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_INVERTED;
-    sEncoderIndexConfig.Prescaler = TIM_ENCODERINDEX_PRESCALER_DIV1;
-    sEncoderIndexConfig.Filter = 0;
-    sEncoderIndexConfig.FirstIndexEnable = ENABLE;
-    sEncoderIndexConfig.Position = TIM_ENCODERINDEX_POSITION_00;
-    sEncoderIndexConfig.Direction = TIM_ENCODERINDEX_DIRECTION_UP_DOWN;
-    if (HAL_TIMEx_ConfigEncoderIndex(&htim2, &sEncoderIndexConfig) != HAL_OK)
-    {
-    Error_Handler();
-    }
-    HAL_TIMEx_EnableEncoderIndex(&htim2);
     /* Reset counter */
     __HAL_TIM_SET_COUNTER(&htim2, 0);
     /* Clear interrupt flag bit */
     __HAL_TIM_CLEAR_FLAG(&htim2, TIM_FLAG_UPDATE);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
-    /* Enable the update event for the Direction interrupted */
-    __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_DIR);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim2);
     /* Enable encoder interface */
