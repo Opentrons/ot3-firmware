@@ -72,20 +72,20 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
     PipetteHardwarePin pinout;
     switch(device) {
         case pipette_hardware_device_LED_drive:
-            pinout.port = GPIOA;
-            pinout.pin = GPIO_PIN_8;
+            pinout.port = GPIOB;
+            pinout.pin = GPIO_PIN_11;
             return pinout;
         case pipette_hardware_device_sync_in:
             pinout.port = GPIOB;
-            pinout.pin = GPIO_PIN_5;
+            pinout.pin = GPIO_PIN_7;
             return pinout;
         case pipette_hardware_device_sync_out:
             pinout.port = GPIOB;
-            pinout.pin = GPIO_PIN_4;
+            pinout.pin = GPIO_PIN_6;
             return pinout;
         case pipette_hardware_device_data_ready_front:
             pinout.port = GPIOC;
-            pinout.pin = GPIO_PIN_9;
+            pinout.pin = GPIO_PIN_3;
             return pinout;
         default:
             pinout.port = 0;
@@ -103,11 +103,10 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
      * copi -> PB15
      *
      * Chip Select
-     * PC6
+     * PB12
      */
     switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
-        case (uint32_t)GPIOC: return GPIO_PIN_6;
+        case (uint32_t)GPIOB: return GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         default: return 0;
     }
 }

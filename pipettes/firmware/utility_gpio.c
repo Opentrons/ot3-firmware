@@ -29,10 +29,10 @@ void tip_sense_gpio_init() {
 
     } else {
         /* GPIO Ports Clock Enable */
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        /*Configure GPIO pin : A10 */
-        GPIO_InitStruct.Pin = GPIO_PIN_10;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        /*Configure GPIO pin : C2 */
+        GPIO_InitStruct.Pin = GPIO_PIN_2;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
 }
 

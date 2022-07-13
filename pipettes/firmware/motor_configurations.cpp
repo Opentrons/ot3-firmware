@@ -158,7 +158,7 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                 .direction =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
-                     .pin = GPIO_PIN_3,
+                     .pin = GPIO_PIN_6,
                      .active_setting = GPIO_PIN_SET},
                 .step =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -167,20 +167,20 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 .enable =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_8,
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_10,
                      .active_setting = GPIO_PIN_SET},
                 .limit_switch =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOC,
-                     .pin = GPIO_PIN_2,
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_6,
                      .active_setting = GPIO_PIN_SET},
-                // LED PIN C11, active setting low
+                // LED PIN B11, active setting low
                 .led = {},
                 .tip_sense =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
-                     .pin = GPIO_PIN_10,
+                     .port = GPIOC,
+                     .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_SET},
             };
     }

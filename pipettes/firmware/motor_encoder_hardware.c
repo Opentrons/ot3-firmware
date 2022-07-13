@@ -24,7 +24,7 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     /*Encoder P Axis Index Pin Configuration
-    PC3    ------> CHANNEL I -----> SINGLE_CHANNEL/EIGHT_CHANNEL
+    PA5    ------> CHANNEL I -----> SINGLE_CHANNEL/EIGHT_CHANNEL
     PA7    ------> CHANNEL I -----> NINETY_SIX_CHANNEL/THREE_EIGHTY_FOUR_CHANNEL
     * The Encoder Index Pin is routed to different GPIO pins
     * depending on the pipette type.
@@ -38,7 +38,7 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
             HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
         }
     else{
-            GPIO_InitStruct.Pin = GPIO_PIN_7;
+            GPIO_InitStruct.Pin = GPIO_PIN_5;
             GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
             GPIO_InitStruct.Pull = GPIO_NOPULL;
             GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
