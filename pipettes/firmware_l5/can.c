@@ -44,7 +44,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hfdcan->Instance == FDCAN1) {
         /* Peripheral clock enable */
-        __HAL_RCC_FDCAN_CLK_ENABLE();
+        __HAL_RCC_FDCAN1_CLK_ENABLE();
 
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /**FDCAN1 GPIO Configuration
@@ -75,7 +75,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef* hfdcan) {
 void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* hfdcan) {
     if (hfdcan->Instance == FDCAN1) {
         /* Peripheral clock disable */
-        __HAL_RCC_FDCAN_CLK_DISABLE();
+        __HAL_RCC_FDCAN1_CLK_DISABLE();
 
         /**FDCAN1 GPIO Configuration
         PA11     ------> FDCAN1_RX

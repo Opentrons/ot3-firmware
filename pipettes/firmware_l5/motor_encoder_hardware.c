@@ -1,6 +1,6 @@
 #include "motor_encoder_hardware.h"
 #include "common/firmware/errors.h"
-#include "stm32g4xx_hal.h"
+#include "stm32l5xx_hal.h"
 #include "pipettes/core/pipette_type.h"
 
 TIM_HandleTypeDef htim2;

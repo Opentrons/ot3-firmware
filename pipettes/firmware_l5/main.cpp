@@ -1,6 +1,6 @@
 // clang-format off
 #include "FreeRTOS.h"
-#include "system_stm32g4xx.h"
+#include "system_stm32l5xx.h"
 #include "task.h"
 
 // clang-format on
@@ -111,7 +111,7 @@ extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
 // to be checked against current configuration. However, they are
-// - clock input is 170MHz assuming the CAN is clocked from sysclk
+// - clock input is 100MHz assuming the CAN is clocked from sysclk
 // - 100ns time quantum
 // - 500khz bitrate
 // - 80% sample point
@@ -122,7 +122,7 @@ extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
 // For the exact timing values these generate see
 // can/tests/test_bit_timings.cpp
 static constexpr auto can_bit_timings =
-    can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
+    can::bit_timings::BitTimings<100 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
 auto initialize_motor_tasks(
@@ -163,6 +163,7 @@ auto initialize_motor_tasks(
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
+    MX_ICACHE_Init();
     utility_gpio_init();
     adc_init();
     initialize_enc(PIPETTE_TYPE);

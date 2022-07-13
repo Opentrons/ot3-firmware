@@ -1,7 +1,7 @@
 #include "motor_hardware.h"
 #include "pipettes/core/pipette_type.h"
 #include "common/firmware/errors.h"
-#include "stm32g4xx_hal.h"
+#include "stm32l5xx_hal.h"
 #include "hardware_config.h"
 
 

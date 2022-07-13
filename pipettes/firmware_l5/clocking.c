@@ -1,4 +1,4 @@
-#include "stm32g4xx_hal_conf.h"
+#include "stm32l5xx_hal_conf.h"
 
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
@@ -12,4 +12,5 @@ void RCC_Peripheral_Clock_Select() {
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
         Error_Handler();
     }
+
 }

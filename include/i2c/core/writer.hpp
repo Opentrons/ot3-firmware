@@ -73,6 +73,33 @@ class Writer {
         return do_write(device_address, sizeof(data) + 1, max_buffer);
     }
 
+    template <std::ranges::range DataBuffer>
+    auto write_isr(uint16_t device_address, const DataBuffer& buf) -> bool {
+        messages::MaxMessageBuffer max_buffer{};
+        auto write_size = std::min(buf.size(), max_buffer.size());
+        std::copy_n(buf.begin(), write_size, max_buffer.begin());
+        return do_write_isr(device_address, write_size, max_buffer);
+    }
+    template <typename Data>
+    requires std::is_integral_v<Data>
+    auto write_isr(uint16_t device_address, Data data) -> bool {
+        messages::MaxMessageBuffer max_buffer{};
+        static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
+                                                  max_buffer.end()));
+        return do_write_isr(device_address, sizeof(data), max_buffer);
+    }
+    template <typename Data>
+    requires std::is_integral_v<Data>
+    auto write_isr(uint16_t device_address, uint8_t reg, Data data) -> bool {
+        messages::MaxMessageBuffer max_buffer{};
+        auto* iter = max_buffer.begin();
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        *iter++ = reg;
+        static_cast<void>(
+            bit_utils::int_to_bytes(data, iter, max_buffer.end()));
+        return do_write_isr(device_address, sizeof(data) + 1, max_buffer);
+    }
+
     /**
      * A single read to the i2c bus.
      *
@@ -222,6 +249,47 @@ class Writer {
             .response_writer = messages::ResponseWriter(response_queue)});
     }
 
+    template <typename Data, messages::I2CResponseQueue ResponseQueue>
+    requires std::is_integral_v<Data>
+    auto transact_isr(uint16_t device_address, Data data,
+                      std::size_t read_count, ResponseQueue& response_queue,
+                      uint8_t transaction_id = 0) -> bool {
+        messages::MaxMessageBuffer max_buffer{};
+        static_cast<void>(bit_utils::int_to_bytes(data, max_buffer.begin(),
+                                                  max_buffer.end()));
+        return transact_isr(
+            device_address, sizeof(data), max_buffer, read_count,
+            messages::TransactionIdentifier{.token = transaction_id,
+                                            .is_completed_poll = false},
+            response_queue);
+    }
+
+    template <typename ResponseQueue>
+    auto transact_isr(uint16_t device_address, std::size_t write_bytes,
+                      const messages::MaxMessageBuffer& buf,
+                      std::size_t read_bytes,
+                      messages::TransactionIdentifier id,
+                      ResponseQueue& response_queue) -> bool {
+        return transact_isr(
+            messages::Transaction{
+                .address = device_address,
+                .bytes_to_read =
+                    std::min(read_bytes, messages::MAX_BUFFER_SIZE),
+                .bytes_to_write = std::min(write_bytes, buf.size()),
+                .write_buffer = buf},
+            id, response_queue);
+    }
+
+    template <typename ResponseQueue>
+    auto transact_isr(const messages::Transaction& txn,
+                      const messages::TransactionIdentifier& id,
+                      ResponseQueue& response_queue) -> bool {
+        return queue->try_write_isr(messages::Transact{
+            .transaction = txn,
+            .id = id,
+            .response_writer = messages::ResponseWriter(response_queue)});
+    }
+
     void set_queue(QueueType* q) { queue = q; }
 
   private:
@@ -236,6 +304,17 @@ class Writer {
             .response_writer = messages::ResponseWriter()});
     }
     QueueType* queue{nullptr};
+
+    auto do_write_isr(uint16_t address, std::size_t write_bytes,
+                      const messages::MaxMessageBuffer& buf) -> bool {
+        return queue->try_write_isr(messages::Transact{
+            .transaction = {.address = address,
+                            .bytes_to_read = 0,
+                            .bytes_to_write = std::min(write_bytes, buf.size()),
+                            .write_buffer = buf},
+            .id = {.token = 0, .is_completed_poll = false},
+            .response_writer = messages::ResponseWriter()});
+    }
 };
 
 }  // namespace writer

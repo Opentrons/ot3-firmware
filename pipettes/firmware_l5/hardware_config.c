@@ -1,6 +1,6 @@
 #include "hardware_config.h"
 #include "platform_specific_hal_conf.h"
-#include "stm32g4xx_hal_gpio.h"
+#include "stm32l5xx_hal_gpio.h"
 
 static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
     PipetteHardwarePin pinout;
@@ -36,14 +36,15 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
 IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
     switch (pipette_type) {
         case NINETY_SIX_CHANNEL:
+            return EXTI15_IRQn;
         case THREE_EIGHTY_FOUR_CHANNEL:
-            // External interrupt lines 15:10
-            return EXTI15_10_IRQn;
+            return EXTI15_IRQn;
         case SINGLE_CHANNEL:
+            return EXTI9_IRQn;
         case EIGHT_CHANNEL:
+            return EXTI9_IRQn;
         default:
-            // External interrupt lines 15:10
-            return EXTI9_5_IRQn;
+            return EXTI9_IRQn;
     }
 }
 
