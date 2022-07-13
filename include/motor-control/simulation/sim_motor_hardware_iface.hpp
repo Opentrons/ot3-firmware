@@ -28,15 +28,10 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
-    void clear_encoder_SR() final { sr_flag = false; }
-    bool get_encoder_SR_flag() final { return !sr_flag; }
-    bool get_encoder_direction() final { return enc_direction; }
 
   private:
     bool limit_switch_status = false;
     int32_t test_pulses = 0;
-    bool sr_flag = false;
-    bool enc_direction = false;
 };
 
 class SimBrushedMotorHardwareIface
