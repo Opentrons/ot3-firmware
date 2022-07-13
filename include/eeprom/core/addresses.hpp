@@ -10,5 +10,6 @@ constexpr types::address serial_number_address_begin = 0;
 constexpr types::address serial_number_address_end =
     serial_number_address_begin + serial_number_length;
 
+
 }  // namespace addresses
 }  // namespace eeprom

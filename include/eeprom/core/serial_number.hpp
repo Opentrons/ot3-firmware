@@ -43,29 +43,51 @@ class SerialNumberAccessor {
      * Begin a read of the serial number.
      */
     auto start_read() -> void {
-        auto amount_to_read = std::min(
-            static_cast<types::data_length>(addresses::serial_number_length),
-            types::max_data_length);
-        eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
-            .memory_address = addresses::serial_number_address_begin,
-            .length = amount_to_read,
-            .callback = callback,
-            .callback_param = this});
+        // reset bytes_recieved to 0 so the response handler knows how much data
+        // to wait for
+        bytes_recieved = 0;
+        // clear the read buffer
+        serial_number.fill(0x00);
+
+        types::data_length amount_to_read;
+        auto read_addr = addresses::serial_number_address_begin;
+        auto bytes_remain = addresses::serial_number_length;
+
+        while (bytes_remain > 0) {
+            amount_to_read = std::min(bytes_remain, types::max_data_length);
+            eeprom_client.send_eeprom_queue(
+                eeprom::message::ReadEepromMessage{.memory_address = read_addr,
+                                                   .length = amount_to_read,
+                                                   .callback = callback,
+                                                   .callback_param = this});
+            bytes_remain -= amount_to_read;
+            read_addr += amount_to_read;
+        }
     }
 
     /**
      * Write serial number to eeprom
      */
     auto write(const SerialNumberType& sn) -> void {
-        auto amount_to_write = std::min(
-            static_cast<types::data_length>(sn.size()), types::max_data_length);
+        types::data_length amount_to_write;
         auto write = types::EepromData{};
-        std::copy_n(sn.cbegin(), amount_to_write, write.begin());
+        auto sn_iter = sn.begin();
+        auto write_addr = addresses::serial_number_address_begin;
 
-        eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
-            .memory_address = addresses::serial_number_address_begin,
-            .length = amount_to_write,
-            .data = write});
+        while (sn_iter < sn.cend() && write_addr < sn.size()) {
+            amount_to_write =
+                std::min(static_cast<types::data_length>(sn.end() - sn_iter),
+                         types::max_data_length);
+
+            std::copy_n(sn_iter, amount_to_write, write.begin());
+            eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
+                .memory_address = write_addr,
+                .length = amount_to_write,
+                .data = write});
+
+            write_addr += amount_to_write;
+            sn_iter += amount_to_write;
+        }
     }
 
   private:
@@ -74,11 +96,17 @@ class SerialNumberAccessor {
      * @param msg The message
      */
     void callback(const eeprom::message::EepromMessage& msg) {
-        SerialNumberType serial_number{};
-        std::copy_n(msg.data.cbegin(),
-                    std::min(msg.data.size(), serial_number.size()),
-                    serial_number.begin());
-        read_listener.on_read(serial_number);
+        // the following line will evaluate to serial_number.begin() +
+        // msg.memory_address with the current eeprom organization since the
+        // address starts at 0 but doing this incase we move it later
+        auto buffer_ptr =
+            (serial_number.begin() +
+             (msg.memory_address - addresses::serial_number_address_begin));
+        std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
+        bytes_recieved += msg.length;
+        if (bytes_recieved == addresses::serial_number_length) {
+            read_listener.on_read(serial_number);
+        }
     }
 
     /**
@@ -93,7 +121,8 @@ class SerialNumberAccessor {
             reinterpret_cast<SerialNumberAccessor<EEPromTaskClient>*>(param);
         self->callback(msg);
     }
-
+    SerialNumberType serial_number{};
+    size_t bytes_recieved = 0;
     EEPromTaskClient& eeprom_client;
     ReadListener& read_listener;
 };
