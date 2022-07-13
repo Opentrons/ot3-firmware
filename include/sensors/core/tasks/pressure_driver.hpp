@@ -41,6 +41,7 @@ class MMR920C04 {
           sensor_id(id) {
         hardware.add_data_ready_callback(
             [this]() -> void { this->sensor_callback(); });
+        LOG("IN PRESSURE DRIVER");
     }
 
     /**
@@ -65,6 +66,7 @@ class MMR920C04 {
     }
 
     auto write(mmr920C04::Registers reg, uint32_t command_data) -> void {
+        LOG("write called");
         writer.write(mmr920C04::ADDRESS, static_cast<uint8_t>(reg),
                      command_data);
     }
@@ -97,6 +99,7 @@ class MMR920C04 {
     }
 
     auto set_measure_mode(mmr920C04::Registers reg) -> bool {
+        LOG("set measure mode called");
         switch (reg) {
             case mmr920C04::Registers::MEASURE_MODE_1:
                 if (set_register(_registers.measure_mode_1)) {
@@ -129,6 +132,7 @@ class MMR920C04 {
     }
 
     auto get_pressure() -> bool {
+        LOG("get pressure called");
         return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
@@ -227,6 +231,7 @@ class MMR920C04 {
     }
 
     auto sensor_callback() -> void {
+        LOG("sensor_callback called");
         uint32_t data = 0x0;
         writer.transact_isr(
             mmr920C04::ADDRESS,
@@ -287,6 +292,7 @@ class MMR920C04 {
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
     auto set_register(Reg) -> bool {
+        LOG("set register called");
         write(Reg::address, 0x0);
         return true;
     }

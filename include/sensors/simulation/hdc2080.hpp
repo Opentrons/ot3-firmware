@@ -20,5 +20,8 @@ class HDC2080 : public I2CRegisterMap<uint8_t, uint16_t> {
                           {hdc2080::MSB_TEMPERATURE_REGISTER, 50000},
                           {hdc2080::MSB_HUMIDITY_REGISTER, 40000},
                           {hdc2080::DEVICE_ID_REGISTER, 0}}) {}
+    virtual auto handle_write(const uint8_t *data, uint16_t size) -> bool {
+        return static_cast<I2CRegisterMap<uint8_t, uint16_t>*> (this)->handle_write(data, size);
+    }
 };
 };  // namespace hdc2080_simulator

@@ -11,7 +11,7 @@
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-#include "sensors/tests/mock_hardware.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 
 template <typename Message, typename Queue>
 requires std::constructible_from<i2c::poller::TaskMessage, Message>

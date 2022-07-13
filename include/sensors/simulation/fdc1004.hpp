@@ -16,6 +16,9 @@ class FDC1004 : public I2CRegisterMap<uint8_t, uint16_t> {
                           {fdc1004::MSB_MEASUREMENT_1, 2000},
                           {fdc1004::LSB_MEASUREMENT_1, 200},
                           {fdc1004::DEVICE_ID_REGISTER, fdc1004::DEVICE_ID}}) {}
+    virtual auto handle_write(const uint8_t *data, uint16_t size) -> bool {
+        return static_cast<I2CRegisterMap<uint8_t, uint16_t>*> (this)->handle_write(data, size);
+    }
 };
 
 };  // namespace fdc1004_simulator

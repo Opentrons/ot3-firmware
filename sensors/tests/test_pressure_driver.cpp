@@ -11,8 +11,7 @@
 #include "sensors/core/tasks/pressure_driver.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-#include "sensors/simulation/hardware.hpp"
-#include "sensors/tests/mock_hardware.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 /*
  * NOTE: pressure_sensor_task.hpp is included here just because
  * the linter throws an unused-function error and NOLINT doesn't
@@ -52,7 +51,7 @@ SCENARIO("Read a single pressure sensor value") {
     i2c::poller::TaskMessage empty_poll_msg{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
-    sensors::hardware::SimulatedSensorHardware hardware{};
+    test_mocks::SimulatedSensorHardware hardware{};
     auto queue_client =
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     queue_client.set_queue(&can_queue);
