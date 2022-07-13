@@ -40,4 +40,4 @@ void MotorHardware::set_LED(bool status) {
 
 auto MotorHardware::get_encoder_pulses() -> int32_t { return 0; }
 
-void MotorHardware::reset_encoder_pulses() { return; }
+void MotorHardware::reset_encoder_pulses() {}
