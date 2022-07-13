@@ -54,7 +54,7 @@ jobs:
   cross-compile-check:
     name: "Cross-Compile/Check"
     runs-on: "ubuntu-20.04"
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: "actions/checkout@v2"
         with:
@@ -77,10 +77,6 @@ jobs:
         run: cmake --build --preset=pipettes --target pipettes-single-proto-lint
       - name: "Proto Lint Multi Channel"
         run: cmake --build --preset=pipettes --target pipettes-multi-proto-lint
-      - name: "Rev1 Lint Single Channel"
-        run: cmake --build --preset=pipettes-rev1 --target pipettes-single-rev1-lint
-      - name: "Rev1 Lint Multi Channel"
-        run: cmake --build --preset=pipettes-rev1 --target pipettes-multi-rev1-lint
       - name: "Upload artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
