@@ -72,6 +72,10 @@ class I2CRegisterMap : public I2CDeviceBase {
         return true;
     }
 
+    auto get_current_register() -> RegAddressType {
+        return current_register;
+    }
+
   private:
     BackingMap register_map;
     test_mocks::MockSensorHardware mock_sensor_hardware{};
