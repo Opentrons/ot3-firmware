@@ -68,6 +68,26 @@ constexpr types::address serial_number_address_begin = 0;
 constexpr types::address serial_number_address_end =
     serial_number_address_begin + serial_number_length;
 
+constexpr types::data_length revision_length = 4;
+constexpr types::address revision_address_begin = serial_number_address_end;
+constexpr types::address revision_address_end =
+    revision_address_begin + revision_length;
+
+constexpr types::data_length usage_length = 4;
+constexpr types::address usage_address_begin = revision_address_end;
+constexpr types::address usage_address_end = usage_address_begin + usage_length;
+
+constexpr types::data_length data_revison_length = 2;
+constexpr types::address data_revison_address_begin = usage_address_end;
+constexpr types::address data_revison_address_end =
+    data_revison_address_begin + data_revison_length;
+
+constexpr types::data_length lookup_table_tail_length = 2;
+constexpr types::address lookup_table_tail_begin = data_revison_address_end;
+constexpr types::address lookup_table_tail_end =
+    lookup_table_tail_begin + lookup_table_tail_length;
+
+constexpr types::address data_address_begin = lookup_table_tail_end;
 
 }  // namespace addresses
 }  // namespace eeprom
