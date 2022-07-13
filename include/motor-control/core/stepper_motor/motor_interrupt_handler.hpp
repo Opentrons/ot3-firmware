@@ -232,7 +232,7 @@ class MotorInterruptHandler {
          * Check whether the position has overflowed. Return true if this has
          * happened, and false otherwise.
          *
-         * (TODO lc): If an overflEncoderHandlerow has happened, we should
+         * (TODO lc): If an overflow has happened, we should
          * probably notify the server somehow that the position needed to be
          * capped. Note: could not get the built-ins to work as expected.
          */
