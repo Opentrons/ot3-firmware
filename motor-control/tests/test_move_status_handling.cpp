@@ -28,7 +28,8 @@ SCENARIO("testing move status position translation") {
     GIVEN("a status handler with known LMS config") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
             .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
-            .steps_per_rev = 200, .microstep = 32, .encoder_ppr = 1000,
+            .steps_per_rev = 200, .microstep = 32,
+            .encoder_pulses_per_rev = 1000,
         };
         auto mcc = MockCanClient();
         auto handler = MoveStatusMessageHandler(mcc, linearConfig);
