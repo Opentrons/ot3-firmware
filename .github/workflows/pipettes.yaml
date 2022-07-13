@@ -63,16 +63,20 @@ jobs:
         with:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
-      - name: "Configure"
+      - name: "Configure proto"
         run: cmake --preset=cross-pipettes . -DCMAKE_BUILD_TYPE=debug
+      - name: "Configure rev1"
+        run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=debug
       - name: "Format"
         run: cmake --build --preset=pipettes --target pipettes-format-ci
-      - name: "Build"
+      - name: "Build proto"
         run: cmake --build --preset=pipettes --target pipettes pipettes-images-hex
-      - name: "Lint Single Channel"
-        run: cmake --build --preset=pipettes --target pipettes-single-lint
-      - name: "Lint Multi Channel"
-        run: cmake --build --preset=pipettes --target pipettes-multi-lint
+      - name: "Build rev1"
+        run: cmake --build --preset=pipettes-rev1 --target pipettes-rev1 pipettes-rev1-images-hex
+      - name: "Proto Lint Single Channel"
+        run: cmake --build --preset=pipettes --target pipettes-single-proto-lint
+      - name: "Proto Lint Multi Channel"
+        run: cmake --build --preset=pipettes --target pipettes-multi-proto-lint
       - name: "Upload artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3

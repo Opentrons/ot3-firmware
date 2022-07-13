@@ -146,9 +146,8 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                 .led = {},
                 .tip_sense =
                     {// Located on the front sensor board
-                     // TODO put correct GPIO pin here in follow-up
                      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
+                     .port = GPIOH,
                      .pin = GPIO_PIN_1,
                      .active_setting = GPIO_PIN_SET},
             };

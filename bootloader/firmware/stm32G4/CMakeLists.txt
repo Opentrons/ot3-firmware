@@ -130,6 +130,15 @@ target_compile_definitions(bootloader-gripper PUBLIC node_id_gripper)
 
 target_stm32G4(bootloader-gripper)
 
+add_executable(bootloader-pipettes-rev1
+        ${BOOTLOADER_FW_LINTABLE_SRCS}
+        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+
+target_compile_definitions(bootloader-pipettes-rev1 PUBLIC node_id_pipette_dynamic)
+
+target_stm32G4(bootloader-pipettes-rev1)
+
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)
 
