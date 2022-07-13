@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "common/firmware/gpio.hpp"
 
 namespace sensors {
