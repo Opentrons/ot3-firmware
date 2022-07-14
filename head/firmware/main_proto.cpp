@@ -200,15 +200,16 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
  */
 
 static motor_hardware::MotorHardware motor_hardware_right(
-    pin_configurations_right, &htim7, &htim3);
+    pin_configurations_right, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right);
 
 static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
-        .steps_per_rev = 200,
-        .microstep = 16},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
+        .steps_per_rev = 200.0,
+        .microstep = 16.0,
+        .encoder_pulses_per_rev = 1000.0},
     motor_hardware_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
@@ -217,15 +218,16 @@ static motor_class::Motor motor_right{
     motor_queue_right};
 
 static motor_hardware::MotorHardware motor_hardware_left(
-    pin_configurations_left, &htim7, &htim2);
+    pin_configurations_left, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left);
 
 static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
-        .steps_per_rev = 200,
-        .microstep = 16},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
+        .steps_per_rev = 200.0,
+        .microstep = 16.0,
+        .encoder_pulses_per_rev = 1000.0},
     motor_hardware_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
@@ -236,6 +238,14 @@ static motor_class::Motor motor_left{
 extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
     motor_interrupt_right.run_interrupt();
+}
+
+extern "C" void left_enc_overflow_callback_glue(int32_t direction) {
+    motor_hardware_left.encoder_overflow(direction);
+}
+
+extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
+    motor_hardware_right.encoder_overflow(direction);
 }
 
 static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
@@ -276,8 +286,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
 
     app_update_clear_flags();
-
-    initialize_timer(motor_callback_glue);
+    initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
+                     right_enc_overflow_callback_glue);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();

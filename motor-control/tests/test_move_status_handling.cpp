@@ -29,13 +29,15 @@ SCENARIO("testing move status position translation") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
             .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
             .steps_per_rev = 200, .microstep = 32,
+            .encoder_pulses_per_rev = 1000,
         };
         auto mcc = MockCanClient();
         auto handler = MoveStatusMessageHandler(mcc, linearConfig);
-        WHEN("passing a position of 0 steps") {
+        WHEN("passing a position of 0 steps with 0 encoder pulses") {
             handler.handle_message(Ack{.group_id = 11,
                                        .seq_id = 8,
                                        .current_position_steps = 0,
+                                       .encoder_position = 0,
                                        .ack_id = AckMessageId::timeout});
             CHECK(mcc.queue.size() == 1);
 
@@ -48,6 +50,31 @@ SCENARIO("testing move status position translation") {
             }
             THEN("the position value should still be 0") {
                 REQUIRE(resp_msg.current_position_um == 0);
+            }
+            THEN("the encoder value should still be 0") {
+                REQUIRE(resp_msg.encoder_position == 0);
+            }
+        }
+        WHEN("passing a position of 0 steps with -100 encoder pulses") {
+            handler.handle_message(Ack{.group_id = 11,
+                                       .seq_id = 8,
+                                       .current_position_steps = 0,
+                                       .encoder_position = -1000,
+                                       .ack_id = AckMessageId::timeout});
+            CHECK(mcc.queue.size() == 1);
+
+            auto resp = mcc.queue.front();
+            auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
+            THEN("the non-position values should be passed through") {
+                REQUIRE(resp_msg.group_id == 11);
+                REQUIRE(resp_msg.seq_id == 8);
+                REQUIRE(resp_msg.ack_id == 3);
+            }
+            THEN("the position value should still be 0") {
+                REQUIRE(resp_msg.current_position_um == 0);
+            }
+            THEN("the encoder value should still be 0") {
+                REQUIRE(resp_msg.encoder_position == -500);
             }
         }
         WHEN("passing a position of fullscale steps") {

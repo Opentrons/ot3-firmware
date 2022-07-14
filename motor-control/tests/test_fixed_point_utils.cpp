@@ -10,7 +10,7 @@ auto convert_to_integer_64(float f, int conversion) {
 }
 
 SCENARIO("Fixed point multiplication") {
-    GIVEN("Two integers") {
+    GIVEN("Two fixed-points") {
         WHEN("both are positive") {
             int32_t a = convert_to_integer(0.3, 31);
             int32_t b = convert_to_integer(0.5, 31);
@@ -48,6 +48,37 @@ SCENARIO("Fixed point multiplication") {
             auto result = fixed_point_multiply(a, b);
             THEN("the result should be 0.4") {
                 int32_t expected = convert_to_integer(0.5, 31);
+                REQUIRE(result == expected);
+            }
+        }
+    }
+    GIVEN("One fixed and one int") {
+        WHEN("both are positive") {
+            int64_t a = convert_to_integer_64(0.5, 31);
+            int32_t b = 10;
+            auto result = fixed_point_multiply(a, b, radix_offset_0{});
+            THEN("the result should be 5") {
+                int32_t expected = 5;
+                REQUIRE(result == expected);
+            }
+        }
+        WHEN("one is positive and one is negative") {
+            int64_t a = convert_to_integer_64(-0.5, 31);
+            int32_t b = 10;
+
+            auto result = fixed_point_multiply(a, b, radix_offset_0{});
+            THEN("the result should be -5") {
+                int32_t expected = -5;
+                REQUIRE(result == expected);
+            }
+        }
+        WHEN("both are negative") {
+            int64_t a = convert_to_integer_64(-0.5, 31);
+            int32_t b = -10;
+
+            auto result = fixed_point_multiply(a, b);
+            THEN("the result should be 5") {
+                int32_t expected = 5;
                 REQUIRE(result == expected);
             }
         }

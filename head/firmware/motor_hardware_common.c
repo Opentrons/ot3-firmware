@@ -1,14 +1,35 @@
 #include "motor_hardware.h"
-#include "stm32g4xx_hal.h"
+
 #include "common/firmware/errors.h"
+#include "stm32g4xx_hal.h"
 
 TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim2 = {
+    .Instance = TIM2,
+    .Init = {
+        .Prescaler = 0,
+        .CounterMode = TIM_COUNTERMODE_UP,
+        .Period = UINT16_MAX,
+        .ClockDivision = TIM_CLOCKDIVISION_DIV1,
+        .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE
+    }
+};
+TIM_HandleTypeDef htim3 = {
+    .Instance = TIM3,
+    .Init = {
+        .Prescaler = 0,
+        .CounterMode = TIM_COUNTERMODE_UP,
+        .Period = UINT16_MAX,
+        .ClockDivision = TIM_CLOCKDIVISION_DIV1,
+        .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE
+    }
+};
 
 motor_interrupt_callback motor_callback = NULL;
+encoder_overflow_callback left_enc_overflow_callback = NULL;
+encoder_overflow_callback right_enc_overflow_callback = NULL;
 
-void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
+void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
         /* Peripheral clock enable */
@@ -90,7 +111,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
  * @param hspi: SPI2 handle pointer
  * @retval None
  */
-void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi) {
     if (hspi->Instance == SPI2) {
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
@@ -162,7 +183,7 @@ SPI_HandleTypeDef hspi3 = {
 
 };
 
-HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi) {
+HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef *hspi) {
     if (hspi->Instance == SPI2) {
         __HAL_RCC_SPI2_CLK_ENABLE();
     } else if (hspi->Instance == SPI3) {
@@ -173,8 +194,7 @@ HAL_StatusTypeDef initialize_spi(SPI_HandleTypeDef* hspi) {
     return HAL_SPI_Init(hspi);
 }
 
-
-void Encoder_GPIO_Init(void){
+void Encoder_GPIO_Init(void) {
     /* Peripheral clock enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
@@ -186,17 +206,17 @@ void Encoder_GPIO_Init(void){
     PA5    ------> CHANNEL I
     */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -206,7 +226,7 @@ void Encoder_GPIO_Init(void){
     PD2    ------> CHANNEL I
     */
     // ENC CHANNELA Z AXIS PIN Configure
-    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -237,99 +257,41 @@ void MX_GPIO_Init(void) {
     initialize_rev_specific_pins();
 }
 
-
-void TIM2_EncoderZL_Init(void){
-    TIM_Encoder_InitTypeDef sConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
-    __HAL_RCC_TIM2_CLK_ENABLE();
-    htim2.Instance = TIM2;
-    htim2.Init.Prescaler = 0;
-    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = UINT32_MAX;
-    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
-    sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-    sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-    sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC1Filter = 0;
-    sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-    sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-    sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC2Filter = 0;
-    if (HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK)
-    {
-    Error_Handler();
+void encoder_init(TIM_HandleTypeDef* htim) {
+    TIM_Encoder_InitTypeDef sConfig = {
+        .EncoderMode = TIM_ENCODERMODE_TI12,
+        .IC1Polarity = TIM_ICPOLARITY_RISING,
+        .IC1Selection = TIM_ICSELECTION_DIRECTTI,
+        .IC1Prescaler = TIM_ICPSC_DIV1,
+        .IC1Filter = 0,
+        .IC2Polarity = TIM_ICPOLARITY_RISING,
+        .IC2Selection = TIM_ICSELECTION_DIRECTTI,
+        .IC2Prescaler = TIM_ICPSC_DIV1,
+        .IC2Filter = 0,
+    };
+    if (HAL_TIM_Encoder_Init(htim, &sConfig) != HAL_OK) {
+        Error_Handler();
     }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-    {
-    Error_Handler();
-    }
-    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_INVERTED;
-    sEncoderIndexConfig.Prescaler = TIM_ENCODERINDEX_PRESCALER_DIV1;
-    sEncoderIndexConfig.Filter = 0;
-    sEncoderIndexConfig.FirstIndexEnable = ENABLE;
-    sEncoderIndexConfig.Position = TIM_ENCODERINDEX_POSITION_00;
-    sEncoderIndexConfig.Direction = TIM_ENCODERINDEX_DIRECTION_UP_DOWN;
-    if (HAL_TIMEx_ConfigEncoderIndex(&htim2, &sEncoderIndexConfig) != HAL_OK)
-    {
-    Error_Handler();
+    TIM_MasterConfigTypeDef sMasterConfig = {
+        .MasterOutputTrigger = TIM_TRGO_RESET,
+        .MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE
+    };
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) !=
+        HAL_OK) {
+        Error_Handler();
     }
     /* Reset counter */
-    __HAL_TIM_SET_COUNTER(&htim2, 0);
+    __HAL_TIM_SET_COUNTER(htim, 0);
+    /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(htim, TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(htim);
     /* Enable encoder interface */
-    HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start_IT(htim, TIM_CHANNEL_ALL);
 }
 
-
-void TIM3_EncoderZR_Init(void){
-    TIM_Encoder_InitTypeDef sConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIMEx_EncoderIndexConfigTypeDef sEncoderIndexConfig = {0};
-    __HAL_RCC_TIM3_CLK_ENABLE();
-    htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 0;
-    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = UINT16_MAX;
-    htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
-    sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-    sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-    sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC1Filter = 0;
-    sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-    sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-    sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC2Filter = 0;
-    if (HAL_TIM_Encoder_Init(&htim3, &sConfig) != HAL_OK)
-    {
-    Error_Handler();
-    }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-    {
-    Error_Handler();
-    }
-    sEncoderIndexConfig.Polarity = TIM_ENCODERINDEX_POLARITY_INVERTED;
-    sEncoderIndexConfig.Prescaler = TIM_ENCODERINDEX_PRESCALER_DIV1;
-    sEncoderIndexConfig.Filter = 0;
-    sEncoderIndexConfig.FirstIndexEnable = ENABLE;
-    sEncoderIndexConfig.Position = TIM_ENCODERINDEX_POSITION_00;
-    sEncoderIndexConfig.Direction = TIM_ENCODERINDEX_DIRECTION_UP_DOWN;
-    if (HAL_TIMEx_ConfigEncoderIndex(&htim3, &sEncoderIndexConfig) != HAL_OK)
-    {
-    Error_Handler();
-    }
-    /* Reset counter */
-    __HAL_TIM_SET_COUNTER(&htim3, 0);
-    /* Enable encoder interface */
-    HAL_TIM_Encoder_Start_IT(&htim3, TIM_CHANNEL_ALL);
-}
 
 void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -354,6 +316,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
     if ((htim == &htim7) && motor_callback) {
         motor_callback();
+    } else if (htim == &htim2 && right_enc_overflow_callback) {
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        right_enc_overflow_callback(direction ? -1 : 1);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+    } else if (htim == &htim3 && left_enc_overflow_callback) {
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        left_enc_overflow_callback(direction ? -1 : 1);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }
 
@@ -361,18 +331,38 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim7) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM7_CLK_ENABLE();
-
         /* TIM7 interrupt Init */
         HAL_NVIC_SetPriority(TIM7_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM7_IRQn);
     }
 }
 
-void initialize_timer(motor_interrupt_callback callback) {
+void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
+    if (htim == &htim2) {
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM2_CLK_ENABLE();
+        /* TIM2 interrupt Init */
+        HAL_NVIC_SetPriority(TIM2_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(TIM2_IRQn);
+    } else if (htim == &htim3) {
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM3_CLK_ENABLE();
+        /* TIM3 interrupt Init */
+        HAL_NVIC_SetPriority(TIM3_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(TIM3_IRQn);
+    }
+}
+
+
+void initialize_timer(motor_interrupt_callback callback,
+                      encoder_overflow_callback l_f_callback,
+                      encoder_overflow_callback r_f_callback) {
     motor_callback = callback;
+    left_enc_overflow_callback = l_f_callback;
+    right_enc_overflow_callback = r_f_callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
-    TIM2_EncoderZL_Init();
-    TIM3_EncoderZR_Init();
+    encoder_init(&htim2);
+    encoder_init(&htim3);
     MX_TIM7_Init();
 }

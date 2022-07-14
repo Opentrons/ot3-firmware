@@ -38,13 +38,17 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto check_limit_switch() -> bool final;
     void set_LED(bool status) final;
     auto check_sync_in() -> bool final;
-    auto get_encoder_pulses() -> uint32_t final;
+    auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
+
+    // downward interface - call from timer overflow handler
+    void encoder_overflow(int32_t direction);
 
   private:
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
+    int32_t motor_encoder_overflow_count = 0;
 };
 
 };  // namespace motor_hardware

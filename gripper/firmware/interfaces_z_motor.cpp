@@ -108,6 +108,7 @@ static motor_class::Motor z_motor{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
         .microstep = 16,
+        .encoder_pulses_per_rev = 0,
         .gear_ratio = 1.8},
     motor_hardware_iface,
     motor_messages::MotionConstraints{.min_velocity = 1,
@@ -133,9 +134,6 @@ void z_motor_iface::initialize() {
     }
 
     initialize_timer(call_motor_handler);
-
-    // Initialize Encoder
-    initialize_enc();
 }
 
 auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {

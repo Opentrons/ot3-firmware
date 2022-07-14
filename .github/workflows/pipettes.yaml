@@ -54,7 +54,7 @@ jobs:
   cross-compile-check:
     name: "Cross-Compile/Check"
     runs-on: "ubuntu-20.04"
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: "actions/checkout@v2"
         with:
@@ -94,7 +94,7 @@ jobs:
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - run: |
           sudo apt update

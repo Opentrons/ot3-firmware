@@ -1,4 +1,5 @@
 #include "motor_hardware.h"
+#include "motor_encoder_hardware.h"
 #include "system_stm32g4xx.h"
 
 // The frequency of one full PWM cycle
@@ -18,6 +19,7 @@ TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 
 static motor_interrupt_callback timer_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
+static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
 
 uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
     if (val < min) {
@@ -288,8 +290,10 @@ void update_pwm(uint32_t duty_cycle) {
 }
 
 void set_brushed_motor_timer_callback(
-    brushed_motor_interrupt_callback callback) {
+    brushed_motor_interrupt_callback callback,
+    encoder_overflow_callback g_enc_f_callback) {
     brushed_timer_callback = callback;
+    gripper_enc_overflow_callback = g_enc_f_callback;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
@@ -298,5 +302,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
         timer_callback();
     } else if (htim == &htim1 && brushed_timer_callback) {
         brushed_timer_callback();
+    }else if (htim == &htim2 && gripper_enc_overflow_callback) {
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        gripper_enc_overflow_callback(direction ? -1 : 1);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }
