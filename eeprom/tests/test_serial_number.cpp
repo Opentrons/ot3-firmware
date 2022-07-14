@@ -6,7 +6,7 @@
 
 using namespace eeprom;
 
-struct MockListener : serial_number::ReadListener {
+struct SN_MockListener : accessor::ReadListener<serial_number::SerialNumberType> {
     void on_read(const serial_number::SerialNumberType& sn) {
         this->sn = sn;
         call_count++;
@@ -17,17 +17,17 @@ struct MockListener : serial_number::ReadListener {
 
 SCENARIO("Writing serial number") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = MockListener{};
+    auto read_listener = SN_MockListener{};
     auto subject =
         serial_number::SerialNumberAccessor{queue_client, read_listener};
 
     GIVEN("A serial number to write") {
-        auto data = serial_number::SerialNumberType{
+        auto sn = serial_number::SerialNumberType{
             'P', '1', 'K', 'S', 'V', '2', '0', '2', '0',
             '1', '9', '0', '7', '2', '4', '3', '0'};
 
         WHEN("the writing serial number") {
-            subject.write(data);
+            subject.write(sn);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -55,7 +55,7 @@ SCENARIO("Writing serial number") {
                     REQUIRE(write_message.length == expected_bytes);
                     REQUIRE(std::equal(write_message.data.begin(),
                                        &(write_message.data[expected_bytes]),
-                                       &(data[i * types::max_data_length])));
+                                       &(sn[i * types::max_data_length])));
                 }
             }
         }
@@ -64,7 +64,7 @@ SCENARIO("Writing serial number") {
 
 SCENARIO("Reading serial number") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = MockListener{};
+    auto read_listener = SN_MockListener{};
     auto subject =
         serial_number::SerialNumberAccessor{queue_client, read_listener};
 
