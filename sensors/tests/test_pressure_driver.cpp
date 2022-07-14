@@ -51,7 +51,7 @@ SCENARIO("Read a single pressure sensor value") {
     i2c::poller::TaskMessage empty_poll_msg{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
-    test_mocks::SimulatedSensorHardware hardware{};
+    test_mocks::MockSensorHardware hardware{};
     auto queue_client =
         mock_client::QueueClient{.pressure_sensor_queue = &pressure_queue};
     queue_client.set_queue(&can_queue);
