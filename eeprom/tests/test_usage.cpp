@@ -1,8 +1,8 @@
 #include <vector>
 
 #include "catch2/catch.hpp"
-#include "eeprom/core/usage.hpp"
 #include "eeprom/core/accessor.hpp"
+#include "eeprom/core/usage.hpp"
 #include "eeprom/tests/mock_eeprom_task_client.hpp"
 
 using namespace eeprom;
@@ -19,22 +19,19 @@ struct U_MockListener : accessor::ReadListener<usage::UsageType> {
 SCENARIO("Writing usage") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = U_MockListener{};
-    auto subject =
-        usage::UsageAccessor{queue_client, read_listener};
+    auto subject = usage::UsageAccessor{queue_client, read_listener};
 
     GIVEN("A usage to write") {
-        auto data = usage::UsageType{1,2,3,4};
+        auto data = usage::UsageType{1, 2, 3, 4};
 
         WHEN("the writing usage") {
             subject.write(data);
 
             THEN("there is an eeprom write") {
-                REQUIRE(
-                    queue_client.messages.size() ==
-                    (addresses::usage_length / types::max_data_length) +
-                        (addresses::usage_length %
-                             types::max_data_length !=
-                         0));
+                REQUIRE(queue_client.messages.size() ==
+                        (addresses::usage_length / types::max_data_length) +
+                            (addresses::usage_length % types::max_data_length !=
+                             0));
                 message::WriteEepromMessage write_message;
                 types::data_length expected_bytes;
                 for (ulong i = 0; i < queue_client.messages.size(); i++) {
@@ -64,20 +61,17 @@ SCENARIO("Writing usage") {
 SCENARIO("Reading usage") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = U_MockListener{};
-    auto subject =
-        usage::UsageAccessor{queue_client, read_listener};
+    auto subject = usage::UsageAccessor{queue_client, read_listener};
 
     GIVEN("A request to read the usage") {
         WHEN("reading the usage") {
             subject.start_read();
 
             THEN("there is an eeprom read") {
-                REQUIRE(
-                    queue_client.messages.size() ==
-                    (addresses::usage_length / types::max_data_length) +
-                        (addresses::usage_length %
-                             types::max_data_length !=
-                         0));
+                REQUIRE(queue_client.messages.size() ==
+                        (addresses::usage_length / types::max_data_length) +
+                            (addresses::usage_length % types::max_data_length !=
+                             0));
 
                 types::data_length expected_bytes;
                 message::ReadEepromMessage read_message;
@@ -106,7 +100,7 @@ SCENARIO("Reading usage") {
         subject.start_read();
 
         WHEN("the read completes") {
-            auto usage = usage::UsageType{2,4,8,16};
+            auto usage = usage::UsageType{2, 4, 8, 16};
 
             message::ReadEepromMessage read_message;
             types::data_length num_bytes;
@@ -118,11 +112,10 @@ SCENARIO("Reading usage") {
 
             for (auto i = 0; i < expected_num_read_response; i++) {
                 num_bytes =
-                    ((addresses::usage_length -
-                      (i * types::max_data_length)) > types::max_data_length
+                    ((addresses::usage_length - (i * types::max_data_length)) >
+                             types::max_data_length
                          ? types::max_data_length
-                         : addresses::usage_length %
-                               types::max_data_length);
+                         : addresses::usage_length % types::max_data_length);
                 read_message = std::get<message::ReadEepromMessage>(
                     queue_client.messages[i]);
 

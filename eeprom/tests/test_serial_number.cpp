@@ -6,7 +6,8 @@
 
 using namespace eeprom;
 
-struct SN_MockListener : accessor::ReadListener<serial_number::SerialNumberType> {
+struct SN_MockListener
+    : accessor::ReadListener<serial_number::SerialNumberType> {
     void on_read(const serial_number::SerialNumberType& sn) {
         this->sn = sn;
         call_count++;
@@ -22,9 +23,9 @@ SCENARIO("Writing serial number") {
         serial_number::SerialNumberAccessor{queue_client, read_listener};
 
     GIVEN("A serial number to write") {
-        auto sn = serial_number::SerialNumberType{
-            'P', '1', 'K', 'S', 'V', '2', '0', '2', '0',
-            '1', '9', '0', '7', '2', '4', '3', '0'};
+        auto sn = serial_number::SerialNumberType{'P', '1', 'K', 'S', 'V', '2',
+                                                  '0', '2', '0', '1', '9', '0',
+                                                  '7', '2', '4', '3', '0'};
 
         WHEN("the writing serial number") {
             subject.write(sn);
