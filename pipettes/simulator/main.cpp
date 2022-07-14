@@ -20,9 +20,9 @@
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/simulator/interfaces.hpp"
 #include "sensors/simulation/fdc1004.hpp"
-#include "sensors/simulation/mock_hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 #include "spi/simulation/spi.hpp"
 #include "task.h"
 

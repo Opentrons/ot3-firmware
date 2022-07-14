@@ -50,7 +50,7 @@ enum class Registers : uint8_t {
     MACRAM_WRITE = 0xE4
 };
 
-static inline auto is_valid_address(const uint8_t add) -> bool { //NOLINT
+static inline auto is_valid_address(const uint8_t add) -> bool {  // NOLINT
     switch (static_cast<Registers>(add)) {
         case Registers::RESET:
         case Registers::IDLE:

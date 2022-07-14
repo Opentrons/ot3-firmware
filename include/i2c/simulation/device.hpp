@@ -2,9 +2,8 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
-#include "sensors/simulation/mock_hardware.hpp"
 #include "sensors/core/mmr920C04.hpp"
-
+#include "sensors/simulation/mock_hardware.hpp"
 
 namespace i2c {
 namespace hardware {
@@ -72,15 +71,12 @@ class I2CRegisterMap : public I2CDeviceBase {
         return true;
     }
 
-    auto get_current_register() -> RegAddressType {
-        return current_register;
-    }
+    auto get_current_register() -> RegAddressType { return current_register; }
 
   private:
     BackingMap register_map;
     test_mocks::MockSensorHardware mock_sensor_hardware{};
     RegAddressType current_register{0};
-
 };
 
 }  // namespace hardware
