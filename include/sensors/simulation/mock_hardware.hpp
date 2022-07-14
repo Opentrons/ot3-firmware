@@ -20,20 +20,14 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
                 continue;
             }
             callback_function = callback;
-            LOG("callback added");
             return true;
         }
         return false;
     }
 
-    // may need to copy the callback function into here
-    // gotta also call add_data_ready_callback in the constructor
-
     auto data_ready() -> void {
         for (auto &callback_function : data_ready_callbacks) {
-            LOG("inside for loop");
             if (callback_function) {
-                LOG("callback function exists");
                 callback_function();
             }
         }

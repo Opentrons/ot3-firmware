@@ -27,7 +27,6 @@ class MMR920C04 : public I2CRegisterMap<uint8_t, uint32_t> {
             auto result = I2CRegisterMap<uint8_t, uint32_t>::handle_write(data, size);
             uint8_t curr_reg = static_cast<uint8_t>(I2CRegisterMap<uint8_t, uint32_t>::get_current_register());
             if (curr_reg == static_cast<uint8_t>(mmr920C04::Registers::MEASURE_MODE_4)) {
-                LOG(" calling data ready , addr = %X", &mock_sensor_hardware);
                 mock_sensor_hardware.data_ready();
             }
             return result;

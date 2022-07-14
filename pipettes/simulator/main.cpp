@@ -133,8 +133,6 @@ auto initialize_motor_tasks(
 
 int main() {
     signal(SIGINT, signal_handler);
-    LOG("fake_sensor_hw address from main = %X", &fake_sensor_hw);
-
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
