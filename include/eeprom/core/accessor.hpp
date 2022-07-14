@@ -27,12 +27,18 @@ class ReadListener {
     virtual void on_read(const T&) = 0;
 };
 
-template <task::TaskClient EEPromTaskClient, typename T, types::address data_begin, types::address data_end, types::data_length data_length>
+template <task::TaskClient EEPromTaskClient, typename T,
+          types::address data_begin, types::address data_end,
+          types::data_length data_length>
 class EEPromAccessor {
   public:
     explicit EEPromAccessor(EEPromTaskClient& eeprom_client,
-                                  ReadListener<T>& listener)
-        : eeprom_client{eeprom_client}, read_listener{listener}, begin{data_begin}, end{data_end}, length{data_length} {}
+                            ReadListener<T>& listener)
+        : eeprom_client{eeprom_client},
+          read_listener{listener},
+          begin{data_begin},
+          end{data_end},
+          length{data_length} {}
 
     /**
      * Begin a read of the data
@@ -69,13 +75,13 @@ class EEPromAccessor {
         auto type_iter = type_value.begin();
         auto write_addr = begin;
 
-        while (type_iter < type_data.cend() && write_addr < (begin + type_data.size())) {
-            amount_to_write =
-                std::min(static_cast<types::data_length>(type_value.end() - type_iter),
-                         types::max_data_length);
+        while (type_iter < type_data.cend() &&
+               write_addr < (begin + type_data.size())) {
+            amount_to_write = std::min(
+                static_cast<types::data_length>(type_value.end() - type_iter),
+                types::max_data_length);
 
             std::copy_n(type_iter, amount_to_write, write.begin());
-            printf("amnt to write %u, type_iter %p, remain? %lu\n", amount_to_write, type_iter, (type_data.end() - type_iter));
             eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
                 .memory_address = write_addr,
                 .length = amount_to_write,
@@ -92,9 +98,7 @@ class EEPromAccessor {
      * @param msg The message
      */
     void callback(const eeprom::message::EepromMessage& msg) {
-        auto buffer_ptr =
-            (type_data.begin() +
-             (msg.memory_address - begin));
+        auto buffer_ptr = (type_data.begin() + (msg.memory_address - begin));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
         if (bytes_recieved == length) {
@@ -111,7 +115,8 @@ class EEPromAccessor {
                          void* param) {
         auto* self =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<EEPromAccessor<EEPromTaskClient, T, data_begin, data_end, data_length>*>(param);
+            reinterpret_cast<EEPromAccessor<EEPromTaskClient, T, data_begin,
+                                            data_end, data_length>*>(param);
         self->callback(msg);
     }
     T type_data{};
@@ -123,6 +128,5 @@ class EEPromAccessor {
     types::data_length length;
 };
 
-
-} // namespace eeprom
-} // namespace accessor
+}  // namespace accessor
+}  // namespace eeprom

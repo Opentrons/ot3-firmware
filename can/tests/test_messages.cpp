@@ -1,9 +1,9 @@
 #include <cstring>
 
-#include "common/core/bit_utils.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
+#include "common/core/bit_utils.hpp"
 
 using namespace can::messages;
 
@@ -45,17 +45,22 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a write to eeprom message") {
-        auto arr = std::array<uint8_t, sizeof(eeprom::message::EepromMessage)>{};
+        auto arr =
+            std::array<uint8_t, sizeof(eeprom::message::EepromMessage)>{};
         auto iter = arr.begin();
         eeprom::types::address addr = 0x12;
         eeprom::types::data_length len = 7;
         // copy addr to array
-        iter = bit_utils::int_to_bytes(addr, iter, iter+sizeof(eeprom::types::address));
+        iter = bit_utils::int_to_bytes(addr, iter,
+                                       iter + sizeof(eeprom::types::address));
         // copy len to array
-        iter = bit_utils::int_to_bytes(len, iter, iter+sizeof(eeprom::types::data_length));
+        iter = bit_utils::int_to_bytes(
+            len, iter, iter + sizeof(eeprom::types::data_length));
         // fill data with 1->7
-        for (uint8_t i = 1; i <= len; i++) { *(iter++) = i; }
-        
+        for (uint8_t i = 1; i <= len; i++) {
+            *(iter++) = i;
+        }
+
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
@@ -79,17 +84,22 @@ SCENARIO("message deserializing works") {
     }
 
     GIVEN("a write to eeprom message with too large data length") {
-        auto arr = std::array<uint8_t, sizeof(eeprom::message::EepromMessage)>{};
+        auto arr =
+            std::array<uint8_t, sizeof(eeprom::message::EepromMessage)>{};
         auto iter = arr.begin();
         eeprom::types::address addr = 0x05;
         eeprom::types::data_length len = 122;
         // copy the address
-        iter = bit_utils::int_to_bytes(addr, iter, iter+sizeof(eeprom::types::address));
+        iter = bit_utils::int_to_bytes(addr, iter,
+                                       iter + sizeof(eeprom::types::address));
         // copy the data_length
-        iter = bit_utils::int_to_bytes(len, iter, iter+sizeof(eeprom::types::data_length));
+        iter = bit_utils::int_to_bytes(
+            len, iter, iter + sizeof(eeprom::types::data_length));
         // fill the first two bytes of data
-        for (uint8_t i = 0; i < 2; i++) { *(iter++) = i; }
-        
+        for (uint8_t i = 0; i < 2; i++) {
+            *(iter++) = i;
+        }
+
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
@@ -207,14 +217,17 @@ SCENARIO("message serializing works") {
                 eeprom::types::address addr;
                 eeprom::types::data_length len;
                 // fetch address from serialized message
-                iter = bit_utils::bytes_to_int(iter, iter+sizeof(eeprom::types::address), addr);
+                iter = bit_utils::bytes_to_int(
+                    iter, iter + sizeof(eeprom::types::address), addr);
                 // fetch length from serialized message
-                iter = bit_utils::bytes_to_int(iter, iter+sizeof(eeprom::types::data_length), len);
+                iter = bit_utils::bytes_to_int(
+                    iter, iter + sizeof(eeprom::types::data_length), len);
                 // check address was serialized correctly
                 REQUIRE(addr == 13);
                 // check length was serialized correctly
                 REQUIRE(len == sizeof(data));
-                //check that the data has been serialized till the end of the buffer
+                // check that the data has been serialized till the end of the
+                // buffer
                 for (uint i = 0; i < data.size() && iter < arr.end(); i++) {
                     REQUIRE(*(iter++) == data[i]);
                 }
@@ -230,19 +243,23 @@ SCENARIO("message serializing works") {
                 eeprom::types::address addr;
                 eeprom::types::data_length len;
                 // fetch address from serialized message
-                iter = bit_utils::bytes_to_int(iter, iter+sizeof(eeprom::types::address), addr);
+                iter = bit_utils::bytes_to_int(
+                    iter, iter + sizeof(eeprom::types::address), addr);
                 // fetch length from serialized message
-                iter = bit_utils::bytes_to_int(iter, iter+sizeof(eeprom::types::data_length), len);
+                iter = bit_utils::bytes_to_int(
+                    iter, iter + sizeof(eeprom::types::data_length), len);
                 // check address was serialized correctly
                 REQUIRE(addr == 13);
                 // check length was serialized correctly
                 REQUIRE(len == sizeof(data));
-                //check that the data has been serialized
-                for (uint i = 0;  i < data.size() && iter < arr.end(); i++) {
+                // check that the data has been serialized
+                for (uint i = 0; i < data.size() && iter < arr.end(); i++) {
                     REQUIRE(*(iter++) == data[i]);
                 }
-                //check that the remainder of the buffer is 0x00
-                for (uint i = data.size(); i < eeprom::types::max_data_length && iter < arr.end(); i++) {
+                // check that the remainder of the buffer is 0x00
+                for (uint i = data.size();
+                     i < eeprom::types::max_data_length && iter < arr.end();
+                     i++) {
                     REQUIRE(*(iter++) == 0x00);
                 }
             }

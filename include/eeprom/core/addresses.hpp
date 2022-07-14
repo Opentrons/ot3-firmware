@@ -4,7 +4,7 @@
 
 namespace eeprom {
 namespace addresses {
-/*  
+/*
  * header format for the eeprom chip
  * [serial number] [revison]  [usage]  [data_revison] [lookup_table_tail]
  *   [20 bytes]    [4 bytes] [4 bytes]    [2 bytes]      [2 bytes]
