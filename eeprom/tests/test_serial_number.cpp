@@ -2,15 +2,9 @@
 
 #include "catch2/catch.hpp"
 #include "eeprom/core/serial_number.hpp"
+#include "eeprom/tests/mock_eeprom_task_client.hpp"
 
 using namespace eeprom;
-
-struct MockEEPromTaskClient {
-    void send_eeprom_queue(const task::TaskMessage& m) {
-        messages.push_back(m);
-    }
-    std::vector<task::TaskMessage> messages{};
-};
 
 struct MockListener : serial_number::ReadListener {
     void on_read(const serial_number::SerialNumberType& sn) {
