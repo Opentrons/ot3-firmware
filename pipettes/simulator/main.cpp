@@ -20,9 +20,9 @@
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/simulator/interfaces.hpp"
 #include "sensors/simulation/fdc1004.hpp"
-#include "sensors/simulation/hardware.hpp"
 #include "sensors/simulation/hdc2080.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 #include "spi/simulation/spi.hpp"
 #include "task.h"
 
@@ -58,18 +58,18 @@ static auto gear_motion_control =
 static auto hdcsensor = hdc2080_simulator::HDC2080{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
 static auto sim_eeprom = eeprom::simulator::EEProm{};
-static auto pressuresensor = mmr920C04_simulator::MMR920C04{};
+static test_mocks::MockSensorHardware fake_sensor_hw{};
+mmr920C04_simulator::MMR920C04 pressuresensor(fake_sensor_hw);
 i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
     {hdcsensor.get_address(), hdcsensor},
     {capsensor.get_address(), capsensor},
     {pressuresensor.get_address(), pressuresensor}};
+
 i2c::hardware::SimI2C::DeviceMap sensor_map_i2c3 = {
     {sim_eeprom.get_address(), sim_eeprom}};
-
 static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map_i2c3};
-static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};
 
-static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
+static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};
 
 static auto node_from_env(const char* env) -> can::ids::NodeId {
     if (!env) {
@@ -133,7 +133,6 @@ auto initialize_motor_tasks(
 
 int main() {
     signal(SIGINT, signal_handler);
-
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });

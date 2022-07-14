@@ -145,7 +145,7 @@ class MMR920C04 {
     }
 
     auto read_pressure(uint32_t data) -> bool {
-        LOG("Updated pressure reading is %d", data);
+        LOG("Updated pressure reading is %u", data);
         if (data != 0) {
             _registers.pressure.reading = data;
             return true;

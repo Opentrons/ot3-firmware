@@ -11,7 +11,7 @@
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-#include "sensors/tests/mock_hardware.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 
 template <typename Message, typename Queue>
 auto get_message(Queue& q) -> Message {

@@ -1,4 +1,8 @@
 #pragma once
+// TODO (lc 02-16-2022) We should refactor the fixed point
+// helper functions such that they live in a shared location.
+
+#include "motor-control/core/utils.hpp"
 /*
  * MMR920C04 Pressure Sensor
  *
@@ -46,7 +50,7 @@ enum class Registers : uint8_t {
     MACRAM_WRITE = 0xE4
 };
 
-static auto is_valid_address(const uint8_t add) -> bool {
+static inline auto is_valid_address(const uint8_t add) -> bool {  // NOLINT
     switch (static_cast<Registers>(add)) {
         case Registers::RESET:
         case Registers::IDLE:

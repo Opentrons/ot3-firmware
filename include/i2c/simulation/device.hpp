@@ -2,6 +2,8 @@
 
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
+#include "sensors/core/mmr920C04.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 
 namespace i2c {
 namespace hardware {
@@ -42,7 +44,7 @@ class I2CRegisterMap : public I2CDeviceBase {
         : I2CDeviceBase(address), register_map{reg_map} {}
     I2CRegisterMap(uint16_t address) : I2CRegisterMap(address, {}) {}
 
-    auto handle_write(const uint8_t *data, uint16_t size) -> bool {
+    virtual auto handle_write(const uint8_t *data, uint16_t size) -> bool {
         auto *iter = data;
         // Read the register
         iter = bit_utils::bytes_to_int(iter, data + size, current_register);
@@ -54,6 +56,7 @@ class I2CRegisterMap : public I2CDeviceBase {
 
             LOG("Writing %X to register %X.", value, current_register);
             register_map[current_register] = value;
+
         } else {
             LOG("Update current register to %X.", current_register);
         }
@@ -68,8 +71,11 @@ class I2CRegisterMap : public I2CDeviceBase {
         return true;
     }
 
+    auto get_current_register() -> RegAddressType { return current_register; }
+
   private:
     BackingMap register_map;
+    test_mocks::MockSensorHardware mock_sensor_hardware{};
     RegAddressType current_register{0};
 };
 

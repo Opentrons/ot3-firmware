@@ -24,14 +24,20 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
         }
         return false;
     }
-    auto change_data_ready_value(bool value) -> void { data_ready = value; }
+
+    auto data_ready() -> void {
+        for (auto &callback_function : data_ready_callbacks) {
+            if (callback_function) {
+                callback_function();
+            }
+        }
+    }
     auto get_sync_state_mock() const -> bool { return sync_state; }
     auto get_sync_set_calls() const -> uint32_t { return sync_set_calls; }
     auto get_sync_reset_calls() const -> uint32_t { return sync_reset_calls; }
 
   private:
     bool sync_state = false;
-    bool data_ready = false;
     uint32_t sync_set_calls = 0;
     uint32_t sync_reset_calls = 0;
 };

@@ -7,7 +7,7 @@
 #include "gripper/core/tasks.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "sensors/simulation/fdc1004.hpp"
-#include "sensors/simulation/hardware.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 #include "task.h"
 
 void signal_handler(int signum) {
@@ -29,7 +29,7 @@ static auto i2c_device_map =
     i2c::hardware::SimI2C::DeviceMap{{sim_eeprom.get_address(), sim_eeprom}};
 static auto i2c3 = i2c::hardware::SimI2C{i2c_device_map};
 
-static sensors::hardware::SimulatedSensorHardware fake_sensor_hw{};
+static test_mocks::MockSensorHardware fake_sensor_hw{};
 
 int main() {
     signal(SIGINT, signal_handler);
