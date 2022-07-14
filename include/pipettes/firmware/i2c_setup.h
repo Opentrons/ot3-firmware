@@ -6,6 +6,7 @@ extern "C" {
 #endif  // __cplusplus
 
 typedef struct HandlerStruct {
+    HAL_I2C_HANDLE i2c1;
     HAL_I2C_HANDLE i2c2;
     HAL_I2C_HANDLE i2c3;
 } I2CHandlerStruct;
