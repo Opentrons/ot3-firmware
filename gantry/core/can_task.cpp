@@ -51,11 +51,11 @@ static auto motion_group_dispatch_target =
 static auto motion_dispatch_target =
     can_task::MotionControllerDispatchTarget{can_motion_handler};
 
+can::dispatch::StandardArbIdTest core_arb_id{.node_id = my_node_id};
 /** Dispatcher to the various handlers */
-static auto dispatcher = can_task::GantryDispatcherType(
-    [](auto) -> bool { return true; }, motor_dispatch_target,
-    motion_group_dispatch_target, motion_dispatch_target,
-    system_dispatch_target);
+static auto dispatcher = can_task::GantryDispatcherType{
+    core_arb_id, motor_dispatch_target, motion_group_dispatch_target,
+    motion_dispatch_target, system_dispatch_target};
 
 auto static reader_message_buffer =
     can::freertos_dispatch::FreeRTOSCanBufferControl<

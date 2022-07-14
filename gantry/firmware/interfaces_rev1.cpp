@@ -36,13 +36,46 @@ static spi::hardware::Spi spi_comms(SPI_intf);
 /**
  * Motor pin configuration.
  */
-struct motion_controller::HardwareConfig motor_pins {
+struct motion_controller::HardwareConfig motor_pins_x {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_1,
             .active_setting = GPIO_PIN_RESET},
+    .step =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_SET},
+    .enable =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_9,
+            .active_setting = GPIO_PIN_SET},
+    .limit_switch =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_2,
+            .active_setting = GPIO_PIN_SET},
+    .led = {},
+    .sync_in = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOB,
+        .pin = GPIO_PIN_7,
+        .active_setting = GPIO_PIN_RESET}
+};
+
+struct motion_controller::HardwareConfig motor_pins_y {
+    .direction =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_1,
+            .active_setting = GPIO_PIN_SET},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -100,8 +133,9 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
-                                                          nullptr);
+static motor_hardware::MotorHardware motor_hardware_iface(
+    (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
+    nullptr);
 
 /**
  * The can bus.

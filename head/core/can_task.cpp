@@ -129,9 +129,16 @@ static auto dispatcher_left_motor = can::dispatch::Dispatcher(
     motion_dispatch_target_left, move_group_dispatch_target_left);
 
 static auto main_dispatcher = can::dispatch::Dispatcher(
-    [](auto) -> bool { return true; }, dispatcher_right_motor,
-    dispatcher_left_motor, presence_sensing_disptach_target,
-    system_dispatch_target);
+    [](uint32_t arbitration_id) -> bool {
+        auto arb = can::arbitration_id::ArbitrationId(arbitration_id);
+        auto node_id = arb.node_id();
+        return ((node_id == can::ids::NodeId::broadcast) ||
+                (node_id == can::ids::NodeId::head) ||
+                (node_id == can::ids::NodeId::head_l) ||
+                (node_id == can::ids::NodeId::head_r));
+    },
+    dispatcher_right_motor, dispatcher_left_motor,
+    presence_sensing_disptach_target, system_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.

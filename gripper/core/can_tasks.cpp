@@ -96,9 +96,10 @@ static auto dispatcher_g = can::dispatch::Dispatcher(
 
 /** Dispatcher to the various handlers */
 static auto main_dispatcher = can::dispatch::Dispatcher(
-    [](auto) -> bool { return true; }, dispatcher_z, dispatcher_g,
-    system_dispatch_target, gripper_info_dispatch_target,
-    eeprom_dispatch_target, sensor_dispatch_target);
+    can::dispatch::StandardArbIdTest{.node_id = can::ids::NodeId::gripper},
+    dispatcher_z, dispatcher_g, system_dispatch_target,
+    gripper_info_dispatch_target, eeprom_dispatch_target,
+    sensor_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
