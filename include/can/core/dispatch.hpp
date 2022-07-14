@@ -110,6 +110,19 @@ requires(!std::movable<BufferType> &&
 };
 
 /**
+ * A useful default arbitration id matcher that works well enough
+ * if you just want a single node id plus the broadcast
+ * */
+struct StandardArbIdTest {
+    const can::ids::NodeId node_id;
+    auto operator()(uint32_t arbitration_id) const -> bool {
+        auto arb = ArbitrationId(arbitration_id);
+        auto _node_id = arb.node_id();
+        return (_node_id == NodeId::broadcast) || (_node_id == node_id);
+    }
+};
+
+/**
  * A CanMessageBufferListener that will dispatch messages to other
  * CanMessageBufferListeners
  * @tparam Listener CanMessageBufferListener objects
