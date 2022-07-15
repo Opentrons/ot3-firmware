@@ -76,7 +76,7 @@ class EEPromAccessor {
         auto write_addr = begin;
 
         while (type_iter < type_value.cend() &&
-            write_addr < (begin + sizeof(type_value))) {
+               write_addr < (begin + sizeof(type_value))) {
             amount_to_write = std::min(
                 static_cast<types::data_length>(type_value.end() - type_iter),
                 types::max_data_length);
@@ -91,6 +91,7 @@ class EEPromAccessor {
             type_iter += amount_to_write;
         }
     }
+
   protected:
     T type_data{};
     EEPromTaskClient& eeprom_client;
@@ -98,6 +99,7 @@ class EEPromAccessor {
     types::address begin;
     types::address end;
     types::data_length length;
+
   private:
     /**
      * Handle a completed read.
