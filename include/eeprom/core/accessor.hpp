@@ -91,7 +91,13 @@ class EEPromAccessor {
             type_iter += amount_to_write;
         }
     }
-
+  protected:
+    T type_data{};
+    EEPromTaskClient& eeprom_client;
+    ReadListener<T>& read_listener;
+    types::address begin;
+    types::address end;
+    types::data_length length;
   private:
     /**
      * Handle a completed read.
@@ -119,13 +125,7 @@ class EEPromAccessor {
                                             data_end, data_length>*>(param);
         self->callback(msg);
     }
-    T type_data{};
     size_t bytes_recieved = 0;
-    EEPromTaskClient& eeprom_client;
-    ReadListener<T>& read_listener;
-    types::address begin;
-    types::address end;
-    types::data_length length;
 };
 
 }  // namespace accessor
