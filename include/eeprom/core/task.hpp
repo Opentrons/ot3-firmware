@@ -16,17 +16,16 @@ namespace eeprom {
 namespace task {
 
 using TaskMessage =
-    std::variant<eeprom::message::WriteEepromMessage,
-                 eeprom::message::ReadEepromMessage,
+    std::variant<message::WriteEepromMessage, message::ReadEepromMessage,
                  i2c::messages::TransactionResponse, std::monostate>;
 
 template <class I2CQueueWriter, class OwnQueue>
 class EEPromMessageHandler {
   public:
-    explicit EEPromMessageHandler(
-        I2CQueueWriter &i2c_writer, OwnQueue &own_queue,
-        eeprom::hardware_iface::EEPromHardwareIface &wp_pin)
-        : writer{i2c_writer}, own_queue{own_queue}, write_protector{wp_pin} {}
+    explicit EEPromMessageHandler(I2CQueueWriter &i2c_writer,
+                                  OwnQueue &own_queue,
+                                  hardware_iface::EEPromHardwareIface &hw_iface)
+        : writer{i2c_writer}, own_queue{own_queue}, hw_iface{hw_iface} {}
     EEPromMessageHandler(const EEPromMessageHandler &) = delete;
     EEPromMessageHandler(const EEPromMessageHandler &&) = delete;
     auto operator=(const EEPromMessageHandler &)
@@ -53,19 +52,18 @@ class EEPromMessageHandler {
         LOG("Transaction with token %ud has completed.", m.id.token);
         if (m.id.token == WRITE_TOKEN) {
             // A write has completed
-            write_protector.enable();
+            hw_iface.enable();
         } else {
             // A read has completed
             auto id_map_entry = id_map.remove(m.id.token);
             if (id_map_entry) {
                 auto read_message = id_map_entry.value();
-                auto data = eeprom::types::EepromData{};
+                auto data = types::EepromData{};
                 std::copy_n(m.read_buffer.cbegin(),
                             std::min(m.bytes_read, data.size()), data.begin());
-                auto v = eeprom::message::EepromMessage{
+                auto v = message::EepromMessage{
                     .memory_address = read_message.memory_address,
-                    .length =
-                        static_cast<eeprom::types::data_length>(m.bytes_read),
+                    .length = static_cast<types::data_length>(m.bytes_read),
                     .data = data};
                 read_message.callback(v, read_message.callback_param);
             } else {
@@ -78,7 +76,7 @@ class EEPromMessageHandler {
      * Handle a request to write to eeprom.
      * @param m THe message
      */
-    void visit(eeprom::message::WriteEepromMessage &m) {
+    void visit(message::WriteEepromMessage &m) {
         LOG("Received request to write %d bytes to address %x", m.length,
             m.memory_address);
 
@@ -86,16 +84,41 @@ class EEPromMessageHandler {
             return;
         }
 
+        // On the Microchip variant of the eeprom if you attempt to write
+        // that crosses the page boundry (8 Bytes) it will wrap and overwrite
+        // the begining of the current page instead of moving to the next page
+
+        if (hw_iface.get_eeprom_chip_type() ==
+                hardware_iface::EEPromChipType::MICROCHIP_24AA02T &&
+            ((m.memory_address % 8) + m.length) > 8) {
+            LOG("Warning: write request will overrun page");
+        }
+
+        // The ST eeprom has a page write function but that requires driving
+        // the write enable pin differently which would require us to change
+        // how we use enable_eeprom_write disable_eeprom_write calls in each
+        // firmware implementation however this would allow us to write 64
+        // bytes/cycle which may be performance boost.
+
         auto buffer = i2c::messages::MaxMessageBuffer{};
         auto *iter = buffer.begin();
-        // First byte is address
-        iter = std::copy_n(&m.memory_address, 1, iter);
+
+        // Older boards use 1 byte addresses, if we're on an older board we
+        // need to drop the higher byte of the memory address when sending the
+        // the message over i2c
+        if (hw_iface.get_eeprom_addr_bytes() ==
+            static_cast<size_t>(
+                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
+            m.memory_address = m.memory_address << 8;
+        }
+        iter = bit_utils::int_to_bytes(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
         // Remainder is data
         iter = std::copy_n(
             m.data.cbegin(),
             std::min(buffer.size() - 1, static_cast<std::size_t>(m.length)),
             iter);
-
         // A write transaction.
         auto transaction = i2c::messages::Transaction{
             .address = types::DEVICE_ADDRESS,
@@ -105,11 +128,10 @@ class EEPromMessageHandler {
         // Use the WRITE_TOKEN to disambiguate from the reads.
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = WRITE_TOKEN};
-
-        write_protector.disable();
+        hw_iface.disable();
         if (!writer.transact(transaction, transaction_id, own_queue)) {
             // Failed to write transaction. Re-enable write protection.
-            write_protector.enable();
+            hw_iface.enable();
         }
     }
 
@@ -117,7 +139,7 @@ class EEPromMessageHandler {
      * Handle a request to read from the eeprom
      * @param m The message
      */
-    void visit(eeprom::message::ReadEepromMessage &m) {
+    void visit(message::ReadEepromMessage &m) {
         LOG("Received request to read %d bytes from address %d", m.length,
             m.memory_address);
 
@@ -135,18 +157,27 @@ class EEPromMessageHandler {
         // The transaction will write the memory address, then read the
         // data.
         auto write_buffer = i2c::messages::MaxMessageBuffer{};
-        // TODO (amit, 2022-05-31): Current board revisions' eeprom has 8-bit
-        // addressing.
-        //  To use the newer 16-bit addressing, remove this static_cast.
-        auto address = static_cast<uint8_t>(m.memory_address);
-        static_cast<void>(bit_utils::int_to_bytes(address, write_buffer.begin(),
-                                                  write_buffer.end()));
+        auto *iter = write_buffer.begin();
 
-        auto transaction =
-            i2c::messages::Transaction{.address = types::DEVICE_ADDRESS,
-                                       .bytes_to_read = m.length,
-                                       .bytes_to_write = sizeof(address),
-                                       .write_buffer{write_buffer}};
+        // Older boards use 1 byte addresses, if we're on an older board we
+        // need to drop the higher byte of the memory address when sending the
+        // the message over i2c
+        if (hw_iface.get_eeprom_addr_bytes() ==
+            static_cast<size_t>(
+                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
+            m.memory_address = m.memory_address << 8;
+        }
+
+        iter = bit_utils::int_to_bytes(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
+
+        auto transaction = i2c::messages::Transaction{
+            .address = types::DEVICE_ADDRESS,
+            .bytes_to_read = m.length,
+            .bytes_to_write =
+                static_cast<std::size_t>(iter - write_buffer.begin()),
+            .write_buffer{write_buffer}};
         // The transaction identifier uses the token returned from id_map.add
         auto transaction_id =
             i2c::messages::TransactionIdentifier{.token = token.value()};
@@ -159,10 +190,9 @@ class EEPromMessageHandler {
 
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
-    i2c::transaction::IdMap<eeprom::message::ReadEepromMessage,
-                            MAX_INFLIGHT_READS>
+    i2c::transaction::IdMap<message::ReadEepromMessage, MAX_INFLIGHT_READS>
         id_map{};
-    eeprom::hardware_iface::WriteProtector write_protector;
+    hardware_iface::EEPromHardwareIface &hw_iface;
 };
 
 /**
