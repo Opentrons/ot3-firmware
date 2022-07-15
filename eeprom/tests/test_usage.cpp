@@ -134,3 +134,43 @@ SCENARIO("Reading usage") {
         }
     }
 }
+// TODO (rtc 07-15-22) make this size independent for Usage type
+// doubt that we'll ever make it size(UsageType) > types::max_data_length
+// but this will fail if we do
+SCENARIO("Increase the Usage") {
+    auto queue_client = MockEEPromTaskClient{};
+    auto read_listener = U_MockListener{};
+    auto subject = usage::UsageAccessor{queue_client, read_listener};
+
+    auto time_to_add = usage::UsageType{0x1, 0x1, 0x0, 0x0};
+    auto old_time = usage::UsageType{0x0, 0x0, 0x1, 0x1};
+    auto expected_new_usage = usage::UsageType{0x1, 0x1, 0x1, 0x1};
+
+    GIVEN("A request to increase usage") {
+        subject.increase_usage(time_to_add);
+        WHEN("increase request sent") {
+            // simulate the read by populating the read resposne with old_time
+            message::ReadEepromMessage read_message;
+            types::data_length num_bytes = sizeof(usage::UsageType);
+            auto data = types::EepromData{};
+            read_message =
+                std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::copy_n(old_time.begin(), num_bytes, data.begin());
+            read_message.callback(
+                {.memory_address = read_message.memory_address,
+                 .length = num_bytes,
+                 .data = data},
+                read_message.callback_param);
+            THEN("There is a write with correct values") {
+                // should have queued a read and a write
+                REQUIRE(queue_client.messages.size() == 2);
+                auto write_message = std::get<message::WriteEepromMessage>(
+                    queue_client.messages[1]);
+                REQUIRE(std::equal(
+                    write_message.data.begin(),
+                    write_message.data.begin() + sizeof(usage::UsageType),
+                    expected_new_usage.begin()));
+            }
+        }
+    }
+}

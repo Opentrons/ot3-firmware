@@ -39,13 +39,13 @@ class UsageAccessor
         types::data_length amount_to_read;
         auto read_addr = addresses::usage_address_begin;
         auto bytes_remain = addresses::usage_length;
-        auto cb_param = increase_usage_cb_param{this, usage};
+        const auto cb_param = new increase_usage_cb_param{this, usage};
         amount_to_read = std::min(bytes_remain, types::max_data_length);
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{.memory_address = read_addr,
                                                .length = amount_to_read,
                                                .callback = increase_callback,
-                                               .callback_param = &cb_param});
+                                               .callback_param = cb_param});
     }
 
   private:
@@ -57,12 +57,12 @@ class UsageAccessor
                            const UsageType& time_to_add) {
         uint32_t time_to_add_int, current_time;
         auto new_usage = UsageType{};
-        bit_utils::bytes_to_int(time_to_add, time_to_add_int);
-        bit_utils::bytes_to_int(msg.data, current_time);
+        std::ignore = bit_utils::bytes_to_int(time_to_add, time_to_add_int);
+        std::ignore = bit_utils::bytes_to_int(msg.data, current_time);
         current_time += time_to_add_int;
-
-        bit_utils::int_to_bytes(current_time, new_usage.begin(),
-                                new_usage.begin() + sizeof(UsageType));
+        std::ignore =
+            bit_utils::int_to_bytes(current_time, new_usage.begin(),
+                                    new_usage.begin() + sizeof(UsageType));
         this->write(new_usage);
     }
 
