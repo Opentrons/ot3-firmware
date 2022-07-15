@@ -76,7 +76,7 @@ class EEPromAccessor {
         auto write_addr = begin;
 
         while (type_iter < type_value.cend() &&
-            write_addr < (begin + type_data.size())) {
+            write_addr < (begin + sizeof(type_value))) {
             amount_to_write = std::min(
                 static_cast<types::data_length>(type_value.end() - type_iter),
                 types::max_data_length);
