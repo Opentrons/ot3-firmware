@@ -12,6 +12,7 @@ add_executable(
         test_hardware_iface.cpp
         test_serial_number.cpp
         test_usage.cpp
+        test_revision.cpp
 )
 
 target_include_directories(eeprom PUBLIC ${CMAKE_SOURCE_DIR}/include)
