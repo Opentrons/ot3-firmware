@@ -86,10 +86,7 @@ class MotorDriverMessageHandler {
             "run_current=%d",
             m.hold_current, m.run_current);
 
-        if (m.hold_current != 0U) {
-            driver.get_register_map().glob_scale.global_scaler =
-                driver.convert_to_tmc2160_current_value(m.hold_current);
-        } else if (m.run_current != 0U) {
+        if (m.run_current != 0U) {
             driver.get_register_map().glob_scale.global_scaler =
                 driver.convert_to_tmc2160_current_value(m.run_current);
         }

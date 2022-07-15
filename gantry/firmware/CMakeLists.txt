@@ -89,7 +89,7 @@ foreach(REV IN LISTS REVISIONS)
             ${GANTRY_FW_LINTABLE_SRCS_COMMON}
             ${GANTRY_FW_LINTABLE_SRCS_${REV}}
           ${GANTRY_FW_NON_LINTABLE_SRCS}
-          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_${AXIS}_hardware_config.c)
+          ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_${AXIS}_${REV}_hardware_config.c)
     list(APPEND EXES gantry-${AXIS}-${REV})
     target_gantry_core(gantry-${AXIS}-${REV} ${AXIS} ${REV})
     target_ot_motor_control(gantry-${AXIS}-${REV})
