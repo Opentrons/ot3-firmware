@@ -29,22 +29,19 @@ class ReadListener {
 };
 
 template <task::TaskClient EEPromTaskClient, typename T,
-          types::address data_begin, types::address data_end,
-          types::data_length data_length>
+          types::address data_begin>
 class EEPromAccessor {
   public:
     explicit EEPromAccessor(EEPromTaskClient& eeprom_client,
                             ReadListener<T>& listener)
         : eeprom_client{eeprom_client},
           read_listener{listener},
-          begin{data_begin},
-          end{data_end},
-          length{data_length} {}
+          begin{data_begin} {}
 
     /**
      * Begin a read of the data
      */
-    auto start_read() -> void { start_read_at_offset(0, begin + length); }
+    auto start_read() -> void { start_read_at_offset(0, begin + sizeof(T)); }
 
     /**
      * Write data to eeprom
@@ -62,8 +59,6 @@ class EEPromAccessor {
     EEPromTaskClient& eeprom_client;
     ReadListener<T>& read_listener;
     types::address begin;
-    types::address end;
-    types::data_length length;
 
     /**
      * Write data to eeprom at a specified offset
@@ -100,6 +95,7 @@ class EEPromAccessor {
         // reset bytes_recieved to 0 so the response handler knows how much data
         // to wait for
         bytes_recieved = 0;
+        bytes_to_read = limit - (begin + offset);
         // clear the read buffer
         type_data.fill(0x00);
 
@@ -128,7 +124,7 @@ class EEPromAccessor {
         auto buffer_ptr = (type_data.begin() + (msg.memory_address - begin));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
-        if (bytes_recieved == length) {
+        if (bytes_recieved == bytes_to_read) {
             read_listener.on_read(type_data);
         }
     }
@@ -142,11 +138,11 @@ class EEPromAccessor {
                          void* param) {
         auto* self =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<EEPromAccessor<EEPromTaskClient, T, data_begin,
-                                            data_end, data_length>*>(param);
+            reinterpret_cast<EEPromAccessor<EEPromTaskClient, T, data_begin>*>(param);
         self->callback(msg);
     }
     size_t bytes_recieved = 0;
+    size_t bytes_to_read = 0;
 };
 
 }  // namespace accessor
