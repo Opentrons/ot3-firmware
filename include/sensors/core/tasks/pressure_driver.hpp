@@ -128,10 +128,7 @@ class MMR920C04 {
         }
     }
 
-    auto get_pressure(mmr920C04::SensorMode mode =
-                          mmr920C04::SensorMode::SINGLE_READ) -> bool {
-        //        _output_sync_bind = sync_bind;
-        _sensor_mode = mode;
+    auto get_pressure() -> bool {
         return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
@@ -236,7 +233,7 @@ class MMR920C04 {
             static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ),
             static_cast<std::size_t>(3), own_queue,
             static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ));
-        if (_sensor_mode == mmr920C04::SensorMode::SINGLE_READ) {
+        if (stop_polling) {
             writer.write_isr(mmr920C04::ADDRESS,
                              static_cast<uint8_t>(mmr920C04::Registers::RESET),
                              data);
@@ -245,6 +242,17 @@ class MMR920C04 {
 
     auto set_sync_bind(SensorOutputBinding binding) -> void {
         _output_sync_bind = binding;
+        if (binding == SensorOutputBinding::none) {
+            // NOLINTNEXTLINE
+            stop_polling = true;
+        } else {
+            stop_polling = false;
+        }
+        hardware.reset_sync();
+    }
+
+    void set_number_of_reads(uint16_t number_of_reads) {
+        this->number_of_reads = number_of_reads;
     }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
@@ -290,6 +298,9 @@ class MMR920C04 {
   private:
     mmr920C04::MMR920C04RegisterMap _registers{};
     bool _initialized = false;
+    bool stop_polling = true;
+    // TODO: implement limited polling
+    uint16_t number_of_reads = 1;
     int32_t threshold_cmH20 = 0x8;
     const uint16_t DELAY = 20;
     I2CQueueWriter &writer;
@@ -298,7 +309,6 @@ class MMR920C04 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
-    mmr920C04::SensorMode _sensor_mode = mmr920C04::SensorMode::SINGLE_READ;
     SensorOutputBinding _output_sync_bind = SensorOutputBinding::none;
 
     template <mmr920C04::MMR920C04Register Reg>

@@ -76,7 +76,8 @@ class PressureMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.get_pressure(mmr920C04::SensorMode::POLLING);
+            driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+            driver.get_pressure();
         } else {
             driver.get_temperature();
         }

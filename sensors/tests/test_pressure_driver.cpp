@@ -38,7 +38,7 @@ constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t sensor_id_int = 0x0;
 
 // TODO: simulate and test data_ready interrupt and response from sensor
-SCENARIO("Read a single pressure sensor value") {
+SCENARIO("Read pressure sensor values") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
     test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
@@ -60,7 +60,9 @@ SCENARIO("Read a single pressure sensor value") {
     sensors::tasks::MMR920C04 driver(writer, poller, queue_client,
                                      pressure_queue, hardware, sensor_id);
 
-    GIVEN("A pressure sensor read in progress") {
+    GIVEN(
+        "Pressure read with SensorMode = SINGLE_READ, and output binding not "
+        "set") {
         WHEN("the sensor_callback function is called") {
             driver.sensor_callback();
             THEN(
@@ -92,7 +94,7 @@ SCENARIO("Read a single pressure sensor value") {
                 driver.handle_response(sensor_response);
                 THEN(
                     "the handle_message function sends the correct data via "
-                    "the CAN bus") {
+                    "the CAN bus, and sync state is false") {
                     can::message_writer_task::TaskMessage can_msg{};
 
                     can_queue.try_read(&can_msg);
@@ -103,8 +105,118 @@ SCENARIO("Read a single pressure sensor value") {
                         fixed_point_to_float(response_msg.sensor_data, 16);
                     float expected = 33.53677;
                     REQUIRE(check_data == Approx(expected));
+                    REQUIRE(hardware.get_sync_state_mock() == false);
+                }
+            }
+        }
+    }
+    GIVEN(
+        "Pressure read with SensorMode = POLLING, and output binding = sync") {
+        driver.get_pressure();
+        driver.set_sync_bind(can::ids::SensorOutputBinding::sync);
+        WHEN("the sensor_callback function is called") {
+            driver.sensor_callback();
+            THEN(
+                "the i2c queue is populated with a MEASURE_MODE_4 and "
+                "a READ_PRESSURE command only") {
+                REQUIRE(i2c_queue.get_size() == 2);
+                auto read_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
+                REQUIRE(read_command.transaction.write_buffer[0] ==
+                        static_cast<uint8_t>(
+                            sensors::mmr920C04::Registers::MEASURE_MODE_4));
+                auto reset_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
+                REQUIRE(reset_command.transaction.write_buffer[0] ==
+                        static_cast<uint8_t>(
+                            sensors::mmr920C04::Registers::PRESSURE_READ));
+            }
+            AND_WHEN(
+                "the driver receives a response higher than the threshold") {
+                auto id = i2c::messages::TransactionIdentifier{
+                    .token = static_cast<uint32_t>(
+                        sensors::mmr920C04::Registers::PRESSURE_READ),
+                    .is_completed_poll = false,
+                    .transaction_index = static_cast<uint8_t>(0)};
+                auto sensor_response = i2c::messages::TransactionResponse{
+                    .id = id,
+                    .bytes_read = 3,
+                    .read_buffer = {0x0, 0x85, 0x96, 0x0, 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
+                driver.handle_response(sensor_response);
+                THEN(
+                    "the handle_message function sends the correct data via "
+                    "the CAN bus, and the sync pin is set") {
+                    can::message_writer_task::TaskMessage can_msg{};
+
+                    can_queue.try_read(&can_msg);
+                    auto response_msg =
+                        std::get<can::messages::ReadFromSensorResponse>(
+                            can_msg.message);
+                    float check_data =
+                        fixed_point_to_float(response_msg.sensor_data, 16);
+                    float expected = 33.53677;
+                    REQUIRE(check_data == Approx(expected));
+                    REQUIRE(hardware.get_sync_state_mock() == true);
+                }
+            }
+        }
+    }
+    GIVEN(
+        "Pressure read with SensorMode = POLLING, and output binding = "
+        "report") {
+        driver.get_pressure();
+        driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+        WHEN("the sensor_callback function is called") {
+            driver.sensor_callback();
+            THEN(
+                "the i2c queue is populated with a MEASURE_MODE_4 and "
+                "a READ_PRESSURE command only") {
+                REQUIRE(i2c_queue.get_size() == 2);
+                auto read_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
+                REQUIRE(read_command.transaction.write_buffer[0] ==
+                        static_cast<uint8_t>(
+                            sensors::mmr920C04::Registers::MEASURE_MODE_4));
+                auto reset_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
+                REQUIRE(reset_command.transaction.write_buffer[0] ==
+                        static_cast<uint8_t>(
+                            sensors::mmr920C04::Registers::PRESSURE_READ));
+            }
+            AND_WHEN(
+                "the driver receives a response higher than the threshold") {
+                auto id = i2c::messages::TransactionIdentifier{
+                    .token = static_cast<uint32_t>(
+                        sensors::mmr920C04::Registers::PRESSURE_READ),
+                    .is_completed_poll = false,
+                    .transaction_index = static_cast<uint8_t>(0)};
+                auto sensor_response = i2c::messages::TransactionResponse{
+                    .id = id,
+                    .bytes_read = 3,
+                    .read_buffer = {0x0, 0x85, 0x96, 0x0, 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
+                driver.handle_response(sensor_response);
+                THEN(
+                    "the handle_message function sends the correct data via "
+                    "the CAN bus, and the sync pin is not set") {
+                    can::message_writer_task::TaskMessage can_msg{};
+
+                    can_queue.try_read(&can_msg);
+                    auto response_msg =
+                        std::get<can::messages::ReadFromSensorResponse>(
+                            can_msg.message);
+                    float check_data =
+                        fixed_point_to_float(response_msg.sensor_data, 16);
+                    float expected = 33.53677;
+                    REQUIRE(check_data == Approx(expected));
+                    REQUIRE(hardware.get_sync_state_mock() == false);
                 }
             }
         }
     }
 }
+
+// send a couple interrupts, make sure RESET never gets sent
+// check that hardware.set_sync() is simulated correctly, and check that
+//  pressure_driver changes the values

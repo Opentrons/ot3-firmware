@@ -65,18 +65,28 @@ SCENARIO("read pressure sensor values") {
             THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
                 REQUIRE(i2c_queue.get_size() == 1);
             }
-            AND_WHEN("the data ready interrupt is triggered") {
-                auto transact_message =
-                    get_message<i2c::messages::Transact>(i2c_queue);
-                THEN(
-                    "the i2c queue is populated with a MEASURE MODE 4 "
-                    "command") {
-                    REQUIRE(transact_message.transaction.address ==
-                            sensors::mmr920C04::ADDRESS);
-                }
-            }
+            auto transact_message =
+                get_message<i2c::messages::Transact>(i2c_queue);
+            REQUIRE(transact_message.transaction.address ==
+                    sensors::mmr920C04::ADDRESS);
         }
     }
+    GIVEN("a request to take multiple reads of the pressure sensor") {
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
+                {}, pressure_id, sensor_id_int));
+        sensor.handle_message(single_read);
+        WHEN("the handler function receives the message") {
+            THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
+                REQUIRE(i2c_queue.get_size() == 1);
+            }
+            auto transact_message =
+                get_message<i2c::messages::Transact>(i2c_queue);
+            REQUIRE(transact_message.transaction.address ==
+                    sensors::mmr920C04::ADDRESS);
+        }
+    }
+
     GIVEN("a request to take a single read of the temperature sensor") {
         auto single_read =
             sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
