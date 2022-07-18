@@ -36,6 +36,11 @@ enum class SensorStatus : uint8_t {
     UNKNOWN = 0xFF
 };
 
+enum class SensorMode : uint8_t {
+    SINGLE_READ = 0x0,
+    POLLING = 0x1,
+};
+
 enum class Registers : uint8_t {
     RESET = 0x72,
     IDLE = 0x94,

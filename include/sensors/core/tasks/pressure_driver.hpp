@@ -128,7 +128,9 @@ class MMR920C04 {
         }
     }
 
-    auto get_pressure() -> bool {
+    auto get_pressure(mmr920C04::SensorMode mode = mmr920C04::SensorMode::SINGLE_READ) -> bool {
+//        _output_sync_bind = sync_bind;
+        _sensor_mode = mode;
         return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
@@ -233,10 +235,15 @@ class MMR920C04 {
             static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ),
             static_cast<std::size_t>(3), own_queue,
             static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ));
+        if (_sensor_mode == mmr920C04::SensorMode::SINGLE_READ) {
+            writer.write_isr(mmr920C04::ADDRESS,
+                             static_cast<uint8_t>(mmr920C04::Registers::RESET),
+                             data);
+        }
+    }
 
-        writer.write_isr(mmr920C04::ADDRESS,
-                         static_cast<uint8_t>(mmr920C04::Registers::RESET),
-                         data);
+    auto set_sync_bind(SensorOutputBinding binding) -> void {
+        _output_sync_bind = binding;
     }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
@@ -247,6 +254,14 @@ class MMR920C04 {
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);
+                if (_output_sync_bind == SensorOutputBinding::sync) {
+                    if (data > threshold_cmH20) {
+                        hardware.set_sync();
+                    }
+                    else {
+                        hardware.reset_sync();
+                    }
+                }
                 send_pressure();
                 break;
             case mmr920C04::Registers::LOW_PASS_PRESSURE_READ:
@@ -283,6 +298,9 @@ class MMR920C04 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
+    mmr920C04::SensorMode _sensor_mode = mmr920C04::SensorMode::SINGLE_READ;
+    SensorOutputBinding _output_sync_bind = SensorOutputBinding::none;
+
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
