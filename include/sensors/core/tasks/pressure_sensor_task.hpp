@@ -93,8 +93,8 @@ class PressureMessageHandler {
         LOG("received bind request");
         static_cast<void>(m);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.set_sync_bind(static_cast<can::ids::SensorOutputBinding>
-                                 (m.binding));
+            driver.set_sync_bind(
+                static_cast<can::ids::SensorOutputBinding>(m.binding));
         }
     }
 

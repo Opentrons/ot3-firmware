@@ -128,8 +128,9 @@ class MMR920C04 {
         }
     }
 
-    auto get_pressure(mmr920C04::SensorMode mode = mmr920C04::SensorMode::SINGLE_READ) -> bool {
-//        _output_sync_bind = sync_bind;
+    auto get_pressure(mmr920C04::SensorMode mode =
+                          mmr920C04::SensorMode::SINGLE_READ) -> bool {
+        //        _output_sync_bind = sync_bind;
         _sensor_mode = mode;
         return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
@@ -257,8 +258,7 @@ class MMR920C04 {
                 if (_output_sync_bind == SensorOutputBinding::sync) {
                     if (data > threshold_cmH20) {
                         hardware.set_sync();
-                    }
-                    else {
+                    } else {
                         hardware.reset_sync();
                     }
                 }
@@ -300,7 +300,6 @@ class MMR920C04 {
     const can::ids::SensorId &sensor_id;
     mmr920C04::SensorMode _sensor_mode = mmr920C04::SensorMode::SINGLE_READ;
     SensorOutputBinding _output_sync_bind = SensorOutputBinding::none;
-
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
