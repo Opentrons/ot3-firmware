@@ -60,8 +60,9 @@ class EEProm : public I2CDeviceBase,
     }
 
   private:
-    std::array<uint8_t, static_cast<size_t>(
-                            hardware_iface::EEpromMemorySize::MICROCHIP_256_BYTE)>
+    std::array<uint8_t,
+               static_cast<size_t>(
+                   hardware_iface::EEpromMemorySize::MICROCHIP_256_BYTE)>
         backing{};
     uint8_t current_address{0};
     bool write_protected{true};
