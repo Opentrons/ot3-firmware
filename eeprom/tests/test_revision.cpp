@@ -6,8 +6,7 @@
 
 using namespace eeprom;
 
-struct R_MockListener
-    : accessor::ReadListener<revision::RevisionType> {
+struct R_MockListener : accessor::ReadListener<revision::RevisionType> {
     void on_read(const revision::RevisionType& rev) {
         this->rev = rev;
         call_count++;
@@ -19,11 +18,10 @@ struct R_MockListener
 SCENARIO("Writing revision") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = R_MockListener{};
-    auto subject = 
-        revision::RevisionAccessor{queue_client, read_listener};
+    auto subject = revision::RevisionAccessor{queue_client, read_listener};
 
     GIVEN("A revision to write") {
-        auto rev = revision::RevisionType{0,1,2,3};
+        auto rev = revision::RevisionType{0, 1, 2, 3};
 
         WHEN("the writing revision") {
             subject.write(rev);
@@ -32,8 +30,7 @@ SCENARIO("Writing revision") {
                 REQUIRE(
                     queue_client.messages.size() ==
                     (addresses::revision_length / types::max_data_length) +
-                        (addresses::revision_length %
-                             types::max_data_length !=
+                        (addresses::revision_length % types::max_data_length !=
                          0));
                 message::WriteEepromMessage write_message;
                 types::data_length expected_bytes;
@@ -64,8 +61,7 @@ SCENARIO("Writing revision") {
 SCENARIO("Reading revision") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = R_MockListener{};
-    auto subject =
-        revision::RevisionAccessor{queue_client, read_listener};
+    auto subject = revision::RevisionAccessor{queue_client, read_listener};
 
     GIVEN("A request to read the revision") {
         WHEN("reading the revision") {
@@ -75,8 +71,7 @@ SCENARIO("Reading revision") {
                 REQUIRE(
                     queue_client.messages.size() ==
                     (addresses::revision_length / types::max_data_length) +
-                        (addresses::revision_length %
-                             types::max_data_length !=
+                        (addresses::revision_length % types::max_data_length !=
                          0));
 
                 types::data_length expected_bytes;
@@ -106,7 +101,7 @@ SCENARIO("Reading revision") {
         subject.start_read();
 
         WHEN("the read completes") {
-            auto rev = revision::RevisionType{4,5,6,7};
+            auto rev = revision::RevisionType{4, 5, 6, 7};
 
             message::ReadEepromMessage read_message;
             types::data_length num_bytes;
@@ -121,8 +116,7 @@ SCENARIO("Reading revision") {
                     ((addresses::revision_length -
                       (i * types::max_data_length)) > types::max_data_length
                          ? types::max_data_length
-                         : addresses::revision_length %
-                               types::max_data_length);
+                         : addresses::revision_length % types::max_data_length);
                 read_message = std::get<message::ReadEepromMessage>(
                     queue_client.messages[i]);
 
