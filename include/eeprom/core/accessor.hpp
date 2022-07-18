@@ -3,6 +3,7 @@
 #include <array>
 #include <concepts>
 #include <cstdint>
+#include <vector>
 
 #include "addresses.hpp"
 #include "task.hpp"
@@ -43,42 +44,41 @@ class EEPromAccessor {
     /**
      * Begin a read of the data
      */
-    auto start_read() -> void {
-        // reset bytes_recieved to 0 so the response handler knows how much data
-        // to wait for
-        bytes_recieved = 0;
-        // clear the read buffer
-        type_data.fill(0x00);
-
-        types::data_length amount_to_read;
-        auto read_addr = begin;
-        auto bytes_remain = length;
-
-        while (bytes_remain > 0) {
-            amount_to_read = std::min(bytes_remain, types::max_data_length);
-            eeprom_client.send_eeprom_queue(
-                eeprom::message::ReadEepromMessage{.memory_address = read_addr,
-                                                   .length = amount_to_read,
-                                                   .callback = callback,
-                                                   .callback_param = this});
-            bytes_remain -= amount_to_read;
-            read_addr += amount_to_read;
-        }
-    }
+    auto start_read() -> void { start_read_at_offset(0, begin + length); }
 
     /**
      * Write data to eeprom
      */
     auto write(const T& type_value) -> void {
+        auto vector = std::vector<uint8_t>{};
+        for (ulong i = 0; i < sizeof(T); i++) {
+            vector.push_back(type_value[i]);
+        }
+        write_at_offset(vector, 0, begin + sizeof(T));
+    }
+
+  protected:
+    T type_data{};
+    EEPromTaskClient& eeprom_client;
+    ReadListener<T>& read_listener;
+    types::address begin;
+    types::address end;
+    types::data_length length;
+
+    /**
+     * Write data to eeprom at a specified offset
+     */
+    auto write_at_offset(const std::vector<uint8_t> data,
+                         types::data_length offset, types::data_length limit)
+        -> void {
         types::data_length amount_to_write;
         auto write = types::EepromData{};
-        auto type_iter = type_value.begin();
-        auto write_addr = begin;
+        auto type_iter = data.begin();
+        types::address write_addr = begin + offset;
 
-        while (type_iter < type_value.cend() &&
-               write_addr < (begin + sizeof(type_value))) {
+        while (type_iter < data.cend() && write_addr < limit) {
             amount_to_write = std::min(
-                static_cast<types::data_length>(type_value.end() - type_iter),
+                static_cast<types::data_length>(data.end() - type_iter),
                 types::max_data_length);
 
             std::copy_n(type_iter, amount_to_write, write.begin());
@@ -92,13 +92,32 @@ class EEPromAccessor {
         }
     }
 
-  protected:
-    T type_data{};
-    EEPromTaskClient& eeprom_client;
-    ReadListener<T>& read_listener;
-    types::address begin;
-    types::address end;
-    types::data_length length;
+    /**
+     * Begin a read of the data at a specified offset
+     */
+    auto start_read_at_offset(types::data_length offset,
+                              types::data_length limit) -> void {
+        // reset bytes_recieved to 0 so the response handler knows how much data
+        // to wait for
+        bytes_recieved = 0;
+        // clear the read buffer
+        type_data.fill(0x00);
+
+        types::data_length amount_to_read;
+        types::address read_addr = begin + offset;
+        types::data_length bytes_remain = limit - read_addr;
+
+        while (bytes_remain > 0) {
+            amount_to_read = std::min(bytes_remain, types::max_data_length);
+            eeprom_client.send_eeprom_queue(
+                eeprom::message::ReadEepromMessage{.memory_address = read_addr,
+                                                   .length = amount_to_read,
+                                                   .callback = callback,
+                                                   .callback_param = this});
+            bytes_remain -= amount_to_read;
+            read_addr += amount_to_read;
+        }
+    }
 
   private:
     /**
