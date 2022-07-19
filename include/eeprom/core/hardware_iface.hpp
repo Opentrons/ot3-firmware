@@ -78,6 +78,10 @@ class EEPromHardwareIface {
     [[nodiscard]] auto get_eeprom_chip_type() const -> EEPromChipType {
         return eeprom_chip_type;
     }
+    [[nodiscard]] auto get_eeprom_mem_size() const -> size_t {
+        return eeprom_mem_size;
+    }
+
 
   private:
     // The number of times that disable has been called.
