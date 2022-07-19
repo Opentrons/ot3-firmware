@@ -63,10 +63,10 @@ class EEPromAccessor {
     /**
      * Write data to eeprom at a specified offset
      */
-    auto write_at_offset(const std::vector<uint8_t> data,
+    auto write_at_offset(const std::vector<uint8_t>& data,
                          types::data_length offset, types::data_length limit)
         -> void {
-        types::data_length amount_to_write;
+        types::data_length amount_to_write = 0;
         auto write = types::EepromData{};
         auto type_iter = data.begin();
         types::address write_addr = begin + offset;
@@ -99,7 +99,7 @@ class EEPromAccessor {
         // clear the read buffer
         type_data.fill(0x00);
 
-        types::data_length amount_to_read;
+        types::data_length amount_to_read = 0;
         types::address read_addr = begin + offset;
         types::data_length bytes_remain = limit - read_addr;
 
