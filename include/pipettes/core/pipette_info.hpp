@@ -40,7 +40,8 @@ uint16_t get_model();
  */
 template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
-class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
+class PipetteInfoMessageHandler
+    : eeprom::accessor::ReadListener<eeprom::serial_number::SerialNumberType> {
   public:
     /**
      * Constructor
