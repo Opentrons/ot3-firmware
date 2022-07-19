@@ -17,14 +17,15 @@ using RevisionType = std::array<uint8_t, addresses::revision_length>;
  */
 template <task::TaskClient EEPromTaskClient>
 class RevisionAccessor
-    : public accessor::EEPromAccessor<
-          EEPromTaskClient, RevisionType, addresses::revision_address_begin> {
+    : public accessor::EEPromAccessor<EEPromTaskClient, RevisionType,
+                                      addresses::revision_address_begin> {
   public:
     explicit RevisionAccessor(EEPromTaskClient& eeprom_client,
                               accessor::ReadListener<RevisionType>& listener)
         : accessor::EEPromAccessor<
-              EEPromTaskClient, RevisionType, addresses::revision_address_begin>::EEPromAccessor(eeprom_client,
-                                                          listener) {}
+              EEPromTaskClient, RevisionType,
+              addresses::revision_address_begin>::EEPromAccessor(eeprom_client,
+                                                                 listener) {}
 };
 
 }  // namespace revision

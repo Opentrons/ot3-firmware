@@ -19,17 +19,19 @@ struct increase_usage_cb_param {
 
 template <task::TaskClient EEPromTaskClient>
 class UsageAccessor
-    : public accessor::EEPromAccessor<
-          EEPromTaskClient, UsageType, addresses::usage_address_begin> {
+    : public accessor::EEPromAccessor<EEPromTaskClient, UsageType,
+                                      addresses::usage_address_begin> {
     using accessor::EEPromAccessor<
-        EEPromTaskClient, UsageType, addresses::usage_address_begin>::EEPromAccessor;
+        EEPromTaskClient, UsageType,
+        addresses::usage_address_begin>::EEPromAccessor;
 
   public:
     explicit UsageAccessor(EEPromTaskClient& eeprom_client,
                            accessor::ReadListener<UsageType>& listener)
         : accessor::EEPromAccessor<
-              EEPromTaskClient, UsageType, addresses::usage_address_begin>::EEPromAccessor(eeprom_client,
-                                                       listener) {}
+              EEPromTaskClient, UsageType,
+              addresses::usage_address_begin>::EEPromAccessor(eeprom_client,
+                                                              listener) {}
 
     auto increase_usage(const UsageType& usage) -> void {
         types::data_length amount_to_read;

@@ -23,10 +23,9 @@ class SerialNumberAccessor
     explicit SerialNumberAccessor(
         EEPromTaskClient& eeprom_client,
         accessor::ReadListener<SerialNumberType>& listener)
-        : accessor::EEPromAccessor<
-              EEPromTaskClient, SerialNumberType,
-              addresses::serial_number_address_begin>::EEPromAccessor(eeprom_client,
-                                                               listener) {}
+        : accessor::EEPromAccessor<EEPromTaskClient, SerialNumberType,
+                                   addresses::serial_number_address_begin>::
+              EEPromAccessor(eeprom_client, listener) {}
 };
 
 }  // namespace serial_number
