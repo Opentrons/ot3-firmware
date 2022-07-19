@@ -84,8 +84,9 @@ class EEPromMessageHandler {
             return;
         }
         if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
-                LOG("Error attempting to write to an eeprom address that exceeds device storage");
-                return;
+            LOG("Error attempting to write to an eeprom address that exceeds "
+                "device storage");
+            return;
         }
 
         // On the Microchip variant of the eeprom if you attempt to write
@@ -97,7 +98,7 @@ class EEPromMessageHandler {
             ((m.memory_address % 8) + m.length) > 8) {
             LOG("Warning: write request will overrun page");
         }
-        
+
         // The ST eeprom has a page write function but that requires driving
         // the write enable pin differently which would require us to change
         // how we use enable_eeprom_write disable_eeprom_write calls in each
@@ -150,9 +151,10 @@ class EEPromMessageHandler {
         if (m.length <= 0) {
             return;
         }
-       
+
         if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
-            LOG("ERROR attempting to read to an eeprom address that exceeds device storage");
+            LOG("ERROR attempting to read to an eeprom address that exceeds "
+                "device storage");
             return;
         }
 

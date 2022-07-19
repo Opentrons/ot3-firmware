@@ -138,7 +138,8 @@ class EEPromAccessor {
                          void* param) {
         auto* self =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<EEPromAccessor<EEPromTaskClient, T, data_begin>*>(param);
+            reinterpret_cast<EEPromAccessor<EEPromTaskClient, T, data_begin>*>(
+                param);
         self->callback(msg);
     }
     size_t bytes_recieved = 0;

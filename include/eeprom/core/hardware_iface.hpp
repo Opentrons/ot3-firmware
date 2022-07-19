@@ -82,7 +82,6 @@ class EEPromHardwareIface {
         return eeprom_mem_size;
     }
 
-
   private:
     // The number of times that disable has been called.
     uint32_t count{0};
