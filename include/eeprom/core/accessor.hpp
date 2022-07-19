@@ -96,6 +96,9 @@ class EEPromAccessor {
         // to wait for
         bytes_recieved = 0;
         bytes_to_read = limit - (begin + offset);
+        if (bytes_to_read > sizeof(T)) {
+            LOG("error, attempting to read %lu bytes and max read size is %lu\n", bytes_to_read, sizeof(T));
+        }
         // clear the read buffer
         type_data.fill(0x00);
 
@@ -121,6 +124,7 @@ class EEPromAccessor {
      * @param msg The message
      */
     void callback(const eeprom::message::EepromMessage& msg) {
+        //TODO (ryan 07-18-22) handle errors in response
         auto buffer_ptr = (type_data.begin() + (msg.memory_address - begin));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;

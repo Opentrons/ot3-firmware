@@ -1,0 +1,149 @@
+#include <vector>
+
+#include "catch2/catch.hpp"
+#include "eeprom/core/dev_data.hpp"
+#include "eeprom/tests/mock_eeprom_task_client.hpp"
+
+using namespace eeprom;
+
+struct DD_MockListener : accessor::ReadListener<dev_data::DataBufferType> {
+    void on_read(const dev_data::DataBufferType& buf) {
+        this->buf = buf;
+        call_count++;
+    }
+    dev_data::DataBufferType buf{};
+    int call_count{0};
+};
+
+SCENARIO("Writing serial number") {
+    auto queue_client = MockEEPromTaskClient{};
+    auto read_listener = DD_MockListener{};
+    auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    GIVEN("A serial number to write") {
+        WHEN("test") {
+            Then("dummy") { REQUIRE(1 == 1); }
+        }
+    }
+}
+/*
+    GIVEN("A serial number to write") {
+
+
+        WHEN("the writing serial number") {
+            subject.write(sn);
+
+            THEN("there is an eeprom write") {
+                REQUIRE(
+                    queue_client.messages.size() ==
+                    (addresses::serial_number_length / types::max_data_length) +
+                        (addresses::serial_number_length %
+                             types::max_data_length !=
+                         0));
+                message::WriteEepromMessage write_message;
+                types::data_length expected_bytes;
+                for (ulong i = 0; i < queue_client.messages.size(); i++) {
+                    expected_bytes =
+                        ((addresses::serial_number_length -
+                          (i * types::max_data_length)) > types::max_data_length
+                             ? types::max_data_length
+                             : addresses::serial_number_length %
+                                   types::max_data_length);
+
+                    write_message = std::get<message::WriteEepromMessage>(
+                        queue_client.messages[i]);
+                    REQUIRE(write_message.memory_address ==
+                            addresses::serial_number_address_begin +
+                                (i * types::max_data_length));
+
+                    REQUIRE(write_message.length == expected_bytes);
+                    REQUIRE(std::equal(write_message.data.begin(),
+                                       &(write_message.data[expected_bytes]),
+                                       &(sn[i * types::max_data_length])));
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Reading serial number") {
+    auto queue_client = MockEEPromTaskClient{};
+    auto read_listener = SN_MockListener{};
+    auto subject =
+        serial_number::SerialNumberAccessor{queue_client, read_listener};
+
+    GIVEN("A request to read the serial number") {
+        WHEN("reading the serial number") {
+            subject.start_read();
+
+            THEN("there is an eeprom read") {
+                REQUIRE(
+                    queue_client.messages.size() ==
+                    (addresses::serial_number_length / types::max_data_length) +
+                        (addresses::serial_number_length %
+                             types::max_data_length !=
+                         0));
+
+                types::data_length expected_bytes;
+                message::ReadEepromMessage read_message;
+                for (ulong i = 0; i < queue_client.messages.size(); i++) {
+                    expected_bytes =
+                        ((addresses::serial_number_length -
+                          (i * types::max_data_length)) > types::max_data_length
+                             ? types::max_data_length
+                             : addresses::serial_number_length %
+                                   types::max_data_length);
+
+                    read_message = std::get<message::ReadEepromMessage>(
+                        queue_client.messages[i]);
+
+                    REQUIRE(read_message.memory_address ==
+                            addresses::serial_number_address_begin +
+                                (i * types::max_data_length));
+                    REQUIRE(read_message.length == expected_bytes);
+                    REQUIRE(read_message.callback_param == &subject);
+                }
+            }
+        }
+    }
+
+    GIVEN("A request to read the serial number") {
+        subject.start_read();
+
+        WHEN("the read completes") {
+            auto sn = serial_number::SerialNumberType{8, 7, 6, 5, 4, 3, 2, 1};
+
+            message::ReadEepromMessage read_message;
+            types::data_length num_bytes;
+
+            auto data = types::EepromData{};
+            auto expected_num_read_response =
+                (addresses::serial_number_length / types::max_data_length) +
+                (addresses::serial_number_length % types::max_data_length != 0);
+
+            for (auto i = 0; i < expected_num_read_response; i++) {
+                num_bytes =
+                    ((addresses::serial_number_length -
+                      (i * types::max_data_length)) > types::max_data_length
+                         ? types::max_data_length
+                         : addresses::serial_number_length %
+                               types::max_data_length);
+                read_message = std::get<message::ReadEepromMessage>(
+                    queue_client.messages[i]);
+
+                std::copy_n(sn.cbegin() + (i * types::max_data_length),
+                            num_bytes, data.begin());
+
+                read_message.callback(
+                    {.memory_address = read_message.memory_address,
+                     .length = num_bytes,
+                     .data = data},
+                    read_message.callback_param);
+            }
+            THEN("then the listener is called once") {
+                REQUIRE(read_listener.call_count == 1);
+                REQUIRE(read_listener.sn == sn);
+            }
+        }
+    }
+}
+*/

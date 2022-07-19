@@ -198,6 +198,14 @@ class EEPromMessageHandler {
             id_map.remove(token.value());
         }
     }
+    
+    void visit(message::ConfigRequestMessage &m) {
+        auto conf = message::ConfigResponseMessage{
+            .chip = hw_iface.get_eeprom_chip_type(),
+            .addr_type = hw_iface.get_eeprom_addr_bytes(),
+            .mem_size = hw_iface.get_eeprom_mem_size()};
+        m.callback(conf, m.callback_param);
+    }
 
     I2CQueueWriter &writer;
     OwnQueue &own_queue;
