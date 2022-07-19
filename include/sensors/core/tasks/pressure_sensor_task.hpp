@@ -76,6 +76,7 @@ class PressureMessageHandler {
         LOG("Received request to read from %d sensor\n", m.sensor);
         // poll a specific register, or default to a pressure read.
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
+            driver.set_sync_bind(can::ids::SensorOutputBinding::report);
             driver.get_pressure();
         } else {
             driver.get_temperature();
@@ -90,8 +91,12 @@ class PressureMessageHandler {
     }
 
     void visit(const can::messages::BindSensorOutputRequest &m) {
-        LOG("received bind request but not implemented");
+        LOG("received bind request");
         static_cast<void>(m);
+        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
+            driver.set_sync_bind(
+                static_cast<can::ids::SensorOutputBinding>(m.binding));
+        }
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
