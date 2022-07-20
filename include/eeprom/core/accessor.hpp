@@ -70,7 +70,7 @@ class EEPromAccessor {
         auto write = types::EepromData{};
         auto type_iter = data.begin();
         types::address write_addr = begin + offset;
-
+		// NOLINTNEXTLINE(modernize-use-nullptr)
         while (type_iter < data.cend() && write_addr < limit) {
             amount_to_write = std::min(
                 static_cast<types::data_length>(data.end() - type_iter),
