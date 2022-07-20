@@ -78,9 +78,9 @@ auto motor_configs::driver_config_by_axis(TMC2130PipetteAxis which)
         case TMC2130PipetteAxis::linear_motor:
         default:
             tmc2130_conf.chip_select = {
-                .cs_pin = GPIO_PIN_6,
+                .cs_pin = GPIO_PIN_12,
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .GPIO_handle = GPIOC,
+                .GPIO_handle = GPIOB,
             };
             return tmc2130_conf;
     }
