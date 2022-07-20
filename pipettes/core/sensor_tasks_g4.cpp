@@ -1,7 +1,6 @@
-#include "pipettes/core/sensor_tasks.hpp"
-
 #include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
@@ -11,15 +10,15 @@ static auto eeprom_task_builder =
 
 static auto environment_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask,
-        can::ids::SensorId>(can::ids::SensorId::S0);
+                               can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_front =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
-        can::ids::SensorId>(can::ids::SensorId::S0);
+                               can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto pressure_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
-        can::ids::SensorId>(can::ids::SensorId::S0);
+                               can::ids::SensorId>(can::ids::SensorId::S0);
 
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
@@ -58,8 +57,8 @@ void sensor_tasks::start_tasks(
 }
 
 sensor_tasks::QueueClient::QueueClient()
-// This gets overridden in start_tasks, needs to be static here since this
-// is free-store allocated
+    // This gets overridden in start_tasks, needs to be static here since this
+    // is free-store allocated
     : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 void sensor_tasks::QueueClient::send_eeprom_queue(
