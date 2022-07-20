@@ -6,7 +6,7 @@ namespace eeprom {
 namespace addresses {
 /*
  * header format for the eeprom chip
- * [serial number] [revison]  [usage]  [data_revison] [lookup_table_tail]
+ * [serial number] [revison]  [reserved]  [data_revison] [lookup_table_tail]
  *   [20 bytes]    [4 bytes] [4 bytes]    [2 bytes]      [2 bytes]
  *      [                   32 bytes                       ]
  *
@@ -73,17 +73,18 @@ constexpr types::address revision_address_begin = serial_number_address_end;
 constexpr types::address revision_address_end =
     revision_address_begin + revision_length;
 
-constexpr types::data_length usage_length = 4;
-constexpr types::address usage_address_begin = revision_address_end;
-constexpr types::address usage_address_end = usage_address_begin + usage_length;
+constexpr types::data_length reserved_length = 4;
+constexpr types::address reserved_address_begin = revision_address_end;
+constexpr types::address reserved_address_end =
+    reserved_address_begin + reserved_length;
 
-constexpr types::data_length data_revison_length = 2;
-constexpr types::address data_revison_address_begin = usage_address_end;
-constexpr types::address data_revison_address_end =
-    data_revison_address_begin + data_revison_length;
+constexpr types::data_length data_revision_length = 2;
+constexpr types::address data_revision_address_begin = reserved_address_end;
+constexpr types::address data_revision_address_end =
+    data_revision_address_begin + data_revision_length;
 
 constexpr types::data_length lookup_table_tail_length = 2;
-constexpr types::address lookup_table_tail_begin = data_revison_address_end;
+constexpr types::address lookup_table_tail_begin = data_revision_address_end;
 constexpr types::address lookup_table_tail_end =
     lookup_table_tail_begin + lookup_table_tail_length;
 
