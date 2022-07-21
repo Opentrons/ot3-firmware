@@ -62,6 +62,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.SensorOutputBinding, output)
         write_enum_cpp(constants_mod.SensorThresholdMode, output)
         write_enum_cpp(constants_mod.PipetteTipActionType, output)
+        write_enum_cpp(constants_mod.PositionFlags, output)
 
 
 def write_enum_cpp(e: Type[Enum], output: io.StringIO) -> None:
