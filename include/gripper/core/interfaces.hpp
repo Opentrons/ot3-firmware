@@ -42,6 +42,6 @@ void initialize();
  *
  * @return The motor.
  */
-auto get_grip_motor() -> brushed_motor::BrushedMotor &;
+auto get_grip_motor() -> brushed_motor::BrushedMotor<lms::GearBoxConfig> &;
 
 }  // namespace grip_motor_iface

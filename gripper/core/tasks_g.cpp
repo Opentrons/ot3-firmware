@@ -1,6 +1,7 @@
 #include "common/core/freertos_task.hpp"
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/tasks.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/brushed_move_group_task.hpp"
@@ -22,8 +23,9 @@ static auto brushed_move_group_task_builder =
 static auto brushed_move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
-void g_tasks::start_task(brushed_motor::BrushedMotor& grip_motor,
-                         AllTask& gripper_tasks) {
+void g_tasks::start_task(
+    brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
+    AllTask& gripper_tasks) {
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(

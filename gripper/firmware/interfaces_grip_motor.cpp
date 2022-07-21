@@ -62,9 +62,14 @@ static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5}, update_pwm);
 
-static brushed_motor::BrushedMotor grip_motor(brushed_motor_hardware_iface,
-                                              brushed_motor_driver_iface,
-                                              motor_queue);
+static brushed_motor::BrushedMotor grip_motor(
+    lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
+        .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+        .steps_per_rev = 0,
+        .microstep = 0,
+        .encoder_pulses_per_rev = 512,
+        .gear_ratio = 85},
+    brushed_motor_hardware_iface, brushed_motor_driver_iface, motor_queue);
 
 /**
  * Handler of brushed motor interrupts.
@@ -90,6 +95,7 @@ void grip_motor_iface::initialize() {
                                      gripper_enc_overflow_callback_glue);
 }
 
-auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
+auto grip_motor_iface::get_grip_motor()
+    -> brushed_motor::BrushedMotor<lms::GearBoxConfig>& {
     return grip_motor;
 }
