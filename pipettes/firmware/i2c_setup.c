@@ -36,8 +36,8 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
 
     if(hi2c->Instance==I2C2) {
-        // PIN PB6 is SCL
-        // PIN PB7 is SDA
+        // PIN PC4 is SCL
+        // PIN PA8 is SDA
         // Secondary sensors and eeprom
         __HAL_RCC_I2C2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
