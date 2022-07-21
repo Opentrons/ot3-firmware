@@ -44,7 +44,8 @@ class MotionController {
 
     ~MotionController() = default;
 
-    [[nodiscard]] auto get_position_status_handler() -> StepperWithEncoderPositionStatus& {
+    [[nodiscard]] auto get_position_status_handler()
+        -> StepperWithEncoderPositionStatus& {
         return position_status;
     }
 
@@ -172,9 +173,9 @@ class PipetteMotionController {
         return linear_motion_sys_config;
     }
 
-        [[nodiscard]] auto get_position_status_handler() -> StepperPositionStatus& {
+    [[nodiscard]] auto get_position_status_handler() -> StepperPositionStatus& {
         return position_status;
-        }
+    }
 
     void move(const can::messages::TipActionRequest& can_msg) {
         steps_per_tick velocity_steps =

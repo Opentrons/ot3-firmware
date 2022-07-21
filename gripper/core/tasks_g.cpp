@@ -43,6 +43,7 @@ void g_tasks::start_task(brushed_motor::BrushedMotor& grip_motor,
     g_queues.brushed_move_group_queue = &brushed_move_group.get_queue();
     g_queues.brushed_move_status_report_queue =
         &brushed_move_status_reporter.get_queue();
+    g_queues.position_status = &grip_motor.motion_controller.position_status;
 }
 
 g_tasks::QueueClient::QueueClient()
@@ -69,3 +70,18 @@ void g_tasks::QueueClient::send_brushed_move_status_reporter_queue(
 }
 
 auto g_tasks::get_queues() -> g_tasks::QueueClient& { return g_queues; }
+
+void g_tasks::QueueClient::set_position_flags(uint32_t flags) {
+    if (!position_status) return;
+    position_status->set_flags(flags);
+}
+
+void g_tasks::QueueClient::clear_position_flags(uint32_t flags) {
+    if (!position_status) return;
+    position_status->clear_flags(flags);
+}
+
+void g_tasks::QueueClient::update_encoder_position(int32_t pos) {
+    if (!position_status) return;
+    position_status->update_encoder_position(pos);
+}

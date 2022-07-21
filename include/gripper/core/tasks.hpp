@@ -65,6 +65,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_pressure_sensor_queue(const sensors::utils::TaskMessage& m);
 
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -168,6 +169,11 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void set_position_flags(uint32_t);
+    void clear_position_flags(uint32_t);
+    void update_stepper_position(uint32_t);
+    void update_encoder_position(int32_t);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
@@ -179,6 +185,7 @@ struct QueueClient : can::message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
         spi_queue{nullptr};
+    StepperWithEncoderPositionStatus* position_status{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
@@ -205,6 +212,10 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_brushed_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void set_position_flags(uint32_t);
+    void clear_position_flags(uint32_t);
+    void update_encoder_position(int32_t);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -215,7 +226,9 @@ struct QueueClient : can::message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>*
-        brushed_move_status_report_queue{nullptr};
+    brushed_move_status_report_queue{nullptr};
+
+        EncoderOnlyPositionStatus* position_status{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;

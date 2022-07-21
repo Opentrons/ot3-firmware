@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstdint>
 #include <atomic>
+#include <cstdint>
 
 using sq0_31 = int32_t;  // 0: signed bit,  1-31: fractional bits
 using sq15_16 =
@@ -19,42 +19,67 @@ using steps_per_tick_sq = sq0_31;
 struct PositionStatus {
     // Flags with the bit positions of can::ids::PositionFlags
     std::atomic<uint32_t> flags{0};
+    /*
+    ** Performs flags |= flags_to_set, but atomically.
+    */
+    auto set_flags(uint32_t flags_to_set) -> void {
+        std::atomic_fetch_or(&flags, flags_to_set);
+    }
+    /*
+    ** Performs flags &= ~flags_to_set, but atomically
+    */
+    auto clear_flags(uint32_t flags_to_clear) -> void {
+        std::atomic_fetch_and(&flags, ~flags_to_clear);
+    }
 };
 
-struct StepperPositionStatus: public PositionStatus {
-        std::atomic<uint32_t> stepper_position_steps{0};
+struct StepperPositionStatus : public PositionStatus {
+    std::atomic<uint32_t> stepper_position_steps{0};
+    auto update_stepper_position(uint32_t new_position) -> void {
+        stepper_position_steps = new_position;
+    }
 };
 
-struct StepperWithEncoderPositionStatus: public StepperPositionStatus {
-        std::atomic<int32_t> encoder_position_steps{0};
+struct StepperWithEncoderPositionStatus : public StepperPositionStatus {
+    std::atomic<int32_t> encoder_position_steps{0};
+    auto update_encoder_position(int32_t new_position) {
+        encoder_position_steps = new_position;
+    }
 };
 
-struct EncoderOnlyPositionStatus: public PositionStatus {
-        std::atomic<int32_t> encoder_position_steps{0};
+struct EncoderOnlyPositionStatus : public PositionStatus {
+    std::atomic<int32_t> encoder_position_steps{0};
+    auto update_encoder_position(int32_t new_position) -> void {
+        encoder_position_steps = new_position;
+    }
 };
-
 
 template <typename Client>
-concept PositionStatusClient = requires (Client client, uint32_t flag_updates){
-{client.set_position_flags(flag_updates)};
-{client.clear_position_flags(flag_updates)};
-};
-
-template<typename Client>
-concept StepperPositionOnlyClient = requires(Client client, uint32_t stepper_position) {
-{client.update_stepper_position(stepper_position)};
-};
-
-template<typename Client>
-concept EncoderPositionOnlyClient = requires(Client client, int32_t encoder_position) {
-{client.update_encoder_position(encoder_position)};
+concept PositionStatusClient = requires(Client client, uint32_t flag_updates) {
+    {client.set_position_flags(flag_updates)};
+    {client.clear_position_flags(flag_updates)};
 };
 
 template <typename Client>
-concept StepperPositionStatusClient = PositionStatusClient<Client> && StepperPositionOnlyClient<Client>;
+concept StepperPositionOnlyClient = requires(Client client,
+                                             uint32_t stepper_position) {
+    {client.update_stepper_position(stepper_position)};
+};
 
 template <typename Client>
-concept StepperWithEncoderPositionStatusClient = StepperPositionStatusClient<Client> && EncoderPositionOnlyClient<Client>;
+concept EncoderPositionOnlyClient = requires(Client client,
+                                             int32_t encoder_position) {
+    {client.update_encoder_position(encoder_position)};
+};
 
 template <typename Client>
-concept EncoderOnlyPositionStatusClient = PositionStatusClient<Client> && EncoderPositionOnlyClient<Client>;
+concept StepperPositionStatusClient =
+    PositionStatusClient<Client> && StepperPositionOnlyClient<Client>;
+
+template <typename Client>
+concept StepperWithEncoderPositionStatusClient =
+    StepperPositionStatusClient<Client> && EncoderPositionOnlyClient<Client>;
+
+template <typename Client>
+concept EncoderOnlyPositionStatusClient =
+    PositionStatusClient<Client> && EncoderPositionOnlyClient<Client>;
