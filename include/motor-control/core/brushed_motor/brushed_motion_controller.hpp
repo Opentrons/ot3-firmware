@@ -25,6 +25,10 @@ class MotionController {
     MotionController(MotionController&&) = delete;
     ~MotionController() = default;
 
+    [[nodiscard]] auto get_position_status() -> EncoderOnlyPositionStatus& {
+        return position_status;
+    }
+
     void move(const can::messages::GripperGripRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
                         .duty_cycle = can_msg.duty_cycle,
@@ -62,6 +66,8 @@ class MotionController {
     void stop() { hardware.stop_pwm(); }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
+
+    EncoderOnlyPositionStatus position_status{};
 
   private:
     BrushedMotorHardwareIface& hardware;

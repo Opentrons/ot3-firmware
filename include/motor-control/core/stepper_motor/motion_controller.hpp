@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <type_traits>
 #include <variant>
 
@@ -42,6 +43,11 @@ class MotionController {
     MotionController(MotionController&&) = delete;
 
     ~MotionController() = default;
+
+    [[nodiscard]] auto get_position_status_handler()
+        -> StepperWithEncoderPositionStatus& {
+        return position_status;
+    }
 
     [[nodiscard]] auto get_mechanical_config() const
         -> const lms::LinearMotionSystemConfig<MEConfig>& {
@@ -125,6 +131,7 @@ class MotionController {
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_encoder_pulse{0};
     bool enabled = false;
+    StepperWithEncoderPositionStatus position_status{};
 };
 
 }  // namespace motion_controller
@@ -164,6 +171,10 @@ class PipetteMotionController {
     [[nodiscard]] auto get_mechanical_config() const
         -> const lms::LinearMotionSystemConfig<MEConfig>& {
         return linear_motion_sys_config;
+    }
+
+    [[nodiscard]] auto get_position_status_handler() -> StepperPositionStatus& {
+        return position_status;
     }
 
     void move(const can::messages::TipActionRequest& can_msg) {
@@ -222,6 +233,7 @@ class PipetteMotionController {
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
     bool enabled = false;
+    StepperPositionStatus position_status{};
 };
 
 }  // namespace pipette_motion_controller

@@ -70,6 +70,11 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const pipettes::tasks::gear_move_status::TaskMessage& m);
 
+    void set_position_flags(uint32_t);
+    void clear_position_flags(uint32_t);
+    void update_stepper_position(uint32_t);
+    void update_encoder_position(int32_t);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         pipettes::tasks::motion_controller_task::TaskMessage>* motion_queue{
         nullptr};
@@ -83,6 +88,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
         driver_queue{nullptr};
+    StepperWithEncoderPositionStatus* position_status{nullptr};
 };
 
 /**

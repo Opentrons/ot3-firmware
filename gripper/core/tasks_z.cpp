@@ -1,3 +1,4 @@
+
 #include "common/core/freertos_task.hpp"
 #include "gripper/core/tasks.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -56,6 +57,8 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     z_queues.move_group_queue = &move_group.get_queue();
     z_queues.move_status_report_queue = &move_status_reporter.get_queue();
     z_queues.spi_queue = &spi_task.get_queue();
+    z_queues.position_status =
+        &z_motor.motion_controller.get_position_status_handler();
     spi_task_client.set_queue(&spi_task.get_queue());
 }
 
@@ -80,6 +83,26 @@ void z_tasks::QueueClient::send_move_group_queue(
 void z_tasks::QueueClient::send_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
     static_cast<void>(move_status_report_queue->try_write_isr(m));
+}
+
+void z_tasks::QueueClient::set_position_flags(uint32_t flags) {
+    if (!position_status) return;
+    position_status->set_flags(flags);
+}
+
+void z_tasks::QueueClient::clear_position_flags(uint32_t flags) {
+    if (!position_status) return;
+    position_status->clear_flags(flags);
+}
+
+void z_tasks::QueueClient::update_stepper_position(uint32_t pos) {
+    if (!position_status) return;
+    position_status->update_stepper_position(pos);
+}
+
+void z_tasks::QueueClient::update_encoder_position(int32_t pos) {
+    if (!position_status) return;
+    position_status->update_encoder_position(pos);
 }
 
 auto z_tasks::get_queues() -> z_tasks::QueueClient& { return z_queues; }

@@ -6,6 +6,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/types.hpp"
 
 namespace brushed_motor_handler {
 
@@ -17,8 +18,11 @@ using namespace motor_messages;
  *
  */
 
-template <template <class> class QueueImpl,
-          move_status_reporter_task::BrushedTaskClient StatusClient>
+template <typename Client>
+concept InterruptClient =
+    move_status_reporter_task::BrushedTaskClient<Client> &&
+    EncoderOnlyPositionStatusClient<Client>;
+template <template <class> class QueueImpl, InterruptClient StatusClient>
 requires MessageQueue<QueueImpl<BrushedMove>, BrushedMove>
 class BrushedMotorInterruptHandler {
   public:
