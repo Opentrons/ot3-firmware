@@ -32,6 +32,11 @@ class MotionController {
     MotionController(MotionController&&) = delete;
     ~MotionController() = default;
 
+    [[nodiscard]] auto get_mechanical_config() const
+    -> const lms::LinearMotionSystemConfig<MEConfig>& {
+        return linear_motion_sys_config;
+    }
+
     void move(const can::messages::GripperGripRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
                         .duty_cycle = can_msg.duty_cycle,

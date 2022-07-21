@@ -68,7 +68,7 @@ static brushed_motor::BrushedMotor grip_motor(
         .steps_per_rev = 0,
         .microstep = 0,
         .encoder_pulses_per_rev = 512,
-        .gear_ratio = 85},
+        .gear_ratio = 84},
     brushed_motor_hardware_iface, brushed_motor_driver_iface, motor_queue);
 
 /**
