@@ -233,6 +233,12 @@ class MMR920C04 {
             static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ),
             static_cast<std::size_t>(3), own_queue,
             static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ));
+        if (limited_poll) {
+            number_of_reads--;
+            if (number_of_reads < 1) {
+                stop_polling = true;
+            }
+        }
         if (stop_polling) {
             writer.write_isr(mmr920C04::ADDRESS,
                              static_cast<uint8_t>(mmr920C04::Registers::RESET),
@@ -241,18 +247,19 @@ class MMR920C04 {
     }
 
     auto set_sync_bind(SensorOutputBinding binding) -> void {
-        _output_sync_bind = binding;
-        if (binding == SensorOutputBinding::none) {
-            // NOLINTNEXTLINE
-            stop_polling = true;
-        } else {
-            stop_polling = false;
-        }
+//        _output_sync_bind = binding;
         hardware.reset_sync();
+        stop_polling = ((static_cast<uint8_t>(binding) & 0x3) == 0x0);
+        report = ((static_cast<uint8_t>(binding) & 0x2) == 0x2);
+        sync = ((static_cast<uint8_t>(binding) & 0x1) == 0x1);
     }
 
     void set_number_of_reads(uint16_t number_of_reads) {
         this->number_of_reads = number_of_reads;
+    }
+
+    void set_limited_poll(bool _limited) {
+        limited_poll = _limited;
     }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
@@ -263,14 +270,17 @@ class MMR920C04 {
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);
-                if (_output_sync_bind == SensorOutputBinding::sync) {
+                if (sync) {
                     if (data > threshold_cmH20) {
                         hardware.set_sync();
+                        stop_polling = true;
                     } else {
                         hardware.reset_sync();
                     }
                 }
-                send_pressure();
+                if (report) {
+                    send_pressure();
+                }
                 break;
             case mmr920C04::Registers::LOW_PASS_PRESSURE_READ:
                 read_pressure_low_pass(data);
@@ -299,8 +309,10 @@ class MMR920C04 {
     mmr920C04::MMR920C04RegisterMap _registers{};
     bool _initialized = false;
     bool stop_polling = true;
-    // TODO: implement limited polling
-    uint16_t number_of_reads = 1;
+    bool sync = false;
+    bool report = false;
+    bool limited_poll = true;
+    uint16_t number_of_reads = 0x1;
     int32_t threshold_cmH20 = 0x8;
     const uint16_t DELAY = 20;
     I2CQueueWriter &writer;
@@ -309,7 +321,6 @@ class MMR920C04 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
-    SensorOutputBinding _output_sync_bind = SensorOutputBinding::none;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
