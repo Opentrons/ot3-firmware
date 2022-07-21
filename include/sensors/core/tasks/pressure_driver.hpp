@@ -247,7 +247,7 @@ class MMR920C04 {
     }
 
     auto set_sync_bind(SensorOutputBinding binding) -> void {
-//        _output_sync_bind = binding;
+        //        _output_sync_bind = binding;
         hardware.reset_sync();
         stop_polling = ((static_cast<uint8_t>(binding) & 0x3) == 0x0);
         report = ((static_cast<uint8_t>(binding) & 0x2) == 0x2);
@@ -258,9 +258,7 @@ class MMR920C04 {
         this->number_of_reads = number_of_reads;
     }
 
-    void set_limited_poll(bool _limited) {
-        limited_poll = _limited;
-    }
+    void set_limited_poll(bool _limited) { limited_poll = _limited; }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
         int32_t data = 0x0;
