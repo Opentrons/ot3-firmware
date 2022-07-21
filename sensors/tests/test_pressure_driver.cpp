@@ -60,9 +60,9 @@ SCENARIO("Read pressure sensor values") {
     sensors::tasks::MMR920C04 driver(writer, poller, queue_client,
                                      pressure_queue, hardware, sensor_id);
 
-    GIVEN(
-        "Pressure read with SensorMode = SINGLE_READ, and output binding not "
-        "set") {
+    GIVEN("Pressure read with SensorMode = SINGLE_READ") {
+        driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+        driver.set_limited_poll(true);
         WHEN("the sensor_callback function is called") {
             driver.sensor_callback();
             THEN(
@@ -112,6 +112,7 @@ SCENARIO("Read pressure sensor values") {
     }
     GIVEN(
         "Pressure read with SensorMode = POLLING, and output binding = sync") {
+        driver.set_limited_poll(false);
         driver.get_pressure();
         driver.set_sync_bind(can::ids::SensorOutputBinding::sync);
         WHEN("the sensor_callback function is called") {
@@ -145,26 +146,17 @@ SCENARIO("Read pressure sensor values") {
                                     0x0}};
                 driver.handle_response(sensor_response);
                 THEN(
-                    "the handle_message function sends the correct data via "
-                    "the CAN bus, and the sync pin is set") {
-                    can::message_writer_task::TaskMessage can_msg{};
+                    "no data is sent via the CAN bus, and the sync pin is "
+                    "set") {
+                    REQUIRE(can_queue.get_size() == 0);
 
-                    can_queue.try_read(&can_msg);
-                    auto response_msg =
-                        std::get<can::messages::ReadFromSensorResponse>(
-                            can_msg.message);
-                    float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 33.53677;
-                    REQUIRE(check_data == Approx(expected));
                     REQUIRE(hardware.get_sync_state_mock() == true);
                 }
             }
         }
     }
-    GIVEN(
-        "Pressure read with SensorMode = POLLING, and output binding = "
-        "report") {
+    GIVEN("Pressure read with output binding = report") {
+        driver.set_number_of_reads(2);
         driver.get_pressure();
         driver.set_sync_bind(can::ids::SensorOutputBinding::report);
         WHEN("the sensor_callback function is called") {
@@ -216,7 +208,3 @@ SCENARIO("Read pressure sensor values") {
         }
     }
 }
-
-// send a couple interrupts, make sure RESET never gets sent
-// check that hardware.set_sync() is simulated correctly, and check that
-//  pressure_driver changes the values
