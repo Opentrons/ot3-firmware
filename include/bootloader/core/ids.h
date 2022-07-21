@@ -33,7 +33,6 @@ typedef enum {
     can_messageid_enable_motor_request = 0x6,
     can_messageid_disable_motor_request = 0x7,
     can_messageid_move_request = 0x10,
-    can_messageid_setup_request = 0x2,
     can_messageid_write_eeprom = 0x201,
     can_messageid_read_eeprom_request = 0x202,
     can_messageid_read_eeprom_response = 0x203,
@@ -145,7 +144,7 @@ typedef enum {
 } CANSensorType;
 
 /** Sensor IDs available.
-    
+
     Not to be confused with SensorType. This is the ID value that separate
     two or more of the same type of sensor within a system.
      */

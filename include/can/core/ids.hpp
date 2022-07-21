@@ -174,4 +174,10 @@ enum class PipetteTipActionType {
     drop = 0x1,
 };
 
+/** Flags that can apply to position updates. */
+enum class PositionFlags {
+    stepper_position_ok = 0x1,
+    encoder_position_ok = 0x2,
+};
+
 }  // namespace can::ids
