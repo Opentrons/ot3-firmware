@@ -96,7 +96,14 @@ static auto dispatcher_g = can::dispatch::Dispatcher(
 
 /** Dispatcher to the various handlers */
 static auto main_dispatcher = can::dispatch::Dispatcher(
-    can::dispatch::StandardArbIdTest{.node_id = can::ids::NodeId::gripper},
+    [](uint32_t arbitration_id) -> bool {
+        auto arb = can::arbitration_id::ArbitrationId(arbitration_id);
+        auto node_id = arb.node_id();
+        return ((node_id == can::ids::NodeId::broadcast) ||
+                (node_id == can::ids::NodeId::gripper) ||
+                (node_id == can::ids::NodeId::gripper_z) ||
+                (node_id == can::ids::NodeId::gripper_g));
+    },
     dispatcher_z, dispatcher_g, system_dispatch_target,
     gripper_info_dispatch_target, eeprom_dispatch_target,
     sensor_dispatch_target);
