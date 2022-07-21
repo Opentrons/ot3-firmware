@@ -38,9 +38,13 @@ using namespace motor_messages;
  */
 
 // (TODO lc): This should probably live in the motor configs.
-constexpr const int clk_frequency = 85000000 / (5001 * 2);
+    constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl, class StatusClient,
+template<typename Client>
+concept InterruptReporterClient = move_status_reporter_task::TaskClient<Client> && StepperWithEncoderPositionStatusClient<Client>;
+
+template <template <class> class QueueImpl,
+          InterruptReporterClient StatusClient,
           typename MotorMoveMessage>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {

@@ -23,7 +23,11 @@ class MotionController {
     auto operator=(MotionController&&) -> MotionController&& = delete;
     MotionController(MotionController&) = delete;
     MotionController(MotionController&&) = delete;
-    ~MotionController() = default;
+        ~MotionController() = default;
+
+        [[nodiscard]] auto get_position_status() -> EncoderOnlyPositionStatus& {
+            return position_status;
+        }
 
     void move(const can::messages::GripperGripRequest& can_msg) {
         BrushedMove msg{.duration = can_msg.duration,
@@ -67,6 +71,7 @@ class MotionController {
     BrushedMotorHardwareIface& hardware;
     GenericQueue& queue;
     bool enabled = false;
+    EncoderOnlyPositionStatus position_status{};
 };
 
 }  // namespace brushed_motion_controller
