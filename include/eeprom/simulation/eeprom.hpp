@@ -25,10 +25,18 @@ class EEProm : public I2CDeviceBase,
 
     auto handle_write(const uint8_t *data, uint16_t size) -> bool {
         auto *iter = data;
-        // Read the address
-        iter = bit_utils::bytes_to_int(iter, data + size, current_address);
-        auto data_size = size - sizeof(current_address);
 
+        // Read the address
+        iter = bit_utils::bytes_to_int(
+            iter, data + this->get_eeprom_addr_bytes(), current_address);
+        // if the address is configued as 8 bit we need to shift the
+        // current_address toward the LSB
+        if (this->get_eeprom_addr_bytes() ==
+            static_cast<size_t>(
+                hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
+            current_address = current_address >> 8;
+        }
+        auto data_size = size - this->get_eeprom_addr_bytes();
         if (data_size > 0) {
             if (!write_protected) {
                 // Let the exception happen. Catch errors!
@@ -60,11 +68,10 @@ class EEProm : public I2CDeviceBase,
     }
 
   private:
-    std::array<uint8_t,
-               static_cast<size_t>(
-                   hardware_iface::EEpromMemorySize::MICROCHIP_256_BYTE)>
+    std::array<uint8_t, static_cast<size_t>(
+                            hardware_iface::EEpromMemorySize::ST_16_KBYTE)>
         backing{};
-    uint8_t current_address{0};
+    types::address current_address{0};
     bool write_protected{true};
 };
 

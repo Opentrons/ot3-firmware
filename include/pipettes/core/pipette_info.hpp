@@ -24,7 +24,7 @@ enum class PipetteName {
 struct PipetteInfo {
     PipetteName name;
     uint16_t model;
-    std::array<char, 12> serial;
+    eeprom::serial_number::SerialNumberType serial;
 };
 
 // These are implemented in pipette-type-specific source files in core
