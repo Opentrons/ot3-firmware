@@ -308,7 +308,7 @@ class MMR920C04 {
     bool _initialized = false;
     bool stop_polling = true;
     bool sync = false;
-    bool report = false;
+    bool report = true;
     bool limited_poll = true;
     uint16_t number_of_reads = 0x1;
     int32_t threshold_cmH20 = 0x8;
