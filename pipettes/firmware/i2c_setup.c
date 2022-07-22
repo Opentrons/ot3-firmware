@@ -39,7 +39,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
         // PIN PC4 is SCL
         // PIN PA8 is SDA
         // Secondary sensors and eeprom
-        __HAL_RCC_I2C2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -54,19 +53,21 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
         HAL_GPIO_Init(
             GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        __HAL_RCC_I2C2_CLK_ENABLE();
     } else if(hi2c->Instance==I2C3) {
         // PIN PC8 is SCL
         // PIN PC9 is SDA
         // Primary sensors
-        __HAL_RCC_I2C3_CLK_ENABLE();
         GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF4_I2C3;
+        GPIO_InitStruct.Alternate = GPIO_AF8_I2C3;
         HAL_GPIO_Init(
             GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        __HAL_RCC_I2C3_CLK_ENABLE();
+
     }
 
     /*Configure data ready pin : PC3 */
@@ -138,10 +139,6 @@ HAL_I2C_HANDLE MX_I2C3_Init()
 
     return &hi2c3;
 
-}
-
-int data_ready() {
-    return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_3) == GPIO_PIN_SET;
 }
 
 /**
