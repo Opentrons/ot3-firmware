@@ -300,19 +300,19 @@ auto motor_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
         .primary = sensors::hardware::SensorHardwareConfiguration{
             .sync_in =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOB,
-                    .pin = GPIO_PIN_7,
-                    .active_setting = GPIO_PIN_RESET},
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_7,
+                 .active_setting = GPIO_PIN_RESET},
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOB,
-                    .pin = GPIO_PIN_6,
-                    .active_setting = GPIO_PIN_RESET},
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_6,
+                 .active_setting = GPIO_PIN_RESET},
             .data_ready =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOC,
-                    .pin = GPIO_PIN_3,
-                    .active_setting = GPIO_PIN_RESET},
+                 .port = GPIOC,
+                 .pin = GPIO_PIN_3,
+                 .active_setting = GPIO_PIN_RESET},
         }};
     return pins;
 }

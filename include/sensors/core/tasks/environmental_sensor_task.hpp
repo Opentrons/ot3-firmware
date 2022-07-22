@@ -170,7 +170,7 @@ class EnvironmentSensorTask {
                                  CanClient *can_client) {
         auto handler = EnvironmentSensorMessageHandler(*writer, *can_client,
                                                        get_queue(), sensor_id);
-//        handler.initialize();
+        //        handler.initialize();
         utils::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
