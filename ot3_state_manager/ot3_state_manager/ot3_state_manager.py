@@ -2,11 +2,7 @@
 
 from __future__ import annotations
 
-from typing import (
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict, List, Optional
 
 from ot3_state_manager.ot3_state_manager.errors import (
     HardwareNotAttachedError,
@@ -167,6 +163,7 @@ class OT3StateManager:
 
     @property
     def updatable_positions(self) -> List[UpdatablePositions]:
+        """Returns a list of positions that are available to be updated."""
         return [
             key
             for key, value in self._updatable_pos_to_hardware_dict.items()
@@ -174,7 +171,9 @@ class OT3StateManager:
         ]
 
     @property
-    def _updatable_pos_to_hardware_dict(self) -> Dict[UpdatablePositions, Optional[Hardware]]:
+    def _updatable_pos_to_hardware_dict(
+        self,
+    ) -> Dict[UpdatablePositions, Optional[Hardware]]:
 
         return {
             UpdatablePositions.GANTRY_X: self.gantry_x,
@@ -195,18 +194,22 @@ class OT3StateManager:
 
     @property
     def is_gripper_attached(self) -> bool:
+        """Returns True if gripper is attached, False if not."""
         return self.gripper is not None
 
     @property
     def is_left_pipette_attached(self) -> bool:
+        """Returns True if left pipette is attached, False if not."""
         return self.left_pipette is not None
 
     @property
     def is_right_pipette_attached(self) -> bool:
+        """Returns True if right pipette is attached, False if not."""
         return self.right_pipette is not None
 
     @property
     def is_high_throughput_pipette_attached(self) -> bool:
+        """Returns True if high throughput pipette is attached, False if not."""
         return (
             self.right_pipette is not None
             and self.right_pipette.model == PipetteModel.MULTI_96_1000
@@ -234,7 +237,13 @@ class OT3StateManager:
         commanded_position: Optional[float],
         encoder_position: Optional[float],
     ) -> None:
+        """Method to update the position of a piece of OT3 hardware.
 
+        Pass an UpdatablePosition object and at least 1 position to update.
+
+        Throws exception if no positions are provided and if the underlying hardware
+        related to UpdatablePosition is not attached.
+        """
         if all(
             [
                 pos is None

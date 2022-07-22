@@ -3,6 +3,8 @@ from enum import Enum
 
 
 class PipetteModel(Enum):
+    """Enum containing valid pipette models for OT3."""
+
     # TODO: I know these aren't the correct pipette models
     # Need to update when there is more clarity on what they are
     # Maybe pull from shared data in monorepo?

@@ -1,3 +1,5 @@
+"""File for enum class describing OT3 Axes"""
+
 import enum
 
 

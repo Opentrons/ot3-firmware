@@ -1,3 +1,5 @@
+"""File containing hardware dataclasses for OT3."""
+
 from __future__ import annotations
 
 from abc import ABC
@@ -21,6 +23,7 @@ class UpdatablePositions(Enum):
 
     @staticmethod
     def pos_to_axis(pos: UpdatablePositions) -> str:
+        """Returns axis for passed UpdatablePosition object."""
         pos_dict = {
             UpdatablePositions.GANTRY_X: OT3Axis.X.name,
             UpdatablePositions.GANTRY_Y: OT3Axis.Y.name,
@@ -40,6 +43,8 @@ class UpdatablePositions(Enum):
 
 
 class Hardware(ABC):
+    """ABC for all OT3 hardware."""
+
     hardware_name: str
     position: Position
 

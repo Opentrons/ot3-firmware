@@ -1,3 +1,4 @@
+"""OT3StateManager object tests."""
 import pytest
 
 from ot3_state_manager.ot3_state_manager.errors import (
@@ -18,6 +19,7 @@ from ot3_state_manager.ot3_state_manager.pipette_model import PipetteModel
 
 @pytest.fixture
 def ot3_state_manager() -> OT3StateManager:
+    """Returns OT3StateManager with left/right pipette and a gripper."""
     return OT3StateManager.build(
         left_pipette_model=PipetteModel.SINGLE_20,
         right_pipette_model=PipetteModel.MULTI_8_20,
@@ -27,13 +29,14 @@ def ot3_state_manager() -> OT3StateManager:
 
 @pytest.fixture
 def ot3_state_manager_no_pipettes_or_gripper() -> OT3StateManager:
+    """Returns OT3StateManager without left/right pipette and a gripper."""
     return OT3StateManager.build(
         left_pipette_model=None, right_pipette_model=None, use_gripper=False
     )
 
 
 def test_build(ot3_state_manager: OT3StateManager) -> None:
-
+    """Confirms that when building OT3StateManager with pipettes and gripper that it is configured correctly."""  # noqa: E501
     assert ot3_state_manager.left_pipette is not None
     assert ot3_state_manager.right_pipette is not None
     assert ot3_state_manager.gripper is not None
@@ -48,6 +51,7 @@ def test_build(ot3_state_manager: OT3StateManager) -> None:
 
 
 def test_build_no_gripper() -> None:
+    """Confirms that when building OT3StateManager no gripper that it is configured correctly."""  # noqa: E501
     manager = OT3StateManager.build(
         left_pipette_model=PipetteModel.SINGLE_20,
         right_pipette_model=PipetteModel.MULTI_8_20,
@@ -67,6 +71,7 @@ def test_build_no_gripper() -> None:
 
 
 def test_build_no_left_pipette() -> None:
+    """Confirms that when building OT3StateManager with no left pipette that it is configured correctly."""  # noqa: E501
     manager = OT3StateManager.build(
         left_pipette_model=None,
         right_pipette_model=PipetteModel.MULTI_8_20,
@@ -86,6 +91,7 @@ def test_build_no_left_pipette() -> None:
 
 
 def test_build_no_right_pipette() -> None:
+    """Confirms that when building OT3StateManager with no right pipette that it is configured correctly."""  # noqa: E501
     manager = OT3StateManager.build(
         left_pipette_model=PipetteModel.SINGLE_20,
         right_pipette_model=None,
@@ -105,6 +111,7 @@ def test_build_no_right_pipette() -> None:
 
 
 def test_high_throughput_pipette_wrong_mount() -> None:
+    """Confirms that exception is thrown when trying to mount high-throughput pipette to left pipette mount."""  # noqa: E501
     with pytest.raises(PipetteConfigurationError) as err:
         OT3StateManager.build(
             left_pipette_model=PipetteModel.MULTI_96_1000,
@@ -115,6 +122,7 @@ def test_high_throughput_pipette_wrong_mount() -> None:
 
 
 def test_high_throughput_too_many_pipettes() -> None:
+    """Confirms that exception is thrown when trying to a left pipette when a high-throughput pipette is being mounted to the right slot."""  # noqa: E501
     with pytest.raises(PipetteConfigurationError) as err:
         OT3StateManager.build(
             left_pipette_model=PipetteModel.SINGLE_20,
@@ -128,6 +136,7 @@ def test_high_throughput_too_many_pipettes() -> None:
 
 
 def test_high_throughput() -> None:
+    """Confirms that is_high_throughput_pipette_attached returns True when high-throughput pipette is mounted."""  # noqa: E501
     manager = OT3StateManager.build(
         left_pipette_model=None,
         right_pipette_model=PipetteModel.MULTI_96_1000,
@@ -135,6 +144,9 @@ def test_high_throughput() -> None:
     )
 
     assert manager.is_high_throughput_pipette_attached
+    assert not manager.is_left_pipette_attached
+    assert manager.is_right_pipette_attached
+    assert not manager.is_gripper_attached
 
 
 def test_current_position(ot3_state_manager: OT3StateManager) -> None:
@@ -244,3 +256,28 @@ def test_update_position_no_position_provided(
             commanded_position=None,
             encoder_position=None,
         )
+
+
+def test_updatable_positions(ot3_state_manager: OT3StateManager):
+    assert set(ot3_state_manager.updatable_positions) == {
+        UpdatablePositions.GANTRY_X,
+        UpdatablePositions.GANTRY_Y,
+        UpdatablePositions.GRIPPER_EXTEND,
+        UpdatablePositions.GRIPPER_MOUNT,
+        UpdatablePositions.LEFT_PIPETTE_MOUNT,
+        UpdatablePositions.RIGHT_PIPETTE_MOUNT,
+        UpdatablePositions.LEFT_PIPETTE_PLUNGER,
+        UpdatablePositions.RIGHT_PIPETTE_PLUNGER,
+    }
+
+
+def test_updatable_positions_no_gripper_or_pipettes(
+    ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
+):
+    assert set(ot3_state_manager_no_pipettes_or_gripper.updatable_positions) == {
+        UpdatablePositions.GANTRY_X,
+        UpdatablePositions.GANTRY_Y,
+        UpdatablePositions.GRIPPER_MOUNT,
+        UpdatablePositions.LEFT_PIPETTE_MOUNT,
+        UpdatablePositions.RIGHT_PIPETTE_MOUNT,
+    }
