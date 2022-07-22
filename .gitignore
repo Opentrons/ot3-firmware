@@ -12,3 +12,5 @@ node_modules
 __pycache__
 ./Pipfile
 .vscode/settings.json
+ot3_state_manager/.coverage
+ot3_state_manager/coverage.xml
