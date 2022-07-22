@@ -137,8 +137,8 @@ void data_ready_gpio_init() {
         pipette_type, pipette_hardware_device_data_ready_front);
         PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(pipette_type,
                                                                      pipette_hardware_device_data_ready_rear);
-
         __HAL_RCC_GPIOA_CLK_ENABLE();
+
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = hardware_rear.pin;
@@ -166,10 +166,6 @@ void data_ready_gpio_init() {
     /* EXTI interrupt init*/
     HAL_NVIC_SetPriority(exti_line, 10, 0);
     HAL_NVIC_EnableIRQ(exti_line);
-}
-
-int tip_present() {
-    return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET;
 }
 
 void utility_gpio_init() {

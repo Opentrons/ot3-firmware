@@ -96,16 +96,10 @@ void motor_driver_gpio_init() {
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     if (pipette_type != NINETY_SIX_CHANNEL) {
-        /*
-         * (TODO: 25-04-2022) We will be switching all
-         * motor drivers to tmc2160 and will no longer need
-         * to wire up the motor drive clocks to an external oscillator.
-         *
-         * The 96 channel already uses the internal clock so we
-         * should ignore this setup when we're compiling for the 96 channel.
-         */
         // Driver Clock Pin.
-        motor_driver_CLK_gpio_init();
+        // Enable Dir/Step pin
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     } else {
         // Enable Dir/Step pin
         GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
