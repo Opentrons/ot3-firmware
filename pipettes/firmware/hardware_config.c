@@ -106,7 +106,7 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
      * PB12
      */
     switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOB: return GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+        case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         default: return 0;
     }
 }
