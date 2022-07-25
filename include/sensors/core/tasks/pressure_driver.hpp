@@ -247,7 +247,6 @@ class MMR920C04 {
     }
 
     auto set_sync_bind(SensorOutputBinding binding) -> void {
-        //        _output_sync_bind = binding;
         hardware.reset_sync();
         stop_polling = ((static_cast<uint8_t>(binding) & 0x3) == 0x0);
         report = ((static_cast<uint8_t>(binding) & 0x2) == 0x2);
