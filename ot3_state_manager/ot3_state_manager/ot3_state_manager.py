@@ -107,9 +107,9 @@ class OT3StateManager:
             self.right_pipette.position if self.right_pipette is not None else None
         )
         gripper_pos = self.gripper.position if self.gripper is not None else None
+        gripper_mount_pos = self.gripper.gripper_mount_position if self.gripper is not None else None
 
         return {
-            Head.gripper_mount_position.axis: self.head.gripper_mount_position,
             Head.left_pipette_mount_position.axis: self.head.left_pipette_mount_position,
             Head.right_pipette_mount_position.axis: self.head.right_pipette_mount_position,
             GantryX.position.axis: self.gantry_x.position,
@@ -117,6 +117,7 @@ class OT3StateManager:
             LeftPipette.position.axis: left_pipette_pos,
             RightPipette.position.axis: right_pipette_pos,
             Gripper.position.axis: gripper_pos,
+            Gripper.gripper_mount_position.axis: gripper_mount_pos,
         }
 
     @property
