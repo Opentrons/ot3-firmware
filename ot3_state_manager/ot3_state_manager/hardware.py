@@ -52,6 +52,7 @@ class RightPipette:
 @dataclass
 class Head:
     """OT3 Head Hardware."""
+
     # Putting mount control for pipettes under head because that is the board that
     # actually controls it.
     left_pipette_mount_position = Position(axis=OT3Axis.Z_L)
