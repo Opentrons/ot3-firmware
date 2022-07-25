@@ -26,18 +26,22 @@ jobs:
       - name: Checkout ot3-firmware repository
         uses: actions/checkout@v3
 
+      - name: Install poetry
+        run: pipx install poetry
+        working-directory: ot3_state_manager
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
-          cache: pipenv
-          cache-dependency-path: |
-            ./ot3_state_manager/Pipfile.lock
-            ./ot3_state_manager/Makefile
+          python-version: "3.8"
+          cache: poetry
 
-      - name: Install Pipenv
-        run: pip install pipenv==2022.3.24
-        shell: bash
+      # Have to configure the env after installing python because setup-python
+      # does not configure poetry to use the newly installed python version.
+      # Instead it uses the system python version which is wrong.
+      # https://github.com/actions/setup-python/issues/369#issuecomment-1086719372
+      - name: Configure Poetry
+        run: poetry env use 3.8
         working-directory: ot3_state_manager
 
       - name: Setup repo

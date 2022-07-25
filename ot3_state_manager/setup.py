@@ -31,7 +31,7 @@ CLASSIFIERS = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.8",
     "Topic :: Scientific/Engineering",
 ]
 KEYWORDS = ["robots", "protocols", "synbio", "pcr", "automation", "lab"]
@@ -50,7 +50,7 @@ def read(*parts):
 
 
 setup(
-    python_requires=">=3.10",
+    python_requires=">=3.8",
     name=DISTNAME,
     description=DESCRIPTION,
     license=LICENSE,
