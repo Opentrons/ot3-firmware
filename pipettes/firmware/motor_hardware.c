@@ -9,7 +9,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
         /**SPI2 GPIO Configuration
-        PC6     ------> SPI2_CS
+        PB12     ------> SPI2_CS
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_CIPO
         PB15     ------> SPI2_COPI
@@ -24,13 +24,13 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Chip Select
-        GPIO_InitStruct.Pin = pipette_hardware_spi_pins(pipette_type, GPIOC);
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        HAL_GPIO_WritePin(GPIOC, GPIO_InitStruct.Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_InitStruct.Pin, GPIO_PIN_SET);
     }
 }
 
