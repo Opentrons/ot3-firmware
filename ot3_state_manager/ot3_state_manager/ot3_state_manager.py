@@ -189,43 +189,14 @@ class OT3StateManager:
             and self.right_pipette.model == PipetteModel.MULTI_96_1000
         )
 
-    @staticmethod
-    def _update_pos(
-        position: Position,
-        current_position: Optional[float],
-        commanded_position: Optional[float],
-        encoder_position: Optional[float],
-    ) -> None:
-
-        if current_position is not None:
-            position.current_position = current_position
-        if commanded_position is not None:
-            position.commanded_position = commanded_position
-        if encoder_position is not None:
-            position.encoder_position = encoder_position
-
     def update_position(
         self,
         axis_to_update: OT3Axis,
-        current_position: Optional[float],
-        commanded_position: Optional[float],
-        encoder_position: Optional[float],
+        current_position: float,
+        commanded_position: float,
+        encoder_position: float,
     ) -> None:
-        """Method to update the position of a piece of OT3 hardware.
-
-        Pass an UpdatablePosition object and at least 1 position to update.
-
-        Throws exception if no positions are provided and if the underlying hardware
-        related to UpdatablePosition is not attached.
-        """
-        if all(
-            [
-                pos is None
-                for pos in (current_position, commanded_position, encoder_position)
-            ]
-        ):
-            raise ValueError("You must provide a least one position to update.")
-
+        """Method to update the position of a piece of OT3 hardware."""
         pos_to_update = self._pos_dict()[axis_to_update]
 
         if pos_to_update is None:
@@ -233,7 +204,6 @@ class OT3StateManager:
                 f'Axis "{axis_to_update.name}" is not available. '
                 f"Cannot update it's position."
             )
-
-        self._update_pos(
-            pos_to_update, current_position, commanded_position, encoder_position
-        )
+        pos_to_update.current_position = current_position
+        pos_to_update.commanded_position = commanded_position
+        pos_to_update.encoder_position = encoder_position

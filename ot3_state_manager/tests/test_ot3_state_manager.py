@@ -183,8 +183,8 @@ def test_update_current_position(ot3_state_manager: OT3StateManager) -> None:
     ot3_state_manager.update_position(
         axis_to_update=OT3Axis.X,
         current_position=5.0,
-        commanded_position=None,
-        encoder_position=None,
+        commanded_position=0.0,
+        encoder_position=0.0,
     )
     assert ot3_state_manager.current_position[OT3Axis.X] == 5.0
 
@@ -193,9 +193,9 @@ def test_update_commanded_position(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that updating the commanded position works."""
     ot3_state_manager.update_position(
         axis_to_update=OT3Axis.X,
-        current_position=None,
+        current_position=0.0,
         commanded_position=6.0,
-        encoder_position=None,
+        encoder_position=0.0,
     )
     assert ot3_state_manager.commanded_position[OT3Axis.X] == 6.0
 
@@ -204,8 +204,8 @@ def test_update_encoder_position(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that updating the encoder position works."""
     ot3_state_manager.update_position(
         axis_to_update=OT3Axis.X,
-        current_position=None,
-        commanded_position=None,
+        current_position=0.0,
+        commanded_position=0.0,
         encoder_position=7.0,
     )
     assert ot3_state_manager.encoder_position[OT3Axis.X] == 7.0
@@ -232,22 +232,8 @@ def test_update_position_hardware_not_attached(
         ot3_state_manager_no_pipettes_or_gripper.update_position(
             axis_to_update=OT3Axis.G,
             current_position=6.0,
-            commanded_position=None,
-            encoder_position=None,
+            commanded_position=0.0,
+            encoder_position=0.0,
         )
 
     assert err.match('Axis "G" is not available. Cannot update it\'s position.')
-
-
-def test_update_position_no_position_provided(
-    ot3_state_manager: OT3StateManager,
-) -> None:
-    """Confirms that an exception is thrown when calling .update_position and no position is provided."""
-    with pytest.raises(ValueError) as err:
-        ot3_state_manager.update_position(
-            axis_to_update=OT3Axis.G,
-            current_position=None,
-            commanded_position=None,
-            encoder_position=None,
-        )
-    assert err.match("You must provide a least one position to update.")
