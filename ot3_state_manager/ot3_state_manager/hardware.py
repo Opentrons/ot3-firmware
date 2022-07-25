@@ -27,8 +27,8 @@ class GantryY:
 class Gripper:
     """Gripper Hardware."""
 
-    # Gripper mount is controlled by gripper board so it is being filed under gripper
-    gripper_mount_position = Position(axis=OT3Axis.Z_G)
+    # Gripper z is controlled by gripper board so it is being filed under gripper
+    gripper_z_position = Position(axis=OT3Axis.Z_G)
     position = Position(axis=OT3Axis.G)
     jaw_force = Force(axis=OT3Axis.G)
 
@@ -53,7 +53,7 @@ class RightPipette:
 class Head:
     """OT3 Head Hardware."""
 
-    # Putting mount control for pipettes under head because that is the board that
+    # Putting z control for pipettes under head because that is the board that
     # actually controls it.
-    left_pipette_mount_position = Position(axis=OT3Axis.Z_L)
-    right_pipette_mount_position = Position(axis=OT3Axis.Z_R)
+    left_pipette_z_position = Position(axis=OT3Axis.Z_L)
+    right_pipette_z_position = Position(axis=OT3Axis.Z_R)
