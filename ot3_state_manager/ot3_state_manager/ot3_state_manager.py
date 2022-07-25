@@ -12,9 +12,9 @@ from ot3_state_manager.hardware import (
     Head,
     LeftPipette,
     RightPipette,
-    UpdatablePositions,
 )
 from ot3_state_manager.measurable_states import Position
+from ot3_state_manager.ot3_axis import OT3Axis
 from ot3_state_manager.pipette_model import PipetteModel
 
 
@@ -99,7 +99,7 @@ class OT3StateManager:
         self.right_pipette = right_pipette
         self.gripper = gripper
 
-    def _pos_dict(self) -> Dict[str, Optional[Position]]:
+    def _pos_dict(self) -> Dict[OT3Axis, Optional[Position]]:
         """Generates lookup dict for class's position properties."""
         left_pipette_pos = (
             self.left_pipette.position if self.left_pipette is not None else None
@@ -110,18 +110,18 @@ class OT3StateManager:
         gripper_pos = self.gripper.position if self.gripper is not None else None
 
         return {
-            Head.gripper_mount_position.axis.name: self.head.gripper_mount_position,
-            Head.left_pipette_mount_position.axis.name: self.head.left_pipette_mount_position,
-            Head.right_pipette_mount_position.axis.name: self.head.right_pipette_mount_position,
-            GantryX.position.axis.name: self.gantry_x.position,
-            GantryY.position.axis.name: self.gantry_y.position,
-            LeftPipette.position.axis.name: left_pipette_pos,
-            RightPipette.position.axis.name: right_pipette_pos,
-            Gripper.position.axis.name: gripper_pos,
+            Head.gripper_mount_position.axis: self.head.gripper_mount_position,
+            Head.left_pipette_mount_position.axis: self.head.left_pipette_mount_position,
+            Head.right_pipette_mount_position.axis: self.head.right_pipette_mount_position,
+            GantryX.position.axis: self.gantry_x.position,
+            GantryY.position.axis: self.gantry_y.position,
+            LeftPipette.position.axis: left_pipette_pos,
+            RightPipette.position.axis: right_pipette_pos,
+            Gripper.position.axis: gripper_pos,
         }
 
     @property
-    def current_position(self) -> Dict[str, Optional[float]]:
+    def current_position(self) -> Dict[OT3Axis, Optional[float]]:
         """Returns dictionary with axis mapped to current position of said axis.
 
         If hardware is not attached for axis, then position value will be None.
@@ -135,7 +135,7 @@ class OT3StateManager:
         }
 
     @property
-    def commanded_position(self) -> Dict[str, Optional[float]]:
+    def commanded_position(self) -> Dict[OT3Axis, Optional[float]]:
         """Returns dictionary with axis mapped to commanded position of said axis.
 
         If hardware is not attached for axis, then position value will be None.
@@ -149,7 +149,7 @@ class OT3StateManager:
         }
 
     @property
-    def encoder_position(self) -> Dict[str, Optional[float]]:
+    def encoder_position(self) -> Dict[OT3Axis, Optional[float]]:
         """Returns dictionary with axis mapped to encoder position of said axis.
 
         If hardware is not attached for axis, then position value will be None.
@@ -163,35 +163,13 @@ class OT3StateManager:
         }
 
     @property
-    def updatable_positions(self) -> List[UpdatablePositions]:
+    def updatable_axes(self) -> List[OT3Axis]:
         """Returns a list of positions that are available to be updated."""
         return [
             key
-            for key, value in self._updatable_pos_to_hardware_dict.items()
+            for key, value in self._pos_dict().items()
             if value is not None
         ]
-
-    @property
-    def _updatable_pos_to_hardware_dict(
-        self,
-    ) -> Dict[UpdatablePositions, Optional[Hardware]]:
-
-        return {
-            UpdatablePositions.GANTRY_X: self.gantry_x,
-            UpdatablePositions.GANTRY_Y: self.gantry_y,
-            UpdatablePositions.GRIPPER_MOUNT: self.head,
-            UpdatablePositions.LEFT_PIPETTE_MOUNT: self.head,
-            UpdatablePositions.RIGHT_PIPETTE_MOUNT: self.head,
-            UpdatablePositions.GRIPPER_EXTEND: (
-                self.gripper if self.is_gripper_attached else None
-            ),
-            UpdatablePositions.LEFT_PIPETTE_PLUNGER: (
-                self.left_pipette if self.is_left_pipette_attached else None
-            ),
-            UpdatablePositions.RIGHT_PIPETTE_PLUNGER: (
-                self.right_pipette if self.is_right_pipette_attached else None
-            ),
-        }
 
     @property
     def is_gripper_attached(self) -> bool:
@@ -218,22 +196,22 @@ class OT3StateManager:
 
     @staticmethod
     def _update_pos(
-        hardware: Hardware,
+        position: Position,
         current_position: Optional[float],
         commanded_position: Optional[float],
         encoder_position: Optional[float],
     ) -> None:
 
         if current_position is not None:
-            hardware.position.current_position = current_position
+            position.current_position = current_position
         if commanded_position is not None:
-            hardware.position.commanded_position = commanded_position
+            position.commanded_position = commanded_position
         if encoder_position is not None:
-            hardware.position.encoder_position = encoder_position
+            position.encoder_position = encoder_position
 
     def update_position(
         self,
-        pos_to_update: UpdatablePositions,
+        axis_to_update: OT3Axis,
         current_position: Optional[float],
         commanded_position: Optional[float],
         encoder_position: Optional[float],
@@ -253,14 +231,14 @@ class OT3StateManager:
         ):
             raise ValueError("You must provide a least one position to update.")
 
-        hardware_to_update = self._updatable_pos_to_hardware_dict[pos_to_update]
+        pos_to_update = self._pos_dict()[axis_to_update]
 
-        if hardware_to_update is None:
+        if pos_to_update is None:
             raise ValueError(
-                f'Hardware "{pos_to_update.value}" is not attached. '
+                f'Axis "{axis_to_update.name}" is not available. '
                 f"Cannot update it's position."
             )
 
         self._update_pos(
-            hardware_to_update, current_position, commanded_position, encoder_position
+            pos_to_update, current_position, commanded_position, encoder_position
         )

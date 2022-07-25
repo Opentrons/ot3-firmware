@@ -5,7 +5,6 @@ from ot3_state_manager.hardware import (
     Gripper,
     LeftPipette,
     RightPipette,
-    UpdatablePositions,
 )
 from ot3_state_manager.ot3_axis import OT3Axis
 from ot3_state_manager.ot3_state_manager import OT3StateManager
@@ -148,14 +147,14 @@ def test_current_position(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that .current_position returns correctly."""
     current_position_dict = ot3_state_manager.current_position
     assert set(current_position_dict.keys()) == {
-        "Z_G",
-        "Z_L",
-        "Z_R",
-        "X",
-        "Y",
-        "P_L",
-        "P_R",
-        "G",
+        OT3Axis.X,
+        OT3Axis.Y,
+        OT3Axis.Z_L,
+        OT3Axis.Z_R,
+        OT3Axis.Z_G,
+        OT3Axis.P_L,
+        OT3Axis.P_R,
+        OT3Axis.G,
     }
     assert all([val == 0.0 for val in current_position_dict.values()])
 
@@ -166,19 +165,19 @@ def test_current_position_no_gripper_or_pipettes(
     """Confirms that .current_position returns correctly when no pipettes or gripper is attached."""
     current_position_dict = ot3_state_manager_no_pipettes_or_gripper.current_position
     assert set(current_position_dict.keys()) == {
-        "Z_G",
-        "Z_L",
-        "Z_R",
-        "X",
-        "Y",
-        "P_L",
-        "P_R",
-        "G",
+        OT3Axis.X,
+        OT3Axis.Y,
+        OT3Axis.Z_L,
+        OT3Axis.Z_R,
+        OT3Axis.Z_G,
+        OT3Axis.P_L,
+        OT3Axis.P_R,
+        OT3Axis.G,
     }
     assert all(
         [
             current_position_dict[key] is None
-            for key in [OT3Axis.G.name, OT3Axis.P_L.name, OT3Axis.P_R.name]
+            for key in [OT3Axis.G, OT3Axis.P_L, OT3Axis.P_R]
         ]
     )
 
@@ -186,51 +185,47 @@ def test_current_position_no_gripper_or_pipettes(
 def test_update_current_position(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that updating the current position works."""
     ot3_state_manager.update_position(
-        pos_to_update=UpdatablePositions.GANTRY_X,
+        axis_to_update=OT3Axis.X,
         current_position=5.0,
         commanded_position=None,
         encoder_position=None,
     )
-    axis_key = UpdatablePositions.pos_to_axis(UpdatablePositions.GANTRY_X)
-    assert ot3_state_manager.current_position[axis_key] == 5.0
+    assert ot3_state_manager.current_position[OT3Axis.X] == 5.0
 
 
 def test_update_commanded_position(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that updating the commanded position works."""
     ot3_state_manager.update_position(
-        pos_to_update=UpdatablePositions.GANTRY_X,
+        axis_to_update=OT3Axis.X,
         current_position=None,
         commanded_position=6.0,
         encoder_position=None,
     )
-    axis_key = UpdatablePositions.pos_to_axis(UpdatablePositions.GANTRY_X)
-    assert ot3_state_manager.commanded_position[axis_key] == 6.0
+    assert ot3_state_manager.commanded_position[OT3Axis.X] == 6.0
 
 
 def test_update_encoder_position(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that updating the encoder position works."""
     ot3_state_manager.update_position(
-        pos_to_update=UpdatablePositions.GANTRY_X,
+        axis_to_update=OT3Axis.X,
         current_position=None,
         commanded_position=None,
         encoder_position=7.0,
     )
-    axis_key = UpdatablePositions.pos_to_axis(UpdatablePositions.GANTRY_X)
-    assert ot3_state_manager.encoder_position[axis_key] == 7.0
+    assert ot3_state_manager.encoder_position[OT3Axis.X] == 7.0
 
 
 def test_update_multiple_positions(ot3_state_manager: OT3StateManager) -> None:
     """Confirms that updating the multiple positions at the same time works."""
     ot3_state_manager.update_position(
-        pos_to_update=UpdatablePositions.GANTRY_X,
+        axis_to_update=OT3Axis.X,
         current_position=8.0,
         commanded_position=9.0,
         encoder_position=10.0,
     )
-    axis_key = UpdatablePositions.pos_to_axis(UpdatablePositions.GANTRY_X)
-    assert ot3_state_manager.current_position[axis_key] == 8.0
-    assert ot3_state_manager.commanded_position[axis_key] == 9.0
-    assert ot3_state_manager.encoder_position[axis_key] == 10.0
+    assert ot3_state_manager.current_position[OT3Axis.X] == 8.0
+    assert ot3_state_manager.commanded_position[OT3Axis.X] == 9.0
+    assert ot3_state_manager.encoder_position[OT3Axis.X] == 10.0
 
 
 def test_update_position_hardware_not_attached(
@@ -239,14 +234,14 @@ def test_update_position_hardware_not_attached(
     """Confirms that updating a position of a piece of equipment, that is not attached, throws an exception."""
     with pytest.raises(ValueError) as err:
         ot3_state_manager_no_pipettes_or_gripper.update_position(
-            pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
+            axis_to_update=OT3Axis.G,
             current_position=6.0,
             commanded_position=None,
             encoder_position=None,
         )
 
     assert err.match(
-        'Hardware "Gripper Extend" is not attached. Cannot update it\'s position.'
+        'Axis "G" is not available. Cannot update it\'s position.'
     )
 
 
@@ -256,36 +251,9 @@ def test_update_position_no_position_provided(
     """Confirms that an exception is thrown when calling .update_position and no position is provided."""
     with pytest.raises(ValueError) as err:
         ot3_state_manager.update_position(
-            pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
+            axis_to_update=OT3Axis.G,
             current_position=None,
             commanded_position=None,
             encoder_position=None,
         )
     assert err.match("You must provide a least one position to update.")
-
-
-def test_updatable_positions(ot3_state_manager: OT3StateManager) -> None:
-    """Confirms UpdatablePositions contains the correct values."""
-    assert set(ot3_state_manager.updatable_positions) == {
-        UpdatablePositions.GANTRY_X,
-        UpdatablePositions.GANTRY_Y,
-        UpdatablePositions.GRIPPER_EXTEND,
-        UpdatablePositions.GRIPPER_MOUNT,
-        UpdatablePositions.LEFT_PIPETTE_MOUNT,
-        UpdatablePositions.RIGHT_PIPETTE_MOUNT,
-        UpdatablePositions.LEFT_PIPETTE_PLUNGER,
-        UpdatablePositions.RIGHT_PIPETTE_PLUNGER,
-    }
-
-
-def test_updatable_positions_no_gripper_or_pipettes(
-    ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
-) -> None:
-    """Confirms UpdatablePositions omits pipettes and gripper when they are not attached."""
-    assert set(ot3_state_manager_no_pipettes_or_gripper.updatable_positions) == {
-        UpdatablePositions.GANTRY_X,
-        UpdatablePositions.GANTRY_Y,
-        UpdatablePositions.GRIPPER_MOUNT,
-        UpdatablePositions.LEFT_PIPETTE_MOUNT,
-        UpdatablePositions.RIGHT_PIPETTE_MOUNT,
-    }
