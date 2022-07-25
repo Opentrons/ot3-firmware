@@ -1,10 +1,5 @@
-OT_PYTHON ?= python
-pipenv_envvars := $(and $(CI),PIPENV_IGNORE_VIRTUALENVS=1)
-pipenv := $(pipenv_envvars) $(OT_PYTHON) -m pipenv
-python := $(pipenv) run python
-pip := $(pipenv) run pip
-pytest := $(pipenv) run py.test
-pipenv_opts := --dev
+python := poetry run python
+pytest := poetry run py.test
 SHX := npx shx
 
 
@@ -21,16 +16,11 @@ clean_cmd = $(SHX) rm -rf build dist .coverage coverage.xml '*.egg-info' '**/__p
 
 .PHONY: setup
 setup:
-	$(pipenv) sync $(pipenv_opts)
-	$(pipenv) run pip freeze
+	poetry install
 
 .PHONY: clean
 clean:
 	$(clean_cmd)
-
-.PHONY: teardown
-teardown:
-	$(pipenv) --rm
 
 .PHONY: test
 test:
