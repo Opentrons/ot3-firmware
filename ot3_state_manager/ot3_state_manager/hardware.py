@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from abc import ABC
 from dataclasses import dataclass
-from enum import Enum
 
 from ot3_state_manager.measurable_states import Force, Position
 from ot3_state_manager.ot3_axis import OT3Axis
 from ot3_state_manager.pipette_model import PipetteModel
 
+
 class OT3HardwareNames:
     """Names of hardware on OT3."""
+
     GANTRY_X = "Gantry X"
     GANTRY_Y = "Gantry Y"
     GRIPPER = "Gripper"
@@ -20,15 +20,8 @@ class OT3HardwareNames:
     HEAD = "Head"
 
 
-class Hardware(ABC):
-    """ABC for all OT3 hardware."""
-
-    hardware_name: OT3HardwareNames
-    position: Position
-
-
 @dataclass
-class GantryX(Hardware):
+class GantryX:
     """Gantry X Hardware."""
 
     hardware_name = OT3HardwareNames.GANTRY_X
@@ -36,7 +29,7 @@ class GantryX(Hardware):
 
 
 @dataclass
-class GantryY(Hardware):
+class GantryY:
     """Gantry Y Hardware."""
 
     hardware_name = OT3HardwareNames.GANTRY_Y
@@ -44,7 +37,7 @@ class GantryY(Hardware):
 
 
 @dataclass
-class Gripper(Hardware):
+class Gripper:
     """Gripper Hardware."""
 
     hardware_name = OT3HardwareNames.GRIPPER
@@ -53,7 +46,7 @@ class Gripper(Hardware):
 
 
 @dataclass
-class LeftPipette(Hardware):
+class LeftPipette:
     """Left Pipette Hardware"""
 
     hardware_name = OT3HardwareNames.LEFT_PIPETTE
@@ -62,7 +55,7 @@ class LeftPipette(Hardware):
 
 
 @dataclass
-class RightPipette(Hardware):
+class RightPipette:
     """Right Pipette Hardware"""
 
     hardware_name = OT3HardwareNames.RIGHT_PIPETTE
@@ -71,7 +64,7 @@ class RightPipette(Hardware):
 
 
 @dataclass
-class Head(Hardware):
+class Head:
     """OT3 Head Hardware."""
 
     hardware_name = OT3HardwareNames.HEAD

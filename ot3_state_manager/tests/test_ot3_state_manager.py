@@ -1,11 +1,7 @@
 """OT3StateManager object tests."""
 import pytest
 
-from ot3_state_manager.hardware import (
-    Gripper,
-    LeftPipette,
-    RightPipette,
-)
+from ot3_state_manager.hardware import Gripper, LeftPipette, RightPipette
 from ot3_state_manager.ot3_axis import OT3Axis
 from ot3_state_manager.ot3_state_manager import OT3StateManager
 from ot3_state_manager.pipette_model import PipetteModel
@@ -240,9 +236,7 @@ def test_update_position_hardware_not_attached(
             encoder_position=None,
         )
 
-    assert err.match(
-        'Axis "G" is not available. Cannot update it\'s position.'
-    )
+    assert err.match('Axis "G" is not available. Cannot update it\'s position.')
 
 
 def test_update_position_no_position_provided(

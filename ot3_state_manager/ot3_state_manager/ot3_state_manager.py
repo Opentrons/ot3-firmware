@@ -8,7 +8,6 @@ from ot3_state_manager.hardware import (
     GantryX,
     GantryY,
     Gripper,
-    Hardware,
     Head,
     LeftPipette,
     RightPipette,
@@ -165,11 +164,7 @@ class OT3StateManager:
     @property
     def updatable_axes(self) -> List[OT3Axis]:
         """Returns a list of positions that are available to be updated."""
-        return [
-            key
-            for key, value in self._pos_dict().items()
-            if value is not None
-        ]
+        return [key for key, value in self._pos_dict().items() if value is not None]
 
     @property
     def is_gripper_attached(self) -> bool:
