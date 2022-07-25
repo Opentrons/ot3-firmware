@@ -30,7 +30,7 @@ def ot3_state_manager_no_pipettes_or_gripper() -> OT3StateManager:
 
 
 def test_build(ot3_state_manager: OT3StateManager) -> None:
-    """Confirms that when building OT3StateManager with pipettes and gripper that it is configured correctly."""  # noqa: E501
+    """Confirms that when building OT3StateManager with pipettes and gripper that it is configured correctly."""
     assert ot3_state_manager.left_pipette is not None
     assert ot3_state_manager.right_pipette is not None
     assert ot3_state_manager.gripper is not None
@@ -45,7 +45,7 @@ def test_build(ot3_state_manager: OT3StateManager) -> None:
 
 
 def test_build_no_gripper() -> None:
-    """Confirms that when building OT3StateManager no gripper that it is configured correctly."""  # noqa: E501
+    """Confirms that when building OT3StateManager no gripper that it is configured correctly."""
     manager = OT3StateManager.build(
         left_pipette_model=PipetteModel.SINGLE_20,
         right_pipette_model=PipetteModel.MULTI_8_20,
@@ -65,7 +65,7 @@ def test_build_no_gripper() -> None:
 
 
 def test_build_no_left_pipette() -> None:
-    """Confirms that when building OT3StateManager with no left pipette that it is configured correctly."""  # noqa: E501
+    """Confirms that when building OT3StateManager with no left pipette that it is configured correctly."""
     manager = OT3StateManager.build(
         left_pipette_model=None,
         right_pipette_model=PipetteModel.MULTI_8_20,
@@ -85,7 +85,7 @@ def test_build_no_left_pipette() -> None:
 
 
 def test_build_no_right_pipette() -> None:
-    """Confirms that when building OT3StateManager with no right pipette that it is configured correctly."""  # noqa: E501
+    """Confirms that when building OT3StateManager with no right pipette that it is configured correctly."""
     manager = OT3StateManager.build(
         left_pipette_model=PipetteModel.SINGLE_20,
         right_pipette_model=None,
@@ -105,7 +105,7 @@ def test_build_no_right_pipette() -> None:
 
 
 def test_high_throughput_pipette_wrong_mount() -> None:
-    """Confirms that exception is thrown when trying to mount high-throughput pipette to left pipette mount."""  # noqa: E501
+    """Confirms that exception is thrown when trying to mount high-throughput pipette to left pipette mount."""
     with pytest.raises(ValueError) as err:
         OT3StateManager.build(
             left_pipette_model=PipetteModel.MULTI_96_1000,
@@ -116,7 +116,7 @@ def test_high_throughput_pipette_wrong_mount() -> None:
 
 
 def test_high_throughput_too_many_pipettes() -> None:
-    """Confirms that exception is thrown when trying to a left pipette when a high-throughput pipette is being mounted to the right slot."""  # noqa: E501
+    """Confirms that exception is thrown when trying to a left pipette when a high-throughput pipette is being mounted to the right slot."""
     with pytest.raises(ValueError) as err:
         OT3StateManager.build(
             left_pipette_model=PipetteModel.SINGLE_20,
@@ -130,7 +130,7 @@ def test_high_throughput_too_many_pipettes() -> None:
 
 
 def test_high_throughput() -> None:
-    """Confirms that is_high_throughput_pipette_attached returns True when high-throughput pipette is mounted."""  # noqa: E501
+    """Confirms that is_high_throughput_pipette_attached returns True when high-throughput pipette is mounted."""
     manager = OT3StateManager.build(
         left_pipette_model=None,
         right_pipette_model=PipetteModel.MULTI_96_1000,
@@ -162,7 +162,7 @@ def test_current_position(ot3_state_manager: OT3StateManager) -> None:
 def test_current_position_no_gripper_or_pipettes(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
 ) -> None:
-    """Confirms that .current_position returns correctly when no pipettes or gripper is attached."""  # noqa: E501
+    """Confirms that .current_position returns correctly when no pipettes or gripper is attached."""
     current_position_dict = ot3_state_manager_no_pipettes_or_gripper.current_position
     assert set(current_position_dict.keys()) == {
         "Z_G",
@@ -235,7 +235,7 @@ def test_update_multiple_positions(ot3_state_manager: OT3StateManager) -> None:
 def test_update_position_hardware_not_attached(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
 ) -> None:
-    """Confirms that updating a position of a piece of equipment, that is not attached, throws an exception."""  # noqa: E501
+    """Confirms that updating a position of a piece of equipment, that is not attached, throws an exception."""
     with pytest.raises(ValueError) as err:
         ot3_state_manager_no_pipettes_or_gripper.update_position(
             pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
@@ -253,7 +253,7 @@ def test_update_position_hardware_not_attached(
 def test_update_position_no_position_provided(
     ot3_state_manager: OT3StateManager,
 ) -> None:
-    """Confirms that an exception is thrown when calling .update_position and no position is provided."""  # noqa: E501
+    """Confirms that an exception is thrown when calling .update_position and no position is provided."""
     with pytest.raises(ValueError) as err:
         ot3_state_manager.update_position(
             pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
@@ -281,7 +281,7 @@ def test_updatable_positions(ot3_state_manager: OT3StateManager) -> None:
 def test_updatable_positions_no_gripper_or_pipettes(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
 ) -> None:
-    """Confirms UpdatablePositions omits pipettes and gripper when they are not attached."""  # noqa: E501
+    """Confirms UpdatablePositions omits pipettes and gripper when they are not attached."""
     assert set(ot3_state_manager_no_pipettes_or_gripper.updatable_positions) == {
         UpdatablePositions.GANTRY_X,
         UpdatablePositions.GANTRY_Y,

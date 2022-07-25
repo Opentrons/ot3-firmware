@@ -104,8 +104,8 @@ class OT3StateManager:
 
         return {
             Head.gripper_mount_position.axis.name: self.head.gripper_mount_position,
-            Head.left_pipette_mount_position.axis.name: self.head.left_pipette_mount_position,  # noqa: E501
-            Head.right_pipette_mount_position.axis.name: self.head.right_pipette_mount_position,  # noqa: E501
+            Head.left_pipette_mount_position.axis.name: self.head.left_pipette_mount_position,
+            Head.right_pipette_mount_position.axis.name: self.head.right_pipette_mount_position,
             GantryX.position.axis.name: self.gantry_x.position,
             GantryY.position.axis.name: self.gantry_y.position,
             LeftPipette.position.axis.name: left_pipette_pos,
@@ -123,7 +123,7 @@ class OT3StateManager:
 
         # Ignoring the mypy error because we are checking that the value is None
         return {
-            key: (pos_dict[key].current_position if value is not None else None)  # type: ignore[union-attr] # noqa: E501
+            key: (pos_dict[key].current_position if value is not None else None)  # type: ignore[union-attr]
             for key, value in pos_dict.items()
         }
 
@@ -137,7 +137,7 @@ class OT3StateManager:
 
         # Ignoring the mypy error because we are checking that the value is None
         return {
-            key: (pos_dict[key].commanded_position if value is not None else None)  # type: ignore[union-attr] # noqa: E501
+            key: (pos_dict[key].commanded_position if value is not None else None)  # type: ignore[union-attr]
             for key, value in pos_dict.items()
         }
 
@@ -151,7 +151,7 @@ class OT3StateManager:
 
         # Ignoring the mypy error because we are checking that the value is None
         return {
-            key: (pos_dict[key].encoder_position if value is not None else None)  # type: ignore[union-attr] # noqa: E501
+            key: (pos_dict[key].encoder_position if value is not None else None)  # type: ignore[union-attr]
             for key, value in pos_dict.items()
         }
 
