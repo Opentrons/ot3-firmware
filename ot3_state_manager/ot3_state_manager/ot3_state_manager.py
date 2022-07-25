@@ -3,12 +3,6 @@
 from __future__ import annotations
 
 from typing import Dict, List, Optional
-
-from ot3_state_manager.ot3_state_manager.errors import (
-    HardwareNotAttachedError,
-    NoPositionProvidedError,
-    PipetteConfigurationError,
-)
 from ot3_state_manager.ot3_state_manager.hardware import (
     GantryX,
     GantryY,
@@ -77,7 +71,7 @@ class OT3StateManager:
             left_pipette is not None
             and left_pipette.model == PipetteModel.MULTI_96_1000
         ):
-            raise PipetteConfigurationError(
+            raise ValueError(
                 "High-throughput pipette must be connected to right pipette mount"
             )
 
@@ -86,7 +80,7 @@ class OT3StateManager:
             and right_pipette is not None
             and right_pipette.model == PipetteModel.MULTI_96_1000
         ):
-            raise PipetteConfigurationError(
+            raise ValueError(
                 "When using high-throughput pipette you cannot have a pipette in the "
                 "left mount"
             )
@@ -250,12 +244,15 @@ class OT3StateManager:
                 for pos in (current_position, commanded_position, encoder_position)
             ]
         ):
-            raise NoPositionProvidedError()
+            raise ValueError("You must provide a least one position to update.")
 
         hardware_to_update = self._updatable_pos_to_hardware_dict[pos_to_update]
 
         if hardware_to_update is None:
-            raise HardwareNotAttachedError(pos_to_update.value)
+            raise ValueError(
+                f"Hardware \"{pos_to_update.value}\" is not attached. "
+                f"Cannot update it's position."
+            )
 
         self._update_pos(
             hardware_to_update, current_position, commanded_position, encoder_position

@@ -1,11 +1,5 @@
 """OT3StateManager object tests."""
 import pytest
-
-from ot3_state_manager.ot3_state_manager.errors import (
-    HardwareNotAttachedError,
-    NoPositionProvidedError,
-    PipetteConfigurationError,
-)
 from ot3_state_manager.ot3_state_manager.hardware import (
     Gripper,
     LeftPipette,
@@ -112,7 +106,7 @@ def test_build_no_right_pipette() -> None:
 
 def test_high_throughput_pipette_wrong_mount() -> None:
     """Confirms that exception is thrown when trying to mount high-throughput pipette to left pipette mount."""  # noqa: E501
-    with pytest.raises(PipetteConfigurationError) as err:
+    with pytest.raises(ValueError) as err:
         OT3StateManager.build(
             left_pipette_model=PipetteModel.MULTI_96_1000,
             right_pipette_model=None,
@@ -123,7 +117,7 @@ def test_high_throughput_pipette_wrong_mount() -> None:
 
 def test_high_throughput_too_many_pipettes() -> None:
     """Confirms that exception is thrown when trying to a left pipette when a high-throughput pipette is being mounted to the right slot."""  # noqa: E501
-    with pytest.raises(PipetteConfigurationError) as err:
+    with pytest.raises(ValueError) as err:
         OT3StateManager.build(
             left_pipette_model=PipetteModel.SINGLE_20,
             right_pipette_model=PipetteModel.MULTI_96_1000,
@@ -242,7 +236,7 @@ def test_update_position_hardware_not_attached(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
 ) -> None:
     """Confirms that updating a position of a piece of equipment, that is not attached, throws an exception."""  # noqa: E501
-    with pytest.raises(HardwareNotAttachedError) as err:
+    with pytest.raises(ValueError) as err:
         ot3_state_manager_no_pipettes_or_gripper.update_position(
             pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
             current_position=6.0,
@@ -250,20 +244,24 @@ def test_update_position_hardware_not_attached(
             encoder_position=None,
         )
 
-    assert err.match("Hardware, Gripper Extend, is not attached to the OT3.")
+    assert err.match(
+        f"Hardware \"Gripper Extend\" is not attached. "
+        f"Cannot update it's position."
+    )
 
 
 def test_update_position_no_position_provided(
     ot3_state_manager: OT3StateManager,
 ) -> None:
     """Confirms that an exception is thrown when calling .update_position and no position is provided."""  # noqa: E501
-    with pytest.raises(NoPositionProvidedError):
+    with pytest.raises(ValueError) as err:
         ot3_state_manager.update_position(
             pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
             current_position=None,
             commanded_position=None,
             encoder_position=None,
         )
+    assert err.match("You must provide a least one position to update.")
 
 
 def test_updatable_positions(ot3_state_manager: OT3StateManager) -> None:
