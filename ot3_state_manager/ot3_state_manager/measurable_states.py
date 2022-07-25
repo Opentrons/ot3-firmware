@@ -18,6 +18,7 @@ class Position:
 class Force:
     """Represents force state."""
 
+    axis: OT3Axis
     current_force: float = 0.0
     commanded_force: float = 0.0
     encoder_force: float = 0.0

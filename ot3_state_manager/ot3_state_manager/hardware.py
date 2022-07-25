@@ -42,7 +42,7 @@ class Gripper:
 
     hardware_name = OT3HardwareNames.GRIPPER
     position = Position(axis=OT3Axis.G)
-    jaw_force = Force()
+    jaw_force = Force(axis=OT3Axis.G)
 
 
 @dataclass
