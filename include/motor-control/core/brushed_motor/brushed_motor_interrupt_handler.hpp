@@ -85,8 +85,8 @@ class BrushedMotorInterruptHandler {
     }
 
     void homing_stopped() {
-        finish_current_move(AckMessageId::stopped_by_condition);
         hardware.reset_encoder_pulses();
+        finish_current_move(AckMessageId::stopped_by_condition);
     }
 
     auto limit_switch_triggered() -> bool {
