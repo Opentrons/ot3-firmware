@@ -150,6 +150,7 @@ def test_high_throughput() -> None:
 
 
 def test_current_position(ot3_state_manager: OT3StateManager) -> None:
+    """Confirms that .current_position returns correctly."""
     current_position_dict = ot3_state_manager.current_position
     assert set(current_position_dict.keys()) == {
         "Z_G",
@@ -167,6 +168,7 @@ def test_current_position(ot3_state_manager: OT3StateManager) -> None:
 def test_current_position_no_gripper_or_pipettes(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
 ) -> None:
+    """Confirms that .current_position returns correctly when no pipettes or gripper is attached."""  # noqa: E501
     current_position_dict = ot3_state_manager_no_pipettes_or_gripper.current_position
     assert set(current_position_dict.keys()) == {
         "Z_G",
@@ -187,6 +189,7 @@ def test_current_position_no_gripper_or_pipettes(
 
 
 def test_update_current_position(ot3_state_manager: OT3StateManager) -> None:
+    """Confirms that updating the current position works."""
     ot3_state_manager.update_position(
         pos_to_update=UpdatablePositions.GANTRY_X,
         current_position=5.0,
@@ -198,6 +201,7 @@ def test_update_current_position(ot3_state_manager: OT3StateManager) -> None:
 
 
 def test_update_commanded_position(ot3_state_manager: OT3StateManager) -> None:
+    """Confirms that updating the commanded position works."""
     ot3_state_manager.update_position(
         pos_to_update=UpdatablePositions.GANTRY_X,
         current_position=None,
@@ -209,6 +213,7 @@ def test_update_commanded_position(ot3_state_manager: OT3StateManager) -> None:
 
 
 def test_update_encoder_position(ot3_state_manager: OT3StateManager) -> None:
+    """Confirms that updating the encoder position works."""
     ot3_state_manager.update_position(
         pos_to_update=UpdatablePositions.GANTRY_X,
         current_position=None,
@@ -220,6 +225,7 @@ def test_update_encoder_position(ot3_state_manager: OT3StateManager) -> None:
 
 
 def test_update_multiple_positions(ot3_state_manager: OT3StateManager) -> None:
+    """Confirms that updating the multiple positions at the same time works."""
     ot3_state_manager.update_position(
         pos_to_update=UpdatablePositions.GANTRY_X,
         current_position=8.0,
@@ -235,6 +241,7 @@ def test_update_multiple_positions(ot3_state_manager: OT3StateManager) -> None:
 def test_update_position_hardware_not_attached(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
 ) -> None:
+    """Confirms that updating a position of a piece of equipment, that is not attached, throws an exception."""  # noqa: E501
     with pytest.raises(HardwareNotAttachedError) as err:
         ot3_state_manager_no_pipettes_or_gripper.update_position(
             pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
@@ -249,6 +256,7 @@ def test_update_position_hardware_not_attached(
 def test_update_position_no_position_provided(
     ot3_state_manager: OT3StateManager,
 ) -> None:
+    """Confirms that an exception is thrown when calling .update_position and no position is provided."""  # noqa: E501
     with pytest.raises(NoPositionProvidedError):
         ot3_state_manager.update_position(
             pos_to_update=UpdatablePositions.GRIPPER_EXTEND,
@@ -258,7 +266,8 @@ def test_update_position_no_position_provided(
         )
 
 
-def test_updatable_positions(ot3_state_manager: OT3StateManager):
+def test_updatable_positions(ot3_state_manager: OT3StateManager) -> None:
+    """Confirms UpdatablePositions contains the correct values."""
     assert set(ot3_state_manager.updatable_positions) == {
         UpdatablePositions.GANTRY_X,
         UpdatablePositions.GANTRY_Y,
@@ -273,7 +282,8 @@ def test_updatable_positions(ot3_state_manager: OT3StateManager):
 
 def test_updatable_positions_no_gripper_or_pipettes(
     ot3_state_manager_no_pipettes_or_gripper: OT3StateManager,
-):
+) -> None:
+    """Confirms UpdatablePositions omits pipettes and gripper when they are not attached."""  # noqa: E501
     assert set(ot3_state_manager_no_pipettes_or_gripper.updatable_positions) == {
         UpdatablePositions.GANTRY_X,
         UpdatablePositions.GANTRY_Y,

@@ -12,6 +12,8 @@ from ot3_state_manager.ot3_state_manager.pipette_model import PipetteModel
 
 
 class UpdatablePositions(Enum):
+    """Represents positions that can be changed on the OT3"""
+
     GANTRY_X = "Gantry X"
     GANTRY_Y = "Gantry Y"
     GRIPPER_EXTEND = "Gripper Extend"
