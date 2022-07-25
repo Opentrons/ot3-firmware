@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from typing import Dict, List, Optional
-from ot3_state_manager.ot3_state_manager.hardware import (
+
+from ot3_state_manager.hardware import (
     GantryX,
     GantryY,
     Gripper,
@@ -13,8 +14,8 @@ from ot3_state_manager.ot3_state_manager.hardware import (
     RightPipette,
     UpdatablePositions,
 )
-from ot3_state_manager.ot3_state_manager.measurable_states import Position
-from ot3_state_manager.ot3_state_manager.pipette_model import PipetteModel
+from ot3_state_manager.measurable_states import Position
+from ot3_state_manager.pipette_model import PipetteModel
 
 
 class OT3StateManager:
@@ -66,7 +67,13 @@ class OT3StateManager:
         right_pipette: Optional[RightPipette],
         gripper: Optional[Gripper],
     ) -> None:
+        """Creates OT3StateManager object.
 
+        Args:
+            left_pipette: PipetteModel to attach, or None.
+            right_pipette: PipetteModel to attach, or None.
+            gripper: Whether or not to attach a gripper.
+        """
         if (
             left_pipette is not None
             and left_pipette.model == PipetteModel.MULTI_96_1000
@@ -250,7 +257,7 @@ class OT3StateManager:
 
         if hardware_to_update is None:
             raise ValueError(
-                f"Hardware \"{pos_to_update.value}\" is not attached. "
+                f'Hardware "{pos_to_update.value}" is not attached. '
                 f"Cannot update it's position."
             )
 

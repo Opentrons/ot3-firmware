@@ -1,7 +1,7 @@
 """Contains the different states for OT3 that can be monitored."""
 from dataclasses import dataclass
 
-from ot3_state_manager.ot3_state_manager.ot3_axis import OT3Axis
+from ot3_state_manager.ot3_axis import OT3Axis
 
 
 @dataclass

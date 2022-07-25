@@ -1,14 +1,15 @@
 """OT3StateManager object tests."""
 import pytest
-from ot3_state_manager.ot3_state_manager.hardware import (
+
+from ot3_state_manager.hardware import (
     Gripper,
     LeftPipette,
     RightPipette,
     UpdatablePositions,
 )
-from ot3_state_manager.ot3_state_manager.ot3_axis import OT3Axis
-from ot3_state_manager.ot3_state_manager.ot3_state_manager import OT3StateManager
-from ot3_state_manager.ot3_state_manager.pipette_model import PipetteModel
+from ot3_state_manager.ot3_axis import OT3Axis
+from ot3_state_manager.ot3_state_manager import OT3StateManager
+from ot3_state_manager.pipette_model import PipetteModel
 
 
 @pytest.fixture
@@ -245,8 +246,7 @@ def test_update_position_hardware_not_attached(
         )
 
     assert err.match(
-        f"Hardware \"Gripper Extend\" is not attached. "
-        f"Cannot update it's position."
+        'Hardware "Gripper Extend" is not attached. Cannot update it\'s position.'
     )
 
 
