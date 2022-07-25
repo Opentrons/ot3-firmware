@@ -33,7 +33,7 @@ class MotionController {
     ~MotionController() = default;
 
     [[nodiscard]] auto get_mechanical_config() const
-    -> const lms::LinearMotionSystemConfig<MEConfig>& {
+        -> const lms::LinearMotionSystemConfig<MEConfig>& {
         return linear_motion_sys_config;
     }
 
