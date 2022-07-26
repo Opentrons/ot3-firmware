@@ -28,11 +28,11 @@ test:
 .PHONY: lint
 lint:
 	$(python) -m mypy ot3_state_manager $(tests_to_typecheck)
-	$(python) -m isort --check ot3_state_manager tests setup.py
-	$(python) -m black --check --line-length 88 ot3_state_manager tests setup.py
-	$(python) -m flake8 ot3_state_manager tests setup.py
+	$(python) -m isort --check ot3_state_manager tests
+	$(python) -m black --check --line-length 88 ot3_state_manager tests
+	$(python) -m flake8 ot3_state_manager tests
 
 .PHONY: format
 format:
-	$(python) -m isort ot3_state_manager tests setup.py
-	$(python) -m black --line-length 88 ot3_state_manager tests setup.py
+	$(python) -m isort ot3_state_manager tests
+	$(python) -m black --line-length 88 ot3_state_manager tests
