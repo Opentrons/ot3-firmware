@@ -129,11 +129,13 @@ class MMR920C04 {
     }
 
     auto get_pressure() -> bool {
+        read_register = MMR920C04::Registers::PRESSURE_READ;
         return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
     auto get_temperature() -> bool {
-        return !set_measure_mode(mmr920C04::Registers::TEMPERATURE_READ);
+        read_register = MMR920C04::Registers::TEMPERATURE_READ;
+        return !set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
     auto reset(mmr920C04::Reset reg) -> bool {
@@ -230,9 +232,9 @@ class MMR920C04 {
         uint32_t data = 0x0;
         writer.transact_isr(
             mmr920C04::ADDRESS,
-            static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ),
+            static_cast<uint8_t>(read_register),
             static_cast<std::size_t>(3), own_queue,
-            static_cast<uint8_t>(mmr920C04::Registers::PRESSURE_READ));
+            static_cast<uint8_t>(read_register));
         if (limited_poll) {
             number_of_reads--;
             if (number_of_reads < 1) {
@@ -246,11 +248,25 @@ class MMR920C04 {
         }
     }
 
+    auto set_sync() -> void {
+        sync = static_cast<uint8_t>(binding) & static_cast<uint8_t>(SensorOutputBinding::sync)) ==
+        static_cast<uint8_t>(SensorOutputBinding::sync);
+    }
+
+    auto set_report() -> void {
+        report = static_cast<uint8_t>(binding) & static_cast<uint8_t>(SensorOutputBinding::report)) ==
+        static_cast<uint8_t>(SensorOutputBinding::report);
+    }
+
+    auto set_stop_polling() -> void {
+        stop_polling = (static_cast<uint8_t>(binding) == SensorOutputBinding::none);
+    }
+
     auto set_sync_bind(SensorOutputBinding binding) -> void {
         hardware.reset_sync();
-        stop_polling = ((static_cast<uint8_t>(binding) & 0x3) == 0x0);
-        report = ((static_cast<uint8_t>(binding) & 0x2) == 0x2);
-        sync = ((static_cast<uint8_t>(binding) & 0x1) == 0x1);
+        set_sync();
+        set_report();
+        set_stop_polling();
     }
 
     void set_number_of_reads(uint16_t number_of_reads) {
@@ -318,6 +334,7 @@ class MMR920C04 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
+    mmr920C04::Registers read_register;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>

@@ -60,9 +60,12 @@ class PressureMessageHandler {
                 LOG("Could not send read pressure command");
             }
         } else {
-            if (!driver.get_temperature()) {
-                LOG("Could not send read temperature command");
-            }
+            if (can::ids::SensorType(m.sensor) == can::ids::SensorType::temperature) {
+                driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+                driver.set_limited_poll(true);
+                if (!driver.get_temperature()) {
+                    LOG("Could not send read pressure command");
+                }
         }
     }
 

@@ -156,9 +156,42 @@ SCENARIO("Read pressure sensor values") {
         }
     }
     GIVEN("Pressure read with output binding = report") {
-        driver.set_number_of_reads(2);
-        driver.get_pressure();
-        driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+//        driver.set_number_of_reads(2);
+//        driver.get_pressure();
+//        driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+
+        // limited poll
+        WHEN("a limited poll for 3 reads is set") {
+            driver.set_number_of_reads(4);
+            driver.set_limited_poll(true);
+            driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+            driver.get_pressure();
+            THEN("the i2c queue receives a MEASURE_MODE_4 command") {
+                REQUIRE(i2c_queue.get_size() == 1);
+                auto read_command =
+                    get_message<i2c::messages::Transact>(i2c_queue);
+                REQUIRE(read_command.transaction.write_buffer[0] ==
+                        static_cast<uint8_t>(
+                            sensors::mmr920C04::Registers::MEASURE_MODE_4));
+            }
+            THEN ("for each read, the i2c queue receives a READ_PRESSURE command") {
+                for(int i = 0; i < 4; i++) {
+                    driver.sensor_callback();
+                    REQUIRE(i2c_queue.get_size() == 1);
+                    auto read_command =
+                        get_message<i2c::messages::Transact>(i2c_queue);
+                    REQUIRE(read_command.transaction.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                sensors::mmr920C04::Registers::PRESSURE_READ));
+                }
+            }
+        }
+
+        // single read
+        // continuous poll
+        // another single read
+
+        /*
         WHEN("the sensor_callback function is called") {
             driver.sensor_callback();
             THEN(
@@ -206,5 +239,6 @@ SCENARIO("Read pressure sensor values") {
                 }
             }
         }
+        */
     }
 }
