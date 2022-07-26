@@ -9,6 +9,7 @@ add_executable(
         test_main.cpp
         test_capacitive_sensor.cpp
         test_environment_sensor.cpp
+        test_environment_driver.cpp
         test_pressure_sensor.cpp
         test_pressure_driver.cpp
 )

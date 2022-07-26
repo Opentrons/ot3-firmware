@@ -6,7 +6,7 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 #include "motor-control/core/utils.hpp"
-#include "sensors/core/hdc2080.hpp"
+#include "sensors/core/hdc3020.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 
@@ -20,29 +20,28 @@ constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t sensor_id_int = 0x0;
 
 SCENARIO("read temperature and humidity values") {
-    test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
+    test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
     test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
         can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         environment_queue{};
     test_mocks::MockI2CResponseQueue response_queue;
 
-    i2c::writer::TaskMessage empty_msg{};
+    i2c::poller::TaskMessage empty_poll_msg{};
+    auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
     auto queue_client = mock_client::QueueClient{.environment_sensor_queue =
                                                      &environment_queue};
-    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     queue_client.set_queue(&can_queue);
-    writer.set_queue(&i2c_queue);
-
+    poller.set_queue(&i2c_poll_queue);
     auto sensor = sensors::tasks::EnvironmentSensorMessageHandler{
-        writer, queue_client, response_queue, sensor_id};
-    constexpr uint8_t humidity_id = 0x2;
+        poller, queue_client, response_queue, sensor_id};
+    constexpr uint8_t environment_id = 0x2;
     constexpr uint8_t temperature_id = 0x3;
 
     GIVEN("a request to read the humidity of the sensor") {
-        auto read_humidity = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, humidity_id));
-        sensor.handle_message(read_humidity);
+        auto read_environment = sensors::utils::TaskMessage(
+            can::messages::ReadFromSensorRequest({}, environment_id));
+        sensor.handle_message(read_environment);
         WHEN("the handler function receives the message in LSB mode") {
             THEN("the i2c queue is populated with a transact command") {
                 REQUIRE(i2c_queue.get_size() == 1);
@@ -53,9 +52,9 @@ SCENARIO("read temperature and humidity values") {
 
                 THEN("The command and register addresses are correct") {
                     REQUIRE(transact_message.transaction.address ==
-                            sensors::hdc2080::ADDRESS);
+                            sensors::hdc3020::ADDRESS);
                     REQUIRE(transact_message.transaction.write_buffer[0] ==
-                            sensors::hdc2080::LSB_HUMIDITY_REGISTER);
+                            sensors::hdc3020::TRIGGER_ON_DEMAND_MODE);
                     REQUIRE(transact_message.transaction.bytes_to_write == 1);
                     REQUIRE(transact_message.transaction.bytes_to_read == 2);
                 }
@@ -78,28 +77,6 @@ SCENARIO("read temperature and humidity values") {
                     float expected = 97.77832;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
-            }
-        }
-    }
-    GIVEN("a request to read the temperature of the sensor") {
-        auto read_temperature = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, temperature_id));
-        sensor.handle_message(read_temperature);
-        WHEN("the handler function receives the message in LSB mode") {
-            THEN("the i2c queue is populated with a transact command") {
-                REQUIRE(i2c_queue.get_size() == 1);
-            }
-            AND_WHEN("we read the message from the queue") {
-                auto transact_message =
-                    get_message<i2c::messages::Transact>(i2c_queue);
-                THEN("The command and register addresses are correct") {
-                    REQUIRE(transact_message.transaction.address ==
-                            sensors::hdc2080::ADDRESS);
-                    REQUIRE(transact_message.transaction.write_buffer[0] ==
-                            sensors::hdc2080::LSB_TEMPERATURE_REGISTER);
-                    REQUIRE(transact_message.transaction.bytes_to_write == 1);
-                    REQUIRE(transact_message.transaction.bytes_to_read == 2);
-                }
                 THEN(
                     "using the callback with data returns the expected value") {
                     auto my_buff =
@@ -120,6 +97,9 @@ SCENARIO("read temperature and humidity values") {
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
             }
+        }
+    }
+
         }
     }
 }
