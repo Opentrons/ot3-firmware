@@ -9,7 +9,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
         /**SPI2 GPIO Configuration
-        PC6     ------> SPI2_CS
+        PB12     ------> SPI2_CS
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_CIPO
         PB15     ------> SPI2_COPI
@@ -24,13 +24,13 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Chip Select
-        GPIO_InitStruct.Pin = pipette_hardware_spi_pins(pipette_type, GPIOC);
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        HAL_GPIO_WritePin(GPIOC, GPIO_InitStruct.Pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_InitStruct.Pin, GPIO_PIN_SET);
     }
 }
 
@@ -96,16 +96,10 @@ void motor_driver_gpio_init() {
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     if (pipette_type != NINETY_SIX_CHANNEL) {
-        /*
-         * (TODO: 25-04-2022) We will be switching all
-         * motor drivers to tmc2160 and will no longer need
-         * to wire up the motor drive clocks to an external oscillator.
-         *
-         * The 96 channel already uses the internal clock so we
-         * should ignore this setup when we're compiling for the 96 channel.
-         */
         // Driver Clock Pin.
-        motor_driver_CLK_gpio_init();
+        // Enable Dir/Step pin
+        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     } else {
         // Enable Dir/Step pin
         GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOA);

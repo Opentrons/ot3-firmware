@@ -106,7 +106,7 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
      * PB12
      */
     switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOB: return GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+        case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
         default: return 0;
     }
 }
@@ -140,17 +140,17 @@ static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle) {
 
 static uint16_t get_motor_driver_pins_lt(GPIO_TypeDef* for_handle) {
     /*
-     * Dir Pin -> PC3
+     * Dir Pin -> PC6
      *
      * Step Pin -> PC7
-     * Enable Pin -> PC8
+     * Enable Pin -> PA10
      *
      * VREF (TMC2130)
      * PA5
      */
     switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOA: return GPIO_PIN_5;
-        case (uint32_t)GPIOC: return GPIO_PIN_3 | GPIO_PIN_7 | GPIO_PIN_8;
+        case (uint32_t)GPIOA: return GPIO_PIN_10;
+        case (uint32_t)GPIOC: return GPIO_PIN_6 | GPIO_PIN_7;
         default: return 0;
     }
 }
