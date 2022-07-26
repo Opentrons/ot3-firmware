@@ -34,7 +34,7 @@ namespace gripper_tasks {
  */
 void start_tasks(can::bus::CanBus& can_bus,
                  motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-                 brushed_motor::BrushedMotor& grip_motor,
+                 brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
                  spi::hardware::SpiDeviceBase& spi_device,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
                  i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
@@ -187,7 +187,7 @@ struct QueueClient : can::message_writer::MessageWriter {
 
 namespace g_tasks {
 
-void start_task(brushed_motor::BrushedMotor& grip_motor,
+void start_task(brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
                 AllTask& gripper_tasks);
 
 struct QueueClient : can::message_writer::MessageWriter {

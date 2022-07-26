@@ -44,7 +44,8 @@ using BrushedMotorDispatchTarget = can::dispatch::DispatchParseTarget<
 using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
-    can::messages::StopRequest, can::messages::ReadLimitSwitchRequest>;
+    can::messages::StopRequest, can::messages::ReadLimitSwitchRequest,
+    can::messages::EncoderPositionRequest>;
 using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::BrushedMoveGroupHandler<
         g_tasks::QueueClient>,

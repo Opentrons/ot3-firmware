@@ -52,7 +52,7 @@ SCENARIO("testing move status position translation") {
                 REQUIRE(resp_msg.current_position_um == 0);
             }
             THEN("the encoder value should still be 0") {
-                REQUIRE(resp_msg.encoder_position == 0);
+                REQUIRE(resp_msg.encoder_position_um == 0);
             }
         }
         WHEN("passing a position of 0 steps with -100 encoder pulses") {
@@ -74,7 +74,7 @@ SCENARIO("testing move status position translation") {
                 REQUIRE(resp_msg.current_position_um == 0);
             }
             THEN("the encoder value should still be 0") {
-                REQUIRE(resp_msg.encoder_position == -500);
+                REQUIRE(resp_msg.encoder_position_um == -500);
             }
         }
         WHEN("passing a position of fullscale steps") {

@@ -19,9 +19,17 @@ struct LeadScrewConfig {
     }
 };
 
+struct GearBoxConfig {
+    float gear_diameter;  // mm
+    [[nodiscard]] constexpr auto get_mm_per_rev() const -> float {
+        return static_cast<float>(gear_diameter * std::numbers::pi);
+    }
+};
+
 template <typename MC>
 concept MotorMechanicalConfig = requires {
-    std::is_same_v<MC, BeltConfig> || std::is_same_v<MC, LeadScrewConfig>;
+    std::is_same_v<MC, BeltConfig> || std::is_same_v<MC, LeadScrewConfig> ||
+        std::is_same_v<MC, GearBoxConfig>;
 };
 
 template <MotorMechanicalConfig MEConfig>

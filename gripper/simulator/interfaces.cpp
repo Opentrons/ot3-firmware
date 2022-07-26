@@ -91,6 +91,12 @@ static auto brushed_motor_hardware_iface =
     sim_motor_hardware_iface::SimBrushedMotorHardwareIface();
 
 static auto grip_motor = brushed_motor::BrushedMotor(
+    lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
+        .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+        .steps_per_rev = 0,
+        .microstep = 0,
+        .encoder_pulses_per_rev = 512,
+        .gear_ratio = 84.29},
     brushed_motor_hardware_iface, brushed_motor_driver_iface,
     brushed_motor_queue);
 
@@ -106,7 +112,8 @@ auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
     return motor;
 }
 
-auto grip_motor_iface::get_grip_motor() -> brushed_motor::BrushedMotor& {
+auto grip_motor_iface::get_grip_motor()
+    -> brushed_motor::BrushedMotor<lms::GearBoxConfig>& {
     return grip_motor;
 }
 

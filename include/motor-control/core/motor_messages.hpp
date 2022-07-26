@@ -81,6 +81,16 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t group_id;
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
+
+    auto build_ack(int32_t pulses, AckMessageId _id) -> Ack {
+        return Ack{
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .current_position_steps = 0,
+            .encoder_position = pulses,
+            .ack_id = _id,
+        };
+    }
 };
 
 const uint8_t NO_GROUP = 0xff;

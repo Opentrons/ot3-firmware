@@ -7,6 +7,7 @@
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
 #include "motor-control/core/brushed_motor/brushed_motion_controller.hpp"
+#include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 #include "motor-control/core/utils.hpp"
 
@@ -18,12 +19,14 @@ using TaskMessage =
 /**
  * The handler of brushed motion controller messages
  */
-template <can::message_writer_task::TaskClient CanClient>
+template <lms::MotorMechanicalConfig MEConfig,
+          can::message_writer_task::TaskClient CanClient>
 class MotionControllerMessageHandler {
   public:
-    MotionControllerMessageHandler(
-        brushed_motion_controller::MotionController& controller,
-        CanClient& can_client)
+    using MotorControllerType =
+        brushed_motion_controller::MotionController<MEConfig>;
+    MotionControllerMessageHandler(MotorControllerType& controller,
+                                   CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
@@ -74,7 +77,14 @@ class MotionControllerMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
-    brushed_motion_controller::MotionController& controller;
+    void handle(const can::messages::EncoderPositionRequest&) {
+        auto response = controller.read_encoder_pulses();
+        LOG("Received read encoder: encoder_pulses=%d", response);
+        can::messages::EncoderPositionResponse msg{{}, response};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
+    brushed_motion_controller::MotionController<MEConfig>& controller;
     CanClient& can_client;
 };
 
@@ -97,9 +107,10 @@ class MotionControllerTask {
     /**
      * Task entry point.
      */
-    template <can::message_writer_task::TaskClient CanClient>
+    template <lms::MotorMechanicalConfig MEConfig,
+              can::message_writer_task::TaskClient CanClient>
     [[noreturn]] void operator()(
-        brushed_motion_controller::MotionController* controller,
+        brushed_motion_controller::MotionController<MEConfig>* controller,
         CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
