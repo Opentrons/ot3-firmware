@@ -8,21 +8,21 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "i2c/core/writer.hpp"
+#include "i2c/core/poller.hpp"
 #include "sensors/core/tasks/environment_driver.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace sensors {
 namespace tasks {
 
-template <class I2CQueueWriter, can::message_writer_task::TaskClient CanClient,
+template <class I2CQueuePoller, can::message_writer_task::TaskClient CanClient,
           class OwnQueue>
 class EnvironmentSensorMessageHandler {
   public:
-    EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
+    EnvironmentSensorMessageHandler(I2CQueuePoller &i2c_poller,
                                     CanClient &can_client, OwnQueue &own_queue,
                                     const can::ids::SensorId &id)
-        : driver{i2c_writer, i2c_poller, can_client, own_queue, hardware, id} {}
+        : driver{i2c_poller, can_client, own_queue, id} {}
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
         delete;
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
@@ -33,25 +33,13 @@ class EnvironmentSensorMessageHandler {
         -> EnvironmentSensorMessageHandler && = delete;
     ~EnvironmentSensorMessageHandler() = default;
 
-    // TODO(cm): we should move this to the env sensor driver when that's
-    // complete
     void initialize() {
-        std::array reg_buf{static_cast<uint8_t>(hdc2080::DEVICE_ID_REGISTER)};
-        writer.transact(
-            hdc2080::ADDRESS, reg_buf, 4, own_queue,
-            utils::build_id(hdc2080::ADDRESS, hdc2080::DEVICE_ID_REGISTER, 0));
-        // We should send a message that the sensor is in a ready state,
-        // not sure if we should have a separate can message to do that
-        // holding off for this PR.
-        uint16_t configuration_data =
-            hdc2080::DRDY_CONFIG << 8 | hdc2080::SAMPLE_RATE;
-        writer.write(hdc2080::ADDRESS, configuration_data);
-        configuration_data =
-            hdc2080::INTERRUPT_REGISTER << 8 | hdc2080::SET_DATARDY;
-        writer.write(hdc2080::ADDRESS, configuration_data);
-        configuration_data = (hdc2080::MEASURE_REGISTER << 8) |
-                             (hdc2080::BEGIN_MEASUREMENT_RECORDING);
-        writer.write(hdc2080::ADDRESS, configuration_data);
+        /*
+         * (lc 7-26-2022) Not sure if this is needed
+         * but the sensor can only start to send values
+         * after 3ms of boot time.
+         */
+        vTaskDelay(3);
         is_initialized = true;
     }
 
@@ -63,38 +51,11 @@ class EnvironmentSensorMessageHandler {
     void visit(const std::monostate &) {}
 
     void visit(const i2c::messages::TransactionResponse &m) {
-        uint16_t data = 0x0;
-        const auto *iter = m.read_buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, m.read_buffer.cend(), data);
-        switch (utils::reg_from_id<uint8_t>(m.id.token)) {
-            case hdc2080::LSB_HUMIDITY_REGISTER:
-                LOG("Handling humidity data received %d", data);
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ReadFromSensorResponse{
-                        .sensor = can::ids::SensorType::humidity,
-                        .sensor_id = sensor_id,
-                        .sensor_data = hdc2080::convert(
-                            data, can::ids::SensorType::humidity)});
-                break;
-            case hdc2080::LSB_TEMPERATURE_REGISTER:
-                LOG("Handling temperature data recieved %d", data);
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ReadFromSensorResponse{
-                        .sensor = can::ids::SensorType::temperature,
-                        .sensor_id = sensor_id,
-                        .sensor_data = hdc2080::convert(
-                            data, can::ids::SensorType::temperature)});
-                break;
-            default:
-                // do nothing
-                break;
-        }
+        driver.handle_response(m);
     }
 
-    void visit(const can::messages::BaselineSensorRequest &) {
-        LOG("Received non-supported BaselineSensorRequest");
+    void visit(const can::messages::BaselineSensorRequest &m) {
+        driver.trigger_on_demand(m.sample_rate);
     }
 
     void visit(const can::messages::SetSensorThresholdRequest &) {
@@ -102,27 +63,22 @@ class EnvironmentSensorMessageHandler {
     }
 
     void visit(const can::messages::WriteToSensorRequest &m) {
-        LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
-        writer.write(hdc2080::ADDRESS, m.data);
+        LOG("Received non-supported WriteToSensorRequest");
     }
 
     void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor", m.sensor);
-        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::humidity) {
-            std::array reg_buf{hdc2080::LSB_HUMIDITY_REGISTER};
-            writer.transact(hdc2080::ADDRESS, reg_buf, 2, own_queue,
-                            utils::build_id(hdc2080::ADDRESS,
-                                            hdc2080::LSB_HUMIDITY_REGISTER));
-        } else {
-            std::array reg_buf{hdc2080::LSB_TEMPERATURE_REGISTER};
-            writer.transact(hdc2080::ADDRESS, reg_buf, 2, own_queue,
-                            utils::build_id(hdc2080::ADDRESS,
-                                            hdc2080::LSB_TEMPERATURE_REGISTER));
-        }
+        driver.trigger_on_demand();
     }
 
     void visit(const can::messages::BindSensorOutputRequest &) {
-        LOG("Received non-supported BindSensorOutputRequest");
+        LOG("Received bind sensor output request from %d sensor", m.sensor);
+        // sync doesn't quite mean the same thing here for us. We should
+        // think about potentially creating a separate CAN message
+        // for the hdc sensor to at least set the power mode and
+        // auto measure frequency.
+        driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_1M2S);
+
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
@@ -135,7 +91,7 @@ class EnvironmentSensorMessageHandler {
                 .status = static_cast<uint8_t>(is_initialized)});
     }
 
-    HDC3020<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    HDC3020<I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**
@@ -159,9 +115,9 @@ class EnvironmentSensorTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
+    [[noreturn]] void operator()(i2c::poller::Poller<QueueImpl> *poller,
                                  CanClient *can_client) {
-        auto handler = EnvironmentSensorMessageHandler(*writer, *can_client,
+        auto handler = EnvironmentSensorMessageHandler(*poller, *can_client,
                                                        get_queue(), sensor_id);
         //        handler.initialize();
         utils::TaskMessage message{};

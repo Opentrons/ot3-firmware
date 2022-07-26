@@ -54,7 +54,7 @@ enum class Registers : uint8_t {
     // 10 measurement per sec
     AUTO_MEASURE_10M1S = 0x27,
     CONFIGURE_THRESHOLD = 0x61,
-    INTEGRATED_HEATER = 0x30,
+    RESET = 0x30,
     READ_STATUS_REGISTER = 0xF3,
     CLEAR_STATUS_REGISTER = 0x30,
     OFFSET_PROGRAM = 0xA0,
@@ -70,10 +70,11 @@ template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the value before writing it to the sensor.
-concept HDC3020Register =
-std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
-std::remove_cvref_t<Registers&>> &&
-std::integral<decltype(Reg::value_mask)>;
+concept HDC3020CommandRegister =
+    std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
+                 std::remove_cvref_t<Registers&>> &&
+    std::integral<decltype(Reg::value_mask)> &&
+    std::same_as<<decltype(Reg::mode_map)>;
 
 
 struct __attribute__((packed, __may_alias__)) ManufactureId {
@@ -93,12 +94,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasureStatus {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    uint8_t M0 : 1 = 1;
-    uint8_t M1 : 1 = 0;
-    uint8_t M2 : 1 = 0;
-    uint8_t M3 : 1 = 1;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint8_t initialize : 1 = 1;
+    uint8_t minimum_temperature : 1 = 0;
+    uint8_t maximum_temperature : 1 = 0;
+    uint8_t minimum_rh : 1 = 1;
+    uint8_t maximum_rh : 1 = 1;
 };
 
 
@@ -108,13 +108,11 @@ struct __attribute__((packed, __may_alias__)) TriggerOnDemandMeasure {
     static constexpr bool readable = false;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
+    // M0, M1, M2, M3 power modes
+    static constexpr uint8_t mode_map [] = {0x00, 0x0B, 0x16, 0xFF};
 
-    uint8_t M0 : 1 = 0x00;
-    uint8_t M1 : 1 = 0x0B;
-    uint8_t M2 : 1 = 0x16;
-    uint8_t M3 : 1 = 0xFF;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint16_t temperature : 16 = 0;
+    uint16_t humidity : 16 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) AutoMeasure1M1S {
@@ -122,13 +120,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure1M1S {
     static constexpr bool readable = false;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
+    // M0, M1, M2, M3 power modes
+    static constexpr uint8_t mode_map [] = {0x30, 0x26, 0x2D, 0xFF};
 
-    uint8_t M0 : 1 = 0x30;
-    uint8_t M1 : 1 = 0x26;
-    uint8_t M2 : 1 = 0x2D;
-    uint8_t M3 : 1 = 0xFF;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint16_t temperature : 16 = 0;
+    uint16_t humidity : 16 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) AutoMeasure1M2S {
@@ -136,13 +132,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure1M2S {
     static constexpr bool readable = false;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
+    // M0, M1, M2, M3 power modes
+    static constexpr uint8_t mode_map [] = {0x32, 0x24, 0x2F, 0xFF};
 
-    uint8_t M0 : 1 = 0x32;
-    uint8_t M1 : 1 = 0x24;
-    uint8_t M2 : 1 = 0x2F;
-    uint8_t M3 : 1 = 0xFF;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint16_t temperature : 16 = 0;
+    uint16_t humidity : 16 = 0;
 };
 
 
@@ -151,13 +145,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure2M1S {
     static constexpr bool readable = false;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
+    // M0, M1, M2, M3 power modes
+    static constexpr uint8_t mode_map [] = {0x36, 0x20, 0x2B, 0xFF};
 
-    uint8_t M0 : 1 = 0x36;
-    uint8_t M1 : 1 = 0x20;
-    uint8_t M2 : 1 = 0x2B;
-    uint8_t M3 : 1 = 0xFF;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint16_t temperature : 16 = 0;
+    uint16_t humidity : 16 = 0;
 };
 
 
@@ -166,13 +158,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure4M1S {
     static constexpr bool readable = false;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
+    // M0, M1, M2, M3 power modes
+    static constexpr uint8_t mode_map [] = {0x34, 0x22, 0x29, 0xFF};
 
-    uint8_t M0 : 1 = 0x34;
-    uint8_t M1 : 1 = 0x22;
-    uint8_t M2 : 1 = 0x29;
-    uint8_t M3 : 1 = 0xFF;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint16_t temperature : 16 = 0;
+    uint16_t humidity : 16 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) AutoMeasure10M1S {
@@ -180,24 +170,33 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure10M1S {
     static constexpr bool readable = false;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
+    // M0, M1, M2, M3 power modes
+    static constexpr uint8_t mode_map [] = {0x37, 0x21, 0x2A, 0xFF};
 
-    uint8_t M0 : 1 = 0x37;
-    uint8_t M1 : 1 = 0x21;
-    uint8_t M2 : 1 = 0x2A;
-    uint8_t M3 : 1 = 0xFF;
-    uint32_t temperature : 1 = 0;
-    uint32_t humidity : 1 = 0;
+    uint16_t temperature : 16 = 0;
+    uint16_t humidity : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) Reset {
+    static constexpr Registers address = Registers::RESET;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
+
+    uint8_t reset : 8 = 0x93;
 };
 
 
 struct HDC3020RegisterMap {
     ManufactureId manufacture_id = {};
+    AutoMeasureStatus status = {};
     TriggerOnDemandMeasure trigger_measurement = {};
     AutoMeasure1M1S measure_mode_1m1s = {};
     AutoMeasure1M2S measure_mode_1m2s = {};
     AutoMeasure2M1S measure_mode_2m1s = {};
     AutoMeasure4M1S measure_mode_4m1s = {};
     AutoMeasure10M1S measure_mode_10m1s = {};
+    Reset reset = {};
 };
 
 // Registers are all 32 bits
