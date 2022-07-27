@@ -35,12 +35,11 @@ class EnvironmentSensorMessageHandler {
 
     void initialize() {
         /*
-         * (lc 7-26-2022) Not sure if this is needed
+         * (lc 7-26-2022) Not sure if a delay is needed
          * but the sensor can only start to send values
          * after 3ms of boot time.
          */
-        vTaskDelay(3);
-        is_initialized = true;
+        driver.initialize();
     }
 
     void handle_message(const utils::TaskMessage &m) {
@@ -62,33 +61,28 @@ class EnvironmentSensorMessageHandler {
         LOG("Received non-supported SetSensorThresholdRequest");
     }
 
-    void visit(const can::messages::WriteToSensorRequest &m) {
+    void visit(const can::messages::WriteToSensorRequest &) {
         LOG("Received non-supported WriteToSensorRequest");
     }
 
-    void visit(const can::messages::ReadFromSensorRequest &m) {
-        LOG("Received request to read from %d sensor", m.sensor);
+    void visit(const can::messages::ReadFromSensorRequest &) {
+        LOG("Received request to read from environment sensor");
         driver.trigger_on_demand();
     }
 
-    void visit(const can::messages::BindSensorOutputRequest &) {
+    void visit(const can::messages::BindSensorOutputRequest &m) {
         LOG("Received bind sensor output request from %d sensor", m.sensor);
         // sync doesn't quite mean the same thing here for us. We should
         // think about potentially creating a separate CAN message
         // for the hdc sensor to at least set the power mode and
         // auto measure frequency.
-        driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_1M2S);
-
+        driver.set_bind_flags(m.binding);
+        driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_10M1S);
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device status request");
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::PeripheralStatusResponse{
-                .sensor = m.sensor,
-                .sensor_id = sensor_id,
-                .status = static_cast<uint8_t>(is_initialized)});
+        driver.send_status(m);
     }
 
     HDC3020<I2CQueuePoller, CanClient, OwnQueue> driver;

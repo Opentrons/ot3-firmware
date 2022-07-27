@@ -1,25 +1,23 @@
 #pragma once
 /*
- * MMR920C04 Pressure Sensor
+ * HDC3020 Relative Humidity & Temperature Sensor
  *
  * Datasheet:
- * https://nmbtc.com/wp-content/uploads/2021/03/mmr920_leaflet_e_rev1.pdf
- * (Search in our google drive for a more comprehensive datasheet).
+ * https://www.ti.com/lit/ds/symlink/hdc3020.pdf?ts=1658853555423
  *
- * Pressure measurement is a total of 24 bits long.
+ * Temperature and Humidity measurement are 16 bits long respectively.
  *
- * Filter coefficient equation:
+ * RH Equation:
  *
- * Fco = 2^27 * e^(-2pi & freq * tcondition)
+ * RH(%) = 100 x [input * 1/(2^16 - 1)]
  *
- * There are four pressure effective resolution modes which determines
- * tcondition in the filter coefficient equation.
+ * Temperature (ºC) Equation:
  *
- * The register structs below are pre-built with the command message
- * required to get the information from the sensor.
+ * -45 + [175 * (input/2^16 - 1)]
  *
- * The command bits (C7->C0) are another way of stating the 'register' address.
- * Leaving them alone for now.
+ * Each command, whether trigger mode or continuous mode must
+ * send an MSB register and LSB register. The LSB register always represents
+ * the power mode to use for measurement.
  */
 namespace sensors {
 namespace hdc3020 {
@@ -61,8 +59,6 @@ enum class Registers : uint8_t {
     MANUFACTURE_ID = 0x37,
     NIST_ID = 0x36
 
-
-
 };
 
 /** Template concept to constrain what structures encapsulate registers.*/
@@ -74,8 +70,7 @@ concept HDC3020CommandRegister =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
                  std::remove_cvref_t<Registers&>> &&
     std::integral<decltype(Reg::value_mask)> &&
-    std::same_as<<decltype(Reg::mode_map)>;
-
+    std::is_array_v<decltype(Reg::mode_map)>;
 
 struct __attribute__((packed, __may_alias__)) ManufactureId {
     // is this a status??
@@ -101,7 +96,6 @@ struct __attribute__((packed, __may_alias__)) AutoMeasureStatus {
     uint8_t maximum_rh : 1 = 1;
 };
 
-
 struct __attribute__((packed, __may_alias__)) TriggerOnDemandMeasure {
     // is this a status??
     static constexpr Registers address = Registers::AUTO_MEASURE_STATUS;
@@ -109,7 +103,7 @@ struct __attribute__((packed, __may_alias__)) TriggerOnDemandMeasure {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    static constexpr uint8_t mode_map [] = {0x00, 0x0B, 0x16, 0xFF};
+    static constexpr uint8_t mode_map[4] = {0x00, 0x0B, 0x16, 0xFF};
 
     uint16_t temperature : 16 = 0;
     uint16_t humidity : 16 = 0;
@@ -121,7 +115,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure1M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    static constexpr uint8_t mode_map [] = {0x30, 0x26, 0x2D, 0xFF};
+    static constexpr uint8_t mode_map[4] = {0x30, 0x26, 0x2D, 0xFF};
 
     uint16_t temperature : 16 = 0;
     uint16_t humidity : 16 = 0;
@@ -133,12 +127,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure1M2S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    static constexpr uint8_t mode_map [] = {0x32, 0x24, 0x2F, 0xFF};
+    static constexpr uint8_t mode_map[4] = {0x32, 0x24, 0x2F, 0xFF};
 
     uint16_t temperature : 16 = 0;
     uint16_t humidity : 16 = 0;
 };
-
 
 struct __attribute__((packed, __may_alias__)) AutoMeasure2M1S {
     static constexpr Registers address = Registers::AUTO_MEASURE_2M1S;
@@ -146,12 +139,11 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure2M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    static constexpr uint8_t mode_map [] = {0x36, 0x20, 0x2B, 0xFF};
+    static constexpr uint8_t mode_map[4] = {0x36, 0x20, 0x2B, 0xFF};
 
     uint16_t temperature : 16 = 0;
     uint16_t humidity : 16 = 0;
 };
-
 
 struct __attribute__((packed, __may_alias__)) AutoMeasure4M1S {
     static constexpr Registers address = Registers::AUTO_MEASURE_4M1S;
@@ -159,7 +151,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure4M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    static constexpr uint8_t mode_map [] = {0x34, 0x22, 0x29, 0xFF};
+    static constexpr uint8_t mode_map[4] = {0x34, 0x22, 0x29, 0xFF};
 
     uint16_t temperature : 16 = 0;
     uint16_t humidity : 16 = 0;
@@ -171,7 +163,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure10M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    static constexpr uint8_t mode_map [] = {0x37, 0x21, 0x2A, 0xFF};
+    static constexpr uint8_t mode_map[4] = {0x37, 0x21, 0x2A, 0xFF};
 
     uint16_t temperature : 16 = 0;
     uint16_t humidity : 16 = 0;
@@ -185,7 +177,6 @@ struct __attribute__((packed, __may_alias__)) Reset {
 
     uint8_t reset : 8 = 0x93;
 };
-
 
 struct HDC3020RegisterMap {
     ManufactureId manufacture_id = {};
@@ -203,5 +194,5 @@ struct HDC3020RegisterMap {
 using RegisterSerializedType = uint32_t;
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
-};  // namespace mmr920C04
+};  // namespace hdc3020
 };  // namespace sensors
