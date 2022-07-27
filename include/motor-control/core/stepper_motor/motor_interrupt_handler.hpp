@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
@@ -37,12 +39,45 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
+/*
+** Concept describing acceptable messages for the interrupt handler. Acceptable
+** here really just means "there must be a const method to build an ack, and
+** it must return something that also has a using-declaration as AckMessage".
+**
+** Doing this lets the message struct used by the interrupt handler be a
+** template parameter without having the ack message _also_ be a template
+** parameter.
+*/
+template <typename Message>
+concept AcceptableMoveMessage = requires(const Message& m, uint32_t stepper_pos,
+                                         int32_t encoder_pos, AckMessageId id) {
+    {
+        m.build_ack(stepper_pos, encoder_pos, id)
+        } -> std::same_as<typename Message::AckMessage>;
+};
+
+/**
+ * Concept describing a client that can handle move status messages.
+ *
+ * This needs to be here instead of in move_status_reporter_task because it
+ * adapts to the message used so it can match both something intended to
+ * talk to move_status_reporter_task and something intended to talk to the
+ * gear motor equivalent.
+ */
+template <typename Client, typename AckMessage>
+concept StatusTaskClient = requires(Client client, const AckMessage& m) {
+    {client.send_move_status_reporter_queue(m)};
+};
+
 // (TODO lc): This should probably live in the motor configs.
 constexpr const int clk_frequency = 85000000 / (5001 * 2);
 
-template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage>
-requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
+template <template <class> class QueueImpl, typename StatusClient,
+          AcceptableMoveMessage MotorMoveMessage>
+requires StatusTaskClient<StatusClient,
+                          typename MotorMoveMessage::AckMessage> &&
+    StepperWithEncoderPositionStatusClient<StatusClient> &&
+    MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
   public:
     using GenericQueue = QueueImpl<MotorMoveMessage>;

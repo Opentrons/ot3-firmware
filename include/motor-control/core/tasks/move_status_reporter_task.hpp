@@ -148,15 +148,6 @@ class MoveStatusReporterTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_move_status_reporter_queue(m)};
-};
-
-/**
- * Concept describing a class that can message this task.
- * @tparam Client
- */
-template <typename Client>
 concept BrushedTaskClient = requires(Client client, const TaskMessage& m) {
     {client.send_brushed_move_status_reporter_queue(m)};
 };
