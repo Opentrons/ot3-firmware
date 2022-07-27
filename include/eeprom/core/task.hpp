@@ -84,6 +84,11 @@ class EEPromMessageHandler {
         if (m.length <= 0) {
             return;
         }
+        if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
+            LOG("Error attempting to write to an eeprom address that exceeds "
+                "device storage");
+            return;
+        }
 
         // On the Microchip variant of the eeprom if you attempt to write
         // that crosses the page boundry (8 Bytes) it will wrap and overwrite
@@ -145,6 +150,12 @@ class EEPromMessageHandler {
             m.memory_address);
 
         if (m.length <= 0) {
+            return;
+        }
+
+        if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
+            LOG("ERROR attempting to read to an eeprom address that exceeds "
+                "device storage");
             return;
         }
 

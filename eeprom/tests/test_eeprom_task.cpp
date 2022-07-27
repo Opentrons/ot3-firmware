@@ -126,7 +126,7 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface_16};
     GIVEN("A 16 bit write message") {
         auto data = types::EepromData{1, 2, 3, 4};
-        types::address address = 0xabcd;
+        types::address address = 0x0101;
         types::data_length data_length = 4;
         auto write_msg = task::TaskMessage(message::WriteEepromMessage{
             .memory_address = address, .length = data_length, .data = data});
@@ -163,7 +163,7 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
         }
     }
     GIVEN("A 16 bit read message") {
-        types::address address = 0xabcd;
+        types::address address = 0x0101;
         types::data_length data_length = 5;
         auto read_msg = task::TaskMessage(message::ReadEepromMessage{
             .memory_address = address, .length = data_length});
