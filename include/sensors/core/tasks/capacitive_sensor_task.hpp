@@ -179,6 +179,7 @@ class CapacitiveMessageHandler {
   public:
     // Kept public for testability
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
+    bool is_initialized = false;
 };
 
 /**
