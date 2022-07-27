@@ -53,7 +53,7 @@ class HDC3020 {
     }
 
     void trigger_on_demand(uint16_t number_of_reads = 1) {
-        std::array<utils::ResponseTag, 2> tags;
+        std::array<utils::ResponseTag, 2> tags{};
         auto mode = mode_lookup(_registers.trigger_measurement);
         if (number_of_reads > 1) {
             tags[0] = utils::ResponseTag::IS_PART_OF_POLL;
@@ -106,8 +106,8 @@ class HDC3020 {
         }
     }
 
-    std::tuple<int32_t, int32_t> check_data(uint32_t raw_humidity,
-                                            uint32_t raw_temperature) {
+    auto check_data(uint32_t raw_humidity, uint32_t raw_temperature)
+        -> std::tuple<int32_t, int32_t> {
         /*
          * This function uses the built in sensor CRC to validate that the data
          * is correct. For now, we aren't doing anything except removing the CRC
@@ -219,22 +219,23 @@ class HDC3020 {
     const can::ids::SensorId &sensor_id;
 
     template <std::ranges::range Tags>
-    unsigned int build_environment_id(hdc3020::Registers reg, Tags tags) {
+    auto build_environment_id(hdc3020::Registers reg, Tags tags)
+        -> unsigned int {
         return utils::build_id(hdc3020::ADDRESS, static_cast<uint8_t>(reg),
                                utils::byte_from_tags(tags));
     }
 
     template <hdc3020::HDC3020CommandRegister Reg>
-    uint8_t mode_lookup(Reg &) {
+    auto mode_lookup(Reg &) -> uint8_t {
         return Reg::mode_map[static_cast<uint8_t>(POWER_MODE)];
     }
 
-    int32_t convert_humidity_to_fixed_point(int32_t humidity) {
+    auto convert_humidity_to_fixed_point(int32_t humidity) -> int32_t {
         float rh_percent = humidity * (1.0 / MAXIMUM_DATA_SIZE) * 100.0;
         return convert_to_fixed_point(rh_percent, 16);
     }
 
-    int32_t convert_temperature_to_fixed_point(int32_t temperature) {
+    auto convert_temperature_to_fixed_point(int32_t temperature) -> int32_t {
         float temp_celsius =
             175.0 * (temperature * (1.0 / MAXIMUM_DATA_SIZE)) - 45.0;
         return convert_to_fixed_point(temp_celsius, 16);
