@@ -24,7 +24,7 @@ enum class PipetteName {
 struct PipetteInfo {
     PipetteName name;
     uint16_t model;
-    std::array<char, 12> serial;
+    eeprom::serial_number::SerialNumberType serial;
 };
 
 // These are implemented in pipette-type-specific source files in core
@@ -40,7 +40,8 @@ uint16_t get_model();
  */
 template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
-class PipetteInfoMessageHandler : eeprom::serial_number::ReadListener {
+class PipetteInfoMessageHandler
+    : eeprom::accessor::ReadListener<eeprom::serial_number::SerialNumberType> {
   public:
     /**
      * Constructor

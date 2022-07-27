@@ -22,7 +22,8 @@ using namespace can::messages;
  */
 template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
-class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
+class GripperInfoMessageHandler
+    : eeprom::accessor::ReadListener<eeprom::serial_number::SerialNumberType> {
   public:
     /**
      * Constructor
