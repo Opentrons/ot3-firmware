@@ -15,14 +15,15 @@
 namespace sensors {
 namespace tasks {
 
-template <class I2CQueuePoller, can::message_writer_task::TaskClient CanClient,
+template <class I2CQueueWriter, class I2CQueuePoller, can::message_writer_task::TaskClient CanClient,
           class OwnQueue>
 class EnvironmentSensorMessageHandler {
   public:
-    EnvironmentSensorMessageHandler(I2CQueuePoller &i2c_poller,
+    EnvironmentSensorMessageHandler(I2CQueueWriter &i2c_writer,
+                                    I2CQueuePoller &i2c_poller,
                                     CanClient &can_client, OwnQueue &own_queue,
                                     const can::ids::SensorId &id)
-        : driver{i2c_poller, can_client, own_queue, id} {}
+        : driver{i2c_writer, i2c_poller, can_client, own_queue, id} {}
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &) =
         delete;
     EnvironmentSensorMessageHandler(const EnvironmentSensorMessageHandler &&) =
@@ -109,9 +110,10 @@ class EnvironmentSensorTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(i2c::poller::Poller<QueueImpl> *poller,
+    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
+                                 i2c::poller::Poller<QueueImpl> *poller,
                                  CanClient *can_client) {
-        auto handler = EnvironmentSensorMessageHandler(*poller, *can_client,
+        auto handler = EnvironmentSensorMessageHandler(*writer, *poller, *can_client,
                                                        get_queue(), sensor_id);
         //        handler.initialize();
         utils::TaskMessage message{};

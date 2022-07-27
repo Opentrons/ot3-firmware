@@ -108,7 +108,7 @@ struct __attribute__((packed, __may_alias__)) TriggerOnDemandMeasure {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     static constexpr uint8_t mode_map[4] = {0x00, 0x0B, 0x16, 0xFF};
 
     uint16_t temperature : 16 = 0;
@@ -121,7 +121,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure1M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     static constexpr uint8_t mode_map[4] = {0x30, 0x26, 0x2D, 0xFF};
 
     uint16_t temperature : 16 = 0;
@@ -134,7 +134,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure1M2S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     static constexpr uint8_t mode_map[4] = {0x32, 0x24, 0x2F, 0xFF};
 
     uint16_t temperature : 16 = 0;
@@ -147,7 +147,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure2M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     static constexpr uint8_t mode_map[4] = {0x36, 0x20, 0x2B, 0xFF};
 
     uint16_t temperature : 16 = 0;
@@ -160,7 +160,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure4M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     static constexpr uint8_t mode_map[4] = {0x34, 0x22, 0x29, 0xFF};
 
     uint16_t temperature : 16 = 0;
@@ -173,7 +173,7 @@ struct __attribute__((packed, __may_alias__)) AutoMeasure10M1S {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
     // M0, M1, M2, M3 power modes
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     static constexpr uint8_t mode_map[4] = {0x37, 0x21, 0x2A, 0xFF};
 
     uint16_t temperature : 16 = 0;

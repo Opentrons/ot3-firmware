@@ -17,13 +17,14 @@ namespace tasks {
 
 using namespace can::ids;
 
-template <class I2CQueuePoller, can::message_writer_task::TaskClient CanClient,
+template <class I2CQueueWriter, class I2CQueuePoller, can::message_writer_task::TaskClient CanClient,
           class OwnQueue>
 class HDC3020 {
   public:
-    HDC3020(I2CQueuePoller &poller, CanClient &can_client, OwnQueue &own_queue,
+    HDC3020(I2CQueueWriter &writer, I2CQueuePoller &poller, CanClient &can_client, OwnQueue &own_queue,
             const can::ids::SensorId &id)
-        : poller(poller),
+        : writer(writer),
+          poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           sensor_id(id) {}
@@ -41,14 +42,8 @@ class HDC3020 {
     }
 
     auto initialize() -> void {
-        std::array<utils::ResponseTag, 1> tags{};
-        poller.multi_register_poll(
-            hdc3020::ADDRESS,
-            static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_STATUS), 1,
-            _registers.status.initialize, RESPONSE_SIZE, 1, MINIMUM_DELAY_MS,
-            own_queue,
-            build_environment_id(hdc3020::Registers::AUTO_MEASURE_STATUS,
-                                 tags));
+        std::array<uint8_t, 2> write_buffer{static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_STATUS), _registers.status.initialize};
+        writer.write(hdc3020::ADDRESS, write_buffer);
         _initialized = true;
     }
 
@@ -69,7 +64,7 @@ class HDC3020 {
 
     void auto_measure_mode(hdc3020::Registers reg) {
         std::array tags{utils::ResponseTag::POLL_IS_CONTINUOUS};
-        uint8_t reg_as_int = static_cast<uint8_t>(reg);
+        auto reg_as_int = static_cast<uint8_t>(reg);
         switch (reg) {
             case hdc3020::Registers::AUTO_MEASURE_1M2S:
                 poller.continuous_multi_register_poll(
@@ -152,9 +147,9 @@ class HDC3020 {
     void handle_response(const i2c::messages::TransactionResponse &tm) {
         uint32_t raw_humidity = 0x0;
         uint32_t raw_temperature = 0x0;
-        auto *iter = tm.read_buffer.begin();
+        const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, iter + 3, raw_humidity);
-        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.end(),
+        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(),
                                        raw_temperature);
 
         if (raw_humidity != 0x0 || raw_temperature != 0x0) {
@@ -213,6 +208,7 @@ class HDC3020 {
     // to use for different commands.
     hdc3020::LowPowerMode POWER_MODE{1};
     can::ids::SensorOutputBinding sensor_binding{2};
+    I2CQueueWriter &writer;
     I2CQueuePoller &poller;
     CanClient &can_client;
     OwnQueue &own_queue;
