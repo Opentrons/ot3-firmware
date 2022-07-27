@@ -1,4 +1,5 @@
 #pragma once
+#include "types.hpp"
 
 namespace eeprom {
 namespace hardware_iface {
@@ -72,11 +73,14 @@ class EEPromHardwareIface {
             set_write_protect(true);
         }
     }
-    [[nodiscard]] auto get_eeprom_addr_bytes() const -> size_t {
+    [[nodiscard]] auto get_eeprom_addr_bytes() const -> types::address {
         return eeprom_addr_bytes;
     }
     [[nodiscard]] auto get_eeprom_chip_type() const -> EEPromChipType {
         return eeprom_chip_type;
+    }
+    [[nodiscard]] auto get_eeprom_mem_size() const -> types::data_length {
+        return eeprom_mem_size;
     }
 
   private:
