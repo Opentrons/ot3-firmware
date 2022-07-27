@@ -59,8 +59,12 @@ class GripperInfoMessageHandler
      */
     void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
         // TODO (al, 2022-05-19): Define model.
-        writer.send_can_message(can::ids::NodeId::host,
-                                GripperInfoResponse{.model = 1, .serial = sn});
+        std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
+        std::copy_n(sn.begin(), eeprom::addresses::serial_number_length,
+                    serial.begin());
+        writer.send_can_message(
+            can::ids::NodeId::host,
+            GripperInfoResponse{.model = 1, .serial = serial});
     }
 
   private:
@@ -80,7 +84,8 @@ class GripperInfoMessageHandler
      * @param m The message
      */
     void visit(const SetSerialNumber &m) {
-        serial_number_accessor.write(m.serial);
+        serial_number_accessor.write(eeprom::serial_number::SerialNumberType(
+            m.serial.begin(), m.serial.end()));
     }
 
     CanClient &writer;

@@ -8,6 +8,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "eeprom/core/addresses.hpp"
 #include "eeprom/core/serial_number.hpp"
 
 namespace pipette_info {
@@ -76,11 +77,14 @@ class PipetteInfoMessageHandler
      * @param sn The serial number.
      */
     void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
+        std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
+        std::copy_n(sn.begin(), eeprom::addresses::serial_number_length,
+                    serial.begin());
         writer.send_can_message(can::ids::NodeId::host,
                                 can::messages::PipetteInfoResponse{
                                     .name = static_cast<uint16_t>(get_name()),
                                     .model = get_model(),
-                                    .serial = sn});
+                                    .serial = serial});
     }
 
   private:
@@ -100,7 +104,8 @@ class PipetteInfoMessageHandler
      * @param m
      */
     void visit(const SetSerialNumber &m) {
-        serial_number_accessor.write(m.serial);
+        serial_number_accessor.write(eeprom::serial_number::SerialNumberType(
+            m.serial.begin(), m.serial.end()));
     }
 
     CanClient &writer;
