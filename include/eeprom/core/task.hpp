@@ -17,6 +17,7 @@ namespace task {
 
 using TaskMessage =
     std::variant<message::WriteEepromMessage, message::ReadEepromMessage,
+                 message::ConfigRequestMessage,
                  i2c::messages::TransactionResponse, std::monostate>;
 
 template <class I2CQueueWriter, class OwnQueue>
@@ -186,6 +187,14 @@ class EEPromMessageHandler {
             // The writer cannot accept this message. Remove it from the id_map.
             id_map.remove(token.value());
         }
+    }
+
+    void visit(message::ConfigRequestMessage &m) {
+        auto conf = message::ConfigResponseMessage{
+            .chip = hw_iface.get_eeprom_chip_type(),
+            .addr_bytes = hw_iface.get_eeprom_addr_bytes(),
+            .mem_size = hw_iface.get_eeprom_mem_size()};
+        m.callback(conf, m.callback_param);
     }
 
     I2CQueueWriter &writer;

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
-
 namespace eeprom {
 namespace message {
 
@@ -28,6 +28,19 @@ struct ReadEepromMessage {
 
 /** The write to eeprom message */
 using WriteEepromMessage = EepromMessage;
+
+struct ConfigResponseMessage {
+    eeprom::hardware_iface::EEPromChipType chip;
+    types::address addr_bytes;
+    types::data_length mem_size;
+};
+
+using ConfigRequestCallback = void (*)(const ConfigResponseMessage&, void*);
+
+struct ConfigRequestMessage {
+    ConfigRequestCallback callback;
+    void* callback_param;
+};
 
 }  // namespace message
 }  // namespace eeprom
