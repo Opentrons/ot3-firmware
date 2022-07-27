@@ -17,6 +17,14 @@ clean_cmd = rm -rf build dist .coverage coverage.xml '*.egg-info' '__pycache__' 
 setup:
 	poetry install
 
+.PHONY: teardown
+teardown:
+	poetry env info -p | xargs basename | xargs poetry env remove
+
+.PHONY: build
+build:
+	poetry build
+
 .PHONY: clean
 clean:
 	$(clean_cmd)

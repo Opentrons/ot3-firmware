@@ -14,3 +14,4 @@ __pycache__
 .vscode/settings.json
 ot3_state_manager/.coverage
 ot3_state_manager/coverage.xml
+ot3_state_manager/dist/
