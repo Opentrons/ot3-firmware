@@ -11,6 +11,7 @@ add_executable(
         test_eeprom_task.cpp
         test_hardware_iface.cpp
         test_serial_number.cpp
+        test_data_rev.cpp
         test_revision.cpp
 )
 
