@@ -7,7 +7,7 @@ namespace types {
 using address = uint16_t;
 
 // 0-8
-using data_length = uint8_t;
+using data_length = uint16_t;
 
 constexpr data_length max_data_length = 8;
 
