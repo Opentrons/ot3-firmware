@@ -44,6 +44,7 @@ struct GearMotorAck : public Ack {
 };
 
 struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    using AckMessage = Ack;
     stepper_timer_ticks duration;  // in stepper timer ticks
     steps_per_tick velocity;
     steps_per_tick_sq acceleration;
@@ -51,8 +52,9 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id) -> Ack {
-        return Ack{
+    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id) const
+        -> AckMessage {
+        return AckMessage{
             .group_id = group_id,
             .seq_id = seq_id,
             .current_position_steps = position,
@@ -64,10 +66,10 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 
 struct GearMotorMove : public Move {
     can::ids::PipetteTipActionType action;
-
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id)
-        -> GearMotorAck {
-        return GearMotorAck{group_id, seq_id, position, pulses, _id, action};
+    using AckMessage = GearMotorAck;
+    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id) const
+        -> AckMessage {
+        return AckMessage{group_id, seq_id, position, pulses, _id, action};
     }
 };
 
