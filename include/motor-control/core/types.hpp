@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <can/core/ids.hpp>
 
 using sq0_31 = int32_t;  // 0: signed bit,  1-31: fractional bits
 using sq15_16 =
@@ -15,6 +16,13 @@ using stepper_timer_ticks = uint64_t;
 using brushed_timer_ticks = uint64_t;
 using steps_per_tick = sq0_31;
 using steps_per_tick_sq = sq0_31;
+
+// This should be consteval but if it is then the compiler crashes in anything up to
+// and including 12.3. I think it is fixed by
+// https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=647537adefb34041cc2d44585252fd765cc0daae
+auto operator|(can::ids::PositionFlags a, can::ids::PositionFlags b) -> uint32_t {
+    return static_cast<uint32_t>(a) | static_cast<uint32_t>(b);
+}
 
 struct PositionStatus {
     // Flags with the bit positions of can::ids::PositionFlags

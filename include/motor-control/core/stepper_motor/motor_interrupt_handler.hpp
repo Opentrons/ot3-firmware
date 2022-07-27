@@ -2,11 +2,13 @@
 
 #include <type_traits>
 
+#include "can/core/ids.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/types.hpp"
 
 namespace motor_handler {
 
@@ -88,7 +90,10 @@ class MotorInterruptHandler {
         motor_hardware::StepperMotorHardwareIface& hardware_iface)
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
-          hardware(hardware_iface) {}
+          hardware(hardware_iface) {
+        auto flags_to_clear = can::ids::PositionFlags::encoder_position_ok | can::ids::PositionFlags::stepper_position_ok;
+        status_queue_client.clear_position_flags(flags_to_clear);
+    }
     ~MotorInterruptHandler() = default;
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
     auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
@@ -177,8 +182,9 @@ class MotorInterruptHandler {
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
-            position_tracker = 0;
+            set_current_position(0);
             hardware.reset_encoder_pulses();
+            status_queue_client.update_encoder_position(0);
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -205,7 +211,11 @@ class MotorInterruptHandler {
             return false;
         }
         // check to see when motor should step using velocity & tick count
-        return bool((old_position ^ position_tracker) & tick_flag);
+        bool will_step = ((old_position ^ position_tracker) & tick_flag);
+        if (will_step) {
+            status_queue_client.update_stepper_position(position_tracker >> 32);
+        }
+        return will_step;
     }
 
     [[nodiscard]] auto has_messages() const -> bool {
@@ -280,6 +290,9 @@ class MotorInterruptHandler {
     }
     void set_current_position(q31_31 pos_tracker) {
         position_tracker = pos_tracker;
+        status_queue_client.update_stepper_position(pos_tracker >> 32);
+        status_queue_client.set_position_flags(
+            static_cast<uint32_t>(can::ids::PositionFlags::stepper_position_ok));
     }
     bool has_active_move = false;
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
