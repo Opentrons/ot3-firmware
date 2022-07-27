@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #include "accessor.hpp"
 #include "addresses.hpp"
 #include "can/core/message_core.hpp"
