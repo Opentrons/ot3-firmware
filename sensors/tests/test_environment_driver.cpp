@@ -25,78 +25,95 @@ auto get_message(Queue& q) -> Message {
     return std::get<Message>(empty_msg);
 }
 
-template <typename Message, typename Queue>
-requires std::constructible_from<i2c::writer::TaskMessage, Message>
-auto get_message(Queue& q) -> Message {
-    i2c::writer::TaskMessage empty_msg{};
-    q.try_read(&empty_msg);
-    return std::get<Message>(empty_msg);
-}
-
 constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t sensor_id_int = 0x0;
 
-// TODO: simulate and test data_ready interrupt and response from sensor
-SCENARIO("Read a single value from environment sensor") {
+namespace sensors {
+
+namespace tasks {
+
+SCENARIO("Test HDC3020 environment sensor") {
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
     test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
         can_queue{};
-    test_mocks::MockMessageQueue<sensors::utils::TaskMessage> environment_queue{};
+    test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
+        environment_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
 
     i2c::poller::TaskMessage empty_poll_msg{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
-    auto queue_client =
-        mock_client::QueueClient{.environment_sensor_queue = &environment_queue};
+    auto queue_client = mock_client::QueueClient{.environment_sensor_queue =
+                                                     &environment_queue};
     queue_client.set_queue(&can_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::HDC3020 driver(poller, queue_client,
-                                   environment_queue, sensor_id);
+    sensors::tasks::HDC3020 driver(poller, queue_client, environment_queue,
+                                   sensor_id);
 
     GIVEN("A call to trigger on demand") {
         WHEN("a single read occurs when given 1 trigger read") {
             driver.trigger_on_demand();
-            THEN(
-                "we receive two messages") {
-                REQUIRE(i2c_queue.get_size() == 2);
+            THEN("we receive one message") {
+                REQUIRE(i2c_poll_queue.get_size() == 1);
                 auto read_command =
-                    get_message<i2c::messages::Transact>(i2c_queue);
-                REQUIRE(read_command.transaction.write_buffer[0] ==
+                    get_message<i2c::messages::MultiRegisterPollRead>(
+                        i2c_poll_queue);
+                REQUIRE(read_command.first.write_buffer[0] ==
                         static_cast<uint8_t>(
-                            sensors::mmr920C04::Registers::PRESSURE_READ));
-                auto reset_command =
-                    get_message<i2c::messages::Transact>(i2c_queue);
-                REQUIRE(
-                    reset_command.transaction.write_buffer[0] ==
-                    static_cast<uint8_t>(sensors::mmr920C04::Registers::RESET));
+                            hdc3020::Registers::TRIGGER_ON_DEMAND_MODE));
+
+                REQUIRE(read_command.first.bytes_to_write == 1);
+                REQUIRE(read_command.first.bytes_to_read == 1);
+
+                REQUIRE(read_command.second.address == hdc3020::ADDRESS);
+
+                REQUIRE(read_command.second.write_buffer[0] ==
+                        driver.register_map().trigger_measurement.mode_map[1]);
+
+                REQUIRE(read_command.second.bytes_to_write == 1);
+                REQUIRE(read_command.second.bytes_to_read == 6);
             }
             AND_WHEN("the driver receives a response") {
                 auto id = i2c::messages::TransactionIdentifier{
                     .token = static_cast<uint32_t>(
-                        sensors::mmr920C04::Registers::PRESSURE_READ),
+                        hdc3020::Registers::TRIGGER_ON_DEMAND_MODE),
                     .is_completed_poll = false,
                     .transaction_index = static_cast<uint8_t>(0)};
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
-                    .bytes_read = 3,
-                    .read_buffer = {0x0, 0x85, 0x96, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                    0x0}};
+                    .bytes_read = 6,
+                    .read_buffer = {0x20, 0x96, 0x31, 0x50, 0x90, 0x31, 0x0,
+                                    0x0, 0x0}};
                 driver.handle_response(sensor_response);
                 THEN(
                     "the handle_message function sends the correct data via "
                     "the CAN bus") {
-                    can::message_writer_task::TaskMessage can_msg{};
+                    can::message_writer_task::TaskMessage humidity_msg{};
 
-                    can_queue.try_read(&can_msg);
-                    auto response_msg =
+                    can_queue.try_read(&humidity_msg);
+                    auto humidity_response_msg =
                         std::get<can::messages::ReadFromSensorResponse>(
-                            can_msg.message);
-                    float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 33.53677;
-                    REQUIRE(check_data == Approx(expected));
+                            humidity_msg.message);
+                    float check_data_humidity = fixed_point_to_float(
+                        humidity_response_msg.sensor_data, 16);
+                    float expected_humidity = 12.7291;
+                    REQUIRE(check_data_humidity == Approx(expected_humidity));
+
+                    can::message_writer_task::TaskMessage temperature_msg{};
+
+                    can_queue.try_read(&temperature_msg);
+                    auto temperature_response_msg =
+                        std::get<can::messages::ReadFromSensorResponse>(
+                            temperature_msg.message);
+                    float check_data_temp = fixed_point_to_float(
+                        temperature_response_msg.sensor_data, 16);
+                    float expected_temp = 10.0729;
+                    REQUIRE(check_data_temp == Approx(expected_temp));
                 }
             }
         }
     }
 }
+
+}  // namespace tasks
+
+}  // namespace sensors
