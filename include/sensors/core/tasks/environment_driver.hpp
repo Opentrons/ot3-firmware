@@ -228,12 +228,14 @@ class HDC3020 {
 
     auto convert_humidity_to_fixed_point(int32_t humidity) -> int32_t {
         float rh_percent = humidity * (1.0 / MAXIMUM_DATA_SIZE) * 100.0;
+        LOG("Relative humidity: %.4f", rh_percent);
         return convert_to_fixed_point(rh_percent, 16);
     }
 
     auto convert_temperature_to_fixed_point(int32_t temperature) -> int32_t {
         float temp_celsius =
             175.0 * (temperature * (1.0 / MAXIMUM_DATA_SIZE)) - 45.0;
+        LOG("Temperature in celsius: %.4f", temp_celsius);
         return convert_to_fixed_point(temp_celsius, 16);
     }
 };
