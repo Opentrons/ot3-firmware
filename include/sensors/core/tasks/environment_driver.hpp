@@ -54,10 +54,9 @@ class HDC3020 {
             tags[0] = utils::ResponseTag::IS_PART_OF_POLL;
             tags[1] = utils::ResponseTag::IS_BASELINE;
         }
-        poller.multi_register_poll(
-            hdc3020::ADDRESS,
-            static_cast<uint8_t>(hdc3020::Registers::TRIGGER_ON_DEMAND_MODE), 1,
-            mode, RESPONSE_SIZE, number_of_reads, MINIMUM_DELAY_MS, own_queue,
+        std::array<uint8_t, 2> command_buffer{static_cast<uint8_t>(hdc3020::Registers::TRIGGER_ON_DEMAND_MODE), mode};
+        poller.single_register_poll(
+            hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, number_of_reads, MINIMUM_DELAY_MS, own_queue,
             build_environment_id(hdc3020::Registers::TRIGGER_ON_DEMAND_MODE,
                                  tags));
     }
@@ -65,35 +64,36 @@ class HDC3020 {
     void auto_measure_mode(hdc3020::Registers reg) {
         std::array tags{utils::ResponseTag::POLL_IS_CONTINUOUS};
         auto reg_as_int = static_cast<uint8_t>(reg);
+        std::array<uint8_t, 2> command_buffer{reg_as_int};
         switch (reg) {
             case hdc3020::Registers::AUTO_MEASURE_1M2S:
-                poller.continuous_multi_register_poll(
-                    hdc3020::ADDRESS, reg_as_int, 1,
-                    mode_lookup(_registers.measure_mode_1m2s), RESPONSE_SIZE,
+                command_buffer[1] = mode_lookup(_registers.measure_mode_1m2s);
+                poller.continuous_single_register_poll(
+                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE,
                     2000, own_queue, build_environment_id(reg, tags));
                 break;
             case hdc3020::Registers::AUTO_MEASURE_1M1S:
-                poller.continuous_multi_register_poll(
-                    hdc3020::ADDRESS, reg_as_int, 1,
-                    mode_lookup(_registers.measure_mode_1m1s), RESPONSE_SIZE,
+                command_buffer[1] = mode_lookup(_registers.measure_mode_1m1s);
+                poller.continuous_single_register_poll(
+                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE,
                     1000, own_queue, build_environment_id(reg, tags));
                 break;
             case hdc3020::Registers::AUTO_MEASURE_2M1S:
-                poller.continuous_multi_register_poll(
-                    hdc3020::ADDRESS, reg_as_int, 1,
-                    mode_lookup(_registers.measure_mode_2m1s), RESPONSE_SIZE,
+                command_buffer[1] = mode_lookup(_registers.measure_mode_2m1s);
+                poller.continuous_single_register_poll(
+                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE,
                     500, own_queue, build_environment_id(reg, tags));
                 break;
             case hdc3020::Registers::AUTO_MEASURE_4M1S:
-                poller.continuous_multi_register_poll(
-                    hdc3020::ADDRESS, reg_as_int, 1,
-                    mode_lookup(_registers.measure_mode_4m1s), RESPONSE_SIZE,
+                command_buffer[1] = mode_lookup(_registers.measure_mode_4m1s);
+                poller.continuous_single_register_poll(
+                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE,
                     250, own_queue, build_environment_id(reg, tags));
                 break;
             case hdc3020::Registers::AUTO_MEASURE_10M1S:
-                poller.continuous_multi_register_poll(
-                    hdc3020::ADDRESS, reg_as_int, 1,
-                    mode_lookup(_registers.measure_mode_10m1s), RESPONSE_SIZE,
+                command_buffer[1] = mode_lookup(_registers.measure_mode_10m1s);
+                poller.continuous_single_register_poll(
+                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE,
                     100, own_queue, build_environment_id(reg, tags));
                 break;
             default:

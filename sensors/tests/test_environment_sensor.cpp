@@ -28,6 +28,7 @@ namespace sensors {
 namespace tasks {
 
 SCENARIO("Environment Sensor Task Functionality") {
+    test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
     test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
         can_queue{};
@@ -37,12 +38,14 @@ SCENARIO("Environment Sensor Task Functionality") {
 
     i2c::poller::TaskMessage empty_poll_msg{};
     auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
+    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto queue_client = mock_client::QueueClient{.environment_sensor_queue =
                                                      &environment_queue};
     queue_client.set_queue(&can_queue);
+    writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
     auto sensor = sensors::tasks::EnvironmentSensorMessageHandler{
-        poller, queue_client, response_queue, sensor_id};
+        writer, poller, queue_client, response_queue, sensor_id};
 
     GIVEN("CAN messages accepted by the environment sensor task") {
         WHEN("the handler function receives a ReadFromSensorRequest") {
@@ -50,13 +53,13 @@ SCENARIO("Environment Sensor Task Functionality") {
                 can::messages::ReadFromSensorRequest({}, environment_id));
             sensor.handle_message(read_environment);
             THEN(
-                "the i2c queue is populated with a MultiRegisterPollRead "
+                "the i2c queue is populated with a SingleRegisterPollRead "
                 "command") {
                 REQUIRE(i2c_poll_queue.get_size() == 1);
             }
             AND_WHEN("we read the message from the queue") {
                 auto transact_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         i2c_poll_queue);
 
                 THEN("The command and register addresses are correct") {
@@ -73,13 +76,13 @@ SCENARIO("Environment Sensor Task Functionality") {
                 can::messages::BaselineSensorRequest({}, environment_id, 0, 5));
             sensor.handle_message(read_baseline_environment);
             THEN(
-                "the i2c queue is populated with a MultiRegisterPollRead "
+                "the i2c queue is populated with a SingleRegisterPollRead "
                 "command") {
                 REQUIRE(i2c_poll_queue.get_size() == 1);
             }
             AND_WHEN("we read the message from the queue") {
                 auto transact_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         i2c_poll_queue);
 
                 THEN("The command and register addresses are correct") {
@@ -98,12 +101,12 @@ SCENARIO("Environment Sensor Task Functionality") {
             sensor.handle_message(bind_environment);
             THEN(
                 "the i2c queue is populated with a "
-                "ConfigureMultiRegisterContinuousPolling command") {
+                "ConfigureSingleRegisterContinuousPolling command") {
                 REQUIRE(i2c_poll_queue.get_size() == 1);
             }
             AND_WHEN("we read the message from the queue") {
                 auto transact_message = get_message<
-                    i2c::messages::ConfigureMultiRegisterContinuousPolling>(
+                    i2c::messages::ConfigureSingleRegisterContinuousPolling>(
                     i2c_poll_queue);
 
                 THEN("The command and register addresses are correct") {
@@ -111,6 +114,8 @@ SCENARIO("Environment Sensor Task Functionality") {
                     REQUIRE(transact_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
                                 hdc3020::Registers::AUTO_MEASURE_10M1S));
+                    // measure mode 1 for this register
+                    REQUIRE(transact_message.first.write_buffer[1] == 0x21);
                     REQUIRE(transact_message.delay_ms == 100);
                 }
             }

@@ -86,7 +86,7 @@ class EnvironmentSensorMessageHandler {
         driver.send_status(m);
     }
 
-    HDC3020<I2CQueuePoller, CanClient, OwnQueue> driver;
+    HDC3020<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**
