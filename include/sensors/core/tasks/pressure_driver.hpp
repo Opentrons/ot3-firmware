@@ -277,7 +277,6 @@ class MMR920C04 {
                     }
                 }
                 if (report) {
-                    LOG("report is true");
                     send_pressure();
                 }
                 break;
