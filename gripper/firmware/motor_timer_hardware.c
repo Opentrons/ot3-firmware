@@ -1,5 +1,5 @@
-#include "motor_hardware.h"
 #include "motor_encoder_hardware.h"
+#include "motor_hardware.h"
 #include "system_stm32g4xx.h"
 
 // The frequency of one full PWM cycle
@@ -29,16 +29,6 @@ uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
         return max;
     }
     return val;
-}
-
-uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
-    return (dividend + (divisor / 2)) / divisor;
-}
-
-uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
-    return timer_clk_freq >= counter_clk_freq
-               ? round_closest(timer_clk_freq, counter_clk_freq) - 1U
-               : 0U;
 }
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
@@ -84,9 +74,10 @@ static void MX_TIM1_Init(void) {
      * Note that brushed timer tick at a different frequency from the stepper
      * motor timer.
      */
-    htim1.Init.Prescaler = calc_prescaler(SystemCoreClock, GRIPPER_JAW_TIMER_FREQ);
+    htim1.Init.Prescaler =
+        calc_prescaler(SystemCoreClock, GRIPPER_JAW_TIMER_FREQ);
     htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = GRIPPER_JAW_PWM_WIDTH-1;
+    htim1.Init.Period = GRIPPER_JAW_PWM_WIDTH - 1;
     htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim1.Init.RepetitionCounter = 0;
     htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -154,7 +145,8 @@ static void MX_TIM3_Init(void) {
      * Note that brushed timer tick at a different frequency from the stepper
      * motor timer.
      */
-    htim3.Init.Prescaler = calc_prescaler(SystemCoreClock, GRIPPER_JAW_TIMER_FREQ);
+    htim3.Init.Prescaler =
+        calc_prescaler(SystemCoreClock, GRIPPER_JAW_TIMER_FREQ);
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim3.Init.Period = GRIPPER_JAW_PWM_WIDTH - 1;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -199,6 +191,9 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base) {
         __HAL_RCC_TIM3_CLK_DISABLE();
         /* TIM3 interrupt DeInit */
         HAL_NVIC_DisableIRQ(TIM3_IRQn);
+    } else if (htim_base->Instance == TIM4) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM4_CLK_DISABLE();
     }
 }
 
@@ -277,15 +272,14 @@ void initialize_timer(motor_interrupt_callback callback) {
     MX_TIM7_Init();
 }
 
-
 void update_pwm(uint32_t duty_cycle) {
     // we allow period + 1 here because that forces an always-high duty
     // (in pwm mode 1, output is high while cnt < ccr, so we don't want
     // to let cnt = ccr if the pwm value is 100%)
-    htim1.Instance->CCR1 = clamp(duty_cycle, 0, htim1.Init.Period+1);
+    htim1.Instance->CCR1 = clamp(duty_cycle, 0, htim1.Init.Period + 1);
     htim1.Instance->EGR = TIM_EGR_UG;
 
-    htim3.Instance->CCR1 = clamp(duty_cycle, 0, htim3.Init.Period+1);
+    htim3.Instance->CCR1 = clamp(duty_cycle, 0, htim3.Init.Period + 1);
     htim3.Instance->EGR = TIM_EGR_UG;
 }
 
@@ -302,7 +296,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
         timer_callback();
     } else if (htim == &htim1 && brushed_timer_callback) {
         brushed_timer_callback();
-    }else if (htim == &htim2 && gripper_enc_overflow_callback) {
+    } else if (htim == &htim2 && gripper_enc_overflow_callback) {
         uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
         gripper_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);

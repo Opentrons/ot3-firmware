@@ -3,7 +3,20 @@
 #include "common/firmware/errors.h"
 #include "stm32g4xx_hal.h"
 
+#define GRIPPER_ENCODER_SPEED_TIMER_FREQ (1000000UL)
+
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim4;
+
+uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
+    return (dividend + (divisor / 2)) / divisor;
+}
+
+uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
+    return timer_clk_freq >= counter_clk_freq
+               ? round_closest(timer_clk_freq, counter_clk_freq) - 1U
+               : 0U;
+}
 
 void Encoder_GPIO_Init(void) {
     /* Peripheral clock enable */
@@ -52,8 +65,8 @@ void TIM2_EncoderG_Init(void) {
     if (HAL_TIM_Encoder_Init(&htim2, &sConfig) != HAL_OK) {
         Error_Handler();
     }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_ENCODER_CLK;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_ENABLE;
     if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) !=
         HAL_OK) {
         Error_Handler();
@@ -70,6 +83,50 @@ void TIM2_EncoderG_Init(void) {
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
+void TIM4_EncoderGSpeed_Init(void) {
+    __HAL_RCC_TIM4_CLK_ENABLE();
+    TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_IC_InitTypeDef sConfigIC = {0};
+    htim4.Instance = TIM4;
+    htim4.Init.Prescaler =
+        calc_prescaler(SystemCoreClock, GRIPPER_ENCODER_SPEED_TIMER_FREQ);
+    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim4.Init.Period = 30000;  // timer overflows after 3 ms
+    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim4) != HAL_OK) {
+        Error_Handler();
+    }
+    /* Initialize Input Capture mode */
+    if (HAL_TIM_IC_Init(&htim4) != HAL_OK) {
+        Error_Handler();
+    }
+    /* Configure TIM4 in Slave mode */
+    sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+    sSlaveConfig.InputTrigger =
+        TIM_TS_ITR1;  // input trigger uses encoder clock
+    if (HAL_TIM_SlaveConfigSynchro(&htim4, &sSlaveConfig) != HAL_OK) {
+        Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) !=
+        HAL_OK) {
+        Error_Handler();
+    }
+    /* Initialize TIM4 input capture channel */
+    sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+    sConfigIC.ICSelection = TIM_ICSELECTION_TRC;
+    sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+    sConfigIC.ICFilter = 0;
+    if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
+        Error_Handler();
+    }
+    /* Start the input capture measurement */
+    HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1);
+}
+
 void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim2) {
         /* Peripheral clock enable */
@@ -83,4 +140,5 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
 void initialize_enc() {
     Encoder_GPIO_Init();
     TIM2_EncoderG_Init();
+    TIM4_EncoderGSpeed_Init();
 }
