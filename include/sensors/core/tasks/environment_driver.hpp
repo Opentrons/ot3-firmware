@@ -154,6 +154,7 @@ class HDC3020 {
         uint32_t raw_humidity = 0x0;
         uint32_t raw_temperature = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         iter = bit_utils::bytes_to_int(iter, iter + 3, raw_humidity);
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(),
                                        raw_temperature);
