@@ -39,8 +39,10 @@ lint:
 	$(python) -m isort --check ot3_state_manager tests
 	$(python) -m black --check --line-length 88 ot3_state_manager tests
 	$(python) -m flake8 ot3_state_manager tests
+	$(python) -m mdformat --check README.md
 
 .PHONY: format
 format:
 	$(python) -m isort ot3_state_manager tests
 	$(python) -m black --line-length 88 ot3_state_manager tests
+	$(python) -m mdformat README.md
