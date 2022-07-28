@@ -60,12 +60,14 @@ class PressureMessageHandler {
                 LOG("Could not send read pressure command");
             }
         } else {
-            if (can::ids::SensorType(m.sensor) == can::ids::SensorType::temperature) {
+            if (can::ids::SensorType(m.sensor) ==
+                can::ids::SensorType::pressure_temperature) {
                 driver.set_sync_bind(can::ids::SensorOutputBinding::report);
                 driver.set_limited_poll(true);
                 if (!driver.get_temperature()) {
-                    LOG("Could not send read pressure command");
+                    LOG("Could not send read temperature command");
                 }
+            }
         }
     }
 
@@ -159,5 +161,5 @@ class PressureSensorTask {
     QueueType &queue;
     can::ids::SensorId sensor_id;
 };
-}  // namespace tasks
-}  // namespace sensors
+};  // namespace tasks
+};  // namespace sensors

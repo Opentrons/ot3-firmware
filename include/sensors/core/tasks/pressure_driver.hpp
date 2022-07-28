@@ -129,13 +129,13 @@ class MMR920C04 {
     }
 
     auto get_pressure() -> bool {
-        read_register = MMR920C04::Registers::PRESSURE_READ;
+        read_register = mmr920C04::Registers::PRESSURE_READ;
         return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
     auto get_temperature() -> bool {
-        read_register = MMR920C04::Registers::TEMPERATURE_READ;
-        return !set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
+        read_register = mmr920C04::Registers::TEMPERATURE_READ;
+        return set_measure_mode(mmr920C04::Registers::MEASURE_MODE_4);
     }
 
     auto reset(mmr920C04::Reset reg) -> bool {
@@ -230,12 +230,11 @@ class MMR920C04 {
 
     auto sensor_callback() -> void {
         uint32_t data = 0x0;
-        writer.transact_isr(
-            mmr920C04::ADDRESS,
-            static_cast<uint8_t>(read_register),
-            static_cast<std::size_t>(3), own_queue,
-            static_cast<uint8_t>(read_register));
-        if (limited_poll) {
+        writer.transact_isr(mmr920C04::ADDRESS,
+                            static_cast<uint8_t>(read_register),
+                            static_cast<std::size_t>(3), own_queue,
+                            static_cast<uint8_t>(read_register));
+        if (limited_poll && !stop_polling) {
             number_of_reads--;
             if (number_of_reads < 1) {
                 stop_polling = true;
@@ -248,25 +247,11 @@ class MMR920C04 {
         }
     }
 
-    auto set_sync() -> void {
-        sync = static_cast<uint8_t>(binding) & static_cast<uint8_t>(SensorOutputBinding::sync)) ==
-        static_cast<uint8_t>(SensorOutputBinding::sync);
-    }
-
-    auto set_report() -> void {
-        report = static_cast<uint8_t>(binding) & static_cast<uint8_t>(SensorOutputBinding::report)) ==
-        static_cast<uint8_t>(SensorOutputBinding::report);
-    }
-
-    auto set_stop_polling() -> void {
-        stop_polling = (static_cast<uint8_t>(binding) == SensorOutputBinding::none);
-    }
-
     auto set_sync_bind(SensorOutputBinding binding) -> void {
         hardware.reset_sync();
-        set_sync();
-        set_report();
-        set_stop_polling();
+        set_sync(binding);
+        set_report(binding);
+        set_stop_polling(binding);
     }
 
     void set_number_of_reads(uint16_t number_of_reads) {
@@ -292,6 +277,7 @@ class MMR920C04 {
                     }
                 }
                 if (report) {
+                    LOG("report is true");
                     send_pressure();
                 }
                 break;
@@ -328,19 +314,36 @@ class MMR920C04 {
     uint16_t number_of_reads = 0x1;
     int32_t threshold_cmH20 = 0x8;
     const uint16_t DELAY = 20;
+    mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
     CanClient &can_client;
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
-    mmr920C04::Registers read_register;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
     auto set_register(Reg) -> bool {
         write(Reg::address, 0x0);
         return true;
+    }
+
+    auto set_sync(SensorOutputBinding binding) -> void {
+        sync = (static_cast<uint8_t>(binding) &
+                static_cast<uint8_t>(SensorOutputBinding::sync)) ==
+               static_cast<uint8_t>(SensorOutputBinding::sync);
+    }
+
+    auto set_report(SensorOutputBinding binding) -> void {
+        report = (static_cast<uint8_t>(binding) &
+                  static_cast<uint8_t>(SensorOutputBinding::report)) ==
+                 static_cast<uint8_t>(SensorOutputBinding::report);
+    }
+
+    auto set_stop_polling(SensorOutputBinding binding) -> void {
+        stop_polling = (static_cast<uint8_t>(binding) ==
+                        static_cast<uint8_t>(SensorOutputBinding::none));
     }
 };
 };  // namespace tasks

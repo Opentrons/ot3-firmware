@@ -103,10 +103,9 @@ SCENARIO("read pressure sensor values") {
                 THEN("The command addresses are correct") {
                     REQUIRE(transact_message.transaction.address ==
                             sensors::mmr920C04::ADDRESS);
-                    REQUIRE(
-                        transact_message.transaction.write_buffer[0] ==
-                        static_cast<uint8_t>(
-                            sensors::mmr920C04::Registers::TEMPERATURE_READ));
+                    REQUIRE(transact_message.transaction.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                sensors::mmr920C04::Registers::MEASURE_MODE_4));
                 }
             }
         }
