@@ -1,8 +1,8 @@
 """OT3StateManager object tests."""
 import pytest
+from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.hardware import Gripper, LeftPipette, RightPipette
-from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.ot3_state_manager import OT3StateManager
 from ot3_state_manager.pipette_model import PipetteModel
 

@@ -1,6 +1,8 @@
 """Contains the different states for OT3 that can be monitored."""
 from dataclasses import dataclass
+
 from opentrons.hardware_control.types import OT3Axis
+
 
 @dataclass
 class Position:

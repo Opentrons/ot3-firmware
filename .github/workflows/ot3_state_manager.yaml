@@ -25,10 +25,18 @@ jobs:
     steps:
       - name: Checkout ot3-firmware repository
         uses: actions/checkout@v3
+        with:
+          path: ot3-firmware
+
+      - name: Checkout opentrons repository
+        uses: actions/checkout@v3
+        with:
+          repository: "Opentrons/opentrons"
+          path: opentrons
 
       - name: Install poetry
         run: pipx install poetry
-        working-directory: ot3_state_manager
+        working-directory: ot3-firmware/ot3_state_manager
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -42,20 +50,20 @@ jobs:
       # https://github.com/actions/setup-python/issues/369#issuecomment-1086719372
       - name: Configure Poetry
         run: poetry env use 3.8
-        working-directory: ot3_state_manager
+        working-directory: ot3-firmware/ot3_state_manager
 
       - name: Setup repo
         run: make setup
         shell: bash
-        working-directory: ot3_state_manager
+        working-directory: ot3-firmware/ot3_state_manager
 
       - name: "Lint"
         run: make lint
-        working-directory: ot3_state_manager
+        working-directory: ot3-firmware/ot3_state_manager
 
       - name: "Test"
         run: make test
-        working-directory: ot3_state_manager
+        working-directory: ot3-firmware/ot3_state_manager
 
       - name: 'Upload Coverage Report'
         uses: 'codecov/codecov-action@v2'
