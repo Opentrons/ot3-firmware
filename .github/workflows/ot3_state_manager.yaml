@@ -26,6 +26,14 @@ jobs:
       - name: Checkout ot3-firmware repository
         uses: actions/checkout@v3
 
+      - name: Checkout opentrons repository
+        uses: actions/checkout@v3
+        with:
+          repository: "Opentrons/opentrons"
+
+      - name: Check paths
+        run: ls -l
+
       - name: Install poetry
         run: pipx install poetry
         working-directory: ot3_state_manager
