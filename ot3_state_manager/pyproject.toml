@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "ot3_state_manager"
+version = "0.1.0"
+description = "State Manager for OT3"
+license = "Apache-2.0"
+repository = "https://github.com/Opentrons/ot3-firmware"
+authors = ["Opentrons <engineering@opentrons.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "7.0.1"
+pytest-cov = "2.10.1"
+pytest-xdist = "~2.2.1"
+mypy = "0.931"
+flake8 = "~4.0.1"
+flake8-annotations = "~2.7.0"
+flake8-docstrings = "~1.6.0"
+flake8-noqa = "~1.2.1"
+black = "22.3.0"
+isort = "5.10.1"
+
+# Expects the monorepo (opentrons) to be a sibling of this repo
+opentrons-hardware = { path = "../../opentrons/hardware" }
+opentrons = { path = "../../opentrons/api" }
+
+[tool.pytest.ini_options]
+addopts = "--color=yes"
+
+[tool.mypy]
+ignore_missing_imports = false
+check_untyped_defs = true
+show_error_codes = true
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
