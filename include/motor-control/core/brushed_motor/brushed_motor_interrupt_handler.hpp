@@ -65,10 +65,6 @@ class BrushedMotorInterruptHandler {
     }
 
     [[nodiscard]] auto should_continue() const -> bool {
-        /*
-         * TODO: Check encoder position as the condition to stop motor instead
-         * of duration.
-         */
         return tick_count < buffered_move.duration;
     }
 

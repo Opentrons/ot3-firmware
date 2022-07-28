@@ -83,6 +83,22 @@ void TIM2_EncoderG_Init(void) {
     HAL_TIM_Encoder_Start_IT(&htim2, TIM_CHANNEL_ALL);
 }
 
+/**
+ * TIM4 is used to measure the timelapse between two consecutive edges
+ * of the encoder clock. The value can then be used to estimate the speed at
+ * which the encoder is rotating, hence, the speed at which the gripper jaw is
+ * travelling.
+ *
+ * TIM4 receives the encoder clock output signal from TIM2 (tim_trgo). It counts
+ * at 1 MHz and captures the current count whenever an encoder pulse is
+ * received, then resets its counter. The velocity would thus roughly be
+ * (1 MHz / (count * 4)). Counting both rising and falling edges from channel A
+ * + B.
+ *
+ * The timer overflows 3 ms after an edge is received. This means any encoder
+ * movement below 8Hz (1 MHz / (30000 * 4 count))is rejected and that we can
+ * safely assume the encoder has stopped moving.
+ **/
 void TIM4_EncoderGSpeed_Init(void) {
     __HAL_RCC_TIM4_CLK_ENABLE();
     TIM_SlaveConfigTypeDef sSlaveConfig = {0};
