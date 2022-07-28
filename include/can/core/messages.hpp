@@ -775,7 +775,7 @@ struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint16_t model;
-    std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
+    eeprom::serial_number::SerialDataCodeType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -855,7 +855,7 @@ struct SensorDiagnosticResponse
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     uint16_t name;
     uint16_t model;
-    std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
+    eeprom::serial_number::SerialDataCodeType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {

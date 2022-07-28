@@ -8,7 +8,7 @@ namespace eeprom {
 namespace serial_number {
 
 using SerialNumberType = std::vector<uint8_t>;
-
+using SerialDataCodeType = std::array<uint8_t, 12>;
 /**
  * Class that reads and writes serial numbers.
  * @tparam EEPromTaskClient client of eeprom task

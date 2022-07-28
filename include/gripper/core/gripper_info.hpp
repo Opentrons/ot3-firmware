@@ -14,6 +14,17 @@ namespace gripper_info {
 using namespace can::ids;
 using namespace can::messages;
 
+// These defines are used to help parse gripper serials
+// A full Serial number for gripper hasn't been defined yet so we will assume
+// it has a similar structure to pipettes just without the name field
+// see include/pipepttes/core/pipette_info.hpps
+constexpr size_t GRIPPER_MODEL_FIELD_START = 0;
+constexpr size_t GRIPPER_MODEL_FIELD_LEN = 2;
+constexpr size_t GRIPPER_DATACODE_START =
+    GRIPPER_MODEL_FIELD_START + GRIPPER_MODEL_FIELD_LEN;
+constexpr size_t GRIPPER_DATACODE_LEN =
+    sizeof(eeprom::serial_number::SerialDataCodeType);
+
 /**
  * A HandlesMessages implementing class that will respond to system messages.
  *
@@ -64,7 +75,8 @@ class GripperInfoMessageHandler
                     serial.begin());
         writer.send_can_message(
             can::ids::NodeId::host,
-            GripperInfoResponse{.model = 1, .serial = serial});
+            GripperInfoResponse{.model = get_gripper_model(sn),
+                                .serial = get_gripper_data_code(sn)});
     }
 
   private:
@@ -91,5 +103,23 @@ class GripperInfoMessageHandler
     CanClient &writer;
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>
         serial_number_accessor;
+
+    static auto get_gripper_model(
+        const eeprom::serial_number::SerialNumberType &serial) -> uint16_t {
+        uint16_t model = 0;
+        auto iter = serial.begin() + GRIPPER_MODEL_FIELD_START;
+        iter = bit_utils::bytes_to_int(iter, iter + GRIPPER_MODEL_FIELD_LEN,
+                                       model);
+        return model;
+    }
+
+    static auto get_gripper_data_code(
+        const eeprom::serial_number::SerialNumberType &serial)
+        -> eeprom::serial_number::SerialDataCodeType {
+        eeprom::serial_number::SerialDataCodeType dc;
+        std::copy_n(serial.begin() + GRIPPER_DATACODE_START,
+                    GRIPPER_DATACODE_LEN, dc.begin());
+        return dc;
+    }
 };
 };  // namespace gripper_info

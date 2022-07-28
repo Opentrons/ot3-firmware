@@ -28,10 +28,22 @@ struct PipetteInfo {
     eeprom::serial_number::SerialNumberType serial;
 };
 
-// These are implemented in pipette-type-specific source files in core
-// e.g. pipettes/core/pipette_type_single.cpp
+// This is currently implemented in pipette-type-specific source files in core
+// e.g. pipettes/core/pipette_type_single.cpp but could probably also be parsed
+// from the serial number like the model below
 PipetteName get_name();
-uint16_t get_model();
+
+// These defines are used to help parse pipette serials
+// A full Serial number looks like P1KSV20201907243 and contains the name, model
+// and individual data code [name]P1K [model]SV [data_code] 20201907243
+constexpr size_t PIPETTE_NAME_FIELD_START = 0;
+constexpr size_t PIPETTE_NAME_FIELD_LEN = 3;
+constexpr size_t PIPETTE_MODEL_FIELD_START = PIPETTE_NAME_FIELD_LEN;
+constexpr size_t PIPETTE_MODEL_FIELD_LEN = 2;
+constexpr size_t PIPETTE_DATACODE_START =
+    PIPETTE_MODEL_FIELD_START + PIPETTE_MODEL_FIELD_LEN;
+constexpr size_t PIPETTE_DATACODE_LEN =
+    sizeof(eeprom::serial_number::SerialDataCodeType);
 
 /**
  * A HandlesMessages implementing class that will respond to system messages.
@@ -83,8 +95,8 @@ class PipetteInfoMessageHandler
         writer.send_can_message(can::ids::NodeId::host,
                                 can::messages::PipetteInfoResponse{
                                     .name = static_cast<uint16_t>(get_name()),
-                                    .model = get_model(),
-                                    .serial = serial});
+                                    .model = get_model(sn),
+                                    .serial = get_data_code(sn)});
     }
 
   private:
@@ -111,5 +123,21 @@ class PipetteInfoMessageHandler
     CanClient &writer;
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>
         serial_number_accessor;
+    static auto get_model(const eeprom::serial_number::SerialNumberType &serial)
+        -> uint16_t {
+        uint16_t model = 0;
+        auto iter = serial.begin() + PIPETTE_MODEL_FIELD_START;
+        iter = bit_utils::bytes_to_int(iter, iter + PIPETTE_MODEL_FIELD_LEN,
+                                       model);
+        return model;
+    }
+    static auto get_data_code(
+        const eeprom::serial_number::SerialNumberType &serial)
+        -> eeprom::serial_number::SerialDataCodeType {
+        eeprom::serial_number::SerialDataCodeType dc;
+        std::copy_n(serial.begin() + PIPETTE_DATACODE_START,
+                    PIPETTE_DATACODE_LEN, dc.begin());
+        return dc;
+    }
 };
 };  // namespace pipette_info
