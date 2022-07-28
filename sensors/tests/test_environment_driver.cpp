@@ -49,8 +49,8 @@ SCENARIO("Test HDC3020 environment sensor driver") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::HDC3020 driver(writer, poller, queue_client, environment_queue,
-                                   sensor_id);
+    sensors::tasks::HDC3020 driver(writer, poller, queue_client,
+                                   environment_queue, sensor_id);
 
     GIVEN("A call to trigger on demand") {
         WHEN("a single read occurs when given 1 trigger read") {
@@ -68,7 +68,6 @@ SCENARIO("Test HDC3020 environment sensor driver") {
 
                 REQUIRE(read_command.first.bytes_to_write == 2);
                 REQUIRE(read_command.first.bytes_to_read == 6);
-
             }
             AND_WHEN("the driver receives a response") {
                 auto id = i2c::messages::TransactionIdentifier{
