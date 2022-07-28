@@ -100,7 +100,6 @@ void TIM2_EncoderG_Init(void) {
  * safely assume the encoder has stopped moving.
  **/
 void TIM4_EncoderGSpeed_Init(void) {
-    __HAL_RCC_TIM4_CLK_ENABLE();
     TIM_SlaveConfigTypeDef sSlaveConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_IC_InitTypeDef sConfigIC = {0};
@@ -139,6 +138,8 @@ void TIM4_EncoderGSpeed_Init(void) {
     if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
         Error_Handler();
     }
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
     /* Start the input capture measurement */
     HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1);
 }

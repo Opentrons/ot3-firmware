@@ -87,12 +87,17 @@ extern "C" void gripper_enc_overflow_callback_glue(int32_t direction) {
     brushed_motor_hardware_iface.encoder_overflow(direction);
 }
 
+extern "C" void gripper_enc_speed_overflow_callback_glue(void) {
+    brushed_motor_interrupt.enc_speed_timer_overflows();
+}
+
 void grip_motor_iface::initialize() {
     // Initialize DAC
     initialize_dac();
     initialize_enc();
     set_brushed_motor_timer_callback(call_brushed_motor_handler,
-                                     gripper_enc_overflow_callback_glue);
+                                     gripper_enc_overflow_callback_glue,
+                                     gripper_enc_speed_overflow_callback_glue);
 }
 
 auto grip_motor_iface::get_grip_motor()

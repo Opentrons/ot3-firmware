@@ -55,8 +55,7 @@ class BrushedMotorInterruptHandler {
                 limit_switch_triggered()) {
                 homing_stopped();
             } else {
-                tick_count++;
-                if (!should_continue()) {
+                if (is_idle) {
                     finish_current_move(
                         AckMessageId::complete_without_condition);
                 }
@@ -64,8 +63,14 @@ class BrushedMotorInterruptHandler {
         }
     }
 
-    [[nodiscard]] auto should_continue() const -> bool {
-        return tick_count < buffered_move.duration;
+    void enc_speed_timer_overflows() {
+        /* When the encoder speed timer overflows, this means the encoder is
+         * moving at a frequency lower than 8 Hz, we can assume the gripper jaw
+         * has stopped moving and the active move is complete.
+         */
+        if (has_active_move) {
+            is_idle = true;
+        }
     }
 
     void update_and_start_move() {
@@ -73,6 +78,7 @@ class BrushedMotorInterruptHandler {
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
+        is_idle = false;
         if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             hardware.ungrip();
         } else {
@@ -91,7 +97,6 @@ class BrushedMotorInterruptHandler {
 
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
-        tick_count = 0x0;
         has_active_move = false;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(),
@@ -111,9 +116,9 @@ class BrushedMotorInterruptHandler {
     }
 
     bool has_active_move = false;
+    bool is_idle = true;
 
   private:
-    uint64_t tick_count = 0x0;
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::BrushedMotorHardwareIface& hardware;

@@ -11,6 +11,7 @@ extern "C" {
 #endif  // __cplusplus
 
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim4;
 typedef void (*encoder_overflow_callback)(int32_t);
 
 uint32_t round_closest(uint32_t dividend, uint32_t divisor);
