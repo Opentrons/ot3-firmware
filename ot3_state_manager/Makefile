@@ -15,7 +15,7 @@ clean_cmd = rm -rf build dist .coverage coverage.xml '*.egg-info' '__pycache__' 
 
 .PHONY: setup
 setup:
-	poetry install
+	poetry env use 3.8 && poetry update && poetry install
 
 .PHONY: teardown
 teardown:
