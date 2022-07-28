@@ -1,0 +1,64 @@
+# This workflow runs test and lint on branch pushes that touch the
+# ot3_state_manager project.
+
+name: 'ot3_state_manager Lint & Test'
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release-*'
+  pull_request:
+    paths:
+      - 'ot3_state_manager/**'
+      - '.github/workflows/ot3_state_manager.yaml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  lint-test:
+    name: 'ot3_state_manager linting and tests'
+    runs-on: 'ubuntu-18.04'
+    steps:
+      - name: Checkout ot3-firmware repository
+        uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+        working-directory: ot3_state_manager
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+          cache: poetry
+
+      # Have to configure the env after installing python because setup-python
+      # does not configure poetry to use the newly installed python version.
+      # Instead it uses the system python version which is wrong.
+      # https://github.com/actions/setup-python/issues/369#issuecomment-1086719372
+      - name: Configure Poetry
+        run: poetry env use 3.8
+        working-directory: ot3_state_manager
+
+      - name: Setup repo
+        run: make setup
+        shell: bash
+        working-directory: ot3_state_manager
+
+      - name: "Lint"
+        run: make lint
+        working-directory: ot3_state_manager
+
+      - name: "Test"
+        run: make test
+        working-directory: ot3_state_manager
+
+      - name: 'Upload Coverage Report'
+        uses: 'codecov/codecov-action@v2'
+        with:
+          files: ./ot3-state-manager/coverage.xml
+          flags: ot3-state-manager
