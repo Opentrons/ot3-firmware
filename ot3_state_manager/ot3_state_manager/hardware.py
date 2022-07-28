@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ot3_state_manager.measurable_states import Force, Position
-from ot3_state_manager.ot3_axis import OT3Axis
+from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.pipette_model import PipetteModel
 
 

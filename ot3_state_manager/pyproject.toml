@@ -21,6 +21,10 @@ flake8-noqa = "~1.2.1"
 black = "22.3.0"
 isort = "5.10.1"
 
+# Expects the monorepo (opentrons) to be a sibling of this repo
+opentrons-hardware = { path = "../../opentrons/hardware" }
+opentrons = { path = "../../opentrons/api" }
+
 [tool.pytest.ini_options]
 addopts = "--color=yes"
 

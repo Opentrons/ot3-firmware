@@ -13,7 +13,7 @@ from ot3_state_manager.hardware import (
     RightPipette,
 )
 from ot3_state_manager.measurable_states import Position
-from ot3_state_manager.ot3_axis import OT3Axis
+from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.pipette_model import PipetteModel
 
 
