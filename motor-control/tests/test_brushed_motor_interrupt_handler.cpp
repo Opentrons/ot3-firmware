@@ -88,6 +88,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         REQUIRE(read_ack.encoder_position == 30000);
                         REQUIRE(read_ack.ack_id ==
                                 AckMessageId::complete_without_condition);
+                        REQUIRE(test_objs.handler.is_idle);
                     }
                 }
             }
