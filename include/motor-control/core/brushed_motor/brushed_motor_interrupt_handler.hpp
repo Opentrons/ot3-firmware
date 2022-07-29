@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
@@ -89,6 +91,7 @@ class BrushedMotorInterruptHandler {
     void homing_stopped() {
         hardware.reset_encoder_pulses();
         finish_current_move(AckMessageId::stopped_by_condition);
+        is_idle = true;
     }
 
     auto limit_switch_triggered() -> bool {
@@ -116,7 +119,7 @@ class BrushedMotorInterruptHandler {
     }
 
     bool has_active_move = false;
-    bool is_idle = true;
+    std::atomic<bool> is_idle = true;
 
   private:
     GenericQueue& queue;
