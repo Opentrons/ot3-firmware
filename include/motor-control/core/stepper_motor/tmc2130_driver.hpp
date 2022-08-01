@@ -101,6 +101,9 @@ class TMC2130 {
         if (!set_cool_config(_registers.coolconf)) {
             return false;
         }
+        if (!set_stealth_chop(_registers.pwmconf)) {
+            return false;
+        }
         _initialized = true;
         return true;
     }
@@ -352,6 +355,19 @@ class TMC2130 {
         if (ret.has_value()) {
             _registers.drvstatus = ret.value();
         }
+    }
+
+    /**
+     * @brief Update PWMCONF register
+     * @param reg New configuration register to set
+     * @return True if new register was set succesfully, false otherwise
+     */
+    auto set_stealth_chop(StealthChop reg) -> bool {
+        if (set_register(reg)) {
+            _registers.pwmconf = reg;
+            return true;
+        }
+        return false;
     }
 
     /**
