@@ -13,11 +13,6 @@ namespace dev_data {
 using DataBufferType = std::vector<uint8_t>;
 using DataTailType = std::vector<uint8_t>;
 
-struct increase_data_cb_param {
-    void* instance;
-    DataTailType data_to_add;
-};
-
 enum TableAction { READ, WRITE, CREATE, INITALIZE };
 
 struct table_entry_action {
@@ -50,14 +45,14 @@ class DevDataTailAccessor
         types::data_length amount_to_read;
         auto read_addr = addresses::lookup_table_tail_begin;
         auto bytes_remain = addresses::lookup_table_tail_length;
-        const auto cb_param = new increase_data_cb_param{this, data_added};
+        std::copy_n(data_added.begin(), addresses::lookup_table_tail_length, data_to_add.begin());
         amount_to_read = std::min(bytes_remain, types::max_data_length);
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{
                 .memory_address = read_addr,
                 .length = amount_to_read,
                 .callback = increase_tail_callback,
-                .callback_param = cb_param});
+                .callback_param = this});
     }
 
     auto increase_data_tail(const types::data_length data_added) -> void {
@@ -70,12 +65,12 @@ class DevDataTailAccessor
     }
 
   private:
+    DataTailType data_to_add = DataTailType(addresses::lookup_table_tail_length);
     /**
      * Handle a completed read that was triggered by a increase_usage_call.
      * @param msg The message
      */
-    void increase_tail_callback(const eeprom::message::EepromMessage& msg,
-                                const DataTailType& data_to_add) {
+    void increase_tail_callback(const eeprom::message::EepromMessage& msg) {
         uint16_t data_to_add_int, current_data_length;
         auto new_data_length =
             DataTailType(addresses::lookup_table_tail_length);
@@ -96,9 +91,8 @@ class DevDataTailAccessor
     static void increase_tail_callback(
         const eeprom::message::EepromMessage& msg, void* param) {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        auto* cb_param = reinterpret_cast<increase_data_cb_param*>(param);
-        auto* self = reinterpret_cast<DevDataTailAccessor*>(cb_param->instance);
-        self->increase_tail_callback(msg, cb_param->data_to_add);
+        auto* self = reinterpret_cast<DevDataTailAccessor*>(param);
+        self->increase_tail_callback(msg);
     }
 };
 
