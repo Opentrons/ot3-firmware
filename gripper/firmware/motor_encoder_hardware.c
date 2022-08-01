@@ -138,6 +138,12 @@ void TIM4_EncoderGSpeed_Init(void) {
     if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
         Error_Handler();
     }
+    /*
+     * Only counter overflow/underflow generates an update interrupt.
+     * This makes sure the input capture (when the encoder is moving) does not
+     * trigger an update event!
+     */
+    __HAL_TIM_URS_ENABLE(&htim4);
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
     /* Start the input capture measurement */
