@@ -56,6 +56,7 @@ class PressureMessageHandler {
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             driver.set_sync_bind(can::ids::SensorOutputBinding::report);
             driver.set_limited_poll(true);
+            driver.set_number_of_reads(1);
             if (!driver.get_pressure()) {
                 LOG("Could not send read pressure command");
             }
