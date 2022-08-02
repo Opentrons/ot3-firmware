@@ -2,23 +2,14 @@
 
 #include "catch2/catch.hpp"
 #include "eeprom/core/serial_number.hpp"
+#include "eeprom/tests/mock_eeprom_listener.hpp"
 #include "eeprom/tests/mock_eeprom_task_client.hpp"
 
 using namespace eeprom;
 
-struct SN_MockListener
-    : accessor::ReadListener<serial_number::SerialNumberType> {
-    void on_read(const serial_number::SerialNumberType& sn) {
-        this->sn = sn;
-        call_count++;
-    }
-    serial_number::SerialNumberType sn{};
-    int call_count{0};
-};
-
 SCENARIO("Writing serial number") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = SN_MockListener{};
+    auto read_listener = MockListener{};
     auto subject =
         serial_number::SerialNumberAccessor{queue_client, read_listener};
 
@@ -64,9 +55,9 @@ SCENARIO("Writing serial number") {
 
 SCENARIO("Reading serial number") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = SN_MockListener{};
     auto subject =
         serial_number::SerialNumberAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     GIVEN("A request to read the serial number") {
         WHEN("reading the serial number") {

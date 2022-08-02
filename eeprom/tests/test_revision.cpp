@@ -2,23 +2,16 @@
 
 #include "catch2/catch.hpp"
 #include "eeprom/core/revision.hpp"
+#include "eeprom/tests/mock_eeprom_listener.hpp"
 #include "eeprom/tests/mock_eeprom_task_client.hpp"
 
 using namespace eeprom;
 
-struct R_MockListener : accessor::ReadListener<revision::RevisionType> {
-    void on_read(const revision::RevisionType& rev) {
-        this->rev = rev;
-        call_count++;
-    }
-    revision::RevisionType rev{};
-    int call_count{0};
-};
 
 SCENARIO("Writing revision") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = R_MockListener{};
     auto subject = revision::RevisionAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     GIVEN("A revision to write") {
         auto rev = revision::RevisionType{0, 1, 2, 3};
@@ -60,8 +53,8 @@ SCENARIO("Writing revision") {
 
 SCENARIO("Reading revision") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = R_MockListener{};
     auto subject = revision::RevisionAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     GIVEN("A request to read the revision") {
         WHEN("reading the revision") {

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <array>
 #include <vector>
 
@@ -13,7 +14,6 @@ namespace accessor {
 /**
  * Interface of an object that listens for reads
  */
-template <typename T>
 class ReadListener {
   public:
     ReadListener() = default;
@@ -23,7 +23,7 @@ class ReadListener {
     auto operator=(ReadListener&&) noexcept -> ReadListener& = default;
 
     virtual ~ReadListener() = default;
-    virtual void on_read(const T&) = 0;
+    virtual void read_complete() = 0;
 };
 
 template <task::TaskClient EEPromTaskClient, typename T,
@@ -55,7 +55,7 @@ class EEPromAccessor {
   protected:
     T type_data = T(default_size);
     EEPromTaskClient& eeprom_client;
-    ReadListener<T>& read_listener;
+    ReadListener& read_listener;
     types::address begin;
 
     /**
@@ -127,8 +127,7 @@ class EEPromAccessor {
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
         if (bytes_recieved == bytes_to_read) {
-            read_listener.on_read(
-                T(type_data.begin(), type_data.begin() + bytes_recieved));
+            read_listener.read_complete();
         }
     }
 

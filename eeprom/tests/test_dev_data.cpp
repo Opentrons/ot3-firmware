@@ -4,19 +4,12 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "eeprom/core/dev_data.hpp"
+#include "eeprom/tests/mock_eeprom_listener.hpp"
 #include "eeprom/tests/mock_eeprom_task_client.hpp"
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
-using namespace eeprom;
 
-struct DD_MockListener : accessor::ReadListener<dev_data::DataBufferType> {
-    void on_read(const dev_data::DataBufferType& buf) {
-        this->buf = buf;
-        call_count++;
-    }
-    dev_data::DataBufferType buf{};
-    int call_count{0};
-};
+using namespace eeprom;
 
 class MockHardwareIface : public hardware_iface::EEPromHardwareIface {
     using hardware_iface::EEPromHardwareIface::EEPromHardwareIface;
@@ -28,7 +21,7 @@ class MockHardwareIface : public hardware_iface::EEPromHardwareIface {
 
 SCENARIO("initalizing a data accessor") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
+    auto read_listener = MockListener{};
 
     GIVEN("A creating a data accessor entry") {
         auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
@@ -71,8 +64,8 @@ SCENARIO("initalizing a data accessor") {
 }
 SCENARIO("creating a data table entry") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
     auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -121,8 +114,8 @@ SCENARIO("creating a data table entry") {
 }
 SCENARIO("creating a data table on 16 bit addresss entry") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
     auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -173,8 +166,8 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
 
 SCENARIO("writing to data partition") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
     auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -270,8 +263,8 @@ SCENARIO("writing to data partition") {
 
 SCENARIO("writing large data to partition") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
     auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -368,8 +361,8 @@ SCENARIO("writing large data to partition") {
 
 SCENARIO("reading from data partition") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
     auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
@@ -460,8 +453,8 @@ SCENARIO("reading from data partition") {
 
 SCENARIO("reading large data from partition") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DD_MockListener{};
     auto subject = dev_data::DevDataAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};

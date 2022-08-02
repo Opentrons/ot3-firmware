@@ -3,24 +3,16 @@
 #include "catch2/catch.hpp"
 #include "eeprom/core/accessor.hpp"
 #include "eeprom/core/data_rev.hpp"
+#include "eeprom/tests/mock_eeprom_listener.hpp"
 #include "eeprom/tests/mock_eeprom_task_client.hpp"
 
 using namespace eeprom;
 
-struct DV_MockListener
-    : accessor::ReadListener<data_revision::DataRevisionType> {
-    void on_read(const data_revision::DataRevisionType& data_rev) {
-        this->data_rev = data_rev;
-        call_count++;
-    }
-    data_revision::DataRevisionType data_rev{};
-    int call_count{0};
-};
 
 SCENARIO("Writing data revision") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DV_MockListener{};
     auto subject = data_revision::DataRevAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     GIVEN("A data revision to write") {
         auto data = data_revision::DataRevisionType{1, 2};
@@ -63,8 +55,8 @@ SCENARIO("Writing data revision") {
 
 SCENARIO("Reading data revision") {
     auto queue_client = MockEEPromTaskClient{};
-    auto read_listener = DV_MockListener{};
     auto subject = data_revision::DataRevAccessor{queue_client, read_listener};
+    auto read_listener = MockListener{};
 
     GIVEN("A request to read the data revision") {
         WHEN("reading the data revision") {
