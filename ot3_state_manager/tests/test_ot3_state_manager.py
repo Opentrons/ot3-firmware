@@ -1,4 +1,6 @@
 import asyncio
+import socket
+
 import pytest
 
 from opentrons.hardware_control.types import OT3Axis
@@ -25,7 +27,7 @@ def ot3_state() -> OT3State:
 
 
 @pytest.fixture
-def server(event_loop, ot3_state: OT3State):
+def server(event_loop, ot3_state: OT3State) -> None:
     cancel_handle = asyncio.ensure_future(
         OT3StateManager(HOST, PORT, ot3_state).start_message_handler()
         , loop=event_loop
@@ -51,15 +53,16 @@ async def send_message(message: str) -> str:
 
 
 @pytest.mark.asyncio
-async def test_ack(server, ot3_state):
-    message = "- X"
+@pytest.mark.parametrize(
+    "message,expected_val", (
+        pytest.param("+ X", 1, id="pos_pulse"),
+        pytest.param("- X", -1, id="neg_pulse"),
+    )
+)
+async def test_pulse(
+    message: str, expected_val: int, server: None, ot3_state: OT3State
+):
     expected_ack = get_md5_hash(message.encode())
     ack = await send_message(message)
     assert ack == expected_ack.decode()
-
-
-@pytest.mark.asyncio
-async def test_pulse(server, ot3_state):
-    message = "- X"
-    await send_message(message)
-    print(ot3_state.gantry_x.position.current_position)
+    assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
