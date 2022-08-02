@@ -10,51 +10,59 @@ from ot3_state_manager.measurable_states import Force, Position
 from ot3_state_manager.pipette_model import PipetteModel
 
 
-@dataclass
 class GantryX:
     """Gantry X Hardware."""
+    def __init__(self) -> None:
+        self.position = Position(axis=OT3Axis.X)
 
-    position = Position(axis=OT3Axis.X)
 
-
-@dataclass
 class GantryY:
     """Gantry Y Hardware."""
+    def __init__(self) -> None:
+        self.position = Position(axis=OT3Axis.Y)
 
-    position = Position(axis=OT3Axis.Y)
 
-
-@dataclass
 class Gripper:
     """Gripper Hardware."""
 
     # Gripper z is controlled by gripper board so it is being filed under gripper
-    gripper_z_position = Position(axis=OT3Axis.Z_G)
-    position = Position(axis=OT3Axis.G)
-    jaw_force = Force(axis=OT3Axis.G)
+    def __init__(self) -> None:
+        self.gripper_z_position = Position(axis=OT3Axis.Z_G)
+        self.position = Position(axis=OT3Axis.G)
+        self.jaw_force = Force(axis=OT3Axis.G)
 
 
-@dataclass
 class LeftPipette:
     """Left Pipette Hardware"""
 
-    model: PipetteModel
-    position = Position(axis=OT3Axis.P_L)
+    def __init__(self, model: PipetteModel) -> None:
+        self.model = model
+        self.position = Position(axis=OT3Axis.P_L)
 
 
-@dataclass
 class RightPipette:
     """Right Pipette Hardware"""
 
-    model: PipetteModel
-    position = Position(axis=OT3Axis.P_R)
+    def __init__(self, model: PipetteModel) -> None:
+        self.model = model
+        self.position = Position(axis=OT3Axis.P_R)
+
+
+class Head:
+    """OT3 Head Hardware."""
+    def __init__(self) -> None:
+        # Putting z control for pipettes under head because that is the board that
+        # actually controls it.
+        self.left_pipette_z_position = Position(axis=OT3Axis.Z_L)
+        self.right_pipette_z_position = Position(axis=OT3Axis.Z_R)
 
 
 @dataclass
-class Head:
-    """OT3 Head Hardware."""
+class SyncPin:
+    sync_pin: bool = False
 
-    # Putting z control for pipettes under head because that is the board that
-    # actually controls it.
-    left_pipette_z_position = Position(axis=OT3Axis.Z_L)
-    right_pipette_z_position = Position(axis=OT3Axis.Z_R)
+    def set_sync_pin_high(self):
+        self.sync_pin = True
+
+    def set_sync_pin_low(self):
+        self.sync_pin = False
