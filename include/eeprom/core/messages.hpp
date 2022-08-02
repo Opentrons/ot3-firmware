@@ -15,6 +15,9 @@ struct EepromMessage {
 };
 
 using ReadResponseCallback = void (*)(const EepromMessage&, void*);
+// would love to use this instead if gcc wasn't broken on my system. revist when
+// gcc > 12.1.1 using ReadResponseCallback = std::function<void(const
+// EepromMessage&, void*)>;
 
 /**
  * The read from eeprom message.
@@ -36,6 +39,9 @@ struct ConfigResponseMessage {
 };
 
 using ConfigRequestCallback = void (*)(const ConfigResponseMessage&, void*);
+// would love to use this instead if gcc wasn't broken on my system. revist when
+// gcc > 12.1.1 using ConfigRequestCallback = std::function<void(const
+// ConfigResponseMessage&, void*)>;
 
 struct ConfigRequestMessage {
     ConfigRequestCallback callback;
