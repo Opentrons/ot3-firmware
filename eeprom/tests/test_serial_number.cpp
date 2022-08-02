@@ -102,7 +102,6 @@ SCENARIO("Reading serial number") {
         subject.start_read();
 
         WHEN("the read completes") {
-
             message::ReadEepromMessage read_message;
             types::data_length num_bytes;
 

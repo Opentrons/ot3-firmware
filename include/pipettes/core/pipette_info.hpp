@@ -53,8 +53,7 @@ constexpr size_t PIPETTE_DATACODE_LEN =
  */
 template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
-class PipetteInfoMessageHandler
-    : eeprom::accessor::ReadListener<eeprom::serial_number::SerialNumberType> {
+class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
   public:
     /**
      * Constructor
@@ -64,7 +63,8 @@ class PipetteInfoMessageHandler
      */
     explicit PipetteInfoMessageHandler(CanClient &writer,
                                        EEPromClient &eeprom_client)
-        : writer(writer), serial_number_accessor{eeprom_client, *this} {}
+        : writer(writer),
+          serial_number_accessor{eeprom_client, *this, sn_accessor_backing} {}
     PipetteInfoMessageHandler(const PipetteInfoMessageHandler &) = delete;
     PipetteInfoMessageHandler(const PipetteInfoMessageHandler &&) = delete;
     auto operator=(const PipetteInfoMessageHandler &)
@@ -88,15 +88,16 @@ class PipetteInfoMessageHandler
      * A serial number read has completed.
      * @param sn The serial number.
      */
-    void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
+    void read_complete() final {
         std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
-        std::copy_n(sn.begin(), eeprom::addresses::serial_number_length,
-                    serial.begin());
-        writer.send_can_message(can::ids::NodeId::host,
-                                can::messages::PipetteInfoResponse{
-                                    .name = static_cast<uint16_t>(get_name()),
-                                    .model = get_model(sn),
-                                    .serial = get_data_code(sn)});
+        std::copy_n(sn_accessor_backing.begin(),
+                    eeprom::addresses::serial_number_length, serial.begin());
+        writer.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::PipetteInfoResponse{
+                .name = static_cast<uint16_t>(get_name()),
+                .model = get_model(sn_accessor_backing),
+                .serial = get_data_code(sn_accessor_backing)});
     }
 
   private:
@@ -116,17 +117,22 @@ class PipetteInfoMessageHandler
      * @param m
      */
     void visit(const SetSerialNumber &m) {
-        serial_number_accessor.write(eeprom::serial_number::SerialNumberType(
-            m.serial.begin(), m.serial.end()));
+        std::copy_n(m.serial.begin(), sn_accessor_backing.size(),
+                    sn_accessor_backing.begin());
+        serial_number_accessor.write(sn_accessor_backing);
     }
 
     CanClient &writer;
+    eeprom::serial_number::SerialNumberType sn_accessor_backing =
+        eeprom::serial_number::SerialNumberType{};
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>
         serial_number_accessor;
     static auto get_model(const eeprom::serial_number::SerialNumberType &serial)
         -> uint16_t {
         uint16_t model = 0;
-        auto iter = serial.begin() + PIPETTE_MODEL_FIELD_START;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const auto *iter = serial.begin() + PIPETTE_MODEL_FIELD_START;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         iter = bit_utils::bytes_to_int(iter, iter + PIPETTE_MODEL_FIELD_LEN,
                                        model);
         return model;
