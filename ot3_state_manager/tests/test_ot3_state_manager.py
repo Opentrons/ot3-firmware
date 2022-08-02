@@ -52,7 +52,6 @@ async def send_message(message: str) -> str:
     return data.decode()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "message,expected_val", (
         pytest.param("+ X", 1, id="pos_pulse"),
@@ -61,8 +60,36 @@ async def send_message(message: str) -> str:
 )
 async def test_pulse(
     message: str, expected_val: int, server: None, ot3_state: OT3State
-):
+) -> None:
     expected_ack = get_md5_hash(message.encode())
     ack = await send_message(message)
     assert ack == expected_ack.decode()
     assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
+
+
+@pytest.mark.parametrize(
+    "message, error", (
+        pytest.param(
+            "A Bad Message",
+            "ERROR: Bad Message Format. Expects \"<axis> <direction>\". You passed \"A Bad Message\"",  # noqa: E501
+            id="bad_message_format"
+        ),
+        pytest.param(
+            "+ F",
+            "ERROR: Invalid Axis Passed. You passed \"F\"",
+            id="invalid_axis"
+        ),
+        pytest.param(
+            "= X",
+            "ERROR: Symbol \"=\" is not valid. Valid symbols are \"+\" and \"-\"",
+            id="invalid_direction"
+        ),
+    )
+)
+async def test_bad_message(
+    message: str, error: str, server: None, ot3_state: OT3State
+) -> None:
+    response = await send_message(message)
+    assert response == error
+    assert all([value == 0 for value in ot3_state.current_position.values()])
+    assert all([value == 0 for value in ot3_state.encoder_position.values()])

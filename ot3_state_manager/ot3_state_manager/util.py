@@ -38,11 +38,29 @@ class Message:
     def to_message(string: str) -> Message:
         """Parse string to Message."""
         split_string = string.split(" ")
-        assert len(split_string) == 2
-        direction, axis = split_string
+        if not len(split_string) == 2:
+            raise ValueError(
+                "Bad Message Format. Expects \"<axis> <direction>\". "
+                f"You passed \"{string}\""
+            )
+
+        axis_string = split_string[1]
+
+        try:
+            axis = OT3Axis[axis_string]
+        except KeyError:
+            raise ValueError(
+                f"Invalid Axis Passed. You passed \"{axis_string}\""
+            )
+
+        try:
+            direction = Direction.from_symbol(split_string[0])
+        except ValueError:
+            raise
+
         return Message(
-            axis=OT3Axis[axis],
-            direction=Direction.from_symbol(direction)
+            axis=axis,
+            direction=direction
         )
 
 
