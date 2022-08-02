@@ -9,9 +9,9 @@
 namespace eeprom {
 namespace dev_data {
 
-// set the buffer to the max data length
-using DataBufferType = std::vector<uint8_t>;
-using DataTailType = std::vector<uint8_t>;
+template <std::size_t SIZE>
+using DataBufferType = std::array<uint8_t, SIZE>;
+using DataTailType = std::array<uint8_t, addresses::lookup_table_tail_length>;
 
 enum TableAction { READ, WRITE, CREATE, INITALIZE };
 
@@ -25,27 +25,28 @@ struct table_entry_action {
 // helper class to handle reading writing the data_tail value
 template <task::TaskClient EEPromTaskClient>
 class DevDataTailAccessor
-    : public accessor::EEPromAccessor<EEPromTaskClient, DataTailType,
-                                      addresses::lookup_table_tail_begin,
-                                      addresses::lookup_table_tail_length> {
+    : public accessor::EEPromAccessor<EEPromTaskClient,
+                                      addresses::lookup_table_tail_begin> {
     using accessor::EEPromAccessor<
-        EEPromTaskClient, DataTailType, addresses::lookup_table_tail_begin,
-        addresses::lookup_table_tail_length>::EEPromAccessor;
+        EEPromTaskClient, addresses::lookup_table_tail_begin>::EEPromAccessor;
 
   public:
     explicit DevDataTailAccessor(EEPromTaskClient& eeprom_client,
-                                 accessor::ReadListener<DataTailType>& listener)
-        : accessor::EEPromAccessor<EEPromTaskClient, DataTailType,
-                                   addresses::lookup_table_tail_begin,
-                                   addresses::lookup_table_tail_length>::
-              EEPromAccessor(eeprom_client, listener) {}
+                                 accessor::ReadListener& listener,
+                                 DataTailType& buffer)
+        : accessor::EEPromAccessor<EEPromTaskClient,
+                                   addresses::lookup_table_tail_begin>::
+              EEPromAccessor(
+                  eeprom_client, listener,
+                  accessor::AccessorBuffer(buffer.begin(), buffer.end())) {}
 
   public:
     auto increase_data_tail(const DataTailType& data_added) -> void {
         types::data_length amount_to_read;
         auto read_addr = addresses::lookup_table_tail_begin;
         auto bytes_remain = addresses::lookup_table_tail_length;
-        std::copy_n(data_added.begin(), addresses::lookup_table_tail_length, data_to_add.begin());
+        std::copy_n(data_added.begin(), addresses::lookup_table_tail_length,
+                    data_to_add.begin());
         amount_to_read = std::min(bytes_remain, types::max_data_length);
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{
@@ -56,8 +57,7 @@ class DevDataTailAccessor
     }
 
     auto increase_data_tail(const types::data_length data_added) -> void {
-        DataTailType typed_length =
-            DataTailType(addresses::lookup_table_tail_length);
+        DataTailType typed_length = DataTailType{};
         std::ignore = bit_utils::int_to_bytes(
             data_added, typed_length.begin(),
             typed_length.begin() + addresses::lookup_table_tail_length);
@@ -65,15 +65,14 @@ class DevDataTailAccessor
     }
 
   private:
-    DataTailType data_to_add = DataTailType(addresses::lookup_table_tail_length);
+    DataTailType data_to_add = DataTailType{};
     /**
      * Handle a completed read that was triggered by a increase_usage_call.
      * @param msg The message
      */
     void increase_tail_callback(const eeprom::message::EepromMessage& msg) {
         uint16_t data_to_add_int, current_data_length;
-        auto new_data_length =
-            DataTailType(addresses::lookup_table_tail_length);
+        auto new_data_length = DataTailType{};
         std::ignore = bit_utils::bytes_to_int(data_to_add, data_to_add_int);
         std::ignore = bit_utils::bytes_to_int(msg.data, current_data_length);
         current_data_length += data_to_add_int;
@@ -98,31 +97,33 @@ class DevDataTailAccessor
 
 template <task::TaskClient EEPromTaskClient>
 class DevDataAccessor
-    : public accessor::EEPromAccessor<EEPromTaskClient, DataBufferType,
-                                      addresses::data_address_begin,
-                                      can::message_core::MaxMessageSize>,
-      accessor::ReadListener<DataTailType> {
+    : public accessor::EEPromAccessor<EEPromTaskClient,
+                                      addresses::data_address_begin>,
+      accessor::ReadListener {
     using accessor::EEPromAccessor<
-        EEPromTaskClient, DataBufferType, addresses::data_address_begin,
-        can::message_core::MaxMessageSize>::EEPromAccessor;
+        EEPromTaskClient, addresses::data_address_begin>::EEPromAccessor;
 
   public:
+    template <std::size_t SIZE>
     explicit DevDataAccessor(EEPromTaskClient& eeprom_client,
-                             accessor::ReadListener<DataBufferType>& listener)
-        : accessor::EEPromAccessor<
-              EEPromTaskClient, DataBufferType, addresses::data_address_begin,
-              can::message_core::MaxMessageSize>::EEPromAccessor(eeprom_client,
-                                                                 listener),
+                             accessor::ReadListener& listener,
+                             DataBufferType<SIZE>& buffer)
+        : accessor::EEPromAccessor<EEPromTaskClient,
+                                   addresses::data_address_begin>::
+              EEPromAccessor(
+                  eeprom_client, listener,
+                  accessor::AccessorBuffer(buffer.begin(), buffer.end())),
           tail_accessor{DevDataTailAccessor<EEPromTaskClient>(
-              eeprom_client,
-              *(dynamic_cast<accessor::ReadListener<DataTailType>*>(this)))} {
+              eeprom_client, *(dynamic_cast<accessor::ReadListener*>(this)),
+              data_tail_buff)} {
         tail_accessor.start_read();
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
     }
 
+    template <std::size_t SIZE>
     void write_data(uint16_t key, uint16_t len, uint16_t offset,
-                    std::vector<uint8_t> data) {
+                    std::array<uint8_t, SIZE>& data) {
         if (tail_updated && config_updated) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > data_tail) {
@@ -136,7 +137,6 @@ class DevDataAccessor
             }
             LOG("Writing %d bytes to data partition", len);
             // copy the data to our internal buffer
-            prep_buffer(len);
             std::copy_n(data.begin(), len, this->type_data.begin());
             this->action_cmd_m =
                 table_entry_action{.key = key,
@@ -152,10 +152,13 @@ class DevDataAccessor
                 .callback_param = this});
         }
     }
-    void write_data(uint16_t key, uint16_t len, std::vector<uint8_t> data) {
+    template <std::size_t SIZE>
+    void write_data(uint16_t key, uint16_t len,
+                    std::array<uint8_t, SIZE>& data) {
         write_data(key, len, 0, data);
     }
-    void write_data(uint16_t key, std::vector<uint8_t> data) {
+    template <std::size_t SIZE>
+    void write_data(uint16_t key, std::array<uint8_t, SIZE>& data) {
         write_data(key, data.size(), 0, data);
     }
 
@@ -183,8 +186,9 @@ class DevDataAccessor
     void get_data(uint16_t key, uint16_t len) { get_data(key, len, 0); }
     void get_data(uint16_t key) { get_data(key, 0, 0); }
 
+    template <std::size_t SIZE>
     void create_data_part(uint16_t key, uint16_t len,
-                          std::vector<uint8_t> data) {
+                          std::array<uint8_t, SIZE>& data) {
         if (tail_updated && config_updated) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
@@ -212,7 +216,9 @@ class DevDataAccessor
                             "truncating to %d",
                             len);
                     }
-                    this->write_at_offset(data, new_ptr, len);
+                    this->write_at_offset(
+                        accessor::AccessorBuffer(data.begin(), data.end()),
+                        new_ptr, len);
                 }
             } else {
                 action_cmd_m =
@@ -226,7 +232,6 @@ class DevDataAccessor
                             "truncating to %d",
                             len);
                     }
-                    prep_buffer(len);
                     std::copy_n(data.begin(), len, this->type_data.begin());
                     action_cmd_m.action = TableAction::INITALIZE;
                 }
@@ -247,15 +252,15 @@ class DevDataAccessor
     }
 
     void create_data_part(uint16_t key, uint16_t len) {
-        create_data_part(key, len, std::vector<uint8_t>{});
+        auto dummy = std::array<uint8_t, 0>{};
+        create_data_part(key, len, dummy);
     }
 
-    void on_read(const DataTailType& tail) {
-        if (std::equal(tail.begin(),
-                       tail.begin() + addresses::lookup_table_tail_length,
-                       DataTailType{0x00, 0x00}.begin())) {
-            DataTailType init_tail =
-                DataTailType(addresses::lookup_table_tail_length);
+    void read_complete() {
+        // test for non 0x00 elements
+        if (data_tail_buff.end() ==
+            std::find(data_tail_buff.begin(), data_tail_buff.end(), true)) {
+            DataTailType init_tail = DataTailType{};
             std::ignore = bit_utils::int_to_bytes(
                 addresses::data_address_begin, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);
@@ -263,13 +268,15 @@ class DevDataAccessor
             data_tail = addresses::data_address_begin;
         } else {
             std::ignore = bit_utils::bytes_to_int(
-                tail.begin(),
-                tail.begin() + addresses::lookup_table_tail_length, data_tail);
+                data_tail_buff.begin(),
+                data_tail_buff.begin() + addresses::lookup_table_tail_length,
+                data_tail);
         }
         tail_updated = true;
     }
 
   private:
+    DataTailType data_tail_buff = DataTailType{};
     DevDataTailAccessor<EEPromTaskClient> tail_accessor;
     types::address data_tail = 0;
     bool tail_updated{false};
@@ -370,11 +377,6 @@ class DevDataAccessor
             addr = addresses::data_address_begin + (key * 2 * conf.addr_bytes);
         }  // todo else
         return addr;
-    }
-
-    void prep_buffer(uint16_t length) {
-        this->type_data.clear();
-        this->type_data.resize(length, 0x00);
     }
 };
 

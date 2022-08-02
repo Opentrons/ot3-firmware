@@ -10,16 +10,16 @@ using namespace eeprom;
 SCENARIO("Writing serial number") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = MockListener{};
-    auto subject =
-        serial_number::SerialNumberAccessor{queue_client, read_listener};
+    auto sn_buffer = serial_number::SerialNumberType{};
+    auto sn_data = serial_number::SerialNumberType{'P', '1', 'K', 'S', 'V', '2',
+                                                   '0', '2', '0', '1', '9', '0',
+                                                   '7', '2', '4', '3', '0'};
+    auto subject = serial_number::SerialNumberAccessor{
+        queue_client, read_listener, sn_buffer};
 
     GIVEN("A serial number to write") {
-        auto sn = serial_number::SerialNumberType{'P', '1', 'K', 'S', 'V', '2',
-                                                  '0', '2', '0', '1', '9', '0',
-                                                  '7', '2', '4', '3', '0'};
-
         WHEN("the writing serial number") {
-            subject.write(sn);
+            subject.write(sn_data);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -32,10 +32,10 @@ SCENARIO("Writing serial number") {
                 types::data_length expected_bytes;
                 for (ulong i = 0; i < queue_client.messages.size(); i++) {
                     expected_bytes =
-                        ((sn.size() - (i * types::max_data_length)) >
+                        ((sn_data.size() - (i * types::max_data_length)) >
                                  types::max_data_length
                              ? types::max_data_length
-                             : sn.size() % types::max_data_length);
+                             : sn_data.size() % types::max_data_length);
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
@@ -46,7 +46,7 @@ SCENARIO("Writing serial number") {
                     REQUIRE(write_message.length == expected_bytes);
                     REQUIRE(std::equal(write_message.data.begin(),
                                        &(write_message.data[expected_bytes]),
-                                       &(sn[i * types::max_data_length])));
+                                       &(sn_data[i * types::max_data_length])));
                 }
             }
         }
@@ -55,10 +55,14 @@ SCENARIO("Writing serial number") {
 
 SCENARIO("Reading serial number") {
     auto queue_client = MockEEPromTaskClient{};
-    auto subject =
-        serial_number::SerialNumberAccessor{queue_client, read_listener};
     auto read_listener = MockListener{};
+    auto sn_buffer = serial_number::SerialNumberType{};
+    auto sn_data = serial_number::SerialNumberType{'P', '1', 'K', 'S', 'V', '2',
+                                                   '0', '2', '0', '1', '9', '0',
+                                                   '7', '2', '4', '3', '0'};
 
+    auto subject = serial_number::SerialNumberAccessor{
+        queue_client, read_listener, sn_buffer};
     GIVEN("A request to read the serial number") {
         WHEN("reading the serial number") {
             subject.start_read();
@@ -98,7 +102,6 @@ SCENARIO("Reading serial number") {
         subject.start_read();
 
         WHEN("the read completes") {
-            auto sn = serial_number::SerialNumberType{8, 7, 6, 5, 4, 3, 2, 1};
 
             message::ReadEepromMessage read_message;
             types::data_length num_bytes;
@@ -117,20 +120,18 @@ SCENARIO("Reading serial number") {
                                types::max_data_length);
                 read_message = std::get<message::ReadEepromMessage>(
                     queue_client.messages[i]);
-
-                std::copy_n(sn.cbegin() + (i * types::max_data_length),
+                std::copy_n(sn_data.begin() + (i * types::max_data_length),
                             num_bytes, data.begin());
-
                 read_message.callback(
-                    {.memory_address = read_message.memory_address,
-                     .length = num_bytes,
-                     .data = data},
+                    message::EepromMessage{
+                        .memory_address = read_message.memory_address,
+                        .length = num_bytes,
+                        .data = data},
                     read_message.callback_param);
             }
             THEN("then the listener is called once") {
                 REQUIRE(read_listener.call_count == 1);
-                REQUIRE(std::equal(sn.begin(), sn.begin() + sn.size(),
-                                   read_listener.sn.begin()));
+                REQUIRE(sn_buffer == sn_data);
             }
         }
     }

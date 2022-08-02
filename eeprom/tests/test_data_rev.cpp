@@ -8,17 +8,18 @@
 
 using namespace eeprom;
 
-
 SCENARIO("Writing data revision") {
     auto queue_client = MockEEPromTaskClient{};
-    auto subject = data_revision::DataRevAccessor{queue_client, read_listener};
     auto read_listener = MockListener{};
+    auto data_rev_buffer = data_revision::DataRevisionType{};
+    auto subject = data_revision::DataRevAccessor{queue_client, read_listener,
+                                                  data_rev_buffer};
 
     GIVEN("A data revision to write") {
-        auto data = data_revision::DataRevisionType{1, 2};
+        auto data_rev_data = data_revision::DataRevisionType{1, 2};
 
         WHEN("the writing data revision") {
-            subject.write(data);
+            subject.write(data_rev_data);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -44,9 +45,10 @@ SCENARIO("Writing data revision") {
                                 (i * types::max_data_length));
 
                     REQUIRE(write_message.length == expected_bytes);
-                    REQUIRE(std::equal(write_message.data.begin(),
-                                       &(write_message.data[expected_bytes]),
-                                       &(data[i * types::max_data_length])));
+                    REQUIRE(std::equal(
+                        write_message.data.begin(),
+                        &(write_message.data[expected_bytes]),
+                        &(data_rev_data[i * types::max_data_length])));
                 }
             }
         }
@@ -55,8 +57,10 @@ SCENARIO("Writing data revision") {
 
 SCENARIO("Reading data revision") {
     auto queue_client = MockEEPromTaskClient{};
-    auto subject = data_revision::DataRevAccessor{queue_client, read_listener};
     auto read_listener = MockListener{};
+    auto data_rev_buffer = data_revision::DataRevisionType{};
+    auto subject = data_revision::DataRevAccessor{queue_client, read_listener,
+                                                  data_rev_buffer};
 
     GIVEN("A request to read the data revision") {
         WHEN("reading the data revision") {
@@ -97,7 +101,7 @@ SCENARIO("Reading data revision") {
         subject.start_read();
 
         WHEN("the read completes") {
-            auto data_rev = data_revision::DataRevisionType{2, 4};
+            auto data_rev_data = data_revision::DataRevisionType{2, 4};
 
             message::ReadEepromMessage read_message;
             types::data_length num_bytes;
@@ -117,8 +121,9 @@ SCENARIO("Reading data revision") {
                 read_message = std::get<message::ReadEepromMessage>(
                     queue_client.messages[i]);
 
-                std::copy_n(data_rev.cbegin() + (i * types::max_data_length),
-                            num_bytes, data.begin());
+                std::copy_n(
+                    data_rev_data.cbegin() + (i * types::max_data_length),
+                    num_bytes, data.begin());
                 read_message.callback(
                     {.memory_address = read_message.memory_address,
                      .length = num_bytes,
@@ -127,7 +132,7 @@ SCENARIO("Reading data revision") {
             }
             THEN("then the listener is called once") {
                 REQUIRE(read_listener.call_count == 1);
-                REQUIRE(read_listener.data_rev == data_rev);
+                REQUIRE(data_rev_buffer == data_rev_data);
             }
         }
     }

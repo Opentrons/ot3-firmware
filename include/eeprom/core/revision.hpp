@@ -7,7 +7,7 @@
 namespace eeprom {
 namespace revision {
 
-using RevisionType = std::vector<uint8_t>;
+using RevisionType = std::array<uint8_t, addresses::revision_length>;
 
 /**
  * Class that reads and writes serial numbers.
@@ -15,16 +15,17 @@ using RevisionType = std::vector<uint8_t>;
  */
 template <task::TaskClient EEPromTaskClient>
 class RevisionAccessor
-    : public accessor::EEPromAccessor<EEPromTaskClient, RevisionType,
-                                      addresses::revision_address_begin,
-                                      addresses::revision_length> {
+    : public accessor::EEPromAccessor<EEPromTaskClient,
+                                      addresses::revision_address_begin> {
   public:
     explicit RevisionAccessor(EEPromTaskClient& eeprom_client,
-                              accessor::ReadListener<RevisionType>& listener)
-        : accessor::EEPromAccessor<
-              EEPromTaskClient, RevisionType, addresses::revision_address_begin,
-              addresses::revision_length>::EEPromAccessor(eeprom_client,
-                                                          listener) {}
+                              accessor::ReadListener& listener,
+                              RevisionType& buff)
+        : accessor::EEPromAccessor<EEPromTaskClient,
+                                   addresses::revision_address_begin>::
+              EEPromAccessor(
+                  eeprom_client, listener,
+                  accessor::AccessorBuffer(buff.begin(), buff.end())) {}
 };
 
 }  // namespace revision

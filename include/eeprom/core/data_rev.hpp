@@ -8,26 +8,25 @@
 namespace eeprom {
 namespace data_revision {
 
-using DataRevisionType = std::vector<uint8_t>;
+using DataRevisionType = std::array<uint8_t, addresses::data_revision_length>;
 
 template <task::TaskClient EEPromTaskClient>
 class DataRevAccessor
-    : public accessor::EEPromAccessor<EEPromTaskClient, DataRevisionType,
-                                      addresses::data_revision_address_begin,
-                                      addresses::data_revision_length> {
+    : public accessor::EEPromAccessor<EEPromTaskClient,
+                                      addresses::data_revision_address_begin> {
     using accessor::EEPromAccessor<
-        EEPromTaskClient, DataRevisionType,
-        addresses::data_revision_address_begin,
-        addresses::data_revision_length>::EEPromAccessor;
+        EEPromTaskClient,
+        addresses::data_revision_address_begin>::EEPromAccessor;
 
   public:
     explicit DataRevAccessor(EEPromTaskClient& eeprom_client,
-                             accessor::ReadListener<DataRevisionType>& listener)
-        : accessor::EEPromAccessor<
-              EEPromTaskClient, DataRevisionType,
-              addresses::data_revision_address_begin,
-              addresses::data_revision_length>::EEPromAccessor(eeprom_client,
-                                                               listener) {}
+                             accessor::ReadListener& listener,
+                             DataRevisionType& buff)
+        : accessor::EEPromAccessor<EEPromTaskClient,
+                                   addresses::data_revision_address_begin>::
+              EEPromAccessor(
+                  eeprom_client, listener,
+                  accessor::AccessorBuffer(buff.begin(), buff.end())) {}
 };
 
 }  // namespace data_revision

@@ -791,7 +791,7 @@ struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
 };
 
 struct SetSerialNumber : BaseMessage<MessageId::set_serial_number> {
-    std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
+    eeprom::serial_number::SerialNumberType serial{};
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSerialNumber {
