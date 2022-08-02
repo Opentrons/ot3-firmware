@@ -9,9 +9,9 @@ class Position:
     """Represents position state."""
 
     axis: OT3Axis
-    current_position: float = 0.0
-    commanded_position: float = 0.0
-    encoder_position: float = 0.0
+    current_position: int = 0
+    commanded_position: int = 0
+    encoder_position: int = 0
 
 
 @dataclass
@@ -19,6 +19,6 @@ class Force:
     """Represents force state."""
 
     axis: OT3Axis
-    current_force: float = 0.0
-    commanded_force: float = 0.0
-    encoder_force: float = 0.0
+    current_force: int = 0
+    commanded_force: int = 0
+    encoder_force: int = 0
