@@ -80,7 +80,7 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
                                .tbl = 0x2,
                                .mres = 0x4},
                   .coolconf = {.sgt = 0x6},
-                  .pwmconf = {.freewheel0 = 0x0, .freewheel1 = 0x1}},
+                  .pwmconf = {.freewheel = 0x2}},
     .current_config =
         {
             .r_sense = 0.1,

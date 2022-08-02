@@ -456,8 +456,7 @@ struct __attribute__((packed, __may_alias__)) StealthChop {
 
     uint32_t pwm_ampl : 8 = 0;
     uint32_t pwm_grad : 8 = 0;
-    uint32_t pwm_freq0 : 1 = 0;
-    uint32_t pwm_freq1 : 1 = 0;
+    uint32_t pwm_freq : 2 = 0;
     uint32_t pwm_autoscale : 1 = 0;
     uint32_t pwm_symmetric : 1 = 0;
     /**
@@ -467,8 +466,7 @@ struct __attribute__((packed, __may_alias__)) StealthChop {
      * %10: Coil shorted using LS drivers
      * %11: Coil shorted using HS drivers
      */
-    uint32_t freewheel0 : 1 = 0;
-    uint32_t freewheel1 : 1 = 0;
+    uint32_t freewheel : 2 = 0;
 };
 
 // Encapsulates all of the registers that should be configured by software
