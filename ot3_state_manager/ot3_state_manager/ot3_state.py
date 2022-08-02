@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional
 
-from ot3_state_manager.util import Direction, Message
 from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.hardware import (
@@ -19,9 +18,10 @@ from ot3_state_manager.hardware import (
 )
 from ot3_state_manager.measurable_states import Position
 from ot3_state_manager.pipette_model import PipetteModel
-
+from ot3_state_manager.util import Direction
 
 log = logging.getLogger(__name__)
+
 
 class OT3State:
     """Class to maintain state of OT3.
@@ -63,9 +63,7 @@ class OT3State:
         gripper = Gripper() if use_gripper else None
 
         return cls(
-            left_pipette=left_pipette,
-            right_pipette=right_pipette,
-            gripper=gripper
+            left_pipette=left_pipette, right_pipette=right_pipette, gripper=gripper
         )
 
     def __init__(
@@ -187,17 +185,19 @@ class OT3State:
             and self.right_pipette.model == PipetteModel.MULTI_96_1000
         )
 
-    def axis_current_position(self, axis: OT3Axis) -> int:
+    def axis_current_position(self, axis: OT3Axis) -> Optional[int]:
+        """Returns current position or None for specified axis."""
         return self.current_position[axis]
 
-    def axis_encoder_position(self, axis: OT3Axis) -> int:
+    def axis_encoder_position(self, axis: OT3Axis) -> Optional[int]:
+        """Returns encoder position or None for specified axis."""
         return self.encoder_position[axis]
 
     def update_position(
         self,
         axis_to_update: OT3Axis,
-        current_position: float,
-        encoder_position: float,
+        current_position: int,
+        encoder_position: int,
     ) -> None:
         """Method to update the position of a piece of OT3 hardware."""
         pos_to_update = self._pos_dict()[axis_to_update]
@@ -210,11 +210,30 @@ class OT3State:
         pos_to_update.current_position = current_position
         pos_to_update.encoder_position = encoder_position
 
-    def pulse(self, message: Message) -> None:
-        log.info(f"SERVER: Pulsing {message.axis}")
-        mod = 1 if message.direction == Direction.POSITIVE else -1
+    def pulse(self, axis: OT3Axis, direction: Direction) -> None:
+        """Increments or decrements current and encoder position by 1 for axis."""
+        log.info(f"SERVER: Pulsing {axis}")
+        mod = 1 if direction == Direction.POSITIVE else -1
+
+        axis_current_position = self.axis_current_position(axis)
+        axis_encoder_position = self.axis_encoder_position(axis)
+
+        if axis_current_position is None or axis_encoder_position is None:
+            raise ValueError("Trying to pulse axis that is not currently configured.")
+
         self.update_position(
-            axis_to_update=message.axis,
-            current_position=self.axis_current_position(message.axis) + mod,
-            encoder_position=self.axis_encoder_position(message.axis) + mod
+            axis_to_update=axis,
+            current_position=axis_current_position + mod,
+            encoder_position=axis_encoder_position + mod,
         )
+
+    def set_sync_pin(self, state: str) -> None:
+        """Sets sync pin high or low based off of state passed."""
+        if state == "HIGH":
+            self.sync_pin.set_sync_pin_high()
+        else:
+            self.sync_pin.set_sync_pin_low()
+
+    def get_sync_pin_state(self) -> bool:
+        """Returns the sync pin state."""
+        return self.sync_pin.sync_pin

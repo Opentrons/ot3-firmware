@@ -5,7 +5,7 @@ from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.hardware import Gripper, LeftPipette, RightPipette
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Message
+from ot3_state_manager.util import Direction
 
 
 @pytest.fixture
@@ -22,9 +22,7 @@ def ot3_state_manager() -> OT3State:
 def ot3_state_manager_no_pipettes_or_gripper() -> OT3State:
     """Returns OT3State without left/right pipette and a gripper."""
     return OT3State.build(
-        left_pipette_model=None,
-        right_pipette_model=None,
-        use_gripper=False
+        left_pipette_model=None, right_pipette_model=None, use_gripper=False
     )
 
 
@@ -155,7 +153,7 @@ def test_current_position(ot3_state_manager: OT3State) -> None:
         OT3Axis.P_R,
         OT3Axis.G,
     }
-    assert all([val == 0.0 for val in current_position_dict.values()])
+    assert all([val == 0 for val in current_position_dict.values()])
 
 
 def test_current_position_no_gripper_or_pipettes(
@@ -185,31 +183,31 @@ def test_update_current_position(ot3_state_manager: OT3State) -> None:
     """Confirms that updating the current position works."""
     ot3_state_manager.update_position(
         axis_to_update=OT3Axis.X,
-        current_position=5.0,
-        encoder_position=0.0,
+        current_position=5,
+        encoder_position=0,
     )
-    assert ot3_state_manager.current_position[OT3Axis.X] == 5.0
+    assert ot3_state_manager.current_position[OT3Axis.X] == 5
 
 
 def test_update_encoder_position(ot3_state_manager: OT3State) -> None:
     """Confirms that updating the encoder position works."""
     ot3_state_manager.update_position(
         axis_to_update=OT3Axis.X,
-        current_position=0.0,
-        encoder_position=7.0,
+        current_position=0,
+        encoder_position=7,
     )
-    assert ot3_state_manager.encoder_position[OT3Axis.X] == 7.0
+    assert ot3_state_manager.encoder_position[OT3Axis.X] == 7
 
 
 def test_update_multiple_positions(ot3_state_manager: OT3State) -> None:
     """Confirms that updating the multiple positions at the same time works."""
     ot3_state_manager.update_position(
         axis_to_update=OT3Axis.X,
-        current_position=8.0,
-        encoder_position=10.0,
+        current_position=8,
+        encoder_position=10,
     )
-    assert ot3_state_manager.current_position[OT3Axis.X] == 8.0
-    assert ot3_state_manager.encoder_position[OT3Axis.X] == 10.0
+    assert ot3_state_manager.current_position[OT3Axis.X] == 8
+    assert ot3_state_manager.encoder_position[OT3Axis.X] == 10
 
 
 def test_update_position_hardware_not_attached(
@@ -219,23 +217,26 @@ def test_update_position_hardware_not_attached(
     with pytest.raises(ValueError) as err:
         ot3_state_manager_no_pipettes_or_gripper.update_position(
             axis_to_update=OT3Axis.G,
-            current_position=6.0,
-            encoder_position=0.0,
+            current_position=6,
+            encoder_position=0,
         )
 
     assert err.match('Axis "G" is not available. Cannot update it\'s position.')
 
 
-async def test_pulse():
+def test_pulse() -> None:
+    """Confirms that pulsing works correctly."""
     state_1 = OT3State.build(PipetteModel.SINGLE_20, PipetteModel.SINGLE_20, True)
     state_2 = OT3State.build(PipetteModel.SINGLE_20, PipetteModel.SINGLE_20, True)
 
-    state_1.pulse(Message.to_message("+ X"))
+    state_1.pulse(axis=OT3Axis.X, direction=Direction.POSITIVE)
     assert state_1.axis_current_position(OT3Axis.X) == 1
     assert state_2.axis_current_position(OT3Axis.X) == 0
-    state_1.pulse(Message.to_message("+ X"))
+
+    state_1.pulse(axis=OT3Axis.X, direction=Direction.POSITIVE)
     assert state_1.axis_current_position(OT3Axis.X) == 2
     assert state_2.axis_current_position(OT3Axis.X) == 0
-    state_1.pulse(Message.to_message("- X"))
+
+    state_1.pulse(axis=OT3Axis.X, direction=Direction.NEGATIVE)
     assert state_1.axis_current_position(OT3Axis.X) == 1
     assert state_2.axis_current_position(OT3Axis.X) == 0
