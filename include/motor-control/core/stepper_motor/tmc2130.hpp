@@ -446,6 +446,29 @@ struct __attribute__((packed, __may_alias__)) DriveStatus {
     uint32_t stst : 1 = 0;
 };
 
+/**
+ * This register sets the control current for voltage PWM mode stealth chop.
+ */
+struct __attribute__((packed, __may_alias__)) StealthChop {
+    static constexpr Registers address = Registers::PWMCONF;
+    static constexpr bool writable = true;
+    static constexpr uint32_t value_mask = (1 << 22) - 1;
+
+    uint32_t pwm_ampl : 8 = 0;
+    uint32_t pwm_grad : 8 = 0;
+    uint32_t pwm_freq : 2 = 0;
+    uint32_t pwm_autoscale : 1 = 0;
+    uint32_t pwm_symmetric : 1 = 0;
+    /**
+     * Stand still option when motor current setting is zero (I_HOLD=0).
+     * %00: Normal operation
+     * %01: Freewheeling
+     * %10: Coil shorted using LS drivers
+     * %11: Coil shorted using HS drivers
+     */
+    uint32_t freewheel : 2 = 0;
+};
+
 // Encapsulates all of the registers that should be configured by software
 struct TMC2130RegisterMap {
     GConfig gconfig = {};
@@ -457,6 +480,7 @@ struct TMC2130RegisterMap {
     CoolConfig coolconf = {};
     DriveStatus drvstatus = {};
     GStatus gstat = {};
+    StealthChop pwmconf = {};
 };
 
 // Registers are all 32 bits
