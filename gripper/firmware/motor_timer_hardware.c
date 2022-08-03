@@ -20,7 +20,7 @@ TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 static motor_interrupt_callback timer_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
-static encoder_speed_overflow_callback gripper_enc_speed_overflow_callback =
+static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
     NULL;
 
 uint32_t clamp(uint32_t val, uint32_t min, uint32_t max) {
@@ -294,24 +294,34 @@ void update_pwm(uint32_t duty_cycle) {
 void set_brushed_motor_timer_callback(
     brushed_motor_interrupt_callback callback,
     encoder_overflow_callback g_enc_f_callback,
-    encoder_speed_overflow_callback g_enc_speed_callback) {
+    encoder_idle_state_callback g_enc_idle_callback) {
     brushed_timer_callback = callback;
     gripper_enc_overflow_callback = g_enc_f_callback;
-    gripper_enc_speed_overflow_callback = g_enc_speed_callback;
+    gripper_enc_idle_state_overflow_callback = g_enc_idle_callback;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7 && timer_callback) {
         timer_callback();
+
     } else if (htim == &htim1 && brushed_timer_callback) {
         brushed_timer_callback();
+
     } else if (htim == &htim2 && gripper_enc_overflow_callback) {
         uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
         gripper_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
-    } else if (htim == &htim4 && gripper_enc_speed_overflow_callback) {
-        gripper_enc_speed_overflow_callback();
+
+    } else if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
+        gripper_enc_idle_state_overflow_callback(true);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+    }
+}
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
+    if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
+        gripper_enc_idle_state_overflow_callback(false);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_CC1);
     }
 }

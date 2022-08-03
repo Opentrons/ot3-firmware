@@ -35,12 +35,19 @@ void Encoder_GPIO_Init(void) {
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /*Configure GPIO pin : PA5 */
     GPIO_InitStruct.Pin = GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    //    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    //    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    //    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    //    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    //    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    //    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 void TIM2_EncoderG_Init(void) {
@@ -96,8 +103,8 @@ void TIM2_EncoderG_Init(void) {
  * + B.
  *
  * The timer overflows 3 ms after an edge is received. This means any encoder
- * movement below 8Hz (1 MHz / (30000 * 4 count))is rejected and that we can
- * safely assume the encoder has stopped moving.
+ * movement below 8Hz (1 MHz / (30000 * 4 count)), which is about 0.00131 mm/s,
+ * is rejected and that we can safely assume the encoder has stopped moving.
  **/
 void TIM4_EncoderGSpeed_Init(void) {
     TIM_SlaveConfigTypeDef sSlaveConfig = {0};
@@ -107,7 +114,7 @@ void TIM4_EncoderGSpeed_Init(void) {
     htim4.Init.Prescaler =
         calc_prescaler(SystemCoreClock, GRIPPER_ENCODER_SPEED_TIMER_FREQ);
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim4.Init.Period = 30000;  // timer overflows after 3 ms
+    htim4.Init.Period = 3000;  // timer overflows after 3 ms
     htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim4) != HAL_OK) {
@@ -147,7 +154,7 @@ void TIM4_EncoderGSpeed_Init(void) {
     /* The update event of the enable timer is interrupted */
     __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
     /* Start the input capture measurement */
-    HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1);
+    HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
 }
 
 void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
