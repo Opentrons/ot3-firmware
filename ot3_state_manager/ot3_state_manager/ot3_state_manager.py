@@ -7,6 +7,8 @@ import asyncio
 import logging
 from typing import Optional
 
+from opentrons.hardware_control.types import OT3Axis
+
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.pipette_model import PipetteModel
 from ot3_state_manager.util import (
@@ -22,7 +24,7 @@ log = logging.getLogger(__name__)
 class OT3StateManager:
     """Async socket server that accepts pulse messages."""
 
-    def __init__(self, host: str, port: int, ot3_state: OT3State) -> None:
+    def __init__(self, ot3_state: OT3State) -> None:
         """Creates an OT3StateManager Object.
 
         Args:
@@ -30,14 +32,14 @@ class OT3StateManager:
             port: port to connect to
             ot3_state: OT3State object to modify
         """
-        self._host = host
-        self._port = port
         self._ot3_state = ot3_state
+        self.transport = None
 
-    async def _handle_message(
-        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
-    ) -> None:
-        data = await reader.read(100)
+    def connection_made(self, transport):
+        print("Server: Connection Made")
+        self.transport = transport
+
+    def datagram_received(self, data, addr):
         error_response: Optional[str] = None
         try:
             message = parse_message(data.decode())
@@ -54,26 +56,18 @@ class OT3StateManager:
                 error_response = "Parsed to an unhandled message."
 
         if error_response is not None:
-            writer.write(f"ERROR: {error_response}".encode())
+            response = f"ERROR: {error_response}".encode()
         else:
-            writer.write(get_md5_hash(data))
-        await writer.drain()
-        writer.close()
+            response = get_md5_hash(data)
+        self.transport.sendto(response, addr)
+        self.transport = None
 
-    async def start_server(self) -> None:
-        """Starts asyncio server"""
-        server = await asyncio.start_server(
-            self._handle_message, self._host, self._port
-        )
-
-        addr = server.sockets[0].getsockname()
-        log.info(f"SERVER: Serving on {addr[0:2]}")
-
-        async with server:
-            await server.serve_forever()
+    async def start_server(self, host, port) -> None:
+        loop = asyncio.get_running_loop()
+        await loop.create_datagram_endpoint(lambda: self, local_addr=(host, port))
 
 
-if __name__ == "__main__":
+async def main():
     LEFT_PIPETTE_DEST = "left_pipette_model_name"
     RIGHT_PIPETTE_DEST = "right_pipette_model_name"
     GRIPPER_DEST = "use_gripper"
@@ -114,5 +108,8 @@ if __name__ == "__main__":
     host = arg_dict.pop("host")
     port = arg_dict.pop("port")
     ot3_state = OT3State.build(**arg_dict)
-    ot3_state_manager = OT3StateManager(host=host, port=port, ot3_state=ot3_state)
-    asyncio.run(ot3_state_manager.start_server())
+    await OT3StateManager(ot3_state).start_server(host, port)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
