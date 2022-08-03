@@ -244,3 +244,12 @@ def test_pulse() -> None:
     state_1.pulse(axis=OT3Axis.X, direction=Direction.NEGATIVE)
     assert state_1.axis_current_position(OT3Axis.X) == 1
     assert state_2.axis_current_position(OT3Axis.X) == 0
+
+
+def test_sync_pin(ot3_state: OT3State) -> None:
+    """Confirm that sync pin methods function correctly."""
+    assert not ot3_state.get_sync_pin_state()
+    ot3_state.set_sync_pin("HIGH")
+    assert ot3_state.get_sync_pin_state()
+    ot3_state.set_sync_pin("LOW")
+    assert not ot3_state.get_sync_pin_state()
