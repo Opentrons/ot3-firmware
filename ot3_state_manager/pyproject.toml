@@ -24,7 +24,6 @@ isort = "5.10.1"
 mdformat-gfm = "^0.3.5"
 mdformat_frontmatter = "^0.4.1"
 mdformat_footnote = "^0.1.1"
-pydantic = "1.8.2"
 
 # Expects the monorepo (opentrons) to be a sibling of this repo
 opentrons-hardware = { path = "../../opentrons/hardware" }
