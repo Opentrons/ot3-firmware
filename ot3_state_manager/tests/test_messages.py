@@ -6,9 +6,14 @@ from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.messages import (
     MoveMessage,
     SyncPinMessage,
+    handle_message,
     parse_message,
 )
-from ot3_state_manager.util import Direction
+from ot3_state_manager.ot3_state import OT3State
+from ot3_state_manager.util import (
+    Direction,
+    get_md5_hash,
+)
 
 
 @pytest.mark.parametrize(
@@ -109,3 +114,59 @@ def test_invalid_parse_message(message: str) -> None:
     with pytest.raises(ValueError) as err:
         parse_message(message)
         assert err.value == f'Not able to parse message: "{message}"'
+
+@pytest.mark.parametrize(
+    "message,expected_val",
+    (
+        pytest.param("+ X", 1, id="pos_pulse"),
+        pytest.param("- X", -1, id="neg_pulse"),
+    ),
+)
+def test_valid_handle_move_message(
+    message: str,
+    expected_val: int,
+    ot3_state: OT3State
+) -> None:
+    """Confirm that pulse messages work correctly."""
+    ack = handle_message(message.encode(), ot3_state)
+    assert ack == get_md5_hash(message.encode())
+    assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
+
+
+def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
+    """Confirm that pulse messages work correctly."""
+    HIGH_MESSAGE = "SYNC_PIN HIGH"
+    LOW_MESSAGE = "SYNC_PIN LOW"
+
+    ack = handle_message(HIGH_MESSAGE.encode(), ot3_state)
+    assert ack == get_md5_hash(HIGH_MESSAGE.encode())
+    assert ot3_state.get_sync_pin_state()
+
+    ack = handle_message(LOW_MESSAGE.encode(), ot3_state)
+    assert ack == get_md5_hash(LOW_MESSAGE.encode())
+    assert not ot3_state.get_sync_pin_state()
+
+
+@pytest.mark.parametrize(
+    "message, expected_error",
+    (
+        pytest.param(
+            "A Bad Message",
+            'ERROR: Not able to parse message: "A Bad Message"',
+            id="bad_message_format",
+        ),
+        pytest.param(
+            "+ F", 'ERROR: Not able to parse message: "+ F"', id="invalid_axis"
+        ),
+        pytest.param(
+            "= X", 'ERROR: Not able to parse message: "= X"', id="invalid_direction"
+        ),
+    ),
+)
+def test_invalid_handle_message(
+    message: str, expected_error, ot3_state: OT3State
+) -> None:
+    response = handle_message(message.encode(), ot3_state)
+    assert response.decode() == expected_error
+    assert all([value == 0 for value in ot3_state.current_position.values()])
+    assert all([value == 0 for value in ot3_state.encoder_position.values()])

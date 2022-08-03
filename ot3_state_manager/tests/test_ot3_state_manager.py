@@ -1,9 +1,7 @@
 """Test for OT3StateManager object."""
 
 import asyncio
-import unittest.mock
 from typing import Generator
-from unittest.mock import patch
 
 import pytest
 from opentrons.hardware_control.types import OT3Axis
@@ -11,10 +9,8 @@ from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.ot3_state_manager import OT3StateManager
 from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import get_md5_hash
 from tests.udp_client import (
     EchoClientProtocol,
-    send_message,
 )
 
 HOST = "localhost"
@@ -45,6 +41,14 @@ def server(loop: asyncio.AbstractEventLoop, ot3_state: OT3State) -> Generator:
     finally:
         cancel_handle.cancel()
 
+@pytest.fixture
+async def client(loop: asyncio.AbstractEventLoop) -> EchoClientProtocol:
+    client = await EchoClientProtocol.build(HOST, PORT, loop)
+    await client.is_connected()
+    yield client
+    await client.close()
+
+
 @pytest.mark.parametrize(
     "message,expected_val",
     (
@@ -52,56 +56,15 @@ def server(loop: asyncio.AbstractEventLoop, ot3_state: OT3State) -> Generator:
         pytest.param("- X", -1, id="neg_pulse"),
     ),
 )
-async def test_pulse(
-    message: str, expected_val: int, server: None, ot3_state: OT3State
-) -> None:
-    """Confirm that pulse messages work correctly."""
-    await asyncio.ensure_future(send_message(HOST, PORT, message))
-    assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
-
-
-@pytest.mark.parametrize(
-    "message,expected_val",
-    (
-        pytest.param("SYNC_PIN HIGH", True, id="sync_pin_high"),
-        pytest.param("SYNC_PIN LOW", False, id="sync_pin_low"),
-    ),
-)
-async def test_sync_pin_state(
-    message: str, expected_val: bool, server: None, ot3_state: OT3State
-) -> None:
-    """Confirm that SyncPinMessages work correctly"""
-    expected_ack = get_md5_hash(message.encode())
-    ack = await asyncio.ensure_future(send_message(HOST, PORT, message))
-    # assert ack == expected_ack.decode()
-    print("Running assertion")
-    assert ot3_state.get_sync_pin_state() == expected_val
-
-
-@pytest.mark.parametrize(
-    "message, error",
-    (
-        pytest.param(
-            "A Bad Message",
-            'ERROR: Not able to parse message: "A Bad Message"',
-            id="bad_message_format",
-        ),
-        pytest.param(
-            "+ F", 'ERROR: Not able to parse message: "+ F"', id="invalid_axis"
-        ),
-        pytest.param(
-            "= X", 'ERROR: Not able to parse message: "= X"', id="invalid_direction"
-        ),
-    ),
-)
-async def test_bad_message(
+async def test_message_received(
     message: str,
-    error: str,
+    expected_val: int,
     server: None,
+    client: EchoClientProtocol,
+    loop: asyncio.AbstractEventLoop,
     ot3_state: OT3State
 ) -> None:
-    """Confirm that unsupported messages throw exceptions."""
-    response = await asyncio.ensure_future(send_message(HOST, PORT, message))
-
-    assert all([value == 0 for value in ot3_state.current_position.values()])
-    assert all([value == 0 for value in ot3_state.encoder_position.values()])
+    """Confirm that pulse messages work correctly."""
+    await asyncio.ensure_future(client.send_message(message), loop=loop)
+    print("Performing assert")
+    assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
