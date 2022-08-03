@@ -11,12 +11,7 @@ from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import (
-    MoveMessage,
-    SyncPinMessage,
-    get_md5_hash,
-    parse_message,
-)
+from ot3_state_manager.messages import handle_message
 
 log = logging.getLogger(__name__)
 
@@ -40,26 +35,8 @@ class OT3StateManager:
         self.transport = transport
 
     def datagram_received(self, data, addr):
-        error_response: Optional[str] = None
-        try:
-            message = parse_message(data.decode())
-        except ValueError as err:
-            error_response = f"{err.args[0]}"
-        except:  # noqa: E722
-            error_response = "Unhandled Exception"
-        else:
-            if isinstance(message, MoveMessage):
-                self._ot3_state.pulse(message.axis, message.direction)
-            elif isinstance(message, SyncPinMessage):
-                self._ot3_state.set_sync_pin(message.state)
-            else:
-                error_response = "Parsed to an unhandled message."
-
-        if error_response is not None:
-            response = f"ERROR: {error_response}".encode()
-        else:
-            response = get_md5_hash(data)
-        self.transport.sendto(response, addr)
+        print("Received from client: ", data)
+        self.transport.sendto(handle_message(data, self._ot3_state), addr)
         self.transport = None
 
     async def start_server(self, host, port) -> None:
