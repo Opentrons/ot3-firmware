@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import logging
 from typing import Optional
 
 from ot3_state_manager.ot3_state import OT3State
+from ot3_state_manager.pipette_model import PipetteModel
 from ot3_state_manager.util import (
     MoveMessage,
     SyncPinMessage,
@@ -69,3 +71,48 @@ class OT3StateManager:
 
         async with server:
             await server.serve_forever()
+
+
+if __name__ == "__main__":
+    LEFT_PIPETTE_DEST = "left_pipette_model_name"
+    RIGHT_PIPETTE_DEST = "right_pipette_model_name"
+    GRIPPER_DEST = "use_gripper"
+    PIPETTE_NAMES = [member.value for member in PipetteModel]
+    parser = argparse.ArgumentParser(description="OT-3 State Manager CLI")
+
+    parser.add_argument(
+        "host", action="store", help="Host IP or name to connect to.", type=str
+    )
+    parser.add_argument(
+        "port", action="store", help="The port number to connect to.", type=int
+    )
+
+    parser.add_argument(
+        "--left-pipette",
+        action="store",
+        default=None,
+        choices=PIPETTE_NAMES,
+        help="The model name of the pipette to attach to the left mount. (Default none)",  # noqa: E501
+        dest=LEFT_PIPETTE_DEST,
+    )
+    parser.add_argument(
+        "--right-pipette",
+        action="store",
+        default=None,
+        choices=PIPETTE_NAMES,
+        help="The model name of the pipette to attach to the right mount. (Default none)",  # noqa: E501
+        dest=RIGHT_PIPETTE_DEST,
+    )
+    parser.add_argument(
+        "--attach-gripper",
+        action="store_true",
+        default=False,
+        help="Whether or not to attach a gripper. (Default False)",
+        dest=GRIPPER_DEST,
+    )
+    arg_dict = parser.parse_args().__dict__
+    host = arg_dict.pop("host")
+    port = arg_dict.pop("port")
+    ot3_state = OT3State.build(**arg_dict)
+    ot3_state_manager = OT3StateManager(host=host, port=port, ot3_state=ot3_state)
+    asyncio.run(ot3_state_manager.start_server())

@@ -18,7 +18,9 @@ PORT = 8088
 @pytest.fixture(scope="function")
 def ot3_state() -> OT3State:
     """Create OT3State object."""
-    return OT3State.build(PipetteModel.SINGLE_20, PipetteModel.SINGLE_20, True)
+    return OT3State.build(
+        PipetteModel.SINGLE_20.value, PipetteModel.SINGLE_20.value, True
+    )
 
 
 @pytest.fixture

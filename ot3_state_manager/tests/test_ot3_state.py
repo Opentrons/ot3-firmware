@@ -12,8 +12,8 @@ from ot3_state_manager.util import Direction
 def ot3_state_manager() -> OT3State:
     """Returns OT3State with left/right pipette and a gripper."""
     return OT3State.build(
-        left_pipette_model=PipetteModel.SINGLE_20,
-        right_pipette_model=PipetteModel.MULTI_8_20,
+        left_pipette_model_name=PipetteModel.SINGLE_20.value,
+        right_pipette_model_name=PipetteModel.MULTI_8_20.value,
         use_gripper=True,
     )
 
@@ -22,7 +22,7 @@ def ot3_state_manager() -> OT3State:
 def ot3_state_manager_no_pipettes_or_gripper() -> OT3State:
     """Returns OT3State without left/right pipette and a gripper."""
     return OT3State.build(
-        left_pipette_model=None, right_pipette_model=None, use_gripper=False
+        left_pipette_model_name=None, right_pipette_model_name=None, use_gripper=False
     )
 
 
@@ -44,8 +44,8 @@ def test_build(ot3_state_manager: OT3State) -> None:
 def test_build_no_gripper() -> None:
     """Confirms that when building OT3State no gripper that it is configured correctly."""
     manager = OT3State.build(
-        left_pipette_model=PipetteModel.SINGLE_20,
-        right_pipette_model=PipetteModel.MULTI_8_20,
+        left_pipette_model_name=PipetteModel.SINGLE_20.value,
+        right_pipette_model_name=PipetteModel.MULTI_8_20.value,
         use_gripper=False,
     )
 
@@ -64,8 +64,8 @@ def test_build_no_gripper() -> None:
 def test_build_no_left_pipette() -> None:
     """Confirms that when building OT3State with no left pipette that it is configured correctly."""
     manager = OT3State.build(
-        left_pipette_model=None,
-        right_pipette_model=PipetteModel.MULTI_8_20,
+        left_pipette_model_name=None,
+        right_pipette_model_name=PipetteModel.MULTI_8_20.value,
         use_gripper=True,
     )
 
@@ -84,8 +84,8 @@ def test_build_no_left_pipette() -> None:
 def test_build_no_right_pipette() -> None:
     """Confirms that when building OT3State with no right pipette that it is configured correctly."""
     manager = OT3State.build(
-        left_pipette_model=PipetteModel.SINGLE_20,
-        right_pipette_model=None,
+        left_pipette_model_name=PipetteModel.SINGLE_20.value,
+        right_pipette_model_name=None,
         use_gripper=True,
     )
 
@@ -105,8 +105,8 @@ def test_high_throughput_pipette_wrong_mount() -> None:
     """Confirms that exception is thrown when trying to mount high-throughput pipette to left pipette mount."""
     with pytest.raises(ValueError) as err:
         OT3State.build(
-            left_pipette_model=PipetteModel.MULTI_96_1000,
-            right_pipette_model=None,
+            left_pipette_model_name=PipetteModel.MULTI_96_1000.value,
+            right_pipette_model_name=None,
             use_gripper=True,
         )
     assert err.match("High-throughput pipette must be connected to right pipette mount")
@@ -116,8 +116,8 @@ def test_high_throughput_too_many_pipettes() -> None:
     """Confirms that exception is thrown when trying to a left pipette when a high-throughput pipette is being mounted to the right slot."""
     with pytest.raises(ValueError) as err:
         OT3State.build(
-            left_pipette_model=PipetteModel.SINGLE_20,
-            right_pipette_model=PipetteModel.MULTI_96_1000,
+            left_pipette_model_name=PipetteModel.SINGLE_20.value,
+            right_pipette_model_name=PipetteModel.MULTI_96_1000.value,
             use_gripper=True,
         )
     assert err.match(
@@ -129,8 +129,8 @@ def test_high_throughput_too_many_pipettes() -> None:
 def test_high_throughput() -> None:
     """Confirms that is_high_throughput_pipette_attached returns True when high-throughput pipette is mounted."""
     manager = OT3State.build(
-        left_pipette_model=None,
-        right_pipette_model=PipetteModel.MULTI_96_1000,
+        left_pipette_model_name=None,
+        right_pipette_model_name=PipetteModel.MULTI_96_1000.value,
         use_gripper=False,
     )
 
@@ -226,8 +226,12 @@ def test_update_position_hardware_not_attached(
 
 def test_pulse() -> None:
     """Confirms that pulsing works correctly."""
-    state_1 = OT3State.build(PipetteModel.SINGLE_20, PipetteModel.SINGLE_20, True)
-    state_2 = OT3State.build(PipetteModel.SINGLE_20, PipetteModel.SINGLE_20, True)
+    state_1 = OT3State.build(
+        PipetteModel.SINGLE_20.value, PipetteModel.SINGLE_20.value, True
+    )
+    state_2 = OT3State.build(
+        PipetteModel.SINGLE_20.value, PipetteModel.SINGLE_20.value, True
+    )
 
     state_1.pulse(axis=OT3Axis.X, direction=Direction.POSITIVE)
     assert state_1.axis_current_position(OT3Axis.X) == 1

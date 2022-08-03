@@ -34,8 +34,8 @@ class OT3State:
     @classmethod
     def build(
         cls,
-        left_pipette_model: Optional[PipetteModel],
-        right_pipette_model: Optional[PipetteModel],
+        left_pipette_model_name: Optional[str],
+        right_pipette_model_name: Optional[str],
         use_gripper: bool,
     ) -> OT3State:
         """Helper function to build an OT3State object.
@@ -51,13 +51,13 @@ class OT3State:
         slot.
         """
         left_pipette = (
-            LeftPipette(model=left_pipette_model)
-            if left_pipette_model is not None
+            LeftPipette(PipetteModel.model_name_to_enum(left_pipette_model_name))
+            if left_pipette_model_name is not None
             else None
         )
         right_pipette = (
-            RightPipette(model=right_pipette_model)
-            if right_pipette_model is not None
+            RightPipette(PipetteModel.model_name_to_enum(right_pipette_model_name))
+            if right_pipette_model_name is not None
             else None
         )
         gripper = Gripper() if use_gripper else None
