@@ -13,6 +13,7 @@ python = "^3.8"
 pytest = "7.0.1"
 pytest-cov = "2.10.1"
 pytest-xdist = "~2.2.1"
+pytest-asyncio = "~=0.18"
 mypy = "0.931"
 flake8 = "~4.0.1"
 flake8-annotations = "~2.7.0"
@@ -30,6 +31,7 @@ opentrons = { path = "../../opentrons/api" }
 
 [tool.pytest.ini_options]
 addopts = "--color=yes"
+asyncio_mode = "auto"
 
 [tool.mypy]
 ignore_missing_imports = false

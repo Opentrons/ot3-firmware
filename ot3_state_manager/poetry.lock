@@ -154,18 +154,18 @@ pydocstyle = ">=2.1"
 
 [[package]]
 name = "flake8-noqa"
-version = "1.2.7"
+version = "1.2.8"
 description = "Flake8 noqa comment validation"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-flake8 = ">=3.8.0,<5.0"
+flake8 = ">=3.8.0,<6.0"
 typing-extensions = ">=3.7.4.2"
 
 [package.extras]
-dev = ["mypy", "flake8", "flake8-annotations", "flake8-bandit", "flake8-bugbear", "flake8-commas", "flake8-comprehensions", "flake8-continuation", "flake8-datetimez", "flake8-docstrings", "flake8-import-order", "flake8-literal", "flake8-noqa", "flake8-polyfill", "flake8-postponed-annotations", "flake8-requirements", "flake8-tabs", "flake8-typechecking-import", "flake8-use-fstring", "pep8-naming"]
+dev = ["mypy", "flake8 (>=3.8.0,<5.0)", "flake8-annotations", "flake8-bandit", "flake8-bugbear", "flake8-commas", "flake8-comprehensions", "flake8-continuation", "flake8-datetimez", "flake8-docstrings", "flake8-import-order", "flake8-literal", "flake8-noqa", "flake8-polyfill", "flake8-postponed-annotations", "flake8-requirements", "flake8-tabs", "flake8-typechecking-import", "flake8-use-fstring", "pep8-naming"]
 test = ["flake8-docstrings"]
 
 [[package]]
@@ -610,6 +610,20 @@ tomli = ">=1.0.0"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-asyncio"
+version = "0.19.0"
+description = "Pytest support for asyncio"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pytest = ">=6.1.0"
+
+[package.extras]
+testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
+
+[[package]]
 name = "pytest-cov"
 version = "2.10.1"
 description = "Pytest plugin for measuring coverage."
@@ -776,7 +790,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "194b24d9a1a18d0a2427b2101634ab11cd4df04134cfc48471da5cbec2257fcb"
+content-hash = "84c89ef7488f1488c4e2bc67c3c18088be9c2089895a7235a5e0930decc8f8d1"
 
 [metadata.files]
 aenum = [
@@ -892,8 +906,8 @@ flake8-docstrings = [
     {file = "flake8_docstrings-1.6.0-py2.py3-none-any.whl", hash = "sha256:99cac583d6c7e32dd28bbfbef120a7c0d1b6dde4adb5a9fd441c4227a6534bde"},
 ]
 flake8-noqa = [
-    {file = "flake8-noqa-1.2.7.tar.gz", hash = "sha256:056a534871f17cb68f95653c4ab98b9fce2494b3d1ccde568ee5ae0b07845226"},
-    {file = "flake8_noqa-1.2.7-py3-none-any.whl", hash = "sha256:1a19722e3ea572a9931f091c48f546e61b5997dc354627872b0de7d444b68db0"},
+    {file = "flake8-noqa-1.2.8.tar.gz", hash = "sha256:bf09d7305806b83097331fd592344073e65fcb48524a9da5883b294d36ae7a07"},
+    {file = "flake8_noqa-1.2.8-py3-none-any.whl", hash = "sha256:14231bd202064bb1da5cf5d2bdbfff82be6438fdaabb421009a86739867231b1"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
@@ -1100,6 +1114,10 @@ pyserial = [
 pytest = [
     {file = "pytest-7.0.1-py3-none-any.whl", hash = "sha256:9ce3ff477af913ecf6321fe337b93a2c0dcf2a0a1439c43f5452112c1e4280db"},
     {file = "pytest-7.0.1.tar.gz", hash = "sha256:e30905a0c131d3d94b89624a1cc5afec3e0ba2fbdb151867d8e0ebd49850f171"},
+]
+pytest-asyncio = [
+    {file = "pytest-asyncio-0.19.0.tar.gz", hash = "sha256:ac4ebf3b6207259750bc32f4c1d8fcd7e79739edbc67ad0c58dd150b1d072fed"},
+    {file = "pytest_asyncio-0.19.0-py3-none-any.whl", hash = "sha256:7a97e37cfe1ed296e2e84941384bdd37c376453912d397ed39293e0916f521fa"},
 ]
 pytest-cov = [
     {file = "pytest-cov-2.10.1.tar.gz", hash = "sha256:47bd0ce14056fdd79f93e1713f88fad7bdcc583dcd7783da86ef2f085a0bb88e"},
