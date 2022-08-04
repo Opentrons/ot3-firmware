@@ -133,9 +133,9 @@ class BrushedMotorInterruptHandler {
 
     bool has_active_move = false;
     std::atomic<bool> is_idle = true;
+    uint32_t tick = 0;
 
   private:
-    uint32_t tick = 0;
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::BrushedMotorHardwareIface& hardware;

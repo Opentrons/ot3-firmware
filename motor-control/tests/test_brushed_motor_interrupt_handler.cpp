@@ -34,8 +34,6 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             test_objs.handler.run_interrupt();
 
             THEN("The motor hardware proceeds to home") {
-                /* handler shouldn't be idle */
-                REQUIRE(!test_objs.handler.is_idle);
                 /* motor shouldn't be gripping */
                 REQUIRE(!test_objs.hw.get_is_gripping());
                 test_objs.hw.set_encoder_value(1000);
@@ -67,28 +65,36 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
         test_objs.queue.try_write_isr(msg);
 
         WHEN("A brushed move message is received and loaded") {
-            test_objs.handler.run_interrupt();
+            test_objs.handler.update_and_start_move();
 
             THEN("The motor hardware proceeds to grip") {
-                /* handler shouldn't be idle */
-                REQUIRE(!test_objs.handler.is_idle);
                 /* motor should be gripping */
                 REQUIRE(test_objs.hw.get_is_gripping());
                 test_objs.hw.set_encoder_value(30000);
 
                 AND_WHEN("The encoder speed timer overflows") {
                     /* this happens when the enc speed is very slow */
-                    test_objs.handler.enc_speed_timer_overflows();
-                    test_objs.handler.run_interrupt();
+                    test_objs.handler.set_enc_idle_state(true);
 
-                    THEN("Gripped ack is sent") {
-                        REQUIRE(test_objs.hw.get_encoder_pulses() == 30000);
-                        REQUIRE(test_objs.reporter.messages.size() >= 1);
-                        Ack read_ack = test_objs.reporter.messages.back();
-                        REQUIRE(read_ack.encoder_position == 30000);
-                        REQUIRE(read_ack.ack_id ==
-                                AckMessageId::complete_without_condition);
-                        REQUIRE(test_objs.handler.is_idle);
+                    THEN(
+                        "Encoder speed tracker is holding off for a 1 ms (32 "
+                        "ticks)") {
+                        for (uint32_t i = 0; i < HOLDOFF_TICKS; i++) {
+                            REQUIRE(!test_objs.handler.is_sensing());
+                            REQUIRE(test_objs.reporter.messages.size() == 0);
+                            CHECK(test_objs.handler.tick == (i + 1));
+                        }
+
+                        AND_THEN("Gripped ack is sent") {
+                            CHECK(test_objs.handler.tick == 32);
+                            test_objs.handler.run_interrupt();
+                            REQUIRE(test_objs.hw.get_encoder_pulses() == 30000);
+                            REQUIRE(test_objs.reporter.messages.size() >= 1);
+                            Ack read_ack = test_objs.reporter.messages.back();
+                            REQUIRE(read_ack.encoder_position == 30000);
+                            REQUIRE(read_ack.ack_id ==
+                                    AckMessageId::complete_without_condition);
+                        }
                     }
                 }
             }
