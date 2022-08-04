@@ -115,7 +115,8 @@ class EEPromMessageHandler {
         if (hw_iface.get_eeprom_addr_bytes() ==
             static_cast<size_t>(
                 hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
-            m.memory_address = m.memory_address << 8;
+            m.memory_address = m.memory_address
+                               << hardware_iface::ADDR_BITS_DIFFERENCE;
         }
         iter = bit_utils::int_to_bytes(
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -177,7 +178,8 @@ class EEPromMessageHandler {
         if (hw_iface.get_eeprom_addr_bytes() ==
             static_cast<size_t>(
                 hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
-            m.memory_address = m.memory_address << 8;
+            m.memory_address = m.memory_address
+                               << hardware_iface::ADDR_BITS_DIFFERENCE;
         }
 
         iter = bit_utils::int_to_bytes(

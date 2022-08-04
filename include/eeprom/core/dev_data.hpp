@@ -324,8 +324,8 @@ class DevDataAccessor
         data_iter = bit_utils::bytes_to_int(
             data_iter, data_iter + conf.addr_bytes, data_len);
         if (conf.chip == hardware_iface::EEPromChipType::MICROCHIP_24AA02T) {
-            data_addr = data_addr >> 8;
-            data_len = data_len >> 8;
+            data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
+            data_len = data_len >> hardware_iface::ADDR_BITS_DIFFERENCE;
         }
         bool do_initalize = false;
         switch (action_cmd_m.action) {
