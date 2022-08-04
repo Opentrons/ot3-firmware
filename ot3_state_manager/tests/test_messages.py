@@ -1,3 +1,5 @@
+"""Test message functionality."""
+
 from typing import Type
 
 import pytest
@@ -10,10 +12,7 @@ from ot3_state_manager.messages import (
     parse_message,
 )
 from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import (
-    Direction,
-    get_md5_hash,
-)
+from ot3_state_manager.util import Direction, get_md5_hash
 
 
 @pytest.mark.parametrize(
@@ -21,10 +20,13 @@ from ot3_state_manager.util import (
     [
         ["SYNC_PIN HIGH", "HIGH"],
         ["SYNC_PIN LOW", "LOW"],
-    ]
+    ],
 )
 def test_sync_pin_message_to_message(message: str, expected_state: str) -> None:
-    assert SyncPinMessage.to_message(message).state == expected_state
+    """Confirm that sync pin messages parse correctly."""
+    sync_pin_message = SyncPinMessage.to_message(message)
+    assert sync_pin_message is not None
+    assert sync_pin_message.state == expected_state
 
 
 @pytest.mark.parametrize(
@@ -37,11 +39,13 @@ def test_sync_pin_message_to_message(message: str, expected_state: str) -> None:
         "SYNCPIN_HIGH",
         "SYNC_PINHIGH",
         "BLARGH",
-        "SYNC_PIN TOGGLE"
-    ]
+        "SYNC_PIN TOGGLE",
+    ],
 )
 def test_invalid_sync_pin_message_to_message(message: str) -> None:
+    """Confirm invalid sync pin messages do not parse."""
     assert SyncPinMessage.to_message(message) is None
+
 
 @pytest.mark.parametrize(
     "message,expected_axis,expected_direction",
@@ -64,13 +68,16 @@ def test_invalid_sync_pin_message_to_message(message: str) -> None:
         ["- Q", OT3Axis.Q, Direction.NEGATIVE],
         ["+ G", OT3Axis.G, Direction.POSITIVE],
         ["- G", OT3Axis.G, Direction.NEGATIVE],
-    ]
+    ],
 )
 def test_move_message_to_message(
     message: str, expected_axis: OT3Axis, expected_direction: Direction
 ) -> None:
-    assert MoveMessage.to_message(message).axis == expected_axis
-    assert MoveMessage.to_message(message).direction == expected_direction
+    """Confirm that move messages are parsed correctly."""
+    move_message = MoveMessage.to_message(message)
+    assert move_message is not None
+    assert move_message.axis == expected_axis
+    assert move_message.direction == expected_direction
 
 
 @pytest.mark.parametrize(
@@ -81,9 +88,10 @@ def test_move_message_to_message(
         "= X",
         "+ F",
         "F",
-    ]
+    ],
 )
 def test_invalid_move_message_to_message(message: str) -> None:
+    """Confirm that invalid move messages do not parse."""
     assert MoveMessage.to_message(message) is None
 
 
@@ -92,11 +100,10 @@ def test_invalid_move_message_to_message(message: str) -> None:
     [
         ["+ X", MoveMessage],
         ["SYNC_PIN HIGH", SyncPinMessage],
-    ]
+    ],
 )
-def test_parse_message(
-    message: str, expected_type: Type
-) -> None:
+def test_parse_message(message: str, expected_type: Type) -> None:
+    """Confirm that parse_message function works correctly."""
     assert isinstance(parse_message(message), expected_type)
 
 
@@ -108,12 +115,14 @@ def test_parse_message(
         "= X",
         "+ F",
         "F",
-    ]
+    ],
 )
 def test_invalid_parse_message(message: str) -> None:
+    """Confirm parse_message throws ValueError when unable parse to a known message."""
     with pytest.raises(ValueError) as err:
         parse_message(message)
         assert err.value == f'Not able to parse message: "{message}"'
+
 
 @pytest.mark.parametrize(
     "message,expected_val",
@@ -123,9 +132,7 @@ def test_invalid_parse_message(message: str) -> None:
     ),
 )
 def test_valid_handle_move_message(
-    message: str,
-    expected_val: int,
-    ot3_state: OT3State
+    message: str, expected_val: int, ot3_state: OT3State
 ) -> None:
     """Confirm that pulse messages work correctly."""
     ack = handle_message(message.encode(), ot3_state)
@@ -164,8 +171,9 @@ def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
     ),
 )
 def test_invalid_handle_message(
-    message: str, expected_error, ot3_state: OT3State
+    message: str, expected_error: str, ot3_state: OT3State
 ) -> None:
+    """Confirm that invalid messages respond with the correct error."""
     response = handle_message(message.encode(), ot3_state)
     assert response.decode() == expected_error
     assert all([value == 0 for value in ot3_state.current_position.values()])

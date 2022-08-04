@@ -8,9 +8,6 @@ from ot3_state_manager.pipette_model import PipetteModel
 from ot3_state_manager.util import Direction
 
 
-
-
-
 @pytest.fixture
 def ot3_state_no_pipettes_or_gripper() -> OT3State:
     """Returns OT3State without left/right pipette and a gripper."""
@@ -19,7 +16,7 @@ def ot3_state_no_pipettes_or_gripper() -> OT3State:
     )
 
 
-def test_build(ot3_state) -> None:
+def test_build(ot3_state: OT3State) -> None:
     """Confirms that when building OT3State with pipettes and gripper that it is configured correctly."""
     assert ot3_state.left_pipette is not None
     assert ot3_state.right_pipette is not None
@@ -133,7 +130,7 @@ def test_high_throughput() -> None:
     assert not manager.is_gripper_attached
 
 
-def test_current_position(ot3_state) -> None:
+def test_current_position(ot3_state: OT3State) -> None:
     """Confirms that .current_position returns correctly."""
     current_position_dict = ot3_state.current_position
     assert set(current_position_dict.keys()) == {
@@ -150,7 +147,7 @@ def test_current_position(ot3_state) -> None:
 
 
 def test_current_position_no_gripper_or_pipettes(
-    ot3_state_no_pipettes_or_gripper,
+    ot3_state_no_pipettes_or_gripper: OT3State,
 ) -> None:
     """Confirms that .current_position returns correctly when no pipettes or gripper is attached."""
     current_position_dict = ot3_state_no_pipettes_or_gripper.current_position
@@ -172,7 +169,7 @@ def test_current_position_no_gripper_or_pipettes(
     )
 
 
-def test_update_current_position(ot3_state) -> None:
+def test_update_current_position(ot3_state: OT3State) -> None:
     """Confirms that updating the current position works."""
     ot3_state.update_position(
         axis_to_update=OT3Axis.X,
@@ -182,7 +179,7 @@ def test_update_current_position(ot3_state) -> None:
     assert ot3_state.current_position[OT3Axis.X] == 5
 
 
-def test_update_encoder_position(ot3_state) -> None:
+def test_update_encoder_position(ot3_state: OT3State) -> None:
     """Confirms that updating the encoder position works."""
     ot3_state.update_position(
         axis_to_update=OT3Axis.X,
@@ -192,7 +189,7 @@ def test_update_encoder_position(ot3_state) -> None:
     assert ot3_state.encoder_position[OT3Axis.X] == 7
 
 
-def test_update_multiple_positions(ot3_state) -> None:
+def test_update_multiple_positions(ot3_state: OT3State) -> None:
     """Confirms that updating the multiple positions at the same time works."""
     ot3_state.update_position(
         axis_to_update=OT3Axis.X,
@@ -204,7 +201,7 @@ def test_update_multiple_positions(ot3_state) -> None:
 
 
 def test_update_position_hardware_not_attached(
-    ot3_state_no_pipettes_or_gripper,
+    ot3_state_no_pipettes_or_gripper: OT3State,
 ) -> None:
     """Confirms that updating a position of a piece of equipment, that is not attached, throws an exception."""
     with pytest.raises(ValueError) as err:

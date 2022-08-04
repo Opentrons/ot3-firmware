@@ -1,18 +1,17 @@
+"""Class for all messages exchanged between client and server.
+
+Also, location for all message handling functions.
+"""
+
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import (
-    Literal,
-    Optional,
-    Union,
-)
+from typing import Literal, Optional, Union
 
 from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import (
-    Direction,
-    get_md5_hash,
-)
+from ot3_state_manager.util import Direction, get_md5_hash
 
 
 @dataclass
@@ -74,6 +73,7 @@ class MoveMessage(Message):
 
         return None
 
+
 def parse_message(string: str) -> Union[SyncPinMessage, MoveMessage]:
     """Parse string into a Message Type"""
     sync_pin_message = SyncPinMessage.to_message(string)
@@ -89,6 +89,7 @@ def parse_message(string: str) -> Union[SyncPinMessage, MoveMessage]:
 
 
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
+    """Parse incoming message, react to it accordingly, and respond."""
     error_response: Optional[str] = None
     try:
         message = parse_message(data.decode())

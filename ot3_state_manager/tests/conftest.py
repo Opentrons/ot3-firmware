@@ -1,3 +1,5 @@
+"""Global fixtures available to all test files at the same level or below this file."""
+
 import pytest
 
 from ot3_state_manager.ot3_state import OT3State
