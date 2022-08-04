@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
@@ -16,6 +18,9 @@ using namespace motor_messages;
  * A brushed motor motion handler class.
  *
  */
+
+static constexpr uint32_t HOLDOFF_TICKS =
+    32;  // hold off for 1 ms (with a 32k Hz timer)
 
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
@@ -55,8 +60,7 @@ class BrushedMotorInterruptHandler {
                 limit_switch_triggered()) {
                 homing_stopped();
             } else {
-                tick_count++;
-                if (!should_continue()) {
+                if (is_sensing() && is_idle) {
                     finish_current_move(
                         AckMessageId::complete_without_condition);
                 }
@@ -64,15 +68,29 @@ class BrushedMotorInterruptHandler {
         }
     }
 
-    [[nodiscard]] auto should_continue() const -> bool {
-        /*
-         * TODO: Check encoder position as the condition to stop motor instead
-         * of duration.
+    auto is_sensing() -> bool {
+        /* When gripping, hold off a certain number of ticks before checking if
+         * the encoder is idle */
+        if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            return false;
+        }
+        if (tick < HOLDOFF_TICKS) {
+            tick++;
+            return false;
+        }
+        return true;
+    }
+
+    void set_enc_idle_state(bool val) {
+        /* When the encoder speed timer overflows, this means the encoder is
+         * moving at a frequency lower than 8 Hz, we can assume the gripper jaw
+         * has stopped moving and the active move is complete.
          */
-        return tick_count < buffered_move.duration;
+        is_idle = val;
     }
 
     void update_and_start_move() {
+        tick = 0;
         has_active_move = queue.try_read_isr(&buffered_move);
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
@@ -95,7 +113,6 @@ class BrushedMotorInterruptHandler {
 
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
-        tick_count = 0x0;
         has_active_move = false;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(),
@@ -115,9 +132,10 @@ class BrushedMotorInterruptHandler {
     }
 
     bool has_active_move = false;
+    std::atomic<bool> is_idle = true;
+    uint32_t tick = 0;
 
   private:
-    uint64_t tick_count = 0x0;
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::BrushedMotorHardwareIface& hardware;

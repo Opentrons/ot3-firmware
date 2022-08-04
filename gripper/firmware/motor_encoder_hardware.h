@@ -11,8 +11,11 @@ extern "C" {
 #endif  // __cplusplus
 
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim4;
 typedef void (*encoder_overflow_callback)(int32_t);
 
+uint32_t round_closest(uint32_t dividend, uint32_t divisor);
+uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq);
 void initialize_enc();
 
 #ifdef __cplusplus
