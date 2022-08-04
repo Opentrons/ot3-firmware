@@ -21,7 +21,11 @@ struct table_entry_action {
     types::data_length len;
     TableAction action;
 };
-
+/** Implementation Note: do not directly use this accessor, it should only
+ * be used by the DevDataAccessor
+ *
+ * @tparam EEPromTaskClient client of eeprom task
+ **/
 // helper class to handle reading writing the data_tail value
 template <task::TaskClient EEPromTaskClient>
 class DevDataTailAccessor
@@ -95,6 +99,18 @@ class DevDataTailAccessor
     }
 };
 
+/**
+ * Class that reads and writes generalized data using a lookup table stored on
+ * the eeprom
+ *
+ * Implementation Note: When creating an instance of this class, take care
+ * to make the instance not outlive the backing buffer as this will cause a
+ * SYSSEGV
+ * The best way to implement this is to create an instance of both the accessor
+ * and the backing buffer as members of a class so that they share scope
+ *
+ * @tparam EEPromTaskClient client of eeprom task
+ **/
 template <task::TaskClient EEPromTaskClient>
 class DevDataAccessor
     : public accessor::EEPromAccessor<EEPromTaskClient,
