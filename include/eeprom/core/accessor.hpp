@@ -47,15 +47,24 @@ class ReadListener {
     virtual void read_complete() = 0;
 };
 
+/**
+ * Base class for all of the other accessors
+ * This class should not be directly used.
+ *
+ * @tparam EEPromTaskClient client of eeprom task
+ * @tparam data_begin Adddress from addresses.hpp where this data section begins
+ **/
 template <task::TaskClient EEPromTaskClient, types::address data_begin>
 class EEPromAccessor {
-  public:
+  protected:
     explicit EEPromAccessor(EEPromTaskClient& eeprom_client,
                             ReadListener& listener, AccessorBuffer buff)
         : type_data(buff),
           eeprom_client{eeprom_client},
           read_listener(listener),
           begin{data_begin} {}
+
+  public:
     EEPromAccessor(const EEPromAccessor&) = delete;
     EEPromAccessor(EEPromAccessor&&) = delete;
     auto operator=(EEPromAccessor&&) -> EEPromAccessor& = delete;

@@ -31,10 +31,13 @@ template <task::TaskClient EEPromTaskClient>
 class DevDataTailAccessor
     : public accessor::EEPromAccessor<EEPromTaskClient,
                                       addresses::lookup_table_tail_begin> {
+    template <task::TaskClient FriendEEPromTaskClient>
+    friend class DevDataAccessor;
+
     using accessor::EEPromAccessor<
         EEPromTaskClient, addresses::lookup_table_tail_begin>::EEPromAccessor;
 
-  public:
+  private:
     explicit DevDataTailAccessor(EEPromTaskClient& eeprom_client,
                                  accessor::ReadListener& listener,
                                  DataTailType& buffer)
@@ -44,7 +47,6 @@ class DevDataTailAccessor
                   eeprom_client, listener,
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())) {}
 
-  public:
     auto increase_data_tail(const DataTailType& data_added) -> void {
         types::data_length amount_to_read;
         auto read_addr = addresses::lookup_table_tail_begin;
@@ -68,7 +70,6 @@ class DevDataTailAccessor
         increase_data_tail(typed_length);
     }
 
-  private:
     DataTailType data_to_add = DataTailType{};
     /**
      * Handle a completed read that was triggered by a increase_usage_call.
