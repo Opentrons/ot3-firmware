@@ -131,8 +131,7 @@ class DevDataAccessor
                   eeprom_client, listener,
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())),
           tail_accessor{DevDataTailAccessor<EEPromTaskClient>(
-              eeprom_client, *(dynamic_cast<accessor::ReadListener*>(this)),
-              data_tail_buff)} {
+              eeprom_client, *this, data_tail_buff)} {
         tail_accessor.start_read();
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
