@@ -27,3 +27,11 @@ class PipetteModel(Enum):
             PipetteModel.MULTI_96_1000.value: PipetteModel.MULTI_96_1000,
         }
         return lookup_dict[name]
+
+    def get_pipette_name(self) -> str:
+        """Get name of pipette.
+
+        This is the same as calling .value. But .value is not typed to a string and
+        this method is.
+        """
+        return str(self.value)

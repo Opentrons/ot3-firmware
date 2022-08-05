@@ -10,7 +10,7 @@ from ot3_state_manager.pipette_model import PipetteModel
 def ot3_state() -> OT3State:
     """Returns OT3State with left/right pipette and a gripper."""
     return OT3State.build(
-        left_pipette_model_name=PipetteModel.SINGLE_20.value,
-        right_pipette_model_name=PipetteModel.MULTI_8_20.value,
+        left_pipette_model_name=PipetteModel.SINGLE_20.get_pipette_name(),
+        right_pipette_model_name=PipetteModel.MULTI_8_20.get_pipette_name(),
         use_gripper=True,
     )

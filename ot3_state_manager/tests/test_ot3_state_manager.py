@@ -5,10 +5,13 @@ from typing import AsyncGenerator, Generator
 from unittest.mock import Mock, patch
 
 import pytest
+from opentrons.hardware_control.types import OT3Axis
 
+from ot3_state_manager.messages import MoveMessage
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.ot3_state_manager import OT3StateManager
 from ot3_state_manager.pipette_model import PipetteModel
+from ot3_state_manager.util import Direction
 from tests.udp_client import EchoClientProtocol
 
 HOST = "localhost"
@@ -62,7 +65,8 @@ async def test_message_received(
     ot3_state: OT3State,
 ) -> None:
     """Confirm that pulse messages work correctly."""
-    client.send_message("+ X")
+    move_message_bytes = MoveMessage(OT3Axis.X, Direction.POSITIVE).to_bytes()
+    client.send_message(move_message_bytes)
     await asyncio.wait_for(server.is_connected(), 15.0)
     datagram_received_data_arg_content = patched_object.call_args.args[0]
-    assert datagram_received_data_arg_content == b"+ X"
+    assert datagram_received_data_arg_content == move_message_bytes
