@@ -5,6 +5,7 @@ Also, location for all message handling functions.
 
 from __future__ import annotations
 
+import struct
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional
 
@@ -59,32 +60,34 @@ class MoveMessage(Message):
 class MessageLookup:
     """Lookup class for mapping a message to a byte value."""
 
-    MESSAGE_LOOKUP_DICT: Dict[bytes, Message] = {
-        b"0x0000": MoveMessage(OT3Axis.X, Direction.NEGATIVE),
-        b"0x0001": MoveMessage(OT3Axis.X, Direction.POSITIVE),
-        b"0x0010": MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
-        b"0x0011": MoveMessage(OT3Axis.Y, Direction.POSITIVE),
-        b"0x0020": MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
-        b"0x0021": MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
-        b"0x0030": MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
-        b"0x0031": MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
-        b"0x0040": MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
-        b"0x0041": MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
-        b"0x0050": MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
-        b"0x0051": MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
-        b"0x0060": MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
-        b"0x0061": MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
-        b"0x0070": MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
-        b"0x0071": MoveMessage(OT3Axis.Q, Direction.POSITIVE),
-        b"0x0080": MoveMessage(OT3Axis.G, Direction.NEGATIVE),
-        b"0x0081": MoveMessage(OT3Axis.G, Direction.POSITIVE),
-        b"0x1000": SyncPinMessage("LOW"),
-        b"0x1001": SyncPinMessage("HIGH"),
+    MESSAGE_LOOKUP_DICT: Dict[int, Message] = {
+        0x0000: MoveMessage(OT3Axis.X, Direction.NEGATIVE),
+        0x0001: MoveMessage(OT3Axis.X, Direction.POSITIVE),
+        0x0010: MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
+        0x0011: MoveMessage(OT3Axis.Y, Direction.POSITIVE),
+        0x0020: MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
+        0x0021: MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
+        0x0030: MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
+        0x0031: MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
+        0x0040: MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
+        0x0041: MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
+        0x0050: MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
+        0x0051: MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
+        0x0060: MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
+        0x0061: MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
+        0x0070: MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
+        0x0071: MoveMessage(OT3Axis.Q, Direction.POSITIVE),
+        0x0080: MoveMessage(OT3Axis.G, Direction.NEGATIVE),
+        0x0081: MoveMessage(OT3Axis.G, Direction.POSITIVE),
+        0x1000: SyncPinMessage("LOW"),
+        0x1001: SyncPinMessage("HIGH"),
     }
 
-    REVERSE_LOOKUP_DICT: Dict[Message, bytes] = {
+    REVERSE_LOOKUP_DICT: Dict[Message, int] = {
         val: key for key, val in MESSAGE_LOOKUP_DICT.items()
     }
+
+    FORMAT_STRING = ">H"
 
     @classmethod
     def message_to_bytes(cls, message: Message) -> bytes:
@@ -92,15 +95,27 @@ class MessageLookup:
         if message not in cls.REVERSE_LOOKUP_DICT:
             raise ValueError(f"Message {str(message)} not defined.")
 
-        return cls.REVERSE_LOOKUP_DICT[message]
+        return struct.pack(cls.FORMAT_STRING, cls.REVERSE_LOOKUP_DICT[message])
 
     @classmethod
     def bytes_to_message(cls, byte_string: bytes) -> Message:
         """Looks up and returns message for byte value."""
-        if byte_string not in cls.MESSAGE_LOOKUP_DICT:
-            raise ValueError(f"Message for byte string {str(byte_string)} not defined.")
+        try:
+            val_tuple = struct.unpack(cls.FORMAT_STRING, byte_string)
+        except struct.error:
+            raise ValueError(
+                f'Passed message, "{byte_string!r}" is not a valid hexadecimal byte '
+                f"string."
+            )
 
-        return cls.MESSAGE_LOOKUP_DICT[byte_string]
+        assert len(val_tuple) == 1
+        int_val = val_tuple[0]
+        if int_val not in cls.MESSAGE_LOOKUP_DICT:
+            raise ValueError(
+                f"Message for hexadecimal byte string {byte_string!r} is not defined."
+            )
+
+        return cls.MESSAGE_LOOKUP_DICT[int_val]
 
     def __init__(self) -> None:
         """Do not try to instantiate this class."""
