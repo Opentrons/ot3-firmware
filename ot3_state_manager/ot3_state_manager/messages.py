@@ -22,9 +22,6 @@ MESSAGE_BYTE_LENGTH = MESSAGE_ID_BYTE_LENGTH + MESSAGE_CONTENT_BYTE_LENGTH
 STRUCT_FORMAT_STRING = f"B{MESSAGE_CONTENT_BYTE_LENGTH}s"
 
 
-# mypy doesn't like that I am instantiating a dataclass based on an abstract class (ABC)
-# instead of a concrete class.
-@dataclass  # type: ignore[misc]
 class Message(ABC):
     """Parent level class for all Message objects.
 
