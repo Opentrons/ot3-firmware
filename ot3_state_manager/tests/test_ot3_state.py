@@ -5,7 +5,7 @@ from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.hardware import Gripper, LeftPipette, RightPipette
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Direction
+from ot3_state_manager.util import Direction, SyncPinState
 
 
 @pytest.fixture
@@ -243,7 +243,7 @@ def test_pulse() -> None:
 def test_sync_pin(ot3_state: OT3State) -> None:
     """Confirm that sync pin methods function correctly."""
     assert not ot3_state.get_sync_pin_state()
-    ot3_state.set_sync_pin("HIGH")
+    ot3_state.set_sync_pin(SyncPinState.HIGH)
     assert ot3_state.get_sync_pin_state()
-    ot3_state.set_sync_pin("LOW")
+    ot3_state.set_sync_pin(SyncPinState.LOW)
     assert not ot3_state.get_sync_pin_state()

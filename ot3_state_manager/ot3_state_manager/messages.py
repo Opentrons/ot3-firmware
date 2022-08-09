@@ -6,42 +6,60 @@ Also, location for all message handling functions.
 from __future__ import annotations
 
 import struct
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional
+from enum import Enum
+from typing import Any, Callable, Optional
 
 from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import Direction
+from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
+
+MESSAGE_BYTE_LENGTH = 4
+MESSAGE_ID_BYTE_LENGTH = 1
+MESSAGE_CONTENT_BYTE_LENGTH = 3
+STRUCT_FORMAT_STRING = f"B{MESSAGE_CONTENT_BYTE_LENGTH}s"
 
 
-@dataclass
-class Message:
-    """Generic Message Type."""
+# mypy doesn't like that I am instantiating a dataclass based on an abstract class (ABC)
+# instead of a concrete class.
+@dataclass  # type: ignore[misc]
+class Message(ABC):
+    """Parent level class for all Message objects.
 
+    Is abstract base class that requires both a build and to_bytes method to be defined.
+    """
+
+    @staticmethod
+    def parse(message_bytes: bytes) -> Message:
+        """Parse sequence of bytes into a Message object."""
+        if not len(message_bytes) == MESSAGE_BYTE_LENGTH:
+            raise ValueError(
+                f"Message length must be {MESSAGE_BYTE_LENGTH} bytes. "
+                f"Your message was {len(message_bytes)} bytes."
+            )
+        message_id, message_content = struct.unpack(STRUCT_FORMAT_STRING, message_bytes)
+        # mypy thinks that I am instantiating a MoveMessageHardware object here.
+        # I am not, I am performing a lookup as defined in the enum docs.
+        # https://docs.python.org/3/library/enum.html#programmatic-access-to-enumeration-members-and-their-attributes
+        return MessageID(message_id).builder_func(message_content=message_content)  # type: ignore[call-arg]
+
+    @staticmethod
+    @abstractmethod
+    def build(message_content: bytes) -> Message:
+        """Parse message_content into a Message object."""
+        ...
+
+    @abstractmethod
     def to_bytes(self) -> bytes:
-        """Returns bytes value for Message."""
-        return MessageLookup.message_to_bytes(self)
-
-
-@dataclass
-class SyncPinMessage(Message):
-    """Message for setting sync pin high or low."""
-
-    state: Literal["HIGH", "LOW"]
-
-    def __eq__(self, other: Any) -> bool:
-        """Confirm that the 2 objects are equal"""
-        return isinstance(other, SyncPinMessage) and other.state == self.state
-
-    def __hash__(self) -> int:
-        """Return hash for instance."""
-        return hash(str(self))
+        """Convert Message object into a sequence of hexadecimal bytes."""
+        ...
 
 
 @dataclass
 class MoveMessage(Message):
-    """Message to be sent between hardware simulators and OT3StateManager"""
+    """Message for moving OT3 axis in specified direction."""
 
     axis: OT3Axis
     direction: Direction
@@ -56,77 +74,80 @@ class MoveMessage(Message):
         """Return hash for instance."""
         return hash(str(self))
 
+    @staticmethod
+    def build(message_content: bytes) -> MoveMessage:
+        """Convert message_content into a MoveMessage object."""
+        hw_id, direction_val = struct.unpack(">HB", message_content)
+        # mypy thinks that I am instantiating a MoveMessageHardware object here.
+        # I am not, I am performing a lookup as defined in the enum docs.
+        # https://docs.python.org/3/library/enum.html#programmatic-access-to-enumeration-members-and-their-attributes
+        axis = MoveMessageHardware(hw_id).axis  # type: ignore[call-arg]
+        direction = Direction.from_int(direction_val)
+        return MoveMessage(axis=axis, direction=direction)
 
-class MessageLookup:
-    """Lookup class for mapping a message to a byte value."""
+    def to_bytes(self) -> bytes:
+        """Convert MoveMessage object into a sequence of hexadecimal bytes."""
+        hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
+        return struct.pack(">BHB", MessageID.MOVE.message_id, hw_id, self.direction)
 
-    MESSAGE_LOOKUP_DICT: Dict[int, Message] = {
-        0x0000: MoveMessage(OT3Axis.X, Direction.NEGATIVE),
-        0x0001: MoveMessage(OT3Axis.X, Direction.POSITIVE),
-        0x0010: MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
-        0x0011: MoveMessage(OT3Axis.Y, Direction.POSITIVE),
-        0x0020: MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
-        0x0021: MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
-        0x0030: MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
-        0x0031: MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
-        0x0040: MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
-        0x0041: MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
-        0x0050: MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
-        0x0051: MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
-        0x0060: MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
-        0x0061: MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
-        0x0070: MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
-        0x0071: MoveMessage(OT3Axis.Q, Direction.POSITIVE),
-        0x0080: MoveMessage(OT3Axis.G, Direction.NEGATIVE),
-        0x0081: MoveMessage(OT3Axis.G, Direction.POSITIVE),
-        0x1000: SyncPinMessage("LOW"),
-        0x1001: SyncPinMessage("HIGH"),
-    }
 
-    REVERSE_LOOKUP_DICT: Dict[Message, int] = {
-        val: key for key, val in MESSAGE_LOOKUP_DICT.items()
-    }
+@dataclass
+class SyncPinMessage(Message):
+    """Message for setting sync pin high or low."""
 
-    FORMAT_STRING = ">H"
+    state: SyncPinState
 
-    @classmethod
-    def message_to_bytes(cls, message: Message) -> bytes:
-        """Looks up and returns byte value for message."""
-        if message not in cls.REVERSE_LOOKUP_DICT:
-            raise ValueError(f"Message {str(message)} not defined.")
+    def __eq__(self, other: Any) -> bool:
+        """Confirm that the 2 objects are equal"""
+        return isinstance(other, SyncPinMessage) and other.state == self.state
 
-        return struct.pack(cls.FORMAT_STRING, cls.REVERSE_LOOKUP_DICT[message])
+    def __hash__(self) -> int:
+        """Return hash for instance."""
+        return hash(str(self))
 
-    @classmethod
-    def bytes_to_message(cls, byte_string: bytes) -> Message:
-        """Looks up and returns message for byte value."""
-        try:
-            val_tuple = struct.unpack(cls.FORMAT_STRING, byte_string)
-        except struct.error:
-            raise ValueError(
-                f'Passed message, "{byte_string!r}" is not a valid hexadecimal byte '
-                f"string."
-            )
+    @staticmethod
+    def build(message_content: bytes) -> SyncPinMessage:
+        """Convert message_content into a SyncPinMessage object."""
+        # Have to use from_bytes method because struct package won't accept a 3 byte val
+        val = int.from_bytes(message_content, "big")
+        state = SyncPinState.from_int(val)
+        return SyncPinMessage(state=state)
 
-        assert len(val_tuple) == 1
-        int_val = val_tuple[0]
-        if int_val not in cls.MESSAGE_LOOKUP_DICT:
-            raise ValueError(
-                f"Message for hexadecimal byte string {byte_string!r} is not defined."
-            )
+    def to_bytes(self) -> bytes:
+        """Convert SyncPinMessage object into a sequence of hexadecimal bytes."""
+        # 3rd arg is 0 because middle two bytes are not used for SyncPinMessage
+        return struct.pack(">BHB", MessageID.SYNC_PIN.message_id, 0, self.state)
 
-        return cls.MESSAGE_LOOKUP_DICT[int_val]
 
-    def __init__(self) -> None:
-        """Do not try to instantiate this class."""
-        raise NotImplementedError
+class MessageID(Enum):
+    """Enum class defining the relationship between the message_id byte and the corresponding Message object."""
+
+    def __new__(cls, message_id: int, builder_func: Callable) -> MessageID:
+        """Create a new MessageID object.
+
+        Lookup value will be by message_id. So MessageID(<message_id>) can be used to
+        get a move message based off of the message_id.
+        """
+        obj = object.__new__(cls)
+        obj._value_ = message_id
+        obj.message_id = message_id
+        obj.builder_func = builder_func
+        return obj
+
+    def __init__(self, message_id: int, builder_func: Callable) -> None:
+        """Create MessageID object."""
+        self.message_id = message_id
+        self.builder_func = builder_func
+
+    MOVE = 0x00, MoveMessage.build
+    SYNC_PIN = 0x01, SyncPinMessage.build
 
 
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
     """Parse incoming message, react to it accordingly, and respond."""
     error_response: Optional[str] = None
     try:
-        message = MessageLookup.bytes_to_message(data)
+        message = Message.parse(data)
     except ValueError as err:
         error_response = f"{err.args[0]}"
     except:  # noqa: E722

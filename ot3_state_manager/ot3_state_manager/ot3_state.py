@@ -18,7 +18,7 @@ from ot3_state_manager.hardware import (
 )
 from ot3_state_manager.measurable_states import Position
 from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Direction
+from ot3_state_manager.util import Direction, SyncPinState
 
 log = logging.getLogger(__name__)
 
@@ -227,9 +227,9 @@ class OT3State:
             encoder_position=axis_encoder_position + mod,
         )
 
-    def set_sync_pin(self, state: str) -> None:
+    def set_sync_pin(self, state: SyncPinState) -> None:
         """Sets sync pin high or low based off of state passed."""
-        if state == "HIGH":
+        if state is SyncPinState.HIGH:
             self.sync_pin.set_sync_pin_high()
         else:
             self.sync_pin.set_sync_pin_low()
