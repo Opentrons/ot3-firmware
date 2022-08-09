@@ -9,7 +9,7 @@ import struct
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Type
 
 from opentrons.hardware_control.types import OT3Axis
 
@@ -28,7 +28,7 @@ STRUCT_FORMAT_STRING = f"B{MESSAGE_CONTENT_BYTE_LENGTH}s"
 class Message(ABC):
     """Parent level class for all Message objects.
 
-    Is abstract base class that requires both a build and to_bytes method to be defined.
+    Is abstract base class that requires both a build_message and to_bytes method to be defined.
     """
 
     @staticmethod
@@ -47,7 +47,7 @@ class Message(ABC):
 
     @staticmethod
     @abstractmethod
-    def build(message_content: bytes) -> Message:
+    def build_message(message_content: bytes) -> Message:
         """Parse message_content into a Message object."""
         ...
 
@@ -75,7 +75,7 @@ class MoveMessage(Message):
         return hash(str(self))
 
     @staticmethod
-    def build(message_content: bytes) -> MoveMessage:
+    def build_message(message_content: bytes) -> MoveMessage:
         """Convert message_content into a MoveMessage object."""
         hw_id, direction_val = struct.unpack(">HB", message_content)
         # mypy thinks that I am instantiating a MoveMessageHardware object here.
@@ -106,7 +106,7 @@ class SyncPinMessage(Message):
         return hash(str(self))
 
     @staticmethod
-    def build(message_content: bytes) -> SyncPinMessage:
+    def build_message(message_content: bytes) -> SyncPinMessage:
         """Convert message_content into a SyncPinMessage object."""
         assert len(message_content) == 3
         # prepend a byte to message content to make it 4 bytes long and
@@ -137,13 +137,13 @@ class MessageID(Enum):
         obj.builder_func = builder_func
         return obj
 
-    def __init__(self, message_id: int, builder_func: Callable) -> None:
+    def __init__(self, message_id: int, message_class: Type[Message]) -> None:
         """Create MessageID object."""
         self.message_id = message_id
-        self.builder_func = builder_func
+        self.builder_func = message_class.build_message
 
-    MOVE = 0x00, MoveMessage.build
-    SYNC_PIN = 0x01, SyncPinMessage.build
+    MOVE = 0x00, MoveMessage
+    SYNC_PIN = 0x01, SyncPinMessage
 
 
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
