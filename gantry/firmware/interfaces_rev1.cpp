@@ -116,7 +116,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
                          .hend = 0x2,
                          .tbl = 0x2,
                          .tpfd = 0x4,
-                         .mres = 0x4},
+                         .mres = 0x3},
             .coolconf = {.sgt = 0x6},
         },
     .current_config =
