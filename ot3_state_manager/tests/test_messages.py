@@ -28,7 +28,7 @@ from ot3_state_manager.util import Direction, SyncPinState
         ),
         pytest.param(
             b"\x00\xFF\xFF\x01",
-            "ERROR: 65535 is not a valid MoveMessageHardware",
+            "ERROR: Could not find MoveMessageHardware with hw_id: 65535.",
             id="MOVE_MESSAGE_INVALID_HW_ID",
         ),
         pytest.param(

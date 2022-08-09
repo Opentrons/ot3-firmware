@@ -8,8 +8,8 @@ from __future__ import annotations
 import struct
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Callable, Optional, Type
+from enum import Enum, unique
+from typing import Any, Optional, Type
 
 from opentrons.hardware_control.types import OT3Axis
 
@@ -40,10 +40,9 @@ class Message(ABC):
                 f"Your message was {len(message_bytes)} bytes."
             )
         message_id, message_content = struct.unpack(STRUCT_FORMAT_STRING, message_bytes)
-        # mypy thinks that I am instantiating a MoveMessageHardware object here.
-        # I am not, I am performing a lookup as defined in the enum docs.
-        # https://docs.python.org/3/library/enum.html#programmatic-access-to-enumeration-members-and-their-attributes
-        return MessageID(message_id).builder_func(message_content=message_content)  # type: ignore[call-arg]
+        return MessageID.from_id(message_id).builder_func(
+            message_content=message_content
+        )
 
     @staticmethod
     @abstractmethod
@@ -78,10 +77,7 @@ class MoveMessage(Message):
     def build_message(message_content: bytes) -> MoveMessage:
         """Convert message_content into a MoveMessage object."""
         hw_id, direction_val = struct.unpack(">HB", message_content)
-        # mypy thinks that I am instantiating a MoveMessageHardware object here.
-        # I am not, I am performing a lookup as defined in the enum docs.
-        # https://docs.python.org/3/library/enum.html#programmatic-access-to-enumeration-members-and-their-attributes
-        axis = MoveMessageHardware(hw_id).axis  # type: ignore[call-arg]
+        axis = MoveMessageHardware.from_id(hw_id).axis
         direction = Direction.from_int(direction_val)
         return MoveMessage(axis=axis, direction=direction)
 
@@ -122,20 +118,9 @@ class SyncPinMessage(Message):
         return struct.pack(">BHB", MessageID.SYNC_PIN.message_id, 0, self.state)
 
 
+@unique
 class MessageID(Enum):
     """Enum class defining the relationship between the message_id byte and the corresponding Message object."""
-
-    def __new__(cls, message_id: int, builder_func: Callable) -> MessageID:
-        """Create a new MessageID object.
-
-        Lookup value will be by message_id. So MessageID(<message_id>) can be used to
-        get a move message based off of the message_id.
-        """
-        obj = object.__new__(cls)
-        obj._value_ = message_id
-        obj.message_id = message_id
-        obj.builder_func = builder_func
-        return obj
 
     def __init__(self, message_id: int, message_class: Type[Message]) -> None:
         """Create MessageID object."""
@@ -144,6 +129,15 @@ class MessageID(Enum):
 
     MOVE = 0x00, MoveMessage
     SYNC_PIN = 0x01, SyncPinMessage
+
+    @classmethod
+    def from_id(cls, enum_id: int) -> MessageID:
+        """Get MessageID object by message_id."""
+        for val in cls:
+            if val.message_id == enum_id:
+                return val
+        else:
+            raise ValueError(f"Could not find MessageID with message_id: {enum_id}.")
 
 
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:

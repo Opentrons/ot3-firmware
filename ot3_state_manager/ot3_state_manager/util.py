@@ -46,19 +46,6 @@ class SyncPinState(int, enum.Enum):
 class MoveMessageHardware(Enum):
     """Enum representing a mapping of an integer hardware id to an OT3Axis object."""
 
-    def __new__(cls, hw_id: int, axis: OT3Axis) -> MoveMessageHardware:
-        """Create a new MoveMessageHardware object.
-
-        Lookup value will be by hw_id. So MoveMessageHardware(<hw_id>) can be used to
-        get a move message based off of the hw_id. If you want to lookup by OT3Axis use
-        MoveMessageHardware.from_axis(<ot3_axis).
-        """
-        obj = object.__new__(cls)
-        obj._value_ = hw_id
-        obj.hw_id = hw_id
-        obj.axis = axis
-        return obj
-
     def __init__(self, hw_id: int, axis: OT3Axis) -> None:
         """Create a MoveMessageHardware object."""
         self.hw_id = hw_id
@@ -83,3 +70,14 @@ class MoveMessageHardware(Enum):
                 return val
         else:
             raise ValueError(f"Could not find MoveMessageHardware with axis: {axis}.")
+
+    @classmethod
+    def from_id(cls, enum_id: int) -> MoveMessageHardware:
+        """Get MoveMessageHardware connect to passed enum_id."""
+        for val in cls:
+            if val.hw_id == enum_id:
+                return val
+        else:
+            raise ValueError(
+                f"Could not find MoveMessageHardware with hw_id: {enum_id}."
+            )
