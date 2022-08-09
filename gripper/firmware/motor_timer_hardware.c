@@ -2,14 +2,6 @@
 #include "motor_hardware.h"
 #include "system_stm32g4xx.h"
 
-// The frequency of one full PWM cycle
-#define GRIPPER_JAW_PWM_FREQ_HZ (32000UL)
-// the number of selectable points in the PWM
-#define GRIPPER_JAW_PWM_WIDTH (100UL)
-// the frequency at which the timer should count so that it
-// does a full PWM cycle in the time specified by GRIPPER_JAW_PWM_FREQ_HZ
-#define GRIPPER_JAW_TIMER_FREQ (GRIPPER_JAW_PWM_FREQ_HZ * GRIPPER_JAW_PWM_WIDTH)
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim7;

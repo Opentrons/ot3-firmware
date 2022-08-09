@@ -42,11 +42,19 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void set_encoder_value(int32_t val) { enc_val = val; }
     auto set_limit_switch(bool val) { ls_val = val; }
 
+    double update_control(int32_t encoder_error) {
+       is_controlling = true;
+       std::ignore = encoder_error;
+       return 50.0;
+    }
+    void reset_control() { is_controlling = false; }
+
   private:
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
     bool sync_val = false;
     bool is_gripping = false;
+    bool is_controlling = false;
     int32_t enc_val = 0;
 };
 
