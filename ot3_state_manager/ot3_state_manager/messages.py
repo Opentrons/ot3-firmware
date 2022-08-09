@@ -16,9 +16,9 @@ from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
 
-MESSAGE_BYTE_LENGTH = 4
 MESSAGE_ID_BYTE_LENGTH = 1
 MESSAGE_CONTENT_BYTE_LENGTH = 3
+MESSAGE_BYTE_LENGTH = MESSAGE_ID_BYTE_LENGTH + MESSAGE_CONTENT_BYTE_LENGTH
 STRUCT_FORMAT_STRING = f"B{MESSAGE_CONTENT_BYTE_LENGTH}s"
 
 
@@ -108,8 +108,11 @@ class SyncPinMessage(Message):
     @staticmethod
     def build(message_content: bytes) -> SyncPinMessage:
         """Convert message_content into a SyncPinMessage object."""
-        # Have to use from_bytes method because struct package won't accept a 3 byte val
-        val = int.from_bytes(message_content, "big")
+        assert len(message_content) == 3
+        # prepend a byte to message content to make it 4 bytes long and
+        # therefore parsable by struct package, without changing the resulting integer value
+        message_content = b"\x00" + message_content
+        val = struct.unpack(">I", message_content)[0]
         state = SyncPinState.from_int(val)
         return SyncPinMessage(state=state)
 
