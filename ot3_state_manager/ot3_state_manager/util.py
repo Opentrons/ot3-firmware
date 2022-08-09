@@ -17,16 +17,12 @@ class Direction(int, enum.Enum):
     @classmethod
     def from_int(cls, direction_val: int) -> Direction:
         """Parse integer into direction."""
-        if direction_val == Direction.NEGATIVE:
-            direction = Direction.NEGATIVE
-        elif direction_val == Direction.POSITIVE:
-            direction = Direction.POSITIVE
-        else:
+        if direction_val not in (Direction.NEGATIVE, Direction.POSITIVE):
             raise ValueError(
                 "Value for direction must be either 0 (Negative) or 1 "
                 f"(Positive). You passed {direction_val}."
             )
-        return direction
+        return Direction(direction_val)
 
 
 class SyncPinState(int, enum.Enum):
@@ -38,17 +34,12 @@ class SyncPinState(int, enum.Enum):
     @classmethod
     def from_int(cls, state_val: int) -> SyncPinState:
         """Parse integer into sync pin state."""
-        if state_val == 0:
-            state = SyncPinState.LOW
-        elif state_val == 1:
-            state = SyncPinState.HIGH
-        else:
+        if state_val not in (SyncPinState.LOW, SyncPinState.HIGH):
             raise ValueError(
                 "Value for state must either be 0 (LOW) or 1 (HIGH). "
                 f"You passed {state_val}."
             )
-
-        return state
+        return SyncPinState(state_val)
 
 
 @unique
