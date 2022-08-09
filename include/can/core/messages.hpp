@@ -720,7 +720,7 @@ struct SetBrushedMotorPwmRequest
         -> bool = default;
 };
 
-struct AddBrushedLinearMoveRequest : BaseMessage<MessageID::add_brushed_move_request> {
+struct AddBrushedLinearMoveRequest : BaseMessage<MessageId::add_brushed_linear_move_request> {
     uint8_t group_id;
     uint8_t seq_id;
     brushed_timer_ticks duration;
@@ -733,7 +733,7 @@ struct AddBrushedLinearMoveRequest : BaseMessage<MessageID::add_brushed_move_req
         uint8_t seq_id = 0;
         brushed_timer_ticks duration = 0;
         uint32_t duty_cycle = 0;
-        int32_t encoder_postion = 0;
+        int32_t encoder_position = 0;
 
         body = bit_utils::bytes_to_int(body, limit, group_id);
         body = bit_utils::bytes_to_int(body, limit, seq_id);

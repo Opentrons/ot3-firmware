@@ -23,7 +23,10 @@ void BrushedMotorHardware::stop_timer_interrupt() {
 }
 
 void BrushedMotorHardware::activate_motor() { gpio::set(pins.enable); }
-void BrushedMotorHardware::deactivate_motor() { gpio::reset(pins.enable); }
+
+void BrushedMotorHardware::deactivate_motor() {
+    gpio::reset(pins.enable);
+}
 
 bool BrushedMotorHardware::check_limit_switch() {
     return gpio::is_set(pins.limit_switch);
@@ -61,3 +64,13 @@ void BrushedMotorHardware::reset_encoder_pulses() {
 void BrushedMotorHardware::encoder_overflow(int32_t direction) {
     motor_encoder_overflow_count += direction;
 }
+
+
+double BrushedMotorHardware::update_control(int32_t encoder_error) {
+    return controller_loop.compute(encoder_error);
+}
+
+void BrushedMotorHardware::reset_control() {
+    controller_loop.reset();
+}
+

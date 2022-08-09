@@ -63,7 +63,7 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::AddBrushedLinearMoveRequest& m) {
-        controler.move(m);
+        controller.move(m);
     }
 
     void handle(const can::messages::GripperGripRequest& m) {

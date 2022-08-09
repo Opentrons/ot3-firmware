@@ -1,7 +1,9 @@
 #pragma once
 
 #include <atomic>
+#include <algorithm>
 
+#include "ot_utils/core/pid.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
@@ -18,6 +20,8 @@ using namespace motor_messages;
  * A brushed motor motion handler class.
  *
  */
+
+static constexpr int32_t ACCEPTABLE_POSITION_ERROR = 10;
 
 static constexpr uint32_t HOLDOFF_TICKS =
     32;  // hold off for 1 ms (with a 32k Hz timer)
@@ -50,6 +54,20 @@ class BrushedMotorInterruptHandler {
         return queue.has_message_isr();
     }
 
+    int32_t controlled_move_to(int32_t encoder_position) {
+        int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
+        if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
+            return 0;
+        }
+        if (move_delta > 0) {
+            hardware.positive_direction();
+        } else {
+            hardware.negative_direction();
+        }
+        driver_hardware.update_pwm_settings(std::clamp(hardware.update_control(std::abs(encoder_position)), 0.0, 100.0));
+        return move_delta;
+    }
+
     void run_interrupt() {
         if (!has_active_move && has_messages()) {
             update_and_start_move();
@@ -62,6 +80,9 @@ class BrushedMotorInterruptHandler {
                     break;
                 // linear move
                 case MoveStopCondition::encoder_position :
+                    if (std::abs(controlled_move_to(buffered_move.encoder_position)) < ACCEPTABLE_POSITION_ERROR  ) {
+                        finish_current_move(AckMessageId::stopped_by_condition);
+                    }
                     break;
                 // grip move
                 case MoveStopCondition::none :
@@ -70,7 +91,13 @@ class BrushedMotorInterruptHandler {
                             AckMessageId::complete_without_condition);
                     }
                     break;
+                case MoveStopCondition::cap_sensor:
+                    //TODO write cap sensor move code
+                    break;
             }
+        }
+        else if (holding) {
+            controlled_move_to(hold_encoder_position);
         }
     }
 
@@ -101,14 +128,26 @@ class BrushedMotorInterruptHandler {
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
+        hardware.reset_control();
+        holding = false;
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch :
                 hardware.ungrip();
                 break;
             case MoveStopCondition::encoder_position :
+                if ((hardware.get_encoder_pulses() - buffered_move.encoder_position) == 0) {
+                    LOG("Attempting to add a gripper move to our current position");
+                    finish_current_move(AckMessageId::stopped_by_condition);
+                    break;
+                }
+                hardware.update_control(buffered_move.encoder_position);
+                controlled_move_to(buffered_move.encoder_position);
                 break;
             case MoveStopCondition::none :
                 hardware.grip();
+                break;
+            case MoveStopCondition::cap_sensor:
+                //TODO write cap sensor move code
                 break;
         }
     }
@@ -125,6 +164,8 @@ class BrushedMotorInterruptHandler {
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
+        hold_encoder_position = hardware.get_encoder_pulses();
+        holding = true;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(),
                                                ack_msg_id);
@@ -152,5 +193,7 @@ class BrushedMotorInterruptHandler {
     motor_hardware::BrushedMotorHardwareIface& hardware;
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     BrushedMove buffered_move = BrushedMove{};
+    std::atomic<bool> holding = false;
+    int32_t hold_encoder_position = 0;
 };
 }  // namespace brushed_motor_handler
