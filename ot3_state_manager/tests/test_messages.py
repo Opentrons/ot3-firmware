@@ -1,180 +1,299 @@
-"""Test message functionality."""
-
-from typing import Type
+"""Test message functionality"""
 
 import pytest
 from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.messages import (
+    Message,
     MoveMessage,
     SyncPinMessage,
+    _parse_message,
     handle_message,
-    parse_message,
 )
 from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import Direction, get_md5_hash
+from ot3_state_manager.util import Direction, SyncPinState
 
 
 @pytest.mark.parametrize(
-    "message,expected_state",
+    "message, error",
     [
-        ["SYNC_PIN HIGH", "HIGH"],
-        ["SYNC_PIN LOW", "LOW"],
+        pytest.param(
+            b"\x00\x00\x00\x00\xFF",
+            "ERROR: Message length must be 4 bytes. Your message was 5 bytes.",
+            id="MESSAGE_TOO_LONG",
+        ),
+        pytest.param(
+            b"\x00\x00\x00",
+            "ERROR: Message length must be 4 bytes. Your message was 3 bytes.",
+            id="MESSAGE_TOO_SHORT",
+        ),
+        pytest.param(
+            b"\x00\xFF\xFF\x01",
+            "ERROR: Could not find MoveMessageHardware with hw_id: 65535.",
+            id="MOVE_MESSAGE_INVALID_HW_ID",
+        ),
+        pytest.param(
+            b"\x00\x00\x00\x02",
+            "ERROR: Value for direction must be either 0 (Negative) or 1 (Positive). You passed 2.",
+            id="MOVE_MESSAGE_INVALID_DIRECTION",
+        ),
+        pytest.param(
+            b"\x01\x00\x00\x02",
+            "ERROR: Value for state must either be 0 (LOW) or 1 (HIGH). You passed 2.",
+            id="SYNC_PIN_MESSAGE_INVALID_STATE",
+        ),
     ],
 )
-def test_sync_pin_message_to_message(message: str, expected_state: str) -> None:
-    """Confirm that sync pin messages parse correctly."""
-    sync_pin_message = SyncPinMessage.to_message(message)
-    assert sync_pin_message is not None
-    assert sync_pin_message.state == expected_state
+def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
+    """Confirm that if too long/short of a message is passed an exception is thrown."""
+    assert handle_message(message, ot3_state).decode() == error
 
 
 @pytest.mark.parametrize(
-    "message",
-    [
-        "SYNC_PIN_HIGH",
-        "SYNC PIN HIGH",
-        "SYNC PIN_HIGH",
-        "SYNCPINHIGH",
-        "SYNCPIN_HIGH",
-        "SYNC_PINHIGH",
-        "BLARGH",
-        "SYNC_PIN TOGGLE",
-    ],
+    "message,expected_message",
+    (
+        pytest.param(
+            b"\x00\x00\x00\x00",
+            MoveMessage(OT3Axis.X, Direction.NEGATIVE),
+            id="MOVE_X_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x00\x01",
+            MoveMessage(OT3Axis.X, Direction.POSITIVE),
+            id="MOVE_X_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x01\x00",
+            MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
+            id="MOVE_Y_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x01\x01",
+            MoveMessage(OT3Axis.Y, Direction.POSITIVE),
+            id="MOVE_Y_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x02\x00",
+            MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
+            id="MOVE_Z_L_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x02\x01",
+            MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
+            id="MOVE_Z_L_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x03\x00",
+            MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
+            id="MOVE_Z_R_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x03\x01",
+            MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
+            id="MOVE_Z_R_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x04\x00",
+            MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
+            id="MOVE_Z_G_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x04\x01",
+            MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
+            id="MOVE_Z_G_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x05\x00",
+            MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
+            id="MOVE_P_L_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x05\x01",
+            MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
+            id="MOVE_P_L_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x06\x00",
+            MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
+            id="MOVE_P_R_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x06\x01",
+            MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
+            id="MOVE_P_R_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x07\x00",
+            MoveMessage(OT3Axis.G, Direction.NEGATIVE),
+            id="MOVE_G_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x07\x01",
+            MoveMessage(OT3Axis.G, Direction.POSITIVE),
+            id="MOVE_G_POSITIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x08\x00",
+            MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
+            id="MOVE_Q_NEGATIVE",
+        ),
+        pytest.param(
+            b"\x00\x00\x08\x01",
+            MoveMessage(OT3Axis.Q, Direction.POSITIVE),
+            id="MOVE_Q_POSITIVE",
+        ),
+        pytest.param(
+            b"\x01\x00\x00\x00",
+            SyncPinMessage(SyncPinState.LOW),
+            id="SYNC_LOW",
+        ),
+        pytest.param(
+            b"\x01\x00\x00\x01",
+            SyncPinMessage(SyncPinState.HIGH),
+            id="SYNC_HIGH",
+        ),
+    ),
 )
-def test_invalid_sync_pin_message_to_message(message: str) -> None:
-    """Confirm invalid sync pin messages do not parse."""
-    assert SyncPinMessage.to_message(message) is None
+def test_message_parsing(message: bytes, expected_message: Message) -> None:
+    """Confirm that Message.parse parses byte string into correct Message object."""
+    assert _parse_message(message) == expected_message
 
 
 @pytest.mark.parametrize(
-    "message,expected_axis,expected_direction",
-    [
-        ["+ X", OT3Axis.X, Direction.POSITIVE],
-        ["- X", OT3Axis.X, Direction.NEGATIVE],
-        ["+ Y", OT3Axis.Y, Direction.POSITIVE],
-        ["- Y", OT3Axis.Y, Direction.NEGATIVE],
-        ["+ Z_L", OT3Axis.Z_L, Direction.POSITIVE],
-        ["- Z_L", OT3Axis.Z_L, Direction.NEGATIVE],
-        ["+ Z_R", OT3Axis.Z_R, Direction.POSITIVE],
-        ["- Z_R", OT3Axis.Z_R, Direction.NEGATIVE],
-        ["+ Z_G", OT3Axis.Z_G, Direction.POSITIVE],
-        ["- Z_G", OT3Axis.Z_G, Direction.NEGATIVE],
-        ["+ P_L", OT3Axis.P_L, Direction.POSITIVE],
-        ["- P_L", OT3Axis.P_L, Direction.NEGATIVE],
-        ["+ P_R", OT3Axis.P_R, Direction.POSITIVE],
-        ["- P_R", OT3Axis.P_R, Direction.NEGATIVE],
-        ["+ Q", OT3Axis.Q, Direction.POSITIVE],
-        ["- Q", OT3Axis.Q, Direction.NEGATIVE],
-        ["+ G", OT3Axis.G, Direction.POSITIVE],
-        ["- G", OT3Axis.G, Direction.NEGATIVE],
-    ],
+    "message, expected_bytes",
+    (
+        pytest.param(
+            MoveMessage(OT3Axis.X, Direction.NEGATIVE),
+            b"\x00\x00\x00\x00",
+            id="MOVE_X_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.X, Direction.POSITIVE),
+            b"\x00\x00\x00\x01",
+            id="MOVE_X_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
+            b"\x00\x00\x01\x00",
+            id="MOVE_Y_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Y, Direction.POSITIVE),
+            b"\x00\x00\x01\x01",
+            id="MOVE_Y_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
+            b"\x00\x00\x02\x00",
+            id="MOVE_Z_L_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
+            b"\x00\x00\x02\x01",
+            id="MOVE_Z_L_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
+            b"\x00\x00\x03\x00",
+            id="MOVE_Z_R_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
+            b"\x00\x00\x03\x01",
+            id="MOVE_Z_R_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
+            b"\x00\x00\x04\x00",
+            id="MOVE_Z_G_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
+            b"\x00\x00\x04\x01",
+            id="MOVE_Z_G_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
+            b"\x00\x00\x05\x00",
+            id="MOVE_P_L_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
+            b"\x00\x00\x05\x01",
+            id="MOVE_P_L_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
+            b"\x00\x00\x06\x00",
+            id="MOVE_P_R_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
+            b"\x00\x00\x06\x01",
+            id="MOVE_P_R_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.G, Direction.NEGATIVE),
+            b"\x00\x00\x07\x00",
+            id="MOVE_G_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.G, Direction.POSITIVE),
+            b"\x00\x00\x07\x01",
+            id="MOVE_G_POSITIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
+            b"\x00\x00\x08\x00",
+            id="MOVE_Q_NEGATIVE",
+        ),
+        pytest.param(
+            MoveMessage(OT3Axis.Q, Direction.POSITIVE),
+            b"\x00\x00\x08\x01",
+            id="MOVE_Q_POSITIVE",
+        ),
+        pytest.param(
+            SyncPinMessage(SyncPinState.LOW),
+            b"\x01\x00\x00\x00",
+            id="SYNC_LOW",
+        ),
+        pytest.param(
+            SyncPinMessage(SyncPinState.HIGH),
+            b"\x01\x00\x00\x01",
+            id="SYNC_HIGH",
+        ),
+    ),
 )
-def test_move_message_to_message(
-    message: str, expected_axis: OT3Axis, expected_direction: Direction
-) -> None:
-    """Confirm that move messages are parsed correctly."""
-    move_message = MoveMessage.to_message(message)
-    assert move_message is not None
-    assert move_message.axis == expected_axis
-    assert move_message.direction == expected_direction
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "X",
-        "X +",
-        "= X",
-        "+ F",
-        "F",
-    ],
-)
-def test_invalid_move_message_to_message(message: str) -> None:
-    """Confirm that invalid move messages do not parse."""
-    assert MoveMessage.to_message(message) is None
-
-
-@pytest.mark.parametrize(
-    "message,expected_type",
-    [
-        ["+ X", MoveMessage],
-        ["SYNC_PIN HIGH", SyncPinMessage],
-    ],
-)
-def test_parse_message(message: str, expected_type: Type) -> None:
-    """Confirm that parse_message function works correctly."""
-    assert isinstance(parse_message(message), expected_type)
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "X",
-        "X +",
-        "= X",
-        "+ F",
-        "F",
-    ],
-)
-def test_invalid_parse_message(message: str) -> None:
-    """Confirm parse_message throws ValueError when unable parse to a known message."""
-    with pytest.raises(ValueError) as err:
-        parse_message(message)
-        assert err.value == f'Not able to parse message: "{message}"'
+def test_convert_message_to_bytes(message: Message, expected_bytes: bytes) -> None:
+    """Confirm that converting a message into bytes works correctly."""
+    assert message.to_bytes() == expected_bytes
 
 
 @pytest.mark.parametrize(
     "message,expected_val",
     (
-        pytest.param("+ X", 1, id="pos_pulse"),
-        pytest.param("- X", -1, id="neg_pulse"),
+        pytest.param(MoveMessage(OT3Axis.X, Direction.POSITIVE), 1, id="pos_pulse"),
+        pytest.param(MoveMessage(OT3Axis.X, Direction.NEGATIVE), -1, id="neg_pulse"),
     ),
 )
 def test_valid_handle_move_message(
-    message: str, expected_val: int, ot3_state: OT3State
+    message: Message, expected_val: int, ot3_state: OT3State
 ) -> None:
     """Confirm that pulse messages work correctly."""
-    ack = handle_message(message.encode(), ot3_state)
-    assert ack == get_md5_hash(message.encode())
+    print(message.to_bytes())
+    ack = handle_message(message.to_bytes(), ot3_state)
+    assert ack == message.to_bytes()
     assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
 
 
 def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
     """Confirm that pulse messages work correctly."""
-    HIGH_MESSAGE = "SYNC_PIN HIGH"
-    LOW_MESSAGE = "SYNC_PIN LOW"
-
-    ack = handle_message(HIGH_MESSAGE.encode(), ot3_state)
-    assert ack == get_md5_hash(HIGH_MESSAGE.encode())
+    HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
+    LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
+    ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
+    assert ack == HIGH_MESSAGE.to_bytes()
     assert ot3_state.get_sync_pin_state()
 
-    ack = handle_message(LOW_MESSAGE.encode(), ot3_state)
-    assert ack == get_md5_hash(LOW_MESSAGE.encode())
+    ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
+    assert ack == LOW_MESSAGE.to_bytes()
     assert not ot3_state.get_sync_pin_state()
-
-
-@pytest.mark.parametrize(
-    "message, expected_error",
-    (
-        pytest.param(
-            "A Bad Message",
-            'ERROR: Not able to parse message: "A Bad Message"',
-            id="bad_message_format",
-        ),
-        pytest.param(
-            "+ F", 'ERROR: Not able to parse message: "+ F"', id="invalid_axis"
-        ),
-        pytest.param(
-            "= X", 'ERROR: Not able to parse message: "= X"', id="invalid_direction"
-        ),
-    ),
-)
-def test_invalid_handle_message(
-    message: str, expected_error: str, ot3_state: OT3State
-) -> None:
-    """Confirm that invalid messages respond with the correct error."""
-    response = handle_message(message.encode(), ot3_state)
-    assert response.decode() == expected_error
-    assert all([value == 0 for value in ot3_state.current_position.values()])
-    assert all([value == 0 for value in ot3_state.encoder_position.values()])

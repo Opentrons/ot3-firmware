@@ -80,7 +80,7 @@ async def main() -> None:
         action="store",
         default=None,
         choices=PIPETTE_NAMES,
-        help="The model name of the pipette to attach to the left mount. (Default none)",  # noqa: E501
+        help="The model name of the pipette to attach to the left mount. (Default none)",
         dest=LEFT_PIPETTE_DEST,
     )
     parser.add_argument(
@@ -88,7 +88,7 @@ async def main() -> None:
         action="store",
         default=None,
         choices=PIPETTE_NAMES,
-        help="The model name of the pipette to attach to the right mount. (Default none)",  # noqa: E501
+        help="The model name of the pipette to attach to the right mount. (Default none)",
         dest=RIGHT_PIPETTE_DEST,
     )
     parser.add_argument(

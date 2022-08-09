@@ -43,10 +43,10 @@ class EchoClientProtocol(BaseProtocol):
             self.transport.close()
         self.connected = False
 
-    def send_message(self, message: str) -> None:
+    def send_message(self, message: bytes) -> None:
         """Send message to server."""
         if self.transport is not None:
-            self.transport.sendto(message.encode())
+            self.transport.sendto(message)
 
     @classmethod
     async def build(

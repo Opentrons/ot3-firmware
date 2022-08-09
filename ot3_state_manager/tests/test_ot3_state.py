@@ -5,7 +5,7 @@ from opentrons.hardware_control.types import OT3Axis
 from ot3_state_manager.hardware import Gripper, LeftPipette, RightPipette
 from ot3_state_manager.ot3_state import OT3State
 from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Direction
+from ot3_state_manager.util import Direction, SyncPinState
 
 
 @pytest.fixture
@@ -34,8 +34,8 @@ def test_build(ot3_state: OT3State) -> None:
 def test_build_no_gripper() -> None:
     """Confirms that when building OT3State no gripper that it is configured correctly."""
     manager = OT3State.build(
-        left_pipette_model_name=PipetteModel.SINGLE_20.value,
-        right_pipette_model_name=PipetteModel.MULTI_8_20.value,
+        left_pipette_model_name=PipetteModel.SINGLE_20.get_pipette_name(),
+        right_pipette_model_name=PipetteModel.MULTI_8_20.get_pipette_name(),
         use_gripper=False,
     )
 
@@ -55,7 +55,7 @@ def test_build_no_left_pipette() -> None:
     """Confirms that when building OT3State with no left pipette that it is configured correctly."""
     manager = OT3State.build(
         left_pipette_model_name=None,
-        right_pipette_model_name=PipetteModel.MULTI_8_20.value,
+        right_pipette_model_name=PipetteModel.MULTI_8_20.get_pipette_name(),
         use_gripper=True,
     )
 
@@ -74,7 +74,7 @@ def test_build_no_left_pipette() -> None:
 def test_build_no_right_pipette() -> None:
     """Confirms that when building OT3State with no right pipette that it is configured correctly."""
     manager = OT3State.build(
-        left_pipette_model_name=PipetteModel.SINGLE_20.value,
+        left_pipette_model_name=PipetteModel.SINGLE_20.get_pipette_name(),
         right_pipette_model_name=None,
         use_gripper=True,
     )
@@ -95,7 +95,7 @@ def test_high_throughput_pipette_wrong_mount() -> None:
     """Confirms that exception is thrown when trying to mount high-throughput pipette to left pipette mount."""
     with pytest.raises(ValueError) as err:
         OT3State.build(
-            left_pipette_model_name=PipetteModel.MULTI_96_1000.value,
+            left_pipette_model_name=PipetteModel.MULTI_96_1000.get_pipette_name(),
             right_pipette_model_name=None,
             use_gripper=True,
         )
@@ -106,8 +106,8 @@ def test_high_throughput_too_many_pipettes() -> None:
     """Confirms that exception is thrown when trying to a left pipette when a high-throughput pipette is being mounted to the right slot."""
     with pytest.raises(ValueError) as err:
         OT3State.build(
-            left_pipette_model_name=PipetteModel.SINGLE_20.value,
-            right_pipette_model_name=PipetteModel.MULTI_96_1000.value,
+            left_pipette_model_name=PipetteModel.SINGLE_20.get_pipette_name(),
+            right_pipette_model_name=PipetteModel.MULTI_96_1000.get_pipette_name(),
             use_gripper=True,
         )
     assert err.match(
@@ -120,7 +120,7 @@ def test_high_throughput() -> None:
     """Confirms that is_high_throughput_pipette_attached returns True when high-throughput pipette is mounted."""
     manager = OT3State.build(
         left_pipette_model_name=None,
-        right_pipette_model_name=PipetteModel.MULTI_96_1000.value,
+        right_pipette_model_name=PipetteModel.MULTI_96_1000.get_pipette_name(),
         use_gripper=False,
     )
 
@@ -217,10 +217,14 @@ def test_update_position_hardware_not_attached(
 def test_pulse() -> None:
     """Confirms that pulsing works correctly."""
     state_1 = OT3State.build(
-        PipetteModel.SINGLE_20.value, PipetteModel.SINGLE_20.value, True
+        PipetteModel.SINGLE_20.get_pipette_name(),
+        PipetteModel.SINGLE_20.get_pipette_name(),
+        True,
     )
     state_2 = OT3State.build(
-        PipetteModel.SINGLE_20.value, PipetteModel.SINGLE_20.value, True
+        PipetteModel.SINGLE_20.get_pipette_name(),
+        PipetteModel.SINGLE_20.get_pipette_name(),
+        True,
     )
 
     state_1.pulse(axis=OT3Axis.X, direction=Direction.POSITIVE)
@@ -239,7 +243,7 @@ def test_pulse() -> None:
 def test_sync_pin(ot3_state: OT3State) -> None:
     """Confirm that sync pin methods function correctly."""
     assert not ot3_state.get_sync_pin_state()
-    ot3_state.set_sync_pin("HIGH")
+    ot3_state.set_sync_pin(SyncPinState.HIGH)
     assert ot3_state.get_sync_pin_state()
-    ot3_state.set_sync_pin("LOW")
+    ot3_state.set_sync_pin(SyncPinState.LOW)
     assert not ot3_state.get_sync_pin_state()
