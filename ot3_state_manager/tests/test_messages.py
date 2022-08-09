@@ -7,6 +7,7 @@ from ot3_state_manager.messages import (
     Message,
     MoveMessage,
     SyncPinMessage,
+    _parse_message,
     handle_message,
 )
 from ot3_state_manager.ot3_state import OT3State
@@ -155,7 +156,7 @@ def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
 )
 def test_message_parsing(message: bytes, expected_message: Message) -> None:
     """Confirm that Message.parse parses byte string into correct Message object."""
-    assert Message.parse(message) == expected_message
+    assert _parse_message(message) == expected_message
 
 
 @pytest.mark.parametrize(

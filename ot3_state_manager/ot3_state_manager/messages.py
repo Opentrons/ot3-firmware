@@ -32,19 +32,6 @@ class Message(ABC):
     """
 
     @staticmethod
-    def parse(message_bytes: bytes) -> Message:
-        """Parse sequence of bytes into a Message object."""
-        if not len(message_bytes) == MESSAGE_BYTE_LENGTH:
-            raise ValueError(
-                f"Message length must be {MESSAGE_BYTE_LENGTH} bytes. "
-                f"Your message was {len(message_bytes)} bytes."
-            )
-        message_id, message_content = struct.unpack(STRUCT_FORMAT_STRING, message_bytes)
-        return MessageID.from_id(message_id).builder_func(
-            message_content=message_content
-        )
-
-    @staticmethod
     @abstractmethod
     def build_message(message_content: bytes) -> Message:
         """Parse message_content into a Message object."""
@@ -140,11 +127,22 @@ class MessageID(Enum):
             raise ValueError(f"Could not find MessageID with message_id: {enum_id}.")
 
 
+def _parse_message(message_bytes: bytes) -> Message:
+    """Parse sequence of bytes into a Message object."""
+    if not len(message_bytes) == MESSAGE_BYTE_LENGTH:
+        raise ValueError(
+            f"Message length must be {MESSAGE_BYTE_LENGTH} bytes. "
+            f"Your message was {len(message_bytes)} bytes."
+        )
+    message_id, message_content = struct.unpack(STRUCT_FORMAT_STRING, message_bytes)
+    return MessageID.from_id(message_id).builder_func(message_content=message_content)
+
+
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
-    """Parse incoming message, react to it accordingly, and respond."""
+    """Function to handle incoming message, react to it accordingly, and respond."""
     error_response: Optional[str] = None
     try:
-        message = Message.parse(data)
+        message = _parse_message(data)
     except ValueError as err:
         error_response = f"{err.args[0]}"
     except:  # noqa: E722
