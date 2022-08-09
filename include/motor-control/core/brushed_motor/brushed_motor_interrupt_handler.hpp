@@ -55,15 +55,21 @@ class BrushedMotorInterruptHandler {
             update_and_start_move();
         }
         if (has_active_move) {
-            if (buffered_move.stop_condition ==
-                    MoveStopCondition::limit_switch &&
-                limit_switch_triggered()) {
-                homing_stopped();
-            } else {
-                if (is_sensing() && is_idle) {
-                    finish_current_move(
-                        AckMessageId::complete_without_condition);
-                }
+            switch (buffered_move.stop_condition) {
+                // homing move
+                case MoveStopCondition::limit_switch :
+                    if ( limit_switch_triggered()) { homing_stopped(); }
+                    break;
+                // linear move
+                case MoveStopCondition::encoder_position :
+                    break;
+                // grip move
+                case MoveStopCondition::none :
+                    if (is_sensing() && is_idle) {
+                        finish_current_move(
+                            AckMessageId::complete_without_condition);
+                    }
+                    break;
             }
         }
     }
@@ -95,10 +101,15 @@ class BrushedMotorInterruptHandler {
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
-        if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
-            hardware.ungrip();
-        } else {
-            hardware.grip();
+        switch (buffered_move.stop_condition) {
+            case MoveStopCondition::limit_switch :
+                hardware.ungrip();
+                break;
+            case MoveStopCondition::encoder_position :
+                break;
+            case MoveStopCondition::none :
+                hardware.grip();
+                break;
         }
     }
 
