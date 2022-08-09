@@ -775,7 +775,7 @@ struct GripperHomeRequest : BaseMessage<MessageId::gripper_home_request> {
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct GripperInfoResponse : BaseMessage<MessageId::gripper_info_response> {
     uint16_t model;
-    eeprom::serial_number::SerialNumberType serial{};
+    eeprom::serial_number::SerialDataCodeType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -795,12 +795,13 @@ struct SetSerialNumber : BaseMessage<MessageId::set_serial_number> {
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetSerialNumber {
-        eeprom::serial_number::SerialNumberType serial{};
-        std::copy_n(
-            body,
-            std::min(static_cast<std::size_t>(limit - body), serial.size()),
-            serial.begin());
-        return SetSerialNumber{.serial = serial};
+        auto return_struct = SetSerialNumber{};
+
+        std::copy_n(body,
+                    std::min(static_cast<std::size_t>(limit - body),
+                             return_struct.serial.size()),
+                    return_struct.serial.begin());
+        return return_struct;
     }
 
     auto operator==(const SetSerialNumber& other) const -> bool = default;
@@ -854,7 +855,7 @@ struct SensorDiagnosticResponse
 struct PipetteInfoResponse : BaseMessage<MessageId::pipette_info_response> {
     uint16_t name;
     uint16_t model;
-    eeprom::serial_number::SerialNumberType serial{};
+    eeprom::serial_number::SerialDataCodeType serial{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {

@@ -1,4 +1,5 @@
 #pragma once
+#include "types.hpp"
 
 namespace eeprom {
 namespace hardware_iface {
@@ -9,6 +10,9 @@ enum class EEPromAddressType {
     EEPROM_ADDR_8_BIT = sizeof(uint8_t),
     EEPROM_ADDR_16_BIT = sizeof(uint16_t)
 };
+
+constexpr uint8_t ADDR_BITS_DIFFERENCE =
+    8 * (sizeof(uint16_t) - sizeof(uint8_t));
 
 enum class EEpromMemorySize { MICROCHIP_256_BYTE = 256, ST_16_KBYTE = 16384 };
 /**
@@ -72,11 +76,14 @@ class EEPromHardwareIface {
             set_write_protect(true);
         }
     }
-    [[nodiscard]] auto get_eeprom_addr_bytes() const -> size_t {
+    [[nodiscard]] auto get_eeprom_addr_bytes() const -> types::address {
         return eeprom_addr_bytes;
     }
     [[nodiscard]] auto get_eeprom_chip_type() const -> EEPromChipType {
         return eeprom_chip_type;
+    }
+    [[nodiscard]] auto get_eeprom_mem_size() const -> types::data_length {
+        return eeprom_mem_size;
     }
 
   private:

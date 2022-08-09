@@ -11,6 +11,9 @@ add_executable(
         test_eeprom_task.cpp
         test_hardware_iface.cpp
         test_serial_number.cpp
+        test_data_rev.cpp
+        test_revision.cpp
+        test_dev_data.cpp
 )
 
 target_include_directories(eeprom PUBLIC ${CMAKE_SOURCE_DIR}/include)

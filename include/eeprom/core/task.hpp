@@ -17,6 +17,7 @@ namespace task {
 
 using TaskMessage =
     std::variant<message::WriteEepromMessage, message::ReadEepromMessage,
+                 message::ConfigRequestMessage,
                  i2c::messages::TransactionResponse, std::monostate>;
 
 template <class I2CQueueWriter, class OwnQueue>
@@ -83,6 +84,11 @@ class EEPromMessageHandler {
         if (m.length <= 0) {
             return;
         }
+        if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
+            LOG("Error attempting to write to an eeprom address that exceeds "
+                "device storage");
+            return;
+        }
 
         // On the Microchip variant of the eeprom if you attempt to write
         // that crosses the page boundry (8 Bytes) it will wrap and overwrite
@@ -109,7 +115,8 @@ class EEPromMessageHandler {
         if (hw_iface.get_eeprom_addr_bytes() ==
             static_cast<size_t>(
                 hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
-            m.memory_address = m.memory_address << 8;
+            m.memory_address = m.memory_address
+                               << hardware_iface::ADDR_BITS_DIFFERENCE;
         }
         iter = bit_utils::int_to_bytes(
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -147,6 +154,12 @@ class EEPromMessageHandler {
             return;
         }
 
+        if (m.memory_address > hw_iface.get_eeprom_mem_size()) {
+            LOG("ERROR attempting to read to an eeprom address that exceeds "
+                "device storage");
+            return;
+        }
+
         auto token = id_map.add(m);
         if (!token) {
             LOG("No space in the id map.");
@@ -165,7 +178,8 @@ class EEPromMessageHandler {
         if (hw_iface.get_eeprom_addr_bytes() ==
             static_cast<size_t>(
                 hardware_iface::EEPromAddressType::EEPROM_ADDR_8_BIT)) {
-            m.memory_address = m.memory_address << 8;
+            m.memory_address = m.memory_address
+                               << hardware_iface::ADDR_BITS_DIFFERENCE;
         }
 
         iter = bit_utils::int_to_bytes(
@@ -186,6 +200,14 @@ class EEPromMessageHandler {
             // The writer cannot accept this message. Remove it from the id_map.
             id_map.remove(token.value());
         }
+    }
+
+    void visit(message::ConfigRequestMessage &m) {
+        auto conf = message::ConfigResponseMessage{
+            .chip = hw_iface.get_eeprom_chip_type(),
+            .addr_bytes = hw_iface.get_eeprom_addr_bytes(),
+            .mem_size = hw_iface.get_eeprom_mem_size()};
+        m.callback(conf, m.callback_param);
     }
 
     I2CQueueWriter &writer;

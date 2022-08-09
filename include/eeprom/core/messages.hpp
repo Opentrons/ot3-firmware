@@ -1,7 +1,7 @@
 #pragma once
 
+#include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/types.hpp"
-
 namespace eeprom {
 namespace message {
 
@@ -15,6 +15,11 @@ struct EepromMessage {
 };
 
 using ReadResponseCallback = void (*)(const EepromMessage&, void*);
+// would love to use this instead if gcc wasn't broken on my system. revist when
+// gcc > 12.1.1 https://github.com/catchorg/Catch2/issues/2423
+
+// using ReadResponseCallback = std::function<void(const
+// EepromMessage&, void*)>;
 
 /**
  * The read from eeprom message.
@@ -28,6 +33,24 @@ struct ReadEepromMessage {
 
 /** The write to eeprom message */
 using WriteEepromMessage = EepromMessage;
+
+struct ConfigResponseMessage {
+    eeprom::hardware_iface::EEPromChipType chip;
+    types::address addr_bytes;
+    types::data_length mem_size;
+};
+
+using ConfigRequestCallback = void (*)(const ConfigResponseMessage&, void*);
+// would love to use this instead if gcc wasn't broken on my system. revist when
+// gcc > 12.1.1 https://github.com/catchorg/Catch2/issues/2423
+
+// using ConfigRequestCallback = std::function<void(const
+// ConfigResponseMessage&, void*)>;
+
+struct ConfigRequestMessage {
+    ConfigRequestCallback callback;
+    void* callback_param;
+};
 
 }  // namespace message
 }  // namespace eeprom

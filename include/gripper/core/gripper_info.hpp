@@ -14,6 +14,17 @@ namespace gripper_info {
 using namespace can::ids;
 using namespace can::messages;
 
+// These defines are used to help parse gripper serials
+// A full Serial number for gripper hasn't been defined yet so we will assume
+// it has a similar structure to pipettes just without the name field
+// see include/pipepttes/core/pipette_info.hpps
+constexpr size_t GRIPPER_MODEL_FIELD_START = 0;
+constexpr size_t GRIPPER_MODEL_FIELD_LEN = 2;
+constexpr size_t GRIPPER_DATACODE_START =
+    GRIPPER_MODEL_FIELD_START + GRIPPER_MODEL_FIELD_LEN;
+constexpr size_t GRIPPER_DATACODE_LEN =
+    sizeof(eeprom::serial_number::SerialDataCodeType);
+
 /**
  * A HandlesMessages implementing class that will respond to system messages.
  *
@@ -22,7 +33,7 @@ using namespace can::messages;
  */
 template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
-class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
+class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
   public:
     /**
      * Constructor
@@ -32,7 +43,8 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
      */
     explicit GripperInfoMessageHandler(CanClient &writer,
                                        EEPromClient &eeprom_client)
-        : writer{writer}, serial_number_accessor{eeprom_client, *this} {}
+        : writer{writer},
+          serial_number_accessor{eeprom_client, *this, sn_accessor_backing} {}
     GripperInfoMessageHandler(const GripperInfoMessageHandler &) = delete;
     GripperInfoMessageHandler(const GripperInfoMessageHandler &&) = delete;
     auto operator=(const GripperInfoMessageHandler &)
@@ -56,10 +68,16 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
      * A serial number read has completed.
      * @param sn Serial number
      */
-    void on_read(const eeprom::serial_number::SerialNumberType &sn) final {
+    void read_complete() final {
         // TODO (al, 2022-05-19): Define model.
-        writer.send_can_message(can::ids::NodeId::host,
-                                GripperInfoResponse{.model = 1, .serial = sn});
+        std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
+        std::copy_n(sn_accessor_backing.begin(),
+                    eeprom::addresses::serial_number_length, serial.begin());
+        writer.send_can_message(
+            can::ids::NodeId::host,
+            GripperInfoResponse{
+                .model = get_gripper_model(sn_accessor_backing),
+                .serial = get_gripper_data_code(sn_accessor_backing)});
     }
 
   private:
@@ -79,11 +97,35 @@ class GripperInfoMessageHandler : eeprom::serial_number::ReadListener {
      * @param m The message
      */
     void visit(const SetSerialNumber &m) {
-        serial_number_accessor.write(m.serial);
+        std::copy_n(m.serial.begin(), sn_accessor_backing.size(),
+                    sn_accessor_backing.begin());
+        serial_number_accessor.write(sn_accessor_backing);
     }
 
     CanClient &writer;
+    eeprom::serial_number::SerialNumberType sn_accessor_backing =
+        eeprom::serial_number::SerialNumberType{};
     eeprom::serial_number::SerialNumberAccessor<EEPromClient>
         serial_number_accessor;
+
+    static auto get_gripper_model(
+        const eeprom::serial_number::SerialNumberType &serial) -> uint16_t {
+        uint16_t model = 0;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const auto *iter = serial.begin() + GRIPPER_MODEL_FIELD_START;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        iter = bit_utils::bytes_to_int(iter, iter + GRIPPER_MODEL_FIELD_LEN,
+                                       model);
+        return model;
+    }
+
+    static auto get_gripper_data_code(
+        const eeprom::serial_number::SerialNumberType &serial)
+        -> eeprom::serial_number::SerialDataCodeType {
+        eeprom::serial_number::SerialDataCodeType dc;
+        std::copy_n(serial.begin() + GRIPPER_DATACODE_START,
+                    GRIPPER_DATACODE_LEN, dc.begin());
+        return dc;
+    }
 };
 };  // namespace gripper_info

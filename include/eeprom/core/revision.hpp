@@ -5,12 +5,12 @@
 #include "task.hpp"
 
 namespace eeprom {
-namespace serial_number {
+namespace revision {
 
-using SerialNumberType = std::array<uint8_t, addresses::serial_number_length>;
-using SerialDataCodeType = std::array<uint8_t, 12>;
+using RevisionType = std::array<uint8_t, addresses::revision_length>;
+
 /**
- * Class that reads and writes serial numbers.
+ * Class that reads and writes revision values
  *
  * Implementation Note: When creating an instance of this class, take care
  * to make the instance not outlive the backing buffer as this will cause a
@@ -21,19 +21,19 @@ using SerialDataCodeType = std::array<uint8_t, 12>;
  * @tparam EEPromTaskClient client of eeprom task
  **/
 template <task::TaskClient EEPromTaskClient>
-class SerialNumberAccessor
+class RevisionAccessor
     : public accessor::EEPromAccessor<EEPromTaskClient,
-                                      addresses::serial_number_address_begin> {
+                                      addresses::revision_address_begin> {
   public:
-    explicit SerialNumberAccessor(EEPromTaskClient& eeprom_client,
-                                  accessor::ReadListener& listener,
-                                  SerialNumberType& buffer)
+    explicit RevisionAccessor(EEPromTaskClient& eeprom_client,
+                              accessor::ReadListener& listener,
+                              RevisionType& buff)
         : accessor::EEPromAccessor<EEPromTaskClient,
-                                   addresses::serial_number_address_begin>::
+                                   addresses::revision_address_begin>::
               EEPromAccessor(
                   eeprom_client, listener,
-                  accessor::AccessorBuffer(buffer.begin(), buffer.end())) {}
+                  accessor::AccessorBuffer(buff.begin(), buff.end())) {}
 };
 
-}  // namespace serial_number
+}  // namespace revision
 }  // namespace eeprom
