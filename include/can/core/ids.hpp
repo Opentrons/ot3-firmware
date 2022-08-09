@@ -139,10 +139,11 @@ enum class ToolType {
 enum class SensorType {
     tip = 0x0,
     capacitive = 0x1,
-    humidity = 0x2,
-    temperature = 0x3,
-    pressure = 0x4,
-    pressure_temperature = 0x5,
+    environment = 0x2,
+    pressure = 0x3,
+    pressure_temperature = 0x4,
+    humidity = 0x5,
+    temperature = 0x6,
 };
 
 /** Sensor IDs available.

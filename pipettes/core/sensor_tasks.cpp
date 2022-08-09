@@ -35,7 +35,7 @@ void sensor_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
-        5, "enviro sensor", i2c1_task_client, queues);
+        5, "enviro sensor", i2c1_task_client, i2c1_poller_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
         5, "pressure sensor", i2c1_task_client, i2c1_poller_client, queues,
         sensor_hardware);

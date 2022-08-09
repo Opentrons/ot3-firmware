@@ -30,6 +30,10 @@ auto get_message(Queue& q) -> Message {
 }
 
 constexpr auto sensor_id = can::ids::SensorId::S0;
+constexpr uint8_t pressure_id =
+    static_cast<uint8_t>(can::ids::SensorType::pressure);
+constexpr uint8_t pressure_temperature_id =
+    static_cast<uint8_t>(can::ids::SensorType::pressure_temperature);
 constexpr uint8_t sensor_id_int = 0x0;
 
 SCENARIO("read pressure sensor values") {
@@ -53,8 +57,6 @@ SCENARIO("read pressure sensor values") {
 
     auto sensor = sensors::tasks::PressureMessageHandler{
         writer, poller, queue_client, response_queue, mock_hw, sensor_id};
-    constexpr uint8_t pressure_id = 0x4;
-    constexpr uint8_t pressure_temperature_id = 0x5;
 
     GIVEN("a request to take a single read of the pressure sensor") {
         auto single_read =

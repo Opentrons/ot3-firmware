@@ -59,11 +59,7 @@ class SensorHandler {
     void send_to_queue(can::ids::SensorType type, can::ids::SensorId id,
                        const utils::TaskMessage &m) {
         switch (type) {
-            case can::ids::SensorType::temperature: {
-                client.send_environment_sensor_queue(m);
-                break;
-            }
-            case can::ids::SensorType::humidity: {
+            case can::ids::SensorType::environment: {
                 client.send_environment_sensor_queue(m);
                 break;
             }

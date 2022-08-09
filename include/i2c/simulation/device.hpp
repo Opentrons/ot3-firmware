@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cinttypes>
+
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "sensors/core/mmr920C04.hpp"
@@ -64,14 +66,19 @@ class I2CRegisterMap : public I2CDeviceBase {
     }
 
     virtual auto handle_read(uint8_t *data, uint16_t size) -> bool {
-        auto value = register_map.at(current_register);
+        ValueType value = register_map.at(current_register);
         data = bit_utils::int_to_bytes(value, data, data + size);
 
-        LOG("Read %X from register %X.", value, current_register);
+        LOG("Read %+" PRIx64 " from register %X.", value, current_register);
         return true;
     }
 
     auto get_current_register() -> RegAddressType { return current_register; }
+
+    auto set_current_register(RegAddressType reg) {
+        current_register = reg;
+        LOG("Setting current register to %X.", current_register);
+    }
 
   private:
     BackingMap register_map;

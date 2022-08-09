@@ -20,7 +20,7 @@
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/simulator/interfaces.hpp"
 #include "sensors/simulation/fdc1004.hpp"
-#include "sensors/simulation/hdc2080.hpp"
+#include "sensors/simulation/hdc3020.hpp"
 #include "sensors/simulation/mmr920C04.hpp"
 #include "sensors/simulation/mock_hardware.hpp"
 #include "spi/simulation/spi.hpp"
@@ -55,7 +55,7 @@ static auto gear_interrupts =
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 
-static auto hdcsensor = hdc2080_simulator::HDC2080{};
+static auto hdcsensor = hdc3020_simulator::HDC3020{};
 static auto capsensor = fdc1004_simulator::FDC1004{};
 static auto sim_eeprom = eeprom::simulator::EEProm{};
 static test_mocks::MockSensorHardware fake_sensor_hw{};

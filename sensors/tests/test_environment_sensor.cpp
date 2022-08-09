@@ -6,120 +6,141 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 #include "motor-control/core/utils.hpp"
-#include "sensors/core/hdc2080.hpp"
+#include "sensors/core/hdc3020.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 
 template <typename Message, typename Queue>
+requires std::constructible_from<i2c::poller::TaskMessage, Message>
 auto get_message(Queue& q) -> Message {
-    i2c::writer::TaskMessage empty_msg{};
+    i2c::poller::TaskMessage empty_msg{};
     q.try_read(&empty_msg);
     return std::get<Message>(empty_msg);
 }
+
 constexpr auto sensor_id = can::ids::SensorId::S0;
+constexpr uint8_t environment_id =
+    static_cast<uint8_t>(can::ids::SensorType::environment);
 constexpr uint8_t sensor_id_int = 0x0;
 
-SCENARIO("read temperature and humidity values") {
+namespace sensors {
+
+namespace tasks {
+
+SCENARIO("Environment Sensor Task Functionality") {
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
+    test_mocks::MockMessageQueue<i2c::poller::TaskMessage> i2c_poll_queue{};
     test_mocks::MockMessageQueue<can::message_writer_task::TaskMessage>
         can_queue{};
     test_mocks::MockMessageQueue<sensors::utils::TaskMessage>
         environment_queue{};
     test_mocks::MockI2CResponseQueue response_queue;
 
-    i2c::writer::TaskMessage empty_msg{};
+    i2c::poller::TaskMessage empty_poll_msg{};
+    auto poller = i2c::poller::Poller<test_mocks::MockMessageQueue>{};
+    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     auto queue_client = mock_client::QueueClient{.environment_sensor_queue =
                                                      &environment_queue};
-    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
-
+    poller.set_queue(&i2c_poll_queue);
     auto sensor = sensors::tasks::EnvironmentSensorMessageHandler{
-        writer, queue_client, response_queue, sensor_id};
-    constexpr uint8_t humidity_id = 0x2;
-    constexpr uint8_t temperature_id = 0x3;
+        writer, poller, queue_client, response_queue, sensor_id};
 
-    GIVEN("a request to read the humidity of the sensor") {
-        auto read_humidity = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, humidity_id));
-        sensor.handle_message(read_humidity);
-        WHEN("the handler function receives the message in LSB mode") {
-            THEN("the i2c queue is populated with a transact command") {
-                REQUIRE(i2c_queue.get_size() == 1);
+    GIVEN("CAN messages accepted by the environment sensor task") {
+        WHEN("the handler function receives a ReadFromSensorRequest") {
+            auto read_environment = sensors::utils::TaskMessage(
+                can::messages::ReadFromSensorRequest({}, environment_id));
+            sensor.handle_message(read_environment);
+            THEN(
+                "the i2c queue is populated with a SingleRegisterPollRead "
+                "command") {
+                REQUIRE(i2c_poll_queue.get_size() == 1);
             }
             AND_WHEN("we read the message from the queue") {
                 auto transact_message =
-                    get_message<i2c::messages::Transact>(i2c_queue);
+                    get_message<i2c::messages::SingleRegisterPollRead>(
+                        i2c_poll_queue);
 
                 THEN("The command and register addresses are correct") {
-                    REQUIRE(transact_message.transaction.address ==
-                            sensors::hdc2080::ADDRESS);
-                    REQUIRE(transact_message.transaction.write_buffer[0] ==
-                            sensors::hdc2080::LSB_HUMIDITY_REGISTER);
-                    REQUIRE(transact_message.transaction.bytes_to_write == 1);
-                    REQUIRE(transact_message.transaction.bytes_to_read == 2);
+                    REQUIRE(transact_message.first.address == hdc3020::ADDRESS);
+                    REQUIRE(transact_message.first.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                hdc3020::Registers::TRIGGER_ON_DEMAND_MODE));
+                    REQUIRE(transact_message.polling == 1);
                 }
-                THEN(
-                    "using the callback with data returns the expected value") {
-                    auto my_buff =
-                        i2c::messages::MaxMessageBuffer{250, 80, 0, 0, 0};
-                    auto response = test_mocks::launder_response(
-                        transact_message, response_queue,
-                        test_mocks::dummy_response(transact_message, my_buff));
-                    sensor.handle_message(response);
+            }
+        }
+        WHEN("the handler function receives a BaselineSensorRequest") {
+            auto read_baseline_environment = sensors::utils::TaskMessage(
+                can::messages::BaselineSensorRequest({}, environment_id, 0, 5));
+            sensor.handle_message(read_baseline_environment);
+            THEN(
+                "the i2c queue is populated with a SingleRegisterPollRead "
+                "command") {
+                REQUIRE(i2c_poll_queue.get_size() == 1);
+            }
+            AND_WHEN("we read the message from the queue") {
+                auto transact_message =
+                    get_message<i2c::messages::SingleRegisterPollRead>(
+                        i2c_poll_queue);
 
-                    can::message_writer_task::TaskMessage can_msg{};
-                    can_queue.try_read(&can_msg);
-                    auto response_msg =
-                        std::get<can::messages::ReadFromSensorResponse>(
-                            can_msg.message);
-                    float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 97.77832;
-                    REQUIRE(check_data == Approx(expected).epsilon(1e-4));
+                THEN("The command and register addresses are correct") {
+                    REQUIRE(transact_message.first.address == hdc3020::ADDRESS);
+                    REQUIRE(transact_message.first.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                hdc3020::Registers::TRIGGER_ON_DEMAND_MODE));
+                    REQUIRE(transact_message.polling == 5);
+                }
+            }
+        }
+        WHEN("the handler function receives a BindSensorOutputRequest") {
+            auto bind_environment = sensors::utils::TaskMessage(
+                can::messages::BindSensorOutputRequest(
+                    {}, can::ids::SensorType::environment, sensor_id, 2));
+            sensor.handle_message(bind_environment);
+            THEN(
+                "the i2c queue is populated with a "
+                "ConfigureSingleRegisterContinuousPolling command") {
+                REQUIRE(i2c_poll_queue.get_size() == 1);
+            }
+            AND_WHEN("we read the message from the queue") {
+                auto transact_message = get_message<
+                    i2c::messages::ConfigureSingleRegisterContinuousPolling>(
+                    i2c_poll_queue);
+
+                THEN("The command and register addresses are correct") {
+                    REQUIRE(transact_message.first.address == hdc3020::ADDRESS);
+                    REQUIRE(transact_message.first.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                hdc3020::Registers::AUTO_MEASURE_10M1S));
+                    // measure mode 1 for this register
+                    REQUIRE(transact_message.first.write_buffer[1] == 0x21);
+                    REQUIRE(transact_message.delay_ms == 100);
                 }
             }
         }
     }
-    GIVEN("a request to read the temperature of the sensor") {
-        auto read_temperature = sensors::utils::TaskMessage(
-            can::messages::ReadFromSensorRequest({}, temperature_id));
-        sensor.handle_message(read_temperature);
-        WHEN("the handler function receives the message in LSB mode") {
-            THEN("the i2c queue is populated with a transact command") {
-                REQUIRE(i2c_queue.get_size() == 1);
+    GIVEN("CAN messages not accepted by the environment sensor task") {
+        WHEN("the handler function receives a WriteToSensorRequest") {
+            auto write_environment = sensors::utils::TaskMessage(
+                can::messages::WriteToSensorRequest({}, environment_id, 0, 1));
+            sensor.handle_message(write_environment);
+            THEN("the i2c queue is not populated") {
+                REQUIRE(i2c_poll_queue.get_size() == 0);
             }
-            AND_WHEN("we read the message from the queue") {
-                auto transact_message =
-                    get_message<i2c::messages::Transact>(i2c_queue);
-                THEN("The command and register addresses are correct") {
-                    REQUIRE(transact_message.transaction.address ==
-                            sensors::hdc2080::ADDRESS);
-                    REQUIRE(transact_message.transaction.write_buffer[0] ==
-                            sensors::hdc2080::LSB_TEMPERATURE_REGISTER);
-                    REQUIRE(transact_message.transaction.bytes_to_write == 1);
-                    REQUIRE(transact_message.transaction.bytes_to_read == 2);
-                }
-                THEN(
-                    "using the callback with data returns the expected value") {
-                    auto my_buff =
-                        i2c::messages::MaxMessageBuffer{200, 0, 0, 0, 0};
-                    auto response = test_mocks::launder_response(
-                        transact_message, response_queue,
-                        test_mocks::dummy_response(transact_message, my_buff));
-                    sensor.handle_message(response);
-                    can::message_writer_task::TaskMessage can_msg{};
-
-                    can_queue.try_read(&can_msg);
-                    auto response_msg =
-                        std::get<can::messages::ReadFromSensorResponse>(
-                            can_msg.message);
-                    float check_data =
-                        fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 88.40625;
-                    REQUIRE(check_data == Approx(expected).epsilon(1e-4));
-                }
+        }
+        WHEN("the handler function receives a SetSensorThresholdRequest") {
+            auto threshold_environment = sensors::utils::TaskMessage(
+                can::messages::SetSensorThresholdRequest(
+                    {}, can::ids::SensorType::environment, sensor_id, 1,
+                    can::ids::SensorThresholdMode::absolute));
+            sensor.handle_message(threshold_environment);
+            THEN("the i2c queue is not populated") {
+                REQUIRE(i2c_poll_queue.get_size() == 0);
             }
         }
     }
 }
+}  // namespace tasks
+}  // namespace sensors
