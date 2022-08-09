@@ -62,6 +62,10 @@ class MotionControllerMessageHandler {
         controller.stop();
     }
 
+    void handle(const can::messages::AddBrushedLinearMoveRequest& m) {
+        controler.move(m);
+    }
+
     void handle(const can::messages::GripperGripRequest& m) {
         controller.move(m);
     }

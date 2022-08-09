@@ -59,6 +59,19 @@ class MotionController {
         queue.try_write(msg);
     }
 
+    void move(const can::messages::AddBrushedLinearMoveRequest& can_msg) {
+        BrushedMove msg{.duration = can_msg.duration,
+                        .duty_cycle = 0UL,
+                        .group_id = can_msg.group_id,
+                        .seq_id = can_msg.seq_id,
+                        .encoder_position = can_msg.encoder_position,
+                        .stop_condition = MoveStopCondition::encoder_position};
+        if (!enabled) {
+            enable_motor();
+        }
+        queue.try_write(msg);
+    }
+
     void enable_motor() {
         hardware.activate_motor();
         hardware.start_timer_interrupt();
