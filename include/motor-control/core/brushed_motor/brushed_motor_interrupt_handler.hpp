@@ -56,12 +56,9 @@ class BrushedMotorInterruptHandler {
 
     int32_t controlled_move_to(int32_t encoder_position) {
         int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
-        if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
-            return 0;
-        }
         if (move_delta > 0) {
             hardware.positive_direction();
-        } else {
+        } else if (move_delta > 0) {
             hardware.negative_direction();
         }
         // the compute the pid with the abs of move_delta because the pwm value

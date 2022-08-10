@@ -100,4 +100,41 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             }
         }
     }
+    GIVEN("A message to move") {
+        auto msg = BrushedMove{.duration = 0,
+                               .duty_cycle = 50,
+                               .group_id = 0,
+                               .seq_id = 0,
+                               .encoder_position = 2000,
+                               .stop_condition = MoveStopCondition::encoder_position};
+        int32_t last_pid_output = test_objs.hw.get_pid_controller_output();
+        CHECK(last_pid_output == 0.0);
+        test_objs.hw.set_encoder_value(0);
+        test_objs.queue.try_write_isr(msg);
+        WHEN("A brushed move message is received and loaded") {
+            test_objs.handler.update_and_start_move();
+            int32_t current_pid_output = test_objs.hw.get_pid_controller_output();
+            REQUIRE(current_pid_output > last_pid_output);
+            last_pid_output = current_pid_output;
+            THEN("The motor hardware proceeds to move") {
+                for (int32_t i = 100; i < msg.encoder_position; i+=100) {
+                    test_objs.hw.set_encoder_value(i);
+                    test_objs.handler.run_interrupt();
+                    current_pid_output = test_objs.hw.get_pid_controller_output();
+                    REQUIRE(current_pid_output <= last_pid_output);
+                    REQUIRE((test_objs.driver.get_pwm_settings() > 0 &&
+                            test_objs.driver.get_pwm_settings() <= 100));
+
+                }
+                test_objs.hw.set_encoder_value(msg.encoder_position);
+                test_objs.handler.run_interrupt();
+                REQUIRE(test_objs.driver.get_pwm_settings() == 0);
+                REQUIRE(test_objs.reporter.messages.size() >= 1);
+                Ack read_ack = test_objs.reporter.messages.back();
+                REQUIRE(read_ack.encoder_position == msg.encoder_position);
+                REQUIRE(read_ack.ack_id ==
+                        AckMessageId::stopped_by_condition);
+            }
+        }
+    }
 }
