@@ -2,6 +2,7 @@
 
 #include "common/core/logging.h"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "ot_utils/core/pid.hpp"
 
 namespace sim_motor_hardware_iface {
 
@@ -58,9 +59,18 @@ class SimBrushedMotorHardwareIface
     int32_t get_encoder_pulses() final { return 0; }
     void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
 
+    double update_control(int32_t encoder_error) {
+        return controller_loop.compute(encoder_error);
+    }
+    void reset_control() { controller_loop.reset(); }
+
   private:
     bool limit_switch_status = false;
     uint32_t test_pulses = 0;
+    // these controller loop values were selected just because testing
+    // does not emulate change in speed and these give us pretty good values
+    // when the "motor" instantly goes to top speed then instantly stops
+    ot_utils::pid::PID controller_loop{1.1, 0.01, .1 / 32UL, 1.0 / 32UL};
 };
 
 class SimGearMotorHardwareIface
