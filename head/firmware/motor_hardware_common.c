@@ -1,29 +1,22 @@
-#include "motor_hardware.h"
-
 #include "common/firmware/errors.h"
+#include "motor_hardware.h"
 #include "stm32g4xx_hal.h"
 
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim2 = {
     .Instance = TIM2,
-    .Init = {
-        .Prescaler = 0,
-        .CounterMode = TIM_COUNTERMODE_UP,
-        .Period = UINT16_MAX,
-        .ClockDivision = TIM_CLOCKDIVISION_DIV1,
-        .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE
-    }
-};
+    .Init = {.Prescaler = 0,
+             .CounterMode = TIM_COUNTERMODE_UP,
+             .Period = UINT16_MAX,
+             .ClockDivision = TIM_CLOCKDIVISION_DIV1,
+             .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE}};
 TIM_HandleTypeDef htim3 = {
     .Instance = TIM3,
-    .Init = {
-        .Prescaler = 0,
-        .CounterMode = TIM_COUNTERMODE_UP,
-        .Period = UINT16_MAX,
-        .ClockDivision = TIM_CLOCKDIVISION_DIV1,
-        .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE
-    }
-};
+    .Init = {.Prescaler = 0,
+             .CounterMode = TIM_COUNTERMODE_UP,
+             .Period = UINT16_MAX,
+             .ClockDivision = TIM_CLOCKDIVISION_DIV1,
+             .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE}};
 
 motor_interrupt_callback motor_callback = NULL;
 encoder_overflow_callback left_enc_overflow_callback = NULL;
@@ -91,15 +84,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 
-        // Ctrl/Dir/Step pin for motor on SPI3 (Z-axis)
-        GPIO_InitStruct.Pin = GPIO_PIN_4;
-        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
+        // Dir/Step pin for motor on SPI3 (Z-axis)
         GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                       &GPIO_InitStruct);
     }
@@ -257,7 +246,7 @@ void MX_GPIO_Init(void) {
     initialize_rev_specific_pins();
 }
 
-void encoder_init(TIM_HandleTypeDef* htim) {
+void encoder_init(TIM_HandleTypeDef *htim) {
     TIM_Encoder_InitTypeDef sConfig = {
         .EncoderMode = TIM_ENCODERMODE_TI12,
         .IC1Polarity = TIM_ICPOLARITY_RISING,
@@ -274,10 +263,8 @@ void encoder_init(TIM_HandleTypeDef* htim) {
     }
     TIM_MasterConfigTypeDef sMasterConfig = {
         .MasterOutputTrigger = TIM_TRGO_RESET,
-        .MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE
-    };
-    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) !=
-        HAL_OK) {
+        .MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE};
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) {
         Error_Handler();
     }
     /* Reset counter */
@@ -291,7 +278,6 @@ void encoder_init(TIM_HandleTypeDef* htim) {
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(htim, TIM_CHANNEL_ALL);
 }
-
 
 void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -352,7 +338,6 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         HAL_NVIC_EnableIRQ(TIM3_IRQn);
     }
 }
-
 
 void initialize_timer(motor_interrupt_callback callback,
                       encoder_overflow_callback l_f_callback,

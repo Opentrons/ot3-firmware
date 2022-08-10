@@ -15,7 +15,11 @@ void initialize_rev_specific_pins() {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_5 | GPIO_PIN_11;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    
+
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                  &GPIO_InitStruct);
+
     // TODO: Handle brakes better, this just disengages
     // them at boot
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5 | GPIO_PIN_0, GPIO_PIN_SET);
