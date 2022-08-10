@@ -1,8 +1,8 @@
 #pragma once
-#include "ot_utils/core/pid.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "ot_utils/core/pid.hpp"
 
 namespace test_mocks {
 
@@ -46,9 +46,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
         pid_controller_output = controller_loop.compute(encoder_error);
         return pid_controller_output;
     }
-    void reset_control() {
-        controller_loop.reset();
-    }
+    void reset_control() { controller_loop.reset(); }
     double get_pid_controller_output() { return pid_controller_output; }
 
   private:
@@ -61,7 +59,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     // these controller loop values were selected just because testing
     // does not emulate change in speed and these give us pretty good values
     // when the "motor" instantly goes to top speed then instantly stops
-    ot_utils::pid::PID controller_loop{1.1, 0.01, .1/32UL, 1.0/32UL};
+    ot_utils::pid::PID controller_loop{1.1, 0.01, .1 / 32UL, 1.0 / 32UL};
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
@@ -72,6 +70,7 @@ class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
     void setup() final {}
     void update_pwm_settings(uint32_t pwm_set) { pwm_val = pwm_set; }
     uint32_t get_pwm_settings() { return pwm_val; }
+
   private:
     uint32_t pwm_val = 0;
 };

@@ -720,7 +720,8 @@ struct SetBrushedMotorPwmRequest
         -> bool = default;
 };
 
-struct AddBrushedLinearMoveRequest : BaseMessage<MessageId::add_brushed_linear_move_request> {
+struct AddBrushedLinearMoveRequest
+    : BaseMessage<MessageId::add_brushed_linear_move_request> {
     uint8_t group_id;
     uint8_t seq_id;
     brushed_timer_ticks duration;
@@ -741,14 +742,16 @@ struct AddBrushedLinearMoveRequest : BaseMessage<MessageId::add_brushed_linear_m
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
         body = bit_utils::bytes_to_int(body, limit, encoder_position);
 
-        return AddBrushedLinearMoveRequest{.group_id = group_id,
-                                  .seq_id = seq_id,
-                                  .duration = duration,
-                                  .duty_cycle = duty_cycle,
-                                  .encoder_position = encoder_position};
+        return AddBrushedLinearMoveRequest{
+            .group_id = group_id,
+            .seq_id = seq_id,
+            .duration = duration,
+            .duty_cycle = duty_cycle,
+            .encoder_position = encoder_position};
     }
 
-    auto operator==(const AddBrushedLinearMoveRequest& other) const -> bool = default;
+    auto operator==(const AddBrushedLinearMoveRequest& other) const
+        -> bool = default;
 };
 
 struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {

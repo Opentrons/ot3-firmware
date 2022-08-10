@@ -42,7 +42,7 @@ class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void grip() = 0;
     virtual void ungrip() = 0;
     virtual void stop_pwm() = 0;
-    virtual double update_control(int32_t encoder_error) = 0;
+    virtual auto update_control(int32_t encoder_error) -> double = 0;
     virtual void reset_control() = 0;
 };
 };  // namespace motor_hardware

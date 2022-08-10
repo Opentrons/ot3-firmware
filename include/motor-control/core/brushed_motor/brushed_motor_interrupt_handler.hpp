@@ -1,15 +1,15 @@
 #pragma once
 
-#include <atomic>
 #include <algorithm>
+#include <atomic>
 
-#include "ot_utils/core/pid.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "ot_utils/core/pid.hpp"
 
 namespace brushed_motor_handler {
 
@@ -54,7 +54,7 @@ class BrushedMotorInterruptHandler {
         return queue.has_message_isr();
     }
 
-    int32_t controlled_move_to(int32_t encoder_position) {
+    auto controlled_move_to(int32_t encoder_position) -> int32_t {
         int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
         if (move_delta > 0) {
             hardware.positive_direction();
@@ -76,28 +76,31 @@ class BrushedMotorInterruptHandler {
         if (has_active_move) {
             switch (buffered_move.stop_condition) {
                 // homing move
-                case MoveStopCondition::limit_switch :
-                    if ( limit_switch_triggered()) { homing_stopped(); }
+                case MoveStopCondition::limit_switch:
+                    if (limit_switch_triggered()) {
+                        homing_stopped();
+                    }
                     break;
                 // linear move
-                case MoveStopCondition::encoder_position :
-                    if (std::abs(controlled_move_to(buffered_move.encoder_position)) < ACCEPTABLE_POSITION_ERROR  ) {
+                case MoveStopCondition::encoder_position:
+                    if (std::abs(controlled_move_to(
+                            buffered_move.encoder_position)) <
+                        ACCEPTABLE_POSITION_ERROR) {
                         finish_current_move(AckMessageId::stopped_by_condition);
                     }
                     break;
                 // grip move
-                case MoveStopCondition::none :
+                case MoveStopCondition::none:
                     if (is_sensing() && is_idle) {
                         finish_current_move(
                             AckMessageId::complete_without_condition);
                     }
                     break;
                 case MoveStopCondition::cap_sensor:
-                    //TODO write cap sensor move code
+                    // TODO write cap sensor move code
                     break;
             }
-        }
-        else if (holding) {
+        } else if (holding) {
             controlled_move_to(hold_encoder_position);
         }
     }
@@ -132,23 +135,27 @@ class BrushedMotorInterruptHandler {
         hardware.reset_control();
         holding = false;
         switch (buffered_move.stop_condition) {
-            case MoveStopCondition::limit_switch :
+            case MoveStopCondition::limit_switch:
                 hardware.ungrip();
                 break;
-            case MoveStopCondition::encoder_position :
-                if (hardware.get_encoder_pulses() == buffered_move.encoder_position) {
-                    LOG("Attempting to add a gripper move to our current position");
+            case MoveStopCondition::encoder_position:
+                if (hardware.get_encoder_pulses() ==
+                    buffered_move.encoder_position) {
+                    LOG("Attempting to add a gripper move to our current "
+                        "position");
                     finish_current_move(AckMessageId::stopped_by_condition);
                     break;
                 }
-                // multiplied by -1 here because the "error" is the opposite direction we're going
-                LOG("Brushed motor moving %i µm", -1 * controlled_move_to(buffered_move.encoder_position));
+                // multiplied by -1 here because the "error" is the opposite
+                // direction we're going
+                LOG("Brushed motor moving %i µm",
+                    -1 * controlled_move_to(buffered_move.encoder_position));
                 break;
-            case MoveStopCondition::none :
+            case MoveStopCondition::none:
                 hardware.grip();
                 break;
             case MoveStopCondition::cap_sensor:
-                //TODO write cap sensor move code
+                // TODO write cap sensor move code
                 break;
         }
     }
