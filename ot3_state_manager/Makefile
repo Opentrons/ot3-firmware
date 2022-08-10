@@ -25,6 +25,10 @@ teardown:
 build:
 	poetry build
 
+.PHONY: generate-header-file
+generate-header-file:
+	poetry run python3 generate_state_manager_headers.py $(PWD)/../include/common/simulation/ot3_state_manager_messages.hpp
+
 .PHONY: clean
 clean:
 	$(clean_cmd)
@@ -35,14 +39,14 @@ test:
 
 .PHONY: lint
 lint:
-	$(python) -m mypy ot3_state_manager $(tests_to_typecheck)
-	$(python) -m isort --check ot3_state_manager tests
-	$(python) -m black --check --line-length 88 ot3_state_manager tests
-	$(python) -m flake8 ot3_state_manager tests
+	$(python) -m mypy ot3_state_manager $(tests_to_typecheck) generate_state_manager_headers.py
+	$(python) -m isort --check ot3_state_manager tests generate_state_manager_headers.py
+	$(python) -m black --check --line-length 88 ot3_state_manager tests generate_state_manager_headers.py
+	$(python) -m flake8 ot3_state_manager tests generate_state_manager_headers.py
 	$(python) -m mdformat --check README.md
 
 .PHONY: format
 format:
-	$(python) -m isort ot3_state_manager tests
-	$(python) -m black --line-length 88 ot3_state_manager tests
+	$(python) -m isort ot3_state_manager tests generate_state_manager_headers.py
+	$(python) -m black --line-length 88 ot3_state_manager tests generate_state_manager_headers.py
 	$(python) -m mdformat README.md
