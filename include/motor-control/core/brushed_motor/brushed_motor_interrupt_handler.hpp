@@ -172,8 +172,13 @@ class BrushedMotorInterruptHandler {
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
-        hold_encoder_position = hardware.get_encoder_pulses();
-        holding = true;
+        // if we were instructed to move to particular spot maintain that
+        // position otherwise we want to continue to apply pressure
+        if (buffered_move.stop_condition ==
+            MoveStopCondition::encoder_position) {
+            hold_encoder_position = buffered_move.encoder_position;
+            holding = true;
+        }
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(),
                                                ack_msg_id);
