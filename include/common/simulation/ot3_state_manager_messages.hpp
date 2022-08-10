@@ -3,13 +3,15 @@
  ********************************************/
 #pragma once
 
-/** Enum class defining the relationship between the message_id byte and the corresponding Message object. */
+/** Enum class defining the relationship between the message_id byte and the
+ * corresponding Message object. */
 enum class MessageID {
     move_message_id = 0x0,
     sync_pin_message_id = 0x1,
 };
 
-/** Enum representing a mapping of an integer hardware id to an OT3Axis object. */
+/** Enum representing a mapping of an integer hardware id to an OT3Axis object.
+ */
 enum class MoveMessageHardware {
     x_axis_hw_id = 0x0,
     y_axis_hw_id = 0x1,
@@ -33,4 +35,3 @@ enum class SyncPinState {
     HIGH = 0x1,
     LOW = 0x0,
 };
-
