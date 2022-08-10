@@ -80,8 +80,9 @@ void LED_drive_gpio_init() {
     /* GPIO Ports Clock Enable */
     if (hardware.port == GPIOC) {
         __HAL_RCC_GPIOC_CLK_ENABLE();
-    }
-    else if (hardware.port == GPIOA) {
+    } else if (hardware.port == GPIOB) {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+    } else if (hardware.port == GPIOA) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
     }
 
