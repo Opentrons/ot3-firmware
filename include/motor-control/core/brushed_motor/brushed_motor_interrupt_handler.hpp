@@ -64,7 +64,11 @@ class BrushedMotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        driver_hardware.update_pwm_settings(std::clamp(hardware.update_control(std::abs(encoder_position)), 0.0, 100.0));
+        // the compute the pid with the abs of move_delta because the pwm value
+        // is always positive regardless of moving forward or backward
+        double pid_output = hardware.update_control(std::abs(move_delta));
+        driver_hardware.update_pwm_settings(
+            std::clamp(int(pid_output), 0, 100));
         return move_delta;
     }
 
@@ -135,13 +139,13 @@ class BrushedMotorInterruptHandler {
                 hardware.ungrip();
                 break;
             case MoveStopCondition::encoder_position :
-                if ((hardware.get_encoder_pulses() - buffered_move.encoder_position) == 0) {
+                if (hardware.get_encoder_pulses() == buffered_move.encoder_position) {
                     LOG("Attempting to add a gripper move to our current position");
                     finish_current_move(AckMessageId::stopped_by_condition);
                     break;
                 }
-                hardware.update_control(buffered_move.encoder_position);
-                controlled_move_to(buffered_move.encoder_position);
+                // multiplied by -1 here because the "error" is the opposite direction we're going
+                LOG("Brushed motor moving %i µm", -1 * controlled_move_to(buffered_move.encoder_position));
                 break;
             case MoveStopCondition::none :
                 hardware.grip();
