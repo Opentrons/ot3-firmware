@@ -1,5 +1,5 @@
 #pragma once
-
+#include "ot_utils/core/pid.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -43,19 +43,25 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     auto set_limit_switch(bool val) { ls_val = val; }
 
     double update_control(int32_t encoder_error) {
-       is_controlling = true;
-       std::ignore = encoder_error;
-       return 50.0;
+        pid_controller_output = controller_loop.compute(encoder_error);
+        return pid_controller_output;
     }
-    void reset_control() { is_controlling = false; }
+    void reset_control() {
+        controller_loop.reset();
+    }
+    double get_pid_controller_output() { return pid_controller_output; }
 
   private:
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
     bool sync_val = false;
     bool is_gripping = false;
-    bool is_controlling = false;
+    double pid_controller_output = 0.0;
     int32_t enc_val = 0;
+    // these controller loop values were selected just because testing
+    // does not emulate change in speed and these give us pretty good values
+    // when the "motor" instantly goes to top speed then instantly stops
+    ot_utils::pid::PID controller_loop{1.1, 0.01, .1/32UL, 1.0/32UL};
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
@@ -64,7 +70,10 @@ class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
     bool stop_digital_analog_converter() final { return true; }
     bool set_reference_voltage(float) final { return true; }
     void setup() final {}
-    void update_pwm_settings(uint32_t) final {}
+    void update_pwm_settings(uint32_t pwm_set) { pwm_val = pwm_set; }
+    uint32_t get_pwm_settings() { return pwm_val; }
+  private:
+    uint32_t pwm_val = 0;
 };
 
 struct MockBrushedMoveStatusReporterClient {
