@@ -103,25 +103,25 @@ class SyncPinMessage(Message):
 
 
 @dataclass
-class GetLocationMessage(Message):
+class GetAxisLocationMessage(Message):
     """Message to get current location of axis."""
 
     axis: OT3Axis
 
     def __eq__(self, other: Any) -> bool:
         """Confirm that the 2 objects are equal"""
-        return isinstance(other, GetLocationMessage) and other.axis == self.axis
+        return isinstance(other, GetAxisLocationMessage) and other.axis == self.axis
 
     def __hash__(self) -> int:
         """Return hash for instance."""
         return hash(str(self))
 
     @staticmethod
-    def build_message(message_content: bytes) -> GetLocationMessage:
+    def build_message(message_content: bytes) -> GetAxisLocationMessage:
         """Convert message_content into a GetLocationMessage object."""
         hw_id, _ = struct.unpack(">HB", message_content)
         axis = MoveMessageHardware.from_id(hw_id).axis
-        return GetLocationMessage(axis=axis)
+        return GetAxisLocationMessage(axis=axis)
 
     def to_bytes(self) -> bytes:
         """Convert GetLocationMessage object into a sequence of hexadecimal bytes."""
@@ -161,7 +161,7 @@ class MessageID(Enum):
 
     MOVE = 0x00, MoveMessage
     SYNC_PIN = 0x01, SyncPinMessage
-    GET_LOCATION = 0x02, GetLocationMessage
+    GET_LOCATION = 0x02, GetAxisLocationMessage
     GET_SYNC_PIN_STATE = 0x03, GetSyncPinStateMessage
 
     @classmethod
@@ -200,7 +200,7 @@ def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
             ot3_state.pulse(message.axis, message.direction)
         elif isinstance(message, SyncPinMessage):
             ot3_state.set_sync_pin(message.state)
-        elif isinstance(message, GetLocationMessage):
+        elif isinstance(message, GetAxisLocationMessage):
             loc = ot3_state.axis_current_position(message.axis)
             response = str(loc).encode()
         elif isinstance(message, GetSyncPinStateMessage):

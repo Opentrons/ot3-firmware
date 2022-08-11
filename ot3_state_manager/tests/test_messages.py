@@ -4,7 +4,7 @@ import pytest
 from opentrons.hardware_control.types import OT3Axis
 
 from ot3_state_manager.messages import (
-    GetLocationMessage,
+    GetAxisLocationMessage,
     GetSyncPinStateMessage,
     Message,
     MoveMessage,
@@ -161,47 +161,47 @@ def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
         ),
         pytest.param(
             b"\x02\x00\x00\x00",
-            GetLocationMessage(OT3Axis.X),
+            GetAxisLocationMessage(OT3Axis.X),
             id="GET_LOCATION_X",
         ),
         pytest.param(
             b"\x02\x00\x01\x00",
-            GetLocationMessage(OT3Axis.Y),
+            GetAxisLocationMessage(OT3Axis.Y),
             id="GET_LOCATION_Y",
         ),
         pytest.param(
             b"\x02\x00\x02\x00",
-            GetLocationMessage(OT3Axis.Z_L),
+            GetAxisLocationMessage(OT3Axis.Z_L),
             id="GET_LOCATION_Z_L",
         ),
         pytest.param(
             b"\x02\x00\x03\x00",
-            GetLocationMessage(OT3Axis.Z_R),
+            GetAxisLocationMessage(OT3Axis.Z_R),
             id="GET_LOCATION_Z_R",
         ),
         pytest.param(
             b"\x02\x00\x04\x00",
-            GetLocationMessage(OT3Axis.Z_G),
+            GetAxisLocationMessage(OT3Axis.Z_G),
             id="GET_LOCATION_Z_G",
         ),
         pytest.param(
             b"\x02\x00\x05\x00",
-            GetLocationMessage(OT3Axis.P_L),
+            GetAxisLocationMessage(OT3Axis.P_L),
             id="GET_LOCATION_P_L",
         ),
         pytest.param(
             b"\x02\x00\x06\x00",
-            GetLocationMessage(OT3Axis.P_R),
+            GetAxisLocationMessage(OT3Axis.P_R),
             id="GET_LOCATION_P_R",
         ),
         pytest.param(
             b"\x02\x00\x07\x00",
-            GetLocationMessage(OT3Axis.G),
+            GetAxisLocationMessage(OT3Axis.G),
             id="GET_LOCATION_G",
         ),
         pytest.param(
             b"\x02\x00\x08\x00",
-            GetLocationMessage(OT3Axis.Q),
+            GetAxisLocationMessage(OT3Axis.Q),
             id="GET_LOCATION_Q",
         ),
         pytest.param(
@@ -320,47 +320,47 @@ def test_message_parsing(message: bytes, expected_message: Message) -> None:
             id="SYNC_HIGH",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.X),
+            GetAxisLocationMessage(OT3Axis.X),
             b"\x02\x00\x00\x00",
             id="GET_LOCATION_X",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.Y),
+            GetAxisLocationMessage(OT3Axis.Y),
             b"\x02\x00\x01\x00",
             id="GET_LOCATION_Y",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.Z_L),
+            GetAxisLocationMessage(OT3Axis.Z_L),
             b"\x02\x00\x02\x00",
             id="GET_LOCATION_Z_L",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.Z_R),
+            GetAxisLocationMessage(OT3Axis.Z_R),
             b"\x02\x00\x03\x00",
             id="GET_LOCATION_Z_R",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.Z_G),
+            GetAxisLocationMessage(OT3Axis.Z_G),
             b"\x02\x00\x04\x00",
             id="GET_LOCATION_Z_G",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.P_L),
+            GetAxisLocationMessage(OT3Axis.P_L),
             b"\x02\x00\x05\x00",
             id="GET_LOCATION_P_L",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.P_R),
+            GetAxisLocationMessage(OT3Axis.P_R),
             b"\x02\x00\x06\x00",
             id="GET_LOCATION_P_R",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.G),
+            GetAxisLocationMessage(OT3Axis.G),
             b"\x02\x00\x07\x00",
             id="GET_LOCATION_G",
         ),
         pytest.param(
-            GetLocationMessage(OT3Axis.Q),
+            GetAxisLocationMessage(OT3Axis.Q),
             b"\x02\x00\x08\x00",
             id="GET_LOCATION_Q",
         ),
@@ -400,7 +400,7 @@ def test_valid_handle_get_location_message(ot3_state: OT3State) -> None:
         ack = handle_message(pulse_x_pos, ot3_state)
         assert ack == pulse_x_pos
     assert ot3_state.axis_current_position(OT3Axis.X) == 5
-    assert handle_message(GetLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
+    assert handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
 
 
 def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
