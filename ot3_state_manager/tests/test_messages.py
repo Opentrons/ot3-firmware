@@ -400,11 +400,13 @@ def test_valid_handle_get_location_message(ot3_state: OT3State) -> None:
         ack = handle_message(pulse_x_pos, ot3_state)
         assert ack == pulse_x_pos
     assert ot3_state.axis_current_position(OT3Axis.X) == 5
-    assert handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
+    assert (
+        handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
+    )
 
 
 def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
-    """Confirm that pulse messages work correctly."""
+    """Confirm that sync pin messages work correctly."""
     HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
     LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
@@ -415,8 +417,9 @@ def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
     assert ack == LOW_MESSAGE.to_bytes()
     assert not ot3_state.get_sync_pin_state()
 
+
 def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
-    """Confirm that pulse messages work correctly."""
+    """Confirm that get sync pin state messages work correctly."""
     HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
     LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)

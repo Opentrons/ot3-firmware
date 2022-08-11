@@ -142,11 +142,11 @@ class GetSyncPinStateMessage(Message):
 
     @staticmethod
     def build_message(message_content: bytes) -> GetSyncPinStateMessage:
-        """Convert message_content into a GetLocationMessage object."""
+        """Convert message_content into a GetSyncPinStateMessage object."""
         return GetSyncPinStateMessage()
 
     def to_bytes(self) -> bytes:
-        """Convert GetLocationMessage object into a sequence of hexadecimal bytes."""
+        """Convert GetSyncPinStateMessage object into a sequence of hexadecimal bytes."""
         return struct.pack(">BHB", MessageID.GET_SYNC_PIN_STATE.message_id, 0, 0)
 
 
