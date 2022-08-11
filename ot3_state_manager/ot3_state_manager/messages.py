@@ -102,6 +102,54 @@ class SyncPinMessage(Message):
         return struct.pack(">BHB", MessageID.SYNC_PIN.message_id, 0, self.state)
 
 
+@dataclass
+class GetLocationMessage(Message):
+    """Message to get current location of axis."""
+
+    axis: OT3Axis
+
+    def __eq__(self, other: Any) -> bool:
+        """Confirm that the 2 objects are equal"""
+        return isinstance(other, GetLocationMessage) and other.axis == self.axis
+
+    def __hash__(self) -> int:
+        """Return hash for instance."""
+        return hash(str(self))
+
+    @staticmethod
+    def build_message(message_content: bytes) -> GetLocationMessage:
+        """Convert message_content into a GetLocationMessage object."""
+        hw_id, _ = struct.unpack(">HB", message_content)
+        axis = MoveMessageHardware.from_id(hw_id).axis
+        return GetLocationMessage(axis=axis)
+
+    def to_bytes(self) -> bytes:
+        """Convert GetLocationMessage object into a sequence of hexadecimal bytes."""
+        hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
+        return struct.pack(">BHB", MessageID.GET_LOCATION.message_id, hw_id, 0)
+
+
+class GetSyncPinStateMessage(Message):
+    """Message to get current location of axis."""
+
+    def __eq__(self, other: Any) -> bool:
+        """Confirm that the 2 objects are equal"""
+        return isinstance(other, GetSyncPinStateMessage)
+
+    def __hash__(self) -> int:
+        """Return hash for instance."""
+        return hash(str(self))
+
+    @staticmethod
+    def build_message(message_content: bytes) -> GetSyncPinStateMessage:
+        """Convert message_content into a GetLocationMessage object."""
+        return GetSyncPinStateMessage()
+
+    def to_bytes(self) -> bytes:
+        """Convert GetLocationMessage object into a sequence of hexadecimal bytes."""
+        return struct.pack(">BHB", MessageID.GET_SYNC_PIN_STATE.message_id, 0, 0)
+
+
 @unique
 class MessageID(Enum):
     """Enum class defining the relationship between the message_id byte and the corresponding Message object."""
@@ -113,6 +161,8 @@ class MessageID(Enum):
 
     MOVE = 0x00, MoveMessage
     SYNC_PIN = 0x01, SyncPinMessage
+    GET_LOCATION = 0x02, GetLocationMessage
+    GET_SYNC_PIN_STATE = 0x03, GetSyncPinStateMessage
 
     @classmethod
     def from_id(cls, enum_id: int) -> MessageID:
@@ -138,6 +188,7 @@ def _parse_message(message_bytes: bytes) -> Message:
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
     """Function to handle incoming message, react to it accordingly, and respond."""
     error_response: Optional[str] = None
+    response = b""
     try:
         message = _parse_message(data)
     except ValueError as err:
@@ -149,12 +200,20 @@ def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
             ot3_state.pulse(message.axis, message.direction)
         elif isinstance(message, SyncPinMessage):
             ot3_state.set_sync_pin(message.state)
+        elif isinstance(message, GetLocationMessage):
+            loc = ot3_state.axis_current_position(message.axis)
+            response = str(loc).encode()
+        elif isinstance(message, GetSyncPinStateMessage):
+            state = 1 if ot3_state.get_sync_pin_state() else 0
+            response = str(state).encode()
+
         else:
             error_response = "Parsed to an unhandled message."
 
     if error_response is not None:
         response = f"ERROR: {error_response}".encode()
-    else:
+
+    if len(response) == 0:
         response = data
 
     return response
