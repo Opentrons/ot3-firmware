@@ -1,23 +1,17 @@
 """Script to generate hpp file with OT3StateManager message enums."""
 
 import argparse
-import os
 import sys
 from enum import Enum
 from typing import Type
 
+from header_generation_utils.header_generation_utils import (
+    generate_file_comment,
+    write_enum_cpp,
+)
+
 from ot3_state_manager.messages import MessageID
 from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
-
-# Have to do this weirdness because if this file gets moved to outside ot3_state_manager
-# then the opentrons module cannot be imported.
-module_path = os.path.normpath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-)
-sys.path.append(module_path)
-# Need to ignore E402 which is complaining about this import not being at the top
-# of the file. It can't be because the weird import above needs to be performed.
-from header_generation_utils import generate_file_comment, write_enum_cpp  # noqa: E402
 
 
 def get_message_id_enum() -> Type[Enum]:

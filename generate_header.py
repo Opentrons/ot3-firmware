@@ -7,7 +7,7 @@ import io
 import os.path
 import sys
 from types import ModuleType
-from header_generation_utils import (
+from header_generation_utils.header_generation_utils import (
     Block,
     Languge,
     generate_file_comment,
