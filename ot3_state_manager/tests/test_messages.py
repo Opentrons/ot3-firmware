@@ -42,6 +42,11 @@ from ot3_state_manager.util import Direction, SyncPinState
             "ERROR: Value for state must either be 0 (LOW) or 1 (HIGH). You passed 2.",
             id="SYNC_PIN_MESSAGE_INVALID_STATE",
         ),
+        pytest.param(
+            b"\xFF\x00\x00\x00",
+            "ERROR: Could not find MessageID with message_id: 255.",
+            id="INVALID_MESSAGE_ID",
+        )
     ],
 )
 def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
