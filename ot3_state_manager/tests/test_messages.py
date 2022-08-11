@@ -46,7 +46,7 @@ from ot3_state_manager.util import Direction, SyncPinState
             b"\xFF\x00\x00\x00",
             "ERROR: Could not find MessageID with message_id: 255.",
             id="INVALID_MESSAGE_ID",
-        )
+        ),
     ],
 )
 def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
