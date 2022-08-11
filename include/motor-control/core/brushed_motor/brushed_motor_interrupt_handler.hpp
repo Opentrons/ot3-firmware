@@ -64,8 +64,16 @@ class BrushedMotorInterruptHandler {
         // the compute the pid with the abs of move_delta because the pwm value
         // is always positive regardless of moving forward or backward
         double pid_output = hardware.update_control(std::abs(move_delta));
-        driver_hardware.update_pwm_settings(
-            std::clamp(int(pid_output), 0, 100));
+        // if we're done moving set the pwm to 0 to avoid wear on the motor
+        // which can happen when driving it at very low pwms which result in
+        // no movement
+        if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
+            driver_hardware.update_pwm_settings(0);
+        } else {
+            // TODO find the lower bound of pwd where the motor still moves
+            driver_hardware.update_pwm_settings(
+                std::clamp(int(pid_output), 0, 100));
+        }
         return move_delta;
     }
 
