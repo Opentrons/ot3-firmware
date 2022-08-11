@@ -5,6 +5,9 @@ description = "State Manager for OT3"
 license = "Apache-2.0"
 repository = "https://github.com/Opentrons/ot3-firmware"
 authors = ["Opentrons <engineering@opentrons.com>"]
+packages = [
+    { include = "header_generation_utils", from = "../"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
