@@ -197,7 +197,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
  */
 
 static motor_hardware::MotorHardware motor_hardware_right(
-    pin_configurations_right, &htim7, &htim3);
+    pin_configurations_right, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right);
 
@@ -205,7 +205,8 @@ static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16},
+        .microstep = 16,
+        .encoder_pulses_per_rev = 1000.0},
     motor_hardware_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
@@ -214,7 +215,7 @@ static motor_class::Motor motor_right{
     motor_queue_right};
 
 static motor_hardware::MotorHardware motor_hardware_left(
-    pin_configurations_left, &htim7, &htim2);
+    pin_configurations_left, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left);
 
@@ -222,7 +223,8 @@ static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16},
+        .microstep = 16,
+        .encoder_pulses_per_rev = 1000.0},
     motor_hardware_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
