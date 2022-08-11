@@ -22,6 +22,21 @@ MESSAGE_BYTE_LENGTH = MESSAGE_ID_BYTE_LENGTH + MESSAGE_CONTENT_BYTE_LENGTH
 STRUCT_FORMAT_STRING = f"B{MESSAGE_CONTENT_BYTE_LENGTH}s"
 
 
+@dataclass
+class Response:
+    """A socket response."""
+
+    content: Optional[str]
+    is_error: bool = False
+
+    def to_bytes(self) -> bytes:
+        """Convert Response object into bytes."""
+        if self.content is None:
+            return b""
+        message = f"ERROR: {self.content}" if self.is_error else self.content
+        return message.encode()
+
+
 class Message(ABC):
     """Parent level class for all Message objects.
 
@@ -187,33 +202,29 @@ def _parse_message(message_bytes: bytes) -> Message:
 
 def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
     """Function to handle incoming message, react to it accordingly, and respond."""
-    error_response: Optional[str] = None
-    response = b""
+    response = Response(content=None, is_error=False)
     try:
         message = _parse_message(data)
     except ValueError as err:
-        error_response = f"{err.args[0]}"
+        response.is_error = True
+        response.content = f"{err.args[0]}"
     except:  # noqa: E722
-        error_response = "Unhandled Exception"
+        response.is_error = True
+        response.content = "Unhandled Exception"
     else:
         if isinstance(message, MoveMessage):
             ot3_state.pulse(message.axis, message.direction)
+            response.content = data.decode()
         elif isinstance(message, SyncPinMessage):
             ot3_state.set_sync_pin(message.state)
+            response.content = data.decode()
         elif isinstance(message, GetAxisLocationMessage):
             loc = ot3_state.axis_current_position(message.axis)
-            response = str(loc).encode()
+            response.content = str(loc)
         elif isinstance(message, GetSyncPinStateMessage):
-            state = 1 if ot3_state.get_sync_pin_state() else 0
-            response = str(state).encode()
-
+            response.content = "1" if ot3_state.get_sync_pin_state() else "0"
         else:
-            error_response = "Parsed to an unhandled message."
+            response.content = "Parsed to an unhandled message."
+            response.is_error = True
 
-    if error_response is not None:
-        response = f"ERROR: {error_response}".encode()
-
-    if len(response) == 0:
-        response = data
-
-    return response
+    return response.to_bytes()
