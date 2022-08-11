@@ -141,7 +141,7 @@ class GetAxisLocationMessage(Message):
     def to_bytes(self) -> bytes:
         """Convert GetLocationMessage object into a sequence of hexadecimal bytes."""
         hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
-        return struct.pack(">BHB", MessageID.GET_LOCATION.message_id, hw_id, 0)
+        return struct.pack(">BHB", MessageID.GET_AXIS_LOCATION.message_id, hw_id, 0)
 
 
 class GetSyncPinStateMessage(Message):
@@ -176,7 +176,7 @@ class MessageID(Enum):
 
     MOVE = 0x00, MoveMessage
     SYNC_PIN = 0x01, SyncPinMessage
-    GET_LOCATION = 0x02, GetAxisLocationMessage
+    GET_AXIS_LOCATION = 0x02, GetAxisLocationMessage
     GET_SYNC_PIN_STATE = 0x03, GetSyncPinStateMessage
 
     @classmethod
