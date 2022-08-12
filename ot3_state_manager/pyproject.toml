@@ -17,6 +17,7 @@ pytest-cov = "2.10.1"
 pytest-xdist = "~2.2.1"
 pytest-asyncio = "~=0.18"
 mypy = "0.931"
+fastapi = "=0.68.1"
 flake8 = "~4.0.1"
 flake8-annotations = "~2.7.0"
 flake8-docstrings = "~1.6.0"
@@ -26,6 +27,7 @@ isort = "5.10.1"
 mdformat-gfm = "^0.3.5"
 mdformat_frontmatter = "^0.4.1"
 mdformat_footnote = "^0.1.1"
+uvicorn = "=0.14.0"
 
 # Expects the monorepo (opentrons) to be a sibling of this repo
 opentrons-hardware = { path = "../../opentrons/hardware", develop = true}
