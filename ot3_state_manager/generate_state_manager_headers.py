@@ -5,10 +5,7 @@ import sys
 from enum import Enum
 from typing import Type
 
-from header_generation_utils.header_generation_utils import (
-    generate_file_comment,
-    write_enum_cpp,
-)
+from header_generation_utils.utils import generate_file_comment, write_enum_cpp
 
 from ot3_state_manager.messages import MessageID
 from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState

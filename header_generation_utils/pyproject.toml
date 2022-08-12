@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "header_generation_utils"
+version = "0.1.0"
+description = "Helper functions to generate header files"
+license = "Apache-2.0"
+repository = "https://github.com/Opentrons/ot3-firmware"
+authors = ["Opentrons <engineering@opentrons.com>"]
+
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+
+
+[tool.pytest.ini_options]
+addopts = "--color=yes"
+asyncio_mode = "auto"
+
+[tool.mypy]
+ignore_missing_imports = false
+check_untyped_defs = true
+show_error_codes = true
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
