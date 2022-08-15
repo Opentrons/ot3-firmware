@@ -5,5 +5,5 @@
 */
 
 namespace interfaces {
-    void initialize_sim(int argc, char** argv);
+void initialize_sim(int argc, char** argv);
 };

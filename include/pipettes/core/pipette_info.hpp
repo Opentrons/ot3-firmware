@@ -126,7 +126,8 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
         const auto *iter = serial.cbegin();
         const auto *bound = serial.cbegin();
         std::advance(iter, PIPETTE_MODEL_FIELD_START);
-        std::advance(iter, PIPETTE_MODEL_FIELD_START + PIPETTE_MODEL_FIELD_LEN);
+        std::advance(bound,
+                     PIPETTE_MODEL_FIELD_START + PIPETTE_MODEL_FIELD_LEN);
         iter = bit_utils::bytes_to_int(iter, bound, model);
         return model;
     }
@@ -137,7 +138,7 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
         const auto *iter = serial.cbegin();
         const auto *bound = serial.cbegin();
         std::advance(iter, PIPETTE_NAME_FIELD_START);
-        std::advance(iter, PIPETTE_NAME_FIELD_START + PIPETTE_NAME_FIELD_LEN);
+        std::advance(bound, PIPETTE_NAME_FIELD_START + PIPETTE_NAME_FIELD_LEN);
         iter = bit_utils::bytes_to_int(iter, bound, name);
         return name;
     }
