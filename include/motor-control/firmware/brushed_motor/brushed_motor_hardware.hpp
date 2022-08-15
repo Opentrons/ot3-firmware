@@ -22,11 +22,11 @@ struct BrushedHardwareConfig {
 };
 
 // TODO tune the PID loop
-constexpr double PID_KP = 1;
-constexpr double PID_KI = 1;
-constexpr double PID_KD = 1;
-constexpr double PID_WL_H = 1;
-constexpr double PID_WL_L = 1;
+constexpr double PID_KP = 1.35;
+constexpr double PID_KI = 0.0005;
+constexpr double PID_KD = 0.01;
+//constexpr double PID_WL_H = 1;
+//constexpr double PID_WL_L = 1;
 
 class BrushedMotorHardware : public BrushedMotorHardwareIface {
   public:
@@ -36,8 +36,8 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
                          void* encoder_handle, double encoder_timer_freq)
         : pins(config),
           enc_handle(encoder_handle),
-          controller_loop{PID_KP,   PID_KI,  PID_KD, 1 / encoder_timer_freq,
-                          PID_WL_H, PID_WL_L} {}
+          controller_loop{PID_KP,   PID_KI,  PID_KD, 1 / encoder_timer_freq} {}
+                          //PID_WL_H, PID_WL_L} {}
     BrushedMotorHardware(const BrushedMotorHardware&) = default;
     auto operator=(const BrushedMotorHardware&)
         -> BrushedMotorHardware& = default;
