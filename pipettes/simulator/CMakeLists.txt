@@ -61,7 +61,7 @@ function(add_simulator_executable TARGET)
         message(FATAL_ERROR "Invalid pipette target provided.")
     endif ()
 
-    target_link_libraries(${TARGET} PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost)
+    target_link_libraries(${TARGET} PRIVATE can-core common-simulation freertos-pipettes pthread Boost::boost Boost::program_options)
 
     # Set up the include directories
     target_include_directories(
