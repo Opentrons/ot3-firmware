@@ -69,8 +69,12 @@ add_subdirectory(eeprom)
 add_subdirectory(bootloader)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
+message(CHECK_START "Checking if cross-compiling.")
 if(NOT ${CMAKE_CROSSCOMPILING})
+	message(CHECK_PASS "Not cross-compiling. Adding ot3_state_manager")
 	add_subdirectory(ot3_state_manager)
+else ()
+	message(CHECK_FAIL "You are cross-compiling. Not adding ot3_state_manager")
 endif ()
 
 find_package(Clang)
