@@ -51,7 +51,7 @@ foreach(AXIS IN LISTS AXES)
 
   target_ot_motor_control(gantry-${AXIS}-simulator)
 
-  target_link_libraries(gantry-${AXIS}-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost)
+  target_link_libraries(gantry-${AXIS}-simulator PRIVATE can-core common-simulation freertos-gantry pthread Boost::boost ot3_state_manager)
 
   set_target_properties(gantry-${AXIS}-simulator
         PROPERTIES CXX_STANDARD 20

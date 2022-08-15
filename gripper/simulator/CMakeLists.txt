@@ -52,7 +52,7 @@ target_ot_motor_control(gripper-simulator)
 
 target_i2c_simlib(gripper-simulator)
 
-target_link_libraries(gripper-simulator PRIVATE can-core common-simulation freertos-gripper pthread Boost::boost)
+target_link_libraries(gripper-simulator PRIVATE can-core common-simulation freertos-gripper pthread Boost::boost ot3_state_manager)
 
 set_target_properties(gripper-simulator
         PROPERTIES CXX_STANDARD 20

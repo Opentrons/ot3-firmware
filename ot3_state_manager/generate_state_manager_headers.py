@@ -14,7 +14,7 @@ from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
 def get_message_id_enum() -> Type[Enum]:
     """Creates a MessageID enum."""
     message_ids = [
-        ("_".join([message.name, "message_id"]).lower(), message.message_id)
+        (message.name.lower(), message.message_id)
         for message in MessageID
     ]
     # mypy does not execute code, so it cannot figure out what the types
@@ -28,7 +28,7 @@ def get_message_id_enum() -> Type[Enum]:
 def get_move_message_hw_id_enum() -> Type[Enum]:
     """Creates MoveMessage hw_id enum."""
     move_message_hw_ids = [
-        ("_".join([message.axis.name, "axis_hw_id"]).lower(), message.hw_id)
+        (message.axis.name.lower(), message.hw_id)
         for message in MoveMessageHardware
     ]
     # mypy does not execute code, so it cannot figure out what the types
