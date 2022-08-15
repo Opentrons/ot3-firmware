@@ -13,10 +13,7 @@ from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
 
 def get_message_id_enum() -> Type[Enum]:
     """Creates a MessageID enum."""
-    message_ids = [
-        (message.name.lower(), message.message_id)
-        for message in MessageID
-    ]
+    message_ids = [(message.name.lower(), message.message_id) for message in MessageID]
     # mypy does not execute code, so it cannot figure out what the types
     # of the values inside the tuple are.
     # see https://github.com/python/mypy/issues/5317
@@ -28,8 +25,7 @@ def get_message_id_enum() -> Type[Enum]:
 def get_move_message_hw_id_enum() -> Type[Enum]:
     """Creates MoveMessage hw_id enum."""
     move_message_hw_ids = [
-        (message.axis.name.lower(), message.hw_id)
-        for message in MoveMessageHardware
+        (message.axis.name.lower(), message.hw_id) for message in MoveMessageHardware
     ]
     # mypy does not execute code, so it cannot figure out what the types
     # of the values inside the tuple are.
