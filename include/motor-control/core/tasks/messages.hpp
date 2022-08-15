@@ -34,14 +34,16 @@ using BrushedMotorDriverTaskMessage =
 using BrushedMotionControllerTaskMessage =
     std::variant<std::monostate, can::messages::DisableMotorRequest,
                  can::messages::EnableMotorRequest,
+                 can::messages::GripperGripRequest,
                  can::messages::GripperHomeRequest,
-                 can::messages::GripperGripRequest, can::messages::StopRequest,
+                 can::messages::AddBrushedLinearMoveRequest,
+                 can::messages::StopRequest,
                  can::messages::ReadLimitSwitchRequest,
                  can::messages::EncoderPositionRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::GripperGripRequest, can::messages::GripperHomeRequest>;
+    can::messages::GripperGripRequest, can::messages::GripperHomeRequest, can::messages::AddBrushedLinearMoveRequest>;
 
 }  // namespace motor_control_task_messages
