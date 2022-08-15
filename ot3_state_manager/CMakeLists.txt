@@ -1,5 +1,6 @@
+message("Binary dir is ${CMAKE_CURRENT_BINARY_DIR}")
 add_custom_command(
-		OUTPUT ot3_state_manager_messages.hpp
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ot3_state_manager_messages.hpp
 		COMMENT "Generating ot3_state_manager_messages.hpp"
 		DEPENDS ot3_state_manager/generate_state_manager_headers.py
 		VERBATIM
