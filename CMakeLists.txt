@@ -69,6 +69,10 @@ add_subdirectory(eeprom)
 add_subdirectory(bootloader)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
+if(NOT ${CMAKE_CROSSCOMPILING})
+	add_subdirectory(ot3_state_manager)
+endif ()
+
 find_package(Clang)
 
 # c++ linting is here but python linting is in the subdir
@@ -141,8 +145,3 @@ add_custom_target(update-headers
         VERBATIM
         COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++"
         COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
-
-add_custom_target(update-ot3-state-manager-headers
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/ot3_state_manager
-		VERBATIM
-		COMMAND poetry run python3 generate_state_manager_headers.py ${CMAKE_SOURCE_DIR}/include/common/simulation/ot3_state_manager_messages.hpp)
