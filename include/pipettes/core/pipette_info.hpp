@@ -15,20 +15,24 @@ namespace pipette_info {
 using namespace can::ids;
 using namespace can::messages;
 
-// These defines are u    sed to help parse pipette serials, which are stored in
-// a structured binary +     ascii format:
+// These defines are used to help parse pipette serials, which are stored in
+// a structured binary + ascii format:
 // +-----+--------+------+
 // |0x00 |name    |binary|
 // |0x01 |        |      |
 // +-----+--------+------+
-// |0x02 |model   |binary|and individual data code [name]P1K [model]SV
-// [data_code] 20201907243 |0x03 |        |      |
+// |0x02 |model   |binary|
 // +-----+--------+------+
 // |0x04 |datecode|ascii |
 // |0x13 |        |      |
 // +-----+--------+------+
 // The binary name is a uint16 that is a lookup into the pipette name table.
-// The binary model is a uint16 that is a number.
+// The binary model is a uint16 that is a number. Finally, the datecode is
+// ascii and is the remnant of the serial. For instance, serial
+// P1KV3120210214A02 would be stored as
+// name: 0x0000 (p1000_single)
+// model: 0x001f (model 31)
+// datecode: "20210214A02" (datecode for second unit produced on 14/02/21)
 constexpr size_t PIPETTE_NAME_FIELD_START = 0;
 constexpr size_t PIPETTE_NAME_FIELD_LEN = 2;
 constexpr size_t PIPETTE_MODEL_FIELD_START = PIPETTE_NAME_FIELD_LEN;
