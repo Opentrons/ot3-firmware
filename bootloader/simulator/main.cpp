@@ -1,14 +1,12 @@
 #include <signal.h>
 
-
 #include <cstring>
-#include <string>
 #include <iostream>
 #include <memory>
-
-#include "boost/program_options.hpp"
+#include <string>
 
 #include "FreeRTOS.h"
+#include "boost/program_options.hpp"
 #include "bootloader/core/message_handler.h"
 #include "bootloader/core/node_id.h"
 #include "can/core/ids.hpp"
@@ -30,7 +28,8 @@ CANNodeId get_node_id(void) { return g_node_id; }
  * @param data data
  * @param length length of data
  */
-void on_can_message(void* ctx, uint32_t identifier, uint8_t* data, uint8_t length) {
+void on_can_message(void* ctx, uint32_t identifier, uint8_t* data,
+                    uint8_t length) {
     Message message;
     Message response;
     auto* canbus = static_cast<can::sim::bus::SimCANBus*>(ctx);
@@ -48,7 +47,7 @@ void on_can_message(void* ctx, uint32_t identifier, uint8_t* data, uint8_t lengt
         case handle_message_has_response:
             LOG("Message ok. Has response");
             canbus->send(response.arbitration_id.id, response.data,
-                        static_cast<CanFDMessageLength>(response.size));
+                         static_cast<CanFDMessageLength>(response.size));
             break;
         case handle_message_error:
             LOG("Message error.");
@@ -64,7 +63,7 @@ void signal_handler(int signum) {
     exit(signum);
 }
 
-auto node_from_arg(std::string const& val) -> CANNodeId{
+auto node_from_arg(std::string const& val) -> CANNodeId {
     if (val == "pipette_left") {
         return can_nodeid_pipette_left_bootloader;
     } else if (val == "pipette_right") {
@@ -84,9 +83,7 @@ auto node_from_arg(std::string const& val) -> CANNodeId{
 
 // this function is automatically called by program options to validate inputs;
 // if it throws, that's a validation failure.
-void validate(boost::any& v,
-              std::vector<std::string> const& values,
-              CANNodeId*,
+void validate(boost::any& v, std::vector<std::string> const& values, CANNodeId*,
               int) {
     po::validators::check_first_occurrence(v);
     auto const& string_val = po::validators::get_single_string(values);
@@ -99,12 +96,14 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     auto envdesc = po::options_description("");
     cmdlinedesc.add_options()("help,h", "Show this help message.");
     cmdlinedesc.add_options()(
-        "node,n", po::value<CANNodeId>()->default_value(can_nodeid_pipette_left_bootloader),
+        "node,n",
+        po::value<CANNodeId>()->default_value(
+            can_nodeid_pipette_left_bootloader),
         "Which node id to use. Maybe  May be specified in an "
         "environment variable called NODE_ID. Accepted values: pipette_left, "
         "pipette_right, gantry_x, gantry_y, head, gripper");
-    envdesc.add_options()("NODE_ID",
-                          po::value<CANNodeId>()->default_value(can_nodeid_pipette_left_bootloader));
+    envdesc.add_options()("NODE_ID", po::value<CANNodeId>()->default_value(
+                                         can_nodeid_pipette_left_bootloader));
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
 
     po::variables_map vm;
@@ -115,8 +114,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     }
     po::store(po::parse_environment(
                   envdesc,
-                  [can_arg_xform](
-                      const std::string& input_val) -> std::string {
+                  [can_arg_xform](const std::string& input_val) -> std::string {
                       if (input_val == "NODE_ID") {
                           return "node";
                       };
@@ -127,7 +125,6 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     return vm;
 }
 
-
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT("BOOTLOADER", []() -> const char* {
@@ -135,7 +132,8 @@ int main(int argc, char** argv) {
     });
 
     auto options = handle_options(argc, argv);
-    auto canbus = std::make_shared<can::sim::bus::SimCANBus>(can::sim::transport::create(options));
+    auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
+        can::sim::transport::create(options));
     g_node_id = options["node"].as<CANNodeId>();
     LOG("Running bootloader for node id %d", g_node_id);
     canbus->setup_node_id_filter(static_cast<can::ids::NodeId>(get_node_id()));
