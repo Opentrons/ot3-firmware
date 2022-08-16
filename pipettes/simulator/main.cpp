@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
 
 #include "FreeRTOS.h"
 #include "boost/program_options.hpp"
