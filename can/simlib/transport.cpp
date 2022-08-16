@@ -59,7 +59,8 @@ auto can::sim::transport::create(
     const boost::program_options::variables_map& options)
     -> std::shared_ptr<can::sim::transport::BusTransportBase> {
 #ifdef USE_SOCKETCAN
-    auto channel = options["can-channel"].as<std::string>() auto transport =
+    auto channel = options["can-channel"].as<std::string>();
+    auto transport =
         std::make_shared<can::sim::transport::socketcan::SocketCanTransport<
             freertos_synchronization::FreeRTOSCriticalSection>>(channel);
 #else
