@@ -56,10 +56,13 @@ class BrushedMotorInterruptHandler {
 
     auto controlled_move_to(int32_t encoder_position) -> int32_t {
         int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
-        if (move_delta > 0) {
-            hardware.positive_direction();
-        } else if (move_delta > 0) {
-            hardware.negative_direction();
+        if (!controlling) {
+            if (move_delta < 0) {
+                hardware.positive_direction();
+            } else if (move_delta > 0) {
+                hardware.negative_direction();
+            }
+            controlling = true;
         }
         // the compute the pid with the abs of move_delta because the pwm value
         // is always positive regardless of moving forward or backward
@@ -69,6 +72,7 @@ class BrushedMotorInterruptHandler {
         // no movement
         if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
             driver_hardware.update_pwm_settings(0);
+            controlling = false;
         } else {
             // TODO find the lower bound of pwd where the motor still moves
             driver_hardware.update_pwm_settings(
@@ -216,5 +220,6 @@ class BrushedMotorInterruptHandler {
     BrushedMove buffered_move = BrushedMove{};
     std::atomic<bool> holding = false;
     int32_t hold_encoder_position = 0;
+    std::atomic<bool> controlling = false;
 };
 }  // namespace brushed_motor_handler
