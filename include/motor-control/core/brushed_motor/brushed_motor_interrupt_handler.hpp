@@ -64,19 +64,21 @@ class BrushedMotorInterruptHandler {
             }
             controlling = true;
         }
-        // the compute the pid with the abs of move_delta because the pwm value
-        // is always positive regardless of moving forward or backward
-        double pid_output = hardware.update_control(std::abs(move_delta));
-        // if we're done moving set the pwm to 0 to avoid wear on the motor
-        // which can happen when driving it at very low pwms which result in
-        // no movement
         if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
-            driver_hardware.update_pwm_settings(0);
+            current_control_pwm = 0;
+            driver_hardware.update_pwm_settings(current_control_pwm);
             controlling = false;
         } else {
-            // TODO find the lower bound of pwd where the motor still moves
-            driver_hardware.update_pwm_settings(
-                std::clamp(int(pid_output), 0, 100));
+            // the compute the pid with the abs of move_delta because the pwm value
+            // is always positive regardless of moving forward or backward
+            double pid_output = hardware.update_control(std::abs(move_delta));
+            // Floor the PWM to 3 so that we still move when the pid output is so
+            // low that it would otherwise round to 0 since we
+            uint32_t pid_pwm_output = std::clamp(int(pid_output), 3, 100);
+            if (pid_pwm_output != current_control_pwm) {
+                current_control_pwm = pid_pwm_output;
+                driver_hardware.update_pwm_settings(current_control_pwm);
+            }
         }
         return move_delta;
     }
@@ -220,6 +222,7 @@ class BrushedMotorInterruptHandler {
     BrushedMove buffered_move = BrushedMove{};
     std::atomic<bool> holding = false;
     int32_t hold_encoder_position = 0;
+    uint32_t current_control_pwm = 0;
     std::atomic<bool> controlling = false;
 };
 }  // namespace brushed_motor_handler
