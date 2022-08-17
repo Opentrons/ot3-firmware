@@ -106,8 +106,18 @@ class EEProm : public I2CDeviceBase,
         static auto get_backing_file(std::string pathstr) -> std::FILE* {
             auto path = std::filesystem::path(pathstr);
             path.make_preferred();
-            LOG("Backing up eeprom with %s", path.c_str());
-            return std::fopen(path.c_str(), "a+b");
+            // We have to try and open this in r+ first so we don't destroy
+            // the contents if it exists, but if it doesn't exist we'll get
+            // a nullptr
+            if (FILE* filep = std::fopen(path.c_str(), "r+b")) {
+                LOG("Backing up eeprom with %s (preexisting)", path.c_str());
+                return filep;
+            } else {
+                // and have to try again with w+, which will create the file
+                // if it doesn't exist, but would overwrite it if it did
+                LOG("Backing up eeprom with %s (new)", path.c_str());
+                return std::fopen(path.c_str(), "w+b");
+            }
         }
         static auto get_prepped_backing_file(std::string pathstr)
             -> std::FILE* {
