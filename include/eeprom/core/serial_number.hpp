@@ -8,7 +8,7 @@ namespace eeprom {
 namespace serial_number {
 
 using SerialNumberType = std::array<uint8_t, addresses::serial_number_length>;
-using SerialDataCodeType = std::array<uint8_t, 12>;
+using SerialDataCodeType = std::array<uint8_t, 16>;
 /**
  * Class that reads and writes serial numbers.
  *

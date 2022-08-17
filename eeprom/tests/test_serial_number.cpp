@@ -12,8 +12,8 @@ SCENARIO("Writing serial number") {
     auto read_listener = MockListener{};
     auto sn_buffer = serial_number::SerialNumberType{};
     auto sn_data = serial_number::SerialNumberType{0x00, 0x01, 0x00, 0x1f, '2',
-                                                   '0', '2', '0', '1', '9', '0',
-                                                   '7', 'A', '0', '3'};
+                                                   '0',  '2',  '0',  '1',  '9',
+                                                   '0',  '7',  'A',  '0',  '3'};
     auto subject = serial_number::SerialNumberAccessor{
         queue_client, read_listener, sn_buffer};
 
