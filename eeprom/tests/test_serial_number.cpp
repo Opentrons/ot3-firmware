@@ -11,9 +11,9 @@ SCENARIO("Writing serial number") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = MockListener{};
     auto sn_buffer = serial_number::SerialNumberType{};
-    auto sn_data = serial_number::SerialNumberType{'P', '1', 'K', 'S', 'V', '2',
+    auto sn_data = serial_number::SerialNumberType{0x00, 0x01, 0x00, 0x1f, '2',
                                                    '0', '2', '0', '1', '9', '0',
-                                                   '7', '2', '4', '3', '0'};
+                                                   '7', 'A', '0', '3'};
     auto subject = serial_number::SerialNumberAccessor{
         queue_client, read_listener, sn_buffer};
 
@@ -30,7 +30,7 @@ SCENARIO("Writing serial number") {
                          0));
                 message::WriteEepromMessage write_message;
                 types::data_length expected_bytes;
-                for (ulong i = 0; i < queue_client.messages.size(); i++) {
+                for (size_t i = 0; i < queue_client.messages.size(); i++) {
                     expected_bytes =
                         ((sn_data.size() - (i * types::max_data_length)) >
                                  types::max_data_length
@@ -77,7 +77,7 @@ SCENARIO("Reading serial number") {
 
                 types::data_length expected_bytes;
                 message::ReadEepromMessage read_message;
-                for (ulong i = 0; i < queue_client.messages.size(); i++) {
+                for (size_t i = 0; i < queue_client.messages.size(); i++) {
                     expected_bytes =
                         ((addresses::serial_number_length -
                           (i * types::max_data_length)) > types::max_data_length
