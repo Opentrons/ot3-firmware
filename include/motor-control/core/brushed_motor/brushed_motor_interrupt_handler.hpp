@@ -157,13 +157,8 @@ class BrushedMotorInterruptHandler {
                     buffered_move.encoder_position) {
                     LOG("Attempting to add a gripper move to our current "
                         "position");
-                    finish_current_move(AckMessageId::stopped_by_condition);
-                    break;
+                    finish_current_move(AckMessageId::position_error);
                 }
-                // multiplied by -1 here because the "error" is the opposite
-                // direction we're going
-                LOG("Brushed motor moving %i µm",
-                    -1 * controlled_move_to(buffered_move.encoder_position));
                 break;
             case MoveStopCondition::none:
                 hardware.grip();
