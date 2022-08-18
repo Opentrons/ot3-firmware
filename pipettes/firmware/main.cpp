@@ -33,9 +33,7 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-//#include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
-//#include "motor_timer_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
@@ -168,6 +166,9 @@ auto main() -> int {
     utility_gpio_init();
     adc_init();
     initialize_enc(PIPETTE_TYPE);
+
+    delay_start(500);
+
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct);
