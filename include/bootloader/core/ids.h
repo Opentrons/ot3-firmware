@@ -125,12 +125,10 @@ typedef enum {
 /** Tool types detected on Head. */
 typedef enum {
     can_tooltype_undefined_tool = 0x0,
-    can_tooltype_pipette_96_chan = 0x1,
-    can_tooltype_pipette_384_chan = 0x2,
-    can_tooltype_pipette_single_chan = 0x3,
-    can_tooltype_pipette_multi_chan = 0x4,
-    can_tooltype_gripper = 0x5,
-    can_tooltype_nothing_attached = 0x6,
+    can_tooltype_pipette = 0x1,
+    can_tooltype_gripper = 0x2,
+    can_tooltype_nothing_attached = 0x3,
+    can_tooltype_tool_error = 0x4,
 } CANToolType;
 
 /** Sensor types available. */
