@@ -168,10 +168,8 @@ auto main() -> int {
     utility_gpio_init();
     adc_init();
     initialize_enc(PIPETTE_TYPE);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 
     delay_start(400);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
 
     auto id = pipette_mounts::detect_id();
 
