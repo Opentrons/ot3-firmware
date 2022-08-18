@@ -35,7 +35,6 @@
 #pragma GCC diagnostic ignored "-Wvolatile"
 #include "motor_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
-#include "stm32g4xx_hal.h"
 #pragma GCC diagnostic pop
 
 constexpr auto PIPETTE_TYPE = get_pipette_type();
