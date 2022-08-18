@@ -33,9 +33,9 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "stm32g4xx_hal.h"
 #include "motor_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
+#include "stm32g4xx_hal.h"
 #pragma GCC diagnostic pop
 
 constexpr auto PIPETTE_TYPE = get_pipette_type();
@@ -160,7 +160,6 @@ auto initialize_motor_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 }
-
 
 auto main() -> int {
     HardwareInit();
