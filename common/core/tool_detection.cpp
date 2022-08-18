@@ -9,7 +9,7 @@ constexpr static auto pipette_chan_z_bounds =
     ToolCheckBounds{.upper = 580, .lower = 540};
 
 constexpr static auto pipette_chan_a_bounds =
-    ToolCheckBounds{.upper = 2950, .lower = 3050};
+    ToolCheckBounds{.upper = 3050, .lower = 2900};
 
 constexpr static auto nothing_connected_z_bounds =
     ToolCheckBounds{.upper = 5, .lower = 0};
@@ -37,9 +37,6 @@ static std::array tool_list(std::to_array<Tool>({
     Tool{.tool_type = can::ids::ToolType::nothing_attached,
          .tool_carrier = Z_CARRIER,
          .bounds = nothing_connected_z_bounds},
-    Tool{.tool_type = can::ids::ToolType::undefined_tool,
-         .tool_carrier = Z_CARRIER,
-         .bounds = undefined_bounds},
     Tool{.tool_type = can::ids::ToolType::tool_error,
          .tool_carrier = Z_CARRIER,
          .bounds = failure_bounds},
@@ -49,9 +46,6 @@ static std::array tool_list(std::to_array<Tool>({
     Tool{.tool_type = can::ids::ToolType::nothing_attached,
          .tool_carrier = A_CARRIER,
          .bounds = nothing_connected_a_bounds},
-    Tool{.tool_type = can::ids::ToolType::undefined_tool,
-         .tool_carrier = A_CARRIER,
-         .bounds = undefined_bounds},
     Tool{.tool_type = can::ids::ToolType::tool_error,
          .tool_carrier = A_CARRIER,
          .bounds = failure_bounds},
@@ -65,7 +59,7 @@ static std::array tool_list(std::to_array<Tool>({
          .tool_carrier = GRIPPER_CARRIER,
          .bounds = failure_bounds},
     Tool{.tool_type = can::ids::ToolType::undefined_tool,
-         .tool_carrier = GRIPPER_CARRIER,
+         .tool_carrier = UNKNOWN,
          .bounds = undefined_bounds},
 }));
 

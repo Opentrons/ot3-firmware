@@ -8,12 +8,11 @@
 
 // Filter tests - no BDD here because these macros don't have
 // BDD equivalents
-TEMPLATE_TEST_CASE_SIG("tool list by pipette type", "",
+TEMPLATE_TEST_CASE_SIG("tool list by Tool Type type", "",
                        ((can::ids::ToolType TT), TT),
-                       (can::ids::ToolType::pipette_96_chan),
-                       (can::ids::ToolType::pipette_384_chan),
-                       (can::ids::ToolType::pipette_single_chan),
-                       (can::ids::ToolType::pipette_multi_chan),
+                       (can::ids::ToolType::pipette),
+                       (can::ids::ToolType::tool_error),
+                       (can::ids::ToolType::undefined_tool),
                        (can::ids::ToolType::gripper),
                        (can::ids::ToolType::nothing_attached)) {
     SECTION("lookup table filtering") {
@@ -52,7 +51,7 @@ SCENARIO("ot3 tools list for tool detection") {
             }
         }
         WHEN("you pass in an out-of-bounds read") {
-            uint16_t reading = 0;
+            uint16_t reading = 3200;
             THEN("the tool and carrier are undefined") {
                 REQUIRE(tool_detection::tooltype_from_reading(reading) ==
                         can::ids::ToolType::undefined_tool);
