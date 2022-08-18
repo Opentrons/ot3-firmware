@@ -321,6 +321,26 @@ void SystemCoreClockUpdate(void) {
     SystemCoreClock >>= tmp;
 }
 
+
+void __attribute__ ((noinline)) delay_start(int ms) {
+    SysTick->CTRL = 0;
+    SysTick->LOAD = 0;
+    SysTick->VAL = 0;
+    int cycles_per_mssec = SystemCoreClock / 1000;
+    const int total_instruction_cycles = 4;
+    int duration = cycles_per_mssec * ms;
+    int loops = duration / total_instruction_cycles;
+    asm ("movs r3, #0\n"
+         "loopstart:\n"
+         "adds r3, #1\n"
+         "cmp %[duration], r3\n"
+         "bne.n loopstart\n"
+    :
+    : [duration] "r" (loops)
+    : "r3", "cc", "memory");
+}
+
+
 void HardwareInit(void) {
     HAL_Init();
     SystemClock_Config();

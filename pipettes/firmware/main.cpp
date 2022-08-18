@@ -33,9 +33,8 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-//#include "motor_encoder_hardware.h"
+#include "stm32g4xx_hal.h"
 #include "motor_hardware.h"
-//#include "motor_timer_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
 
@@ -162,12 +161,18 @@ auto initialize_motor_tasks(
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 }
 
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
     adc_init();
     initialize_enc(PIPETTE_TYPE);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+    delay_start(400);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct);
