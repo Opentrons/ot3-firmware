@@ -3,6 +3,15 @@
 #include "hardware_config.h"
 #include "pipettes/core/pipette_type.h"
 
+static void enable_gpio_port(void* port) {
+    if (port == GPIOA) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+    } else if (port == GPIOB) {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+    } else if (port == GPIOC) {
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+    }
+}
 
 /**
  * @brief Tip Sense GPIO Initialization Function
@@ -14,10 +23,10 @@ void tip_sense_gpio_init() {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-
+    enable_gpio_port(GPIOC);
     if (pipette_type == NINETY_SIX_CHANNEL) {
         /* GPIO Ports Clock Enable */
-        __HAL_RCC_GPIOA_CLK_ENABLE();
+        enable_gpio_port(GPIOA);
         /*Configure GPIO pin : PC12, back tip sense */
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -28,8 +37,6 @@ void tip_sense_gpio_init() {
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     } else {
-        /* GPIO Ports Clock Enable */
-        __HAL_RCC_GPIOC_CLK_ENABLE();
         /*Configure GPIO pin : C2 */
         GPIO_InitStruct.Pin = GPIO_PIN_2;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -44,8 +51,7 @@ void tip_sense_gpio_init() {
  */
 void limit_switch_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-
+    enable_gpio_port(GPIOC);
     // Enable linear limit switch
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -59,8 +65,7 @@ void limit_switch_gpio_init() {
          */
         GPIO_InitStruct.Pin = GPIO_PIN_14;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-        __HAL_RCC_GPIOA_CLK_ENABLE();
+        enable_gpio_port(GPIOA);
         GPIO_InitStruct.Pin = GPIO_PIN_10;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     }
@@ -76,14 +81,7 @@ void LED_drive_gpio_init() {
     PipetteHardwarePin hardware =
         pipette_hardware_get_gpio(
             pipette_type, pipette_hardware_device_LED_drive);
-
-    /* GPIO Ports Clock Enable */
-    if (hardware.port == GPIOC) {
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-    }
-    else if (hardware.port == GPIOA) {
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-    }
+    enable_gpio_port(hardware.port);
 
     /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -99,7 +97,7 @@ void sync_drive_gpio_init() {
     PipetteHardwarePin sync_in_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_in);
     /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    enable_gpio_port(GPIOB);
 
     /*Configure GPIO pin*/
     GPIO_InitTypeDef sync_in_init = {0};
@@ -111,7 +109,7 @@ void sync_drive_gpio_init() {
     PipetteHardwarePin sync_out_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_out);
 
-    __HAL_RCC_GPIOC_CLK_ENABLE();
+    enable_gpio_port(GPIOC);
 
     GPIO_InitTypeDef sync_out_init = {0};
     sync_out_init.Pin = sync_out_hardware.pin;
@@ -123,22 +121,15 @@ void sync_drive_gpio_init() {
 
 void data_ready_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
-    PipetteHardwarePin hardware;
-    IRQn_Type exti_line = get_interrupt_line(pipette_type);
-    if (pipette_type == SINGLE_CHANNEL || pipette_type == EIGHT_CHANNEL)
-    {
-        hardware =
+    PipetteHardwarePin hardware =
             pipette_hardware_get_gpio(
                 pipette_type, pipette_hardware_device_data_ready_front);
-    }
-    else {
-        hardware =
-            pipette_hardware_get_gpio(
-        pipette_type, pipette_hardware_device_data_ready_front);
-        PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(pipette_type,
-                                                                     pipette_hardware_device_data_ready_rear);
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-
+    enable_gpio_port(hardware.port);
+    IRQn_Type exti_line = get_interrupt_line(pipette_type);
+    if (pipette_type != SINGLE_CHANNEL && pipette_type != EIGHT_CHANNEL) {
+        PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(
+            pipette_type, pipette_hardware_device_data_ready_rear);
+        enable_gpio_port(hardware_rear.port);
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = hardware_rear.pin;
@@ -151,9 +142,6 @@ void data_ready_gpio_init() {
         HAL_NVIC_SetPriority(exti_line, 10, 0);
         HAL_NVIC_EnableIRQ(exti_line);
     }
-
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
 
     /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
