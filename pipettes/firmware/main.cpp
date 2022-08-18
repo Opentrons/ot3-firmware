@@ -169,7 +169,7 @@ auto main() -> int {
     adc_init();
     initialize_enc(PIPETTE_TYPE);
 
-    delay_start(400);
+    delay_start(500);
 
     auto id = pipette_mounts::detect_id();
 
