@@ -50,9 +50,9 @@ class I2CMessageHandler {
 
     i2c::hardware::I2CBase &i2c_interface;
 
-    // Default timeout should be 60 seconds
+    // Default timeout should be 1 second
     // freertos expects this time to be in milliseconds
-    static constexpr auto TIMEOUT = 60000;
+    static constexpr auto TIMEOUT = 1000;
 };
 
 /**
