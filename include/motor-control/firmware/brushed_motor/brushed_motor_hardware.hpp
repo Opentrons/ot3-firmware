@@ -29,9 +29,9 @@ enum class ControlDirection {
 };
 
 // TODO tune the PID loop
-constexpr double PID_KP = 1.35;
-constexpr double PID_KI = 0.0005;
-constexpr double PID_KD = 0.01;
+constexpr double PID_KP = 0.05;
+constexpr double PID_KI =0;// 0.0005;
+constexpr double PID_KD =0;// 0.01;
 //constexpr double PID_WL_H = 1;
 //constexpr double PID_WL_L = 1;
 
