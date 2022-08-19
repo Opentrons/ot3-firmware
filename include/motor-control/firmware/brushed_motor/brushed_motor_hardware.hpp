@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <atomic>
 
 #include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
@@ -19,6 +20,12 @@ struct BrushedHardwareConfig {
     gpio::PinConfig enable;
     gpio::PinConfig limit_switch;
     gpio::PinConfig sync_in;
+};
+
+enum class ControlDirection {
+    positive,
+    negative,
+    unset
 };
 
 // TODO tune the PID loop
@@ -67,6 +74,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;
     ot_utils::pid::PID controller_loop;
+    std::atomic<ControlDirection> control_dir = ControlDirection::unset;
 };
 
 };  // namespace motor_hardware
