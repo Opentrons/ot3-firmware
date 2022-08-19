@@ -62,29 +62,28 @@ class BrushedMotorInterruptHandler {
 
     auto controlled_move_to(int32_t encoder_position) -> int32_t {
         int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
-        if (!controlling) {
+        uint32_t old_control_pwm = current_control_pwm;
+        // pass through early if we're already within acceptable position
+        if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
+            current_control_pwm = 0;
+        } else {
             if (move_delta < 0) {
                 hardware.positive_direction();
             } else if (move_delta > 0) {
                 hardware.negative_direction();
             }
-            controlling = true;
-        }
-        if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
-            current_control_pwm = 0;
-            driver_hardware.update_pwm_settings(current_control_pwm);
-            controlling = false;
-        } else {
             // the compute the pid with the abs of move_delta because the pwm value
             // is always positive regardless of moving forward or backward
             double pid_output = hardware.update_control(std::abs(move_delta));
-            // Floor the PWM to 3 so that we still move when the pid output is so
-            // low that it would otherwise round to 0 since we
-            uint32_t pid_pwm_output = std::clamp(int(pid_output), 3, 100);
-            if (pid_pwm_output != current_control_pwm) {
-                current_control_pwm = pid_pwm_output;
-                driver_hardware.update_pwm_settings(current_control_pwm);
-            }
+            // TODO we really need to figure out some v_ref/pwm interplay issues
+            // if there are pretty hard upper and lower boundries on PWM
+            // values that will move the gripper, but not move it so fast that
+            // the mcu crashes for some reason. these values see to be
+            // the good values for a vref of 0.5
+            current_control_pwm = std::clamp(int(pid_output), 7, 40);
+        }
+        if (old_control_pwm != current_control_pwm) {
+            driver_hardware.update_pwm_settings(current_control_pwm);
         }
         return move_delta;
     }
@@ -120,7 +119,7 @@ class BrushedMotorInterruptHandler {
                     // TODO write cap sensor move code
                     break;
             }
-        } else if (holding) {
+        } else if (holding && std::abs(hardware.get_encoder_pulses() - hold_encoder_position) > ACCEPTABLE_POSITION_ERROR) {
             controlled_move_to(hold_encoder_position);
         }
     }
@@ -224,6 +223,5 @@ class BrushedMotorInterruptHandler {
     std::atomic<bool> holding = false;
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
-    std::atomic<bool> controlling = false;
 };
 }  // namespace brushed_motor_handler
