@@ -62,9 +62,9 @@ void adc_init(void) {
         Error_Handler();
     }
     ADC_ChannelConfTypeDef sConfig = {0};
-    // Configure channel 16 (PB1) for single ended long duration read on
+    // Configure channel 15 (PB0) for single ended long duration read on
     // the tool ID pin
-    sConfig.Channel = ADC_CHANNEL_16;
+    sConfig.Channel = ADC_CHANNEL_15;
     sConfig.Rank = ADC_REGULAR_RANK_1;
     sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
