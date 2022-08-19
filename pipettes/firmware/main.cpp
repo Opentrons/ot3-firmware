@@ -58,8 +58,12 @@ static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_comms2 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
-class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
+class PipetteEEPromHardwareIface
+    : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
+    PipetteEEPromHardwareIface()
+        : eeprom::hardware_iface::EEPromHardwareIface(
+              eeprom::hardware_iface::EEPromChipType::ST_M24128) {}
     void set_write_protect(bool enable) final {
         if (enable) {
             disable_eeprom_write();
@@ -68,7 +72,7 @@ class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
         }
     }
 };
-static auto eeprom_hardware_iface = EEPromHardwareIface();
+static auto eeprom_hardware_iface = PipetteEEPromHardwareIface{};
 
 static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
