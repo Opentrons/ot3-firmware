@@ -6,7 +6,7 @@ SCENARIO("Initial mount detection") {
     GIVEN("A mount detector") {
         WHEN("Checking left-side voltages") {
             // Use a list of voltages that are rough midpoints of Z mount bounds
-            auto voltage = GENERATE(1860, 1430, 450, 920);
+            auto voltage = GENERATE(1490, 1430, 450, 920);
             THEN("the mount should always be left") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==
@@ -23,7 +23,7 @@ SCENARIO("Initial mount detection") {
             }
         }
         WHEN("Checking out of bounds voltages") {
-            auto voltage = GENERATE(3200, 0);
+            auto voltage = GENERATE(3001, 4095);
             THEN("the mount should always be left") {
                 INFO("Checking voltage " << voltage);
                 REQUIRE(pipette_mounts::decide_id(voltage) ==

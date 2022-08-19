@@ -126,11 +126,10 @@ enum class ErrorCode {
 
 /** Tool types detected on Head. */
 enum class ToolType {
-    undefined_tool = 0x0,
-    pipette = 0x1,
-    gripper = 0x2,
-    nothing_attached = 0x3,
-    tool_error = 0x4,
+    pipette = 0x0,
+    gripper = 0x1,
+    nothing_attached = 0x2,
+    tool_error = 0x3,
 };
 
 /** Sensor types available. */

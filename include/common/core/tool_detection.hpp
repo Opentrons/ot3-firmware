@@ -104,9 +104,9 @@ auto tool_from_reading(millivolts_t reading, Lookup with_lookup) -> Tool {
             return element;
         }
     }
-    return Tool{.tool_type = can::ids::ToolType::undefined_tool,
+    return Tool{.tool_type = can::ids::ToolType::tool_error,
                 .tool_carrier = Carrier::UNKNOWN,
-                .bounds = {0, 0}};
+                .bounds = {4094, 3001}};
 }
 
 inline auto tool_from_reading(millivolts_t reading) -> Tool {
@@ -148,18 +148,6 @@ auto filter_lookup_table(can::ids::ToolType filter_by, Lookup from_table) {
 template <typename Lookup>
 auto filter_lookup_table(Carrier filter_by, Lookup from_table) {
     return from_table;
-}
-
-template <typename Lookup>
-auto tool_from_reading(millivolts_t reading, Lookup with_lookup) -> Tool {
-    for (const auto& element : with_lookup) {
-        if (element.within_bounds(reading)) {
-            return element;
-        }
-    }
-    return Tool{.tool_type = can::ids::ToolType::undefined_tool,
-                .tool_carrier = Carrier::UNKNOWN,
-                .bounds = {0, 0}};
 }
 
 inline auto tool_from_reading(millivolts_t reading) -> Tool {
