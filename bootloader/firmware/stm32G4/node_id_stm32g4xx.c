@@ -46,7 +46,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* which_adc) {
 
         __HAL_RCC_GPIOB_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = GPIO_PIN_1;
+        GPIO_InitStruct.Pin = GPIO_PIN_0;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -62,9 +62,9 @@ static bool adc_init(void) {
         return false;
     }
     ADC_ChannelConfTypeDef sConfig = {0};
-    // Configure channel 16 (PB1) for single ended long duration read on
+    // Configure channel 15 (PB0) for single ended long duration read on
     // the tool ID pin
-    sConfig.Channel = ADC_CHANNEL_16;
+    sConfig.Channel = ADC_CHANNEL_15;
     sConfig.Rank = ADC_REGULAR_RANK_1;
     sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
