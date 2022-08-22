@@ -1,6 +1,9 @@
 #pragma once
 
+#include <boost/program_options.hpp>
+#include <functional>
 #include <memory>
+#include <string>
 
 namespace can::sim::transport {
 
@@ -49,6 +52,10 @@ class BusTransportBase {
  *
  * @return pointer to BusTransportBase.
  */
-auto create() -> std::shared_ptr<BusTransportBase>;
+auto create(const boost::program_options::variables_map& options)
+    -> std::shared_ptr<BusTransportBase>;
+auto add_options(boost::program_options::options_description& cmdline_desc,
+                 boost::program_options::options_description& env_desc)
+    -> std::function<std::string(std::string)>;
 
 }  // namespace can::sim::transport

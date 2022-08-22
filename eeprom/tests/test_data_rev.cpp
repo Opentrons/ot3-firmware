@@ -30,7 +30,7 @@ SCENARIO("Writing data revision") {
                          0));
                 message::WriteEepromMessage write_message;
                 types::data_length expected_bytes;
-                for (ulong i = 0; i < queue_client.messages.size(); i++) {
+                for (size_t i = 0; i < queue_client.messages.size(); i++) {
                     expected_bytes =
                         ((addresses::data_revision_length -
                           (i * types::max_data_length)) > types::max_data_length
@@ -76,7 +76,7 @@ SCENARIO("Reading data revision") {
 
                 types::data_length expected_bytes;
                 message::ReadEepromMessage read_message;
-                for (ulong i = 0; i < queue_client.messages.size(); i++) {
+                for (size_t i = 0; i < queue_client.messages.size(); i++) {
                     expected_bytes =
                         ((addresses::data_revision_length -
                           (i * types::max_data_length)) > types::max_data_length

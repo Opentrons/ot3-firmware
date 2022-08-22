@@ -1,6 +1,11 @@
 #include <signal.h>
 
+#include <iostream>
+#include <memory>
+#include <string>
+
 #include "FreeRTOS.h"
+#include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.h"
 #include "head/core/presence_sensing_driver.hpp"
@@ -16,10 +21,7 @@
 #include "spi/simulation/spi.hpp"
 #include "task.h"
 
-/**
- * The CAN bus.
- */
-static auto canbus = can::sim::bus::SimCANBus(can::sim::transport::create());
+namespace po = boost::program_options;
 
 /**
  * The SPI busses.
@@ -114,15 +116,37 @@ void signal_handler(int signum) {
     exit(signum);
 }
 
-int main() {
+auto handle_options(int argc, char** argv) -> po::variables_map {
+    auto cmdlinedesc = po::options_description("simulator for the OT-3 head");
+    auto envdesc = po::options_description("");
+    cmdlinedesc.add_options()("help,h", "Show this help message.");
+    auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
+    if (vm.count("help")) {
+        std::cout << cmdlinedesc << std::endl;
+        std::exit(0);
+    }
+    po::store(po::parse_environment(envdesc, can_arg_xform), vm);
+    po::notify(vm);
+    return vm;
+}
+
+int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
 
     LOG_INIT("HEAD", []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
 
+    auto options = handle_options(argc, argv);
+
+    auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
+        can::sim::transport::create(options));
+
     head_tasks::start_tasks(
-        canbus, motor_left.motion_controller, motor_right.motion_controller,
+        *canbus, motor_left.motion_controller, motor_right.motion_controller,
         presence_sense_driver, spi_comms_right, spi_comms_left,
         MotorDriverConfigurations, MotorDriverConfigurations);
 

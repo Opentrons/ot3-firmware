@@ -2,8 +2,11 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
+#include <string>
 
 #include "FreeRTOS.h"
+#include "boost/program_options.hpp"
 #include "can/core/ids.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
@@ -28,7 +31,7 @@
 
 constexpr auto PIPETTE_TYPE = get_pipette_type();
 
-static auto can_bus_1 = can::sim::bus::SimCANBus{can::sim::transport::create()};
+namespace po = boost::program_options;
 
 static spi::hardware::SimSpiDeviceBase spi_comms{};
 
@@ -55,35 +58,17 @@ static auto gear_interrupts =
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 
-static auto hdcsensor = hdc3020_simulator::HDC3020{};
-static auto capsensor = fdc1004_simulator::FDC1004{};
-static auto sim_eeprom = eeprom::simulator::EEProm{};
-static test_mocks::MockSensorHardware fake_sensor_hw{};
-mmr920C04_simulator::MMR920C04 pressuresensor(fake_sensor_hw);
-i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
-    {hdcsensor.get_address(), hdcsensor},
-    {capsensor.get_address(), capsensor},
-    {pressuresensor.get_address(), pressuresensor}};
-
-i2c::hardware::SimI2C::DeviceMap sensor_map_i2c3 = {
-    {sim_eeprom.get_address(), sim_eeprom}};
-static auto i2c3_comms = i2c::hardware::SimI2C{sensor_map_i2c3};
-
-static auto i2c1_comms = i2c::hardware::SimI2C{sensor_map_i2c1};
-
-static auto node_from_env(const char* env) -> can::ids::NodeId {
-    if (!env) {
-        LOG("On left mount by default");
+static auto node_from_options(const po::variables_map& options)
+    -> can::ids::NodeId {
+    auto side = options["mount"].as<std::string>();
+    if (side == "left") {
+        LOG("On left mount");
         return can::ids::NodeId::pipette_left;
-    }
-    if (strncmp(env, "left", strlen("left")) == 0) {
-        LOG("On left mount from env var");
-        return can::ids::NodeId::pipette_left;
-    } else if (strncmp(env, "right", strlen("right")) == 0) {
+    } else if (side == "right") {
         LOG("On right mount from env var");
         return can::ids::NodeId::pipette_right;
     } else {
-        LOG("On left mount from invalid env var");
+        LOG("On left mount from invalid option %s", side.c_str());
         return can::ids::NodeId::pipette_left;
     }
 }
@@ -100,7 +85,9 @@ static const char* PipetteTypeString[] = {
 auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
-    interfaces::gear_motor::GearMotionControl& gear_motion) {
+    interfaces::gear_motor::GearMotionControl& gear_motion,
+    test_mocks::MockSensorHardware& fake_sensor_hw,
+    eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -120,7 +107,9 @@ auto initialize_motor_tasks(
 auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
-    interfaces::gear_motor::UnavailableGearMotionControl&) {
+    interfaces::gear_motor::UnavailableGearMotionControl&,
+    test_mocks::MockSensorHardware& fake_sensor_hw,
+    eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -131,16 +120,74 @@ auto initialize_motor_tasks(
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
 }
 
-int main() {
+auto handle_options(int argc, char** argv) -> po::variables_map {
+    auto cmdlinedesc = po::options_description("simulator for OT-3 pipettes");
+    auto envdesc = po::options_description("");
+    cmdlinedesc.add_options()("help,h", "Show this help message.");
+    cmdlinedesc.add_options()(
+        "mount,m", po::value<std::string>()->default_value("left"),
+        "Which mount ('right' or 'left') to attach to. May be specified in an "
+        "environment variable called MOUNT.");
+    envdesc.add_options()("MOUNT",
+                          po::value<std::string>()->default_value("left"));
+    auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
+    auto eeprom_arg_xform =
+        eeprom::simulator::EEProm::add_options(cmdlinedesc, envdesc);
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
+    if (vm.count("help")) {
+        std::cout << cmdlinedesc << std::endl;
+        std::exit(0);
+    }
+    po::store(po::parse_environment(
+                  envdesc,
+                  [can_arg_xform, eeprom_arg_xform](
+                      const std::string& input_val) -> std::string {
+                      if (input_val == "MOUNT") {
+                          return "mount";
+                      };
+                      auto can_xformed = can_arg_xform(input_val);
+                      if (can_xformed != "") {
+                          return can_xformed;
+                      }
+                      auto eeprom_xformed = eeprom_arg_xform(input_val);
+                      return eeprom_xformed;
+                  }),
+              vm);
+    po::notify(vm);
+    return vm;
+}
+
+int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
+    auto options = handle_options(argc, argv);
+    auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
+    auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
+    auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(options);
+    auto fake_sensor_hw = std::make_shared<test_mocks::MockSensorHardware>();
+    auto pressuresensor =
+        std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
+    i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
+        {hdcsensor->get_address(), *hdcsensor},
+        {capsensor->get_address(), *capsensor},
+        {pressuresensor->get_address(), *pressuresensor}};
 
-    central_tasks::start_tasks(can_bus_1, node_from_env(std::getenv("MOUNT")));
-    peripheral_tasks::start_tasks(i2c3_comms, i2c1_comms, spi_comms);
-    initialize_motor_tasks(node_from_env(std::getenv("MOUNT")),
-                           motor_config.driver_configs, gear_motion_control);
+    i2c::hardware::SimI2C::DeviceMap sensor_map_i2c3 = {
+        {sim_eeprom->get_address(), *sim_eeprom}};
+    auto i2c3_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c3);
+
+    auto i2c1_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c1);
+    auto can_bus_1 = std::make_shared<can::sim::bus::SimCANBus>(
+        can::sim::transport::create(options));
+    auto node = node_from_options(options);
+    central_tasks::start_tasks(*can_bus_1, node);
+    peripheral_tasks::start_tasks(*i2c3_comms, *i2c1_comms, spi_comms);
+    initialize_motor_tasks(node, motor_config.driver_configs,
+                           gear_motion_control, *fake_sensor_hw, *sim_eeprom);
 
     vTaskStartScheduler();
 }

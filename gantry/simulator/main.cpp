@@ -4,6 +4,7 @@
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces_proto.hpp"
 #include "gantry/core/tasks_proto.hpp"
+#include "gantry/simulator/interfaces.hpp"
 #include "task.h"
 
 void signal_handler(int signum) {
@@ -11,7 +12,7 @@ void signal_handler(int signum) {
     exit(signum);
 }
 
-int main() {
+int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
 
     LOG_INIT(
@@ -21,6 +22,7 @@ int main() {
         });
 
     interfaces::initialize();
+    interfaces::initialize_sim(argc, argv);
 
     gantry::tasks::start_tasks(
         interfaces::get_can_bus(), interfaces::get_motor().motion_controller,

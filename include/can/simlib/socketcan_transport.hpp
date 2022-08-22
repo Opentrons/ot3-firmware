@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <string>
 
 #include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
@@ -20,7 +21,7 @@ namespace can::sim::transport::socketcan {
 template <synchronization::LockableProtocol CriticalSection>
 class SocketCanTransport : public can::sim::transport::BusTransportBase {
   public:
-    explicit SocketCanTransport(const char *address) : address{address} {}
+    explicit SocketCanTransport(std::string address) : address{address} {}
     ~SocketCanTransport() { close(); };
     SocketCanTransport(const SocketCanTransport &) = delete;
     SocketCanTransport(const SocketCanTransport &&) = delete;

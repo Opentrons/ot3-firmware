@@ -1,5 +1,13 @@
+#include "gantry/simulator/interfaces.hpp"
+
+#include <iostream>
+#include <memory>
+#include <string>
+
+#include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
+#include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces_proto.hpp"
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
@@ -8,11 +16,7 @@
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 #include "spi/simulation/spi.hpp"
 
-/**
- * The CAN bus.
- */
-static auto canbus = can::sim::bus::SimCANBus(can::sim::transport::create());
-
+namespace po = boost::program_options;
 /**
  * The SPI bus.
  */
@@ -76,10 +80,34 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,
                                                       motor_interface);
-
 void interfaces::initialize() {}
 
-auto interfaces::get_can_bus() -> can::bus::CanBus& { return canbus; }
+static po::variables_map options{};
+
+void interfaces::initialize_sim(int argc, char** argv) {
+    auto cmdlinedesc = po::options_description(
+        std::string("simulator for the OT-3 gantry ") +
+        ((get_axis_type() == gantry_x) ? "X" : "Y") + " axis");
+    auto envdesc = po::options_description("");
+    cmdlinedesc.add_options()("help,h", "Show this help message.");
+    auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
+
+    po::store(po::parse_command_line(argc, argv, cmdlinedesc), options);
+    if (options.count("help")) {
+        std::cout << cmdlinedesc << std::endl;
+        std::exit(0);
+    }
+    po::store(po::parse_environment(envdesc, can_arg_xform), options);
+    po::notify(options);
+}
+
+std::shared_ptr<can::bus::CanBus> canbus;
+
+auto interfaces::get_can_bus() -> can::bus::CanBus& {
+    canbus.reset(
+        new can::sim::bus::SimCANBus(can::sim::transport::create(options)));
+    return *canbus;
+}
 
 auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
     return spi_comms;

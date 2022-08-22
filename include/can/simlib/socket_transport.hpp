@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <boost/asio.hpp>
+#include <string>
 
 #include "can/core/message_core.hpp"
 #include "common/core/logging.h"
@@ -17,7 +18,7 @@ using boost::asio::ip::tcp;
 template <synchronization::LockableProtocol CriticalSection>
 class SocketTransport : public can::sim::transport::BusTransportBase {
   public:
-    explicit SocketTransport(const char *host, uint32_t port)
+    explicit SocketTransport(std::string host, uint32_t port)
         : host{host}, port{port}, socket{context} {}
     ~SocketTransport() {}
     SocketTransport(const SocketTransport &) = delete;

@@ -70,8 +70,10 @@ class CapacitiveMessageHandler {
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
             capacitance_handler.handle_ongoing_response(m);
+            LOG("continuous transaction response");
         } else {
             capacitance_handler.handle_baseline_response(m);
+            LOG("limited transaction response");
         }
     }
 
@@ -106,7 +108,7 @@ class CapacitiveMessageHandler {
     }
 
     void visit(can::messages::BaselineSensorRequest &m) {
-        LOG("Received request to read from %d sensor", m.sensor);
+        LOG("Received request to baseline %d sensor", m.sensor);
         capacitance_handler.reset_limited();
         capacitance_handler.set_number_of_reads(m.sample_rate);
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,

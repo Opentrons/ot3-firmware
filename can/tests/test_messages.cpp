@@ -228,7 +228,7 @@ SCENARIO("message serializing works") {
                 REQUIRE(len == sizeof(data));
                 // check that the data has been serialized till the end of the
                 // buffer
-                for (uint i = 0; i < data.size() && iter < arr.end(); i++) {
+                for (size_t i = 0; i < data.size() && iter < arr.end(); i++) {
                     REQUIRE(*(iter++) == data[i]);
                 }
             }
@@ -253,11 +253,11 @@ SCENARIO("message serializing works") {
                 // check length was serialized correctly
                 REQUIRE(len == sizeof(data));
                 // check that the data has been serialized
-                for (uint i = 0; i < data.size() && iter < arr.end(); i++) {
+                for (size_t i = 0; i < data.size() && iter < arr.end(); i++) {
                     REQUIRE(*(iter++) == data[i]);
                 }
                 // check that the remainder of the buffer is 0x00
-                for (uint i = data.size();
+                for (size_t i = data.size();
                      i < eeprom::types::max_data_length && iter < arr.end();
                      i++) {
                     REQUIRE(*(iter++) == 0x00);

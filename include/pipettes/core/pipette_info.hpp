@@ -15,29 +15,26 @@ namespace pipette_info {
 using namespace can::ids;
 using namespace can::messages;
 
-enum class PipetteName {
-    P1000_SINGLE = 0,
-    P1000_MULTI = 1,
-    P1000_96 = 2,
-    P1000_384 = 3,
-};
-
-struct PipetteInfo {
-    PipetteName name;
-    uint16_t model;
-    eeprom::serial_number::SerialNumberType serial;
-};
-
-// This is currently implemented in pipette-type-specific source files in core
-// e.g. pipettes/core/pipette_type_single.cpp but could probably also be parsed
-// from the serial number like the model below
-PipetteName get_name();
-
-// These defines are used to help parse pipette serials
-// A full Serial number looks like P1KSV20201907243 and contains the name, model
-// and individual data code [name]P1K [model]SV [data_code] 20201907243
+// These defines are used to help parse pipette serials, which are stored in
+// a structured binary + ascii format:
+// +-----+--------+------+
+// |0x00 |name    |binary|
+// |0x01 |        |      |
+// +-----+--------+------+
+// |0x02 |model   |binary|
+// +-----+--------+------+
+// |0x04 |datecode|ascii |
+// |0x13 |        |      |
+// +-----+--------+------+
+// The binary name is a uint16 that is a lookup into the pipette name table.
+// The binary model is a uint16 that is a number. Finally, the datecode is
+// ascii and is the remnant of the serial. For instance, serial
+// P1KV3120210214A02 would be stored as
+// name: 0x0000 (p1000_single)
+// model: 0x001f (model 31)
+// datecode: "20210214A02" (datecode for second unit produced on 14/02/21)
 constexpr size_t PIPETTE_NAME_FIELD_START = 0;
-constexpr size_t PIPETTE_NAME_FIELD_LEN = 3;
+constexpr size_t PIPETTE_NAME_FIELD_LEN = 2;
 constexpr size_t PIPETTE_MODEL_FIELD_START = PIPETTE_NAME_FIELD_LEN;
 constexpr size_t PIPETTE_MODEL_FIELD_LEN = 2;
 constexpr size_t PIPETTE_DATACODE_START =
@@ -95,7 +92,7 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
         writer.send_can_message(
             can::ids::NodeId::host,
             can::messages::PipetteInfoResponse{
-                .name = static_cast<uint16_t>(get_name()),
+                .name = get_name(sn_accessor_backing),
                 .model = get_model(sn_accessor_backing),
                 .serial = get_data_code(sn_accessor_backing)});
     }
@@ -130,13 +127,26 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
     static auto get_model(const eeprom::serial_number::SerialNumberType &serial)
         -> uint16_t {
         uint16_t model = 0;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        const auto *iter = serial.begin() + PIPETTE_MODEL_FIELD_START;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        iter = bit_utils::bytes_to_int(iter, iter + PIPETTE_MODEL_FIELD_LEN,
-                                       model);
+        const auto *iter = serial.cbegin();
+        const auto *bound = serial.cbegin();
+        std::advance(iter, PIPETTE_MODEL_FIELD_START);
+        std::advance(bound,
+                     PIPETTE_MODEL_FIELD_START + PIPETTE_MODEL_FIELD_LEN);
+        iter = bit_utils::bytes_to_int(iter, bound, model);
         return model;
     }
+
+    static auto get_name(const eeprom::serial_number::SerialNumberType &serial)
+        -> uint16_t {
+        uint16_t name = 0;
+        const auto *iter = serial.cbegin();
+        const auto *bound = serial.cbegin();
+        std::advance(iter, PIPETTE_NAME_FIELD_START);
+        std::advance(bound, PIPETTE_NAME_FIELD_START + PIPETTE_NAME_FIELD_LEN);
+        iter = bit_utils::bytes_to_int(iter, bound, name);
+        return name;
+    }
+
     static auto get_data_code(
         const eeprom::serial_number::SerialNumberType &serial)
         -> eeprom::serial_number::SerialDataCodeType {
