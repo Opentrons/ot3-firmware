@@ -75,12 +75,10 @@ class BrushedMotorInterruptHandler {
             // the compute the pid with the abs of move_delta because the pwm value
             // is always positive regardless of moving forward or backward
             double pid_output = hardware.update_control(std::abs(move_delta));
-            // TODO we really need to figure out some v_ref/pwm interplay issues
-            // if there are pretty hard upper and lower boundries on PWM
-            // values that will move the gripper, but not move it so fast that
-            // the mcu crashes for some reason. these values see to be
-            // the good values for a vref of 0.5
-            current_control_pwm = std::clamp(int(pid_output), 7, 40);
+            // TODO parameterize the floor here (and maybe the celing) 7 seems
+            // to be the value where the motor is strong enough to actually
+            // push down the limit switch so it seems a good floor for now
+            current_control_pwm = std::clamp(int(pid_output), 7, 100);
         }
         if (old_control_pwm != current_control_pwm) {
             driver_hardware.update_pwm_settings(current_control_pwm);
