@@ -11,9 +11,9 @@ namespace attached_tools {
 using namespace tool_detection;
 
 struct AttachedTools {
-    can::ids::ToolType z_motor = can::ids::ToolType::undefined_tool;
-    can::ids::ToolType a_motor = can::ids::ToolType::undefined_tool;
-    can::ids::ToolType gripper = can::ids::ToolType::undefined_tool;
+    can::ids::ToolType z_motor = can::ids::ToolType::nothing_attached;
+    can::ids::ToolType a_motor = can::ids::ToolType::nothing_attached;
+    can::ids::ToolType gripper = can::ids::ToolType::nothing_attached;
     AttachedTools() = default;
     AttachedTools(adc::MillivoltsReadings reading)
         : z_motor(tooltype_from_reading(

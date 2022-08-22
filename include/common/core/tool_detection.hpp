@@ -104,9 +104,9 @@ auto tool_from_reading(millivolts_t reading, Lookup with_lookup) -> Tool {
             return element;
         }
     }
-    return Tool{.tool_type = can::ids::ToolType::undefined_tool,
+    return Tool{.tool_type = can::ids::ToolType::tool_error,
                 .tool_carrier = Carrier::UNKNOWN,
-                .bounds = {0, 0}};
+                .bounds = {4094, 3001}};
 }
 
 inline auto tool_from_reading(millivolts_t reading) -> Tool {
@@ -157,9 +157,9 @@ auto tool_from_reading(millivolts_t reading, Lookup with_lookup) -> Tool {
             return element;
         }
     }
-    return Tool{.tool_type = can::ids::ToolType::undefined_tool,
+    return Tool{.tool_type = can::ids::ToolType::tool_error,
                 .tool_carrier = Carrier::UNKNOWN,
-                .bounds = {0, 0}};
+                .bounds = {4094, 3001}};
 }
 
 inline auto tool_from_reading(millivolts_t reading) -> Tool {

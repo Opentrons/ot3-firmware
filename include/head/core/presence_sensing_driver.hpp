@@ -64,7 +64,7 @@ class PresenceSensingDriver {
     [[nodiscard]] constexpr static auto should_use_new_value(
         can::ids::ToolType old_tool, can::ids::ToolType new_tool) -> bool {
         return (old_tool != new_tool) &&
-               (new_tool != can::ids::ToolType::undefined_tool);
+               (new_tool != can::ids::ToolType::nothing_attached);
     }
 
     [[nodiscard]] constexpr static auto should_update(
@@ -77,8 +77,8 @@ class PresenceSensingDriver {
     [[nodiscard]] constexpr static auto update_tool(can::ids::ToolType old_tool,
                                                     can::ids::ToolType new_tool)
         -> can::ids::ToolType {
-        return (new_tool == can::ids::ToolType::undefined_tool) ? old_tool
-                                                                : new_tool;
+        return (new_tool == can::ids::ToolType::nothing_attached) ? old_tool
+                                                                  : new_tool;
     }
     [[nodiscard]] constexpr static auto update_tools(
         const attached_tools::AttachedTools& old_tools,
