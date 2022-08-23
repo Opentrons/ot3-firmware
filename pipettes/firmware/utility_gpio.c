@@ -63,7 +63,7 @@ void limit_switch_gpio_init() {
          * Right gear -> PC14
          * Left gear -> PA10
          */
-        enable_gpio_port(GPIOC)
+        enable_gpio_port(GPIOC);
         GPIO_InitStruct.Pin = GPIO_PIN_14;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
         enable_gpio_port(GPIOA);
