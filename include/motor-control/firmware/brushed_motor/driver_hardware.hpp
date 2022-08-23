@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 
@@ -15,6 +16,8 @@ struct DacConfig {
 
 struct DriverConfig {
     float vref;
+    uint32_t pwm_min;
+    uint32_t pwm_max;
 };
 
 class BrushedMotorDriver : public BrushedMotorDriverIface {
@@ -36,6 +39,9 @@ class BrushedMotorDriver : public BrushedMotorDriverIface {
     void setup() final;
     void update_pwm_settings(uint32_t duty_cycle) final {
         callback(duty_cycle);
+    }
+    auto pwm_active_duty_clamp(uint32_t duty_cycle) -> uint32_t final {
+        return std::clamp(duty_cycle, conf.pwm_min, conf.pwm_max);
     }
 
   private:

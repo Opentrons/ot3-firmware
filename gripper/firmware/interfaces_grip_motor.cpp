@@ -15,7 +15,7 @@
 /**
  * Brushed motor pin configuration.
  */
-struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
+struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
     .pwm_1 =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -31,10 +31,13 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_pins {
             .port = GPIOC,
             .pin = GPIO_PIN_11,
             .active_setting = GPIO_PIN_SET},
-    .limit_switch = {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOC,
-        .pin = GPIO_PIN_2,
-        .active_setting = GPIO_PIN_SET},
+    .limit_switch =
+        {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_2,
+            .active_setting = GPIO_PIN_SET},
+    .encoder_interrupt_freq = GRIPPER_JAW_PWM_FREQ_HZ / GRIPPER_JAW_PWM_WIDTH;
+    .pid_kd = 0.05, .pid_ki = 0, .pid_kd = 0,
 };
 
 /**
@@ -54,14 +57,16 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins, &htim2,
-    GRIPPER_JAW_PWM_FREQ_HZ / GRIPPER_JAW_PWM_WIDTH);
+    brushed_motor_conf, &htim2);
 
 /**
  * The brushed motor driver hardware interface.
  */
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
-    dac_config, brushed_motor_driver::DriverConfig{.vref = 0.5}, update_pwm);
+    dac_config,
+    brushed_motor_driver::DriverConfig{
+        .vref = 0.5, .pwm_min = 7, .pwm_max = 100},
+    update_pwm);
 
 static brushed_motor::BrushedMotor grip_motor(
     lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
