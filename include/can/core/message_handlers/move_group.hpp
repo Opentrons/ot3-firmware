@@ -34,7 +34,8 @@ class BrushedMoveGroupHandler {
     using MessageType =
         std::variant<std::monostate, ClearAllMoveGroupsRequest,
                      ExecuteMoveGroupRequest, GetMoveGroupRequest,
-                     GripperGripRequest, GripperHomeRequest, AddBrushedLinearMoveRequest>;
+                     GripperGripRequest, GripperHomeRequest,
+                     AddBrushedLinearMoveRequest>;
     BrushedMoveGroupHandler(Brushed_Client &task_client)
         : task_client{task_client} {}
     BrushedMoveGroupHandler(const BrushedMoveGroupHandler &) = delete;

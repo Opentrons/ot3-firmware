@@ -9,11 +9,7 @@ namespace test_mocks {
 using namespace brushed_motor_driver;
 using namespace motor_hardware;
 
-enum class PWM_DIRECTION {
-    positive,
-    negative,
-    unset
-};
+enum class PWM_DIRECTION { positive, negative, unset };
 
 class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
   public:
@@ -25,14 +21,14 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     MockBrushedMotorHardware(MockBrushedMotorHardware&&) = default;
     auto operator=(MockBrushedMotorHardware&&)
         -> MockBrushedMotorHardware& = default;
-    void positive_direction() final {move_dir = PWM_DIRECTION::positive;}
-    void negative_direction() final {move_dir = PWM_DIRECTION::negative;}
+    void positive_direction() final { move_dir = PWM_DIRECTION::positive; }
+    void negative_direction() final { move_dir = PWM_DIRECTION::negative; }
     void activate_motor() final {}
     void deactivate_motor() final {}
     auto check_limit_switch() -> bool final { return ls_val; }
     void grip() final { is_gripping = true; }
     void ungrip() final { is_gripping = false; }
-    void stop_pwm() final {move_dir = PWM_DIRECTION::unset;}
+    void stop_pwm() final { move_dir = PWM_DIRECTION::unset; }
     auto check_sync_in() -> bool final { return sync_val; }
     auto get_encoder_pulses() -> int32_t final {
         return (motor_encoder_overflow_count << 16) + enc_val;
@@ -55,6 +51,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() { controller_loop.reset(); }
     double get_pid_controller_output() { return pid_controller_output; }
     PWM_DIRECTION get_direction() { return move_dir; }
+
   private:
     PWM_DIRECTION move_dir = PWM_DIRECTION::unset;
     int32_t motor_encoder_overflow_count = 0;

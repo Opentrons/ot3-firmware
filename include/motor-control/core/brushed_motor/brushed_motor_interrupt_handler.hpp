@@ -72,8 +72,8 @@ class BrushedMotorInterruptHandler {
             } else if (move_delta > 0) {
                 hardware.negative_direction();
             }
-            // the compute the pid with the abs of move_delta because the pwm value
-            // is always positive regardless of moving forward or backward
+            // the compute the pid with the abs of move_delta because the pwm
+            // value is always positive regardless of moving forward or backward
             double pid_output = hardware.update_control(std::abs(move_delta));
             // TODO parameterize the floor here (and maybe the celing) 7 seems
             // to be the value where the motor is strong enough to actually
@@ -117,7 +117,9 @@ class BrushedMotorInterruptHandler {
                     // TODO write cap sensor move code
                     break;
             }
-        } else if (holding && std::abs(hardware.get_encoder_pulses() - hold_encoder_position) > ACCEPTABLE_POSITION_ERROR) {
+        } else if (holding && std::abs(hardware.get_encoder_pulses() -
+                                       hold_encoder_position) >
+                                  ACCEPTABLE_POSITION_ERROR) {
             controlled_move_to(hold_encoder_position);
         }
     }

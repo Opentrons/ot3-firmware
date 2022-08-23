@@ -54,7 +54,8 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_pins, &htim2, GRIPPER_JAW_PWM_FREQ_HZ/GRIPPER_JAW_PWM_WIDTH);
+    brushed_motor_pins, &htim2,
+    GRIPPER_JAW_PWM_FREQ_HZ / GRIPPER_JAW_PWM_WIDTH);
 
 /**
  * The brushed motor driver hardware interface.
