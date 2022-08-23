@@ -51,18 +51,19 @@ void tip_sense_gpio_init() {
  */
 void limit_switch_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
-    enable_gpio_port(GPIOC);
+    enable_gpio_port(GPIOA);
     // Enable linear limit switch
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     if (pipette_type == NINETY_SIX_CHANNEL) {
         /*
          * Right gear -> PC14
          * Left gear -> PA10
          */
+        enable_gpio_port(GPIOC);
         GPIO_InitStruct.Pin = GPIO_PIN_14;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
         enable_gpio_port(GPIOA);

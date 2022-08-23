@@ -159,7 +159,7 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_6,
-                     .active_setting = GPIO_PIN_SET},
+                     .active_setting = GPIO_PIN_RESET},
                 .step =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
