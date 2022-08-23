@@ -36,7 +36,8 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .encoder_interrupt_freq = GRIPPER_JAW_PWM_FREQ_HZ / GRIPPER_JAW_PWM_WIDTH;
+    .encoder_interrupt_freq =
+        double(GRIPPER_JAW_PWM_FREQ_HZ) / double(GRIPPER_JAW_PWM_WIDTH),
     .pid_kd = 0.05, .pid_ki = 0, .pid_kd = 0,
 };
 
@@ -68,14 +69,15 @@ static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
         .vref = 0.5, .pwm_min = 7, .pwm_max = 100},
     update_pwm);
 
-static brushed_motor::BrushedMotor grip_motor(
-    lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
-        .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
-        .steps_per_rev = 0,
-        .microstep = 0,
-        .encoder_pulses_per_rev = 512,
-        .gear_ratio = 84.29},
-    brushed_motor_hardware_iface, brushed_motor_driver_iface, motor_queue);
+static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config {
+    .mech_config = lms::GearBoxConfig{.gear_diameter = 9}, .steps_per_rev = 0,
+    .microstep = 0, .encoder_pulses_per_rev = 512, .gear_ratio = 84.29
+};
+
+static brushed_motor::BrushedMotor grip_motor(gear_config,
+                                              brushed_motor_hardware_iface,
+                                              brushed_motor_driver_iface,
+                                              motor_queue);
 
 /**
  * Handler of brushed motor interrupts.
@@ -83,7 +85,7 @@ static brushed_motor::BrushedMotor grip_motor(
 static brushed_motor_handler::BrushedMotorInterruptHandler
     brushed_motor_interrupt(motor_queue, gripper_tasks::g_tasks::get_queues(),
                             brushed_motor_hardware_iface,
-                            brushed_motor_driver_iface);
+                            brushed_motor_driver_iface, gear_config);
 
 extern "C" void call_brushed_motor_handler(void) {
     brushed_motor_interrupt.run_interrupt();
