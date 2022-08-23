@@ -117,8 +117,14 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             THEN("The motor hardware proceeds to move") {
                 int32_t i = 0;
                 // simulate the motor moving so the pid can update
-                while (i < msg.encoder_position) {
-                    i += test_objs.driver.get_pwm_settings();
+                while (test_objs.reporter.messages.size() == 0) {
+                    if (test_objs.hw.get_direction() ==
+                        test_mocks::PWM_DIRECTION::positive) {
+                        i += test_objs.driver.get_pwm_settings();
+                    } else {
+                        i -= test_objs.driver.get_pwm_settings();
+                    }
+
                     test_objs.hw.set_encoder_value(i);
                     test_objs.handler.run_interrupt();
                     if (test_objs.driver.get_pwm_settings() == 0) {
