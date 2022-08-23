@@ -74,6 +74,9 @@ class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
     void setup() final {}
     void update_pwm_settings(uint32_t pwm_set) { pwm_val = pwm_set; }
     uint32_t get_pwm_settings() { return pwm_val; }
+    uint32_t pwm_active_duty_clamp(uint32_t duty_cycle) {
+        return std::clamp(duty_cycle, uint32_t(7), uint32_t(100));
+    }
 
   private:
     uint32_t pwm_val = 0;

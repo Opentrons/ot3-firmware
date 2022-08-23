@@ -20,27 +20,24 @@ struct BrushedHardwareConfig {
     gpio::PinConfig enable;
     gpio::PinConfig limit_switch;
     gpio::PinConfig sync_in;
+    double encoder_interrupt_freq;
+    double pid_kp;
+    double pid_ki;
+    double pid_kd;
 };
 
 enum class ControlDirection { positive, negative, unset };
-
-// TODO tune the PID loop
-constexpr double PID_KP = 0.05;
-constexpr double PID_KI = 0;  // 0.0005;
-constexpr double PID_KD = 0;  // 0.01;
-// constexpr double PID_WL_H = 1;
-// constexpr double PID_WL_L = 1;
 
 class BrushedMotorHardware : public BrushedMotorHardwareIface {
   public:
     ~BrushedMotorHardware() final = default;
     BrushedMotorHardware() = delete;
     BrushedMotorHardware(const BrushedHardwareConfig& config,
-                         void* encoder_handle, double encoder_timer_freq)
+                         void* encoder_handle)
         : pins(config),
           enc_handle(encoder_handle),
-          controller_loop{PID_KP, PID_KI, PID_KD, 1 / encoder_timer_freq} {}
-    // PID_WL_H, PID_WL_L} {}
+          controller_loop{config.pid_kp, config.pid_ki, config.pid_kd,
+                          1 / config.encoder_interrupt_freq} {}
     BrushedMotorHardware(const BrushedMotorHardware&) = default;
     auto operator=(const BrushedMotorHardware&)
         -> BrushedMotorHardware& = default;
