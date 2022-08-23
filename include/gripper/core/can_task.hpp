@@ -51,7 +51,8 @@ using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
         g_tasks::QueueClient>,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::GripperGripRequest, can::messages::GripperHomeRequest, can::messages::AddBrushedLinearMoveRequest>;
+    can::messages::GripperGripRequest, can::messages::GripperHomeRequest,
+    can::messages::AddBrushedLinearMoveRequest>;
 using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
                                             gripper_tasks::QueueClient>,

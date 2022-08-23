@@ -117,8 +117,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             THEN("The motor hardware proceeds to move") {
                 int32_t i = 0;
                 // simulate the motor moving so the pid can update
-                while(i < msg.encoder_position) {
-                    i +=test_objs.driver.get_pwm_settings();
+                while (i < msg.encoder_position) {
+                    i += test_objs.driver.get_pwm_settings();
                     test_objs.hw.set_encoder_value(i);
                     test_objs.handler.run_interrupt();
                     if (test_objs.driver.get_pwm_settings() == 0) {
@@ -132,7 +132,9 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
                 Ack read_ack = test_objs.reporter.messages.back();
                 // check if position is withen acceptable parameters
-                REQUIRE(std::abs(read_ack.encoder_position - msg.encoder_position) < ACCEPTABLE_POSITION_ERROR);
+                REQUIRE(
+                    std::abs(read_ack.encoder_position - msg.encoder_position) <
+                    ACCEPTABLE_POSITION_ERROR);
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }
