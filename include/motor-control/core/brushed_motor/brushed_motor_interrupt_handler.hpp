@@ -21,10 +21,6 @@ using namespace motor_messages;
  *
  */
 
-// TODO paramaterize this to the driver but this is the current
-// number of ticks per 0.01mm for gripper (6105.39307 tics/mm * 0.01)
-static constexpr int32_t ACCEPTABLE_POSITION_ERROR = 61;
-
 // TODO Investigate this value, I'm pretty sure that the timer actually gets
 // called every 3ms because the clock is 32K hz and the period is set to 100
 // which will call the interupt every 3.125 ish ms and therefor the hold off
@@ -43,11 +39,13 @@ class BrushedMotorInterruptHandler {
     BrushedMotorInterruptHandler(
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
         motor_hardware::BrushedMotorHardwareIface& hardware_iface,
-        brushed_motor_driver::BrushedMotorDriverIface& driver_iface)
+        brushed_motor_driver::BrushedMotorDriverIface& driver_iface,
+        lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gearbox_config)
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
-          driver_hardware(driver_iface) {}
+          driver_hardware(driver_iface),
+          gear_conf(gearbox_config) {}
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
         -> BrushedMotorInterruptHandler& = delete;
@@ -60,11 +58,16 @@ class BrushedMotorInterruptHandler {
         return queue.has_message_isr();
     }
 
+    // upon advice from hardware, 0.01mm is a good limit for percision
+    auto acceptable_position_error() -> int32_t {
+        return int32_t(gear_conf.get_encoder_pulses_per_mm() * 0.01);
+    }
+
     auto controlled_move_to(int32_t encoder_position) -> int32_t {
         int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
         uint32_t old_control_pwm = current_control_pwm;
         // pass through early if we're already within acceptable position
-        if (std::abs(move_delta) < ACCEPTABLE_POSITION_ERROR) {
+        if (std::abs(move_delta) < acceptable_position_error()) {
             current_control_pwm = 0;
         } else {
             if (move_delta < 0) {
@@ -102,7 +105,7 @@ class BrushedMotorInterruptHandler {
                 case MoveStopCondition::encoder_position:
                     if (std::abs(controlled_move_to(
                             buffered_move.encoder_position)) <
-                        ACCEPTABLE_POSITION_ERROR) {
+                        acceptable_position_error()) {
                         finish_current_move(AckMessageId::stopped_by_condition);
                     }
                     break;
@@ -119,7 +122,7 @@ class BrushedMotorInterruptHandler {
             }
         } else if (holding && std::abs(hardware.get_encoder_pulses() -
                                        hold_encoder_position) >
-                                  ACCEPTABLE_POSITION_ERROR) {
+                                  acceptable_position_error()) {
             controlled_move_to(hold_encoder_position);
         }
     }
@@ -219,6 +222,7 @@ class BrushedMotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::BrushedMotorHardwareIface& hardware;
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
+    lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
     BrushedMove buffered_move = BrushedMove{};
     std::atomic<bool> holding = false;
     int32_t hold_encoder_position = 0;

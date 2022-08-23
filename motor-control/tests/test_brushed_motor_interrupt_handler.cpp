@@ -7,6 +7,13 @@
 
 using namespace brushed_motor_handler;
 
+auto gear_config = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
+    .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+    .steps_per_rev = 0,
+    .microstep = 0,
+    .encoder_pulses_per_rev = 512,
+    .gear_ratio = 84.29};
+
 struct BrushedMotorContainer {
     test_mocks::MockBrushedMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::BrushedMove> queue{};
@@ -15,7 +22,7 @@ struct BrushedMotorContainer {
     BrushedMotorInterruptHandler<
         test_mocks::MockMessageQueue,
         test_mocks::MockBrushedMoveStatusReporterClient>
-        handler{queue, reporter, hw, driver};
+        handler{queue, reporter, hw, driver, gear_config};
 };
 
 SCENARIO("Brushed motor interrupt handler handle move messages") {
@@ -140,7 +147,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 // check if position is withen acceptable parameters
                 REQUIRE(
                     std::abs(read_ack.encoder_position - msg.encoder_position) <
-                    ACCEPTABLE_POSITION_ERROR);
+                    test_objs.handler.acceptable_position_error());
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }

@@ -38,11 +38,11 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
           enc_handle(encoder_handle),
           controller_loop{config.pid_kp, config.pid_ki, config.pid_kd,
                           1 / config.encoder_interrupt_freq} {}
-    BrushedMotorHardware(const BrushedMotorHardware&) = default;
+    BrushedMotorHardware(const BrushedMotorHardware&) = delete;
     auto operator=(const BrushedMotorHardware&)
-        -> BrushedMotorHardware& = default;
-    BrushedMotorHardware(BrushedMotorHardware&&) = default;
-    auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = default;
+        -> BrushedMotorHardware& = delete;
+    BrushedMotorHardware(BrushedMotorHardware&&) = delete;
+    auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = delete;
     void positive_direction() final;
     void negative_direction() final;
     void activate_motor() final;
