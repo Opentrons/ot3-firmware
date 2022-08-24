@@ -38,7 +38,11 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .active_setting = GPIO_PIN_SET},
     .encoder_interrupt_freq =
         double(GRIPPER_JAW_PWM_FREQ_HZ) / double(GRIPPER_JAW_PWM_WIDTH),
-    .pid_kd = 0.05, .pid_ki = 0, .pid_kd = 0,
+    // the expected behavior with these pid values is that the motor runs at
+    // full power until it's about 2mm away and then it slows down on that
+    // approach. final values as the error delta approachs 0.01mm is ~7 which
+    // is the floor of pwm values that still move the gripper
+    .pid_kd = 0.0008, .pid_ki = 0.0000125, .pid_kd = 0.000015,
 };
 
 /**

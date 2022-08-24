@@ -70,7 +70,7 @@ class SimBrushedMotorHardwareIface
     // these controller loop values were selected just because testing
     // does not emulate change in speed and these give us pretty good values
     // when the "motor" instantly goes to top speed then instantly stops
-    ot_utils::pid::PID controller_loop{1.1, 0.01, .1 / 32UL, 1.0 / 32UL};
+    ot_utils::pid::PID controller_loop{0.0008, 0.0000125, 0.000015, 1.0 / 320UL};
 };
 
 class SimGearMotorHardwareIface
