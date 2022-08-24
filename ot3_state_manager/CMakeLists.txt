@@ -7,7 +7,7 @@ add_custom_command(
 		COMMENT "Generating ot3_state_manager_messages.hpp"
 		VERBATIM
 		DEPENDS ${PYSRC_DIR}/messages.py
-		COMMAND poetry run python3 generate_state_manager_headers.py ${GENERATED_MESSAGE_HEADER}
+		COMMAND ${Poetry_EXECUTABLE} run python3 generate_state_manager_headers.py ${GENERATED_MESSAGE_HEADER}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		)
 add_custom_target(state-manager-headers DEPENDS ${GENERATED_MESSAGE_HEADER})
