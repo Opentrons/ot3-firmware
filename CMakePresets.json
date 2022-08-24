@@ -267,6 +267,22 @@
         "pipettes-384-simulator",
         "gripper-simulator"
       ]
+    },
+    {
+      "name": "ot3-state-manager",
+      "displayName": "OT-3 State Manager",
+      "description": "Build OT3 State Manager",
+      "configurePreset": "host",
+      "jobs": 4,
+      "targets": [
+        "ot3-state-manager-setup",
+        "ot3-state-manager-teardown",
+        "ot3-state-manager-build",
+        "ot3-state-manager-format",
+        "ot3-state-manager-lint",
+        "ot3-state-manager-test",
+        "ot3-state-manager-clean"
+      ]
     }
   ]
 }
