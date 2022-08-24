@@ -43,7 +43,7 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
         // approach. final values as the error delta approachs 0.01mm is ~7
         // which
         // is the floor of pwm values that still move the gripper
-        .pid_kd = 0.0008, .pid_ki = 0.0000125, .pid_kd = 0.000015,
+        .pid_kp = 0.0008, .pid_ki = 0.0000125, .pid_kd = 0.000015,
 };
 
 /**
