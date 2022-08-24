@@ -113,7 +113,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         .duty_cycle = 0,
                         .group_id = 0,
                         .seq_id = 0,
-                        .encoder_position = 2000,
+                        .encoder_position = 610539, // ~1cm
                         .stop_condition = MoveStopCondition::encoder_position};
         int32_t last_pid_output = test_objs.hw.get_pid_controller_output();
         REQUIRE(last_pid_output == 0.0);
@@ -125,11 +125,16 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 int32_t i = 0;
                 // simulate the motor moving so the pid can update
                 while (test_objs.reporter.messages.size() == 0) {
+                    // the approxomaite speed of the jaw movenent is 0.55mm/s * pwm
+                    // so the distance traveled in one interrupt time is 0.55mm/s*pwm*0.003s
+                    // just mulitpy that by get_encoder_pulses_per_mm to get the encoder delta
+                    int32_t encoder_delta = int32_t(test_objs.driver.get_pwm_settings() * 0.55 * (1.0/320.0) * gear_config.get_encoder_pulses_per_mm());
+
                     if (test_objs.hw.get_direction() ==
                         test_mocks::PWM_DIRECTION::positive) {
-                        i += test_objs.driver.get_pwm_settings();
+                        i += encoder_delta;
                     } else {
-                        i -= test_objs.driver.get_pwm_settings();
+                        i -= encoder_delta;
                     }
 
                     test_objs.hw.set_encoder_value(i);
