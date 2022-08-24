@@ -39,10 +39,11 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
     .encoder_interrupt_freq =
         double(GRIPPER_JAW_PWM_FREQ_HZ) / double(GRIPPER_JAW_PWM_WIDTH),
     // the expected behavior with these pid values is that the motor runs at
-    // full power until it's about 2mm away and then it slows down on that
-    // approach. final values as the error delta approachs 0.01mm is ~7 which
-    // is the floor of pwm values that still move the gripper
-    .pid_kd = 0.0008, .pid_ki = 0.0000125, .pid_kd = 0.000015,
+        // full power until it's about 2mm away and then it slows down on that
+        // approach. final values as the error delta approachs 0.01mm is ~7
+        // which
+        // is the floor of pwm values that still move the gripper
+        .pid_kd = 0.0008, .pid_ki = 0.0000125, .pid_kd = 0.000015,
 };
 
 /**
@@ -73,10 +74,12 @@ static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
         .vref = 0.5, .pwm_min = 7, .pwm_max = 100},
     update_pwm);
 
-static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config {
-    .mech_config = lms::GearBoxConfig{.gear_diameter = 9}, .steps_per_rev = 0,
-    .microstep = 0, .encoder_pulses_per_rev = 512, .gear_ratio = 84.29
-};
+static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
+    .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+    .steps_per_rev = 0,
+    .microstep = 0,
+    .encoder_pulses_per_rev = 512,
+    .gear_ratio = 84.29};
 
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,
