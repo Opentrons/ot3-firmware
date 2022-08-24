@@ -75,13 +75,13 @@ class BrushedMotorInterruptHandler {
             } else if (move_delta > 0) {
                 hardware.negative_direction();
             }
-            // the compute the pid with the abs of move_delta because the pwm
-            // value is always positive regardless of moving forward or backward
-            double pid_output = hardware.update_control(std::abs(move_delta));
+            double pid_output = hardware.update_control(move_delta);
             // The min and max PWM values for an active duty move are hardware
             // dependent so let the driver decide the bounds of the pid output
-            current_control_pwm =
-                driver_hardware.pwm_active_duty_clamp(int(pid_output));
+            // take the abs of the pid output because the pwm value has to be
+            // always positive
+            current_control_pwm = driver_hardware.pwm_active_duty_clamp(
+                int(std::abs(pid_output)));
         }
         if (old_control_pwm != current_control_pwm) {
             driver_hardware.update_pwm_settings(current_control_pwm);
