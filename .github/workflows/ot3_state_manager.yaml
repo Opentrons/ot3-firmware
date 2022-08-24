@@ -21,8 +21,13 @@ defaults:
 jobs:
   lint-test:
     name: 'ot3_state_manager linting and tests'
-    runs-on: 'ubuntu-18.04'
+    runs-on: 'ubuntu-20.04'
     steps:
+      - name: Update and install gcc-10 & g++-10
+        run: |
+          sudo apt update
+          sudo apt install gcc-10 g++-10
+
       - name: Checkout ot3-firmware repository
         uses: actions/checkout@v3
         with:
@@ -34,39 +39,35 @@ jobs:
           repository: "Opentrons/opentrons"
           path: opentrons
 
-      - name: Install poetry
-        run: pipx install poetry
-        working-directory: ot3-firmware/ot3_state_manager
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.8"
-          cache: poetry
 
-      # Have to configure the env after installing python because setup-python
-      # does not configure poetry to use the newly installed python version.
-      # Instead it uses the system python version which is wrong.
-      # https://github.com/actions/setup-python/issues/369#issuecomment-1086719372
-      - name: Configure Poetry
-        run: poetry env use 3.8
-        working-directory: ot3-firmware/ot3_state_manager
+      - name: Cache stm32-tools
+        uses: "actions/cache@v2"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
+
+      - name: Build Host
+        run: cmake --preset=host-gcc10 .
+        working-directory: ot3-firmware
 
       - name: Setup repo
-        run: make setup
-        shell: bash
-        working-directory: ot3-firmware/ot3_state_manager
+        run: cmake --build ./build-host/ --target ot3-state-manager-setup
+        working-directory: ot3-firmware
 
-      - name: "Lint"
-        run: make lint
-        working-directory: ot3-firmware/ot3_state_manager
+      - name: Lint
+        run: cmake --build ./build-host/ --target ot3-state-manager-setup
+        working-directory: ot3-firmware
 
-      - name: "Test"
-        run: make test
-        working-directory: ot3-firmware/ot3_state_manager
+      - name: Test
+        run: cmake --build ./build-host/ --target ot3-state-manager-test
+        working-directory: ot3-firmware
 
-      - name: 'Upload Coverage Report'
+      - name: Upload Coverage Report
         uses: 'codecov/codecov-action@v2'
         with:
-          files: ./ot3-state-manager/coverage.xml
+          files: ./ot3-firmware/ot3-state-manager/coverage.xml
           flags: ot3-state-manager

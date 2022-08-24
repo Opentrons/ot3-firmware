@@ -90,22 +90,45 @@ jobs:
     runs-on: "ubuntu-20.04"
     timeout-minutes: 10
     steps:
-      - run: |
+      - name: Update and install gcc-10 & g++-10
+        run: |
           sudo apt update
           sudo apt install gcc-10 g++-10
-      - uses: "actions/checkout@v2"
+
+      - name: Checkout ot3-firmware repository
+        uses: "actions/checkout@v2"
         with:
           fetch-depth: 0
-      - uses: "actions/cache@v2"
+          path: ot3-firmware
+
+      - name: Checkout opentrons repository
+        uses: actions/checkout@v3
+        with:
+          repository: "Opentrons/opentrons"
+          path: opentrons
+
+      - name: Cache stm32-tools
+        uses: "actions/cache@v2"
         with:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
+
       - name: "Configure"
         run: cmake --preset=host-gcc10 .
+        working-directory: ot3-firmware
+
       - name: 'Build and test'
         run: cmake --build ./build-host --target gripper-build-and-test
+        working-directory: ot3-firmware
+
+      - name: 'Setup ot3_state_manager'
+        run: cmake --build ./build-host/ --target ot3-state-manager-setup
+        working-directory: ot3-firmware
+
       - name: 'Build simulator'
         run: cmake --build ./build-host --target gripper-simulator
+        working-directory: ot3-firmware
+
       - name: "Upload artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
