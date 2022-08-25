@@ -21,6 +21,13 @@ using namespace motor_messages;
  *
  */
 
+enum class ControlState {
+    FORCE_CONTROLLING,
+    POSITION_CONTROLLING,
+    IDLE,
+    ACTIVE
+};
+
 // TODO Investigate this value, I'm pretty sure that the timer actually gets
 // called every 3ms because the clock is 32K hz and the period is set to 100
 // which will call the interupt every 3.125 ish ms and therefor the hold off
@@ -89,10 +96,10 @@ class BrushedMotorInterruptHandler {
     }
 
     void run_interrupt() {
-        if (!has_active_move && has_messages()) {
+        if (motor_state != ControlState::ACTIVE && has_messages()) {
             update_and_start_move();
         }
-        if (has_active_move) {
+        if (motor_state == ControlState::ACTIVE) {
             switch (buffered_move.stop_condition) {
                 // homing move
                 case MoveStopCondition::limit_switch:
@@ -119,7 +126,7 @@ class BrushedMotorInterruptHandler {
                     // TODO write cap sensor move code
                     break;
             }
-        } else if (holding) {
+        } else if (motor_state == ControlState::POSITION_CONTROLLING) {
             controlled_move_to(hold_encoder_position);
         }
     }
@@ -147,12 +154,13 @@ class BrushedMotorInterruptHandler {
 
     void update_and_start_move() {
         tick = 0;
-        has_active_move = queue.try_read_isr(&buffered_move);
+        if (queue.try_read_isr(&buffered_move)) {
+            motor_state = ControlState::ACTIVE;
+        }
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
         hardware.reset_control();
-        holding = false;
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
                 hardware.ungrip();
@@ -162,7 +170,7 @@ class BrushedMotorInterruptHandler {
                     buffered_move.encoder_position) {
                     LOG("Attempting to add a gripper move to our current "
                         "position");
-                    finish_current_move(AckMessageId::position_error);
+                    finish_current_move(AckMessageId::stopped_by_condition);
                 }
                 break;
             case MoveStopCondition::none:
@@ -185,14 +193,16 @@ class BrushedMotorInterruptHandler {
 
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
-        has_active_move = false;
         // if we were instructed to move to particular spot maintain that
         // position otherwise we want to continue to apply pressure
         if (buffered_move.stop_condition ==
             MoveStopCondition::encoder_position) {
             hold_encoder_position = buffered_move.encoder_position;
-            holding = true;
+            motor_state = ControlState::POSITION_CONTROLLING;
+        } else {
+            motor_state = ControlState::FORCE_CONTROLLING;
         }
+
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(),
                                                ack_msg_id);
@@ -210,7 +220,6 @@ class BrushedMotorInterruptHandler {
         return buffered_move;
     }
 
-    bool has_active_move = false;
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
 
@@ -221,7 +230,7 @@ class BrushedMotorInterruptHandler {
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
     BrushedMove buffered_move = BrushedMove{};
-    std::atomic<bool> holding = false;
+    ControlState motor_state = ControlState::IDLE;
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
     int32_t acceptable_position_error = 0;
