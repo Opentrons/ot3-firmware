@@ -113,7 +113,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         .duty_cycle = 0,
                         .group_id = 0,
                         .seq_id = 0,
-                        .encoder_position = 610539,  // ~1cm
+                        .encoder_position = 61054,  // ~1cm
                         .stop_condition = MoveStopCondition::encoder_position};
         int32_t last_pid_output = test_objs.hw.get_pid_controller_output();
         REQUIRE(last_pid_output == 0.0);
