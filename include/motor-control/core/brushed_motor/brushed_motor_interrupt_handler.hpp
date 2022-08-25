@@ -70,9 +70,9 @@ class BrushedMotorInterruptHandler {
             current_control_pwm = 0;
         } else {
             if (move_delta < 0) {
-                hardware.positive_direction();
+                hardware.grip();
             } else if (move_delta > 0) {
-                hardware.negative_direction();
+                hardware.ungrip();
             }
             double pid_output = hardware.update_control(move_delta);
             // The min and max PWM values for an active duty move are hardware
