@@ -12,6 +12,9 @@
 
 #pragma GCC diagnostic pop
 
+constexpr uint32_t PWM_MAX = 100;
+constexpr uint32_t PWM_MIN = 7;
+
 /**
  * Brushed motor pin configuration.
  */
@@ -38,12 +41,27 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .active_setting = GPIO_PIN_SET},
     .encoder_interrupt_freq =
         double(GRIPPER_JAW_PWM_FREQ_HZ) / double(GRIPPER_JAW_PWM_WIDTH),
-    // the expected behavior with these pid values is that the motor runs at
-        // full power until it's about 2mm away and then it slows down on that
-        // approach. final values as the error delta approachs 0.01mm is ~7
-        // which
-        // is the floor of pwm values that still move the gripper
-        .pid_kp = 0.0008, .pid_ki = 0.0000125, .pid_kd = 0.000015,
+
+    /* the expected behavior with these pid values is that the motor runs at
+     * full power until it's about 2mm away and then it slows down on that
+     * approach. final values as the error delta approachs 0.01mm is ~7
+     * which is the floor of pwm values that still move the gripper
+     * this 7 is from the windup limits, but over very short moves( <
+     *
+     * the most significant value here is the proportional gain
+     * when the distance error is > 2mm (12210 encoder ticks)
+     * the proportional term will be > 100 and reduce linearly
+     * the derivative gain here was chosen so that it helps make the slowdown
+     * when the distance error < 2mm but the term's significane drops off
+     * pwm drops below 20 (20 pwm is about 200 encoder pulses/ interrupt)
+     * (0.000015 * 200 / (1/320)) ~= 1
+     *
+     * and finally the intergral gain helps ramp up to the -7 or +7 during moves
+     * it needs moves of ~5mm to hit this but the clamping of the pwm control
+     * will make sure that the total output is still floored to 7
+     */
+        .pid_kp = 0.008, .pid_ki = 0.0045, .pid_kd = 0.000015,
+    .wl_high = PWM_MIN, .wl_low = (-1 * PWM_MIN)
 };
 
 /**
@@ -71,7 +89,7 @@ static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     dac_config,
     brushed_motor_driver::DriverConfig{
-        .vref = 0.5, .pwm_min = 7, .pwm_max = 100},
+        .vref = 0.5, .pwm_min = PWM_MIN, .pwm_max = PWM_MAX},
     update_pwm);
 
 static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
