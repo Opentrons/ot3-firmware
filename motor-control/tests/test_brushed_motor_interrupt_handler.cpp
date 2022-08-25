@@ -156,7 +156,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 // check if position is withen acceptable parameters
                 REQUIRE(
                     std::abs(read_ack.encoder_position - msg.encoder_position) <
-                    test_objs.handler.acceptable_position_error());
+                    int32_t(gear_config.get_encoder_pulses_per_mm() * 0.01));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }

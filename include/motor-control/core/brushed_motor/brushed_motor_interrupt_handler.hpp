@@ -45,7 +45,11 @@ class BrushedMotorInterruptHandler {
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
           driver_hardware(driver_iface),
-          gear_conf(gearbox_config) {}
+          gear_conf(gearbox_config) {
+        // upon advice from hardware, 0.01mm is a good limit for precision
+        acceptable_position_error =
+            int32_t(gear_conf.get_encoder_pulses_per_mm() * 0.01);
+    }
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
         -> BrushedMotorInterruptHandler& = delete;
@@ -58,16 +62,11 @@ class BrushedMotorInterruptHandler {
         return queue.has_message_isr();
     }
 
-    // upon advice from hardware, 0.01mm is a good limit for percision
-    auto acceptable_position_error() -> int32_t {
-        return int32_t(gear_conf.get_encoder_pulses_per_mm() * 0.01);
-    }
-
     auto controlled_move_to(int32_t encoder_position) -> int32_t {
         int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
         uint32_t old_control_pwm = current_control_pwm;
         // pass through early if we're already within acceptable position
-        if (std::abs(move_delta) < acceptable_position_error()) {
+        if (std::abs(move_delta) < acceptable_position_error) {
             current_control_pwm = 0;
         } else {
             if (move_delta < 0) {
@@ -105,7 +104,7 @@ class BrushedMotorInterruptHandler {
                 case MoveStopCondition::encoder_position:
                     if (std::abs(controlled_move_to(
                             buffered_move.encoder_position)) <
-                        acceptable_position_error()) {
+                        acceptable_position_error) {
                         finish_current_move(AckMessageId::stopped_by_condition);
                     }
                     break;
@@ -122,7 +121,7 @@ class BrushedMotorInterruptHandler {
             }
         } else if (holding && std::abs(hardware.get_encoder_pulses() -
                                        hold_encoder_position) >
-                                  acceptable_position_error()) {
+                                  acceptable_position_error) {
             controlled_move_to(hold_encoder_position);
         }
     }
@@ -227,5 +226,6 @@ class BrushedMotorInterruptHandler {
     std::atomic<bool> holding = false;
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
+    int32_t acceptable_position_error = 0;
 };
 }  // namespace brushed_motor_handler
