@@ -26,8 +26,14 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void activate_motor() final {}
     void deactivate_motor() final {}
     auto check_limit_switch() -> bool final { return ls_val; }
-    void grip() final { is_gripping = true; }
-    void ungrip() final { is_gripping = false; }
+    void grip() final {
+        positive_direction();
+        is_gripping = true;
+    }
+    void ungrip() final {
+        negative_direction();
+        is_gripping = false;
+    }
     void stop_pwm() final { move_dir = PWM_DIRECTION::unset; }
     auto check_sync_in() -> bool final { return sync_val; }
     auto get_encoder_pulses() -> int32_t final {
