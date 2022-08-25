@@ -24,6 +24,8 @@ struct BrushedHardwareConfig {
     double pid_kp;
     double pid_ki;
     double pid_kd;
+    double wl_high;
+    double wl_low;
 };
 
 enum class ControlDirection { positive, negative, unset };
@@ -36,8 +38,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
                          void* encoder_handle)
         : pins(config),
           enc_handle(encoder_handle),
-          controller_loop{config.pid_kp, config.pid_ki, config.pid_kd,
-                          1 / config.encoder_interrupt_freq} {}
+          controller_loop{config.pid_kp,  config.pid_ki,
+                          config.pid_kd,  1.F / config.encoder_interrupt_freq,
+                          config.wl_high, config.wl_low} {}
     BrushedMotorHardware(const BrushedMotorHardware&) = delete;
     auto operator=(const BrushedMotorHardware&)
         -> BrushedMotorHardware& = delete;
