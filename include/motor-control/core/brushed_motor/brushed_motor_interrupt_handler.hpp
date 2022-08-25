@@ -35,6 +35,9 @@ enum class ControlState {
 static constexpr uint32_t HOLDOFF_TICKS =
     32;  // hold off for 1 ms (with a 32k Hz timer)
 
+// upon advice from hardware, 0.01mm is a good limit for precision
+static constexpr double ACCEPTABLE_DISTANCE_TOLLERANCE_MM = 0.01;
+
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
 requires MessageQueue<QueueImpl<BrushedMove>, BrushedMove>
@@ -53,9 +56,9 @@ class BrushedMotorInterruptHandler {
           hardware(hardware_iface),
           driver_hardware(driver_iface),
           gear_conf(gearbox_config) {
-        // upon advice from hardware, 0.01mm is a good limit for precision
         acceptable_position_error =
-            int32_t(gear_conf.get_encoder_pulses_per_mm() * 0.01);
+            int32_t(gear_conf.get_encoder_pulses_per_mm() *
+                    ACCEPTABLE_DISTANCE_TOLLERANCE_MM);
     }
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
