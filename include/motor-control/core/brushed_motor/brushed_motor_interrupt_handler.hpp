@@ -95,39 +95,48 @@ class BrushedMotorInterruptHandler {
         return move_delta;
     }
 
-    void run_interrupt() {
-        if (motor_state != ControlState::ACTIVE && has_messages()) {
-            update_and_start_move();
+    void execute_active_move() {
+        switch (buffered_move.stop_condition) {
+            // homing move
+            case MoveStopCondition::limit_switch:
+                if (limit_switch_triggered()) {
+                    homing_stopped();
+                }
+                break;
+            // linear move
+            case MoveStopCondition::encoder_position:
+                if (std::abs(
+                        controlled_move_to(buffered_move.encoder_position)) <
+                    acceptable_position_error) {
+                    finish_current_move(AckMessageId::stopped_by_condition);
+                }
+                break;
+            // grip move
+            case MoveStopCondition::none:
+                if (is_sensing() && is_idle) {
+                    finish_current_move(
+                        AckMessageId::complete_without_condition);
+                }
+                break;
+            case MoveStopCondition::cap_sensor:
+                // TODO write cap sensor move code
+                break;
         }
-        if (motor_state == ControlState::ACTIVE) {
-            switch (buffered_move.stop_condition) {
-                // homing move
-                case MoveStopCondition::limit_switch:
-                    if (limit_switch_triggered()) {
-                        homing_stopped();
-                    }
-                    break;
-                // linear move
-                case MoveStopCondition::encoder_position:
-                    if (std::abs(controlled_move_to(
-                            buffered_move.encoder_position)) <
-                        acceptable_position_error) {
-                        finish_current_move(AckMessageId::stopped_by_condition);
-                    }
-                    break;
-                // grip move
-                case MoveStopCondition::none:
-                    if (is_sensing() && is_idle) {
-                        finish_current_move(
-                            AckMessageId::complete_without_condition);
-                    }
-                    break;
-                case MoveStopCondition::cap_sensor:
-                    // TODO write cap sensor move code
-                    break;
-            }
+    }
+
+    void execute_idle_move() {
+        if (has_messages()) {
+            update_and_start_move();
         } else if (motor_state == ControlState::POSITION_CONTROLLING) {
             controlled_move_to(hold_encoder_position);
+        }
+    }
+
+    void run_interrupt() {
+        if (motor_state == ControlState::ACTIVE) {
+            execute_active_move();
+        } else {
+            execute_idle_move();
         }
     }
 
