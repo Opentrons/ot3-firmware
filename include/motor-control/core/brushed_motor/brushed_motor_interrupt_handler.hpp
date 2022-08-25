@@ -119,9 +119,7 @@ class BrushedMotorInterruptHandler {
                     // TODO write cap sensor move code
                     break;
             }
-        } else if (holding && std::abs(hardware.get_encoder_pulses() -
-                                       hold_encoder_position) >
-                                  acceptable_position_error) {
+        } else if (holding) {
             controlled_move_to(hold_encoder_position);
         }
     }
