@@ -36,8 +36,8 @@ auto can::sim::transport::add_options(po::options_description& cmdline_desc,
         "port,p", po::value<uint16_t>()->default_value(9898),
         "port for the can server. May be specified in an environment variable "
         "called CAN_PORT.");
-    env_desc.add_options()("server-host",
-                           po::value<std::string>()->default_value("localhost"))(
+    env_desc.add_options()(
+        "server-host", po::value<std::string>()->default_value("localhost"))(
         "port", po::value<uint16_t>()->default_value(9898));
     return [](std::string input_val) -> std::string {
         if (input_val == "CAN_SERVER_HOST") {
