@@ -20,7 +20,7 @@ auto can::sim::transport::add_options(po::options_description& cmdline_desc,
                                po::value<std::string>()->default_value("vcan0"),
                                "can channel identifier. May be specified in an "
                                "environment variable called CAN_CHANNEL.");
-    env_desc.add_options()("CAN_CHANNEL",
+    env_desc.add_options()("can-channel",
                            po::value<std::string>()->default_value("vcan0"));
     return [](std::string input_val) -> std::string {
         if (input_val == "CAN_CHANNEL") {
@@ -36,10 +36,9 @@ auto can::sim::transport::add_options(po::options_description& cmdline_desc,
         "port,p", po::value<uint16_t>()->default_value(9898),
         "port for the can server. May be specified in an environment variable "
         "called CAN_PORT.");
-    env_desc.add_options()("CAN_SERVER_HOST",
-                           po::value<std::string>()->default_value("localhost"),
-                           "can server to connect to")(
-        "CAN_PORT", po::value<uint16_t>()->default_value(9898));
+    env_desc.add_options()(
+        "server-host", po::value<std::string>()->default_value("localhost"))(
+        "port", po::value<uint16_t>()->default_value(9898));
     return [](std::string input_val) -> std::string {
         if (input_val == "CAN_SERVER_HOST") {
             return "server-host";

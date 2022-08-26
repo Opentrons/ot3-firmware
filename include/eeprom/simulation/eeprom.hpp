@@ -165,7 +165,7 @@ class EEProm : public I2CDeviceBase,
                 "path to backing file for eeprom. if unspecified, a temp will "
                 "be used. May be specified in an environment file called "
                 "EEPROM_FILENAME.");
-            env.add_options()("EEPROM_FILENAME",
+            env.add_options()("eeprom-filename",
                               po::value<std::string>()->default_value(
                                   std::string(TEMPFILE_KEY)));
             return [](std::string input_val) -> std::string {
