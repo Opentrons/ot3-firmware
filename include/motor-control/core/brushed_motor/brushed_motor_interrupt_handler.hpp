@@ -28,15 +28,11 @@ enum class ControlState {
     ACTIVE
 };
 
-// TODO Investigate this value, I'm pretty sure that the timer actually gets
-// called every 3ms because the clock is 32K hz and the period is set to 100
-// which will call the interupt every 3.125 ish ms and therefor the hold off
-// will be 100 ms
 static constexpr uint32_t HOLDOFF_TICKS =
     32;  // hold off for 1 ms (with a 32k Hz timer)
 
 // upon advice from hardware, 0.01mm is a good limit for precision
-static constexpr double ACCEPTABLE_DISTANCE_TOLLERANCE_MM = 0.01;
+static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
 
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
@@ -58,7 +54,7 @@ class BrushedMotorInterruptHandler {
           gear_conf(gearbox_config) {
         acceptable_position_error =
             int32_t(gear_conf.get_encoder_pulses_per_mm() *
-                    ACCEPTABLE_DISTANCE_TOLLERANCE_MM);
+                    ACCEPTABLE_DISTANCE_TOLERANCE_MM);
     }
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)

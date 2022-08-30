@@ -39,22 +39,24 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .encoder_interrupt_freq =
-        double(GRIPPER_JAW_PWM_FREQ_HZ) / double(GRIPPER_JAW_PWM_WIDTH),
+    .encoder_interrupt_freq = double(GRIPPER_JAW_PWM_FREQ_HZ),
 
     /* the expected behavior with these pid values is that the motor runs at
      * full power until it's about 2mm away and then it slows down on that
      * approach. final values as the error delta approachs 0.01mm is ~7
      * which is the floor of pwm values that still move the gripper
-     * this 7 is from the windup limits, but over very short moves( <
+     * this 7 is from the windup limits, but over very short moves that are less
+     * than 5 mm this doesn't wind up all the way to 7 but the we use the
+     * pwm_active_duty_clamp method to make sure that no matter the output that
+     * we clamp the pwm to something within the acceptable values of the motor
      *
      * the most significant value here is the proportional gain
      * when the distance error is > 2mm (12210 encoder ticks)
      * the proportional term will be > 100 and reduce linearly
      * the derivative gain here was chosen so that it helps make the slowdown
      * when the distance error < 2mm but the term's significane drops off
-     * pwm drops below 20 (20 pwm is about 200 encoder pulses/ interrupt)
-     * (0.000015 * 200 / (1/320)) ~= 1
+     * pwm drops below 20 (20 pwm is about 2 encoder pulses/ interrupt)
+     * (0.000015 * 2 / (1/32000)) ~= 1
      *
      * and finally the intergral gain helps ramp up to the -7 or +7 during moves
      * it needs moves of ~5mm to hit this but the clamping of the pwm control
