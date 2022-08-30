@@ -131,9 +131,16 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                     // get_encoder_pulses_per_mm to get the encoder delta
                     int32_t encoder_delta =
                         int32_t(test_objs.driver.get_pwm_settings() * 0.55 *
-                                (1.0 / 320.0) *
+                                (1.0 / 32000.0) *
                                 gear_config.get_encoder_pulses_per_mm());
-
+                    // when the encoder delta is very small the int can get
+                    // stuck at 0 when it should be like 0.9 at the very
+                    // end of the move. so floor it 1 if the pwm is > 0 at all
+                    if (test_objs.driver.get_pwm_settings() > 0) {
+                        encoder_delta =
+                            std::clamp(encoder_delta, 1,
+                                       std::numeric_limits<int32_t>::max());
+                    }
                     if (test_objs.hw.get_direction() ==
                         test_mocks::PWM_DIRECTION::positive) {
                         i += encoder_delta;
