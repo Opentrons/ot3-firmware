@@ -63,8 +63,10 @@ add_custom_target(
 
 add_custom_target(
 	ot3-state-manager-format
-	${Poetry_EXECUTABLE} run python -m isort ot3_state_manager tests generate_state_manager_headers.py
-	${Poetry_EXECUTABLE} run python -m black --line-length 88 ot3_state_manager tests generate_state_manager_headers.py
+	# Have to wrap this isort command in a bash -c for some reason because otherwise it fails on the -m for no reason
+	# other than cmake is dumb sometimes.
+	bash -c "${Poetry_EXECUTABLE} run python -m isort ot3_state_manager tests generate_state_manager_headers.py"
+	${Poetry_EXECUTABLE} run python -m black ot3_state_manager tests generate_state_manager_headers.py
 	${Poetry_EXECUTABLE} run python -m mdformat README.md
 	WORKING_DIRECTORY ../../ot3_state_manager
 )
