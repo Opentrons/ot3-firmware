@@ -111,11 +111,12 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
     static auto get_gripper_model(
         const eeprom::serial_number::SerialNumberType &serial) -> uint16_t {
         uint16_t model = 0;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        const auto *iter = serial.begin() + GRIPPER_MODEL_FIELD_START;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        iter = bit_utils::bytes_to_int(iter, iter + GRIPPER_MODEL_FIELD_LEN,
-                                       model);
+        const auto *iter = serial.cbegin();
+        const auto *bound = serial.cbegin();
+        std::advance(iter, GRIPPER_MODEL_FIELD_START);
+        std::advance(bound,
+                     GRIPPER_MODEL_FIELD_START + GRIPPER_MODEL_FIELD_LEN);
+        iter = bit_utils::bytes_to_int(iter, bound, model);
         return model;
     }
 

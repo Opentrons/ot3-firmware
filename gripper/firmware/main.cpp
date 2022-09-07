@@ -65,6 +65,8 @@ static auto i2c_handles = I2CHandlerStruct{};
 class EEPromHardwareInterface
     : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
+    EEPromHardwareInterface()
+        : eeprom::hardware_iface::EEPromHardwareIface(eeprom::hardware_iface::EEPromChipType::ST_M24128) {}
     void set_write_protect(bool enable) final {
         if (enable) {
             disable_eeprom_write();
@@ -73,7 +75,7 @@ class EEPromHardwareInterface
         }
     }
 };
-static auto eeprom_hw_iface = EEPromHardwareInterface();
+static auto eeprom_hw_iface = EEPromHardwareInterface{};
 
 struct sensors::hardware::SensorHardwareConfiguration sensor_pins {
     .sync_in =
