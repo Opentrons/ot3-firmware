@@ -95,11 +95,11 @@ void TIM2_EncoderG_Init(void) {
  * TIM4 receives the encoder clock output signal from TIM2 (tim_trgo). It counts
  * at 1 MHz and captures the current count whenever an encoder pulse is
  * received, then resets its counter. The velocity would thus roughly be
- * (1 MHz / (count * 4)). Counting both rising and falling edges from channel A
- * + B.
+ * (1 MHz / (count)). TIM2 is counting both rising and falling edges from channel A
+ * + B. so this timer uses a DIV4 prescaller to count only complete ticks
  *
- * The timer overflows 3 ms after an edge is received. This means any encoder
- * movement below 8Hz (1 MHz / (30000 * 4 count)), which is about 0.00131 mm/s,
+ * The timer overflows 3 ms after an tick is received. This means any encoder
+ * movement below 8Hz, which is about 0.00131 mm/s,
  * is rejected and that we can safely assume the encoder has stopped moving.
  **/
 void TIM4_EncoderGSpeed_Init(void) {
@@ -136,7 +136,7 @@ void TIM4_EncoderGSpeed_Init(void) {
     /* Initialize TIM4 input capture channel */
     sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
     sConfigIC.ICSelection = TIM_ICSELECTION_TRC;
-    sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+    sConfigIC.ICPrescaler = TIM_ICPSC_DIV4;
     sConfigIC.ICFilter = 0;
     if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
         Error_Handler();
