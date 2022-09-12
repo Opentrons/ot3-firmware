@@ -97,13 +97,15 @@ void TIM2_EncoderG_Init(void) {
  * travelling.
  *
  * TIM4 receives the encoder clock output signal from TIM2 (tim_trgo). It counts
- * at 1 MHz and captures the current count whenever an encoder pulse is
- * received, then resets its counter. The velocity would thus roughly be
- * (1 MHz / (count * 4)). Counting both rising and falling edges from channel A
- * + B.
+ * at 1 MHz and captures the current count whenever a full encoder tick
+ * (4 pulses)  is received, then resets its counter.
+ * The physical movement is 0.1637896203 um per pulse so is 0.655158481 um
+ * per full tick, so the velocity is ~(0.6552/count) um/us or ~(655.2/count) mm/s
+ * TIM2 is counting both rising and falling edges from channel A + B.
+ * so this timer uses a DIV4 prescaller to count only complete ticks
  *
- * The timer overflows 3 ms after an edge is received. This means any encoder
- * movement below 8Hz (1 MHz / (30000 * 4 count)), which is about 0.00131 mm/s,
+ * The timer overflows 3 ms after an tick is received. This means any encoder
+ * movement below 333Hz, which is about 0.2184 mm/s
  * is rejected and that we can safely assume the encoder has stopped moving.
  **/
 void TIM4_EncoderGSpeed_Init(void) {
