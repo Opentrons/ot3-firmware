@@ -46,7 +46,8 @@ target_compile_definitions(gripper-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(gripper-simulator)
 
-target_gripper_core(gripper-simulator)
+target_gripper_core_proto(gripper-simulator)
+target_gripper_core_rev1(gripper-simulator)
 
 target_ot_motor_control(gripper-simulator)
 
