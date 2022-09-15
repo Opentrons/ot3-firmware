@@ -29,7 +29,9 @@ enum class ControlState {
 };
 
 static constexpr uint32_t HOLDOFF_TICKS =
-    32;  // hold off for 1 ms (with a 32k Hz timer)
+    16;  // hold off for 0.5 ms (with a 32k Hz timer)
+// using the logic analyzer it takes about 0.2-0.3 ms for the output
+// to stablize after changing directions of the PWM
 
 // upon advice from hardware, 0.01mm is a good limit for precision
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
