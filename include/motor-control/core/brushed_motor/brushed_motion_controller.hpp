@@ -60,15 +60,14 @@ class MotionController {
     }
 
     void move(const can::messages::AddBrushedLinearMoveRequest& can_msg) {
-        BrushedMove msg{
-            .duration = can_msg.duration,
-            .duty_cycle = 0UL,
-            .group_id = can_msg.group_id,
-            .seq_id = can_msg.seq_id,
-            .encoder_position = int32_t(
-                can_msg.encoder_position_um *
-                get_mechanical_config().get_encoder_pulses_per_mm() * 1000),
-            .stop_condition = MoveStopCondition::encoder_position};
+        BrushedMove msg{.duration = can_msg.duration,
+                        .duty_cycle = 0UL,
+                        .group_id = can_msg.group_id,
+                        .seq_id = can_msg.seq_id,
+                        .encoder_position = int32_t(
+                            can_msg.encoder_position_um /
+                            get_mechanical_config().get_encoder_um_per_pulse()),
+                        .stop_condition = MoveStopCondition::encoder_position};
         if (!enabled) {
             enable_motor();
         }
