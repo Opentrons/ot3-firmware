@@ -76,8 +76,10 @@ class BrushedMotorInterruptHandler {
             current_control_pwm = 0;
         } else {
             if (move_delta < 0) {
+                tick = 0;
                 hardware.grip();
             } else if (move_delta > 0) {
+                tick = 0;
                 hardware.ungrip();
             }
             double pid_output = hardware.update_control(move_delta);
@@ -132,6 +134,10 @@ class BrushedMotorInterruptHandler {
     }
 
     void run_interrupt() {
+        if (tick < HOLDOFF_TICKS) {
+            tick++;
+            return;
+        }
         if (motor_state == ControlState::ACTIVE) {
             execute_active_move();
         } else {
@@ -142,11 +148,8 @@ class BrushedMotorInterruptHandler {
     auto is_sensing() -> bool {
         /* When gripping, hold off a certain number of ticks before checking if
          * the encoder is idle */
-        if (buffered_move.stop_condition == MoveStopCondition::limit_switch) {
-            return false;
-        }
-        if (tick < HOLDOFF_TICKS) {
-            tick++;
+        if (buffered_move.stop_condition == MoveStopCondition::limit_switch ||
+            tick < HOLDOFF_TICKS) {
             return false;
         }
         return true;
@@ -161,7 +164,6 @@ class BrushedMotorInterruptHandler {
     }
 
     void update_and_start_move() {
-        tick = 0;
         if (queue.try_read_isr(&buffered_move)) {
             motor_state = ControlState::ACTIVE;
         }
@@ -171,6 +173,7 @@ class BrushedMotorInterruptHandler {
         hardware.reset_control();
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
+                tick = 0;
                 hardware.ungrip();
                 break;
             case MoveStopCondition::encoder_position:
@@ -182,6 +185,7 @@ class BrushedMotorInterruptHandler {
                 }
                 break;
             case MoveStopCondition::none:
+                tick = 0;
                 hardware.grip();
                 break;
             case MoveStopCondition::cap_sensor:

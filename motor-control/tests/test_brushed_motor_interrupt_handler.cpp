@@ -38,7 +38,10 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
         test_objs.queue.try_write_isr(msg);
 
         WHEN("A brushed move message is received and loaded") {
-            test_objs.handler.run_interrupt();
+            // Burn through the startup ticks
+            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                test_objs.handler.run_interrupt();
+            }
 
             THEN("The motor hardware proceeds to home") {
                 /* motor shouldn't be gripping */
@@ -47,7 +50,10 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 test_objs.hw.set_limit_switch(true);
 
                 AND_WHEN("The limit switch is hit") {
-                    test_objs.handler.run_interrupt();
+                    // Burn through the ticks since they reset with new move
+                    for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                        test_objs.handler.run_interrupt();
+                    }
 
                     THEN("Encoder value is reset and homed ack is sent") {
                         REQUIRE(test_objs.hw.get_encoder_pulses() == 0);
@@ -72,7 +78,10 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
         test_objs.queue.try_write_isr(msg);
 
         WHEN("A brushed move message is received and loaded") {
-            test_objs.handler.update_and_start_move();
+            // Burn through the startup ticks
+            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                test_objs.handler.run_interrupt();
+            }
 
             THEN("The motor hardware proceeds to grip") {
                 /* motor should be gripping */
@@ -89,6 +98,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         for (uint32_t i = 0; i < HOLDOFF_TICKS; i++) {
                             REQUIRE(!test_objs.handler.is_sensing());
                             REQUIRE(test_objs.reporter.messages.size() == 0);
+                            test_objs.handler.run_interrupt();
                             CHECK(test_objs.handler.tick == (i + 1));
                         }
 
@@ -120,7 +130,10 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
         test_objs.hw.set_encoder_value(0);
         test_objs.queue.try_write_isr(msg);
         WHEN("A brushed move message is received and loaded") {
-            test_objs.handler.update_and_start_move();
+            // Burn through the startup ticks
+            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                test_objs.handler.run_interrupt();
+            }
             THEN("The motor hardware proceeds to move") {
                 int32_t i = 0;
                 // simulate the motor moving so the pid can update
@@ -153,8 +166,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                     if (test_objs.driver.get_pwm_settings() == 0) {
                         break;
                     }
-                    REQUIRE((test_objs.driver.get_pwm_settings() > 0 &&
-                             test_objs.driver.get_pwm_settings() <= 100));
+                    REQUIRE(test_objs.driver.get_pwm_settings() <= 100);
                 }
                 test_objs.handler.run_interrupt();
                 REQUIRE(test_objs.driver.get_pwm_settings() == 0);
