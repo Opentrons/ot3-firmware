@@ -277,10 +277,8 @@ void update_pwm(uint32_t duty_cycle) {
     // (in pwm mode 1, output is high while cnt < ccr, so we don't want
     // to let cnt = ccr if the pwm value is 100%)
     htim1.Instance->CCR1 = clamp(duty_cycle, 0, htim1.Init.Period + 1);
-    //htim1.Instance->EGR = TIM_EGR_UG;
 
     htim3.Instance->CCR1 = clamp(duty_cycle, 0, htim3.Init.Period + 1);
-    //htim3.Instance->EGR = TIM_EGR_UG;
 }
 
 void set_brushed_motor_timer_callback(
