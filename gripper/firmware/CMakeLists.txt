@@ -44,7 +44,6 @@ set(GRIPPER_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
@@ -54,12 +53,16 @@ set(GRIPPER_FW_NON_LINTABLE_SRCS
 
 add_executable(gripper-proto
         ${GRIPPER_FW_LINTABLE_SRCS}
-        ${GRIPPER_FW_NON_LINTABLE_SRCS})
+        ${GRIPPER_FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware_proto.c
+        )
 target_gripper_core_proto(gripper-proto)
 
 add_executable(gripper-rev1
         ${GRIPPER_FW_LINTABLE_SRCS}
-        ${GRIPPER_FW_NON_LINTABLE_SRCS})
+        ${GRIPPER_FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware_rev1.c
+        )
 target_gripper_core_rev1(gripper-rev1)
 
 set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
