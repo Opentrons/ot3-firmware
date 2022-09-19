@@ -27,7 +27,6 @@ set(DEFAULT_REVISION gripper-proto)
 
 # Add source files that should be checked by clang-tidy here
 set(GRIPPER_FW_LINTABLE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces_grip_motor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces_z_motor.cpp
@@ -54,6 +53,7 @@ set(GRIPPER_FW_NON_LINTABLE_SRCS
 add_executable(gripper-proto
         ${GRIPPER_FW_LINTABLE_SRCS}
         ${GRIPPER_FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/main_proto.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware_proto.c
         )
 target_gripper_core_proto(gripper-proto)
@@ -61,6 +61,7 @@ target_gripper_core_proto(gripper-proto)
 add_executable(gripper-rev1
         ${GRIPPER_FW_LINTABLE_SRCS}
         ${GRIPPER_FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware_rev1.c
         )
 target_gripper_core_rev1(gripper-rev1)
