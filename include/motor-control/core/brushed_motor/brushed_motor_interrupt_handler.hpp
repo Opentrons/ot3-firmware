@@ -150,8 +150,9 @@ class BrushedMotorInterruptHandler {
     auto is_sensing() -> bool {
         /* When gripping, hold off a certain number of ticks before checking if
          * the encoder is idle */
-        return !(buffered_move.stop_condition == MoveStopCondition::limit_switch ||
-            tick < HOLDOFF_TICKS);
+        return !(buffered_move.stop_condition ==
+                     MoveStopCondition::limit_switch ||
+                 tick < HOLDOFF_TICKS);
     }
 
     void set_enc_idle_state(bool val) {
