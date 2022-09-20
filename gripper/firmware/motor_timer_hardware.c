@@ -2,14 +2,6 @@
 #include "motor_hardware.h"
 #include "system_stm32g4xx.h"
 
-// The frequency of one full PWM cycle
-#define GRIPPER_JAW_PWM_FREQ_HZ (32000UL)
-// the number of selectable points in the PWM
-#define GRIPPER_JAW_PWM_WIDTH (100UL)
-// the frequency at which the timer should count so that it
-// does a full PWM cycle in the time specified by GRIPPER_JAW_PWM_FREQ_HZ
-#define GRIPPER_JAW_TIMER_FREQ (GRIPPER_JAW_PWM_FREQ_HZ * GRIPPER_JAW_PWM_WIDTH)
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim7;
@@ -285,10 +277,8 @@ void update_pwm(uint32_t duty_cycle) {
     // (in pwm mode 1, output is high while cnt < ccr, so we don't want
     // to let cnt = ccr if the pwm value is 100%)
     htim1.Instance->CCR1 = clamp(duty_cycle, 0, htim1.Init.Period + 1);
-    htim1.Instance->EGR = TIM_EGR_UG;
 
     htim3.Instance->CCR1 = clamp(duty_cycle, 0, htim3.Init.Period + 1);
-    htim3.Instance->EGR = TIM_EGR_UG;
 }
 
 void set_brushed_motor_timer_callback(

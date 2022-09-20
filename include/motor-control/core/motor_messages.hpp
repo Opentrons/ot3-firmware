@@ -21,7 +21,8 @@ struct MotionConstraints {
 enum class MoveStopCondition : uint8_t {
     none = 0x0,
     limit_switch = 0x1,
-    cap_sensor = 0x2
+    cap_sensor = 0x2,
+    encoder_position = 0x3
 };
 
 enum class AckMessageId : uint8_t {
@@ -80,6 +81,7 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint32_t duty_cycle;
     uint8_t group_id;
     uint8_t seq_id;
+    int32_t encoder_position;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
     auto build_ack(int32_t pulses, AckMessageId _id) -> Ack {

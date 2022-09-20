@@ -54,6 +54,7 @@ class PID {
     [[nodiscard]] auto ki() const -> double;
     [[nodiscard]] auto kd() const -> double;
     [[nodiscard]] auto sampletime() const -> double;
+    [[nodiscard]] auto sampletime_inv() const -> double;
     [[nodiscard]] auto windup_limit_high() const -> double;
     [[nodiscard]] auto windup_limit_low() const -> double;
     [[nodiscard]] auto last_error() const -> double;
@@ -66,6 +67,7 @@ class PID {
     double _ki;
     double _kd;
     double _sampletime;
+    double _sampletime_inv = 0.0;
     double _windup_limit_high;
     double _windup_limit_low;
     double _last_error;

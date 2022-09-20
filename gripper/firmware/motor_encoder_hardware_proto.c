@@ -3,8 +3,6 @@
 #include "common/firmware/errors.h"
 #include "stm32g4xx_hal.h"
 
-#define GRIPPER_ENCODER_SPEED_TIMER_FREQ (1000000UL)
-
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
 

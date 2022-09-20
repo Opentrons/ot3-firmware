@@ -33,7 +33,7 @@ void LED_drive_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    /*Configure GPIO pin : PC7 */
+    /*Configure GPIO pin : PC6 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;

@@ -1,9 +1,11 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
 
 #include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "ot_utils/core/pid.hpp"
 
 namespace motor_hardware {
 
@@ -18,7 +20,15 @@ struct BrushedHardwareConfig {
     gpio::PinConfig enable;
     gpio::PinConfig limit_switch;
     gpio::PinConfig sync_in;
+    double encoder_interrupt_freq;
+    double pid_kp;
+    double pid_ki;
+    double pid_kd;
+    double wl_high;
+    double wl_low;
 };
+
+enum class ControlDirection { positive, negative, unset };
 
 class BrushedMotorHardware : public BrushedMotorHardwareIface {
   public:
@@ -26,12 +36,16 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     BrushedMotorHardware() = delete;
     BrushedMotorHardware(const BrushedHardwareConfig& config,
                          void* encoder_handle)
-        : pins(config), enc_handle(encoder_handle) {}
-    BrushedMotorHardware(const BrushedMotorHardware&) = default;
+        : pins(config),
+          enc_handle(encoder_handle),
+          controller_loop{config.pid_kp,  config.pid_ki,
+                          config.pid_kd,  1.F / config.encoder_interrupt_freq,
+                          config.wl_high, config.wl_low} {}
+    BrushedMotorHardware(const BrushedMotorHardware&) = delete;
     auto operator=(const BrushedMotorHardware&)
-        -> BrushedMotorHardware& = default;
-    BrushedMotorHardware(BrushedMotorHardware&&) = default;
-    auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = default;
+        -> BrushedMotorHardware& = delete;
+    BrushedMotorHardware(BrushedMotorHardware&&) = delete;
+    auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = delete;
     void positive_direction() final;
     void negative_direction() final;
     void activate_motor() final;
@@ -48,10 +62,15 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
 
     void encoder_overflow(int32_t direction);
 
+    auto update_control(int32_t encoder_error) -> double final;
+    void reset_control() final;
+
   private:
     BrushedHardwareConfig pins;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;
+    ot_utils::pid::PID controller_loop;
+    std::atomic<ControlDirection> control_dir = ControlDirection::unset;
 };
 
 };  // namespace motor_hardware
