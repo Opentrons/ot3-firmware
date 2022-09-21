@@ -111,13 +111,16 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
             .thigh = {.threshold = 0xFFFFF},
-            .chopconf = {.toff = 0x3,
-                         .hstrt = 0x5,
-                         .hend = 0x2,
+            .chopconf = {.toff = 0x5,
+                         .hstrt = 0x4,
+                         .hend = 0x0,
                          .tbl = 0x2,
                          .tpfd = 0x4,
-                         .mres = 0x3},
+                         .mres = 0x4},
             .coolconf = {.sgt = 0x6},
+            .pwmconf = {.pwm_autoscale = 0x1,
+                        .pwm_autograd = 0x1,
+                        .}
         },
     .current_config =
         {

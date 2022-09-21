@@ -31,7 +31,7 @@ auto utils::linear_motion_sys_config_by_axis(enum GantryAxisType which)
             return lms::LinearMotionSystemConfig<lms::BeltConfig>{
                 .mech_config = lms::BeltConfig{.pulley_diameter = 12.7254},
                 .steps_per_rev = 200,
-                .microstep = 32,
+                .microstep = 16,
                 .encoder_pulses_per_rev = 1000,
             };
         default:
