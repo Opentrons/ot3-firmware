@@ -143,15 +143,15 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
     # Targets to create full image hex file containing both bootloader and application
     add_custom_command(
             OUTPUT ${REVISION_TARGET}-image.hex
-            DEPENDS ${REVISION_TARGET}-hex bootloader-gripper-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-${REVISION_TARGET}.hex
-            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-${REVISION_TARGET}.hex ${REVISION_TARGET}.hex
+            DEPENDS ${REVISION_TARGET}-hex bootloader-gripper-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex
+            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-gripper>/bootloader-gripper.hex ${REVISION_TARGET}.hex
             VERBATIM)
     add_custom_target(${REVISION_TARGET}-image-hex ALL
             DEPENDS ${REVISION_TARGET}-image.hex)
 
     # Targets to flash bootloader and firmware
     add_custom_target(${REVISION_TARGET}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gripper-image.hex;reset;exit"
+            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.hex;reset;exit"
             VERBATIM
             COMMENT "Flashing board"
             DEPENDS ${REVISION_TARGET}-image-hex)
