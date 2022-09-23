@@ -151,7 +151,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
 
     # Targets to flash bootloader and firmware
     add_custom_target(${REVISION_TARGET}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/gripper-image.hex;reset;exit"
+            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.hex;reset;exit"
             VERBATIM
             COMMENT "Flashing board"
             DEPENDS ${REVISION_TARGET}-image-hex)
