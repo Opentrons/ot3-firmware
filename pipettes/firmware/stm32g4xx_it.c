@@ -117,13 +117,17 @@ void DebugMon_Handler(void) {}
 /*  file (startup_stm32g4xxxx.s).                                             */
 /******************************************************************************/
 
+void EXTI3_IRQHandler(void) {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+}
+
 void EXTI8_IRQHandler(void) {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
 }
 
-void EXTI9_IRQHandler(void) {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
-}
+//void EXTI9_IRQHandler(void) {
+//    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+//}
 
 // TODO refer to schematic to check and see that the data ready
 // pin is the same across values.

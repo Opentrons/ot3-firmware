@@ -110,6 +110,11 @@ extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
         sensor_hardware.data_ready();
     }
 }
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
+        sensor_hardware.data_ready();
+    }
+}
 
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
@@ -171,8 +176,9 @@ auto main() -> int {
     adc_init();
     initialize_enc(PIPETTE_TYPE);
 
+    //    iwdg_refresh();
     delay_start(500);
-
+    //    iwdg_refresh();
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct);

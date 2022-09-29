@@ -134,6 +134,7 @@ void data_ready_gpio_init() {
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = hardware_rear.pin;
+//        GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
         GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

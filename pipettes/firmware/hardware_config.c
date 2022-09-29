@@ -42,8 +42,9 @@ IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
         case SINGLE_CHANNEL:
         case EIGHT_CHANNEL:
         default:
-            // External interrupt lines 15:10
-            return EXTI9_5_IRQn;
+            // External interrupt line 3
+            return EXTI3_IRQn;
+//            return EXTI9_5_IRQn;
     }
 }
 
