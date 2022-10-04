@@ -52,7 +52,7 @@ struct Empty : BaseMessage<MId> {
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
-        return iter-body;
+        return iter - body;
     }
 
     auto operator==(const Empty&) const -> bool = default;
@@ -159,7 +159,9 @@ struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
         std::copy_n(body, data_length, data.begin());
 
         return WriteToEEPromRequest{.message_index = msg_ind,
-            .address = address, .data_length = data_length, .data = data};
+                                    .address = address,
+                                    .data_length = data_length,
+                                    .data = data};
     }
 
     auto operator==(const WriteToEEPromRequest& other) const -> bool = default;
@@ -193,8 +195,9 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
     eeprom::types::address address;
     eeprom::types::data_length data_length;
     eeprom::types::EepromData data;
-    static constexpr uint8_t SIZE = sizeof(message_index) +
-        sizeof(address) + sizeof(data_length) + eeprom::types::max_data_length;
+    static constexpr uint8_t SIZE = sizeof(message_index) + sizeof(address) +
+                                    sizeof(data_length) +
+                                    eeprom::types::max_data_length;
 
     /**
      * Create a response message from iterator
@@ -206,15 +209,17 @@ struct ReadFromEEPromResponse : BaseMessage<MessageId::read_eeprom_response> {
      */
     template <bit_utils::ByteIterator DataIter, typename Limit>
     static auto create(uint32_t msg_ind, eeprom::types::address address,
-                       DataIter data_iter,
-                       Limit limit) -> ReadFromEEPromResponse {
+                       DataIter data_iter, Limit limit)
+        -> ReadFromEEPromResponse {
         eeprom::types::EepromData data{};
         eeprom::types::data_length data_length = std::min(
             eeprom::types::max_data_length,
             static_cast<eeprom::types::data_length>(limit - data_iter));
         std::copy_n(data_iter, data_length, data.begin());
         return ReadFromEEPromResponse{.message_index = msg_ind,
-            .address = address, .data_length = data_length, .data = data};
+                                      .address = address,
+                                      .data_length = data_length,
+                                      .data = data};
     }
 
     template <bit_utils::ByteIterator Output, typename Limit>
@@ -481,9 +486,8 @@ struct WriteMotorDriverRegister
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
         body = bit_utils::bytes_to_int(body, limit, reg_address);
         body = bit_utils::bytes_to_int(body, limit, data);
-        return WriteMotorDriverRegister{.message_index = msg_ind,
-                                        .reg_address = reg_address,
-                                        .data = data};
+        return WriteMotorDriverRegister{
+            .message_index = msg_ind, .reg_address = reg_address, .data = data};
     }
 
     auto operator==(const WriteMotorDriverRegister& other) const
@@ -1179,8 +1183,7 @@ struct PeripheralStatusRequest
         return PeripheralStatusRequest{
             .message_index = msg_ind,
             .sensor = static_cast<can::ids::SensorType>(_sensor),
-            .sensor_id = static_cast<can::ids::SensorId>(_id)
-            };
+            .sensor_id = static_cast<can::ids::SensorId>(_id)};
     }
     auto operator==(const PeripheralStatusRequest& other) const
         -> bool = default;
@@ -1214,12 +1217,12 @@ using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
  * A variant of all message types we might send..
  */
 
-using ResponseMessageType = std::variant<Acknowledgment,
-    HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
-    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
-    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
-    PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    EncoderPositionResponse, ReadFromSensorResponse,
+using ResponseMessageType = std::variant<
+    Acknowledgment, HeartbeatResponse, DeviceInfoResponse,
+    GetMotionConstraintsResponse, GetMoveGroupResponse,
+    ReadMotorDriverRegisterResponse, ReadFromEEPromResponse, MoveCompleted,
+    ReadPresenceSensingVoltageResponse, PushToolsDetectedNotification,
+    ReadLimitSwitchResponse, EncoderPositionResponse, ReadFromSensorResponse,
     FirmwareUpdateStatusResponse, SensorThresholdResponse,
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,

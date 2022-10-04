@@ -9,8 +9,9 @@ using namespace can::messages;
 
 SCENARIO("message deserializing works") {
     GIVEN("a set motion constraints request body") {
-        auto arr = std::array<uint8_t, 20>{0xde, 0xad, 0xbe, 0xef,
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x11};
+        auto arr = std::array<uint8_t, 20>{
+            0xde, 0xad, 0xbe, 0xef, 1,   2,   3,   4,   5,   6,
+            7,    8,    9,    0xa,  0xb, 0xc, 0xd, 0xe, 0xf, 0x11};
         WHEN("constructed") {
             auto r = SetMotionConstraints::parse(arr.begin(), arr.end());
             THEN("it is converted to a the correct structure") {
@@ -54,7 +55,7 @@ SCENARIO("message deserializing works") {
         eeprom::types::address addr = 0x12;
         eeprom::types::data_length len = 7;
         // copy message_index to array
-        iter = bit_utils::int_to_bytes(msg_ind, iter, iter+sizeof(uint32_t));
+        iter = bit_utils::int_to_bytes(msg_ind, iter, iter + sizeof(uint32_t));
         // copy addr to array
         iter = bit_utils::int_to_bytes(addr, iter,
                                        iter + sizeof(eeprom::types::address));
@@ -68,7 +69,7 @@ SCENARIO("message deserializing works") {
 
         WHEN("constructed") {
             auto r = WriteToEEPromRequest::parse(arr.begin(), arr.end());
-            THEN("it is converted to a the correct structure") {\
+            THEN("it is converted to a the correct structure") {
                 REQUIRE(r.message_index == 0xdeadbeef);
                 REQUIRE(r.address == 0x12);
                 REQUIRE(r.data_length == 7);
@@ -96,9 +97,8 @@ SCENARIO("message deserializing works") {
         uint32_t msg_ind = 0xdeadbeef;
         eeprom::types::address addr = 0x05;
         eeprom::types::data_length len = 122;
-        //copy the message_index
-        iter = bit_utils::int_to_bytes(msg_ind, iter,
-                                       iter + sizeof(uint32_t));
+        // copy the message_index
+        iter = bit_utils::int_to_bytes(msg_ind, iter, iter + sizeof(uint32_t));
         // copy the address
         iter = bit_utils::int_to_bytes(addr, iter,
                                        iter + sizeof(eeprom::types::address));
@@ -163,7 +163,9 @@ SCENARIO("message serializing works") {
 
     GIVEN("a device info response message") {
         auto message = DeviceInfoResponse{.message_index = 0xdeadbeef,
-            .version = 0x00220033, .flags = 0x11445566, .shortsha{"abcdef0"}};
+                                          .version = 0x00220033,
+                                          .flags = 0x11445566,
+                                          .shortsha{"abcdef0"}};
         auto arr = std::array<uint8_t, 21>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};
@@ -225,9 +227,9 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a read from eeprom response") {
-        auto data = std::array<uint8_t, 5>{ 0, 1, 2, 3, 4};
-        auto message =
-            ReadFromEEPromResponse::create(0xdeadbeef, 13, data.cbegin(), data.cend());
+        auto data = std::array<uint8_t, 5>{0, 1, 2, 3, 4};
+        auto message = ReadFromEEPromResponse::create(
+            0xdeadbeef, 13, data.cbegin(), data.cend());
 
         THEN("the length is correctly set.") {
             REQUIRE(message.data_length == data.size());
@@ -242,8 +244,8 @@ SCENARIO("message serializing works") {
                 eeprom::types::address addr;
                 eeprom::types::data_length len;
                 // fetch message_index from serialize message
-                iter = bit_utils::bytes_to_int(
-                    iter, iter+sizeof(uint32_t), msg_ind);
+                iter = bit_utils::bytes_to_int(iter, iter + sizeof(uint32_t),
+                                               msg_ind);
                 // fetch address from serialized message
                 iter = bit_utils::bytes_to_int(
                     iter, iter + sizeof(eeprom::types::address), addr);
@@ -274,8 +276,8 @@ SCENARIO("message serializing works") {
                 eeprom::types::address addr;
                 eeprom::types::data_length len;
                 // fetch message_index from serialized message
-                iter = bit_utils::bytes_to_int(
-                    iter, iter + sizeof(uint32_t), msg_ind);
+                iter = bit_utils::bytes_to_int(iter, iter + sizeof(uint32_t),
+                                               msg_ind);
                 // fetch address from serialized message
                 iter = bit_utils::bytes_to_int(
                     iter, iter + sizeof(eeprom::types::address), addr);
