@@ -33,6 +33,7 @@ struct TransactionIdentifier {
 ** the size elements are the amounts to read or write.
 */
 struct Transaction {
+    uint32_t message_index;
     uint16_t address;
     size_t bytes_to_read;
     size_t bytes_to_write;
@@ -48,6 +49,7 @@ struct Transaction {
 */
 struct TransactionResponse {
     auto operator==(const TransactionResponse&) const -> bool = default;
+    uint32_t message_index;
     TransactionIdentifier id;
     size_t bytes_read;
     MaxMessageBuffer read_buffer;
