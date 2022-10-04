@@ -8,7 +8,7 @@ add_custom_command(
 	COMMENT "Generating header file and storing to ${GENERATED_MESSAGE_HEADER}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
-	COMMAND ${Poetry_EXECUTABLE} run python3 generate_state_manager_headers.py ${GENERATED_MESSAGE_HEADER}
+	COMMAND ${Poetry_EXECUTABLE} run generate-headers ${GENERATED_MESSAGE_HEADER}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 add_custom_target(state-manager-headers DEPENDS ${GENERATED_MESSAGE_HEADER})

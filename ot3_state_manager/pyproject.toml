@@ -29,6 +29,9 @@ mdformat_footnote = "^0.1.1"
 opentrons = { path = "../../opentrons/api", develop = true}
 header_generation_utils = { path = "../header_generation_utils", develop = true}
 
+[tool.poetry.scripts]
+generate-headers = 'generate_state_manager_headers:main'
+
 [tool.pytest.ini_options]
 addopts = "--color=yes"
 asyncio_mode = "auto"
