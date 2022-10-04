@@ -402,6 +402,7 @@ SCENARIO("capacitance callback tests") {
             std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
                             sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             i2c::messages::TransactionResponse first{
+                .message_index = 1234,
                 .id =
                     i2c::messages::TransactionIdentifier{
                         .token = sensors::utils::build_id(
@@ -415,8 +416,9 @@ SCENARIO("capacitance callback tests") {
             auto second = first;
             second.id.transaction_index = 1;
             second.read_buffer = buffer_b;
-            callback_host.set_threshold(
-                10, can::ids::SensorThresholdMode::absolute);
+            callback_host.set_threshold(10,
+                                        can::ids::SensorThresholdMode::absolute,
+                                        first.message_index);
             can_queue.reset();
             callback_host.handle_ongoing_response(first);
             callback_host.handle_ongoing_response(second);

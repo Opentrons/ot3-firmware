@@ -184,7 +184,8 @@ class MMR920C04 {
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
-            .sensor = get_sensor_type(), .sensor_data = pressure};
+            .sensor = get_sensor_type(),
+            .sensor_data = pressure};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -193,7 +194,8 @@ class MMR920C04 {
             _registers.low_pass_pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
-            .sensor = get_sensor_type(), .sensor_data = pressure};
+            .sensor = get_sensor_type(),
+            .sensor_data = pressure};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -202,7 +204,8 @@ class MMR920C04 {
             _registers.low_pass_pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
-            .sensor = get_sensor_type(), .sensor_data = temperature};
+            .sensor = get_sensor_type(),
+            .sensor_data = temperature};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -226,11 +229,11 @@ class MMR920C04 {
     }
 
     auto send_peripheral_response(uint32_t message_index) -> void {
-        auto message =
-            can::messages::PeripheralStatusResponse{.message_index = message_index,
-                                                    .sensor = get_sensor_type(),
-                                                    .sensor_id = sensor_id,
-                                                    .status = initialized()};
+        auto message = can::messages::PeripheralStatusResponse{
+            .message_index = message_index,
+            .sensor = get_sensor_type(),
+            .sensor_id = sensor_id,
+            .status = initialized()};
         can_client.send_can_message(get_host_id(), message);
     }
 
