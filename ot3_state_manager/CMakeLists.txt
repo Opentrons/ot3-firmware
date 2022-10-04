@@ -2,11 +2,10 @@
 # use with target_link_libraries(YOURTARGET ot3_state_manager)
 
 set(GENERATED_MESSAGE_HEADER ${CMAKE_BINARY_DIR}/common/simulation/ot3_state_manager_messages.hpp)
-message("GENERATED_MESSAGE_HEADER: ${GENERATED_MESSAGE_HEADER}")
 set(PYSRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ot3_state_manager)
 add_custom_command(
 	OUTPUT ${GENERATED_MESSAGE_HEADER}
-	COMMENT "Generating ot3_state_manager_messages.hpp"
+	COMMENT "Generating header file and storing to ${GENERATED_MESSAGE_HEADER}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
 	COMMAND ${Poetry_EXECUTABLE} run python3 generate_state_manager_headers.py ${GENERATED_MESSAGE_HEADER}
