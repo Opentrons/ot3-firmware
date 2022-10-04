@@ -97,7 +97,7 @@ class PressureMessageHandler {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
         driver.set_threshold(m.threshold);
-        driver.send_threshold();
+        driver.send_threshold(m.message_index);
     }
 
     void visit(const can::messages::BindSensorOutputRequest &m) {
@@ -113,7 +113,7 @@ class PressureMessageHandler {
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
         LOG("received peripheral device info request");
-        driver.send_peripheral_response();
+        driver.send_peripheral_response(m.message_index);
         static_cast<void>(m);
     }
 

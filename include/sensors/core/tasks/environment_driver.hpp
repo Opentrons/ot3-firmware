@@ -128,14 +128,16 @@ class HDC3020 {
         return std::make_tuple(humidity, temperature);
     }
 
-    void send_hdc3020_data(int32_t humidity, int32_t temperature) {
+    void send_hdc3020_data(int32_t humidity, int32_t temperature, uint32_t message_index) {
         auto fixed_humidity = convert_humidity_to_fixed_point(humidity);
         auto fixed_temperature =
             convert_temperature_to_fixed_point(temperature);
         auto hum_message = can::messages::ReadFromSensorResponse{
+            .message_index = message_index,
             .sensor = SensorType::humidity, .sensor_data = fixed_humidity};
         can_client.send_can_message(get_host_id(), hum_message);
         auto temp_message = can::messages::ReadFromSensorResponse{
+            .message_index = message_index,
             .sensor = SensorType::temperature,
             .sensor_data = fixed_temperature};
         can_client.send_can_message(get_host_id(), temp_message);
@@ -145,6 +147,7 @@ class HDC3020 {
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::PeripheralStatusResponse{
+                .message_index = m.message_index,
                 .sensor = m.sensor,
                 .sensor_id = get_sensor_id(),
                 .status = static_cast<uint8_t>(initialized())});
@@ -195,7 +198,7 @@ class HDC3020 {
             if (sensor_binding == can::ids::SensorOutputBinding::report) {
                 // TODO we need to store the humidity/temp values on
                 // eeprom at some point. TBD on implementation details.
-                send_hdc3020_data(humidity, temperature);
+                send_hdc3020_data(humidity, temperature, tm.message_index);
             }
         }
     }
