@@ -73,7 +73,7 @@ SCENARIO("Environment Sensor Task Functionality") {
         }
         WHEN("the handler function receives a BaselineSensorRequest") {
             auto read_baseline_environment = sensors::utils::TaskMessage(
-                can::messages::BaselineSensorRequest({}, environment_id, 0, 5));
+                can::messages::BaselineSensorRequest({},0xdeadbeef, environment_id, 0, 5));
             sensor.handle_message(read_baseline_environment);
             THEN(
                 "the i2c queue is populated with a SingleRegisterPollRead "
@@ -97,7 +97,7 @@ SCENARIO("Environment Sensor Task Functionality") {
         WHEN("the handler function receives a BindSensorOutputRequest") {
             auto bind_environment = sensors::utils::TaskMessage(
                 can::messages::BindSensorOutputRequest(
-                    {}, can::ids::SensorType::environment, sensor_id, 2));
+                    {}, 0xdeadbeef, can::ids::SensorType::environment, sensor_id, 2));
             sensor.handle_message(bind_environment);
             THEN(
                 "the i2c queue is populated with a "
@@ -124,7 +124,7 @@ SCENARIO("Environment Sensor Task Functionality") {
     GIVEN("CAN messages not accepted by the environment sensor task") {
         WHEN("the handler function receives a WriteToSensorRequest") {
             auto write_environment = sensors::utils::TaskMessage(
-                can::messages::WriteToSensorRequest({}, environment_id, 0, 1));
+                can::messages::WriteToSensorRequest({},0xdeadbeef, environment_id, 0, 1));
             sensor.handle_message(write_environment);
             THEN("the i2c queue is not populated") {
                 REQUIRE(i2c_poll_queue.get_size() == 0);
@@ -133,7 +133,7 @@ SCENARIO("Environment Sensor Task Functionality") {
         WHEN("the handler function receives a SetSensorThresholdRequest") {
             auto threshold_environment = sensors::utils::TaskMessage(
                 can::messages::SetSensorThresholdRequest(
-                    {}, can::ids::SensorType::environment, sensor_id, 1,
+                    {}, 0xdeadbeef, can::ids::SensorType::environment, sensor_id, 1,
                     can::ids::SensorThresholdMode::absolute));
             sensor.handle_message(threshold_environment);
             THEN("the i2c queue is not populated") {

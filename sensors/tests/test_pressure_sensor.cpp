@@ -61,7 +61,7 @@ SCENARIO("read pressure sensor values") {
     GIVEN("a request to take a single read of the pressure sensor") {
         auto single_read =
             sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
-                {}, pressure_id, sensor_id_int));
+                {},0xdeadbeef, pressure_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
@@ -76,7 +76,7 @@ SCENARIO("read pressure sensor values") {
     GIVEN("a request to take multiple reads of the pressure sensor") {
         auto single_read =
             sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
-                {}, pressure_id, sensor_id_int));
+                {},0xdeadbeef, pressure_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
@@ -92,7 +92,7 @@ SCENARIO("read pressure sensor values") {
     GIVEN("a request to take a single read of the temperature sensor") {
         auto single_read =
             sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
-                {}, pressure_temperature_id, sensor_id_int));
+                {},0xdeadbeef, pressure_temperature_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
             THEN("the i2c queue is populated with a transact command") {
