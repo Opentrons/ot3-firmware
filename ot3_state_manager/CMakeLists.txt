@@ -1,6 +1,8 @@
 # interface library for headers generated from python for messages
 # use with target_link_libraries(YOURTARGET ot3_state_manager)
-set(GENERATED_MESSAGE_HEADER ${CMAKE_CURRENT_BINARY_DIR}/ot3_state_manager_messages.hpp)
+
+set(GENERATED_MESSAGE_HEADER ${CMAKE_BINARY_DIR}/common/simulation/ot3_state_manager_messages.hpp)
+message("GENERATED_MESSAGE_HEADER: ${GENERATED_MESSAGE_HEADER}")
 set(PYSRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ot3_state_manager)
 add_custom_command(
 	OUTPUT ${GENERATED_MESSAGE_HEADER}
