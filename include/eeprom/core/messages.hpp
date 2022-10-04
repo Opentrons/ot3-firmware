@@ -7,6 +7,7 @@ namespace message {
 
 /** Eeprom message */
 struct EepromMessage {
+    uint32_t message_index;
     eeprom::types::address memory_address;
     eeprom::types::data_length length;
     eeprom::types::EepromData data;
@@ -25,6 +26,7 @@ using ReadResponseCallback = void (*)(const EepromMessage&, void*);
  * The read from eeprom message.
  */
 struct ReadEepromMessage {
+    uint32_t message_index;
     eeprom::types::address memory_address;
     eeprom::types::data_length length;
     ReadResponseCallback callback;
