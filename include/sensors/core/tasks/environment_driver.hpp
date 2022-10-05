@@ -205,6 +205,10 @@ class HDC3020 {
         }
     }
 
+    auto get_can_client() -> CanClient& {
+        return can_client;
+    }
+
   private:
     hdc3020::HDC3020RegisterMap _registers{};
     bool _initialized = false;

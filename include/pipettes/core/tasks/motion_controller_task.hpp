@@ -45,23 +45,29 @@ class MotionControllerMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can::messages::StopRequest&) {
+    void handle(const can::messages::StopRequest& m) {
         LOG("Received stop request");
         controller.stop();
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
-    void handle(const can::messages::EnableMotorRequest&) {
+    void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
         controller.enable_motor();
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
-    void handle(const can::messages::DisableMotorRequest&) {
+    void handle(const can::messages::DisableMotorRequest& m) {
         LOG("Received disable motor request");
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
         controller.disable_motor();
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void handle(const can::messages::GetMotionConstraintsRequest&) {
@@ -82,6 +88,8 @@ class MotionControllerMessageHandler {
             m.min_velocity, m.max_velocity, m.min_acceleration,
             m.max_acceleration);
         controller.set_motion_constraints(m);
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void handle(const can::messages::TipActionRequest& m) {

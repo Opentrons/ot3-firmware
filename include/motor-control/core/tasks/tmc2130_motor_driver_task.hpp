@@ -96,6 +96,8 @@ class MotorDriverMessageHandler {
                 driver.convert_to_tmc2130_current_value(m.run_current);
         }
         driver.set_current_control(driver.get_register_map().ihold_irun);
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     tmc2130::driver::TMC2130<Writer, TaskQueue> driver;

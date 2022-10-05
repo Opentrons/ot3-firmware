@@ -109,6 +109,7 @@ SCENARIO("read capacitance sensor values") {
             sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
                 {}, 0xdeadbeef, capacitive_id, sensor_id_int, NUM_READS));
         sensor.handle_message(multi_read);
+        can_queue.reset();
         WHEN("the handler function receives the message in LSB mode") {
             THEN("the poller queue is populated with a poll request") {
                 REQUIRE(poller_queue.get_size() == 1);
@@ -240,6 +241,7 @@ SCENARIO("read capacitance sensor values") {
                 sensor.handle_message(first_resp);
                 sensor.handle_message(second_resp);
             }
+            can_queue.reset();
             THEN("it should adjust the offset accordingly") {
                 // check for the offset
                 auto read = sensors::utils::TaskMessage(

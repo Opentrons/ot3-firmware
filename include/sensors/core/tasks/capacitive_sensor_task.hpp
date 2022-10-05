@@ -106,6 +106,8 @@ class CapacitiveMessageHandler {
     void visit(can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(ADDRESS, m.data);
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(can::messages::BaselineSensorRequest &m) {
@@ -119,6 +121,8 @@ class CapacitiveMessageHandler {
             DELAY, own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(can::messages::SetSensorThresholdRequest &m) {
@@ -157,6 +161,8 @@ class CapacitiveMessageHandler {
             own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(can::messages::PeripheralStatusRequest &m) {

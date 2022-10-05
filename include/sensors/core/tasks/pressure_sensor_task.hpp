@@ -78,6 +78,8 @@ class PressureMessageHandler {
         if (mmr920C04::is_valid_address(m.reg_address)) {
             driver.write(mmr920C04::Registers(m.reg_address), m.data);
         }
+        driver.get_can_client().send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(const can::messages::BaselineSensorRequest &m) {
@@ -91,6 +93,8 @@ class PressureMessageHandler {
         } else {
             driver.get_temperature();
         }
+        driver.get_can_client().send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(const can::messages::SetSensorThresholdRequest &m) {
@@ -109,6 +113,8 @@ class PressureMessageHandler {
             driver.set_limited_poll(false);
             driver.get_pressure();
         }
+        driver.get_can_client().send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
