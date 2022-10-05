@@ -62,16 +62,6 @@ class MoveMessage(Message):
     axis: OT3Axis
     direction: Direction
 
-    def __eq__(self, other: Any) -> bool:
-        """Confirm that the 2 objects are equal"""
-        return isinstance(other, MoveMessage) and (
-            self.axis == other.axis and self.direction == other.direction
-        )
-
-    def __hash__(self) -> int:
-        """Return hash for instance."""
-        return hash(str(self))
-
     @staticmethod
     def build_message(message_content: bytes) -> MoveMessage:
         """Convert message_content into a MoveMessage object."""
@@ -91,14 +81,6 @@ class SyncPinMessage(Message):
     """Message for setting sync pin high or low."""
 
     state: SyncPinState
-
-    def __eq__(self, other: Any) -> bool:
-        """Confirm that the 2 objects are equal"""
-        return isinstance(other, SyncPinMessage) and other.state == self.state
-
-    def __hash__(self) -> int:
-        """Return hash for instance."""
-        return hash(str(self))
 
     @staticmethod
     def build_message(message_content: bytes) -> SyncPinMessage:
@@ -123,14 +105,6 @@ class GetAxisLocationMessage(Message):
 
     axis: OT3Axis
 
-    def __eq__(self, other: Any) -> bool:
-        """Confirm that the 2 objects are equal"""
-        return isinstance(other, GetAxisLocationMessage) and other.axis == self.axis
-
-    def __hash__(self) -> int:
-        """Return hash for instance."""
-        return hash(str(self))
-
     @staticmethod
     def build_message(message_content: bytes) -> GetAxisLocationMessage:
         """Convert message_content into a GetLocationMessage object."""
@@ -147,13 +121,15 @@ class GetAxisLocationMessage(Message):
 class GetSyncPinStateMessage(Message):
     """Message to get current location of axis."""
 
+    # Need this __eq__ function because the __dict__ method of this object
+    # doesn't have any attributes, so it resorts to seeing if the objects
+    # reside in the same place in memory, which will basically always fail.
+    # Instead, just check if the same class. This comparison works just fine
+    # because GetSyncPinStateMessage does have any attributes that can change
+    # value.
     def __eq__(self, other: Any) -> bool:
         """Confirm that the 2 objects are equal"""
         return isinstance(other, GetSyncPinStateMessage)
-
-    def __hash__(self) -> int:
-        """Return hash for instance."""
-        return hash(str(self))
 
     @staticmethod
     def build_message(message_content: bytes) -> GetSyncPinStateMessage:
