@@ -1,6 +1,18 @@
 # interface library for headers generated from python for messages
 # use with target_link_libraries(YOURTARGET state_manager)
 
+set_property(
+	DIRECTORY
+	APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/coverage.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.coverage"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.mypy_cache"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.pytest_cache"
+    "${CMAKE_CURRENT_SOURCE_DIR}/build"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dist"
+    "${CMAKE_CURRENT_SOURCE_DIR}/__pycache__"
+)
+
 set(MESSAGE_IDS_PATH ${CMAKE_BINARY_DIR}/common/simulation/message_ids.hpp)
 set(MOVE_MESSAGE_HW_IDS_PATH ${CMAKE_BINARY_DIR}/common/simulation/move_message_hw_ids.hpp)
 set(DIRECTION_PATH ${CMAKE_BINARY_DIR}/common/simulation/direction.hpp)
