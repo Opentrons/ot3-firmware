@@ -113,7 +113,8 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         std::copy_n(m.serial.begin(), sn_accessor_backing.size(),
                     sn_accessor_backing.begin());
         serial_number_accessor.write(sn_accessor_backing);
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 

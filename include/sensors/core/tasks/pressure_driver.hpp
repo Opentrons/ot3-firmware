@@ -312,9 +312,7 @@ class MMR920C04 {
         }
     }
 
-    auto get_can_client() -> CanClient& {
-        return can_client;
-    }
+    auto get_can_client() -> CanClient & { return can_client; }
 
   private:
     mmr920C04::MMR920C04RegisterMap _registers{};

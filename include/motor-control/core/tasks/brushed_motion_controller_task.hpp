@@ -50,21 +50,24 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
         controller.enable_motor();
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void handle(const can::messages::DisableMotorRequest& m) {
         LOG("Received disable motor request");
         controller.disable_motor();
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void handle(const can::messages::StopRequest& m) {
         LOG("Received stop request");
         controller.stop();
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
@@ -84,8 +87,7 @@ class MotionControllerMessageHandler {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
         can::messages::ReadLimitSwitchResponse msg{
-            .message_index = m.message_index,
-            .switch_status = response};
+            .message_index = m.message_index, .switch_status = response};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
@@ -93,8 +95,7 @@ class MotionControllerMessageHandler {
         auto response = controller.read_encoder_pulses();
         LOG("Received read encoder: encoder_pulses=%d", response);
         can::messages::EncoderPositionResponse msg{
-            .message_index = m.message_index,
-            .encoder_position = response};
+            .message_index = m.message_index, .encoder_position = response};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 

@@ -72,7 +72,8 @@ class MotorDriverMessageHandler {
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
             driver.write(tmc2160::registers::Registers(m.reg_address), m.data);
         }
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
@@ -80,7 +81,8 @@ class MotorDriverMessageHandler {
         LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
-            driver.read(tmc2160::registers::Registers(m.reg_address), data, m.message_index);
+            driver.read(tmc2160::registers::Registers(m.reg_address), data,
+                        m.message_index);
         }
     }
 
@@ -97,7 +99,8 @@ class MotorDriverMessageHandler {
                 driver.convert_to_tmc2160_current_value(m.run_current);
         }
         driver.set_current_control(driver.get_register_map().ihold_irun);
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 

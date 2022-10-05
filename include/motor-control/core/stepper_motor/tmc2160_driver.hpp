@@ -53,9 +53,11 @@ class TMC2160 {
     auto operator=(const TMC2160&& c) = delete;
     ~TMC2160() = default;
 
-    auto read(Registers addr, uint32_t command_data, uint32_t message_index) -> void {
+    auto read(Registers addr, uint32_t command_data, uint32_t message_index)
+        -> void {
         auto converted_addr = static_cast<uint8_t>(addr);
-        _spi_manager.read(converted_addr, command_data, _task_queue, _cs_intf, message_index);
+        _spi_manager.read(converted_addr, command_data, _task_queue, _cs_intf,
+                          message_index);
     }
 
     auto write(Registers addr, uint32_t command_data) -> bool {

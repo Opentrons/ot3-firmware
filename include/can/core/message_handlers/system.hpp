@@ -64,10 +64,8 @@ class SystemMessageHandler {
     void visit(InitiateFirmwareUpdate &) { app_update_start(); }
 
     void visit(FirmwareUpdateStatusRequest &m) {
-        auto status_response =
-            FirmwareUpdateStatusResponse{
-                .message_index = m.message_index,
-                .flags = app_update_flags()};
+        auto status_response = FirmwareUpdateStatusResponse{
+            .message_index = m.message_index, .flags = app_update_flags()};
         writer.send_can_message(can::ids::NodeId::host, status_response);
     }
 

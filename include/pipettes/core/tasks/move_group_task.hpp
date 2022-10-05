@@ -76,7 +76,8 @@ class MoveGroupMessageHandler {
         for (auto& group : move_groups) {
             group.clear();
         }
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
@@ -87,7 +88,8 @@ class MoveGroupMessageHandler {
             auto move = group.get_move(i);
             std::visit([this](auto& m) { this->visit_move(m); }, move);
         }
-        can_client.send_can_message(can::ids::NodeId::host,
+        can_client.send_can_message(
+            can::ids::NodeId::host,
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
