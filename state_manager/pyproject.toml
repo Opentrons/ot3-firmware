@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ot3_state_manager"
+name = "state_manager"
 version = "0.1.0"
 description = "State Manager for OT3"
 license = "Apache-2.0"

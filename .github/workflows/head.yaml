@@ -129,8 +129,8 @@ jobs:
         run: cmake --build ./build-host --target head-build-and-test
         working-directory: ot3-firmware
 
-      - name: 'Setup ot3_state_manager'
-        run: cmake --build ./build-host/ --target ot3-state-manager-setup
+      - name: 'Setup state_manager'
+        run: cmake --build ./build-host/ --target state-manager-setup
         working-directory: ot3-firmware
 
       - name: 'Build simulator'

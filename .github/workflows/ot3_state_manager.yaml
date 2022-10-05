@@ -1,7 +1,7 @@
 # This workflow runs test and lint on branch pushes that touch the
-# ot3_state_manager project.
+# state_manager project.
 
-name: 'ot3_state_manager Lint & Test'
+name: 'state_manager Lint & Test'
 
 on:
   push:
@@ -10,8 +10,8 @@ on:
       - 'release-*'
   pull_request:
     paths:
-      - 'ot3_state_manager/**'
-      - '.github/workflows/ot3_state_manager.yaml'
+      - 'state_manager/**'
+      - '.github/workflows/state_manager.yaml'
   workflow_dispatch:
 
 defaults:
@@ -20,7 +20,7 @@ defaults:
 
 jobs:
   lint-test:
-    name: 'ot3_state_manager linting and tests'
+    name: 'state_manager linting and tests'
     runs-on: 'ubuntu-20.04'
     steps:
       - name: Update and install gcc-10 & g++-10
@@ -55,19 +55,19 @@ jobs:
         working-directory: ot3-firmware
 
       - name: Setup repo
-        run: cmake --build ./build-host/ --target ot3-state-manager-setup
+        run: cmake --build ./build-host/ --target state-manager-setup
         working-directory: ot3-firmware
 
       - name: Lint
-        run: cmake --build ./build-host/ --target ot3-state-manager-setup
+        run: cmake --build ./build-host/ --target state-manager-setup
         working-directory: ot3-firmware
 
       - name: Test
-        run: cmake --build ./build-host/ --target ot3-state-manager-test
+        run: cmake --build ./build-host/ --target state-manager-test
         working-directory: ot3-firmware
 
       - name: Upload Coverage Report
         uses: 'codecov/codecov-action@v2'
         with:
-          files: ./ot3-firmware/ot3-state-manager/coverage.xml
-          flags: ot3-state-manager
+          files: ./ot3-firmware/state-manager/coverage.xml
+          flags: state-manager

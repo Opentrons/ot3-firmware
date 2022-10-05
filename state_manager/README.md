@@ -12,7 +12,7 @@ to retrieve the state.
 
 ## Dependencies
 
-The `ot3_state_manager` depends on the `api` and `hardware` project from the
+The `state_manager` depends on the `api` and `hardware` project from the
 [opentrons](https://github.com/Opentrons/opentrons) repo. When creating a virtualenv, poetry
 expects the `opentrons` repo to be a sibiling to `ot3-firmware`. If the `opentrons` repo does
 not exist as a sibling to `ot3-firmware`, build the project will fail.
@@ -27,25 +27,25 @@ not exist as a sibling to `ot3-firmware`, build the project will fail.
 
 ## Setup
 
-To setup the ot3_state_manager project, navigate to `ot3-firmware/ot3_state_manager`
+To setup the state_manager project, navigate to `ot3-firmware/state_manager`
 and run `make setup`
 
 ## Teardown
 
-To teardown the virtualenv created by poetry, navigate to `ot3-firmware/ot3_state_manager`
+To teardown the virtualenv created by poetry, navigate to `ot3-firmware/state_manager`
 and run `make teardown`
 
 ## Tests
 
-To run unittests for project, navigate to `ot3-firmware/ot3_state_manager`
+To run unittests for project, navigate to `ot3-firmware/state_manager`
 and run `make test`
 
 ## Formatting
 
-To run formatting, navigate to `ot3-firmware/ot3_state_manager`
+To run formatting, navigate to `ot3-firmware/state_manager`
 and run `make format`
 
 ## Lint
 
-To run linting, navigate to `ot3-firmware/ot3_state_manager`
+To run linting, navigate to `ot3-firmware/state_manager`
 and run `make lint`

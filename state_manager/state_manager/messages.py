@@ -13,8 +13,8 @@ from typing import Any, Optional, Type
 
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
+from .ot3_state import OT3State
+from .util import Direction, MoveMessageHardware, SyncPinState
 
 MESSAGE_ID_BYTE_LENGTH = 1
 MESSAGE_CONTENT_BYTE_LENGTH = 3

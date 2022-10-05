@@ -269,19 +269,19 @@
       ]
     },
     {
-      "name": "ot3-state-manager",
-      "displayName": "OT-3 State Manager",
-      "description": "Build OT3 State Manager",
+      "name": "state-manager",
+      "displayName": "State Manager",
+      "description": "Build State Manager",
       "configurePreset": "host",
       "jobs": 4,
       "targets": [
-        "ot3-state-manager-setup",
-        "ot3-state-manager-teardown",
-        "ot3-state-manager-build",
-        "ot3-state-manager-format",
-        "ot3-state-manager-lint",
-        "ot3-state-manager-test",
-        "ot3-state-manager-clean"
+        "state-manager-setup",
+        "state-manager-teardown",
+        "state-manager-build",
+        "state-manager-format",
+        "state-manager-lint",
+        "state-manager-test",
+        "state-manager-clean"
       ]
     }
   ]

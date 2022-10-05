@@ -45,7 +45,7 @@ target_head_core_proto(head-simulator)
 
 target_ot_motor_control(head-simulator)
 
-target_link_libraries(head-simulator PRIVATE can-core common-simulation freertos-head pthread Boost::boost Boost::program_options ot3_state_manager)
+target_link_libraries(head-simulator PRIVATE can-core common-simulation freertos-head pthread Boost::boost Boost::program_options state_manager)
 
 set_target_properties(head-simulator
         PROPERTIES CXX_STANDARD 20

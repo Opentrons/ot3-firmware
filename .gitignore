@@ -12,7 +12,7 @@ node_modules
 __pycache__
 ./Pipfile
 .vscode/settings.json
-ot3_state_manager/.coverage
-ot3_state_manager/coverage.xml
-ot3_state_manager/dist/
-include/common/simulation/ot3_state_manager_messages.hpp
+state_manager/.coverage
+state_manager/coverage.xml
+state_manager/dist/
+include/common/simulation/state_manager_messages.hpp

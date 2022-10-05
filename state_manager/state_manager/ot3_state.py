@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.hardware import (
+from .hardware import (
     GantryX,
     GantryY,
     Gripper,
@@ -16,9 +16,9 @@ from ot3_state_manager.hardware import (
     RightPipette,
     SyncPin,
 )
-from ot3_state_manager.measurable_states import Position
-from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Direction, SyncPinState
+from .measurable_states import Position
+from .pipette_model import PipetteModel
+from .util import Direction, SyncPinState
 
 log = logging.getLogger(__name__)
 

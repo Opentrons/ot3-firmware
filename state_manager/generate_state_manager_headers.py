@@ -7,8 +7,8 @@ from typing import Type
 
 from header_generation_utils.utils import generate_file_comment, write_enum_cpp
 
-from ot3_state_manager.messages import MessageID
-from ot3_state_manager.util import Direction, MoveMessageHardware, SyncPinState
+from state_manager.messages import MessageID
+from state_manager.util import Direction, MoveMessageHardware, SyncPinState
 
 
 def get_message_id_enum() -> Type[Enum]:

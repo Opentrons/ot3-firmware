@@ -3,7 +3,7 @@
 import pytest
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.messages import (
+from state_manager.messages import (
     GetAxisLocationMessage,
     GetSyncPinStateMessage,
     Message,
@@ -12,8 +12,8 @@ from ot3_state_manager.messages import (
     _parse_message,
     handle_message,
 )
-from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import Direction, SyncPinState
+from state_manager.ot3_state import OT3State
+from state_manager.util import Direction, SyncPinState
 
 
 @pytest.mark.parametrize(
