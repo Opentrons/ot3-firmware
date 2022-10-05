@@ -10,7 +10,11 @@ on:
       - 'release-*'
   pull_request:
     paths:
-      - 'state_manager/**'
+      - 'state_manager/state_manager/**'
+      - 'state_manager/tests/**'
+      - 'state_manager/generate_state_manager_headers.py'
+      - 'state_manager/CMakeLists.txt'
+      - 'state_manager/pyproject.toml'
       - '.github/workflows/state_manager.yaml'
   workflow_dispatch:
 
