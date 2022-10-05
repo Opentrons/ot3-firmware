@@ -12,7 +12,13 @@ from state_manager.util import Direction, MoveMessageHardware, SyncPinState
 
 
 def get_message_id_enum() -> Type[Enum]:
-    """Creates a MessageID enum."""
+    """Creates a MessageID enum.
+
+    Cannot just pass the MessageID type to write_enum_cpp because MessageID
+    is a multi attribute enum. For each enum entry there is a message_id and
+    a builder_func attribute. Need to return an enum with just the message_id
+    as the value.
+    """
     message_ids = [(message.name.lower(), message.message_id) for message in MessageID]
     # mypy does not execute code, so it cannot figure out what the types
     # of the values inside the tuple are.
@@ -23,7 +29,13 @@ def get_message_id_enum() -> Type[Enum]:
 
 
 def get_move_message_hw_id_enum() -> Type[Enum]:
-    """Creates MoveMessage hw_id enum."""
+    """Creates MoveMessage hw_id enum.
+
+    Cannot just pass the MoveMessage type to write_enum_cpp because MoveMessage
+    is a multi attribute enum. For each enum entry there is a hw_id and
+    a builder_func attribute. Need to return an enum with just the hw_id
+    as the value.
+    """
     move_message_hw_ids = [
         (message.axis.name.lower(), message.hw_id) for message in MoveMessageHardware
     ]
