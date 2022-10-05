@@ -3,6 +3,9 @@
 
 set(GENERATED_MESSAGE_HEADER ${CMAKE_BINARY_DIR}/common/simulation/state_manager_messages.hpp)
 set(PYSRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/state_manager)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/.venv)
+set(VENV_PATH ${CMAKE_BINARY_DIR}/.venv)
+
 add_custom_command(
 	OUTPUT ${GENERATED_MESSAGE_HEADER}
 	COMMENT "Generating header file and storing to ${GENERATED_MESSAGE_HEADER}"
@@ -20,8 +23,8 @@ target_include_directories(state_manager INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(
 	state-manager-setup
-	COMMAND ${Poetry_EXECUTABLE} env use 3.8
-	COMMAND ${Poetry_EXECUTABLE} install
+	COMMAND POETRY_VIRTUALENVS_PATH=${VENV_PATH} ${Poetry_EXECUTABLE} env use 3.8
+	COMMAND POETRY_VIRTUALENVS_PATH=${VENV_PATH} ${Poetry_EXECUTABLE} install
 	WORKING_DIRECTORY ../../state_manager
 )
 
@@ -35,7 +38,7 @@ add_custom_target(
 
 add_custom_target(
 	state-manager-teardown
-	COMMAND ${Poetry_EXECUTABLE} env info -p | xargs basename | xargs ${Poetry_EXECUTABLE} env remove
+	COMMAND POETRY_VIRTUALENVS_PATH= ${VENV_PATH} ${Poetry_EXECUTABLE} env info -p | xargs basename | xargs ${Poetry_EXECUTABLE} env remove
 	WORKING_DIRECTORY ../../state_manager
 )
 
@@ -82,3 +85,4 @@ add_custom_target(
 add_dependencies(state-manager-test state-manager-setup)
 add_dependencies(state-manager-lint state-manager-setup)
 add_dependencies(state-manager-format state-manager-setup)
+unset(ENV{POETRY_VIRTUALENVS_PATH})
