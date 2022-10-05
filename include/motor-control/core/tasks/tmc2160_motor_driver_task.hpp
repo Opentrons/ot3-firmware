@@ -72,6 +72,8 @@ class MotorDriverMessageHandler {
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
             driver.write(tmc2160::registers::Registers(m.reg_address), m.data);
         }
+        can_client.send_can_message(can::ids::NodeId::host,
+            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void handle(const can::messages::ReadMotorDriverRegister& m) {
