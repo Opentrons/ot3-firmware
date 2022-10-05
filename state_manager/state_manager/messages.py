@@ -54,6 +54,11 @@ class Message(ABC):
         """Convert Message object into a sequence of hexadecimal bytes."""
         ...
 
+    @abstractmethod
+    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+        """Parse message and return a response."""
+        ...
+
 
 @dataclass
 class MoveMessage(Message):
@@ -74,6 +79,11 @@ class MoveMessage(Message):
         """Convert MoveMessage object into a sequence of hexadecimal bytes."""
         hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
         return struct.pack(">BHB", MessageID.MOVE.message_id, hw_id, self.direction)
+
+    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+        """Parse move message and return response."""
+        ot3_state.pulse(self.axis, self.direction)
+        return Response(content=data.decode(), is_error=False)
 
 
 @dataclass
@@ -98,6 +108,11 @@ class SyncPinMessage(Message):
         # 3rd arg is 0 because middle two bytes are not used for SyncPinMessage
         return struct.pack(">BHB", MessageID.SYNC_PIN.message_id, 0, self.state)
 
+    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+        """Parse sync pin message and return a response."""
+        ot3_state.set_sync_pin(self.state)
+        return Response(content=data.decode(), is_error=False)
+
 
 @dataclass
 class GetAxisLocationMessage(Message):
@@ -116,6 +131,11 @@ class GetAxisLocationMessage(Message):
         """Convert GetLocationMessage object into a sequence of hexadecimal bytes."""
         hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
         return struct.pack(">BHB", MessageID.GET_AXIS_LOCATION.message_id, hw_id, 0)
+
+    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+        """Parse get axis location message and return a response."""
+        loc = ot3_state.axis_current_position(self.axis)
+        return Response(content=str(loc), is_error=False)
 
 
 class GetSyncPinStateMessage(Message):
@@ -139,6 +159,12 @@ class GetSyncPinStateMessage(Message):
     def to_bytes(self) -> bytes:
         """Convert GetSyncPinStateMessage object into a sequence of hexadecimal bytes."""
         return struct.pack(">BHB", MessageID.GET_SYNC_PIN_STATE.message_id, 0, 0)
+
+    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+        """Parse get sync pin state message and return a response."""
+        return Response(
+            content="1" if ot3_state.get_sync_pin_state() else "0", is_error=False
+        )
 
 
 @unique
@@ -188,17 +214,8 @@ def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
         response.is_error = True
         response.content = "Unhandled Exception"
     else:
-        if isinstance(message, MoveMessage):
-            ot3_state.pulse(message.axis, message.direction)
-            response.content = data.decode()
-        elif isinstance(message, SyncPinMessage):
-            ot3_state.set_sync_pin(message.state)
-            response.content = data.decode()
-        elif isinstance(message, GetAxisLocationMessage):
-            loc = ot3_state.axis_current_position(message.axis)
-            response.content = str(loc)
-        elif isinstance(message, GetSyncPinStateMessage):
-            response.content = "1" if ot3_state.get_sync_pin_state() else "0"
+        if issubclass(message.__class__, Message):
+            response = message.handle(data, ot3_state)
         else:
             response.content = "Parsed to an unhandled message."
             response.is_error = True
