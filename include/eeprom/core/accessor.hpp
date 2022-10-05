@@ -44,7 +44,7 @@ class ReadListener {
     auto operator=(ReadListener&&) noexcept -> ReadListener& = default;
 
     virtual ~ReadListener() = default;
-    virtual void read_complete() = 0;
+    virtual void read_complete(uint32_t message_index) = 0;
 };
 
 /**
@@ -166,7 +166,7 @@ class EEPromAccessor {
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
         if (bytes_recieved == bytes_to_read) {
-            read_listener.read_complete();
+            read_listener.read_complete(msg.message_index);
         }
     }
 

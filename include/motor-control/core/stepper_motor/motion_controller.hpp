@@ -71,7 +71,8 @@ class MotionController {
     void move(const can::messages::HomeRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
-        Move msg{.duration = can_msg.duration,
+        Move msg{.message_index = can_msg.message_index,
+                 .duration = can_msg.duration,
                  .velocity = velocity_steps,
                  .acceleration = 0,
                  .group_id = can_msg.group_id,

@@ -683,7 +683,8 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
         body = bit_utils::bytes_to_int(body, limit, data);
         body = bit_utils::bytes_to_int(body, limit, reg_address);
-        return WriteToSensorRequest{.sensor = sensor,
+        return WriteToSensorRequest{.message_index = msg_ind,
+                                    .sensor = sensor,
                                     .sensor_id = sensor_id,
                                     .data = data,
                                     .reg_address = reg_address};

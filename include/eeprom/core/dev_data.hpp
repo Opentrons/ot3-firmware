@@ -272,7 +272,10 @@ class DevDataAccessor
         create_data_part(key, len, dummy);
     }
 
-    void read_complete() {
+    void read_complete(uint32_t message_index) {
+        // we don't need message_index since this is an internal call
+        // and not initatied from a can message
+        std::ignore = message_index;
         // test for non 0x00 elements
         if (data_tail_buff.end() ==
             std::find(data_tail_buff.begin(), data_tail_buff.end(), true)) {

@@ -45,7 +45,7 @@ class PresenceSensingDriverMessageHandler {
   private:
     void visit(std::monostate&) {}
 
-    void visit(can::messages::ReadPresenceSensingVoltageRequest&) {
+    void visit(can::messages::ReadPresenceSensingVoltageRequest &m) {
         auto voltage_read = driver.get_readings();
 
         LOG("Received read presence sensing voltage request: z=%d, a=%d, "
@@ -53,6 +53,7 @@ class PresenceSensingDriverMessageHandler {
             voltage_read.z_motor, voltage_read.a_motor, voltage_read.gripper);
 
         can::messages::ReadPresenceSensingVoltageResponse resp{
+            .message_index = m.message_index,
             .z_motor = voltage_read.z_motor,
             .a_motor = voltage_read.a_motor,
             .gripper = voltage_read.gripper,

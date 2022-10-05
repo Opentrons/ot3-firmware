@@ -41,6 +41,7 @@ class MoveStatusMessageHandler {
      */
     void handle_message(const TaskMessage& message) {
         can::messages::MoveCompleted msg = {
+            .message_index = message.message_index,
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .current_position_um = fixed_point_multiply(

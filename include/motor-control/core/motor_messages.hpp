@@ -33,6 +33,7 @@ enum class AckMessageId : uint8_t {
 };
 
 struct Ack {
+    uint32_t message_index;
     uint8_t group_id;
     uint8_t seq_id;
     uint32_t current_position_steps;
@@ -45,6 +46,7 @@ struct GearMotorAck : public Ack {
 };
 
 struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    uint32_t message_index;
     stepper_timer_ticks duration;  // in stepper timer ticks
     steps_per_tick velocity;
     steps_per_tick_sq acceleration;
@@ -52,8 +54,9 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id) -> Ack {
+    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id, uint32_t message_index) -> Ack {
         return Ack{
+            .message_index = message_index,
             .group_id = group_id,
             .seq_id = seq_id,
             .current_position_steps = position,
@@ -66,9 +69,9 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 struct GearMotorMove : public Move {
     can::ids::PipetteTipActionType action;
 
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id)
+    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id, uint32_t message_index)
         -> GearMotorAck {
-        return GearMotorAck{group_id, seq_id, position, pulses, _id, action};
+        return GearMotorAck{message_index, group_id, seq_id, position, pulses, _id, action};
     }
 };
 
@@ -77,6 +80,7 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
      * Note that brushed timer tick at a different frequency from the stepper
      * motor timer.
      */
+    uint32_t message_index;
     brushed_timer_ticks duration;  // in brushed timer ticks
     uint32_t duty_cycle;
     uint8_t group_id;
@@ -84,8 +88,9 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     int32_t encoder_position;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(int32_t pulses, AckMessageId _id) -> Ack {
+    auto build_ack(int32_t pulses, AckMessageId _id, uint32_t message_index) -> Ack {
         return Ack{
+            .message_index = message_index,
             .group_id = group_id,
             .seq_id = seq_id,
             .current_position_steps = 0,

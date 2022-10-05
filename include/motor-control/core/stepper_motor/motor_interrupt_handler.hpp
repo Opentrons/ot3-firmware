@@ -204,7 +204,8 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                hardware.get_encoder_pulses(), ack_msg_id);
+                hardware.get_encoder_pulses(), ack_msg_id,
+                buffered_move.message_index);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));

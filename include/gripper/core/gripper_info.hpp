@@ -68,7 +68,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
      * A serial number read has completed.
      * @param sn Serial number
      */
-    void read_complete() final {
+    void read_complete(uint32_t message_index) final {
         // TODO (al, 2022-05-19): Define model.
         std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
         std::copy_n(sn_accessor_backing.begin(),
@@ -76,6 +76,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         writer.send_can_message(
             can::ids::NodeId::host,
             GripperInfoResponse{
+                .message_index = message_index,
                 .model = get_gripper_model(sn_accessor_backing),
                 .serial = get_gripper_data_code(sn_accessor_backing)});
     }

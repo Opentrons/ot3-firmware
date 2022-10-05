@@ -85,13 +85,14 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
      * A serial number read has completed.
      * @param sn The serial number.
      */
-    void read_complete() final {
+    void read_complete(uint32_t message_index) final {
         std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
         std::copy_n(sn_accessor_backing.begin(),
                     eeprom::addresses::serial_number_length, serial.begin());
         writer.send_can_message(
             can::ids::NodeId::host,
             can::messages::PipetteInfoResponse{
+                .message_index = message_index,
                 .name = get_name(sn_accessor_backing),
                 .model = get_model(sn_accessor_backing),
                 .serial = get_data_code(sn_accessor_backing)});

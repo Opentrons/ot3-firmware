@@ -58,6 +58,7 @@ class MotorDriverMessageHandler {
                 tmc2160::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
             can::messages::ReadMotorDriverRegisterResponse response_msg{
+                //.message_index = m.message_index,
                 .reg_address = static_cast<uint8_t>(m.id.token),
                 .data = data,
             };
