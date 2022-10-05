@@ -15,5 +15,4 @@ __pycache__
 state_manager/.coverage
 state_manager/coverage.xml
 state_manager/dist/
-include/common/simulation/state_manager_messages.hpp
 state_manager/poetry.toml

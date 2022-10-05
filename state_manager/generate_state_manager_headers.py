@@ -10,6 +10,17 @@ from header_generation_utils.utils import generate_file_comment, write_enum_cpp
 from state_manager.messages import MessageID
 from state_manager.util import Direction, MoveMessageHardware, SyncPinState
 
+MESSAGE_ID_NAME = "message-ids"
+MOVE_MESSAGE_HARDWARE_ID_NAME = "move-message-hardware-ids"
+DIRECTION_NAME = "direction"
+SYNC_PIN_STATE_NAME = "sync-pin-state"
+POSSIBLE_CHOICES = [
+    MESSAGE_ID_NAME,
+    MOVE_MESSAGE_HARDWARE_ID_NAME,
+    DIRECTION_NAME,
+    SYNC_PIN_STATE_NAME,
+]
+
 
 def get_message_id_enum() -> Type[Enum]:
     """Creates a MessageID enum.
@@ -53,6 +64,12 @@ def main() -> None:
         description="Generate a C or C++ header files defining CANBUS constants."
     )
     parser.add_argument(
+        "header_to_generate",
+        metavar="HEADER_TO_GENERATE",
+        type=str,
+        choices=POSSIBLE_CHOICES,
+    )
+    parser.add_argument(
         "target",
         metavar="TARGET",
         type=argparse.FileType("w"),
@@ -64,10 +81,17 @@ def main() -> None:
     args = parser.parse_args()
     output = args.target
     generate_file_comment(output)
-    write_enum_cpp(get_message_id_enum(), output)
-    write_enum_cpp(get_move_message_hw_id_enum(), output)
-    write_enum_cpp(Direction, output)
-    write_enum_cpp(SyncPinState, output)
+
+    if args.header_to_generate == MESSAGE_ID_NAME:
+        write_enum_cpp(get_message_id_enum(), output)
+    elif args.header_to_generate == MOVE_MESSAGE_HARDWARE_ID_NAME:
+        write_enum_cpp(get_move_message_hw_id_enum(), output)
+    elif args.header_to_generate == DIRECTION_NAME:
+        write_enum_cpp(Direction, output)
+    elif args.header_to_generate == SYNC_PIN_STATE_NAME:
+        write_enum_cpp(SyncPinState, output)
+    else:
+        raise ValueError("Value passed to header_to_generate arg was not recognized")
 
 
 if __name__ == "__main__":

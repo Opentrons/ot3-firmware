@@ -1,21 +1,54 @@
 # interface library for headers generated from python for messages
 # use with target_link_libraries(YOURTARGET state_manager)
 
-set(GENERATED_MESSAGE_HEADER ${CMAKE_BINARY_DIR}/common/simulation/state_manager_messages.hpp)
+set(MESSAGE_IDS_PATH ${CMAKE_BINARY_DIR}/common/simulation/message_ids.hpp)
+set(MOVE_MESSAGE_HW_IDS_PATH ${CMAKE_BINARY_DIR}/common/simulation/move_message_hw_ids.hpp)
+set(DIRECTION_PATH ${CMAKE_BINARY_DIR}/common/simulation/direction.hpp)
+set(SYNC_PIN_STATE_PATH ${CMAKE_BINARY_DIR}/common/simulation/sync_pin_state.hpp)
 set(PYSRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/state_manager)
 set(VENV_PATH ${CMAKE_BINARY_DIR}/.venv)
 file(MAKE_DIRECTORY ${VENV_PATH})
 
-
 add_custom_command(
-	OUTPUT ${GENERATED_MESSAGE_HEADER}
-	COMMENT "Generating header file and storing to ${GENERATED_MESSAGE_HEADER}"
+	OUTPUT ${MESSAGE_IDS_PATH}
+	COMMENT "Generating header file and storing to ${MESSAGE_IDS_PATH}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
-	COMMAND ${Poetry_EXECUTABLE} run generate-headers ${GENERATED_MESSAGE_HEADER}
+	COMMAND ${Poetry_EXECUTABLE} run generate-headers message-ids ${MESSAGE_IDS_PATH}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
-add_custom_target(state-manager-headers DEPENDS ${GENERATED_MESSAGE_HEADER})
+
+
+add_custom_command(
+	OUTPUT ${MOVE_MESSAGE_HW_IDS_PATH}
+	COMMENT "Generating header file and storing to ${MOVE_MESSAGE_HW_IDS_PATH}"
+	VERBATIM
+	DEPENDS ${PYSRC_DIR}/messages.py
+	COMMAND ${Poetry_EXECUTABLE} run generate-headers move-message-hardware-ids ${MOVE_MESSAGE_HW_IDS_PATH}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
+
+add_custom_command(
+	OUTPUT ${DIRECTION_PATH}
+	COMMENT "Generating header file and storing to ${DIRECTION_PATH}"
+	VERBATIM
+	DEPENDS ${PYSRC_DIR}/messages.py
+	COMMAND ${Poetry_EXECUTABLE} run generate-headers direction ${DIRECTION_PATH}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
+
+add_custom_command(
+	OUTPUT ${SYNC_PIN_STATE_PATH}
+	COMMENT "Generating header file and storing to ${SYNC_PIN_STATE_PATH}"
+	VERBATIM
+	DEPENDS ${PYSRC_DIR}/messages.py
+	COMMAND ${Poetry_EXECUTABLE} run generate-headers sync-pin-state ${SYNC_PIN_STATE_PATH}
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	)
+
+add_custom_target(state-manager-headers DEPENDS ${SYNC_PIN_STATE_PATH} ${MESSAGE_IDS_PATH} ${MOVE_MESSAGE_HW_IDS_PATH} ${DIRECTION_PATH})
 # By depending on this target, you'll be able to include the generated file
 # with no path qualifiers (i.e. #include "state_manager_messages.hpp")
 add_library(state_manager INTERFACE)
