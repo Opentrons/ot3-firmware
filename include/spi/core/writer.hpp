@@ -47,14 +47,16 @@ class Writer {
      */
     template <OriginatingResponseQueue RQType>
     auto read(uint8_t register_addr, uint32_t command_data,
-              RQType& response_queue, utils::ChipSelectInterface cs_intf)
+              RQType& response_queue, utils::ChipSelectInterface cs_intf,
+              uint32_t message_index)
         -> bool {
         auto txBuffer = build_message(register_addr, spi::hardware::Mode::READ,
                                       command_data);
         TransactionIdentifier _transaction_id{
             .token = register_addr,
             .command_type = static_cast<uint8_t>(spi::hardware::Mode::READ),
-            .requires_response = false};
+            .requires_response = false,
+            .message_index = message_index};
         Transact message{
             .id = _transaction_id,
             .transaction = {.txBuffer = txBuffer, .cs_interface = cs_intf},

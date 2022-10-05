@@ -58,7 +58,7 @@ class MotorDriverMessageHandler {
                 tmc2160::registers::Registers(static_cast<uint8_t>(m.id.token)),
                 m.rxBuffer);
             can::messages::ReadMotorDriverRegisterResponse response_msg{
-                //.message_index = m.message_index,
+                .message_index = m.id.message_index,
                 .reg_address = static_cast<uint8_t>(m.id.token),
                 .data = data,
             };
@@ -80,7 +80,7 @@ class MotorDriverMessageHandler {
         LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
-            driver.read(tmc2160::registers::Registers(m.reg_address), data);
+            driver.read(tmc2160::registers::Registers(m.reg_address), data, m.message_index);
         }
     }
 
