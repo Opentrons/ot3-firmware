@@ -123,8 +123,3 @@ add_custom_target(
 	COMMAND ${Poetry_EXECUTABLE} run python -m mdformat README.md
 	WORKING_DIRECTORY ../../state_manager
 )
-
-add_dependencies(state-manager-test state-manager-setup)
-add_dependencies(state-manager-lint state-manager-setup)
-add_dependencies(state-manager-format state-manager-setup)
-unset(ENV{POETRY_VIRTUALENVS_PATH})
