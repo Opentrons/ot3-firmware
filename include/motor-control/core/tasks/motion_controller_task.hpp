@@ -60,9 +60,10 @@ class MotionControllerMessageHandler {
             can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
-    void handle(const can::messages::GetMotionConstraintsRequest&) {
+    void handle(const can::messages::GetMotionConstraintsRequest &m) {
         auto constraints = controller.get_motion_constraints();
         can::messages::GetMotionConstraintsResponse response_msg{
+            .message_index = m.message_index,
             .min_velocity = constraints.min_velocity,
             .max_velocity = constraints.max_velocity,
             .min_acceleration = constraints.min_acceleration,
@@ -97,17 +98,21 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-    void handle(const can::messages::ReadLimitSwitchRequest&) {
+    void handle(const can::messages::ReadLimitSwitchRequest &m) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
-        can::messages::ReadLimitSwitchResponse msg{{}, response};
+        can::messages::ReadLimitSwitchResponse msg{
+            .message_index = m.message_index,
+            .switch_status = response};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
-    void handle(const can::messages::EncoderPositionRequest&) {
+    void handle(const can::messages::EncoderPositionRequest &m) {
         auto response = controller.read_encoder_pulses();
         LOG("Received read encoder: encoder_pulses=%d", response);
-        can::messages::EncoderPositionResponse msg{{}, response};
+        can::messages::EncoderPositionResponse msg{
+            .message_index = m.message_index,
+            .encoder_position = response};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 

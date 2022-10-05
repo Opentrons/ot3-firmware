@@ -60,20 +60,21 @@ class PresenceSensingDriverMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
-    void visit(can::messages::AttachedToolsRequest&) {
+    void visit(can::messages::AttachedToolsRequest& m) {
         LOG("Received attached tools request");
         auto tools = driver.update_tools();
         auto new_tools = tools.second;
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::PushToolsDetectedNotification{
+                .message_index = m.message_index,
                 .z_motor = (new_tools.z_motor),
                 .a_motor = (new_tools.a_motor),
                 .gripper = (new_tools.gripper),
             });
     }
 
-    void visit(presence_sensing_driver_task_messages::CheckForToolChange&) {
+    void visit(presence_sensing_driver_task_messages::CheckForToolChange& m) {
         attached_tools::AttachedTools new_tools;
         bool new_tool_detected = false;
         std::tie(new_tool_detected, new_tools) = driver.update_tools();
@@ -81,6 +82,8 @@ class PresenceSensingDriverMessageHandler {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::PushToolsDetectedNotification{
+                    // 0 message index to indicate async message
+                    .message_index = 0,
                     .z_motor = (new_tools.z_motor),
                     .a_motor = (new_tools.a_motor),
                     .gripper = (new_tools.gripper),
