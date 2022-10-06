@@ -239,6 +239,7 @@
       "configurePreset": "host",
       "jobs": 4,
       "targets": [
+        "state-manager-setup",
         "bootloader-simulator",
         "head-simulator",
         "gantry-x-simulator",
@@ -257,6 +258,7 @@
       "configurePreset": "host-gcc10",
       "jobs": 4,
       "targets": [
+        "state-manager-setup",
         "bootloader-simulator",
         "head-simulator",
         "gantry-x-simulator",
@@ -266,22 +268,6 @@
         "pipettes-96-simulator",
         "pipettes-384-simulator",
         "gripper-simulator"
-      ]
-    },
-    {
-      "name": "state-manager",
-      "displayName": "State Manager",
-      "description": "Build State Manager",
-      "configurePreset": "host",
-      "jobs": 4,
-      "targets": [
-        "state-manager-setup",
-        "state-manager-teardown",
-        "state-manager-build",
-        "state-manager-format",
-        "state-manager-lint",
-        "state-manager-test",
-        "state-manager-clean"
       ]
     }
   ]
