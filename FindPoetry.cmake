@@ -62,3 +62,4 @@ find_program(
 	NO_DEFAULT_PATH
 	REQUIRED
 )
+message("Poetry executable is located at: ${Poetry_EXECUTABLE}")
