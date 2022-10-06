@@ -59,11 +59,11 @@ jobs:
         working-directory: ot3-firmware
 
       - name: Setup repo
-        run: cmake --build ./build-host/ --target state-manager-setup
+        run: cmake --build --preset simulators
         working-directory: ot3-firmware
 
       - name: Lint
-        run: cmake --build ./build-host/ --target state-manager-setup
+        run: cmake --build ./build-host/ --target state-manager-lint
         working-directory: ot3-firmware
 
       - name: Test
