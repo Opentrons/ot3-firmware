@@ -46,6 +46,11 @@ SCENARIO("device info") {
         request.arbitration_id.parts.message_id =
             can_messageid_device_info_request;
         request.arbitration_id.parts.padding = 0;
+        request.size = sizeof(uint32_t);
+        request.data[0] = 0xD3;
+        request.data[1] = 0x4D;
+        request.data[2] = 0xB3;
+        request.data[3] = 0x3F;
 
         WHEN("received") {
             Message response;
@@ -63,23 +68,27 @@ SCENARIO("device info") {
                         can_messageid_device_info_response);
             }
             THEN("it populates response body") {
-                REQUIRE(response.size == 16);
-                REQUIRE(response.data[0] == 0xDE);
-                REQUIRE(response.data[1] == 0xAD);
-                REQUIRE(response.data[2] == 0xBE);
-                REQUIRE(response.data[3] == 0xEF);
-                REQUIRE(response.data[4] == 0xC0);
-                REQUIRE(response.data[5] == 0xFF);
-                REQUIRE(response.data[6] == 0xEE);
-                REQUIRE(response.data[7] == 0xBB);
-                REQUIRE(response.data[8] == 'a');
-                REQUIRE(response.data[9] == 'b');
-                REQUIRE(response.data[10] == 'c');
-                REQUIRE(response.data[11] == 'd');
-                REQUIRE(response.data[12] == 'e');
-                REQUIRE(response.data[13] == 'f');
-                REQUIRE(response.data[14] == '0');
-                REQUIRE(response.data[15] == 0);
+                REQUIRE(response.size == 20);
+                REQUIRE(response.data[0] == 0xD3);
+                REQUIRE(response.data[1] == 0x4D);
+                REQUIRE(response.data[2] == 0xB3);
+                REQUIRE(response.data[3] == 0x3F);
+                REQUIRE(response.data[4] == 0xDE);
+                REQUIRE(response.data[5] == 0xAD);
+                REQUIRE(response.data[6] == 0xBE);
+                REQUIRE(response.data[7] == 0xEF);
+                REQUIRE(response.data[8] == 0xC0);
+                REQUIRE(response.data[9] == 0xFF);
+                REQUIRE(response.data[10] == 0xEE);
+                REQUIRE(response.data[11] == 0xBB);
+                REQUIRE(response.data[12] == 'a');
+                REQUIRE(response.data[13] == 'b');
+                REQUIRE(response.data[14] == 'c');
+                REQUIRE(response.data[15] == 'd');
+                REQUIRE(response.data[16] == 'e');
+                REQUIRE(response.data[17] == 'f');
+                REQUIRE(response.data[18] == '0');
+                REQUIRE(response.data[19] == 0);
             }
         }
     }
@@ -98,6 +107,11 @@ SCENARIO("update data bad checksum error") {
         request.data[1] = 0xAD;
         request.data[2] = 0xBE;
         request.data[3] = 0xEF;
+        request.data[4] = 0xC0;
+        request.data[5] = 0xFF;
+        request.data[6] = 0xEE;
+        request.data[7] = 0xBB;
+
         request.size = 64;
 
         WHEN("received") {
@@ -116,15 +130,68 @@ SCENARIO("update data bad checksum error") {
                         can_messageid_fw_update_data_ack);
             }
             THEN("it populates response body") {
+                REQUIRE(response.size == 10);
+                REQUIRE(response.data[0] == 0xDE);
+                REQUIRE(response.data[1] == 0xAD);
+                REQUIRE(response.data[2] == 0xBE);
+                REQUIRE(response.data[3] == 0xEF);
+                REQUIRE(response.data[4] == 0xC0);
+                REQUIRE(response.data[5] == 0xFF);
+                REQUIRE(response.data[6] == 0xEE);
+                REQUIRE(response.data[7] == 0xBB);
+                REQUIRE(response.data[8] ==
+                        ((can_errorcode_bad_checksum >> 8) & 0xFF));
+                REQUIRE(response.data[9] ==
+                        (can_errorcode_bad_checksum & 0xFF));
+            }
+        }
+    }
+}
+
+SCENARIO("update data complete") {
+    GIVEN("a request") {
+        Message request;
+        request.arbitration_id.parts.function_code = 0;
+        request.arbitration_id.parts.node_id = get_node_id();
+        request.arbitration_id.parts.originating_node_id = can_nodeid_host;
+        request.arbitration_id.parts.message_id =
+            can_messageid_fw_update_complete;
+        request.arbitration_id.parts.padding = 0;
+        request.data[0] = 0xDE;
+        request.data[1] = 0xAD;
+        request.data[2] = 0xBE;
+        request.data[3] = 0xEF;
+        request.data[4] = 0xC0;
+        request.data[5] = 0xFF;
+        request.data[6] = 0xEE;
+        request.data[7] = 0xBB;
+        request.size = 12;
+
+        WHEN("received") {
+            Message response;
+            auto error = handle_message(&request, &response);
+            THEN("it returns response") {
+                REQUIRE(error == handle_message_has_response);
+            }
+            THEN("it populates response arbitration id") {
+                REQUIRE(response.arbitration_id.parts.function_code == 0);
+                REQUIRE(response.arbitration_id.parts.node_id ==
+                        can_nodeid_host);
+                REQUIRE(response.arbitration_id.parts.originating_node_id ==
+                        get_node_id());
+                REQUIRE(response.arbitration_id.parts.message_id ==
+                        can_messageid_fw_update_complete_ack);
+            }
+            THEN("it populates response body") {
                 REQUIRE(response.size == 6);
                 REQUIRE(response.data[0] == 0xDE);
                 REQUIRE(response.data[1] == 0xAD);
                 REQUIRE(response.data[2] == 0xBE);
                 REQUIRE(response.data[3] == 0xEF);
                 REQUIRE(response.data[4] ==
-                        ((can_errorcode_bad_checksum >> 8) & 0xFF));
+                        ((can_errorcode_invalid_size >> 8) & 0xFF));
                 REQUIRE(response.data[5] ==
-                        (can_errorcode_bad_checksum & 0xFF));
+                        (can_errorcode_invalid_size & 0xFF));
             }
         }
     }
@@ -143,7 +210,11 @@ SCENARIO("update data complete error") {
         request.data[1] = 0xAD;
         request.data[2] = 0xBE;
         request.data[3] = 0xEF;
-        request.size = 4;
+        request.data[4] = 0xC0;
+        request.data[5] = 0xFF;
+        request.data[6] = 0xEE;
+        request.data[7] = 0xBB;
+        request.size = 8;
 
         WHEN("received") {
             Message response;
@@ -161,10 +232,15 @@ SCENARIO("update data complete error") {
                         can_messageid_fw_update_complete_ack);
             }
             THEN("it populates response body") {
-                REQUIRE(response.size == 2);
-                REQUIRE(response.data[0] ==
+                REQUIRE(response.size == 6);
+
+                REQUIRE(response.data[0] == 0xDE);
+                REQUIRE(response.data[1] == 0xAD);
+                REQUIRE(response.data[2] == 0xBE);
+                REQUIRE(response.data[3] == 0xEF);
+                REQUIRE(response.data[4] ==
                         ((can_errorcode_invalid_size >> 8) & 0xFF));
-                REQUIRE(response.data[1] ==
+                REQUIRE(response.data[5] ==
                         (can_errorcode_invalid_size & 0xFF));
             }
         }
@@ -180,7 +256,11 @@ SCENARIO("update get status") {
         request.arbitration_id.parts.message_id =
             can_messageid_fw_update_status_request;
         request.arbitration_id.parts.padding = 0;
-        request.size = 0;
+        request.size = 4;
+        request.data[0] = 0xDE;
+        request.data[1] = 0xAD;
+        request.data[2] = 0xBE;
+        request.data[3] = 0xEF;
 
         WHEN("received") {
             Message response;
@@ -198,11 +278,15 @@ SCENARIO("update get status") {
                         can_messageid_fw_update_status_response);
             }
             THEN("it populates response body") {
-                REQUIRE(response.size == 4);
-                REQUIRE(response.data[0] == 0xAB);
-                REQUIRE(response.data[1] == 0xE0);
-                REQUIRE(response.data[2] == 0xDE);
-                REQUIRE(response.data[3] == 0xAD);
+                REQUIRE(response.size == 8);
+                REQUIRE(response.data[0] == 0xDE);
+                REQUIRE(response.data[1] == 0xAD);
+                REQUIRE(response.data[2] == 0xBE);
+                REQUIRE(response.data[3] == 0xEF);
+                REQUIRE(response.data[4] == 0xAB);
+                REQUIRE(response.data[5] == 0xE0);
+                REQUIRE(response.data[6] == 0xDE);
+                REQUIRE(response.data[7] == 0xAD);
             }
         }
     }

@@ -75,16 +75,27 @@ HandleMessageReturn handle_device_info_request(const Message* request, Message* 
     response->arbitration_id.parts.node_id = can_nodeid_host;
     response->arbitration_id.parts.originating_node_id = get_node_id();
     const struct version *vstruct = version_get();
-    response->size = sizeof(*vstruct);
-    write_uint32(response->data, vstruct->version);
-    write_uint32(response->data + offsetof(struct version, flags), vstruct->flags);
-    memcpy(response->data + offsetof(struct version, sha), &vstruct->sha[0], sizeof(vstruct->sha));
+    uint32_t message_index;
+    parse_empty_message(request->data, request->size, &message_index);
+    response->size = sizeof(*vstruct) + sizeof(uint32_t);
+    write_uint32(response->data, message_index);
+    write_uint32(response->data + sizeof(uint32_t), vstruct->version);
+    write_uint32(response->data + offsetof(struct version, flags) + sizeof(uint32_t), vstruct->flags);
+    memcpy(response->data + offsetof(struct version, sha) + sizeof(uint32_t), &vstruct->sha[0], sizeof(vstruct->sha));
     return handle_message_has_response;
 }
 
 HandleMessageReturn handle_initiate_fw_update(const Message* request, Message* response) {
     fw_update_initialize(get_update_state());
-    return handle_message_ok;
+    response->arbitration_id.id = 0;
+    response->arbitration_id.parts.message_id = can_messageid_acknowledgement;
+    response->arbitration_id.parts.node_id = can_nodeid_host;
+    response->arbitration_id.parts.originating_node_id = get_node_id();
+    uint32_t message_index;
+    parse_empty_message(request->data, request->size, &message_index);
+    response->size = sizeof(uint32_t);
+    write_uint32(response->data, message_index);
+    return handle_message_has_response;
 }
 
 HandleMessageReturn handle_fw_update_data(const Message* request, Message* response) {
@@ -104,6 +115,7 @@ HandleMessageReturn handle_fw_update_data(const Message* request, Message* respo
 
     // Build response
     uint8_t* p = response->data;
+    p = write_uint32(p, data.message_index);
     p = write_uint32(p, data.address);
     p = write_uint16(p, e);
 
@@ -142,6 +154,7 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
 
     // Build response
     uint8_t* p = response->data;
+    p = write_uint32(p, complete.message_index);
     p = write_uint16(p, e);
 
     response->arbitration_id.id = 0;
@@ -155,7 +168,11 @@ HandleMessageReturn handle_fw_update_complete(const Message* request, Message* r
 
 
 HandleMessageReturn handle_fw_update_status_request(const Message* request, Message* response) {
+    uint32_t message_index;
+    parse_empty_message(request->data, request->size, &message_index);
+
     uint8_t* p = response->data;
+    p = write_uint32(p, message_index);
     p = write_uint32(p, app_update_flags());
 
     response->arbitration_id.id = 0;
@@ -168,9 +185,12 @@ HandleMessageReturn handle_fw_update_status_request(const Message* request, Mess
 
 static HandleMessageReturn handle_fw_update_erase_application(const Message* request, Message* response) {
     FwUpdateReturn updater_return = fw_update_erase_application(get_update_state());
+    uint32_t message_index;
+    parse_empty_message(request->data, request->size, &message_index);
 
     // Build response
     uint8_t* p = response->data;
+    p = write_uint32(p, message_index);
     p = write_uint16(p, updater_return == fw_update_ok ? can_errorcode_ok : can_errorcode_hardware);
 
     response->arbitration_id.id = 0;
