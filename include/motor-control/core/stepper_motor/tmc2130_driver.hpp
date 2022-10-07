@@ -117,7 +117,8 @@ class TMC2130 {
             _current_config.v_sf);
         auto fixed_point_constant = static_cast<uint32_t>(
             FLOAT_CONSTANT * static_cast<float>(1LL << 16));
-        auto max_val = static_cast<uint64_t>(32LL << 32) / static_cast<uint64_t>(fixed_point_constant);
+        auto max_val = static_cast<uint64_t>(32LL << 32) /
+                       static_cast<uint64_t>(fixed_point_constant);
         if (static_cast<uint64_t>(c) >= max_val) {
             return 31;
         }
