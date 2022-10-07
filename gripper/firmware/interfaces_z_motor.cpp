@@ -68,8 +68,8 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
  */
 static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers = {.gconfig = {.en_pwm_mode = 0x1},
-                  .ihold_irun = {.hold_current = 0x0,
-                                 .run_current = 0x19,
+                  .ihold_irun = {.hold_current = 0xA,
+                                 .run_current = 0x1F,
                                  .hold_current_delay = 0x7},
                   .tpowerdown = {},
                   .tcoolthrs = {.threshold = 0},
@@ -80,10 +80,13 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
                                .tbl = 0x2,
                                .mres = 0x4},
                   .coolconf = {.sgt = 0x6},
-                  .pwmconf = {.freewheel = 0x2}},
+                  .pwmconf = {.pwm_ampl = 0x80,
+                              .pwm_grad = 0x04,
+                              .pwm_freq = 0x1,
+                              .pwm_autoscale = 0x01}},
     .current_config =
         {
-            .r_sense = 0.1,
+            .r_sense = 0.33,
             .v_sf = 0.325,
         },
     .chip_select = {
