@@ -406,11 +406,6 @@ class TMC2160 {
             GLOB_FROM_CURRENT / (CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO);
         auto fixed_point_constant = static_cast<uint32_t>(
             GLOBAL_SCALE_CONSTANT * static_cast<float>(1LL << 16));
-        auto max_val = static_cast<uint64_t>(32LL << 32) /
-                       static_cast<uint64_t>(fixed_point_constant);
-        if (static_cast<uint64_t>(c) >= max_val) {
-            return 31;
-        }
         uint64_t global_scaler = static_cast<uint64_t>(fixed_point_constant) *
                                  static_cast<uint64_t>(c);
         return static_cast<uint32_t>(global_scaler >> 32) - 1;
