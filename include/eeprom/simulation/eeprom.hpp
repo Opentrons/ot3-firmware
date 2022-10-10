@@ -29,13 +29,14 @@ class EEProm : public I2CDeviceBase,
         -> std::function<std::string(std::string)> {
         return BackingStore::add_options(cmdline_desc, env_desc);
     }
-    explicit EEProm(po::variables_map& options, uint32_t backing_data = 0)
+    explicit EEProm(po::variables_map& options, const uint64_t backing_data = 0)
         : I2CDeviceBase(types::DEVICE_ADDRESS),
           backing(options, backing_data) {}
-    EEProm(hardware_iface::EEPromChipType chip, po::variables_map& options)
+    EEProm(hardware_iface::EEPromChipType chip, po::variables_map& options,
+           const uint32_t backing_data = 0)
         : I2CDeviceBase(types::DEVICE_ADDRESS),
           hardware_iface::EEPromHardwareIface(chip),
-          backing(options) {}
+          backing(options, backing_data) {}
 
     auto handle_write(const uint8_t* data, uint16_t size) -> bool {
         auto* iter = data;
@@ -89,7 +90,7 @@ class EEProm : public I2CDeviceBase,
         BackingStore(BackingStore&&) = delete;
         auto operator=(BackingStore&&) -> BackingStore&& = delete;
         explicit BackingStore(const po::variables_map& variables,
-                              const uint32_t backing_data)
+                              const uint64_t backing_data)
             : backing(get_prepped_backing_file(variables, backing_data)) {}
         ~BackingStore() {
             if (backing) {
@@ -122,7 +123,7 @@ class EEProm : public I2CDeviceBase,
             }
         }
         static auto get_prepped_backing_file(std::string pathstr,
-                                             uint32_t backing_data)
+                                             const uint64_t backing_data)
             -> std::FILE* {
             auto file = ((pathstr == TEMPFILE_KEY) ? get_temp_file()
                                                    : get_backing_file(pathstr));
@@ -157,10 +158,11 @@ class EEProm : public I2CDeviceBase,
             LOG("got file at %p\n", file);
             return file;
         }
-        static auto get_prepped_backing_file(const po::variables_map& variables)
+        static auto get_prepped_backing_file(const po::variables_map& variables,
+                                             const uint64_t backing_data)
             -> FILE* {
             return get_prepped_backing_file(
-                variables["eeprom-filename"].as<std::string>());
+                variables["eeprom-filename"].as<std::string>(), backing_data);
         }
         static auto add_options(po::options_description& cmdline,
                                 po::options_description& env)

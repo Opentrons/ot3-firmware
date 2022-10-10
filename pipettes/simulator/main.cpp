@@ -165,8 +165,8 @@ int main(int argc, char** argv) {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
     // Binary value equivalent to P1KSV3120200304A1
-    const uint32_t TEMPORARY_PIPETTE_SERIAL = 0x1f20200304A1 auto options =
-        handle_options(argc, argv);
+    const uint64_t TEMPORARY_PIPETTE_SERIAL = 0x1f20200304A1;
+    auto options = handle_options(argc, argv);
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
