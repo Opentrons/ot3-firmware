@@ -33,7 +33,7 @@ class EEProm : public I2CDeviceBase,
         : I2CDeviceBase(types::DEVICE_ADDRESS),
           backing(options, backing_data) {}
     EEProm(hardware_iface::EEPromChipType chip, po::variables_map& options,
-           const uint32_t backing_data = 0)
+           const uint64_t backing_data = 0)
         : I2CDeviceBase(types::DEVICE_ADDRESS),
           hardware_iface::EEPromHardwareIface(chip),
           backing(options, backing_data) {}
@@ -142,7 +142,9 @@ class EEProm : public I2CDeviceBase,
                 std::fseek(file, start, SEEK_SET);
                 auto tmp_backing = std::array<char, BACKING_SIZE>{};
                 if (backing_data != 0) {
-                    tmp_backing.fill(backing_data);
+                    //                    tmp_backing.fill(backing_data);
+                    static_cast<void>(bit_utils::int_to_bytes(
+                        backing_data, tmp_backing.begin(), tmp_backing.end()));
                 } else {
                     tmp_backing.fill(0xff);
                 }
