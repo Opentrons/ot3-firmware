@@ -75,7 +75,7 @@ class PresenceSensingDriverMessageHandler {
             });
     }
 
-    void visit(presence_sensing_driver_task_messages::CheckForToolChange& m) {
+    void visit(presence_sensing_driver_task_messages::CheckForToolChange&) {
         attached_tools::AttachedTools new_tools;
         bool new_tool_detected = false;
         std::tie(new_tool_detected, new_tools) = driver.update_tools();

@@ -114,10 +114,6 @@ class MotionController {
                               .max_velocity = can_msg.max_velocity,
                               .min_acceleration = can_msg.min_acceleration,
                               .max_acceleration = can_msg.max_acceleration};
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index =
-                                              can_msg.message_index});
     }
 
     [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {
@@ -180,6 +176,7 @@ class PipetteMotionController {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         GearMotorMove msg{
+            can_msg.message_index,
             can_msg.duration,
             velocity_steps,
             0,

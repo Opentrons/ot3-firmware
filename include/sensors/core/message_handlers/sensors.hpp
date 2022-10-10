@@ -39,9 +39,6 @@ class SensorHandler {
     void visit(const can::messages::WriteToSensorRequest &m) {
         send_to_queue(can::ids::SensorType(m.sensor),
                       can::ids::SensorId(m.sensor_id), m);
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
     }
 
     void visit(const can::messages::ReadFromSensorRequest &m) {

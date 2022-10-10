@@ -57,7 +57,7 @@ class SystemMessageHandler {
     void visit(std::monostate &) {}
 
     void visit(DeviceInfoRequest &m) {
-        resonse.message_index = m;
+        response.message_index = m.message_index;
         writer.send_can_message(can::ids::NodeId::host, response);
     }
 

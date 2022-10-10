@@ -583,7 +583,7 @@ struct ReadPresenceSensingVoltageResponse
 
 struct PushToolsDetectedNotification
     : BaseMessage<MessageId::tools_detected_notification> {
-    uint32_t message_index;
+    uint32_t message_index = 0;
     can::ids::ToolType z_motor{};
     can::ids::ToolType a_motor{};
     can::ids::ToolType gripper{};
@@ -638,7 +638,7 @@ struct FirmwareUpdateStatusResponse
 };
 
 struct ReadFromSensorRequest : BaseMessage<MessageId::read_sensor_request> {
-    uint32_t message_index;
+    uint32_t message_index = 0;
     uint8_t sensor = 0;
     uint8_t sensor_id = 0;
     uint8_t offset_reading = 0;
@@ -694,7 +694,7 @@ struct WriteToSensorRequest : BaseMessage<MessageId::write_sensor_request> {
 };
 
 struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
-    uint32_t message_index;
+    uint32_t message_index = 0;
     uint8_t sensor = 0;
     uint8_t sensor_id = 0;
     uint16_t sample_rate = 1;
@@ -720,7 +720,7 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
 };
 
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
-    uint32_t message_index;
+    uint32_t message_index = 0;
     can::ids::SensorType sensor{};
     can::ids::SensorId sensor_id{};
     int32_t sensor_data = 0;
@@ -774,7 +774,7 @@ struct SetSensorThresholdRequest
 
 struct SensorThresholdResponse
     : BaseMessage<MessageId::set_sensor_threshold_response> {
-    uint32_t message_index;
+    uint32_t message_index = 0;
     can::ids::SensorType sensor{};
     can::ids::SensorId sensor_id{};
     int32_t threshold = 0;
@@ -1079,7 +1079,7 @@ struct BindSensorOutputRequest
 
 struct BindSensorOutputResponse
     : BaseMessage<MessageId::bind_sensor_output_response> {
-    uint32_t message_index;
+    uint32_t message_index = 0;
     can::ids::SensorType sensor{};
     can::ids::SensorId sensor_id{};
     uint8_t binding{};  // a bitfield of can::ids::SensorOutputBinding
