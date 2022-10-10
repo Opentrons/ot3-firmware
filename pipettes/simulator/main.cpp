@@ -164,10 +164,13 @@ int main(int argc, char** argv) {
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
-    auto options = handle_options(argc, argv);
+    // Binary value equivalent to P1KSV3120200304A1
+    const uint32_t TEMPORARY_PIPETTE_SERIAL = 0x1f20200304A1 auto options =
+        handle_options(argc, argv);
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
-    auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(options);
+    auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
+        options, TEMPORARY_PIPETTE_SERIAL);
     auto fake_sensor_hw = std::make_shared<test_mocks::MockSensorHardware>();
     auto pressuresensor =
         std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
