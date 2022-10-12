@@ -3,15 +3,17 @@
 import pytest
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.messages import (
+from state_manager.messages import (
+    GetAxisLocationMessage,
+    GetSyncPinStateMessage,
     Message,
     MoveMessage,
     SyncPinMessage,
     _parse_message,
     handle_message,
 )
-from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.util import Direction, SyncPinState
+from state_manager.ot3_state import OT3State
+from state_manager.util import Direction, SyncPinState
 
 
 @pytest.mark.parametrize(
@@ -41,6 +43,11 @@ from ot3_state_manager.util import Direction, SyncPinState
             b"\x01\x00\x00\x02",
             "ERROR: Value for state must either be 0 (LOW) or 1 (HIGH). You passed 2.",
             id="SYNC_PIN_MESSAGE_INVALID_STATE",
+        ),
+        pytest.param(
+            b"\xFF\x00\x00\x00",
+            "ERROR: Could not find MessageID with message_id: 255.",
+            id="INVALID_MESSAGE_ID",
         ),
     ],
 )
@@ -152,6 +159,56 @@ def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
             SyncPinMessage(SyncPinState.HIGH),
             id="SYNC_HIGH",
         ),
+        pytest.param(
+            b"\x02\x00\x00\x00",
+            GetAxisLocationMessage(OT3Axis.X),
+            id="GET_LOCATION_X",
+        ),
+        pytest.param(
+            b"\x02\x00\x01\x00",
+            GetAxisLocationMessage(OT3Axis.Y),
+            id="GET_LOCATION_Y",
+        ),
+        pytest.param(
+            b"\x02\x00\x02\x00",
+            GetAxisLocationMessage(OT3Axis.Z_L),
+            id="GET_LOCATION_Z_L",
+        ),
+        pytest.param(
+            b"\x02\x00\x03\x00",
+            GetAxisLocationMessage(OT3Axis.Z_R),
+            id="GET_LOCATION_Z_R",
+        ),
+        pytest.param(
+            b"\x02\x00\x04\x00",
+            GetAxisLocationMessage(OT3Axis.Z_G),
+            id="GET_LOCATION_Z_G",
+        ),
+        pytest.param(
+            b"\x02\x00\x05\x00",
+            GetAxisLocationMessage(OT3Axis.P_L),
+            id="GET_LOCATION_P_L",
+        ),
+        pytest.param(
+            b"\x02\x00\x06\x00",
+            GetAxisLocationMessage(OT3Axis.P_R),
+            id="GET_LOCATION_P_R",
+        ),
+        pytest.param(
+            b"\x02\x00\x07\x00",
+            GetAxisLocationMessage(OT3Axis.G),
+            id="GET_LOCATION_G",
+        ),
+        pytest.param(
+            b"\x02\x00\x08\x00",
+            GetAxisLocationMessage(OT3Axis.Q),
+            id="GET_LOCATION_Q",
+        ),
+        pytest.param(
+            b"\x03\x00\x00\x00",
+            GetSyncPinStateMessage(),
+            id="GET_SYNC_PIN_STATE",
+        ),
     ),
 )
 def test_message_parsing(message: bytes, expected_message: Message) -> None:
@@ -262,6 +319,56 @@ def test_message_parsing(message: bytes, expected_message: Message) -> None:
             b"\x01\x00\x00\x01",
             id="SYNC_HIGH",
         ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.X),
+            b"\x02\x00\x00\x00",
+            id="GET_LOCATION_X",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.Y),
+            b"\x02\x00\x01\x00",
+            id="GET_LOCATION_Y",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.Z_L),
+            b"\x02\x00\x02\x00",
+            id="GET_LOCATION_Z_L",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.Z_R),
+            b"\x02\x00\x03\x00",
+            id="GET_LOCATION_Z_R",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.Z_G),
+            b"\x02\x00\x04\x00",
+            id="GET_LOCATION_Z_G",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.P_L),
+            b"\x02\x00\x05\x00",
+            id="GET_LOCATION_P_L",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.P_R),
+            b"\x02\x00\x06\x00",
+            id="GET_LOCATION_P_R",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.G),
+            b"\x02\x00\x07\x00",
+            id="GET_LOCATION_G",
+        ),
+        pytest.param(
+            GetAxisLocationMessage(OT3Axis.Q),
+            b"\x02\x00\x08\x00",
+            id="GET_LOCATION_Q",
+        ),
+        pytest.param(
+            GetSyncPinStateMessage(),
+            b"\x03\x00\x00\x00",
+            id="GET_SYNC_PIN_STATE",
+        ),
     ),
 )
 def test_convert_message_to_bytes(message: Message, expected_bytes: bytes) -> None:
@@ -286,8 +393,20 @@ def test_valid_handle_move_message(
     assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
 
 
+def test_valid_handle_get_location_message(ot3_state: OT3State) -> None:
+    """Confirm that get location messages work correctly."""
+    pulse_x_pos = MoveMessage(OT3Axis.X, Direction.POSITIVE).to_bytes()
+    for _ in range(5):
+        ack = handle_message(pulse_x_pos, ot3_state)
+        assert ack == pulse_x_pos
+    assert ot3_state.axis_current_position(OT3Axis.X) == 5
+    assert (
+        handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
+    )
+
+
 def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
-    """Confirm that pulse messages work correctly."""
+    """Confirm that sync pin messages work correctly."""
     HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
     LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
@@ -297,3 +416,18 @@ def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
     ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
     assert ack == LOW_MESSAGE.to_bytes()
     assert not ot3_state.get_sync_pin_state()
+
+
+def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
+    """Confirm that get sync pin state messages work correctly."""
+    HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
+    LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
+    ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
+    assert ack == HIGH_MESSAGE.to_bytes()
+    assert ot3_state.get_sync_pin_state()
+    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"1"
+
+    ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
+    assert ack == LOW_MESSAGE.to_bytes()
+    assert not ot3_state.get_sync_pin_state()
+    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"0"

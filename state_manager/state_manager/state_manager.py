@@ -8,9 +8,9 @@ import logging
 from asyncio import BaseProtocol
 from typing import Tuple, cast
 
-from ot3_state_manager.messages import handle_message
-from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.pipette_model import PipetteModel
+from .messages import handle_message
+from .ot3_state import OT3State
+from .pipette_model import PipetteModel
 
 log = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ot3_state_manager"
+name = "state_manager"
 version = "0.1.0"
 description = "State Manager for OT3"
 license = "Apache-2.0"
@@ -26,8 +26,11 @@ mdformat_frontmatter = "^0.4.1"
 mdformat_footnote = "^0.1.1"
 
 # Expects the monorepo (opentrons) to be a sibling of this repo
-opentrons-hardware = { path = "../../opentrons/hardware" }
-opentrons = { path = "../../opentrons/api" }
+opentrons = { path = "../../opentrons/api", develop = true}
+header_generation_utils = { path = "../header_generation_utils", develop = true}
+
+[tool.poetry.scripts]
+generate-headers = 'generate_state_manager_headers:main'
 
 [tool.pytest.ini_options]
 addopts = "--color=yes"

@@ -7,11 +7,11 @@ from unittest.mock import Mock, patch
 import pytest
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.messages import MoveMessage
-from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.ot3_state_manager import OT3StateManager
-from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Direction
+from state_manager.messages import MoveMessage
+from state_manager.ot3_state import OT3State
+from state_manager.pipette_model import PipetteModel
+from state_manager.state_manager import OT3StateManager
+from state_manager.util import Direction
 from tests.udp_client import EchoClientProtocol
 
 HOST = "localhost"

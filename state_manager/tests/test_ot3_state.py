@@ -2,10 +2,10 @@
 import pytest
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.hardware import Gripper, LeftPipette, RightPipette
-from ot3_state_manager.ot3_state import OT3State
-from ot3_state_manager.pipette_model import PipetteModel
-from ot3_state_manager.util import Direction, SyncPinState
+from state_manager.hardware import Gripper, LeftPipette, RightPipette
+from state_manager.ot3_state import OT3State
+from state_manager.pipette_model import PipetteModel
+from state_manager.util import Direction, SyncPinState
 
 
 @pytest.fixture

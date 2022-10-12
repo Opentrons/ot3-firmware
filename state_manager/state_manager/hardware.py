@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 
 from opentrons.hardware_control.types import OT3Axis
 
-from ot3_state_manager.measurable_states import Force, Position
-from ot3_state_manager.pipette_model import PipetteModel
+from .measurable_states import Force, Position
+from .pipette_model import PipetteModel
 
 
 @dataclass

@@ -239,6 +239,7 @@
       "configurePreset": "host",
       "jobs": 4,
       "targets": [
+        "state-manager-setup",
         "bootloader-simulator",
         "head-simulator",
         "gantry-x-simulator",
@@ -257,6 +258,7 @@
       "configurePreset": "host-gcc10",
       "jobs": 4,
       "targets": [
+        "state-manager-setup",
         "bootloader-simulator",
         "head-simulator",
         "gantry-x-simulator",

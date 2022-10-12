@@ -69,6 +69,15 @@ add_subdirectory(eeprom)
 add_subdirectory(bootloader)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
+message(VERBOSE "Checking if cross-compiling.")
+if(NOT ${CMAKE_CROSSCOMPILING})
+	message(VERBOSE "Not cross-compiling. Adding state_manager")
+	find_package(Poetry 1.1.15)
+	add_subdirectory(state_manager)
+else ()
+	message(VERBOSE "You are cross-compiling. Not adding state_manager")
+endif ()
+
 find_package(Clang)
 
 # c++ linting is here but python linting is in the subdir
