@@ -57,6 +57,8 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     z_queues.move_status_report_queue = &move_status_reporter.get_queue();
     z_queues.spi_queue = &spi_task.get_queue();
     spi_task_client.set_queue(&spi_task.get_queue());
+
+    z_motor.motion_controller.enable_motor();
 }
 
 z_tasks::QueueClient::QueueClient()
