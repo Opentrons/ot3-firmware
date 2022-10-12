@@ -155,7 +155,6 @@ macro(add_STM32G4_freertos suffix)
 endmacro()
 set(STM32G4xx_FreeRTOS_FOUND ${bsp_populated} PARENT_SCOPE)
 
-
 macro(add_STM32G4_usb suffix)
         set(usb_root ${bsp_source}/Middlewares/ST/STM32_USB_Device_Library/)
         set(usb_core_root ${usb_root}/Core)
