@@ -103,7 +103,7 @@ void TIM4_EncoderGSpeed_Init(void) {
         calc_prescaler(SystemCoreClock, GRIPPER_ENCODER_SPEED_TIMER_FREQ);
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim4.Init.Period = 3000;  // timer overflows after 3 ms
-    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim4) != HAL_OK) {
         Error_Handler();
@@ -128,7 +128,7 @@ void TIM4_EncoderGSpeed_Init(void) {
     /* Initialize TIM4 input capture channel */
     sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
     sConfigIC.ICSelection = TIM_ICSELECTION_TRC;
-    sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+    sConfigIC.ICPrescaler = TIM_ICPSC_DIV4;
     sConfigIC.ICFilter = 0;
     if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
         Error_Handler();
