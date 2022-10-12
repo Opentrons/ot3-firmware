@@ -44,7 +44,6 @@ IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
         default:
             // External interrupt line 3
             return EXTI3_IRQn;
-//            return EXTI9_5_IRQn;
     }
 }
 
