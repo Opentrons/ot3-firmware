@@ -68,7 +68,7 @@ struct TMC2160Container {
                                    .tbl = 0x2,
                                    .mres = 0x3},
                       .coolconf = {.sgt = 0b110},
-                      .glob_scale = {.global_scaler = 112}},
+                      .glob_scale = {.global_scaler = 0xA7}},
         .current_config = {
             .r_sense = 0.1,
             .v_sf = 0.325,
@@ -120,6 +120,19 @@ TEST_CASE("Setup a tmc2130 motor driver") {
 TEST_CASE("Setup a tmc2160 motor driver") {
     TMC2160Container subject{};
 
+    GIVEN("A call to global scaler set driver") {
+        WHEN(
+            "Set the value to 32 if global scaler is calculated to be "
+            "below 32") {
+            subject.driver.get_register_map().glob_scale.global_scaler = 1;
+            subject.driver.set_glob_scaler(
+                subject.driver.get_register_map().glob_scale);
+            REQUIRE(
+                subject.driver.get_register_map().glob_scale.global_scaler ==
+                32);
+        }
+    }
+
     GIVEN("a tmc2160 motor driver") {
         WHEN("Setup is called") {
             subject.driver.write_config();
@@ -156,30 +169,20 @@ TEST_CASE("Setup a tmc2160 motor driver") {
 
         WHEN("Changing the current") {
             constexpr uint32_t two_amps = 2 << 16;
-            constexpr uint32_t global_scaler_2amps = 221;
+            constexpr uint32_t cs_2amps = 31;
 
             constexpr uint32_t one_amp = 1 << 16;
-            constexpr uint32_t global_scaler_1amps = 110;
+            constexpr uint32_t cs_one_amp = 20;
             auto register_config = subject.driver_config.registers;
-            REQUIRE(
-                subject.driver.get_register_map().glob_scale.global_scaler ==
-                register_config.glob_scale.global_scaler);
-            THEN("The global scaler value is correct") {
+            REQUIRE(subject.driver.get_register_map().ihold_irun.run_current ==
+                    register_config.ihold_irun.run_current);
+            THEN("The CS current value is correct") {
                 auto two_amps_gs =
                     subject.driver.convert_to_tmc2160_current_value(two_amps);
-                REQUIRE(two_amps_gs == global_scaler_2amps);
+                REQUIRE(two_amps_gs == cs_2amps);
                 auto one_amps_gs =
                     subject.driver.convert_to_tmc2160_current_value(one_amp);
-                REQUIRE(one_amps_gs == global_scaler_1amps);
-            }
-            AND_THEN(
-                "Set the value to 32 if global scaler is calculated to be "
-                "below 32") {
-                subject.driver.get_register_map().glob_scale.global_scaler = 1;
-                subject.driver.set_glob_scaler(
-                    subject.driver.get_register_map().glob_scale);
-                REQUIRE(subject.driver.get_register_map()
-                            .glob_scale.global_scaler == 32);
+                REQUIRE(one_amps_gs == cs_one_amp);
             }
         }
     }
