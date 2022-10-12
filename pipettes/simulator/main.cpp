@@ -159,13 +159,33 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     return vm;
 }
 
+uint32_t temporary_serial_number(const PipetteType pipette_type) {
+    // TODO there is no pipette name for the ninety six or three eighty four
+    // channel pipette. For now they will come out as 'p50s and p50m' in
+    // the simulator
+    switch (pipette_type) {
+        case EIGHT_CHANNEL:
+            // Binary value equivalent to P1KMV3120200304A1
+            return 0x011F089D;
+        case NINETY_SIX_CHANNEL:
+            return 0x021F089D;
+        case THREE_EIGHTY_FOUR_CHANNEL:
+            return 0x031F089D;
+        case SINGLE_CHANNEL:
+        default:
+            // Binary value equivalent to P1KSV3120200304A1
+            return 0x001F089D;
+    }
+}
+
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
-    // Binary value equivalent to P1KSV3120200304A1
-    const uint64_t TEMPORARY_PIPETTE_SERIAL = 0x001f20220304A1;
+
+    const uint32_t TEMPORARY_PIPETTE_SERIAL =
+        temporary_serial_number(PIPETTE_TYPE);
     auto options = handle_options(argc, argv);
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();

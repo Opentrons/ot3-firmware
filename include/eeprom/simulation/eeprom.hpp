@@ -29,11 +29,11 @@ class EEProm : public I2CDeviceBase,
         -> std::function<std::string(std::string)> {
         return BackingStore::add_options(cmdline_desc, env_desc);
     }
-    explicit EEProm(po::variables_map& options, const uint64_t backing_data = 0)
+    explicit EEProm(po::variables_map& options, const uint32_t backing_data = 0)
         : I2CDeviceBase(types::DEVICE_ADDRESS),
           backing(options, backing_data) {}
     EEProm(hardware_iface::EEPromChipType chip, po::variables_map& options,
-           const uint64_t backing_data = 0)
+           const uint32_t backing_data = 0)
         : I2CDeviceBase(types::DEVICE_ADDRESS),
           hardware_iface::EEPromHardwareIface(chip),
           backing(options, backing_data) {}
@@ -90,7 +90,7 @@ class EEProm : public I2CDeviceBase,
         BackingStore(BackingStore&&) = delete;
         auto operator=(BackingStore&&) -> BackingStore&& = delete;
         explicit BackingStore(const po::variables_map& variables,
-                              const uint64_t backing_data)
+                              const uint32_t backing_data)
             : backing(get_prepped_backing_file(variables, backing_data)) {}
         ~BackingStore() {
             if (backing) {
@@ -123,7 +123,7 @@ class EEProm : public I2CDeviceBase,
             }
         }
         static auto get_prepped_backing_file(std::string pathstr,
-                                             const uint64_t backing_data)
+                                             const uint32_t backing_data)
             -> std::FILE* {
             auto file = ((pathstr == TEMPFILE_KEY) ? get_temp_file()
                                                    : get_backing_file(pathstr));
@@ -142,9 +142,14 @@ class EEProm : public I2CDeviceBase,
                 std::fseek(file, start, SEEK_SET);
                 auto tmp_backing = std::array<char, BACKING_SIZE>{};
                 if (backing_data != 0) {
-                    //                    tmp_backing.fill(backing_data);
+                    uint32_t instrument_type =
+                        (backing_data & 0xFFFF0000) >> 16;
+                    uint32_t serial_number = backing_data & 0x0000FFFF;
+                    auto iter = bit_utils::int_to_bytes(instrument_type,
+                                                        tmp_backing.begin(),
+                                                        tmp_backing.end());
                     static_cast<void>(bit_utils::int_to_bytes(
-                        backing_data, tmp_backing.begin(), tmp_backing.end()));
+                        serial_number, iter, tmp_backing.end()));
                 } else {
                     tmp_backing.fill(0xff);
                 }
@@ -161,7 +166,7 @@ class EEProm : public I2CDeviceBase,
             return file;
         }
         static auto get_prepped_backing_file(const po::variables_map& variables,
-                                             const uint64_t backing_data)
+                                             const uint32_t backing_data)
             -> FILE* {
             return get_prepped_backing_file(
                 variables["eeprom-filename"].as<std::string>(), backing_data);
