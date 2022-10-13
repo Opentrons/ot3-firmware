@@ -137,19 +137,20 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 1},
+            .gconfig = {.en_pwm_mode = 0},
             .ihold_irun = {.hold_current = 16,
                            .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0xFFFFF},
+            .thigh = {.threshold = 0},
             .chopconf = {.toff = 0x3,
-                         .hstrt = 0x5,
-                         .hend = 0x2,
-                         .tbl = 0x2,
+                         .hstrt = 0x2,
+                         .hend = 0x3,
+                         .tbl = 0x1,
                          .tpfd = 0x4,
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
+            .glob_scale = {.global_scaler = 0xA7},
         },
     .current_config =
         {
@@ -165,19 +166,20 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
 static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 1},
+            .gconfig = {.en_pwm_mode = 0},
             .ihold_irun = {.hold_current = 16,
                            .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0xFFFFF},
+            .thigh = {.threshold = 0},
             .chopconf = {.toff = 0x3,
-                         .hstrt = 0x5,
-                         .hend = 0x2,
-                         .tbl = 0x2,
+                         .hstrt = 0x2,
+                         .hend = 0x3,
+                         .tbl = 0x1,
                          .tpfd = 0x4,
                          .mres = 0x4},
             .coolconf = {.sgt = 0x6},
+            .glob_scale = {.global_scaler = 0xA7},
         },
     .current_config =
         {
