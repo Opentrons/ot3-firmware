@@ -53,8 +53,7 @@ class PresenceSensingDriver {
         auto new_tools = attached_tools::AttachedTools(get_readings());
         bool notify = should_send_notification(current_tools, new_tools);
         current_tools = new_tools;
-        return std::make_pair(notify,
-                              current_tools);
+        return std::make_pair(notify, current_tools);
     }
 
   private:
