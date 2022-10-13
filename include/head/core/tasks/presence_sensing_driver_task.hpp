@@ -75,9 +75,8 @@ class PresenceSensingDriverMessageHandler {
 
     void visit(presence_sensing_driver_task_messages::CheckForToolChange&) {
         attached_tools::AttachedTools new_tools;
-        auto tool_update = driver.update_tools();
-        bool new_tool_detected = tool_update.first;
-        new_tools = tool_update.second;
+        bool new_tool_detected = false;
+        std::tie(new_tool_detected, new_tools) = driver.update_tools();
         if (new_tool_detected) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
