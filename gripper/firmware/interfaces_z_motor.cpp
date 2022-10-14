@@ -116,7 +116,7 @@ static motor_class::Motor z_motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    motor_queue, true};
 
 /**
  * Handler of motor interrupts.

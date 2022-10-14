@@ -26,7 +26,8 @@ class MotionController {
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      StepperMotorHardwareIface& hardware_iface,
-                     MotionConstraints constraints, GenericQueue& queue)
+                     MotionConstraints constraints, GenericQueue& queue,
+                     bool eng_on_strt=false)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           motion_constraints(constraints),
@@ -34,7 +35,8 @@ class MotionController {
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_steps_per_mm(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_encoder_um_per_pulse(), 31)) {}
+              linear_motion_sys_config.get_encoder_um_per_pulse(), 31)),
+          engage_at_startup(eng_on_strt){}
 
     auto operator=(const MotionController&) -> MotionController& = delete;
     auto operator=(MotionController&&) -> MotionController&& = delete;
@@ -116,7 +118,6 @@ class MotionController {
     [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {
         return motion_constraints;
     }
-
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     StepperMotorHardwareIface& hardware;
@@ -125,6 +126,8 @@ class MotionController {
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_encoder_pulse{0};
     bool enabled = false;
+  public:
+    bool engage_at_startup;
 };
 
 }  // namespace motion_controller
