@@ -102,7 +102,8 @@ class BrushedMotorInterruptHandler {
         switch (buffered_move.stop_condition) {
             // homing move
             case MoveStopCondition::limit_switch:
-                if (limit_switch_triggered()) {
+                if (limit_switch_triggered() && is_idle) {
+                //if (is_sensing() && is_idle) {
                     homing_stopped();
                 }
                 break;
