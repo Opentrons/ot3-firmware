@@ -78,10 +78,11 @@ HandleMessageReturn handle_device_info_request(const Message* request, Message* 
     uint32_t message_index;
     parse_empty_message(request->data, request->size, &message_index);
     response->size = sizeof(*vstruct) + sizeof(uint32_t);
-    write_uint32(response->data, message_index);
-    write_uint32(response->data + sizeof(uint32_t), vstruct->version);
-    write_uint32(response->data + offsetof(struct version, flags) + sizeof(uint32_t), vstruct->flags);
-    memcpy(response->data + offsetof(struct version, sha) + sizeof(uint32_t), &vstruct->sha[0], sizeof(vstruct->sha));
+    uint8_t* p = response->data;
+    p = write_uint32(p, message_index);
+    p = write_uint32(p, vstruct->version);
+    p = write_uint32(p, vstruct->flags);
+    p = memcpy(p, &vstruct->sha[0], sizeof(vstruct->sha));
     return handle_message_has_response;
 }
 
