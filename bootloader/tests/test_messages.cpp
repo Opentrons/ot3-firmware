@@ -69,8 +69,6 @@ SCENARIO("update data") {
             0, 0, 0, 0, 0, 0,
             // Checksum.
             0xfc, 0x9a};
-        printf("\n\n\n\n%x\n\n\n\n",
-               compute_checksum(arr.data(), arr.data() + 62));
         WHEN("parsed") {
             UpdateData result;
             auto error = parse_update_data(arr.data(), arr.size(), &result);
