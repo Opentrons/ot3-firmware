@@ -21,6 +21,8 @@ typedef struct {
 } UpdateData;
 
 #define UPDATE_DATA_MESSAGE_SIZE    64
+// can't be (UPDATE_DATA_MESSAGE_SIZE - sizeof(UpdateData) - sizeof(uint8_t))
+// since c adds padding to align all struct members to 32bit addresses
 #define UPDATE_DATA_MAX_BYTE_COUNT  52
 
 /**
@@ -32,7 +34,7 @@ typedef struct {
     uint32_t crc32;
 } UpdateComplete;
 
-#define UPDATE_COMPLETE_MESSAGE_SIZE    12
+#define UPDATE_COMPLETE_MESSAGE_SIZE (sizeof(UpdateComplete))
 
 /**
  * Get the message_index from an empty_payload message
