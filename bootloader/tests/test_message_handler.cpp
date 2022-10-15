@@ -148,7 +148,7 @@ SCENARIO("update data bad checksum error") {
     }
 }
 
-SCENARIO("update data complete") {
+SCENARIO("update data complete success") {
     GIVEN("a request") {
         Message request;
         request.arbitration_id.parts.function_code = 0;
