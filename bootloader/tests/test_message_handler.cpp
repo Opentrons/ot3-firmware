@@ -147,6 +147,55 @@ SCENARIO("update data bad checksum error") {
         }
     }
 }
+SCENARIO("update data invalid size") {
+    GIVEN("a request") {
+        Message request;
+        request.arbitration_id.parts.function_code = 0;
+        request.arbitration_id.parts.node_id = get_node_id();
+        request.arbitration_id.parts.originating_node_id = can_nodeid_host;
+        request.arbitration_id.parts.message_id = can_messageid_fw_update_data;
+        request.arbitration_id.parts.padding = 0;
+        std::memset(request.data, 0, sizeof(request.data));
+        request.data[0] = 0xDE;
+        request.data[1] = 0xAD;
+        request.data[2] = 0xBE;
+        request.data[3] = 0xEF;
+        request.data[4] = 0xC0;
+        request.data[5] = 0xFF;
+        request.data[6] = 0xEE;
+        request.data[7] = 0xBB;
+
+        request.size = 8;
+
+        WHEN("received") {
+            Message response;
+            auto error = handle_message(&request, &response);
+            THEN("it returns response") {
+                REQUIRE(error == handle_message_has_response);
+            }
+            THEN("it populates response arbitration id") {
+                REQUIRE(response.arbitration_id.parts.function_code == 0);
+                REQUIRE(response.arbitration_id.parts.node_id ==
+                        can_nodeid_host);
+                REQUIRE(response.arbitration_id.parts.originating_node_id ==
+                        get_node_id());
+                REQUIRE(response.arbitration_id.parts.message_id ==
+                        can_messageid_fw_update_data_ack);
+            }
+            THEN("it populates response body") {
+                REQUIRE(response.size == 10);
+                REQUIRE(response.data[0] == 0xDE);
+                REQUIRE(response.data[1] == 0xAD);
+                REQUIRE(response.data[2] == 0xBE);
+                REQUIRE(response.data[3] == 0xEF);
+                REQUIRE(response.data[8] ==
+                        ((can_errorcode_invalid_size >> 8) & 0xFF));
+                REQUIRE(response.data[9] ==
+                        (can_errorcode_invalid_size & 0xFF));
+            }
+        }
+    }
+}
 
 SCENARIO("update data complete success") {
     GIVEN("a request") {

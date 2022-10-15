@@ -44,6 +44,10 @@ CANErrorCode parse_update_data(
 
     // Message size and null check
     if (!buffer || size != UPDATE_DATA_MESSAGE_SIZE) {
+        // if its there, populate with message index
+        if (buffer && size > sizeof(result->message_index)) {
+            buffer = to_uint32(buffer, &result->message_index);
+        }
         return can_errorcode_invalid_size;
     }
 
@@ -93,6 +97,10 @@ CANErrorCode parse_update_complete(
 
     // Message size and null check
     if (!buffer || size != UPDATE_COMPLETE_MESSAGE_SIZE) {
+        // if its there, populate with message index
+        if (buffer && size > sizeof(result->message_index)) {
+            buffer = to_uint32(buffer, &result->message_index);
+        }
         return can_errorcode_invalid_size;
     }
     buffer = to_uint32(buffer, &result->message_index);
