@@ -105,7 +105,7 @@ static auto pins_for_sensor =
 auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
-extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
         sensor_hardware.data_ready();
     }
@@ -172,7 +172,6 @@ auto main() -> int {
     initialize_enc(PIPETTE_TYPE);
 
     delay_start(500);
-
     auto id = pipette_mounts::detect_id();
 
     i2c_setup(&i2chandler_struct);
