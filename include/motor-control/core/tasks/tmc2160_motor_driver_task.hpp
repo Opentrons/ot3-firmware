@@ -85,12 +85,15 @@ class MotorDriverMessageHandler {
         LOG("Received write motor current request: hold_current=%d, "
             "run_current=%d",
             m.hold_current, m.run_current);
-
+        if (m.hold_current != 0U) {
+            driver.get_register_map().ihold_irun.hold_current =
+                driver.convert_to_tmc2160_current_value(m.hold_current);
+        };
         if (m.run_current != 0U) {
-            driver.get_register_map().glob_scale.global_scaler =
+            driver.get_register_map().ihold_irun.run_current =
                 driver.convert_to_tmc2160_current_value(m.run_current);
         }
-        driver.set_glob_scaler(driver.get_register_map().glob_scale);
+        driver.set_current_control(driver.get_register_map().ihold_irun);
     }
 
     tmc2160::driver::TMC2160<Writer, TaskQueue> driver;
