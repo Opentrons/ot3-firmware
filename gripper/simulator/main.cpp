@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         {sim_eeprom->get_address(), *sim_eeprom}};
     auto i2c3 = std::make_shared<i2c::hardware::SimI2C>(i2c_device_map);
     static auto canbus = can::sim::bus::SimCANBus(
-        can::sim::transport::create(options, TEMPORARY_SERIAL));
+        can::sim::transport::create(options));
     z_motor_iface::initialize();
     grip_motor_iface::initialize();
     gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
