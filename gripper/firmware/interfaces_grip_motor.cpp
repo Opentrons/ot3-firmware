@@ -99,7 +99,7 @@ static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
     .steps_per_rev = 0,
     .microstep = 0,
     .encoder_pulses_per_rev = 512,
-    .gear_ratio = 84.29};
+    .gear_ratio = 103.81};
 
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,
