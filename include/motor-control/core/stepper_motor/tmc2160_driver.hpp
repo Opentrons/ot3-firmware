@@ -12,6 +12,7 @@
 #include <optional>
 
 #include "common/core/bit_utils.hpp"
+#include "common/core/logging.h"
 #include "spi/core/utils.hpp"
 #include "spi/core/writer.hpp"
 #include "tmc2160.hpp"
@@ -381,6 +382,10 @@ class TMC2160 {
     [[nodiscard]] auto convert_to_tmc2160_current_value(uint32_t c) const
         -> uint32_t {
         /*
+         *
+         * The default global scaler constant should be 167.0 or 0xA7. When
+         * the run current CS register is set to 31, that will give us a rms run
+         * current of approximately 1.5A.
          * From the datasheet (page 62):
          *
          * For best precision of current setting, it is advised to measure and
@@ -397,18 +402,24 @@ class TMC2160 {
          * RMS_CURRENT_RATIO)
          *
          * new_scalar = current * GLOBALSCALAR_CONSTANT
+         *
+         * GLOBALSCALAR_CONSTANT = 167
          */
-        constexpr auto GLOB_FROM_CURRENT = 256.0 * sqrt2;
-        float CURRENT_SCALE_RATIO =
-            (_registers.ihold_irun.run_current + 1.0) / 32.0;
-        auto RMS_CURRENT_RATIO = _current_config.v_sf / _current_config.r_sense;
-        auto GLOBAL_SCALE_CONSTANT =
-            GLOB_FROM_CURRENT / (CURRENT_SCALE_RATIO * RMS_CURRENT_RATIO);
+        auto GLOBALSCALAR_INV = 256.0 / _registers.glob_scale.global_scaler;
+        auto VOLTAGE_INV = _current_config.r_sense / _current_config.v_sf;
+        auto RMS_CURRENT_CONSTANT =
+            GLOBALSCALAR_INV * sqrt2 * 32.0 * VOLTAGE_INV;
+        LOG("The current rms constant is %.4f", RMS_CURRENT_CONSTANT);
         auto fixed_point_constant = static_cast<uint32_t>(
-            GLOBAL_SCALE_CONSTANT * static_cast<float>(1LL << 16));
-        uint64_t global_scaler = static_cast<uint64_t>(fixed_point_constant) *
-                                 static_cast<uint64_t>(c);
-        return static_cast<uint32_t>(global_scaler >> 32) - 1;
+            RMS_CURRENT_CONSTANT * static_cast<float>(1LL << 16));
+        uint64_t shifted_current_cs =
+            static_cast<uint64_t>(fixed_point_constant) *
+            static_cast<uint64_t>(c);
+        auto current_cs = static_cast<uint32_t>(shifted_current_cs >> 32);
+        if (current_cs > 32) {
+            current_cs = 32;
+        }
+        return current_cs - 1;
     }
 
   private:
