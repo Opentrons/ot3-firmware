@@ -6,6 +6,7 @@
 #include <span>
 
 #include "can/core/ids.hpp"
+#include "can/core/message_core.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/version.h"
 #include "eeprom/core/serial_number.hpp"
@@ -59,6 +60,11 @@ struct Empty : BaseMessage<MId> {
 };
 
 using Acknowledgment = Empty<MessageId::acknowledgement>;
+
+template <can::message_core::HasMessageIndex Request>
+static auto ack_from_request(const Request& r) -> Acknowledgment {
+    return Acknowledgment{.message_index = r.message_index};
+}
 
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 

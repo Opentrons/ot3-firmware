@@ -78,7 +78,7 @@ class MoveGroupMessageHandler {
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::ExecuteMoveGroupRequest& m) {
@@ -90,7 +90,7 @@ class MoveGroupMessageHandler {
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit_move(const std::monostate&) {}

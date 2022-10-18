@@ -44,8 +44,7 @@ class EEPromHandler {
             .data{can_msg.data}};
         client.send_eeprom_queue(msg);
         client.send_can_message(can::ids::NodeId::host,
-                                can::messages::Acknowledgment{
-                                    .message_index = can_msg.message_index});
+                                can::messages::ack_from_request(can_msg));
     }
 
     /**

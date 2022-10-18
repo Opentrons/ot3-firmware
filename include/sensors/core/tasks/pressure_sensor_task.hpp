@@ -80,7 +80,7 @@ class PressureMessageHandler {
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::BaselineSensorRequest &m) {
@@ -96,7 +96,7 @@ class PressureMessageHandler {
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::SetSensorThresholdRequest &m) {
@@ -117,7 +117,7 @@ class PressureMessageHandler {
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {

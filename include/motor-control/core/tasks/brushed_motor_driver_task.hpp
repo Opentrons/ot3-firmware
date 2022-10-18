@@ -49,7 +49,7 @@ class MotorDriverMessageHandler {
         driver.set_reference_voltage(val);
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::SetBrushedMotorPwmRequest& m) {
@@ -57,7 +57,7 @@ class MotorDriverMessageHandler {
         driver.update_pwm_settings(m.duty_cycle);
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     brushed_motor_driver::BrushedMotorDriverIface& driver;

@@ -115,7 +115,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         serial_number_accessor.write(sn_accessor_backing);
         writer.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     CanClient &writer;

@@ -74,7 +74,7 @@ class MotorDriverMessageHandler {
         }
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::ReadMotorDriverRegister& m) {
@@ -101,7 +101,7 @@ class MotorDriverMessageHandler {
         driver.set_current_control(driver.get_register_map().ihold_irun);
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     tmc2160::driver::TMC2160<Writer, TaskQueue> driver;

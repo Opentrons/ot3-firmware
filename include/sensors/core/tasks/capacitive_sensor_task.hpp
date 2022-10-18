@@ -108,7 +108,7 @@ class CapacitiveMessageHandler {
         writer.write(ADDRESS, m.data);
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::BaselineSensorRequest &m) {
@@ -124,7 +124,7 @@ class CapacitiveMessageHandler {
                             utils::byte_from_tags(tags)));
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::SetSensorThresholdRequest &m) {
@@ -165,7 +165,7 @@ class CapacitiveMessageHandler {
                             utils::byte_from_tags(tags)));
         can_client.send_can_message(
             can::ids::NodeId::host,
-            can::messages::Acknowledgment{.message_index = m.message_index});
+            can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::PeripheralStatusRequest &m) {

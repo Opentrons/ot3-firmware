@@ -28,6 +28,19 @@ concept HasMessageID = requires {
 };
 
 /**
+ * Concept describing an item that has a message index
+ * @tparam T
+ */
+template <typename T>
+concept HasMessageIndex = requires {
+    /**
+     * Has a static public id member. This is the MessageId that the Parsable
+     * knows how to parse.
+     */
+    { T::message_index } -> std::convertible_to<uint32_t>;
+};
+
+/**
  * The concept describing the interface of a parsable can message
  * @tparam T
  */
