@@ -134,22 +134,24 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
 };
 
 // TODO clean up the head main file by using interfaces.
+// NOTE (andy s): Z stage drivers should use Spread Cycle,
+//                to enable predictable current/force output.
 static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 0},
+            .gconfig = {.en_pwm_mode = 0},  // enable spread cycle (zero)
             .ihold_irun = {.hold_current = 16,
                            .run_current = 31,
                            .hold_current_delay = 0x7},
-            .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0},
-            .chopconf = {.toff = 0x3,
-                         .hstrt = 0x2,
-                         .hend = 0x3,
-                         .tbl = 0x1,
-                         .tpfd = 0x4,
-                         .mres = 0x4},
-            .coolconf = {.sgt = 0x6},
+            .tcoolthrs = {.threshold = 0},  // timing threshold to enabling coolstep (keep at zero!)
+            .thigh = {.threshold = 0},      // timing threshold for enabling constant t-off/fullsteps (keep at zero!)
+            .chopconf = {.toff = 0x3,       // amount of time chopper spends in slow decay
+                         .hstrt = 0x2,      // chopper-hysteresis START (spread cycle only)
+                         .hend = 0x3,       // chopper-hysteresis END (spread cycle only)
+                         .tbl = 0x1,        // blanking period before chopper current measurement
+                         .tpfd = 0x4,       // amount of time spent in fast-decay
+                         .mres = 0x4},      // microstepping resolution
+            .coolconf = {.sgt = 0x6},       // stallguard threshold (sensitivity)
             .glob_scale = {.global_scaler = 0xA7},
         },
     .current_config =
@@ -163,22 +165,24 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
         .GPIO_handle = GPIOB,
     }};
 
+// NOTE (andy s): Z stage drivers should use Spread Cycle,
+//                to enable predictable current/force output.
 static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 0},
+            .gconfig = {.en_pwm_mode = 0},  // enable spread cycle (zero)
             .ihold_irun = {.hold_current = 16,
                            .run_current = 31,
                            .hold_current_delay = 0x7},
-            .tcoolthrs = {.threshold = 0},
-            .thigh = {.threshold = 0},
-            .chopconf = {.toff = 0x3,
-                         .hstrt = 0x2,
-                         .hend = 0x3,
-                         .tbl = 0x1,
-                         .tpfd = 0x4,
-                         .mres = 0x4},
-            .coolconf = {.sgt = 0x6},
+            .tcoolthrs = {.threshold = 0},  // timing threshold to enabling coolstep (keep at zero!)
+            .thigh = {.threshold = 0},      // timing threshold for enabling constant t-off/fullsteps (keep at zero!)
+            .chopconf = {.toff = 0x3,       // amount of time chopper spends in slow decay
+                         .hstrt = 0x2,      // chopper-hysteresis START (spread cycle only)
+                         .hend = 0x3,       // chopper-hysteresis END (spread cycle only)
+                         .tbl = 0x1,        // blanking period before chopper current measurement
+                         .tpfd = 0x4,       // amount of time spent in fast-decay
+                         .mres = 0x4},      // microstepping resolution
+            .coolconf = {.sgt = 0x6},       // stallguard threshold (sensitivity)
             .glob_scale = {.global_scaler = 0xA7},
         },
     .current_config =
@@ -187,9 +191,9 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
             .v_sf = 0.325,
         },
     .chip_select{
-        .cs_pin = GPIO_PIN_4,
+        .cs_pin = GPIO_PIN_12,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .GPIO_handle = GPIOA,
+        .GPIO_handle = GPIOB,
     }};
 
 /**
