@@ -35,7 +35,7 @@ struct motion_controller::HardwareConfig motor_pins {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_10,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = GPIO_PIN_SET},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
