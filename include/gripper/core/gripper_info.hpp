@@ -89,18 +89,19 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
     void visit(const InstrumentInfoRequest &) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
-        //serial_number_accessor.start_read();
+        // serial_number_accessor.start_read();
         // this temporarliy needs to be hardcoded because the rev1 gripper
-        // cannot read/write to the eeprom due to electrical issues with the chip
-        // having the same address as a sensor on the i2c line
-        // for testing we will unseat the eeprom chip and use this instead to
-        // create the reponse
+        // cannot read/write to the eeprom due to electrical issues with the
+        // chip having the same address as a sensor on the i2c line for testing
+        // we will unseat the eeprom chip and use this instead to create the
+        // reponse
         writer.send_can_message(
             can::ids::NodeId::host,
             GripperInfoResponse{
                 .model = 0x0001,
-                .serial = eeprom::serial_number::SerialDataCodeType{0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
-                                                                    0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F}});
+                .serial = eeprom::serial_number::SerialDataCodeType{
+                    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+                    0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F}});
     }
 
     /**
