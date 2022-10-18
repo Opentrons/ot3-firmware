@@ -191,9 +191,9 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
             .v_sf = 0.325,
         },
     .chip_select{
-        .cs_pin = GPIO_PIN_12,
+        .cs_pin = GPIO_PIN_4,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .GPIO_handle = GPIOB,
+        .GPIO_handle = GPIOA,
     }};
 
 /**
