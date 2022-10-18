@@ -48,9 +48,8 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::StopRequest& m) {
         LOG("Received stop request");
         controller.stop();
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::EnableMotorRequest& m) {
@@ -58,9 +57,8 @@ class MotionControllerMessageHandler {
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
         controller.enable_motor();
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::DisableMotorRequest& m) {
@@ -68,9 +66,8 @@ class MotionControllerMessageHandler {
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
         controller.disable_motor();
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::GetMotionConstraintsRequest&) {
@@ -91,9 +88,8 @@ class MotionControllerMessageHandler {
             m.min_velocity, m.max_velocity, m.min_acceleration,
             m.max_acceleration);
         controller.set_motion_constraints(m);
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::TipActionRequest& m) {

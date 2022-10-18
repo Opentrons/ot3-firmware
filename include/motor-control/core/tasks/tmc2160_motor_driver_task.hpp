@@ -72,9 +72,8 @@ class MotorDriverMessageHandler {
         if (tmc2160::registers::is_valid_address(m.reg_address)) {
             driver.write(tmc2160::registers::Registers(m.reg_address), m.data);
         }
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::ReadMotorDriverRegister& m) {
@@ -99,9 +98,8 @@ class MotorDriverMessageHandler {
                 driver.convert_to_tmc2160_current_value(m.run_current);
         }
         driver.set_current_control(driver.get_register_map().ihold_irun);
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     tmc2160::driver::TMC2160<Writer, TaskQueue> driver;

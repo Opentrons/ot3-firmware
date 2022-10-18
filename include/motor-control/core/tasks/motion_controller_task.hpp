@@ -42,25 +42,22 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::StopRequest& m) {
         LOG("Received stop request");
         controller.stop();
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
         controller.enable_motor();
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::DisableMotorRequest& m) {
         LOG("Received disable motor request");
         controller.disable_motor();
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::GetMotionConstraintsRequest& m) {
@@ -82,9 +79,8 @@ class MotionControllerMessageHandler {
             m.min_velocity, m.max_velocity, m.min_acceleration,
             m.max_acceleration);
         controller.set_motion_constraints(m);
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::AddLinearMoveRequest& m) {

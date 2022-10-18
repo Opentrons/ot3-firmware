@@ -47,17 +47,15 @@ class MotorDriverMessageHandler {
         auto val = fixed_point_to_float(m.v_ref, 16);
         LOG("Received set motor reference voltage request, vref=%f", val);
         driver.set_reference_voltage(val);
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::SetBrushedMotorPwmRequest& m) {
         LOG("Received set motor PWM request, duty_cycle=%d", m.duty_cycle);
         driver.update_pwm_settings(m.duty_cycle);
-        can_client.send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     brushed_motor_driver::BrushedMotorDriverIface& driver;

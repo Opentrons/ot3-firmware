@@ -57,8 +57,7 @@ class EnvironmentSensorMessageHandler {
     void visit(const can::messages::BaselineSensorRequest &m) {
         driver.trigger_on_demand(m.sample_rate);
         driver.get_can_client().send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+            can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::SetSensorThresholdRequest &) {
@@ -68,8 +67,7 @@ class EnvironmentSensorMessageHandler {
     void visit(const can::messages::WriteToSensorRequest &m) {
         LOG("Received non-supported WriteToSensorRequest");
         driver.get_can_client().send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+            can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::ReadFromSensorRequest &) {
@@ -86,8 +84,7 @@ class EnvironmentSensorMessageHandler {
         driver.set_bind_flags(m.binding);
         driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_10M1S);
         driver.get_can_client().send_can_message(
-            can::ids::NodeId::host,
-            can::messages::ack_from_request(m));
+            can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
