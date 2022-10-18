@@ -144,14 +144,14 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
                            .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},  // timing threshold to enabling coolstep (keep at zero!)
-            .thigh = {.threshold = 0},      // timing threshold for enabling constant t-off/fullsteps (keep at zero!)
-            .chopconf = {.toff = 0x3,       // amount of time chopper spends in slow decay
-                         .hstrt = 0x2,      // chopper-hysteresis START (spread cycle only)
-                         .hend = 0x3,       // chopper-hysteresis END (spread cycle only)
-                         .tbl = 0x1,        // blanking period before chopper current measurement
-                         .tpfd = 0x4,       // amount of time spent in fast-decay
-                         .mres = 0x4},      // microstepping resolution
-            .coolconf = {.sgt = 0x6},       // stallguard threshold (sensitivity)
+            .thigh = {.threshold = 0},  // timing threshold for enabling constant t-off/fullsteps (keep at zero!)
+            .chopconf = {.toff = 0x3,  // amount of time chopper spends in slow decay
+                         .hstrt = 0x2,  // chopper-hysteresis START (spread cycle only)
+                         .hend = 0x3,  // chopper-hysteresis END (spread cycle only)
+                         .tbl = 0x1,  // blanking period before chopper current measurement
+                         .tpfd = 0x4,  // amount of time spent in fast-decay
+                         .mres = 0x4},  // microstepping resolution
+            .coolconf = {.sgt = 0x6},  // stallguard threshold (sensitivity)
             .glob_scale = {.global_scaler = 0xA7},
         },
     .current_config =
@@ -175,14 +175,14 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
                            .run_current = 31,
                            .hold_current_delay = 0x7},
             .tcoolthrs = {.threshold = 0},  // timing threshold to enabling coolstep (keep at zero!)
-            .thigh = {.threshold = 0},      // timing threshold for enabling constant t-off/fullsteps (keep at zero!)
-            .chopconf = {.toff = 0x3,       // amount of time chopper spends in slow decay
-                         .hstrt = 0x2,      // chopper-hysteresis START (spread cycle only)
-                         .hend = 0x3,       // chopper-hysteresis END (spread cycle only)
-                         .tbl = 0x1,        // blanking period before chopper current measurement
-                         .tpfd = 0x4,       // amount of time spent in fast-decay
-                         .mres = 0x4},      // microstepping resolution
-            .coolconf = {.sgt = 0x6},       // stallguard threshold (sensitivity)
+            .thigh = {.threshold = 0},  // timing threshold for enabling constant t-off/fullsteps (keep at zero!)
+            .chopconf = {.toff = 0x3,  // amount of time chopper spends in slow decay
+                         .hstrt = 0x2,  // chopper-hysteresis START (spread cycle only)
+                         .hend = 0x3,  // chopper-hysteresis END (spread cycle only)
+                         .tbl = 0x1,  // blanking period before chopper current measurement
+                         .tpfd = 0x4,  // amount of time spent in fast-decay
+                         .mres = 0x4},  // microstepping resolution
+            .coolconf = {.sgt = 0x6},  // stallguard threshold (sensitivity)
             .glob_scale = {.global_scaler = 0xA7},
         },
     .current_config =
