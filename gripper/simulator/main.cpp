@@ -70,8 +70,10 @@ int main(int argc, char** argv) {
     LOG_INIT("GRIPPER", []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
+    const uint32_t TEMPORARY_SERIAL = 0x103321;
     auto options = handle_options(argc, argv);
-    auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(options);
+    auto sim_eeprom =
+        std::make_shared<eeprom::simulator::EEProm>(options, TEMPORARY_SERIAL);
     auto i2c_device_map = i2c::hardware::SimI2C::DeviceMap{
         {sim_eeprom->get_address(), *sim_eeprom}};
     auto i2c3 = std::make_shared<i2c::hardware::SimI2C>(i2c_device_map);
