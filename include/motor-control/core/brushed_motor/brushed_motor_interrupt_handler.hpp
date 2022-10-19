@@ -102,8 +102,12 @@ class BrushedMotorInterruptHandler {
         switch (buffered_move.stop_condition) {
             // homing move
             case MoveStopCondition::limit_switch:
+                // We double check for is_idle here because there was a POC
+                // gripper with a noisy limit switch that triggered prematurely
+                // this just adds a double check and we can use it later to
+                // trigger an error if is_idle is true but the limit switch
+                // isn't triggered
                 if (limit_switch_triggered() && is_idle) {
-                    // if (is_sensing() && is_idle) {
                     homing_stopped();
                 }
                 break;
