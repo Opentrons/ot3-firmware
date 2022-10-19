@@ -61,9 +61,16 @@ struct Empty : BaseMessage<MId> {
 
 using Acknowledgment = Empty<MessageId::acknowledgement>;
 
+
+/* convience functions for creating responses */
 template <can::message_core::HasMessageIndex Request>
 static auto ack_from_request(const Request& r) -> Acknowledgment {
     return Acknowledgment{.message_index = r.message_index};
+}
+
+template <can::message_core::HasMessageIndex Request, can::message_core::HasMessageIndex Resposne>
+static auto add_resp_ind(Resposne& resp, const Request& req) -> void {
+    resp.message_index = req.message_index;
 }
 
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
