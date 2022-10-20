@@ -78,7 +78,7 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
                                .hstrt = 0x5,
                                .hend = 0x3,
                                .tbl = 0x2,
-                               .mres = 0x4},
+                               .mres = 0x3},
                   .coolconf = {.sgt = 0x6},
                   .pwmconf = {.pwm_ampl = 0x80,
                               .pwm_grad = 0x04,
@@ -108,7 +108,7 @@ static motor_class::Motor z_motor{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16,
+        .microstep = 32,
         .encoder_pulses_per_rev = 0,
         .gear_ratio = 1.8},
     motor_hardware_iface,
