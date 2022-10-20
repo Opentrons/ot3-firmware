@@ -57,7 +57,7 @@ class SystemMessageHandler {
     void visit(std::monostate &) {}
 
     void visit(DeviceInfoRequest &m) {
-        response.message_index = m.message_index;
+        can::messages::add_resp_ind(response,m);
         writer.send_can_message(can::ids::NodeId::host, response);
     }
 
@@ -74,7 +74,8 @@ class SystemMessageHandler {
         auto num_tasks =
             uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
         for (UBaseType_t i = 0; i < num_tasks; i++) {
-            auto r = TaskInfoResponse{.message_index = m.message_index};
+            auto r = TaskInfoResponse{};
+             can::messages::add_resp_ind(r,m);
             std::copy_n(tasks[i].pcTaskName, r.name.size(),  // NOLINT
                         r.name.begin());
             r.runtime_counter = tasks[i].ulRunTimeCounter;            // NOLINT
