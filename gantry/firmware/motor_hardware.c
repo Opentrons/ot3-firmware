@@ -141,11 +141,16 @@ void MX_GPIO_Init(void) {
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
+// motor timer: 200kHz from
+// 170MHz sysclk
+// /1 AHB
+// /2 APB1
+// /425 prescaler = 200kHz
 void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
-    htim7.Init.Prescaler = 849;
+    htim7.Init.Prescaler = 424;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
     htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;

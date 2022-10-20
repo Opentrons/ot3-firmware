@@ -198,7 +198,7 @@ void MX_TIM7_Init(void) {
     /*
      * Setting counter clock frequency to 100 kHz
      */
-    htim7.Init.Prescaler = 849;
+    htim7.Init.Prescaler = 425;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
     htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
