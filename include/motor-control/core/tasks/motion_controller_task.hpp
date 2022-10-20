@@ -133,7 +133,12 @@ class MotionControllerTask {
         CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
+        bool first_run = true;
         for (;;) {
+            if (first_run && controller->engage_at_startup) {
+                controller->enable_motor();
+                first_run = false;
+            }
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
             }
