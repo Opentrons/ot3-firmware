@@ -18,10 +18,10 @@ void eeprom_write_gpio_init() {
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     if (pipette_type == NINETY_SIX_CHANNEL) {
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        /*Configure GPIO pin : A15 */
-        GPIO_InitStruct.Pin = GPIO_PIN_15;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        /*Configure GPIO pin : B2 */
+        GPIO_InitStruct.Pin = GPIO_PIN_2;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     } else {
         __HAL_RCC_GPIOC_CLK_ENABLE();
         /*Configure GPIO pin : C5 */
@@ -70,11 +70,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
 
     }
 
-    /*Configure data ready pin : PC3 */
-    GPIO_InitStruct.Pin = GPIO_PIN_3;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
 HAL_I2C_HANDLE MX_I2C2_Init()
@@ -146,7 +141,7 @@ HAL_I2C_HANDLE MX_I2C3_Init()
  */
 void enable_eeprom_write() {
     if (get_pipette_type() == NINETY_SIX_CHANNEL) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
     } else {
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
     }
@@ -157,7 +152,7 @@ void enable_eeprom_write() {
  */
 void disable_eeprom_write() {
     if (get_pipette_type() == NINETY_SIX_CHANNEL) {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
     } else {
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
     }

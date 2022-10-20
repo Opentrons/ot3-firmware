@@ -9,7 +9,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
         /**SPI2 GPIO Configuration
-        PB12     ------> SPI2_CS
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_CIPO
         PB15     ------> SPI2_COPI
@@ -24,13 +23,23 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         // Chip Select
-        GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        if (pipette_type == NINETY_SIX_CHANNEL) {
+            GPIO_InitStruct.Pin = pipette_hardware_spi_pins(pipette_type, GPIOC);
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+            HAL_GPIO_WritePin(GPIOC, GPIO_InitStruct.Pin, GPIO_PIN_SET);
 
-        HAL_GPIO_WritePin(GPIOB, GPIO_InitStruct.Pin, GPIO_PIN_SET);
+            GPIO_InitStruct.Pin = GPIO_PIN_11;
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            HAL_GPIO_WritePin(GPIOB, GPIO_InitStruct.Pin, GPIO_PIN_SET);
+        } else {
+            GPIO_InitStruct.Pin = GPIO_PIN_12;
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            HAL_GPIO_WritePin(GPIOB, GPIO_InitStruct.Pin, GPIO_PIN_SET);
+        }
+
     }
 }
 
@@ -58,16 +67,10 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         __HAL_RCC_SPI2_CLK_DISABLE();
 
         /**SPI2 GPIO Configuration
-        PC6     ------> SPI2_CS
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_CIPO
         PB15     ------> SPI2_COPI
 
-         Step/Dir
-         PC3  ---> Dir Pin
-         PC7  ---> Step Pin
-         Enable
-         PC8  ---> Enable Pin
         */
         PipetteType pipette_type = get_pipette_type();
         HAL_GPIO_DeInit(GPIOB, pipette_hardware_spi_pins(pipette_type, GPIOB));
@@ -75,15 +78,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
     }
 }
 
-void motor_driver_CLK_gpio_init() {
-    // Driver Clock Pin
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
-}
 
 void motor_driver_gpio_init() {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -107,9 +101,6 @@ void motor_driver_gpio_init() {
         // Enable/Dir/Step pin
         GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOB);
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-        GPIO_InitStruct.Pin = pipette_hardware_motor_driver_pins(pipette_type, GPIOD);
-        HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     }
 
