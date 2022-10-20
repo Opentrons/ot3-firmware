@@ -269,9 +269,6 @@ auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
 }
 
 auto interfaces::get_driver_config() -> tmc2160::configs::TMC2160DriverConfig& {
-    if (get_axis_type() == gantry_x) {
-        return motor_driver_config_x;
-    } else {
-        return motor_driver_config_y;
-    }
+    return (get_axis_type() == gantry_x) ? motor_driver_config_x
+                                         : motor_driver_config_y;
 }
