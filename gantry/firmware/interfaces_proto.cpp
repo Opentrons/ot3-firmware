@@ -112,7 +112,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
                                .hstrt = 0x5,
                                .hend = 0x3,
                                .tbl = 0x2,
-                               .mres = 0x3},
+                               .mres = 0x2},
                   .coolconf = {.sgt = 0x6}},
     .current_config =
         {
@@ -135,7 +135,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
                                .hstrt = 0x5,
                                .hend = 0x3,
                                .tbl = 0x2,
-                               .mres = 0x3},
+                               .mres = 0x2},
                   .coolconf = {.sgt = 0x6}},
     .current_config =
         {

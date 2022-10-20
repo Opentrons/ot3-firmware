@@ -23,7 +23,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                                            .hstrt = 0x5,
                                            .hend = 0x3,
                                            .tbl = 0x2,
-                                           .mres = 0x3},
+                                           .mres = 0x2},
                               .coolconf = {.sgt = 0x6},
                               .glob_scale = {.global_scaler = 0xA7}},
                 .current_config =
@@ -53,7 +53,7 @@ auto motor_configs::driver_config_by_axis(TMC2130PipetteAxis which)
                                    .hstrt = 0x5,
                                    .hend = 0x3,
                                    .tbl = 0x2,
-                                   .mres = 0x3},
+                                   .mres = 0x2},
                       .coolconf = {.sgt = 0x6}},
         .current_config =
             {
