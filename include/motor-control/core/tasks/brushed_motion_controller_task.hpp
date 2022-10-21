@@ -92,7 +92,7 @@ class MotionControllerMessageHandler {
         auto response = controller.read_encoder_pulses();
         LOG("Received read encoder: encoder_pulses=%d", response);
         can::messages::EncoderPositionResponse msg{.encoder_position =
-                                                           response};
+                                                       response};
         can::messages::add_resp_ind(msg, m);
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
