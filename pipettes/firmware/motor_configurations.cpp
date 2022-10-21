@@ -9,22 +9,20 @@
 auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
     -> tmc2160::configs::TMC2160DriverConfig {
     tmc2160::configs::TMC2160DriverConfig tmc2160_conf{
-        .registers = {
-            .gconfig = {.en_pwm_mode = 1},
-            .ihold_irun = {.hold_current = 16,
-                         .run_current = 31,
-                         .hold_current_delay = 0x7},
-          .tpowerdown = {},
-          .tcoolthrs = {.threshold = 0},
-          .thigh = {.threshold = 0xFFFFF},
-          .chopconf = {.toff = 0x5,
-                       .hstrt = 0x5,
-                       .hend = 0x3,
-                       .tbl = 0x2,
-                       .mres = 0x2},
-          .coolconf = {.sgt = 0x6},
-          .glob_scale = {.global_scaler = 0xA7}
-        },
+        .registers = {.gconfig = {.en_pwm_mode = 1},
+                      .ihold_irun = {.hold_current = 16,
+                                     .run_current = 31,
+                                     .hold_current_delay = 0x7},
+                      .tpowerdown = {},
+                      .tcoolthrs = {.threshold = 0},
+                      .thigh = {.threshold = 0xFFFFF},
+                      .chopconf = {.toff = 0x5,
+                                   .hstrt = 0x5,
+                                   .hend = 0x3,
+                                   .tbl = 0x2,
+                                   .mres = 0x2},
+                      .coolconf = {.sgt = 0x6},
+                      .glob_scale = {.global_scaler = 0xA7}},
         .current_config =
             {
                 .r_sense = 0.1,
