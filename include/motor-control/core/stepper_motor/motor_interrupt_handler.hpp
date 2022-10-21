@@ -37,9 +37,6 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
-// (TODO lc): This should probably live in the motor configs.
-constexpr const int clk_frequency = 85000000 / (5001 * 2);
-
 template <template <class> class QueueImpl, class StatusClient,
           typename MotorMoveMessage>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>

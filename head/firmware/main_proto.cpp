@@ -152,7 +152,7 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
                          .hstrt = 0x5,
                          .hend = 0x3,
                          .tbl = 0x2,
-                         .mres = 0x4},
+                         .mres = 0x3},
             .coolconf = {.sgt = 0x6},
         },
     .current_config =
@@ -179,7 +179,7 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
                          .hstrt = 0x5,
                          .hend = 0x3,
                          .tbl = 0x2,
-                         .mres = 0x4},
+                         .mres = 0x3},
             .coolconf = {.sgt = 0x6},
         },
     .current_config =
@@ -208,7 +208,7 @@ static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
         .steps_per_rev = 200.0,
-        .microstep = 16.0,
+        .microstep = 32.0,
         .encoder_pulses_per_rev = 1000.0},
     motor_hardware_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
@@ -226,7 +226,7 @@ static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
         .steps_per_rev = 200.0,
-        .microstep = 16.0,
+        .microstep = 32.0,
         .encoder_pulses_per_rev = 1000.0},
     motor_hardware_left,
     motor_messages::MotionConstraints{.min_velocity = 1,

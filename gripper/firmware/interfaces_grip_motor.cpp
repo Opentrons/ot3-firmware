@@ -91,7 +91,7 @@ static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     dac_config,
     brushed_motor_driver::DriverConfig{
-        .vref = 0.5, .pwm_min = PWM_MIN, .pwm_max = PWM_MAX},
+        .vref = 1, .pwm_min = PWM_MIN, .pwm_max = PWM_MAX},
     update_pwm);
 
 static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
@@ -99,7 +99,7 @@ static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
     .steps_per_rev = 0,
     .microstep = 0,
     .encoder_pulses_per_rev = 512,
-    .gear_ratio = 84.29};
+    .gear_ratio = 103.81};
 
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,

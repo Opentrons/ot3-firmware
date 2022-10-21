@@ -35,7 +35,7 @@ struct motion_controller::HardwareConfig motor_pins {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_10,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = GPIO_PIN_SET},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -67,9 +67,9 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
  * Motor driver configuration.
  */
 static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
-    .registers = {.gconfig = {.en_pwm_mode = 0x1},
-                  .ihold_irun = {.hold_current = 0x0,
-                                 .run_current = 0x19,
+    .registers = {.gconfig = {.en_pwm_mode = 0x0},
+                  .ihold_irun = {.hold_current = 0x2,  // 0.177A
+                                 .run_current = 0xA,   // 0.648A
                                  .hold_current_delay = 0x7},
                   .tpowerdown = {},
                   .tcoolthrs = {.threshold = 0},
@@ -78,13 +78,16 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
                                .hstrt = 0x5,
                                .hend = 0x3,
                                .tbl = 0x2,
-                               .mres = 0x4},
+                               .mres = 0x3},
                   .coolconf = {.sgt = 0x6},
-                  .pwmconf = {.freewheel = 0x2}},
+                  .pwmconf = {.pwm_ampl = 0x80,
+                              .pwm_grad = 0x04,
+                              .pwm_freq = 0x1,
+                              .pwm_autoscale = 0x01}},
     .current_config =
         {
             .r_sense = 0.1,
-            .v_sf = 0.325,
+            .v_sf = 0.32,
         },
     .chip_select = {
         .cs_pin = GPIO_PIN_12,
@@ -105,7 +108,7 @@ static motor_class::Motor z_motor{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16,
+        .microstep = 32,
         .encoder_pulses_per_rev = 0,
         .gear_ratio = 1.8},
     motor_hardware_iface,
@@ -113,7 +116,7 @@ static motor_class::Motor z_motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    motor_queue, true};
 
 /**
  * Handler of motor interrupts.

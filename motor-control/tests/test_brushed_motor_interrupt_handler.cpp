@@ -93,7 +93,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                     test_objs.handler.set_enc_idle_state(true);
 
                     THEN(
-                        "Encoder speed tracker is holding off for a 0.5 ms (16 "
+                        "Encoder speed tracker is holding off for a 1 ms (32 "
                         "ticks)") {
                         for (uint32_t i = 0; i < HOLDOFF_TICKS; i++) {
                             REQUIRE(!test_objs.handler.is_sensing());
@@ -103,7 +103,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         }
 
                         AND_THEN("Gripped ack is sent") {
-                            CHECK(test_objs.handler.tick == 16);
+                            CHECK(test_objs.handler.tick == 32);
                             test_objs.handler.run_interrupt();
                             REQUIRE(test_objs.hw.get_encoder_pulses() == 30000);
                             REQUIRE(test_objs.reporter.messages.size() >= 1);

@@ -146,7 +146,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_right{
                                .hend = 0x2,
                                .tbl = 0x2,
                                .tpfd = 0x4,
-                               .mres = 0x4},
+                               .mres = 0x3},
                   .coolconf = {.sgt = 0x6},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
@@ -172,7 +172,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
                                .hend = 0x2,
                                .tbl = 0x2,
                                .tpfd = 0x4,
-                               .mres = 0x4},
+                               .mres = 0x3},
                   .coolconf = {.sgt = 0x6},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
@@ -201,7 +201,7 @@ static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16,
+        .microstep = 32,
         .encoder_pulses_per_rev = 1000.0,
         .gear_ratio = 4.0},
     motor_hardware_right,
@@ -220,7 +220,7 @@ static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16,
+        .microstep = 32,
         .encoder_pulses_per_rev = 1000.0,
         .gear_ratio = 4.0},
     motor_hardware_left,

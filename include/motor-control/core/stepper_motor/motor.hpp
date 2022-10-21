@@ -31,11 +31,12 @@ struct Motor {
      */
     Motor(lms::LinearMotionSystemConfig<MEConfig> lms_config,
           motor_hardware::StepperMotorHardwareIface& hardware_iface,
-          MotionConstraints constraints, GenericQueue& queue)
+          MotionConstraints constraints, GenericQueue& queue,
+          bool engage_on_boot = false)
 
         : pending_move_queue(queue),
           motion_controller{lms_config, hardware_iface, constraints,
-                            pending_move_queue} {}
+                            pending_move_queue, engage_on_boot} {}
     GenericQueue& pending_move_queue;
     motion_controller::MotionController<MEConfig> motion_controller;
 
