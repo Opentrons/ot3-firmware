@@ -128,7 +128,7 @@ static constexpr auto can_bit_timings =
 auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
-    interfaces::gear_motor::GearMotionControl& gear_motion) {
+    interfaces::gear_motor::GearMotionControl&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c1_client(),
@@ -136,13 +136,15 @@ auto initialize_motor_tasks(
                               sensor_hardware, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
-    initialize_gear_timer(gear_callback_wrapper);
+//    initialize_gear_timer(gear_callback_wrapper);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
-    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  gear_motion,
-                                  peripheral_tasks::get_spi_client(), conf, id);
+    // This now no longer works on the L5 for the 96 channel board.
+    //    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+    //                                  gear_motion,
+    //                                  peripheral_tasks::get_spi_client(),
+    //                                  conf, id);
 }
 auto initialize_motor_tasks(
     can::ids::NodeId id,

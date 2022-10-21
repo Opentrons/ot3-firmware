@@ -4,8 +4,8 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/stepper_motor/tmc2130.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/core/stepper_motor/tmc2160.hpp"
+#include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/tasks/gear_move_status_reporter_task.hpp"
@@ -19,7 +19,7 @@
  * All tasks that deal with motion control related to the 96 channel
  * pick up/drop tip motors.
  *
- * Both motors are driven by a tmc2130 driver.
+ * Both motors are driven by a tmc2160 driver.
  */
 namespace gear_motor_tasks {
 
@@ -39,7 +39,7 @@ void start_tasks(
  * Access to all the gear motion tasks.
  */
 struct Tasks {
-    tmc2130::tasks::MotorDriverTask<
+    tmc2160::tasks::MotorDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>* driver{nullptr};
 
     pipettes::tasks::motion_controller_task::MotionControllerTask<
@@ -62,7 +62,7 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_motion_controller_queue(
         const pipettes::tasks::motion_controller_task::TaskMessage& m);
 
-    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
+    void send_motor_driver_queue(const tmc2160::tasks::TaskMessage& m);
 
     void send_move_group_queue(
         const pipettes::tasks::move_group_task::TaskMessage& m);
@@ -81,7 +81,7 @@ struct QueueClient : can::message_writer::MessageWriter {
         pipettes::tasks::gear_move_status::TaskMessage>*
         move_status_report_queue{nullptr};
 
-    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
+    freertos_message_queue::FreeRTOSMessageQueue<tmc2160::tasks::TaskMessage>*
         driver_queue{nullptr};
 };
 
