@@ -8,23 +8,23 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
     switch (device) {
         case pipette_hardware_device_LED_drive:
             pinout.port = GPIOC;
-            pinout.pin = GPIO_PIN_11;
+            pinout.pin = GPIO_PIN_14;
             return pinout;
         case pipette_hardware_device_sync_in:
-            pinout.port = GPIOB;
-            pinout.pin = GPIO_PIN_4;
+            pinout.port = GPIOD;
+            pinout.pin = GPIO_PIN_2;
             return pinout;
         case pipette_hardware_device_sync_out:
-            pinout.port = GPIOB;
-            pinout.pin = GPIO_PIN_5;
+            pinout.port = GPIOA;
+            pinout.pin = GPIO_PIN_9;
             return pinout;
         case pipette_hardware_device_data_ready_front:
             pinout.port = GPIOC;
-            pinout.pin = GPIO_PIN_15;
+            pinout.pin = GPIO_PIN_11;
             return pinout;
         case pipette_hardware_device_data_ready_rear:
-            pinout.port = GPIOA;
-            pinout.pin = GPIO_PIN_8;
+            pinout.port = GPIOC;
+            pinout.pin = GPIO_PIN_6;
             return pinout;
         default:
             pinout.port = 0;
@@ -38,6 +38,12 @@ IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
         case NINETY_SIX_CHANNEL:
         case THREE_EIGHTY_FOUR_CHANNEL:
             // External interrupt lines 15:10
+            // TODO(lc: 10-20-2022) This will only
+            // return the front sensor board data ready line
+            // for now. We need to support and set-up both
+            // for the 96-chan and 8-chan
+            // PC6 -> GPIO_EXTI6 (EXTI9_5_IRQn)
+            // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
             return EXTI15_10_IRQn;
         case SINGLE_CHANNEL:
         case EIGHT_CHANNEL:
@@ -56,14 +62,17 @@ static uint16_t get_spi_pins_ht(GPIO_TypeDef* for_handle) {
      * copi -> PB15
      *
      * Chip Select
-     * plunger -> PC6
-     * left pickup -> PC9
-     * right pickup -> PC10
+     * plunger -> PC5
+     * left pickup -> PB11
+     * right pickup -> PC15
+     *
+     * Any CS pins sharing the same port as the spi bus need
+     * to be initialized separately since the configurations are different.
+     *
      */
     switch((uint32_t)for_handle) {
         case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
-        // PC6, PC8, PC9
-        case (uint32_t)GPIOC: return GPIO_PIN_6 | GPIO_PIN_9 | GPIO_PIN_10;
+        case (uint32_t)GPIOC: return GPIO_PIN_5 | GPIO_PIN_15;
         default: return 0;
     }
 }
@@ -104,6 +113,9 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
      *
      * Chip Select
      * PB12
+     *
+     * Any CS pins sharing the same port as the spi bus need
+     * to be initialized separately since the configurations are different.
      */
     switch((uint32_t)for_handle) {
         case (uint32_t)GPIOB: return GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
@@ -114,26 +126,24 @@ static uint16_t get_spi_pins_lt(GPIO_TypeDef* for_handle) {
 static uint16_t get_motor_driver_pins_ht(GPIO_TypeDef* for_handle) {
     /*
      * Dir Pins
-     * plunger -> PA7
-     * left pickup -> PC7
-     * right pickup -> PC13
+     * plunger -> PA6
+     * left pickup -> PB0
+     * right pickup -> PB7
      *
      * Step Pins
-     * plunger -> PB10
-     * left pickup -> PC8
-     * right pickup -> PB8
+     * plunger -> PA7
+     * left pickup -> PB1
+     * right pickup -> PC2
      *
-     * VREF (TMC2130)
-     * PA5
      *
      * Motor Enable
-     * PD2
+     * pickup enable -> PA10
+     * plunger enable -> PB4
      */
     switch((uint32_t)for_handle) {
-        case (uint32_t)GPIOA: return GPIO_PIN_5 | GPIO_PIN_7;
-        case (uint32_t)GPIOB: return GPIO_PIN_8 | GPIO_PIN_10;
-        case (uint32_t)GPIOC: return GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_13;
-        case (uint32_t)GPIOD: return GPIO_PIN_2;
+        case (uint32_t)GPIOA: return GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_10;
+        case (uint32_t)GPIOB: return GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_4;
+        case (uint32_t)GPIOC: return GPIO_PIN_2;
         default: return 0;
     }
 }

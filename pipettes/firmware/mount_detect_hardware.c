@@ -1,5 +1,6 @@
 #include "mount_detect_hardware.h"
 #include "platform_specific_hal_conf.h"
+#include "pipettes/core/pipette_type.h"
 
 #include "common/firmware/errors.h"
 
@@ -46,12 +47,22 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc) {
         /* Peripheral clock enable */
         __HAL_RCC_ADC12_CLK_ENABLE();
 
-        __HAL_RCC_GPIOB_CLK_ENABLE();
+        if (get_pipette_type() == NINETY_SIX_CHANNEL) {
+            // ADC1_IN9
+            __HAL_RCC_GPIOC_CLK_ENABLE();
+            GPIO_InitStruct.Pin = GPIO_PIN_3;
+            GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+            GPIO_InitStruct.Pull = GPIO_NOPULL;
+            HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        } else {
+            __HAL_RCC_GPIOB_CLK_ENABLE();
 
-        GPIO_InitStruct.Pin = GPIO_PIN_0;
-        GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+            GPIO_InitStruct.Pin = GPIO_PIN_0;
+            GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+            GPIO_InitStruct.Pull = GPIO_NOPULL;
+            HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        }
+
     }
 }
 
@@ -62,14 +73,30 @@ void adc_init(void) {
         Error_Handler();
     }
     ADC_ChannelConfTypeDef sConfig = {0};
-    // Configure channel 15 (PB0) for single ended long duration read on
-    // the tool ID pin
-    sConfig.Channel = ADC_CHANNEL_15;
-    sConfig.Rank = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
-    sConfig.SingleDiff = ADC_SINGLE_ENDED;
-    sConfig.OffsetNumber = ADC_OFFSET_NONE;
-    sConfig.Offset = 0;
+
+    if (get_pipette_type() == NINETY_SIX_CHANNEL) {
+        // Configure channel 9 (PC3) for single ended long duration read on
+        // the tool ID pin
+        // TODO (lc: 10-20-2022) Verify these settings are still OK
+        // for channel 9 of the adc.
+        sConfig.Channel = ADC_CHANNEL_9;
+        sConfig.Rank = ADC_REGULAR_RANK_1;
+        sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+        sConfig.SingleDiff = ADC_SINGLE_ENDED;
+        sConfig.OffsetNumber = ADC_OFFSET_NONE;
+        sConfig.Offset = 0;
+    } else {
+        // Configure channel 15 (PB0) for single ended long duration read on
+        // the tool ID pin
+        sConfig.Channel = ADC_CHANNEL_15;
+        sConfig.Rank = ADC_REGULAR_RANK_1;
+        sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+        sConfig.SingleDiff = ADC_SINGLE_ENDED;
+        sConfig.OffsetNumber = ADC_OFFSET_NONE;
+        sConfig.Offset = 0;
+    }
+
+
     if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
         Error_Handler();
     }
