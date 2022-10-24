@@ -57,18 +57,17 @@ class PresenceSensingDriver {
     }
 
   private:
-    [[nodiscard]] constexpr static auto new_tool_attached(
+    [[nodiscard]] constexpr static auto tool_attached_changed(
         can::ids::ToolType old_tool, can::ids::ToolType new_tool) -> bool {
-        return (old_tool != new_tool) &&
-               (new_tool != can::ids::ToolType::nothing_attached);
+        return old_tool != new_tool;
     }
 
     [[nodiscard]] constexpr static auto should_send_notification(
         const attached_tools::AttachedTools& old_tools,
         const attached_tools::AttachedTools& new_tools) -> bool {
-        return new_tool_attached(old_tools.z_motor, new_tools.z_motor) ||
-               new_tool_attached(old_tools.a_motor, new_tools.a_motor) ||
-               new_tool_attached(old_tools.gripper, new_tools.gripper);
+        return tool_attached_changed(old_tools.z_motor, new_tools.z_motor) ||
+               tool_attached_changed(old_tools.a_motor, new_tools.a_motor) ||
+               tool_attached_changed(old_tools.gripper, new_tools.gripper);
     }
 
     adc::BaseADC& adc_comms;

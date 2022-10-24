@@ -36,8 +36,8 @@ SCENARIO("get_tool called on presence sensing driver") {
                     std::tie(updated, tools) = ps.update_tools();
                     THEN(
                         "Tools detected == nothing attached, and tools_detected"
-                        "notification not sent") {
-                        REQUIRE(!updated);
+                        "notification gets sent") {
+                        REQUIRE(updated);
                         REQUIRE(tools.z_motor ==
                                 can::ids::ToolType::nothing_attached);
                         REQUIRE(tools.a_motor ==
