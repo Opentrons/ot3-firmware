@@ -26,6 +26,26 @@ SCENARIO("get_tool called on presence sensing driver") {
                 REQUIRE(tools.gripper == can::ids::ToolType::gripper);
                 REQUIRE(tools.a_motor == can::ids::ToolType::pipette);
                 REQUIRE(tools.z_motor == can::ids::ToolType::pipette);
+                AND_WHEN(
+                    "get_tool is called again and adc detects the tools have "
+                    "been removed") {
+                    adc_comms.get_z_channel().mock_set_reading_by_voltage(10);
+                    adc_comms.get_a_channel().mock_set_reading_by_voltage(10);
+                    adc_comms.get_gripper_channel().mock_set_reading_by_voltage(
+                        10);
+                    std::tie(updated, tools) = ps.update_tools();
+                    THEN(
+                        "Tools detected == nothing attached, and tools_detected"
+                        "notification not sent") {
+                        REQUIRE(!updated);
+                        REQUIRE(tools.z_motor ==
+                                can::ids::ToolType::nothing_attached);
+                        REQUIRE(tools.a_motor ==
+                                can::ids::ToolType::nothing_attached);
+                        REQUIRE(tools.gripper ==
+                                can::ids::ToolType::nothing_attached);
+                    }
+                }
                 AND_WHEN("Tools switch to invalid voltages") {
                     adc_comms.get_z_channel().mock_set_reading_by_voltage(3300);
                     std::tie(updated, tools) = ps.update_tools();
