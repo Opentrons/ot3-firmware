@@ -27,6 +27,7 @@ string(REPLACE "." "_" "_poetry_archive_version_component" "${Poetry_FIND_VERSIO
 
 message(STATUS "Checking for installed Python package")
 set(Python_FIND_UNVERSIONED_NAMES "FIRST")  # Helps find pyenv if installed
+set(Python_FIND_FRAMEWORK "LAST") # Encourages cmake to find pyenv before macOS system version
 find_package(Python COMPONENTS Interpreter Development)
 if(NOT ${Python_FOUND})
 	message(FATAL_ERROR "Could not find installed python version. Cannot install poetry. Exiting...")
