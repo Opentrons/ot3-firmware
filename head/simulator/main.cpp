@@ -8,6 +8,8 @@
 #include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/logging.h"
+#include "common/core/freertos_synchronization.hpp"
+#include "common/simulation/state_manager.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
@@ -111,6 +113,10 @@ static auto adc_comms = adc::SimADC{};
 static auto presence_sense_driver =
     presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
+static std::shared_ptr<state_manager::StateManagerConnection<
+    freertos_synchronization::FreeRTOSCriticalSection>>
+    state_manager_connection;
+
 void signal_handler(int signum) {
     LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
@@ -121,6 +127,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     auto envdesc = po::options_description("");
     cmdlinedesc.add_options()("help,h", "Show this help message.");
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
+    auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
@@ -129,6 +136,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
         std::exit(0);
     }
     po::store(po::parse_environment(envdesc, can_arg_xform), vm);
+    po::store(po::parse_environment(envdesc, state_mgr_arg_xform), vm);
     po::notify(vm);
     return vm;
 }
@@ -141,6 +149,9 @@ int main(int argc, char** argv) {
     });
 
     auto options = handle_options(argc, argv);
+
+    state_manager_connection = state_manager::create<
+        freertos_synchronization::FreeRTOSCriticalSection>(options);
 
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
