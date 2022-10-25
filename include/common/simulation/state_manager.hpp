@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <array>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <memory>
@@ -44,10 +45,13 @@ class StateManagerConnection {
     auto open() -> bool {
         LOG("Creating state manager connection to %s:%d", _host.c_str(), _port);
 
-        boost::asio::ip::tcp::resolver resolver(_context);
+        boost::asio::ip::udp::resolver resolver(_context);
         try {
-            boost::asio::connect(
-                _socket, resolver.resolve(_host, std::to_string(_port)));
+            _endpoint = *resolver
+                             .resolve(boost::asio::ip::udp::v4(), _host,
+                                      std::to_string(_port))
+                             .begin();
+            _socket.open(boost::asio::ip::udp::v4());
         } catch (boost::system::system_error &) {
             LOG("Error opening state manager connection to %s:%d",
                 _host.c_str(), _port);
@@ -65,6 +69,16 @@ class StateManagerConnection {
         }
     }
 
+    template <size_t N>
+    auto send(std::array<uint8_t, N> data) -> bool {
+        if (_socket.is_open()) {
+            LOG("Sending %d bytes to state manager", N);
+            _socket.send_to(boost::asio::const_buffer(data.data(), N),
+                            _endpoint);
+        }
+        return true;
+    }
+
     // TODO:
     //   - Add message class
     //   - Write Message, accepting a message instance
@@ -73,7 +87,8 @@ class StateManagerConnection {
     std::string _host;
     uint32_t _port;
     boost::asio::io_context _context{};
-    boost::asio::ip::tcp::socket _socket;
+    boost::asio::ip::udp::endpoint _endpoint{};
+    boost::asio::ip::udp::socket _socket;
     CriticalSection critical_section{};
 };
 

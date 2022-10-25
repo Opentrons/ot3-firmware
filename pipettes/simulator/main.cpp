@@ -12,8 +12,8 @@
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_synchronization.hpp"
-#include "common/simulation/state_manager.hpp"
 #include "common/core/logging.h"
+#include "common/simulation/state_manager.hpp"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "pipettes/core/central_tasks.hpp"
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
-        
+
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
