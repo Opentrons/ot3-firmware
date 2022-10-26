@@ -11,7 +11,9 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/core/freertos_synchronization.hpp"
 #include "common/core/logging.h"
+#include "common/simulation/state_manager.hpp"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "pipettes/core/central_tasks.hpp"
@@ -57,6 +59,10 @@ static auto gear_interrupts =
     interfaces::gear_motor::get_interrupts(gear_hardware, interrupt_queues);
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
+
+static std::shared_ptr<state_manager::StateManagerConnection<
+    freertos_synchronization::FreeRTOSCriticalSection>>
+    state_manager_connection;
 
 static auto node_from_options(const po::variables_map& options)
     -> can::ids::NodeId {
@@ -133,6 +139,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
     auto eeprom_arg_xform =
         eeprom::simulator::EEProm::add_options(cmdlinedesc, envdesc);
+    auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
@@ -142,7 +149,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     }
     po::store(po::parse_environment(
                   envdesc,
-                  [can_arg_xform, eeprom_arg_xform](
+                  [can_arg_xform, eeprom_arg_xform, state_mgr_arg_xform](
                       const std::string& input_val) -> std::string {
                       if (input_val == "MOUNT") {
                           return "mount";
@@ -152,7 +159,11 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
                           return can_xformed;
                       }
                       auto eeprom_xformed = eeprom_arg_xform(input_val);
-                      return eeprom_xformed;
+                      if (eeprom_xformed != "") {
+                          return eeprom_xformed;
+                      }
+                      auto state_mgr_xformed = state_mgr_arg_xform(input_val);
+                      return state_mgr_xformed;
                   }),
               vm);
     po::notify(vm);
@@ -187,6 +198,10 @@ int main(int argc, char** argv) {
     const uint32_t TEMPORARY_PIPETTE_SERIAL =
         temporary_serial_number(PIPETTE_TYPE);
     auto options = handle_options(argc, argv);
+
+    state_manager_connection = state_manager::create<
+        freertos_synchronization::FreeRTOSCriticalSection>(options);
+
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(

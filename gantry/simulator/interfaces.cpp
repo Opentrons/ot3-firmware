@@ -7,6 +7,8 @@
 #include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
+#include "common/core/freertos_synchronization.hpp"
+#include "common/simulation/state_manager.hpp"
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces_proto.hpp"
 #include "gantry/core/queues.hpp"
@@ -84,6 +86,10 @@ void interfaces::initialize() {}
 
 static po::variables_map options{};
 
+static std::shared_ptr<state_manager::StateManagerConnection<
+    freertos_synchronization::FreeRTOSCriticalSection>>
+    state_manager_connection;
+
 void interfaces::initialize_sim(int argc, char** argv) {
     auto cmdlinedesc = po::options_description(
         std::string("simulator for the OT-3 gantry ") +
@@ -91,6 +97,7 @@ void interfaces::initialize_sim(int argc, char** argv) {
     auto envdesc = po::options_description("");
     cmdlinedesc.add_options()("help,h", "Show this help message.");
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
+    auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
 
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), options);
     if (options.count("help")) {
@@ -98,7 +105,11 @@ void interfaces::initialize_sim(int argc, char** argv) {
         std::exit(0);
     }
     po::store(po::parse_environment(envdesc, can_arg_xform), options);
+    po::store(po::parse_environment(envdesc, state_mgr_arg_xform), options);
     po::notify(options);
+
+    state_manager_connection = state_manager::create<
+        freertos_synchronization::FreeRTOSCriticalSection>(options);
 }
 
 std::shared_ptr<can::bus::CanBus> canbus;
