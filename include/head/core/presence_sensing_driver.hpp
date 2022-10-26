@@ -51,43 +51,23 @@ class PresenceSensingDriver {
     [[nodiscard]] auto update_tools()
         -> std::pair<bool, attached_tools::AttachedTools> {
         auto new_tools = attached_tools::AttachedTools(get_readings());
-
-        auto ret = std::make_pair(should_update(current_tools, new_tools),
-                                  update_tools(current_tools, new_tools));
-        if (ret.first) {
-            current_tools = ret.second;
-        }
-        return ret;
+        bool notify = should_send_notification(current_tools, new_tools);
+        current_tools = new_tools;
+        return std::make_pair(notify, current_tools);
     }
 
   private:
-    [[nodiscard]] constexpr static auto should_use_new_value(
+    [[nodiscard]] constexpr static auto tool_attached_changed(
         can::ids::ToolType old_tool, can::ids::ToolType new_tool) -> bool {
-        return (old_tool != new_tool) &&
-               (new_tool != can::ids::ToolType::nothing_attached);
+        return old_tool != new_tool;
     }
 
-    [[nodiscard]] constexpr static auto should_update(
+    [[nodiscard]] constexpr static auto should_send_notification(
         const attached_tools::AttachedTools& old_tools,
         const attached_tools::AttachedTools& new_tools) -> bool {
-        return should_use_new_value(old_tools.z_motor, new_tools.z_motor) ||
-               should_use_new_value(old_tools.a_motor, new_tools.a_motor) ||
-               should_use_new_value(old_tools.gripper, new_tools.gripper);
-    }
-    [[nodiscard]] constexpr static auto update_tool(can::ids::ToolType old_tool,
-                                                    can::ids::ToolType new_tool)
-        -> can::ids::ToolType {
-        return (new_tool == can::ids::ToolType::nothing_attached) ? old_tool
-                                                                  : new_tool;
-    }
-    [[nodiscard]] constexpr static auto update_tools(
-        const attached_tools::AttachedTools& old_tools,
-        const attached_tools::AttachedTools& new_tools)
-        -> attached_tools::AttachedTools {
-        return attached_tools::AttachedTools(
-            update_tool(old_tools.z_motor, new_tools.z_motor),
-            update_tool(old_tools.a_motor, new_tools.a_motor),
-            update_tool(old_tools.gripper, new_tools.gripper));
+        return tool_attached_changed(old_tools.z_motor, new_tools.z_motor) ||
+               tool_attached_changed(old_tools.a_motor, new_tools.a_motor) ||
+               tool_attached_changed(old_tools.gripper, new_tools.gripper);
     }
 
     adc::BaseADC& adc_comms;

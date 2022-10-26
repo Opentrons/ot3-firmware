@@ -14,12 +14,12 @@ using namespace tmc2130::configs;
 using namespace tmc2160::configs;
 
 enum class TMC2130PipetteAxis {
-    left_gear_motor,
-    right_gear_motor,
     linear_motor,
 };
 
 enum class TMC2160PipetteAxis {
+    left_gear_motor,
+    right_gear_motor,
     linear_motor,
 };
 
@@ -28,8 +28,8 @@ struct LowThroughputPipetteDriverHardware {
 };
 
 struct HighThroughputPipetteDriverHardware {
-    TMC2130DriverConfig right_gear_motor;
-    TMC2130DriverConfig left_gear_motor;
+    TMC2160DriverConfig right_gear_motor;
+    TMC2160DriverConfig left_gear_motor;
     TMC2160DriverConfig linear_motor;
 };
 
