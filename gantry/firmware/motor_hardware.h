@@ -10,6 +10,7 @@ extern "C" {
 
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim2;
 
 typedef void (*motor_interrupt_callback)();
 

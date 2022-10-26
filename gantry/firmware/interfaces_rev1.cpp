@@ -133,7 +133,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
  */
 static motor_hardware::MotorHardware motor_hardware_iface(
     (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
-    nullptr);
+    &htim2);
 
 /**
  * The can bus.
