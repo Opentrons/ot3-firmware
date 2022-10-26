@@ -6,7 +6,6 @@ import argparse
 import asyncio
 import logging
 from asyncio import BaseProtocol
-import time
 from typing import Tuple, cast
 
 from .messages import handle_message
