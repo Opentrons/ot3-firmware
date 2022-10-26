@@ -43,6 +43,8 @@ class StateManagerConnection {
         delete;
 
     auto open() -> bool {
+        auto lock = synchronization::Lock(critical_section);
+
         LOG("Creating state manager connection to %s:%d", _host.c_str(), _port);
 
         boost::asio::ip::udp::resolver resolver(_context);
@@ -63,6 +65,7 @@ class StateManagerConnection {
     }
 
     auto close() -> void {
+        auto lock = synchronization::Lock(critical_section);
         if (_socket.is_open()) {
             LOG("Closing state manager socket to %s:%d", _host.c_str(), _port);
             _socket.close();
@@ -71,6 +74,7 @@ class StateManagerConnection {
 
     template <size_t N>
     auto send(std::array<uint8_t, N> data) -> bool {
+        auto lock = synchronization::Lock(critical_section);
         if (_socket.is_open()) {
             LOG("Sending %d bytes to state manager", N);
             _socket.send_to(boost::asio::const_buffer(data.data(), N),
