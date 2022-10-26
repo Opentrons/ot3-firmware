@@ -34,12 +34,11 @@ static auto move_status_task_builder_right = freertos_task::TaskStarter<
  * Start head tasks.
  */
 void head_gear_tasks::start_tasks(
-    head_gear_tasks::CanWriterTask& can_writer,
-    can::ids::NodeId id,
+    head_gear_tasks::CanWriterTask& can_writer, can::ids::NodeId id,
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>&
-    left_motion_controller,
+        left_motion_controller,
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>&
-    right_motion_controller,
+        right_motion_controller,
     head_gear_tasks::SPIWriterClient& spi2_comms,
     head_gear_tasks::SPIWriterClient& spi3_comms,
     tmc2160::configs::TMC2160DriverConfig& left_driver_configs,
@@ -57,8 +56,7 @@ void head_gear_tasks::start_tasks(
     auto& motion_left = mc_task_builder_left.start(
         5, "motion controller", left_motion_controller, left_queues);
     auto& tmc2160_driver_left = tmc2160_driver_task_builder_left.start(
-        5, "tmc2160 driver", left_driver_configs, left_queues,
-        spi3_comms);
+        5, "tmc2160 driver", left_driver_configs, left_queues, spi3_comms);
     auto& move_group_left = move_group_task_builder_left.start(
         5, "move group", left_queues, left_queues);
     auto& move_status_reporter_left = move_status_task_builder_left.start(
@@ -81,8 +79,7 @@ void head_gear_tasks::start_tasks(
     auto& motion_right = mc_task_builder_right.start(
         5, "motion controller", right_motion_controller, right_queues);
     auto& tmc2160_driver_right = tmc2160_driver_task_builder_right.start(
-        5, "tmc2160 driver", right_driver_configs, right_queues,
-        spi2_comms);
+        5, "tmc2160 driver", right_driver_configs, right_queues, spi2_comms);
     auto& move_group_right = move_group_task_builder_right.start(
         5, "move group", right_queues, right_queues);
     auto& move_status_reporter_right = move_status_task_builder_right.start(
@@ -103,8 +100,8 @@ void head_gear_tasks::start_tasks(
 }
 
 head_gear_tasks::QueueClient::QueueClient()
-// This gets overridden in start_tasks, needs to be static here since this
-// is free-store allocated
+    // This gets overridden in start_tasks, needs to be static here since this
+    // is free-store allocated
     : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 void head_gear_tasks::QueueClient::send_motion_controller_queue(

@@ -21,11 +21,11 @@
 namespace head_peripheral_tasks {
 
 using I2CClient =
-i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
+    i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 using I2CPollerClient =
-i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
+    i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
 using SPIClient =
-spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
+    spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
 void start_tasks(i2c::hardware::I2CBase& i2c3_interface,
                  spi::hardware::SpiDeviceBase& spi2_device,
@@ -38,7 +38,7 @@ struct Tasks {
     i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
         i2c3_task{nullptr};
     i2c::tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
-        freertos_timer::FreeRTOSTimer>* i2c3_poller_task{
+                              freertos_timer::FreeRTOSTimer>* i2c3_poller_task{
         nullptr};
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi2_task{
         nullptr};
@@ -102,6 +102,4 @@ auto get_spi3_client() -> SPIClient&;
  */
 auto get_spi2_client() -> SPIClient&;
 
-
-
-}  // namespace peripheral_tasks
+}  // namespace head_peripheral_tasks

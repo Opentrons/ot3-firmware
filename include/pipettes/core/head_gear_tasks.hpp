@@ -5,7 +5,6 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
-
 #include "pipettes/core/tasks/gear_move_status_reporter_task.hpp"
 #include "pipettes/core/tasks/motion_controller_task.hpp"
 #include "pipettes/core/tasks/move_group_task.hpp"
@@ -17,24 +16,21 @@ namespace head_gear_tasks {
 using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 using SPIWriterClient =
-spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
+    spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 
 /**
  * Start head tasks.
  */
 
 void start_tasks(
-    head_gear_tasks::CanWriterTask& can_writer,
-    can::ids::NodeId id,
+    head_gear_tasks::CanWriterTask& can_writer, can::ids::NodeId id,
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>&
-    left_motion_controller,
+        left_motion_controller,
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>&
-    right_motion_controller,
-    SPIWriterClient& spi2_device,
-    SPIWriterClient& spi3_device,
+        right_motion_controller,
+    SPIWriterClient& spi2_device, SPIWriterClient& spi3_device,
     tmc2160::configs::TMC2160DriverConfig& left_driver_configs,
     tmc2160::configs::TMC2160DriverConfig& right_driver_configs);
-
 
 /**
  * Access to all tasks associated with a motor. There will be one for the left
@@ -57,7 +53,6 @@ struct Tasks {
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
         nullptr};
 };
-
 
 /**
  * Access to all the gear motion task queues.
@@ -91,8 +86,6 @@ struct QueueClient : can::message_writer::MessageWriter {
         driver_queue{nullptr};
 };
 
-
-
 /**
  * Access to the left gear motor tasks queues singleton
  * @return
@@ -104,7 +97,6 @@ struct QueueClient : can::message_writer::MessageWriter {
  * @return
  */
 [[nodiscard]] auto get_left_gear_queues() -> QueueClient&;
-
 
 /**
  * Access to the right gear motor tasks singleton
@@ -118,4 +110,4 @@ struct QueueClient : can::message_writer::MessageWriter {
  */
 [[nodiscard]] auto get_left_gear_tasks() -> Tasks&;
 
-}  // namespace head_tasks
+}  // namespace head_gear_tasks

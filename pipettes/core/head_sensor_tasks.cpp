@@ -1,6 +1,7 @@
+#include "pipettes/core/head_sensor_tasks.hpp"
+
 #include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
-#include "pipettes/core/head_sensor_tasks.hpp"
 
 static auto tasks = head_sensor_tasks::Tasks{};
 static auto queue_client = head_sensor_tasks::QueueClient{};
@@ -11,8 +12,7 @@ static auto eeprom_task_builder =
 void head_sensor_tasks::start_tasks(
     head_sensor_tasks::CanWriterTask& can_writer,
     head_sensor_tasks::I2CClient& i2c3_task_client,
-    head_sensor_tasks::I2CPollerClient&,
-    can::ids::NodeId id,
+    head_sensor_tasks::I2CPollerClient&, can::ids::NodeId id,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
     queue_client.set_node_id(id);
     auto& queues = head_sensor_tasks::get_queues();
@@ -28,8 +28,8 @@ void head_sensor_tasks::start_tasks(
 }
 
 head_sensor_tasks::QueueClient::QueueClient()
-// This gets overridden in start_tasks, needs to be static here since this
-// is free-store allocated
+    // This gets overridden in start_tasks, needs to be static here since this
+    // is free-store allocated
     : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
 void head_sensor_tasks::QueueClient::send_eeprom_queue(

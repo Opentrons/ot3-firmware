@@ -8,7 +8,6 @@
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
 
-
 /**
  * Sensor Tasks
  *
@@ -24,13 +23,12 @@ namespace head_sensor_tasks {
 using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 using I2CClient =
-i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
+    i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 using I2CPollerClient =
-i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
+    i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
 
 void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
-                 I2CPollerClient& i2c3_poller_client,
-                 can::ids::NodeId id,
+                 I2CPollerClient& i2c3_poller_client, can::ids::NodeId id,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
@@ -65,4 +63,4 @@ struct QueueClient : can::message_writer::MessageWriter {
  */
 [[nodiscard]] auto get_queues() -> QueueClient&;
 
-}  // namespace sensor_tasks
+}  // namespace head_sensor_tasks

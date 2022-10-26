@@ -10,8 +10,7 @@
 static auto& peripheral_queue_client = head_peripheral_tasks::get_queues();
 static auto& sensor_queue_client = head_sensor_tasks::get_queues();
 static auto& gear_left_queue_client = head_gear_tasks::get_left_gear_queues();
-static auto& gear_right_queue_client =
-    head_gear_tasks::get_right_gear_queues();
+static auto& gear_right_queue_client = head_gear_tasks::get_right_gear_queues();
 static auto& central_queue_client = central_tasks::get_queues();
 
 /** The parsed message handler */
@@ -57,7 +56,8 @@ static auto gear_motion_controller_dispatch_target_right =
         gear_motion_handler_right};
 
 static auto gear_motion_group_dispatch_target_left =
-    head_dispatch_builder::GearMoveGroupDispatchTarget{gear_move_group_handler_left};
+    head_dispatch_builder::GearMoveGroupDispatchTarget{
+        gear_move_group_handler_left};
 static auto gear_motion_group_dispatch_target_right =
     head_dispatch_builder::GearMoveGroupDispatchTarget{
         gear_move_group_handler_right};
@@ -74,7 +74,8 @@ static auto pipette_info_target =
 /** Dispatcher to the various handlers */
 static auto dispatcher = can::dispatch::Dispatcher(
     [](auto) -> bool { return true; }, eeprom_dispatch_target,
-    pipette_info_target, system_dispatch_target, gear_motor_dispatch_target_left,
+    pipette_info_target, system_dispatch_target,
+    gear_motor_dispatch_target_left,
     gear_motion_controller_dispatch_target_left,
     gear_motion_group_dispatch_target_left, gear_motor_dispatch_target_right,
     gear_motion_controller_dispatch_target_right,
@@ -125,7 +126,7 @@ auto static writer_task_control =
         writer_task};
 
 auto can_task::start_reader(can::bus::CanBus& canbus, can::ids::NodeId id)
--> can_task::CanMessageReaderTask& {
+    -> can_task::CanMessageReaderTask& {
     reader_task.listen_id = id;
     reader_task_control.start(5, "can reader task", &canbus);
     return reader_task;

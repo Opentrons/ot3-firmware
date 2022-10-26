@@ -12,7 +12,7 @@ static auto i2c3_task_builder =
     freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
 template <template <typename> typename QueueImpl>
 using PollerWithTimer =
-i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
+    i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
 
 static auto i2c3_poll_task_builder =
     freertos_task::TaskStarter<1024, PollerWithTimer>{};
@@ -31,15 +31,15 @@ static auto spi3_task_client =
 static auto spi3_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
-void head_peripheral_tasks::start_tasks(i2c::hardware::I2CBase& i2c3_interface,
-                                   spi::hardware::SpiDeviceBase& spi2_device,
-                                   spi::hardware::SpiDeviceBase& spi3_device) {
+void head_peripheral_tasks::start_tasks(
+    i2c::hardware::I2CBase& i2c3_interface,
+    spi::hardware::SpiDeviceBase& spi2_device,
+    spi::hardware::SpiDeviceBase& spi3_device) {
     auto& queues = head_peripheral_tasks::get_queues();
     auto& tasks = head_peripheral_tasks::get_tasks();
 
     auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3_interface);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
-
 
     auto& i2c3_poller_task =
         i2c3_poll_task_builder.start(5, "i2c3 poller", i2c3_task_client);
@@ -67,21 +67,26 @@ head_peripheral_tasks::QueueClient::QueueClient() {}
 
 auto head_peripheral_tasks::get_tasks() -> Tasks& { return tasks; }
 
-auto head_peripheral_tasks::get_queues() -> QueueClient& { return queue_client; }
+auto head_peripheral_tasks::get_queues() -> QueueClient& {
+    return queue_client;
+}
 
-auto head_peripheral_tasks::get_i2c3_client() -> head_peripheral_tasks::I2CClient& {
+auto head_peripheral_tasks::get_i2c3_client()
+    -> head_peripheral_tasks::I2CClient& {
     return i2c3_task_client;
 }
 
 auto head_peripheral_tasks::get_i2c3_poller_client()
--> i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>& {
+    -> i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>& {
     return i2c3_poll_client;
 }
 
-auto head_peripheral_tasks::get_spi2_client() -> head_peripheral_tasks::SPIClient& {
+auto head_peripheral_tasks::get_spi2_client()
+    -> head_peripheral_tasks::SPIClient& {
     return spi2_task_client;
 }
 
-auto head_peripheral_tasks::get_spi3_client() -> head_peripheral_tasks::SPIClient& {
+auto head_peripheral_tasks::get_spi3_client()
+    -> head_peripheral_tasks::SPIClient& {
     return spi3_task_client;
 }
