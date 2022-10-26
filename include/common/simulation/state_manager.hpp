@@ -19,6 +19,7 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include "common/core/logging.h"
@@ -34,14 +35,38 @@ template <synchronization::LockableProtocol CriticalSection>
 class StateManagerConnection {
   public:
     explicit StateManagerConnection(std::string host, uint32_t port)
-        : _host(host), _port(port), _socket(_context) {}
-    ~StateManagerConnection() {}
+        : _host(host), _port(port), _socket(_context) {
+        if (!open()) {
+            // This actually doesn't rely on a server being open since
+            // we're using datagrams, so it makes sense to throw on
+            // errors here.
+            throw std::invalid_argument(
+                "Could not initialize state manager connection.");
+        }
+    }
+    ~StateManagerConnection() { close(); }
     StateManagerConnection(const StateManagerConnection &) = delete;
     StateManagerConnection(const StateManagerConnection &&) = delete;
     StateManagerConnection &operator=(const StateManagerConnection &) = delete;
     StateManagerConnection &&operator=(const StateManagerConnection &&) =
         delete;
 
+    template <size_t N>
+    auto send(std::array<uint8_t, N> data) -> bool {
+        auto lock = synchronization::Lock(critical_section);
+        if (_socket.is_open()) {
+            LOG("Sending %d bytes to state manager", N);
+            _socket.send_to(boost::asio::const_buffer(data.data(), N),
+                            _endpoint);
+        }
+        return true;
+    }
+
+    // TODO:
+    //   - Add message class
+    //   - Write Message, accepting a message instance
+
+  private:
     auto open() -> bool {
         auto lock = synchronization::Lock(critical_section);
 
@@ -72,22 +97,6 @@ class StateManagerConnection {
         }
     }
 
-    template <size_t N>
-    auto send(std::array<uint8_t, N> data) -> bool {
-        auto lock = synchronization::Lock(critical_section);
-        if (_socket.is_open()) {
-            LOG("Sending %d bytes to state manager", N);
-            _socket.send_to(boost::asio::const_buffer(data.data(), N),
-                            _endpoint);
-        }
-        return true;
-    }
-
-    // TODO:
-    //   - Add message class
-    //   - Write Message, accepting a message instance
-
-  private:
     std::string _host;
     uint32_t _port;
     boost::asio::io_context _context{};
@@ -103,7 +112,6 @@ auto create(const boost::program_options::variables_map &options)
     auto port = options["state-mgr-port"].as<std::uint16_t>();
     auto ret =
         std::make_shared<StateManagerConnection<CriticalSection>>(host, port);
-    ret->open();
     return ret;
 }
 
