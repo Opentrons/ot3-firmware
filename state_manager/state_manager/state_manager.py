@@ -104,8 +104,6 @@ async def main() -> None:
     port = arg_dict.pop("port")
     ot3_state = OT3State.build(**arg_dict)
     await OT3StateManager(ot3_state).start_server(host, port)
-    while(1):
-        time.sleep(1)
 
 
 if __name__ == "__main__":
