@@ -164,15 +164,6 @@ auto create(const boost::program_options::variables_map &options)
     auto port = options["state-mgr-port"].as<std::uint16_t>();
     auto ret =
         std::make_shared<StateManagerConnection<CriticalSection>>(host, port);
-    ret->send_sync_msg(SyncPinState::LOW);
-    for (long i = 0; i < 10000; ++i) {
-        ret->send_move_msg(MoveMessageHardware::z_l, Direction::POSITIVE);
-    }
-    auto sync = ret->get_sync_state();
-    LOG("SyncState: %d", sync);
-    ret->send_sync_msg(SyncPinState::HIGH);
-    sync = ret->get_sync_state();
-    LOG("SyncState: %d", sync);
     return ret;
 }
 
