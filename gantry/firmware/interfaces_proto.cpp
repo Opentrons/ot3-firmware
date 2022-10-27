@@ -232,7 +232,7 @@ void interfaces::initialize() {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler);
+    initialize_timer(call_motor_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);
