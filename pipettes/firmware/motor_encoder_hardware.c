@@ -38,7 +38,7 @@ void Encoder_GPIO_Init(PipetteType pipette_type){
             HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
         }
     else{
-            GPIO_InitStruct.Pin = GPIO_PIN_5;
+            GPIO_InitStruct.Pin = GPIO_PIN_4;
             GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
             GPIO_InitStruct.Pull = GPIO_NOPULL;
             GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
