@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
 
     z_motor_iface::get_z_motor_interface().provide_state_manager(
         state_manager_connection);
+    fake_sensor_hw.provide_state_manager(state_manager_connection);
 
     auto sim_eeprom =
         std::make_shared<eeprom::simulator::EEProm>(options, TEMPORARY_SERIAL);

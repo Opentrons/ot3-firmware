@@ -150,6 +150,9 @@ auto create(const boost::program_options::variables_map &options)
     auto port = options["state-mgr-port"].as<std::uint16_t>();
     auto ret =
         std::make_shared<StateManagerConnection<CriticalSection>>(host, port);
+    for (int i = 0; i < 100; ++i) {
+        ret->send_move_msg(MoveMessageHardware::z_l, Direction::POSITIVE);
+    }
     return ret;
 }
 
