@@ -207,6 +207,7 @@ int main(int argc, char** argv) {
     linear_motor_hardware.change_hardware_id(
         node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
                                                : MoveMessageHardware::z_r);
+    linear_motor_hardware.provide_state_manager(state_manager_connection);
 
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();

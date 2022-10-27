@@ -4,6 +4,7 @@
 
 namespace z_motor_iface {
 
-auto get_z_motor_interface() -> sim_motor_hardware_iface::SimMotorHardwareIface&;
+auto get_z_motor_interface()
+    -> sim_motor_hardware_iface::SimMotorHardwareIface&;
 
 }
