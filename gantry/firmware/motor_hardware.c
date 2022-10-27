@@ -3,14 +3,7 @@
 
 
 TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim2 = {
-        .Instance = TIM2,
-        .Init = {.Prescaler = 0,
-                .CounterMode = TIM_COUNTERMODE_UP,
-                .Period = UINT16_MAX,
-                .ClockDivision = TIM_CLOCKDIVISION_DIV1,
-                .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE}};;
-
+TIM_HandleTypeDef htim2;
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -190,7 +183,7 @@ void Encoder_GPIO_Init(void) {
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
-void TIM2_EncoderG_Init(void) {
+void TIM2_Encoder_Init(void) {
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     __HAL_RCC_TIM2_CLK_ENABLE();
@@ -205,7 +198,7 @@ void TIM2_EncoderG_Init(void) {
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
     sConfig.IC1Filter = 0;
-    sConfig.IC2Polarity = TIM_ICPOLARITY_FALLING;
+    sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
     sConfig.IC2Filter = 0;
@@ -269,5 +262,5 @@ void initialize_timer(motor_interrupt_callback callback, encoder_overflow_callba
     MX_GPIO_Init();
     MX_TIM7_Init();
     Encoder_GPIO_Init();
-    TIM2_EncoderG_Init();
+    TIM2_Encoder_Init();
 }
