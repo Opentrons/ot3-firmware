@@ -75,7 +75,8 @@ class StateManagerConnection {
                                                 message.end());
         itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint8_t>(direction),
                                                 itr, message.end());
-        return send(message);
+        std::ignore = send_and_receive(message);
+        return true;
     }
 
     /**
@@ -94,7 +95,17 @@ class StateManagerConnection {
                                                 message.end());
         itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint8_t>(state),
                                                 itr, message.end());
-        return send(message);
+        std::ignore = send_and_receive(message);
+        return true;
+    }
+
+    auto get_sync_state() -> SyncPinState {
+        std::array<uint8_t, 4> message = {
+            static_cast<uint8_t>(MessageID::get_sync_pin_state), 0x00, 0x00,
+            0x00};
+        auto response = send_and_receive(message);
+        // Response is an ascii character for 'low' or 'high'
+        return response[0] == '0' ? SyncPinState::LOW : SyncPinState::HIGH;
     }
 
   private:
@@ -129,10 +140,13 @@ class StateManagerConnection {
     }
 
     template <size_t N>
-    auto send(const std::array<uint8_t, N> &data) -> bool {
+    auto send_and_receive(const std::array<uint8_t, N> &send)
+        -> std::array<uint8_t, N> {
         auto lock = synchronization::Lock(critical_section);
-        return _socket.send_to(boost::asio::const_buffer(data.data(), N),
-                               _endpoint) == N;
+        _socket.send_to(boost::asio::const_buffer(send.data(), N), _endpoint);
+        std::array<uint8_t, N> ret;
+        _socket.receive(boost::asio::buffer(ret));
+        return ret;
     }
 
     std::string _host;
@@ -150,9 +164,15 @@ auto create(const boost::program_options::variables_map &options)
     auto port = options["state-mgr-port"].as<std::uint16_t>();
     auto ret =
         std::make_shared<StateManagerConnection<CriticalSection>>(host, port);
-    for (int i = 0; i < 100; ++i) {
+    ret->send_sync_msg(SyncPinState::LOW);
+    for (long i = 0; i < 10000; ++i) {
         ret->send_move_msg(MoveMessageHardware::z_l, Direction::POSITIVE);
     }
+    auto sync = ret->get_sync_state();
+    LOG("SyncState: %d", sync);
+    ret->send_sync_msg(SyncPinState::HIGH);
+    sync = ret->get_sync_state();
+    LOG("SyncState: %d", sync);
     return ret;
 }
 

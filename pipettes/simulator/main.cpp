@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
         options, TEMPORARY_PIPETTE_SERIAL);
     auto fake_sensor_hw = std::make_shared<test_mocks::MockSensorHardware>();
-    fake_sensor_hw.provide_state_manager(state_manager_connection);
+    fake_sensor_hw->provide_state_manager(state_manager_connection);
     auto pressuresensor =
         std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {

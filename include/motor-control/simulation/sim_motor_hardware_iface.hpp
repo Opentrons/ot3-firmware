@@ -39,7 +39,12 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     }
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
-    bool check_sync_in() final { return true; }
+    bool check_sync_in() final {
+        if (_state_manager) {
+            return _state_manager->get_sync_state() == SyncPinState::HIGH;
+        }
+        return true;
+    }
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
