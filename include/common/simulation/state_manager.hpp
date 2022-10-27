@@ -24,6 +24,13 @@
 
 #include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
+#include "ot_utils/core/bit_utils.hpp"
+
+// Message types
+#include "common/simulation/direction.hpp"
+#include "common/simulation/message_ids.hpp"
+#include "common/simulation/move_message_hw_ids.hpp"
+#include "common/simulation/sync_pin_state.hpp"
 
 namespace state_manager {
 
@@ -51,17 +58,44 @@ class StateManagerConnection {
     StateManagerConnection &&operator=(const StateManagerConnection &&) =
         delete;
 
-    template <size_t N>
-    auto send(std::array<uint8_t, N> data) -> bool {
-        auto lock = synchronization::Lock(critical_section);
-        LOG("Sending %d bytes to state manager", N);
-        return _socket.send_to(boost::asio::const_buffer(data.data(), N),
-                               _endpoint) == N;
+    /**
+     * @brief Send a Move message to the state manager, indicating an axis on
+     * the robot moved a single microstep.
+     *
+     * @param id The id of the axis
+     * @param direction The direction the axis moved
+     * @return true if the message sent succesfully, false otherwise
+     */
+    auto send_move_msg(MoveMessageHardware id, Direction direction) -> bool {
+        std::array<uint8_t, 4> message;
+        auto itr = ot_utils::bit_utils::int_to_bytes(
+            static_cast<uint8_t>(MessageID::move), message.begin(),
+            message.end());
+        itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint16_t>(id), itr,
+                                                message.end());
+        itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint8_t>(direction),
+                                                itr, message.end());
+        return send(message);
     }
 
-    // TODO:
-    //   - Add message class
-    //   - Write Message, accepting a message instance
+    /**
+     * @brief Send a Sync pin message to the state manager, indicating the
+     * sync pin on the OT-3 changed state.
+     *
+     * @param state The updated state of the sync pin
+     * @return true if the message sent succesfully, false otherwise
+     */
+    auto send_sync_msg(SyncPinState state) -> bool {
+        std::array<uint8_t, 4> message;
+        auto itr = ot_utils::bit_utils::int_to_bytes(
+            static_cast<uint8_t>(MessageID::sync_pin), message.begin(),
+            message.end());
+        itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint16_t>(0), itr,
+                                                message.end());
+        itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint8_t>(state),
+                                                itr, message.end());
+        return send(message);
+    }
 
   private:
     auto open() -> bool {
@@ -92,6 +126,13 @@ class StateManagerConnection {
             LOG("Closing state manager socket to %s:%d", _host.c_str(), _port);
             _socket.close();
         }
+    }
+
+    template <size_t N>
+    auto send(const std::array<uint8_t, N> &data) -> bool {
+        auto lock = synchronization::Lock(critical_section);
+        return _socket.send_to(boost::asio::const_buffer(data.data(), N),
+                               _endpoint) == N;
     }
 
     std::string _host;

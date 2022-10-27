@@ -199,8 +199,14 @@ int main(int argc, char** argv) {
         temporary_serial_number(PIPETTE_TYPE);
     auto options = handle_options(argc, argv);
 
+    auto node = node_from_options(options);
+
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+
+    linear_motor_hardware.change_hardware_id(
+        node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
+                                               : MoveMessageHardware::z_r);
 
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
@@ -221,7 +227,6 @@ int main(int argc, char** argv) {
     auto i2c1_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c1);
     auto can_bus_1 = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
-    auto node = node_from_options(options);
     central_tasks::start_tasks(*can_bus_1, node);
     peripheral_tasks::start_tasks(*i2c3_comms, *i2c1_comms, spi_comms);
     initialize_motor_tasks(node, motor_config.driver_configs,
