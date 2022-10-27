@@ -3,7 +3,13 @@
 
 
 TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim2 = {
+        .Instance = TIM2,
+        .Init = {.Prescaler = 0,
+                .CounterMode = TIM_COUNTERMODE_UP,
+                .Period = UINT16_MAX,
+                .ClockDivision = TIM_CLOCKDIVISION_DIV1,
+                .AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE}};;
 
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
@@ -118,9 +124,9 @@ HAL_StatusTypeDef initialize_spi(enum GantryAxisType gantry_type) {
 }
 
 
-TIM_HandleTypeDef htim7;
-
 static motor_interrupt_callback timer_callback = NULL;
+static encoder_overflow_callback enc_overflow_callback = NULL;
+
 
 /**
  * @brief GPIO Initialization Function
@@ -228,6 +234,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7 && timer_callback) {
         timer_callback();
+    } else if (htim == &htim2 && enc_overflow_callback) {
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        enc_overflow_callback(direction ? -1 : 1);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }
 
@@ -253,8 +263,9 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-void initialize_timer(motor_interrupt_callback callback) {
+void initialize_timer(motor_interrupt_callback callback, encoder_overflow_callback enc_callback) {
     timer_callback = callback;
+    enc_overflow_callback = enc_callback;
     MX_GPIO_Init();
     MX_TIM7_Init();
     Encoder_GPIO_Init();
