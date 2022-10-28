@@ -133,7 +133,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
  */
 static motor_hardware::MotorHardware motor_hardware_iface(
     (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
-    nullptr);
+    &htim2);
 
 /**
  * The can bus.
@@ -173,6 +173,13 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
+/**
+ * Encoder overflow callback.
+ */
+extern "C" void enc_overflow_callback(int32_t direction) {
+    motor_hardware_iface.encoder_overflow(direction);
+}
+
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -199,7 +206,7 @@ void interfaces::initialize() {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler);
+    initialize_timer(call_motor_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

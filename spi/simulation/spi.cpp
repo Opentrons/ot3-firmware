@@ -7,6 +7,7 @@ bool spi::hardware::SimSpiDeviceBase::transmit_receive(
     const spi::utils::MaxMessageBuffer& transmit,
     spi::utils::MaxMessageBuffer& receive,
     spi::utils::ChipSelectInterface cs_intf) {
+    static_cast<void>(cs_intf);
     txrx_count++;
     uint8_t control = 0;
     uint32_t data = 0;
