@@ -92,6 +92,8 @@ add_custom_target(
 	WORKING_DIRECTORY ../../state_manager
 )
 
+add_dependencies(state-manager-headers state-manager-setup)
+
 add_custom_target(
 	state-manager-update
 	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local

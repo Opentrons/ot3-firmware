@@ -1,7 +1,7 @@
 #pragma once
 
 #include "sensors/core/sensor_hardware_interface.hpp"
-namespace sim_mocks {
+namespace test_mocks {
 class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
     auto set_sync() -> void override {
@@ -32,6 +32,7 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
             }
         }
     }
+
     auto get_sync_state_mock() const -> bool { return sync_state; }
     auto get_sync_set_calls() const -> uint32_t { return sync_set_calls; }
     auto get_sync_reset_calls() const -> uint32_t { return sync_reset_calls; }
@@ -41,4 +42,4 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
     uint32_t sync_set_calls = 0;
     uint32_t sync_reset_calls = 0;
 };
-};  // namespace sim_mocks
+};  // namespace test_mocks

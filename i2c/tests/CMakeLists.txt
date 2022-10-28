@@ -34,7 +34,7 @@ target_compile_options(i2c
         -Wctor-dtor-privacy)
 
 target_i2c_simlib(i2c)
-target_link_libraries(i2c Catch2::Catch2 common-core common-simulation)
+target_link_libraries(i2c Catch2::Catch2 common-core)
 
 
 catch_discover_tests(i2c)
