@@ -5,7 +5,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "sensors/core/mmr920C04.hpp"
-#include "sensors/simulation/mock_hardware.hpp"
+#include "sensors/tests/mock_hardware.hpp"
 
 namespace i2c {
 namespace hardware {

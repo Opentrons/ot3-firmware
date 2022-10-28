@@ -5,6 +5,8 @@ add_library(common-simulation STATIC
 
 target_link_libraries(common-simulation PUBLIC can-core Boost::boost Boost::date_time pthread)
 
+add_dependencies(common-simulation state_manager)
+
 target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
 
 set_target_properties(common-simulation

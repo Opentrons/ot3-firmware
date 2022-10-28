@@ -11,7 +11,7 @@
 #include "sensors/core/tasks/pressure_driver.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
-#include "sensors/simulation/mock_hardware.hpp"
+#include "sensors/tests/mock_hardware.hpp"
 /*
  * NOTE: pressure_sensor_task.hpp is included here just because
  * the linter throws an unused-function error and NOLINT doesn't
