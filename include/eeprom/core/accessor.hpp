@@ -73,7 +73,7 @@ class EEPromAccessor {
     /**
      * Begin a read of the data
      */
-    auto start_read() -> void { start_read_at_offset(0, type_data.size()); }
+    auto start_read(uint32_t message_index) -> void { start_read_at_offset(0, type_data.size(), message_index); }
 
     /**
      * Write data to eeprom
@@ -127,7 +127,7 @@ class EEPromAccessor {
      * Begin a read of the data at a specified offset
      */
     auto start_read_at_offset(types::data_length offset,
-                              types::data_length limit_offset) -> void {
+                              types::data_length limit_offset, uint32_t message_index) -> void {
         // reset bytes_recieved to 0 so the response handler knows how much data
         // to wait for
         bytes_recieved = 0;
@@ -145,7 +145,8 @@ class EEPromAccessor {
         while (bytes_remain > 0) {
             amount_to_read = std::min(bytes_remain, types::max_data_length);
             eeprom_client.send_eeprom_queue(
-                eeprom::message::ReadEepromMessage{.memory_address = read_addr,
+                eeprom::message::ReadEepromMessage{.message_index = message_index,
+                                                   .memory_address = read_addr,
                                                    .length = amount_to_read,
                                                    .callback = callback,
                                                    .callback_param = this});

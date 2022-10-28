@@ -87,7 +87,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
     /**
      * Handle request for instrument info.
      */
-    void visit(const InstrumentInfoRequest &) {
+    void visit(const InstrumentInfoRequest &m) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
         // serial_number_accessor.start_read();
@@ -99,6 +99,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         writer.send_can_message(
             can::ids::NodeId::host,
             GripperInfoResponse{
+                .message_index = m.message_index,
                 .model = 0x0001,
                 .serial = eeprom::serial_number::SerialDataCodeType{
                     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,

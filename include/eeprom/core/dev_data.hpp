@@ -178,7 +178,7 @@ class DevDataAccessor
         write_data(key, data.size(), 0, data);
     }
 
-    void get_data(uint16_t key, uint16_t len, uint16_t offset) {
+    void get_data(uint16_t key, uint16_t len, uint16_t offset, uint32_t message_index) {
         if (tail_updated && config_updated) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > data_tail) {
@@ -193,14 +193,15 @@ class DevDataAccessor
             // call a read to the table entry so we know where
             // to read the data
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
+                .message_index = message_index
                 .memory_address = table_location,
                 .length = static_cast<types::data_length>(2 * conf.addr_bytes),
                 .callback = table_action_callback,
                 .callback_param = this});
         }
     }
-    void get_data(uint16_t key, uint16_t len) { get_data(key, len, 0); }
-    void get_data(uint16_t key) { get_data(key, 0, 0); }
+    void get_data(uint16_t key, uint16_t len, uint32_t message_index) { get_data(key, len, 0, message_index); }
+    void get_data(uint16_t key, uint32_t message_index) { get_data(key, 0, 0, message_index); }
 
     template <std::size_t SIZE>
     void create_data_part(uint16_t key, uint16_t len,
@@ -373,7 +374,7 @@ class DevDataAccessor
                 if (action_cmd_m.len != 0) {
                     data_len = action_cmd_m.len;
                 }
-                this->start_read_at_offset(data_addr, data_addr + data_len);
+                this->start_read_at_offset(data_addr, data_addr + data_len, m.message_index);
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;

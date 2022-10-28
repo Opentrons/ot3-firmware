@@ -104,7 +104,7 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
     /**
      * Handle a request to get instrument info.
      */
-    void visit(const InstrumentInfoRequest &) {
+    void visit(const InstrumentInfoRequest &m) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
         serial_number_accessor.start_read();
