@@ -2,6 +2,7 @@
 
 #include "i2c/simulation/device.hpp"
 #include "sensors/core/mmr920C04.hpp"
+#include "sensors/simulation/mock_hardware.hpp"
 
 namespace mmr920C04_simulator {
 
@@ -10,7 +11,7 @@ using namespace i2c::hardware;
 
 class MMR920C04 : public I2CRegisterMap<uint8_t, uint32_t> {
   public:
-    MMR920C04(test_mocks::MockSensorHardware &mock_sensor_hw)
+    MMR920C04(sim_mocks::MockSensorHardware &mock_sensor_hw)
         : I2CRegisterMap{mmr920C04::ADDRESS,
                          {{static_cast<uint8_t>(mmr920C04::Registers::STATUS),
                            0xED},
@@ -40,7 +41,7 @@ class MMR920C04 : public I2CRegisterMap<uint8_t, uint32_t> {
         return result;
     }
 
-    test_mocks::MockSensorHardware &mock_sensor_hardware;
+    sim_mocks::MockSensorHardware &mock_sensor_hardware;
 };
 
 };  // namespace mmr920C04_simulator

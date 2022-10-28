@@ -92,7 +92,7 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl& gear_motion,
-    test_mocks::MockSensorHardware& fake_sensor_hw,
+    sim_mocks::MockSensorHardware& fake_sensor_hw,
     eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -114,7 +114,7 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&,
-    test_mocks::MockSensorHardware& fake_sensor_hw,
+    sim_mocks::MockSensorHardware& fake_sensor_hw,
     eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
         options, TEMPORARY_PIPETTE_SERIAL);
-    auto fake_sensor_hw = std::make_shared<test_mocks::MockSensorHardware>();
+    auto fake_sensor_hw = std::make_shared<sim_mocks::MockSensorHardware>();
     auto pressuresensor =
         std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
