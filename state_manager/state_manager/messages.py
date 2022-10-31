@@ -55,7 +55,7 @@ class Message(ABC):
         ...
 
     @abstractmethod
-    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+    def handle(self, data: bytes, ot3_state: OT3State) -> Optional[Response]:
         """Parse message and return a response."""
         ...
 
@@ -80,10 +80,10 @@ class MoveMessage(Message):
         hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
         return struct.pack(">BHB", MessageID.MOVE.message_id, hw_id, self.direction)
 
-    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+    def handle(self, data: bytes, ot3_state: OT3State) -> Optional[Response]:
         """Parse move message and return response."""
         ot3_state.pulse(self.axis, self.direction)
-        return Response(content=data.decode(), is_error=False)
+        return None
 
 
 @dataclass
@@ -108,10 +108,10 @@ class SyncPinMessage(Message):
         # 3rd arg is 0 because middle two bytes are not used for SyncPinMessage
         return struct.pack(">BHB", MessageID.SYNC_PIN.message_id, 0, self.state)
 
-    def handle(self, data: bytes, ot3_state: OT3State) -> Response:
+    def handle(self, data: bytes, ot3_state: OT3State) -> Optional[Response]:
         """Parse sync pin message and return a response."""
         ot3_state.set_sync_pin(self.state)
-        return Response(content=data.decode(), is_error=False)
+        return None
 
 
 @dataclass
@@ -202,7 +202,7 @@ def _parse_message(message_bytes: bytes) -> Message:
     return MessageID.from_id(message_id).builder_func(message_content=message_content)
 
 
-def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
+def handle_message(data: bytes, ot3_state: OT3State) -> Optional[bytes]:
     """Function to handle incoming message, react to it accordingly, and respond."""
     response = Response(content=None, is_error=False)
     try:
@@ -220,4 +220,4 @@ def handle_message(data: bytes, ot3_state: OT3State) -> bytes:
             response.content = "Parsed to an unhandled message."
             response.is_error = True
 
-    return response.to_bytes()
+    return response.to_bytes() if response is not None else None
