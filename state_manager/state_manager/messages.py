@@ -204,19 +204,22 @@ def _parse_message(message_bytes: bytes) -> Message:
 
 def handle_message(data: bytes, ot3_state: OT3State) -> Optional[bytes]:
     """Function to handle incoming message, react to it accordingly, and respond."""
-    response = Response(content=None, is_error=False)
+    response: Optional[Response]
     try:
         message = _parse_message(data)
     except ValueError as err:
+        response = Response(content=None, is_error=False)
         response.is_error = True
         response.content = f"{err.args[0]}"
     except:  # noqa: E722
+        response = Response(content=None, is_error=False)
         response.is_error = True
         response.content = "Unhandled Exception"
     else:
         if issubclass(message.__class__, Message):
             response = message.handle(data, ot3_state)
         else:
+            response = Response(content=None, is_error=False)
             response.content = "Parsed to an unhandled message."
             response.is_error = True
 

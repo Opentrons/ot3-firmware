@@ -53,7 +53,9 @@ from state_manager.util import Direction, SyncPinState
 )
 def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
     """Confirm that if too long/short of a message is passed an exception is thrown."""
-    assert handle_message(message, ot3_state).decode() == error
+    response = handle_message(message, ot3_state)
+    assert response is not None
+    assert response.decode() == error
 
 
 @pytest.mark.parametrize(
