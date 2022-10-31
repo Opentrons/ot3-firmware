@@ -15,6 +15,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_configurations.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/utility_configurations.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pipette_motor_hardware.cpp
     ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
