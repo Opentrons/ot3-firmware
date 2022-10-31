@@ -82,7 +82,12 @@ class SimBrushedMotorHardwareIface
     void grip() final {}
     void ungrip() final {}
     void stop_pwm() final {}
-    bool check_sync_in() final { return true; }
+    bool check_sync_in() final {
+        if (_state_manager) {
+            return _state_manager->get_sync_state() == SyncPinState::HIGH;
+        }
+        return true;
+    }
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return 0; }
     void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
@@ -92,6 +97,10 @@ class SimBrushedMotorHardwareIface
     }
     void reset_control() { controller_loop.reset(); }
 
+    void provide_state_manager(StateManagerHandle handle) {
+        _state_manager = handle;
+    }
+
   private:
     bool limit_switch_status = false;
     uint32_t test_pulses = 0;
@@ -100,6 +109,7 @@ class SimBrushedMotorHardwareIface
     // when the "motor" instantly goes to top speed then instantly stops
     ot_utils::pid::PID controller_loop{0.008,         0.0045, 0.000015,
                                        1.F / 32000.0, 7,      -7};
+    StateManagerHandle _state_manager = nullptr;
 };
 
 class SimGearMotorHardwareIface
@@ -129,16 +139,26 @@ class SimGearMotorHardwareIface
     }
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
-    bool check_sync_in() final { return true; }
+    bool check_sync_in() final {
+        if (_state_manager) {
+            return _state_manager->get_sync_state() == SyncPinState::HIGH;
+        }
+        return true;
+    }
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
     void trigger_tip_sense() { tip_sense_status = true; }
 
+    void provide_state_manager(StateManagerHandle handle) {
+        _state_manager = handle;
+    }
+
   private:
     bool limit_switch_status = false;
     bool tip_sense_status = false;
     int32_t test_pulses = 0;
+    StateManagerHandle _state_manager = nullptr;
 };
 
 }  // namespace sim_motor_hardware_iface

@@ -189,6 +189,23 @@ uint32_t temporary_serial_number(const PipetteType pipette_type) {
     }
 }
 
+[[maybe_unused]] static auto provide_state(
+    interfaces::gear_motor::UnavailableGearHardware& hardware,
+    sim_motor_hardware_iface::StateManagerHandle state_manager_connection)
+    -> void {
+    // Do nothing for unavailable gear motor
+    static_cast<void>(hardware);
+    static_cast<void>(state_manager_connection);
+}
+
+[[maybe_unused]] static auto provide_state(
+    interfaces::gear_motor::GearHardware& hardware,
+    sim_motor_hardware_iface::StateManagerHandle state_manager_connection)
+    -> void {
+    hardware.left.provide_state_manager(state_manager_connection);
+    hardware.right.provide_state_manager(state_manager_connection);
+}
+
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
@@ -208,6 +225,7 @@ int main(int argc, char** argv) {
         node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
                                                : MoveMessageHardware::z_r);
     linear_motor_hardware.provide_state_manager(state_manager_connection);
+    provide_state(gear_hardware, state_manager_connection);
 
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();

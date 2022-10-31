@@ -128,3 +128,8 @@ auto z_motor_iface::get_z_motor_interface()
     -> sim_motor_hardware_iface::SimMotorHardwareIface& {
     return motor_interface;
 }
+
+auto z_motor_iface::get_brushed_motor_interface()
+    -> sim_motor_hardware_iface::SimBrushedMotorHardwareIface& {
+    return brushed_motor_hardware_iface;
+}
