@@ -132,7 +132,7 @@ class DevDataAccessor
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())),
           tail_accessor{DevDataTailAccessor<EEPromTaskClient>(
               eeprom_client, *this, data_tail_buff)} {
-        tail_accessor.start_read();
+        tail_accessor.start_read(0);
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
     }
@@ -194,7 +194,8 @@ class DevDataAccessor
             // call a read to the table entry so we know where
             // to read the data
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
-                .message_index = message_index.memory_address = table_location,
+                .message_index = message_index,
+                .memory_address = table_location,
                 .length = static_cast<types::data_length>(2 * conf.addr_bytes),
                 .callback = table_action_callback,
                 .callback_param = this});
