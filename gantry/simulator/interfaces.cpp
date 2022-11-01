@@ -27,7 +27,9 @@ static auto spi_comms = spi::hardware::SimSpiDeviceBase();
 /**
  * The motor interface.
  */
-static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
+static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface(
+    get_axis_type() == GantryAxisType::gantry_x ? MoveMessageHardware::x
+                                                : MoveMessageHardware::y);
 
 /**
  * The pending move queue
@@ -110,6 +112,7 @@ void interfaces::initialize_sim(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+    motor_interface.provide_state_manager(state_manager_connection);
 }
 
 std::shared_ptr<can::bus::CanBus> canbus;

@@ -35,9 +35,9 @@ static auto spi_comms_left = spi::hardware::SimSpiDeviceBase();
  * The motor interfaces.
  */
 static auto motor_interface_right =
-    sim_motor_hardware_iface::SimMotorHardwareIface();
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_r);
 static auto motor_interface_left =
-    sim_motor_hardware_iface::SimMotorHardwareIface();
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_l);
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
@@ -152,6 +152,9 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+
+    motor_interface_right.provide_state_manager(state_manager_connection);
+    motor_interface_left.provide_state_manager(state_manager_connection);
 
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));

@@ -56,7 +56,8 @@ auto linear_motor::get_interrupt_driver(
 
 auto linear_motor::get_motor_hardware()
     -> sim_motor_hardware_iface::SimMotorHardwareIface {
-    return sim_motor_hardware_iface::SimMotorHardwareIface{};
+    return sim_motor_hardware_iface::SimMotorHardwareIface(
+        MoveMessageHardware::z_l);
 }
 
 auto linear_motor::get_motion_control(
