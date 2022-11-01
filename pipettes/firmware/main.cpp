@@ -11,7 +11,6 @@
 #include "common/core/app_update.h"
 #include "common/firmware/clocking.h"
 #include "common/firmware/errors.h"
-#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
 #include "eeprom/core/hardware_iface.hpp"
@@ -27,6 +26,7 @@
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/firmware/interfaces.hpp"
+#include "pipettes/firmware/utility_configurations.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -42,13 +42,7 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 static auto can_bus_1 = can::hal::bus::HalCanBus(
-    can_get_device_handle(),
-    // TODO we need to modify this based on pipette type as well since
-    // LED pin changes from board to board
-    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOB,
-                    .pin = GPIO_PIN_11,
-                    .active_setting = GPIO_PIN_RESET});
+    can_get_device_handle(), utility_configs::led_gpio(PIPETTE_TYPE));
 
 spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
 

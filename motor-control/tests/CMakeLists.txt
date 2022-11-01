@@ -36,7 +36,7 @@ target_compile_options(motor-control
         -Wsign-promo
         -Wextra-semi
         -Wctor-dtor-privacy)
-target_link_libraries(motor-control PUBLIC Catch2::Catch2 common-simulation motor-utils)
+target_link_libraries(motor-control PUBLIC Catch2::Catch2 motor-utils)
 
 catch_discover_tests(motor-control)
 add_build_and_test_target(motor-control)

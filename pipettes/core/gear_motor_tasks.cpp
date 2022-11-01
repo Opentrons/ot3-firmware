@@ -13,8 +13,8 @@ static auto right_queue_client = gear_motor_tasks::QueueClient{};
 // left gear motor tasks
 static auto mc_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
-static auto tmc2130_driver_task_builder_left =
-    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
+static auto tmc2160_driver_task_builder_left =
+    freertos_task::TaskStarter<512, tmc2160::tasks::MotorDriverTask>{};
 
 static auto move_group_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
@@ -24,8 +24,8 @@ static auto move_status_task_builder_left = freertos_task::TaskStarter<
 // right gear motor tasks
 static auto mc_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
-static auto tmc2130_driver_task_builder_right =
-    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
+static auto tmc2160_driver_task_builder_right =
+    freertos_task::TaskStarter<512, tmc2160::tasks::MotorDriverTask>{};
 
 static auto move_group_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
@@ -49,8 +49,8 @@ void gear_motor_tasks::start_tasks(
     // Left Gear Motor Tasks
     auto& motion_left = mc_task_builder_left.start(
         5, "motion controller", motion_controllers.left, left_queues);
-    auto& tmc2130_driver_left = tmc2130_driver_task_builder_left.start(
-        5, "tmc2130 driver", gear_driver_configs.left_gear_motor, left_queues,
+    auto& tmc2160_driver_left = tmc2160_driver_task_builder_left.start(
+        5, "tmc2160 driver", gear_driver_configs.left_gear_motor, left_queues,
         spi_writer);
     auto& move_group_left = move_group_task_builder_left.start(
         5, "move group", left_queues, left_queues);
@@ -58,13 +58,13 @@ void gear_motor_tasks::start_tasks(
         5, "move status", left_queues,
         motion_controllers.left.get_mechanical_config());
 
-    left_tasks.driver = &tmc2130_driver_left;
+    left_tasks.driver = &tmc2160_driver_left;
     left_tasks.motion_controller = &motion_left;
     left_tasks.move_group = &move_group_left;
     left_tasks.move_status_reporter = &move_status_reporter_left;
 
     left_queues.set_queue(&can_writer.get_queue());
-    left_queues.driver_queue = &tmc2130_driver_left.get_queue();
+    left_queues.driver_queue = &tmc2160_driver_left.get_queue();
     left_queues.motion_queue = &motion_left.get_queue();
     left_queues.move_group_queue = &move_group_left.get_queue();
     left_queues.move_status_report_queue =
@@ -73,8 +73,8 @@ void gear_motor_tasks::start_tasks(
     // Right Gear Motor Tasks
     auto& motion_right = mc_task_builder_right.start(
         5, "motion controller", motion_controllers.right, right_queues);
-    auto& tmc2130_driver_right = tmc2130_driver_task_builder_right.start(
-        5, "tmc2130 driver", gear_driver_configs.right_gear_motor, right_queues,
+    auto& tmc2160_driver_right = tmc2160_driver_task_builder_right.start(
+        5, "tmc2160 driver", gear_driver_configs.right_gear_motor, right_queues,
         spi_writer);
     auto& move_group_right = move_group_task_builder_right.start(
         5, "move group", right_queues, right_queues);
@@ -82,13 +82,13 @@ void gear_motor_tasks::start_tasks(
         5, "move status", right_queues,
         motion_controllers.right.get_mechanical_config());
 
-    right_tasks.driver = &tmc2130_driver_left;
+    right_tasks.driver = &tmc2160_driver_left;
     right_tasks.motion_controller = &motion_left;
     right_tasks.move_group = &move_group_left;
     right_tasks.move_status_reporter = &move_status_reporter_left;
 
     right_queues.set_queue(&can_writer.get_queue());
-    right_queues.driver_queue = &tmc2130_driver_right.get_queue();
+    right_queues.driver_queue = &tmc2160_driver_right.get_queue();
     right_queues.motion_queue = &motion_right.get_queue();
     right_queues.move_group_queue = &move_group_right.get_queue();
     right_queues.move_status_report_queue =
@@ -106,7 +106,7 @@ void gear_motor_tasks::QueueClient::send_motion_controller_queue(
 }
 
 void gear_motor_tasks::QueueClient::send_motor_driver_queue(
-    const tmc2130::tasks::TaskMessage& m) {
+    const tmc2160::tasks::TaskMessage& m) {
     driver_queue->try_write(m);
 }
 

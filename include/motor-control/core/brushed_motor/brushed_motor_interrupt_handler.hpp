@@ -29,7 +29,7 @@ enum class ControlState {
 };
 
 static constexpr uint32_t HOLDOFF_TICKS =
-    16;  // hold off for 0.5 ms (with a 32k Hz timer)
+    32;  // hold off for 1 ms (with a 32k Hz timer)
 // using the logic analyzer it takes about 0.2-0.3 ms for the output
 // to stablize after changing directions of the PWM
 
@@ -102,7 +102,12 @@ class BrushedMotorInterruptHandler {
         switch (buffered_move.stop_condition) {
             // homing move
             case MoveStopCondition::limit_switch:
-                if (limit_switch_triggered()) {
+                // We double check for is_idle here because there was a POC
+                // gripper with a noisy limit switch that triggered prematurely
+                // this just adds a double check and we can use it later to
+                // trigger an error if is_idle is true but the limit switch
+                // isn't triggered
+                if (limit_switch_triggered() && is_idle) {
                     homing_stopped();
                 }
                 break;

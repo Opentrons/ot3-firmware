@@ -11,7 +11,9 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/core/freertos_synchronization.hpp"
 #include "common/core/logging.h"
+#include "common/simulation/state_manager.hpp"
 #include "eeprom/simulation/eeprom.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "pipettes/core/central_tasks.hpp"
@@ -58,6 +60,10 @@ static auto gear_interrupts =
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 
+static std::shared_ptr<state_manager::StateManagerConnection<
+    freertos_synchronization::FreeRTOSCriticalSection>>
+    state_manager_connection;
+
 static auto node_from_options(const po::variables_map& options)
     -> can::ids::NodeId {
     auto side = options["mount"].as<std::string>();
@@ -86,7 +92,7 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl& gear_motion,
-    test_mocks::MockSensorHardware& fake_sensor_hw,
+    sim_mocks::MockSensorHardware& fake_sensor_hw,
     eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -108,7 +114,7 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&,
-    test_mocks::MockSensorHardware& fake_sensor_hw,
+    sim_mocks::MockSensorHardware& fake_sensor_hw,
     eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -133,6 +139,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
     auto eeprom_arg_xform =
         eeprom::simulator::EEProm::add_options(cmdlinedesc, envdesc);
+    auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
@@ -142,7 +149,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     }
     po::store(po::parse_environment(
                   envdesc,
-                  [can_arg_xform, eeprom_arg_xform](
+                  [can_arg_xform, eeprom_arg_xform, state_mgr_arg_xform](
                       const std::string& input_val) -> std::string {
                       if (input_val == "MOUNT") {
                           return "mount";
@@ -152,7 +159,11 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
                           return can_xformed;
                       }
                       auto eeprom_xformed = eeprom_arg_xform(input_val);
-                      return eeprom_xformed;
+                      if (eeprom_xformed != "") {
+                          return eeprom_xformed;
+                      }
+                      auto state_mgr_xformed = state_mgr_arg_xform(input_val);
+                      return state_mgr_xformed;
                   }),
               vm);
     po::notify(vm);
@@ -178,6 +189,23 @@ uint32_t temporary_serial_number(const PipetteType pipette_type) {
     }
 }
 
+[[maybe_unused]] static auto provide_state(
+    interfaces::gear_motor::UnavailableGearHardware& hardware,
+    sim_motor_hardware_iface::StateManagerHandle state_manager_connection)
+    -> void {
+    // Do nothing for unavailable gear motor
+    static_cast<void>(hardware);
+    static_cast<void>(state_manager_connection);
+}
+
+[[maybe_unused]] static auto provide_state(
+    interfaces::gear_motor::GearHardware& hardware,
+    sim_motor_hardware_iface::StateManagerHandle state_manager_connection)
+    -> void {
+    hardware.left.provide_state_manager(state_manager_connection);
+    hardware.right.provide_state_manager(state_manager_connection);
+}
+
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
@@ -187,11 +215,24 @@ int main(int argc, char** argv) {
     const uint32_t TEMPORARY_PIPETTE_SERIAL =
         temporary_serial_number(PIPETTE_TYPE);
     auto options = handle_options(argc, argv);
+
+    auto node = node_from_options(options);
+
+    state_manager_connection = state_manager::create<
+        freertos_synchronization::FreeRTOSCriticalSection>(options);
+
+    linear_motor_hardware.change_hardware_id(
+        node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
+                                               : MoveMessageHardware::z_r);
+    linear_motor_hardware.provide_state_manager(state_manager_connection);
+    provide_state(gear_hardware, state_manager_connection);
+
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
         options, TEMPORARY_PIPETTE_SERIAL);
-    auto fake_sensor_hw = std::make_shared<test_mocks::MockSensorHardware>();
+    auto fake_sensor_hw = std::make_shared<sim_mocks::MockSensorHardware>();
+    fake_sensor_hw->provide_state_manager(state_manager_connection);
     auto pressuresensor =
         std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
@@ -206,7 +247,6 @@ int main(int argc, char** argv) {
     auto i2c1_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c1);
     auto can_bus_1 = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
-    auto node = node_from_options(options);
     central_tasks::start_tasks(*can_bus_1, node);
     peripheral_tasks::start_tasks(*i2c3_comms, *i2c1_comms, spi_comms);
     initialize_motor_tasks(node, motor_config.driver_configs,

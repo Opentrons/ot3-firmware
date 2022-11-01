@@ -1,25 +1,16 @@
 #pragma once
 
-#include "common/core/freertos_synchronization.hpp"
-#include "common/simulation/state_manager.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
-
-using StateManager = state_manager::StateManagerConnection<
-    freertos_synchronization::FreeRTOSCriticalSection>;
-using StateManagerHandle = std::shared_ptr<StateManager>;
-
-namespace sim_mocks {
+namespace test_mocks {
 class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
   public:
     auto set_sync() -> void override {
-        if (_state_manager) {
-            _state_manager->send_sync_msg(SyncPinState::HIGH);
-        }
+        sync_state = true;
+        sync_set_calls++;
     }
     auto reset_sync() -> void override {
-        if (_state_manager) {
-            _state_manager->send_sync_msg(SyncPinState::LOW);
-        }
+        sync_state = false;
+        sync_reset_calls++;
     }
     std::array<std::function<void()>, 5> data_ready_callbacks = {};
     auto add_data_ready_callback(std::function<void()> callback)
@@ -42,11 +33,13 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
         }
     }
 
-    void provide_state_manager(StateManagerHandle handle) {
-        _state_manager = handle;
-    }
+    auto get_sync_state_mock() const -> bool { return sync_state; }
+    auto get_sync_set_calls() const -> uint32_t { return sync_set_calls; }
+    auto get_sync_reset_calls() const -> uint32_t { return sync_reset_calls; }
 
   private:
-    StateManagerHandle _state_manager = nullptr;
+    bool sync_state = false;
+    uint32_t sync_set_calls = 0;
+    uint32_t sync_reset_calls = 0;
 };
-};  // namespace sim_mocks
+};  // namespace test_mocks

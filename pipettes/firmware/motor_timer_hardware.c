@@ -10,12 +10,16 @@ TIM_HandleTypeDef htim6;
 static linear_motor_interrupt_callback plunger_callback = NULL;
 static gear_motor_interrupt_callback gear_callback = NULL;
 
-
+// motor timer: 200kHz from
+// 170MHz sysclk
+// /1 AHB
+// /2 APB1
+// /425 prescaler * 1 count = 200kHz
 void MX_TIM7_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim7.Instance = TIM7;
-    htim7.Init.Prescaler = 849;
+    htim7.Init.Prescaler = 425;
     htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim7.Init.Period = 1;
     htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;

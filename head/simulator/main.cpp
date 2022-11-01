@@ -7,7 +7,9 @@
 #include "FreeRTOS.h"
 #include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
+#include "common/core/freertos_synchronization.hpp"
 #include "common/core/logging.h"
+#include "common/simulation/state_manager.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
@@ -33,9 +35,9 @@ static auto spi_comms_left = spi::hardware::SimSpiDeviceBase();
  * The motor interfaces.
  */
 static auto motor_interface_right =
-    sim_motor_hardware_iface::SimMotorHardwareIface();
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_r);
 static auto motor_interface_left =
-    sim_motor_hardware_iface::SimMotorHardwareIface();
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_l);
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
@@ -76,7 +78,7 @@ static motor_class::Motor motor_right{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16,
+        .microstep = 32,
         .encoder_pulses_per_rev = 1000},
     motor_interface_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
@@ -92,7 +94,7 @@ static motor_class::Motor motor_left{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
-        .microstep = 16,
+        .microstep = 32,
         .encoder_pulses_per_rev = 1000.0},
     motor_interface_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
@@ -111,6 +113,10 @@ static auto adc_comms = adc::SimADC{};
 static auto presence_sense_driver =
     presence_sensing_driver::PresenceSensingDriver(adc_comms);
 
+static std::shared_ptr<state_manager::StateManagerConnection<
+    freertos_synchronization::FreeRTOSCriticalSection>>
+    state_manager_connection;
+
 void signal_handler(int signum) {
     LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
@@ -121,6 +127,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     auto envdesc = po::options_description("");
     cmdlinedesc.add_options()("help,h", "Show this help message.");
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
+    auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
@@ -129,6 +136,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
         std::exit(0);
     }
     po::store(po::parse_environment(envdesc, can_arg_xform), vm);
+    po::store(po::parse_environment(envdesc, state_mgr_arg_xform), vm);
     po::notify(vm);
     return vm;
 }
@@ -141,6 +149,12 @@ int main(int argc, char** argv) {
     });
 
     auto options = handle_options(argc, argv);
+
+    state_manager_connection = state_manager::create<
+        freertos_synchronization::FreeRTOSCriticalSection>(options);
+
+    motor_interface_right.provide_state_manager(state_manager_connection);
+    motor_interface_left.provide_state_manager(state_manager_connection);
 
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));

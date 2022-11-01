@@ -112,7 +112,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{
                                .hstrt = 0x5,
                                .hend = 0x3,
                                .tbl = 0x2,
-                               .mres = 0x3},
+                               .mres = 0x2},
                   .coolconf = {.sgt = 0x6}},
     .current_config =
         {
@@ -135,7 +135,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
                                .hstrt = 0x5,
                                .hend = 0x3,
                                .tbl = 0x2,
-                               .mres = 0x3},
+                               .mres = 0x2},
                   .coolconf = {.sgt = 0x6}},
     .current_config =
         {
@@ -200,6 +200,12 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 
+/**
+ * Encoder overflow callback.
+ */
+extern "C" void enc_overflow_callback(int32_t direction) {
+    motor_hardware_iface.encoder_overflow(direction);
+}
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -226,7 +232,7 @@ void interfaces::initialize() {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler);
+    initialize_timer(call_motor_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

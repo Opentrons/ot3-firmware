@@ -32,7 +32,7 @@ target_compile_options(common
   -Wextra-semi
   -Wctor-dtor-privacy
   -fno-rtti)
-target_link_libraries(common Catch2::Catch2 common-simulation common-core)
+target_link_libraries(common Catch2::Catch2 common-core)
 
 catch_discover_tests(common)
 add_build_and_test_target(common)

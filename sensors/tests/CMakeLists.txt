@@ -32,7 +32,7 @@ target_compile_options(sensors
         -Wextra-semi
         -Wctor-dtor-privacy)
 
-target_link_libraries(sensors Catch2::Catch2 common-simulation common-core motor-utils)
+target_link_libraries(sensors Catch2::Catch2 common-core motor-utils)
 target_i2c_simlib(sensors)
 
 catch_discover_tests(sensors)
