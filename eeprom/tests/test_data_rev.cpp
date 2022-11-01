@@ -126,8 +126,7 @@ SCENARIO("Reading data revision") {
                     data_rev_data.cbegin() + (i * types::max_data_length),
                     num_bytes, data.begin());
                 read_message.callback(
-                    {
-                     .message_index = read_message.message_index,
+                    {.message_index = read_message.message_index,
                      .memory_address = read_message.memory_address,
                      .length = num_bytes,
                      .data = data},
