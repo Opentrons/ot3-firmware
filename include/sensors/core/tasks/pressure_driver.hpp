@@ -69,6 +69,10 @@ class MMR920C04 {
                      command_data);
     }
 
+    auto write(mmr920C04::Registers reg) -> void {
+        writer.write(mmr920C04::ADDRESS, static_cast<uint8_t>(reg));
+    }
+
     auto transact(mmr920C04::Registers reg) -> void {
         std::array reg_buf{static_cast<uint8_t>(reg)};
         writer.transact(
@@ -324,7 +328,7 @@ class MMR920C04 {
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
     auto set_register(Reg) -> bool {
-        write(Reg::address, 0x0);
+        write(Reg::address);
         return true;
     }
 
