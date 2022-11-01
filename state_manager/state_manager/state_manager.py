@@ -6,7 +6,7 @@ import argparse
 import asyncio
 import logging
 from asyncio import BaseProtocol
-from typing import Tuple, cast
+from typing import List, Tuple, cast
 
 from .messages import handle_message
 from .ot3_state import OT3State
@@ -29,6 +29,7 @@ class OT3StateManager(BaseProtocol):
         self._ot3_state = ot3_state
         self.transport = None
         self._connected = False
+        self._addresses: List[Tuple[str, str]] = []
 
     def connection_made(self, transport) -> None:  # noqa: ANN001
         """Called when connection is made from client."""

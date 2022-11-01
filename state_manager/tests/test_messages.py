@@ -1,5 +1,7 @@
 """Test message functionality"""
 
+import struct
+
 import pytest
 from opentrons.hardware_control.types import OT3Axis
 
@@ -7,6 +9,7 @@ from state_manager.messages import (
     GetAxisLocationMessage,
     GetSyncPinStateMessage,
     Message,
+    MessageID,
     MoveMessage,
     SyncPinMessage,
     _parse_message,
@@ -402,8 +405,10 @@ def test_valid_handle_get_location_message(ot3_state: OT3State) -> None:
         ack = handle_message(pulse_x_pos, ot3_state)
         assert ack is None
     assert ot3_state.axis_current_position(OT3Axis.X) == 5
+    expected = b"\x02\x00\x005"
     assert (
-        handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
+        handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state)
+        == expected
     )
 
 
@@ -427,9 +432,9 @@ def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
     assert ack is None
     assert ot3_state.get_sync_pin_state()
-    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"1"
+    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"\x031"
 
     ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
     assert ack is None
     assert not ot3_state.get_sync_pin_state()
-    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"0"
+    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"\x030"

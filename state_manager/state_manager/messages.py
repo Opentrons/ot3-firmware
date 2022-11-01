@@ -26,15 +26,15 @@ STRUCT_FORMAT_STRING = f"B{MESSAGE_CONTENT_BYTE_LENGTH}s"
 class Response:
     """A socket response."""
 
-    content: Optional[str]
+    content: Optional[bytes]
     is_error: bool = False
 
     def to_bytes(self) -> bytes:
         """Convert Response object into bytes."""
         if self.content is None:
             return b""
-        message = f"ERROR: {self.content}" if self.is_error else self.content
-        return message.encode()
+        message = b"ERROR: " + self.content if self.is_error else self.content
+        return message
 
 
 class Message(ABC):
@@ -134,8 +134,13 @@ class GetAxisLocationMessage(Message):
 
     def handle(self, data: bytes, ot3_state: OT3State) -> Response:
         """Parse get axis location message and return a response."""
-        loc = ot3_state.axis_current_position(self.axis)
-        return Response(content=str(loc), is_error=False)
+        loc = str(ot3_state.axis_current_position(self.axis))
+        hw_id = MoveMessageHardware.from_axis(self.axis).hw_id
+        message = (
+            struct.pack(">BH", MessageID.GET_AXIS_LOCATION.message_id, hw_id)
+            + loc.encode()
+        )
+        return Response(content=message, is_error=False)
 
 
 class GetSyncPinStateMessage(Message):
@@ -162,8 +167,10 @@ class GetSyncPinStateMessage(Message):
 
     def handle(self, data: bytes, ot3_state: OT3State) -> Response:
         """Parse get sync pin state message and return a response."""
+        value = b"1" if ot3_state.get_sync_pin_state() else b"0"
         return Response(
-            content="1" if ot3_state.get_sync_pin_state() else "0", is_error=False
+            content=struct.pack(">B", MessageID.GET_SYNC_PIN_STATE.message_id) + value,
+            is_error=False,
         )
 
 
@@ -210,11 +217,11 @@ def handle_message(data: bytes, ot3_state: OT3State) -> Optional[bytes]:
     except ValueError as err:
         response = Response(content=None, is_error=False)
         response.is_error = True
-        response.content = f"{err.args[0]}"
+        response.content = f"{err.args[0]}".encode()
     except:  # noqa: E722
         response = Response(content=None, is_error=False)
         response.is_error = True
-        response.content = "Unhandled Exception"
+        response.content = b"Unhandled Exception"
     else:
         if issubclass(message.__class__, Message):
             response = message.handle(data, ot3_state)
