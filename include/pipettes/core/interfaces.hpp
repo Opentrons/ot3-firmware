@@ -3,6 +3,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
 namespace interfaces {
 

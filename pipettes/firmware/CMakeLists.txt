@@ -30,8 +30,7 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
     ${CMAKE_CURRENT_SOURCE_DIR}/can.c
     ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/hardware_config.c

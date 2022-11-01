@@ -8,11 +8,11 @@
 #include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/firmware/pipette_motor_hardware.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "motor_encoder_hardware.h"
 #include "motor_timer_hardware.h"
 #pragma GCC diagnostic pop
 
@@ -63,22 +63,22 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 
 namespace linear_motor {
 
-auto get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
-auto get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
-auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware;
-auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware;
-auto get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto get_motor_hardware(motor_hardware::HardwareConfig pins)
+    -> motor_hardware::MotorHardware;
+auto get_motion_control(motor_hardware::MotorHardware& hw,
                         LowThroughputInterruptQueues& queues)
     -> MotionControlType;
-auto get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto get_motion_control(motor_hardware::MotorHardware& hw,
                         HighThroughputInterruptQueues& queues)
     -> MotionControlType;
+void encoder_interrupt(motor_hardware::MotorHardware& hw,
+                       int32_t direction);
 
 }  // namespace linear_motor
 

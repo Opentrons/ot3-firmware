@@ -72,6 +72,19 @@ class PipetteEEPromHardwareIface
         }
     }
 };
+
+
+auto convert_to_motor_hardware(pipette_motor_hardware::HardwareConfig motor_config) ->
+    motor_hardware::HardwareConfig {
+    return motor_hardware::HardwareConfig {
+        .direction = motor_config.direction,
+        .step = motor_config.step,
+        .enable = motor_config.enable,
+        .limit_switch = motor_config.limit_switch,
+        .led = motor_config.led,
+    };
+}
+
 static auto eeprom_hardware_iface = PipetteEEPromHardwareIface{};
 
 static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
@@ -79,7 +92,9 @@ static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
 
 static auto linear_motor_hardware =
-    interfaces::linear_motor::get_motor_hardware(motor_config.hardware_pins);
+    interfaces::linear_motor::get_motor_hardware(
+        convert_to_motor_hardware(motor_config.hardware_pins.linear_motor)
+        );
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
     linear_motor_hardware, interrupt_queues);
 static auto linear_motion_control =
@@ -97,6 +112,11 @@ extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
 
 extern "C" void gear_callback_wrapper() {
     interfaces::gear_motor::gear_callback(gear_interrupts);
+}
+
+void encoder_callback(int32_t direction) {
+    interfaces::linear_motor::encoder_interrupt(linear_motor_hardware,
+                                                direction);
 }
 
 static auto pins_for_sensor =
@@ -141,6 +161,7 @@ auto initialize_motor_tasks(
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
+    initialize_enc_timer(encoder_callback);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
@@ -159,6 +180,7 @@ auto initialize_motor_tasks(
                               sensor_hardware, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
+    initialize_enc_timer(encoder_callback);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id);
@@ -169,7 +191,6 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
     adc_init();
-    initialize_enc(PIPETTE_TYPE);
 
     delay_start(500);
     auto id = pipette_mounts::detect_id();

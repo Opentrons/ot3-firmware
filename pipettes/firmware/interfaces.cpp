@@ -38,14 +38,19 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
 }
 
-auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+void linear_motor::encoder_interrupt(motor_hardware::MotorHardware& hw,
+                                     int32_t direction) {
+    hw.encoder_overflow(direction);
+}
+
+auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
         queues.plunger_queue, linear_motor_tasks::get_queues(), hw);
 }
 
-auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
@@ -53,20 +58,20 @@ auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
 }
 
 auto linear_motor::get_motor_hardware(
-    motor_configs::LowThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware {
-    return pipette_motor_hardware::MotorHardware(pins.linear_motor, &htim7,
+    motor_hardware::HardwareConfig pins)
+    -> motor_hardware::MotorHardware {
+    return motor_hardware::MotorHardware(pins, &htim7,
                                                  &htim2);
 }
 
-auto linear_motor::get_motor_hardware(
-    motor_configs::HighThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware {
-    return pipette_motor_hardware::MotorHardware(pins.linear_motor, &htim7,
-                                                 &htim2);
-}
+//auto linear_motor::get_motor_hardware(
+//    motor_hardware::HardwareConfig pins)
+//    -> motor_hardware::MotorHardware {
+//    return motor_hardware::MotorHardware(pins, &htim7,
+//                                                 &htim2);
+//}
 
-auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
                                       LowThroughputInterruptQueues& queues)
     -> MotionControlType {
     return motion_controller::MotionController{
@@ -79,7 +84,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
         queues.plunger_queue};
 }
 
-auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
                                       HighThroughputInterruptQueues& queues)
     -> MotionControlType {
     return motion_controller::MotionController{
