@@ -40,10 +40,13 @@ int32_t MotorHardware::get_encoder_pulses() {
     // the counter is the low 16 bits (see below), we can just bit-pack
     // the value and everything will work.
     if (!enc_handle) {
-        return 0;
+        return 9999;
     }
-    return (motor_encoder_overflow_count << 16) +
-           motor_hardware_encoder_pulse_count(enc_handle);
+    int32_t encoder_pulse_count = motor_hardware_encoder_pulse_count(enc_handle);
+//    return 5556;
+    return (motor_encoder_overflow_count * (1 << 16)) +
+           encoder_pulse_count;
+//    return 5678;
 }
 
 void MotorHardware::reset_encoder_pulses() {

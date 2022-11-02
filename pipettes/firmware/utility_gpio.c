@@ -78,7 +78,7 @@ void limit_switch_gpio_init() {
 }
 
 void encoder_gpio_init() {
-    PipetteType pipette_type = get_pipette_type();
+//    PipetteType pipette_type = get_pipette_type();
 
     /* Peripheral clock enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -94,7 +94,7 @@ void encoder_gpio_init() {
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     /*Encoder P Axis Index Pin Configuration
@@ -103,22 +103,6 @@ void encoder_gpio_init() {
     * The Encoder Index Pin is routed to different GPIO pins
     * depending on the pipette type.
     */
-    if (pipette_type == NINETY_SIX_CHANNEL || pipette_type == THREE_EIGHTY_FOUR_CHANNEL){
-        GPIO_InitStruct.Pin = GPIO_PIN_3;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF2_TIM2;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-    }
-    else{
-        GPIO_InitStruct.Pin = GPIO_PIN_5;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF2_TIM2;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    }
 
 }
 
