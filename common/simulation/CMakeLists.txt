@@ -9,12 +9,17 @@ add_dependencies(common-simulation state_manager)
 
 target_compile_definitions(common-simulation PUBLIC ENABLE_LOGGING)
 
+add_dependencies(common-simulation state-manager-headers)
+
 set_target_properties(common-simulation
         PROPERTIES CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
 
-target_include_directories(common-simulation
-        PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(common-simulation PUBLIC 
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/cpp-utils/include
+        ${CMAKE_BINARY_DIR} # To include state manager headers
+        )
 
 target_compile_options(common-simulation
         PRIVATE

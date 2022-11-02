@@ -189,6 +189,23 @@ uint32_t temporary_serial_number(const PipetteType pipette_type) {
     }
 }
 
+[[maybe_unused]] static auto provide_state(
+    interfaces::gear_motor::UnavailableGearHardware& hardware,
+    sim_motor_hardware_iface::StateManagerHandle state_manager_connection)
+    -> void {
+    // Do nothing for unavailable gear motor
+    static_cast<void>(hardware);
+    static_cast<void>(state_manager_connection);
+}
+
+[[maybe_unused]] static auto provide_state(
+    interfaces::gear_motor::GearHardware& hardware,
+    sim_motor_hardware_iface::StateManagerHandle state_manager_connection)
+    -> void {
+    hardware.left.provide_state_manager(state_manager_connection);
+    hardware.right.provide_state_manager(state_manager_connection);
+}
+
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
@@ -199,14 +216,23 @@ int main(int argc, char** argv) {
         temporary_serial_number(PIPETTE_TYPE);
     auto options = handle_options(argc, argv);
 
+    auto node = node_from_options(options);
+
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+
+    linear_motor_hardware.change_hardware_id(
+        node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
+                                               : MoveMessageHardware::z_r);
+    linear_motor_hardware.provide_state_manager(state_manager_connection);
+    provide_state(gear_hardware, state_manager_connection);
 
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
     auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
         options, TEMPORARY_PIPETTE_SERIAL);
     auto fake_sensor_hw = std::make_shared<sim_mocks::MockSensorHardware>();
+    fake_sensor_hw->provide_state_manager(state_manager_connection);
     auto pressuresensor =
         std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
@@ -221,7 +247,6 @@ int main(int argc, char** argv) {
     auto i2c1_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c1);
     auto can_bus_1 = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
-    auto node = node_from_options(options);
     central_tasks::start_tasks(*can_bus_1, node);
     peripheral_tasks::start_tasks(*i2c3_comms, *i2c1_comms, spi_comms);
     initialize_motor_tasks(node, motor_config.driver_configs,
