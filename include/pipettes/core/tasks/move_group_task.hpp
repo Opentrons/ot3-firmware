@@ -65,6 +65,7 @@ class MoveGroupMessageHandler {
         LOG("Received get move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
         auto response = can::messages::GetMoveGroupResponse{
+            .message_index = m.message_index,
             .group_id = m.group_id,
             .num_moves = static_cast<uint8_t>(group.size()),
             .total_duration = group.get_duration()};

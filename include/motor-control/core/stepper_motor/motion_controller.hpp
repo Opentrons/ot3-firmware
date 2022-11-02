@@ -55,7 +55,8 @@ class MotionController {
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         steps_per_tick_sq acceleration_steps =
             fixed_point_multiply(steps_per_mm, can_msg.acceleration);
-        Move msg{.duration = can_msg.duration,
+        Move msg{.message_index = can_msg.message_index,
+                 .duration = can_msg.duration,
                  .velocity = velocity_steps,
                  .acceleration = acceleration_steps,
                  .group_id = can_msg.group_id,

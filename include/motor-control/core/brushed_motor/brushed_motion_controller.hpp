@@ -38,7 +38,8 @@ class MotionController {
     }
 
     void move(const can::messages::GripperGripRequest& can_msg) {
-        BrushedMove msg{.duration = can_msg.duration,
+        BrushedMove msg{.message_index = can_msg.message_index,
+                        .duration = can_msg.duration,
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
@@ -61,7 +62,8 @@ class MotionController {
     }
 
     void move(const can::messages::AddBrushedLinearMoveRequest& can_msg) {
-        BrushedMove msg{.duration = can_msg.duration,
+        BrushedMove msg{.message_index = can_msg.message_index,
+                        .duration = can_msg.duration,
                         .duty_cycle = 0UL,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
