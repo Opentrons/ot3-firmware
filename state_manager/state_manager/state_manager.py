@@ -39,8 +39,14 @@ class OT3StateManager(BaseProtocol):
     def datagram_received(self, data: bytes, addr: Tuple[str, str]) -> None:
         """Called when a datagram is received from client."""
         response = handle_message(data, self._ot3_state)
+        if addr not in self._addresses:
+            self._addresses.append(addr)
         if self.transport is not None and response is not None:
-            self.transport.sendto(response, addr)
+            if response.broadcast:
+                for client in self._addresses:
+                    self.transport.sendto(response.to_bytes(), client)
+            else:
+                self.transport.sendto(response.to_bytes(), addr)
 
     async def start_server(self, host: str, port: int) -> OT3StateManager:
         """Starts OT3StateManager UDP Datagram server"""

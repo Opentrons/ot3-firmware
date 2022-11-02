@@ -28,6 +28,7 @@ class Response:
 
     content: Optional[bytes]
     is_error: bool = False
+    broadcast: bool = False
 
     def to_bytes(self) -> bytes:
         """Convert Response object into bytes."""
@@ -111,7 +112,10 @@ class SyncPinMessage(Message):
     def handle(self, data: bytes, ot3_state: OT3State) -> Optional[Response]:
         """Parse sync pin message and return a response."""
         ot3_state.set_sync_pin(self.state)
-        return None
+        # Set up a broadcast response
+        response = GetSyncPinStateMessage().handle(b"", ot3_state)
+        response.broadcast = True
+        return response
 
 
 @dataclass
@@ -209,18 +213,16 @@ def _parse_message(message_bytes: bytes) -> Message:
     return MessageID.from_id(message_id).builder_func(message_content=message_content)
 
 
-def handle_message(data: bytes, ot3_state: OT3State) -> Optional[bytes]:
+def handle_message(data: bytes, ot3_state: OT3State) -> Optional[Response]:
     """Function to handle incoming message, react to it accordingly, and respond."""
     response: Optional[Response]
     try:
         message = _parse_message(data)
     except ValueError as err:
-        response = Response(content=None, is_error=False)
-        response.is_error = True
+        response = Response(content=None, is_error=True)
         response.content = f"{err.args[0]}".encode()
     except:  # noqa: E722
-        response = Response(content=None, is_error=False)
-        response.is_error = True
+        response = Response(content=None, is_error=True)
         response.content = b"Unhandled Exception"
     else:
         if issubclass(message.__class__, Message):
@@ -230,4 +232,4 @@ def handle_message(data: bytes, ot3_state: OT3State) -> Optional[bytes]:
             response.content = "Parsed to an unhandled message."
             response.is_error = True
 
-    return response.to_bytes() if response is not None else None
+    return response
