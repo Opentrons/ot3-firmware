@@ -117,7 +117,7 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
     void visit(const SetSerialNumber &m) {
         std::copy_n(m.serial.begin(), sn_accessor_backing.size(),
                     sn_accessor_backing.begin());
-        serial_number_accessor.write(sn_accessor_backing);
+        serial_number_accessor.write(sn_accessor_backing, m.message_index);
         writer.send_can_message(can::ids::NodeId::host,
                                 can::messages::ack_from_request(m));
     }
