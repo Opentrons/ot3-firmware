@@ -56,6 +56,7 @@ class DevDataTailAccessor
         amount_to_read = std::min(bytes_remain, types::max_data_length);
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{
+                .message_index = 0,
                 .memory_address = read_addr,
                 .length = amount_to_read,
                 .callback = increase_tail_callback,
@@ -84,7 +85,7 @@ class DevDataTailAccessor
         std::ignore = bit_utils::int_to_bytes(
             current_data_length, new_data_length.begin(),
             new_data_length.begin() + addresses::lookup_table_tail_length);
-        this->write(new_data_length);
+        this->write(new_data_length, 0);
     }
 
     /**
@@ -240,7 +241,7 @@ class DevDataAccessor
                     }
                     this->write_at_offset(
                         accessor::AccessorBuffer(data.begin(), data.end()),
-                        new_ptr, len);
+                        new_ptr, len, 0);
                 }
             } else {
                 action_cmd_m =
@@ -289,7 +290,7 @@ class DevDataAccessor
             std::ignore = bit_utils::int_to_bytes(
                 addresses::data_address_begin, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);
-            tail_accessor.write(init_tail);
+            tail_accessor.write(init_tail, 0);
             data_tail = addresses::data_address_begin;
         } else {
             std::ignore = bit_utils::bytes_to_int(
@@ -368,7 +369,7 @@ class DevDataAccessor
                     if (do_initalize) {
                         this->write_at_offset(this->type_data,
                                               data_addr - action_cmd_m.len,
-                                              data_addr);
+                                              data_addr, m.message_index);
                     }
                 }
                 break;
@@ -385,7 +386,8 @@ class DevDataAccessor
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
                 this->write_at_offset(this->type_data, data_addr,
-                                      data_addr + action_cmd_m.len);
+                                      data_addr + action_cmd_m.len,
+                                      m.message_index);
                 break;
         }
     }

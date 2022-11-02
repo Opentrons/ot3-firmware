@@ -19,7 +19,7 @@ SCENARIO("Writing serial number") {
 
     GIVEN("A serial number to write") {
         WHEN("the writing serial number") {
-            subject.write(sn_data);
+            subject.write(sn_data, 1234);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -39,6 +39,7 @@ SCENARIO("Writing serial number") {
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
+                    REQUIRE(write_message.message_index == 1234);
                     REQUIRE(write_message.memory_address ==
                             addresses::serial_number_address_begin +
                                 (i * types::max_data_length));

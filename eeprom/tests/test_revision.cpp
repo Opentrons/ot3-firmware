@@ -18,7 +18,7 @@ SCENARIO("Writing revision") {
         auto rev_data = revision::RevisionType{0, 1, 2, 3};
 
         WHEN("the writing revision") {
-            subject.write(rev_data);
+            subject.write(rev_data, 1234);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -38,6 +38,7 @@ SCENARIO("Writing revision") {
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
+                    REQUIRE(write_message.message_index == 1234);
                     REQUIRE(write_message.memory_address ==
                             addresses::revision_address_begin +
                                 (i * types::max_data_length));

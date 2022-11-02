@@ -80,15 +80,18 @@ class EEPromAccessor {
     /**
      * Write data to eeprom
      */
-    auto write(const AccessorBuffer& type_value) -> void {
-        write_at_offset(type_value, 0, type_data.size());
+    auto write(const AccessorBuffer& type_value, uint32_t message_index)
+        -> void {
+        write_at_offset(type_value, 0, type_data.size(), message_index);
     }
     /**
      * Overload to write to preserve functionality
      */
     template <std::size_t SIZE>
-    auto write(std::array<uint8_t, SIZE>& type_value) -> void {
-        write(AccessorBuffer(type_value.begin(), type_value.end()));
+    auto write(std::array<uint8_t, SIZE>& type_value, uint32_t message_index)
+        -> void {
+        write(AccessorBuffer(type_value.begin(), type_value.end()),
+              message_index);
     }
 
   protected:
@@ -101,7 +104,8 @@ class EEPromAccessor {
      * Write data to eeprom at a specified offset
      */
     auto write_at_offset(const AccessorBuffer& data, types::data_length offset,
-                         types::data_length limit_offset) -> void {
+                         types::data_length limit_offset,
+                         uint32_t message_index) -> void {
         types::data_length amount_to_write = 0;
         types::data_length write_remain = limit_offset - offset;
         auto write = types::EepromData{};
@@ -114,6 +118,7 @@ class EEPromAccessor {
 
             std::copy_n(type_iter, amount_to_write, write.begin());
             eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
+                .message_index = message_index,
                 .memory_address = write_addr,
                 .length = amount_to_write,
                 .data = write});
