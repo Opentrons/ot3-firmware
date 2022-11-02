@@ -103,7 +103,8 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::ReadLimitSwitchRequest& m) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
-        can::messages::ReadLimitSwitchResponse msg{m.message_index, {}, response};
+        can::messages::ReadLimitSwitchResponse msg{
+            .message_index = m.message_index, .switch_status = response};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
