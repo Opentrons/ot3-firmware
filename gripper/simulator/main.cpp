@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
-    state_manager_task_control.start(5, "state manager task",
+    state_manager_task_control.start(5, "state mgr task",
                                      &state_manager_connection);
 
     z_motor_iface::get_z_motor_interface().provide_state_manager(

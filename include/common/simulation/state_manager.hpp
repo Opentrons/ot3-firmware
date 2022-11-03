@@ -46,6 +46,13 @@ auto add_options(boost::program_options::options_description &cmdline_desc,
  * server. The run() function must be invoked from its own thread context,
  * and it will automatically serve all new messages.
  *
+ * On startup, the class will poll the state manager for the current status
+ * of the sync pin. If a response is not received,, the class will keep
+ * polling at 5Hz until a response is received. The state manager keeps a list
+ * of all clients that ever connect to it in order to broadcast sync pin
+ * updates, so it is integral that the simulators register themselves
+ * proactively.
+ *
  * @tparam CriticalSection Provides thread safety on internal queues
  */
 template <synchronization::LockableProtocol CriticalSection>
@@ -57,9 +64,14 @@ class StateManagerConnection {
     using StateMessage = std::array<uint8_t, StateMessageLen>;
     using MQueue = std::deque<StateMessage>;
     static constexpr size_t MaxReceive = 128;
+    static constexpr int ConnectionTimeout = 5;
 
     explicit StateManagerConnection(std::string host, uint32_t port)
-        : _host(host), _port(port), _socket(_service) {}
+        : _host(host),
+          _port(port),
+          _socket(_service),
+          _connection_timer(_service,
+                            boost::asio::chrono::seconds(ConnectionTimeout)) {}
     ~StateManagerConnection() { close(); }
     StateManagerConnection(const StateManagerConnection &) = delete;
     StateManagerConnection(const StateManagerConnection &&) = delete;
@@ -89,6 +101,7 @@ class StateManagerConnection {
                         boost::asio::placeholders::error,
                         boost::asio::placeholders::bytes_transferred));
         get_sync_state();
+        timer_kickoff();
         // Should run until the program is killed
         while (1) {
             _service.run();
@@ -200,13 +213,12 @@ class StateManagerConnection {
         std::ignore = bytes;
         std::ignore = error;
         if (!error || error == boost::asio::error::message_size) {
-            LOG("Received %d bytes", bytes);
-
             auto end = _rx_buf.begin();
             std::advance(end, bytes);
             auto response = parse_state_manager_response(_rx_buf.begin(), end);
             if (std::holds_alternative<SyncPinState>(response)) {
                 _sync_pin_state = std::get<SyncPinState>(response);
+                _got_response = true;
                 LOG("Updated sync pin value: %d",
                     static_cast<int>(_sync_pin_state.load()));
             }
@@ -217,6 +229,27 @@ class StateManagerConnection {
                             this, boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
+    }
+
+    auto handle_timer_expiration(const boost::system::error_code &error)
+        -> void {
+        std::ignore = error;
+        if (!_got_response.load()) {
+            LOG("Haven't heard from state manager. Retrying connection.");
+            // We haven't gotten a response, so send a query to the state
+            // manager and refresh this timer
+            get_sync_state();
+            timer_kickoff();
+        }
+    }
+
+    auto timer_kickoff() -> void {
+        _connection_timer.cancel();
+        _connection_timer.expires_after(
+            boost::asio::chrono::seconds(ConnectionTimeout));
+        _connection_timer.async_wait(
+            boost::bind(&std::decay_t<decltype(*this)>::handle_timer_expiration,
+                        this, boost::asio::placeholders::error));
     }
 
     auto open() -> bool {
@@ -258,6 +291,8 @@ class StateManagerConnection {
     MQueue _messages{};
     std::array<uint8_t, MaxReceive> _rx_buf{};
     std::atomic<SyncPinState> _sync_pin_state = SyncPinState::LOW;
+    std::atomic<bool> _got_response = false;
+    boost::asio::steady_timer _connection_timer;
 };
 
 template <synchronization::LockableProtocol CriticalSection>

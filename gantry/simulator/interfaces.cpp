@@ -120,7 +120,7 @@ void interfaces::initialize_sim(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
-    state_manager_task_control.start(5, "state manager task",
+    state_manager_task_control.start(5, "state mgr task",
                                      &state_manager_connection);
     motor_interface.provide_state_manager(state_manager_connection);
 }
