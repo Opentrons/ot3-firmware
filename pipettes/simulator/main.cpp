@@ -220,6 +220,7 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+    state_manager_connection = nullptr;
 
     linear_motor_hardware.change_hardware_id(
         node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
