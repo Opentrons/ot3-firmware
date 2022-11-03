@@ -1,6 +1,5 @@
-#include "pipettes/firmware/interfaces.hpp"
-
 #include "pipettes/core/configs.hpp"
+#include "pipettes/firmware/interfaces_g4.hpp"
 
 using namespace interfaces;
 

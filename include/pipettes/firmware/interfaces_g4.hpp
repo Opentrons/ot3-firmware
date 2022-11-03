@@ -2,6 +2,7 @@
 
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
@@ -12,9 +13,16 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "motor_encoder_hardware.h"
 #include "motor_timer_hardware.h"
 #pragma GCC diagnostic pop
+
+/*
+ * (CM, 11/3/2022)
+ * This file exists in addition to interfaces.hpp to accommodate the l5 firmware
+ * after the changes in the enable-pipette-encoder-output branch. interfaces.hpp
+ * can be deleted with the l5 firmware.
+ *
+ * */
 
 namespace interfaces {
 
@@ -63,22 +71,21 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 
 namespace linear_motor {
 
-auto get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
-auto get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
-auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware;
-auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware;
-auto get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto get_motor_hardware(motor_hardware::HardwareConfig pins)
+    -> motor_hardware::MotorHardware;
+auto get_motion_control(motor_hardware::MotorHardware& hw,
                         LowThroughputInterruptQueues& queues)
     -> MotionControlType;
-auto get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto get_motion_control(motor_hardware::MotorHardware& hw,
                         HighThroughputInterruptQueues& queues)
     -> MotionControlType;
+void encoder_interrupt(motor_hardware::MotorHardware& hw, int32_t direction);
 
 }  // namespace linear_motor
 

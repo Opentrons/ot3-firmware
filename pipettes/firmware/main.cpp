@@ -26,7 +26,7 @@
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
-#include "pipettes/firmware/interfaces.hpp"
+#include "pipettes/firmware/interfaces_g4.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
