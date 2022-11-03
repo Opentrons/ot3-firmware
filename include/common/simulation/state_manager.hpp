@@ -16,6 +16,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/program_options.hpp>
@@ -26,15 +27,12 @@
 
 #include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
+#include "common/simulation/state_manager_parser.hpp"
 #include "ot_utils/core/bit_utils.hpp"
 
-// Message types
-#include "common/simulation/direction.hpp"
-#include "common/simulation/message_ids.hpp"
-#include "common/simulation/move_message_hw_ids.hpp"
-#include "common/simulation/sync_pin_state.hpp"
-
 namespace state_manager {
+
+using namespace state_manager_parser;
 
 auto add_options(boost::program_options::options_description &cmdline_desc,
                  boost::program_options::options_description &env_desc)
@@ -53,9 +51,11 @@ auto add_options(boost::program_options::options_description &cmdline_desc,
 template <synchronization::LockableProtocol CriticalSection>
 class StateManagerConnection {
   public:
+    using T = StateManagerConnection<CriticalSection>;
     // This only applies to OUTGOING messages. Responses from the server
     // may have variable length.
-    using StateMessage = std::array<uint8_t, 4>;
+    static constexpr size_t StateMessageLen = 4;
+    using StateMessage = std::array<uint8_t, StateMessageLen>;
     using MQueue = std::deque<StateMessage>;
     static constexpr size_t MaxReceive = 128;
 
@@ -74,6 +74,7 @@ class StateManagerConnection {
      * asynchronous manner. This function will block until the thread ends.
      */
     [[noreturn]] void run() {
+        LOG("Starting state manager io_service");
         if (!open()) {
             // This actually doesn't rely on a server being open since
             // we're using datagrams, so it makes sense to throw on
@@ -85,11 +86,12 @@ class StateManagerConnection {
         boost::asio::io_service::work work(_service);
         _socket.async_receive(
             boost::asio::buffer(_rx_buf),
-            boost::bind(this->handle_receive, this,
+            boost::bind(&T::handle_receive, this,
                         boost::asio::placeholders::error,
                         boost::asio::placeholders::bytes_transferred));
+        get_sync_state();
         // Should run until the program is killed
-        while(1) {
+        while (1) {
             _service.run();
         }
     }
@@ -139,9 +141,7 @@ class StateManagerConnection {
         send_message(message);
     }
 
-    auto current_sync_state() -> SyncPinState {
-        return SyncPinState::LOW;
-    }
+    auto current_sync_state() -> SyncPinState { return SyncPinState::LOW; }
 
   private:
     /**
@@ -167,22 +167,28 @@ class StateManagerConnection {
         // nothing enqueued before adding this message.
         if (!queue_message(msg)) {
             _socket.async_send_to(
-                boost::asio::const_buffer(_messages.front().data()), _endpoint,
-                boost::bind(this->handle_send, this,
+                boost::asio::const_buffer(_messages.front().data(),
+                                          StateMessageLen),
+                _endpoint,
+                boost::bind(&T::handle_send, this,
                             boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
     }
 
-    auto handle_send(const boost::system::error_code &error,
-                     std::size_t bytes_transferred) -> void {
+    auto handle_send(const boost::system::error_code &error, std::size_t bytes)
+        -> void {
         auto lock = synchronization::Lock(critical_section);
         _messages.pop_front();
+        std::ignore = bytes;
+        std::ignore = error;
         if (_messages.size() > 0) {
             // Start another send
             _socket.async_send_to(
-                boost::asio::const_buffer(_messages.front().data()), _endpoint,
-                boost::bind(this->handle_send, this,
+                boost::asio::const_buffer(_messages.front().data(),
+                                          StateMessageLen),
+                _endpoint,
+                boost::bind(&T::handle_send, this,
                             boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
@@ -190,12 +196,25 @@ class StateManagerConnection {
 
     auto handle_receive(const boost::system::error_code &error,
                         std::size_t bytes) -> void {
+        // Don't need to lock on reception because no other thread context
+        // touches the rx buffer
+        std::ignore = bytes;
+        std::ignore = error;
         if (!error || error == boost::asio::error::message_size) {
-            // TODO parse the message
             LOG("Received %d bytes", bytes);
+
+            auto end = _rx_buf.begin();
+            std::advance(end, bytes);
+            auto response = parse_state_manager_response(_rx_buf.begin(), end);
+            if (std::holds_alternative<SyncPinState>(response)) {
+                _sync_pin_state = std::get<SyncPinState>(response);
+                LOG("Updated sync pin value: %d",
+                    static_cast<int>(_sync_pin_state.load()));
+            }
+
             _socket.async_receive(
                 boost::asio::buffer(_rx_buf),
-                boost::bind(this->handle_receive, this,
+                boost::bind(&T::handle_receive, this,
                             boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
@@ -238,7 +257,8 @@ class StateManagerConnection {
     boost::asio::ip::udp::socket _socket;
     CriticalSection critical_section{};
     MQueue _messages{};
-    std::array<uint8_t, MaxReceive> _rx_buf;
+    std::array<uint8_t, MaxReceive> _rx_buf{};
+    std::atomic<SyncPinState> _sync_pin_state = SyncPinState::LOW;
 };
 
 template <synchronization::LockableProtocol CriticalSection>
@@ -255,11 +275,14 @@ template <synchronization::LockableProtocol CriticalSection>
 struct StateManagerTask {
     using Connection = std::shared_ptr<StateManagerConnection<CriticalSection>>;
     [[noreturn]] void operator()(Connection *connection_ptr) {
-        if(connection_ptr) { 
+        if (connection_ptr) {
             auto connection = *connection_ptr;
             if (connection) {
                 connection->run();
             }
+        }
+        LOG("State manager spuriously exited");
+        while (1) {
         }
     }
 };
