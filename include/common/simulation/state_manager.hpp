@@ -51,7 +51,6 @@ auto add_options(boost::program_options::options_description &cmdline_desc,
 template <synchronization::LockableProtocol CriticalSection>
 class StateManagerConnection {
   public:
-    using T = StateManagerConnection<CriticalSection>;
     // This only applies to OUTGOING messages. Responses from the server
     // may have variable length.
     static constexpr size_t StateMessageLen = 4;
@@ -86,7 +85,7 @@ class StateManagerConnection {
         boost::asio::io_service::work work(_service);
         _socket.async_receive(
             boost::asio::buffer(_rx_buf),
-            boost::bind(&T::handle_receive, this,
+            boost::bind(&std::decay_t<decltype(*this)>::handle_receive, this,
                         boost::asio::placeholders::error,
                         boost::asio::placeholders::bytes_transferred));
         get_sync_state();
@@ -170,7 +169,7 @@ class StateManagerConnection {
                 boost::asio::const_buffer(_messages.front().data(),
                                           StateMessageLen),
                 _endpoint,
-                boost::bind(&T::handle_send, this,
+                boost::bind(&std::decay_t<decltype(*this)>::handle_send, this,
                             boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
@@ -188,7 +187,7 @@ class StateManagerConnection {
                 boost::asio::const_buffer(_messages.front().data(),
                                           StateMessageLen),
                 _endpoint,
-                boost::bind(&T::handle_send, this,
+                boost::bind(&std::decay_t<decltype(*this)>::handle_send, this,
                             boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
@@ -214,8 +213,8 @@ class StateManagerConnection {
 
             _socket.async_receive(
                 boost::asio::buffer(_rx_buf),
-                boost::bind(&T::handle_receive, this,
-                            boost::asio::placeholders::error,
+                boost::bind(&std::decay_t<decltype(*this)>::handle_receive,
+                            this, boost::asio::placeholders::error,
                             boost::asio::placeholders::bytes_transferred));
         }
     }
