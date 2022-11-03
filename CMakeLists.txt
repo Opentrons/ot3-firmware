@@ -17,6 +17,12 @@ if (NOT ${CMAKE_CROSSCOMPILING})
     add_custom_target(build-and-test)
 endif ()
 
+if (DEFINED "CMAKE_DOCKER_PREP")
+        find_package(Boost 1.71.0)
+        find_package(Clang)
+        return()
+endif()
+
 
 # Set a default build type if none was specified
 # From https://blog.kitware.com/cmake-and-the-default-build-type/
