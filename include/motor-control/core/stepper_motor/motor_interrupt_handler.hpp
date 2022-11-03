@@ -202,13 +202,9 @@ class MotorInterruptHandler {
         has_active_move = false;
         tick_count = 0x0;
         if (buffered_move.group_id != NO_GROUP) {
-            encoder_pulses_test = hardware.get_encoder_pulses();
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                encoder_pulses_test, ack_msg_id);
-//            auto ack = buffered_move.build_ack(
-//                static_cast<uint32_t>(position_tracker >> 31),
-//                0x5555, ack_msg_id);
+                hardware.get_encoder_pulses(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
@@ -254,8 +250,6 @@ class MotorInterruptHandler {
     void set_buffered_move(MotorMoveMessage new_move) {
         buffered_move = new_move;
     }
-  public:
-    int32_t encoder_pulses_test = 0;
 
 
   private:

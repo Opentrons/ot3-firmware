@@ -80,7 +80,7 @@ int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
     if (enc_htim != NULL) {
         pulses = __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)enc_htim);
     } else {
-        pulses = 1234;
+        pulses = 0;
     }
     return pulses;
 }

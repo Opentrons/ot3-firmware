@@ -73,7 +73,6 @@ class PipetteEEPromHardwareIface
     }
 };
 
-
 auto convert_to_motor_hardware(pipette_motor_hardware::HardwareConfig motor_config) ->
     motor_hardware::HardwareConfig {
     return motor_hardware::HardwareConfig {

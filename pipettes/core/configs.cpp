@@ -8,7 +8,8 @@ auto configs::linear_motion_sys_config_by_axis(PipetteType which)
             return lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
                 .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
                 .steps_per_rev = 200,
-                .microstep = 64};
+                .microstep = 64,
+                .encoder_pulses_per_rev = 1000};
         case PipetteType::EIGHT_CHANNEL:
         case PipetteType::SINGLE_CHANNEL:
         default:
