@@ -251,7 +251,6 @@ class MotorInterruptHandler {
         buffered_move = new_move;
     }
 
-
   private:
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;

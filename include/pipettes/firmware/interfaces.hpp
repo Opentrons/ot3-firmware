@@ -2,13 +2,13 @@
 
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/firmware/pipette_motor_hardware.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -77,8 +77,7 @@ auto get_motion_control(motor_hardware::MotorHardware& hw,
 auto get_motion_control(motor_hardware::MotorHardware& hw,
                         HighThroughputInterruptQueues& queues)
     -> MotionControlType;
-void encoder_interrupt(motor_hardware::MotorHardware& hw,
-                       int32_t direction);
+void encoder_interrupt(motor_hardware::MotorHardware& hw, int32_t direction);
 
 }  // namespace linear_motor
 

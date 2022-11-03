@@ -57,11 +57,9 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
         queues.plunger_queue, linear_motor_tasks::get_queues(), hw);
 }
 
-auto linear_motor::get_motor_hardware(
-    motor_hardware::HardwareConfig pins)
+auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware {
-    return motor_hardware::MotorHardware(pins, &htim7,
-                                                 &htim2);
+    return motor_hardware::MotorHardware(pins, &htim7, &htim2);
 }
 
 auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
