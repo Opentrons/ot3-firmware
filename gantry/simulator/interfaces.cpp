@@ -8,6 +8,7 @@
 #include "can/simlib/sim_canbus.hpp"
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 #include "common/simulation/state_manager.hpp"
 #include "gantry/core/axis_type.h"
 #include "gantry/core/interfaces_proto.hpp"
@@ -92,6 +93,13 @@ static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>
     state_manager_connection;
 
+static auto state_manager_task = state_manager::StateManagerTask<
+    freertos_synchronization::FreeRTOSCriticalSection>{};
+
+static auto state_manager_task_control =
+    freertos_task::FreeRTOSTask<512, decltype(state_manager_task)>{
+        state_manager_task};
+
 void interfaces::initialize_sim(int argc, char** argv) {
     auto cmdlinedesc = po::options_description(
         std::string("simulator for the OT-3 gantry ") +
@@ -112,6 +120,8 @@ void interfaces::initialize_sim(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+    state_manager_task_control.start(5, "state manager task",
+                                     &state_manager_connection);
     motor_interface.provide_state_manager(state_manager_connection);
 }
 

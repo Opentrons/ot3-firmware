@@ -41,7 +41,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
         if (_state_manager) {
-            return _state_manager->get_sync_state() == SyncPinState::HIGH;
+            return _state_manager->current_sync_state() == SyncPinState::HIGH;
         }
         return true;
     }
@@ -84,7 +84,7 @@ class SimBrushedMotorHardwareIface
     void stop_pwm() final {}
     bool check_sync_in() final {
         if (_state_manager) {
-            return _state_manager->get_sync_state() == SyncPinState::HIGH;
+            return _state_manager->current_sync_state() == SyncPinState::HIGH;
         }
         return true;
     }
@@ -141,7 +141,7 @@ class SimGearMotorHardwareIface
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
         if (_state_manager) {
-            return _state_manager->get_sync_state() == SyncPinState::HIGH;
+            return _state_manager->current_sync_state() == SyncPinState::HIGH;
         }
         return true;
     }

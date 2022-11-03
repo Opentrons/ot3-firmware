@@ -17,7 +17,9 @@
 
 #include <array>
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/program_options.hpp>
+#include <deque>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -38,19 +40,27 @@ auto add_options(boost::program_options::options_description &cmdline_desc,
                  boost::program_options::options_description &env_desc)
     -> std::function<std::string(std::string)>;
 
+/**
+ * @brief Manages the datagram connection to the central state manager.
+ *
+ * @details
+ * This class asynchronously sends to and receives from the state manager
+ * server. The run() function must be invoked from its own thread context,
+ * and it will automatically serve all new messages.
+ *
+ * @tparam CriticalSection Provides thread safety on internal queues
+ */
 template <synchronization::LockableProtocol CriticalSection>
 class StateManagerConnection {
   public:
+    // This only applies to OUTGOING messages. Responses from the server
+    // may have variable length.
+    using StateMessage = std::array<uint8_t, 4>;
+    using MQueue = std::deque<StateMessage>;
+    static constexpr size_t MaxReceive = 128;
+
     explicit StateManagerConnection(std::string host, uint32_t port)
-        : _host(host), _port(port), _socket(_context) {
-        if (!open()) {
-            // This actually doesn't rely on a server being open since
-            // we're using datagrams, so it makes sense to throw on
-            // errors here.
-            throw std::invalid_argument(
-                "Could not initialize state manager connection.");
-        }
-    }
+        : _host(host), _port(port), _socket(_service) {}
     ~StateManagerConnection() { close(); }
     StateManagerConnection(const StateManagerConnection &) = delete;
     StateManagerConnection(const StateManagerConnection &&) = delete;
@@ -59,6 +69,31 @@ class StateManagerConnection {
         delete;
 
     /**
+     * @brief This function must be called from its own thread context in
+     * order to provide servicing of the state manager UDP connection in an
+     * asynchronous manner. This function will block until the thread ends.
+     */
+    [[noreturn]] void run() {
+        if (!open()) {
+            // This actually doesn't rely on a server being open since
+            // we're using datagrams, so it makes sense to throw on
+            // errors here.
+            throw std::invalid_argument(
+                "Could not initialize state manager connection.");
+        }
+        // This ensures that run() doesn't return prematurely
+        boost::asio::io_service::work work(_service);
+        _socket.async_receive(
+            boost::asio::buffer(_rx_buf),
+            boost::bind(this->handle_receive, this,
+                        boost::asio::placeholders::error,
+                        boost::asio::placeholders::bytes_transferred));
+        // Should run until the program is killed
+        while(1) {
+            _service.run();
+        }
+    }
+    /**
      * @brief Send a Move message to the state manager, indicating an axis on
      * the robot moved a single microstep.
      *
@@ -66,7 +101,7 @@ class StateManagerConnection {
      * @param direction The direction the axis moved
      * @return true if the message sent succesfully, false otherwise
      */
-    auto send_move_msg(MoveMessageHardware id, Direction direction) -> bool {
+    auto send_move_msg(MoveMessageHardware id, Direction direction) -> void {
         std::array<uint8_t, 4> message;
         auto itr = ot_utils::bit_utils::int_to_bytes(
             static_cast<uint8_t>(MessageID::move), message.begin(),
@@ -75,8 +110,7 @@ class StateManagerConnection {
                                                 message.end());
         itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint8_t>(direction),
                                                 itr, message.end());
-        std::ignore = send_and_receive(message);
-        return true;
+        send_message(message);
     }
 
     /**
@@ -86,7 +120,7 @@ class StateManagerConnection {
      * @param state The updated state of the sync pin
      * @return true if the message sent succesfully, false otherwise
      */
-    auto send_sync_msg(SyncPinState state) -> bool {
+    auto send_sync_msg(SyncPinState state) -> void {
         std::array<uint8_t, 4> message;
         auto itr = ot_utils::bit_utils::int_to_bytes(
             static_cast<uint8_t>(MessageID::sync_pin), message.begin(),
@@ -95,26 +129,84 @@ class StateManagerConnection {
                                                 message.end());
         itr = ot_utils::bit_utils::int_to_bytes(static_cast<uint8_t>(state),
                                                 itr, message.end());
-        std::ignore = send_and_receive(message);
-        return true;
+        send_message(message);
     }
 
-    auto get_sync_state() -> SyncPinState {
+    auto get_sync_state() -> void {
         std::array<uint8_t, 4> message = {
             static_cast<uint8_t>(MessageID::get_sync_pin_state), 0x00, 0x00,
             0x00};
-        auto response = send_and_receive(message);
-        // Response is an ascii character for 'low' or 'high'
-        return response[0] == '0' ? SyncPinState::LOW : SyncPinState::HIGH;
+        send_message(message);
+    }
+
+    auto current_sync_state() -> SyncPinState {
+        return SyncPinState::LOW;
     }
 
   private:
+    /**
+     * Enqueues a new message to send. This should only be called under
+     * a synchronization lock.
+     * @return True if there was already a message in the queue, false
+     * if the queue was empty before adding this message.
+     */
+    auto queue_message(StateMessage &msg) -> bool {
+        _messages.push_back(msg);
+        return _messages.size() > 1;
+    }
+
+    /**
+     * @brief Send a message. This might not send the message immediately,
+     * but it will be enqueued to send eventually.
+     *
+     * @param msg
+     */
+    auto send_message(StateMessage &msg) -> void {
+        auto lock = synchronization::Lock(critical_section);
+        // This will add the message no matter what. We only send if there was
+        // nothing enqueued before adding this message.
+        if (!queue_message(msg)) {
+            _socket.async_send_to(
+                boost::asio::const_buffer(_messages.front().data()), _endpoint,
+                boost::bind(this->handle_send, this,
+                            boost::asio::placeholders::error,
+                            boost::asio::placeholders::bytes_transferred));
+        }
+    }
+
+    auto handle_send(const boost::system::error_code &error,
+                     std::size_t bytes_transferred) -> void {
+        auto lock = synchronization::Lock(critical_section);
+        _messages.pop_front();
+        if (_messages.size() > 0) {
+            // Start another send
+            _socket.async_send_to(
+                boost::asio::const_buffer(_messages.front().data()), _endpoint,
+                boost::bind(this->handle_send, this,
+                            boost::asio::placeholders::error,
+                            boost::asio::placeholders::bytes_transferred));
+        }
+    }
+
+    auto handle_receive(const boost::system::error_code &error,
+                        std::size_t bytes) -> void {
+        if (!error || error == boost::asio::error::message_size) {
+            // TODO parse the message
+            LOG("Received %d bytes", bytes);
+            _socket.async_receive(
+                boost::asio::buffer(_rx_buf),
+                boost::bind(this->handle_receive, this,
+                            boost::asio::placeholders::error,
+                            boost::asio::placeholders::bytes_transferred));
+        }
+    }
+
     auto open() -> bool {
         auto lock = synchronization::Lock(critical_section);
 
         LOG("Creating state manager connection to %s:%d", _host.c_str(), _port);
 
-        boost::asio::ip::udp::resolver resolver(_context);
+        boost::asio::ip::udp::resolver resolver(_service);
         try {
             _endpoint = *resolver
                              .resolve(boost::asio::ip::udp::v4(), _host,
@@ -139,22 +231,14 @@ class StateManagerConnection {
         }
     }
 
-    template <size_t N>
-    auto send_and_receive(const std::array<uint8_t, N> &send)
-        -> std::array<uint8_t, N> {
-        auto lock = synchronization::Lock(critical_section);
-        _socket.send_to(boost::asio::const_buffer(send.data(), N), _endpoint);
-        std::array<uint8_t, N> ret;
-        _socket.receive(boost::asio::buffer(ret));
-        return ret;
-    }
-
     std::string _host;
     uint32_t _port;
-    boost::asio::io_context _context{};
+    boost::asio::io_service _service{};
     boost::asio::ip::udp::endpoint _endpoint{};
     boost::asio::ip::udp::socket _socket;
     CriticalSection critical_section{};
+    MQueue _messages{};
+    std::array<uint8_t, MaxReceive> _rx_buf;
 };
 
 template <synchronization::LockableProtocol CriticalSection>
@@ -166,5 +250,18 @@ auto create(const boost::program_options::variables_map &options)
         std::make_shared<StateManagerConnection<CriticalSection>>(host, port);
     return ret;
 }
+
+template <synchronization::LockableProtocol CriticalSection>
+struct StateManagerTask {
+    using Connection = std::shared_ptr<StateManagerConnection<CriticalSection>>;
+    [[noreturn]] void operator()(Connection *connection_ptr) {
+        if(connection_ptr) { 
+            auto connection = *connection_ptr;
+            if (connection) {
+                connection->run();
+            }
+        }
+    }
+};
 
 }  // namespace state_manager
