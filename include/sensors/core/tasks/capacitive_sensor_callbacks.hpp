@@ -60,7 +60,7 @@ struct ReadCapacitanceCallback {
                 can::messages::ReadFromSensorResponse{
                     .sensor = can::ids::SensorType::capacitive,
                     .sensor_id = sensor_id,
-                    .sensor_data = convert_to_fixed_point(capacitance, 15)});
+                    .sensor_data = convert_to_fixed_point(capacitance, 16)});
         }
     }
 
@@ -86,7 +86,7 @@ struct ReadCapacitanceCallback {
             auto message = can::messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
                 .sensor_id = sensor_id,
-                .sensor_data = convert_to_fixed_point(capacitance, 15)};
+                .sensor_data = convert_to_fixed_point(capacitance, 16)};
             can_client.send_can_message(can::ids::NodeId::host, message);
         }
 //        auto new_offset = update_offset(capacitance, current_offset_pf);
@@ -140,7 +140,7 @@ struct ReadCapacitanceCallback {
         auto message = can::messages::SensorThresholdResponse{
             .sensor = SensorType::capacitive,
             .sensor_id = sensor_id,
-            .threshold = convert_to_fixed_point(zero_threshold_pf, 15),
+            .threshold = convert_to_fixed_point(zero_threshold_pf, 16),
             .mode = from_mode};
         can_client.send_can_message(can::ids::NodeId::host, message);
     }

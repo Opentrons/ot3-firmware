@@ -91,7 +91,7 @@ class CapacitiveMessageHandler {
                 .sensor = SensorType::capacitive,
                 .sensor_id = sensor_id,
                 .sensor_data = convert_to_fixed_point(
-                    capacitance_handler.get_offset(), 15)};
+                    capacitance_handler.get_offset(), 16)};
             can_client.send_can_message(can::ids::NodeId::host, message);
         } else {
             capacitance_handler.reset_limited();
@@ -125,7 +125,7 @@ class CapacitiveMessageHandler {
             m.threshold, m.sensor);
         if (m.mode == can::ids::SensorThresholdMode::absolute) {
             capacitance_handler.set_threshold(
-                fixed_point_to_float(m.threshold, 15), m.mode);
+                fixed_point_to_float(m.threshold, 16), m.mode);
         } else {
             capacitance_handler.reset_limited();
             capacitance_handler.set_number_of_reads(10);
@@ -133,7 +133,7 @@ class CapacitiveMessageHandler {
                             utils::ResponseTag::IS_BASELINE,
                             utils::ResponseTag::IS_THRESHOLD_SENSE};
             capacitance_handler.prime_autothreshold(
-                fixed_point_to_float(m.threshold, 15));
+                fixed_point_to_float(m.threshold, 16));
             poller.multi_register_poll(
                 ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2,
                 uint16_t(10), DELAY, own_queue,

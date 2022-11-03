@@ -265,7 +265,7 @@ struct __attribute__((packed, __may_alias__)) Temperature {
     [[nodiscard]] static auto to_temperature(uint32_t reg) -> sq15_16 {
         float temperature =
             CONVERT_TO_CELSIUS * (static_cast<float>(reg) / MAX_SIZE);
-        return convert_to_fixed_point(temperature, 15);
+        return convert_to_fixed_point(temperature, 16);
     }
 };
 
