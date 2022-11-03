@@ -102,20 +102,72 @@ struct motion_controller::HardwareConfig motor_pins_y {
         .active_setting = GPIO_PIN_RESET}
 };
 
-static tmc2160::configs::TMC2160DriverConfig motor_driver_config{
-    .registers = {.gconfig = {.en_pwm_mode = 1},
+static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
+    .registers = {.gconfig = {.en_pwm_mode = 0},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
+                  .tpowerdown = {.time = 0xFF},
                   .tcoolthrs = {.threshold = 0},
-                  .thigh = {.threshold = 0xFFFFF},
-                  .chopconf = {.toff = 0x3,
-                               .hstrt = 0x5,
-                               .hend = 0x2,
-                               .tbl = 0x2,
+                  .thigh = {.threshold = 0x5F},
+                  .chopconf = {.toff = 0x2,
+                               .hstrt = 0x0,
+                               .hend = 0x3,
+                               .disfdcc = 0,
+                               .chm = 0,
+                               .tbl = 0x1,
+                               .vhighfs = 1,
+                               .vhighchm = 1,
                                .tpfd = 0x4,
-                               .mres = 0x2},
+                               .mres = 0x3},
                   .coolconf = {.sgt = 0x6},
+                  .pwmconf = {.pwm_ofs = 30,
+                              .pwm_grad = 0,
+                              .pwm_freq = 0x1,
+                              .pwm_autoscale = 1,
+                              .pwm_autograd = 1,
+                              .freewheel = 0,
+                              .pwm_reg = 0x7,
+                              .pwm_lim = 0xC},
+                  .glob_scale = {.global_scaler = 0xA7}},
+    .current_config =
+        {
+            .r_sense = 0.1,
+            .v_sf = 0.325,
+        },
+    .chip_select{
+        .cs_pin = GPIO_PIN_12,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .GPIO_handle = GPIOB,
+    }};
+
+static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
+    .registers = {.gconfig = {.en_pwm_mode = 0},
+                  .ihold_irun = {.hold_current = 16,
+                                 .run_current = 31,
+                                 .hold_current_delay = 0x7},
+                  .tpowerdown = {.time = 0xFF},
+                  .tcoolthrs = {.threshold = 0},
+                  .thigh = {.threshold = 0x5F},
+                  .chopconf = {.toff = 0x3,
+                               .hstrt = 0x0,
+                               .hend = 0x0,
+                               .disfdcc = 0,
+                               .chm = 0,
+                               .tbl = 0x1,
+                               .vhighfs = 1,
+                               .vhighchm = 1,
+                               .tpfd = 0x4,
+                               .mres = 0x3},
+                  .coolconf = {.sgt = 0x6},
+                  .pwmconf = {.pwm_ofs = 30,
+                              .pwm_grad = 0,
+                              .pwm_freq = 0x1,
+                              .pwm_autoscale = 1,
+                              .pwm_autograd = 1,
+                              .freewheel = 0,
+                              .pwm_reg = 0x7,
+                              .pwm_lim = 0xC},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {
@@ -230,5 +282,6 @@ auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
 }
 
 auto interfaces::get_driver_config() -> tmc2160::configs::TMC2160DriverConfig& {
-    return motor_driver_config;
+    return (get_axis_type() == gantry_x) ? motor_driver_config_x
+                                         : motor_driver_config_y;
 }
