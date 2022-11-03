@@ -23,7 +23,9 @@ typedef struct {
 #define UPDATE_DATA_MESSAGE_SIZE    64
 // can't be (UPDATE_DATA_MESSAGE_SIZE - sizeof(UpdateData) - sizeof(uint8_t))
 // since c adds padding to align all struct members to 32bit addresses
-#define UPDATE_DATA_MAX_BYTE_COUNT  52
+
+// this value also needs to be a multiple of 8
+#define UPDATE_DATA_MAX_BYTE_COUNT  48
 
 /**
  * Contents of the firmware update complete message.
