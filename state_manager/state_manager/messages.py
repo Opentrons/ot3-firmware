@@ -34,7 +34,11 @@ class Response:
         """Convert Response object into bytes."""
         if self.content is None:
             return b""
-        message = b"ERROR: " + self.content if self.is_error else self.content
+        message = (
+            f"ERROR: {self.content.decode()}".encode()
+            if self.is_error
+            else self.content
+        )
         return message
 
 

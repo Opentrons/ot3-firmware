@@ -24,6 +24,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 #include "common/core/logging.h"
 #include "common/core/synchronization.hpp"
@@ -317,6 +318,7 @@ struct StateManagerTask {
         }
         LOG("State manager spuriously exited");
         while (1) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 };
