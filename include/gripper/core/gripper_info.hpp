@@ -99,8 +99,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
             can::ids::NodeId::host,
             GripperInfoResponse{
                 .model = 0x0001,
-                .serial = eeprom::serial_number::SerialDataCodeType{
-                    0x01}});
+                .serial = eeprom::serial_number::SerialDataCodeType{0x01}});
     }
 
     /**
