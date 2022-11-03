@@ -1,5 +1,5 @@
 # Util to access the state manager.
-# To send data to the state manager, enter 4 whitespace-separated numbers and hit enter.
+# To send data to the state manager, enter 4 whitespace-separated hex numbers and hit enter.
 
 import sys
 import socket 
@@ -24,6 +24,8 @@ def main():
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    print('Write four hex numbers to send a message to the state manager')
+
     while True:
         rlist = [sys.stdin, sock]
         readable, _, _ = select.select(rlist, [], [])
@@ -33,14 +35,7 @@ def main():
             if(len(vals) != 4):
                 print('Please enter exactly 4 numbers') 
                 continue
-            message_ints = []
-            for val in vals:
-                int_val = int(val)
-                if int_val > 0xFF or int_val < 0:
-                    print(f'Bad value {int_val}', sys.stderr)
-                    return -1
-                message_ints.append(int_val)
-            message = bytearray(message_ints)
+            message = bytearray([int(val, base=16) for val in vals])
             print(f'Sending: {message}')
             sock.sendto(message, UDP_ADDR)
         if sock in readable:

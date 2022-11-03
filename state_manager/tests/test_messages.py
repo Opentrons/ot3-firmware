@@ -425,6 +425,8 @@ def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
 
 def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
     """Confirm that get sync pin state messages work correctly."""
+    SYNC_ON_MSG = b"\x031"
+    SYNC_OFF_MSG = b"\x030"
     HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
     LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
@@ -434,7 +436,7 @@ def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
     ack = handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state)
     assert ack is not None
     assert not ack.broadcast
-    assert ack.to_bytes() == b"\x031"
+    assert ack.to_bytes() == SYNC_ON_MSG
 
     ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
     assert ack is not None
@@ -443,4 +445,4 @@ def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
     ack = handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state)
     assert ack is not None
     assert not ack.broadcast
-    assert ack.to_bytes() == b"\x030"
+    assert ack.to_bytes() == SYNC_OFF_MSG
