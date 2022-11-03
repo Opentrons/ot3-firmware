@@ -71,8 +71,8 @@ constexpr float MAX_CAPDAC_PF =
 // Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
 constexpr std::size_t CONVERSION_BITS = 24;
 constexpr float MAX_MEASUREMENT_PF = 15;
-constexpr float MAX_RAW_MEASUREMENT =
-    float(std::numeric_limits<int32_t>::max() >> 8);
+constexpr float MAX_RAW_MEASUREMENT = float(std::numeric_limits<int32_t>::max() >> (sizeof(uint32_t) * 8) - CONVERSION_BITS);
+//    float(std::numeric_limits<int32_t>::max() >> 8);
 //          ((sizeof(uint32_t) * 8) - CONVERSION_BITS));
 
 // Because we're doing big gantry moves, we'll probably have to handle
