@@ -85,7 +85,7 @@
 #include "bootloader/firmware/constants.h"
 
 #if !defined(HSE_VALUE)
-#define HSE_VALUE 24000000U /*!< Value of the External oscillator in Hz */
+#define HSE_VALUE 16000000U /*!< Value of the External oscillator in Hz */
 #endif                      /* HSE_VALUE */
 
 #if !defined(HSI_VALUE)
@@ -140,7 +140,7 @@
    there is no need to call the 2 first functions listed above, since
    SystemCoreClock variable is updated automatically.
 */
-uint32_t SystemCoreClock = HSI_VALUE;
+uint32_t SystemCoreClock = HSE_VALUE;
 
 const uint8_t AHBPrescTable[16] = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
                                    1U, 2U, 3U, 4U, 6U, 7U, 8U, 9U};
@@ -213,11 +213,10 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;
     RCC_OscInitStruct.PLL.PLLN = 85;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
