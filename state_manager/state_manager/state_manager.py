@@ -6,7 +6,7 @@ import argparse
 import asyncio
 import logging
 from asyncio import BaseProtocol
-from typing import Tuple, cast
+from typing import List, Tuple, cast
 
 from .messages import handle_message
 from .ot3_state import OT3State
@@ -29,6 +29,7 @@ class OT3StateManager(BaseProtocol):
         self._ot3_state = ot3_state
         self.transport = None
         self._connected = False
+        self._addresses: List[Tuple[str, str]] = []
 
     def connection_made(self, transport) -> None:  # noqa: ANN001
         """Called when connection is made from client."""
@@ -37,8 +38,15 @@ class OT3StateManager(BaseProtocol):
 
     def datagram_received(self, data: bytes, addr: Tuple[str, str]) -> None:
         """Called when a datagram is received from client."""
-        if self.transport is not None:
-            self.transport.sendto(handle_message(data, self._ot3_state), addr)
+        response = handle_message(data, self._ot3_state)
+        if addr not in self._addresses:
+            self._addresses.append(addr)
+        if self.transport is not None and response is not None:
+            if response.broadcast:
+                for client in self._addresses:
+                    self.transport.sendto(response.to_bytes(), client)
+            else:
+                self.transport.sendto(response.to_bytes(), addr)
 
     async def start_server(self, host: str, port: int) -> OT3StateManager:
         """Starts OT3StateManager UDP Datagram server"""

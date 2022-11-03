@@ -12,6 +12,7 @@
 #include "can/simlib/transport.hpp"
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
 #include "eeprom/simulation/eeprom.hpp"
@@ -63,6 +64,13 @@ static auto gear_motion_control =
 static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>
     state_manager_connection;
+
+static auto state_manager_task = state_manager::StateManagerTask<
+    freertos_synchronization::FreeRTOSCriticalSection>{};
+
+static auto state_manager_task_control =
+    freertos_task::FreeRTOSTask<512, decltype(state_manager_task)>{
+        state_manager_task};
 
 static auto node_from_options(const po::variables_map& options)
     -> can::ids::NodeId {
@@ -220,7 +228,8 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
-    state_manager_connection = nullptr;
+    state_manager_task_control.start(5, "state mgr task",
+                                     &state_manager_connection);
 
     linear_motor_hardware.change_hardware_id(
         node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
