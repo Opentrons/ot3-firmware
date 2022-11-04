@@ -59,7 +59,7 @@ CANErrorCode parse_update_data(
     // Byte count
     result->num_bytes = *p_buffer++;
     if (result->num_bytes > UPDATE_DATA_MAX_BYTE_COUNT || 
-        result->num_bytes % 8 != 0) {
+        (result->num_bytes % 8 != 0 && result->num_bytes > 16)) {
         return can_errorcode_invalid_byte_count;
     }
     // Reserved byte
