@@ -8,10 +8,12 @@
 #include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/freertos_synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 #include "common/simulation/state_manager.hpp"
 #include "eeprom/simulation/eeprom.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
+#include "gripper/simulation/sim_interfaces.hpp"
 #include "i2c/simulation/i2c_sim.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/mock_hardware.hpp"
@@ -33,11 +35,18 @@ static auto sensor_map =
     i2c::hardware::SimI2C::DeviceMap{{capsensor.get_address(), capsensor}};
 static auto i2c2 = i2c::hardware::SimI2C{sensor_map};
 
-static test_mocks::MockSensorHardware fake_sensor_hw{};
+static sim_mocks::MockSensorHardware fake_sensor_hw{};
 
 static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>
     state_manager_connection;
+
+static auto state_manager_task = state_manager::StateManagerTask<
+    freertos_synchronization::FreeRTOSCriticalSection>{};
+
+static auto state_manager_task_control =
+    freertos_task::FreeRTOSTask<512, decltype(state_manager_task)>{
+        state_manager_task};
 
 auto handle_options(int argc, char** argv) -> po::variables_map {
     auto cmdlinedesc =
@@ -86,6 +95,14 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+    state_manager_task_control.start(5, "state mgr task",
+                                     &state_manager_connection);
+
+    z_motor_iface::get_z_motor_interface().provide_state_manager(
+        state_manager_connection);
+    z_motor_iface::get_brushed_motor_interface().provide_state_manager(
+        state_manager_connection);
+    fake_sensor_hw.provide_state_manager(state_manager_connection);
 
     auto sim_eeprom =
         std::make_shared<eeprom::simulator::EEProm>(options, TEMPORARY_SERIAL);

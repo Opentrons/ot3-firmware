@@ -2,6 +2,7 @@
 
 #include "can/simlib/transport.hpp"
 #include "gripper/core/tasks.hpp"
+#include "gripper/simulation/sim_interfaces.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
@@ -17,7 +18,8 @@ static auto spi_comms = spi::hardware::SimSpiDeviceBase();
 /**
  * The motor interface.
  */
-static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface();
+static auto motor_interface =
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_g);
 
 /**
  * The pending move queue
@@ -120,4 +122,14 @@ auto grip_motor_iface::get_grip_motor()
 auto z_motor_iface::get_tmc2130_driver_configs()
     -> tmc2130::configs::TMC2130DriverConfig& {
     return MotorDriverConfigurations;
+}
+
+auto z_motor_iface::get_z_motor_interface()
+    -> sim_motor_hardware_iface::SimMotorHardwareIface& {
+    return motor_interface;
+}
+
+auto z_motor_iface::get_brushed_motor_interface()
+    -> sim_motor_hardware_iface::SimBrushedMotorHardwareIface& {
+    return brushed_motor_hardware_iface;
 }

@@ -8,6 +8,7 @@
 #include "boost/program_options.hpp"
 #include "can/simlib/sim_canbus.hpp"
 #include "common/core/freertos_synchronization.hpp"
+#include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
 #include "head/core/presence_sensing_driver.hpp"
@@ -35,9 +36,9 @@ static auto spi_comms_left = spi::hardware::SimSpiDeviceBase();
  * The motor interfaces.
  */
 static auto motor_interface_right =
-    sim_motor_hardware_iface::SimMotorHardwareIface();
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_r);
 static auto motor_interface_left =
-    sim_motor_hardware_iface::SimMotorHardwareIface();
+    sim_motor_hardware_iface::SimMotorHardwareIface(MoveMessageHardware::z_l);
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
@@ -117,6 +118,13 @@ static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>
     state_manager_connection;
 
+static auto state_manager_task = state_manager::StateManagerTask<
+    freertos_synchronization::FreeRTOSCriticalSection>{};
+
+static auto state_manager_task_control =
+    freertos_task::FreeRTOSTask<512, decltype(state_manager_task)>{
+        state_manager_task};
+
 void signal_handler(int signum) {
     LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
@@ -152,6 +160,11 @@ int main(int argc, char** argv) {
 
     state_manager_connection = state_manager::create<
         freertos_synchronization::FreeRTOSCriticalSection>(options);
+    state_manager_task_control.start(5, "state mgr task",
+                                     &state_manager_connection);
+
+    motor_interface_right.provide_state_manager(state_manager_connection);
+    motor_interface_left.provide_state_manager(state_manager_connection);
 
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));

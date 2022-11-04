@@ -53,7 +53,9 @@ from state_manager.util import Direction, SyncPinState
 )
 def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
     """Confirm that if too long/short of a message is passed an exception is thrown."""
-    assert handle_message(message, ot3_state).decode() == error
+    response = handle_message(message, ot3_state)
+    assert response is not None
+    assert response.to_bytes().decode() == error
 
 
 @pytest.mark.parametrize(
@@ -389,7 +391,7 @@ def test_valid_handle_move_message(
     """Confirm that pulse messages work correctly."""
     print(message.to_bytes())
     ack = handle_message(message.to_bytes(), ot3_state)
-    assert ack == message.to_bytes()
+    assert ack is None
     assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
 
 
@@ -398,11 +400,12 @@ def test_valid_handle_get_location_message(ot3_state: OT3State) -> None:
     pulse_x_pos = MoveMessage(OT3Axis.X, Direction.POSITIVE).to_bytes()
     for _ in range(5):
         ack = handle_message(pulse_x_pos, ot3_state)
-        assert ack == pulse_x_pos
+        assert ack is None
     assert ot3_state.axis_current_position(OT3Axis.X) == 5
-    assert (
-        handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state) == b"5"
-    )
+    expected = b"\x02\x00\x005"
+    ack = handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state)
+    assert ack is not None
+    assert ack.to_bytes() == expected
 
 
 def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
@@ -410,24 +413,36 @@ def test_valid_handle_sync_pin_message(ot3_state: OT3State) -> None:
     HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
     LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
-    assert ack == HIGH_MESSAGE.to_bytes()
+    assert ack is not None
+    assert ack.broadcast
     assert ot3_state.get_sync_pin_state()
 
     ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
-    assert ack == LOW_MESSAGE.to_bytes()
+    assert ack is not None
+    assert ack.broadcast
     assert not ot3_state.get_sync_pin_state()
 
 
 def test_valid_handle_get_sync_pin_state_message(ot3_state: OT3State) -> None:
     """Confirm that get sync pin state messages work correctly."""
+    SYNC_ON_MSG = b"\x031"
+    SYNC_OFF_MSG = b"\x030"
     HIGH_MESSAGE = SyncPinMessage(SyncPinState.HIGH)
     LOW_MESSAGE = SyncPinMessage(SyncPinState.LOW)
     ack = handle_message(HIGH_MESSAGE.to_bytes(), ot3_state)
-    assert ack == HIGH_MESSAGE.to_bytes()
+    assert ack is not None
+    assert ack.broadcast
     assert ot3_state.get_sync_pin_state()
-    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"1"
+    ack = handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state)
+    assert ack is not None
+    assert not ack.broadcast
+    assert ack.to_bytes() == SYNC_ON_MSG
 
     ack = handle_message(LOW_MESSAGE.to_bytes(), ot3_state)
-    assert ack == LOW_MESSAGE.to_bytes()
+    assert ack is not None
+    assert ack.broadcast
     assert not ot3_state.get_sync_pin_state()
-    assert handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state) == b"0"
+    ack = handle_message(GetSyncPinStateMessage().to_bytes(), ot3_state)
+    assert ack is not None
+    assert not ack.broadcast
+    assert ack.to_bytes() == SYNC_OFF_MSG
