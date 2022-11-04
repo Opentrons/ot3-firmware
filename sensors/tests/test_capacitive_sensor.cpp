@@ -168,7 +168,7 @@ SCENARIO("read capacitance sensor values") {
                             can_msg.message);
                     float check_data = signed_fixed_point_to_float(
                         response_msg.sensor_data, 16);
-                    float expected = 7.5;
+                    float expected = 15;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
                 THEN(
@@ -207,7 +207,7 @@ SCENARIO("read capacitance sensor values") {
                         std::get<can::messages::ReadFromSensorResponse>(
                             can_msg.message);
                     float check_data = signed_fixed_point_to_float(
-                        response_msg.sensor_data, 15);
+                        response_msg.sensor_data, 16);
                     float expected = -15;
                     REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                 }
@@ -346,7 +346,7 @@ SCENARIO("capacitance callback tests") {
                 REQUIRE(sent.sensor == can::ids::SensorType::capacitive);
                 // we're just checking that the data is faithfully represented,
                 // don't really care what it is
-                REQUIRE(sent.sensor_data == convert_to_fixed_point(15, 15));
+                REQUIRE(sent.sensor_data == convert_to_fixed_point(15, 16));
             }
             THEN("it should not touch the sync line") {
                 REQUIRE(mock_hw.get_sync_state_mock() == false);
@@ -523,7 +523,7 @@ SCENARIO("threshold configuration") {
                     sensor.handle_message(final_response_b);
                     THEN("the threshold is set to the proper value") {
                         REQUIRE(sensor.capacitance_handler.get_threshold() ==
-                                Approx(15.375).epsilon(1e-4));
+                                Approx(15.1875).epsilon(1e-4));
                     }
                     THEN(
                         "a message is sent on can informing that the threshold "
@@ -536,9 +536,9 @@ SCENARIO("threshold configuration") {
                             std::get<can::messages::SensorThresholdResponse>(
                                 can_msg.message);
                         float check_data = signed_fixed_point_to_float(
-                            response_msg.threshold, 15);
+                            response_msg.threshold, 16);
                         // the average value + 1
-                        float expected = 15.375;
+                        float expected = 15.1875;
                         REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                         REQUIRE(response_msg.mode ==
                                 can::ids::SensorThresholdMode::auto_baseline);
@@ -572,7 +572,7 @@ SCENARIO("threshold configuration") {
                         can::ids::SensorThresholdMode::absolute);
             }
             THEN("the sensor's threshold should be set") {
-                REQUIRE(sensor.capacitance_handler.get_threshold() == 10);
+                REQUIRE(sensor.capacitance_handler.get_threshold() == 5);
             }
         }
     }

@@ -20,10 +20,11 @@ SCENARIO("converting data to 24 bit value from IC registers") {
         constexpr int16_t LSB = 0xff00;
         int32_t converted_registers = sensors::fdc1004::convert_reads(MSB, LSB);
         LOG("the converted value: %d", converted_registers);
-        REQUIRE(float(converted_registers) == sensors::fdc1004::MAX_RAW_MEASUREMENT / 2);
-        int32_t capacitance = sensors::fdc1004::convert_capacitance(converted_registers, 1, 0.0);
+        REQUIRE(converted_registers == (int(sensors::fdc1004::MAX_RAW_MEASUREMENT) >> 1));
+        float capacitance = sensors::fdc1004::convert_capacitance(converted_registers, 1, 0.0);
+        float expected = 7.5;
         THEN("The capacitance should be equal to 7.5 pF") {
-            REQUIRE(capacitance == 7.5);
+            REQUIRE(capacitance == Approx(expected).epsilon(1e-4));
         }
     }
 
