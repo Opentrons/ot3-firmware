@@ -29,21 +29,21 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                 .v_sf = 0.325,
             },
         .chip_select = {
-            .cs_pin = GPIO_PIN_6,
+            .cs_pin = GPIO_PIN_5,
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .GPIO_handle = GPIOC,
         }};
     switch (which) {
         case TMC2160PipetteAxis::left_gear_motor:
             tmc2160_conf.chip_select = {
-                .cs_pin = GPIO_PIN_9,
+                .cs_pin = GPIO_PIN_11,
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .GPIO_handle = GPIOC,
+                .GPIO_handle = GPIOB,
             };
             return tmc2160_conf;
         case TMC2160PipetteAxis::right_gear_motor:
             tmc2160_conf.chip_select = {
-                .cs_pin = GPIO_PIN_10,
+                .cs_pin = GPIO_PIN_15,
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .GPIO_handle = GPIOC,
             };
