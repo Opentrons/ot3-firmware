@@ -45,10 +45,10 @@ struct ReadCapacitanceCallback {
         auto capacitance = convert_capacitance(
             convert_reads(polling_results[0], polling_results[1]), 1,
             current_offset_pf);
-        // TODO (lc 1-2-2022) we should figure out a better strategy for adjusting
-        // the capdac. I am leaving this commented out as a reminder.
-//        auto new_offset = update_offset(capacitance, current_offset_pf);
-//        set_offset(new_offset);
+        // TODO (lc 1-2-2022) we should figure out a better strategy for
+        // adjusting the capdac. I am leaving this commented out as a reminder.
+        //        auto new_offset = update_offset(capacitance,
+        //        current_offset_pf); set_offset(new_offset);
         if (bind_sync) {
             if (capacitance > zero_threshold_pf) {
                 hardware.set_sync();
@@ -91,10 +91,10 @@ struct ReadCapacitanceCallback {
                 .sensor_data = convert_to_fixed_point(capacitance, 16)};
             can_client.send_can_message(can::ids::NodeId::host, message);
         }
-        // TODO (lc 1-2-2022) we should figure out a better strategy for adjusting
-        // the capdac. I am leaving this commented out as a reminder.
-//        auto new_offset = update_offset(capacitance, current_offset_pf);
-//        set_offset(new_offset);
+        // TODO (lc 1-2-2022) we should figure out a better strategy for
+        // adjusting the capdac. I am leaving this commented out as a reminder.
+        //        auto new_offset = update_offset(capacitance,
+        //        current_offset_pf); set_offset(new_offset);
     }
 
     void reset_limited() {

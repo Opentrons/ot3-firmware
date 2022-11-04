@@ -1,9 +1,9 @@
 #pragma once
 
-#include <limits>
 #include <cstdlib>
-#include "common/core/logging.h"
+#include <limits>
 
+#include "common/core/logging.h"
 
 // TODO (lc 02-16-2022) We should refactor the fixed point
 // helper functions such that they live in a shared location.
@@ -71,7 +71,9 @@ constexpr float MAX_CAPDAC_PF =
 // Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
 constexpr std::size_t CONVERSION_BITS = 24;
 constexpr float MAX_MEASUREMENT_PF = 15;
-constexpr float MAX_RAW_MEASUREMENT = float(std::numeric_limits<int32_t>::max() >> (sizeof(uint32_t) * 8) - CONVERSION_BITS);
+constexpr float MAX_RAW_MEASUREMENT =
+    float(std::numeric_limits<int32_t>::max() >>
+          (sizeof(uint32_t) * 8) - CONVERSION_BITS);
 //    float(std::numeric_limits<int32_t>::max() >> 8);
 //          ((sizeof(uint32_t) * 8) - CONVERSION_BITS));
 
