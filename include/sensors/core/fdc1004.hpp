@@ -73,9 +73,7 @@ constexpr std::size_t CONVERSION_BITS = 24;
 constexpr float MAX_MEASUREMENT_PF = 15;
 constexpr float MAX_RAW_MEASUREMENT =
     float(std::numeric_limits<int32_t>::max() >>
-          (sizeof(uint32_t) * 8) - CONVERSION_BITS);
-//    float(std::numeric_limits<int32_t>::max() >> 8);
-//          ((sizeof(uint32_t) * 8) - CONVERSION_BITS));
+          ((sizeof(uint32_t) * 8) - CONVERSION_BITS));
 
 // Because we're doing big gantry moves, we'll probably have to handle
 // the parasitic capacitance of the system shifting around a lot. We'll
