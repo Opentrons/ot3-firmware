@@ -30,6 +30,7 @@ enum class MessageId {
     gripper_info_response = 0x308,
     set_serial_number = 0x30a,
     stop_request = 0x0,
+    error_message = 0x2,
     get_status_request = 0x1,
     get_status_response = 0x5,
     enable_motor_request = 0x6,
@@ -124,6 +125,13 @@ enum class ErrorCode {
     invalid_byte_count = 0x3,
     invalid_input = 0x4,
     hardware = 0x5,
+};
+
+/** Error Severity levels */
+enum class ErrorSeverity {
+    warning = 0x1,
+    recoverable = 0x2,
+    unrecoverable = 0x3, 
 };
 
 /** Tool types detected on Head. */

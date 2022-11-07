@@ -73,6 +73,36 @@ static auto add_resp_ind(Resposne& resp, const Request& req) -> void {
     resp.message_index = req.message_index;
 }
 
+struct ErrorMessage : BaseMessage<MessageId::error_message> {
+    uint32_t message_index;
+    uint16_t severity;
+    uint16_t error_code;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(severity, iter, limit);
+        iter = bit_utils::int_to_bytes(error_code, iter, limit);
+        return iter - body;
+    }
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ErrorMessage {
+        uint32_t message_index = 0;
+        uint16_t severity = 0;
+        uint16_t error_code = 0;
+        body = bit_utils::bytes_to_int(body, limit, message_index);
+        body = bit_utils::bytes_to_int(body, limit, severity);
+        body = bit_utils::bytes_to_int(body, limit, error_code);
+
+        return ErrorMessage{.message_index = message_index,
+                            .severity = severity,
+                            .error_code = error_code};
+    }
+
+    auto operator==(const ErrorMessage& other) const -> bool = default;
+};
+
 using HeartbeatRequest = Empty<MessageId::heartbeat_request>;
 
 using HeartbeatResponse = Empty<MessageId::heartbeat_response>;
@@ -1236,7 +1266,7 @@ using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
  */
 
 using ResponseMessageType = std::variant<
-    Acknowledgment, HeartbeatResponse, DeviceInfoResponse, GetMotionConstraintsResponse,
+    Acknowledgment, HeartbeatResponse, ErrorMessage, DeviceInfoResponse, GetMotionConstraintsResponse,
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
