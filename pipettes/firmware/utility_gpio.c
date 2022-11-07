@@ -77,6 +77,28 @@ void limit_switch_gpio_init() {
     }
 }
 
+void encoder_gpio_init() {
+    /* Peripheral clock enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __GPIOA_CLK_ENABLE();
+    __GPIOC_CLK_ENABLE();
+    __HAL_RCC_TIM2_CLK_ENABLE();
+    /* Encoder P Axis GPIO Configuration
+    PA0     ------> CHANNEL B ----> GPIO_PIN_0
+    PA1     ------> CHANNEL A ----> GPIO_PIN_1
+     On EVT hardware, this is the same for single and 96 channel main boards.
+    */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+}
+
 /**
  * @brief LED GPIO Initialization Function
  * @param None
@@ -168,4 +190,5 @@ void utility_gpio_init() {
     LED_drive_gpio_init();
     sync_drive_gpio_init();
     data_ready_gpio_init();
+    encoder_gpio_init();
 }
