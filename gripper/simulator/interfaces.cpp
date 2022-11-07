@@ -57,16 +57,17 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
         .v_sf = 0.325,
     }};
 
-/**
- * The motor struct.
- */
-static motor_class::Motor motor{
+static auto z_motor_sys_config =
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
         .microstep = 16,
-        .encoder_pulses_per_rev = 1000},
-    motor_interface,
+        .encoder_pulses_per_rev = 1000};
+/**
+ * The motor struct.
+ */
+static motor_class::Motor motor{
+    z_motor_sys_config, motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
@@ -102,7 +103,9 @@ static auto grip_motor = brushed_motor::BrushedMotor(
     brushed_motor_hardware_iface, brushed_motor_driver_iface,
     brushed_motor_queue);
 
-void z_motor_iface::initialize(){};
+void z_motor_iface::initialize() {
+    motor_interface.provide_mech_config(z_motor_sys_config);
+};
 
 void grip_motor_iface::initialize(){};
 

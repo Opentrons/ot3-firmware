@@ -212,6 +212,11 @@ uint32_t temporary_serial_number(const PipetteType pipette_type) {
     -> void {
     hardware.left.provide_state_manager(state_manager_connection);
     hardware.right.provide_state_manager(state_manager_connection);
+    hardware.left.provide_mech_config(configs::linear_motion_sys_config_by_axis(
+        PipetteType::NINETY_SIX_CHANNEL));
+    hardware.right.provide_mech_config(
+        configs::linear_motion_sys_config_by_axis(
+            PipetteType::NINETY_SIX_CHANNEL));
 }
 
 int main(int argc, char** argv) {
@@ -235,6 +240,8 @@ int main(int argc, char** argv) {
         node == can::ids::NodeId::pipette_left ? MoveMessageHardware::z_l
                                                : MoveMessageHardware::z_r);
     linear_motor_hardware.provide_state_manager(state_manager_connection);
+    linear_motor_hardware.provide_mech_config(
+        linear_motion_control.get_mechanical_config());
     provide_state(gear_hardware, state_manager_connection);
 
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
