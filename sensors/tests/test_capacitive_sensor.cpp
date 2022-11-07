@@ -524,7 +524,7 @@ SCENARIO("threshold configuration") {
                     sensor.handle_message(final_response_b);
                     THEN("the threshold is set to the proper value") {
                         REQUIRE(sensor.capacitance_handler.get_threshold() ==
-                                Approx(15.1875).epsilon(1e-4));
+                                Approx(15.375).epsilon(1e-4));
                     }
                     THEN(
                         "a message is sent on can informing that the threshold "
@@ -539,7 +539,7 @@ SCENARIO("threshold configuration") {
                         float check_data = signed_fixed_point_to_float(
                             response_msg.threshold, S15Q16_RADIX);
                         // the average value + 1
-                        float expected = 15.1875;
+                        float expected = 15.375;
                         REQUIRE(check_data == Approx(expected).epsilon(1e-4));
                         REQUIRE(response_msg.mode ==
                                 can::ids::SensorThresholdMode::auto_baseline);
@@ -573,7 +573,7 @@ SCENARIO("threshold configuration") {
                         can::ids::SensorThresholdMode::absolute);
             }
             THEN("the sensor's threshold should be set") {
-                REQUIRE(sensor.capacitance_handler.get_threshold() == 5);
+                REQUIRE(sensor.capacitance_handler.get_threshold() == 10);
             }
         }
     }
