@@ -104,9 +104,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     } else if ((htim == &htim6) && gear_callback) {
         gear_callback();
     } else if ((htim == &htim2) && encoder_callback) {
-    uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
-    encoder_callback(direction ? -1 : 1);
-    __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        encoder_callback(direction ? -1 : 1);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }
 

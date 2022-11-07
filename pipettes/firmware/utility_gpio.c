@@ -78,8 +78,6 @@ void limit_switch_gpio_init() {
 }
 
 void encoder_gpio_init() {
-//    PipetteType pipette_type = get_pipette_type();
-
     /* Peripheral clock enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -89,6 +87,7 @@ void encoder_gpio_init() {
     /* Encoder P Axis GPIO Configuration
     PA0     ------> CHANNEL B ----> GPIO_PIN_0
     PA1     ------> CHANNEL A ----> GPIO_PIN_1
+     On EVT hardware, this is the same for single and 96 channel main boards.
     */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
@@ -97,12 +96,6 @@ void encoder_gpio_init() {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    /*Encoder P Axis Index Pin Configuration
-    PA5    ------> CHANNEL I -----> SINGLE_CHANNEL/EIGHT_CHANNEL
-    PA7    ------> CHANNEL I -----> NINETY_SIX_CHANNEL/THREE_EIGHTY_FOUR_CHANNEL
-    * The Encoder Index Pin is routed to different GPIO pins
-    * depending on the pipette type.
-    */
 
 }
 

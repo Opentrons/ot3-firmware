@@ -20,7 +20,8 @@
  * (CM, 11/3/2022)
  * This file exists in addition to interfaces.hpp to accommodate the l5 firmware
  * after the changes in the enable-pipette-encoder-output branch. interfaces.hpp
- * can be deleted with the l5 firmware.
+ * can be deleted with the l5 firmware, at which point this should be renamed
+ * to interfaces.hpp.
  *
  * */
 
