@@ -62,7 +62,7 @@ static auto z_motor_sys_config =
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
         .steps_per_rev = 200,
         .microstep = 16,
-        .encoder_pulses_per_rev = 1000};
+        .encoder_pulses_per_rev = 0};
 /**
  * The motor struct.
  */
