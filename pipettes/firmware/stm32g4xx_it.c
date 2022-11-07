@@ -47,6 +47,7 @@ DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim2;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -143,6 +144,8 @@ void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(can_get_device_handle())
  * @brief This function handles TIM7 global interrupt.
  */
 void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
+
+void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
 /**
  * @brief This function handles TIM6 global interrupt.

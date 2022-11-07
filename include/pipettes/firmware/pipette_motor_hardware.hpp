@@ -42,11 +42,13 @@ class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
     auto check_tip_sense() -> bool final;
+    void encoder_overflow(int32_t direction);
 
   private:
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
+    int32_t encoder_overflow_count = 0;
 };
 
 };  // namespace pipette_motor_hardware
