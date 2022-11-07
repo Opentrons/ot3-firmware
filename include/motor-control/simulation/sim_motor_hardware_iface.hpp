@@ -67,11 +67,14 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
 
     template <MotionSystemConfig MSC>
     void provide_mech_config(const MSC &config) {
+        // Exists to match the firmware's interrupt scheme
+        static constexpr float encoder_extra_factor = 4.0;
         if (config.steps_per_rev == 0 || config.microstep == 0) {
             _encoder_ticks_per_pulse = 0;
         } else {
             _encoder_ticks_per_pulse =
-                config.encoder_pulses_per_rev /
+                static_cast<float>(config.encoder_pulses_per_rev *
+                                   encoder_extra_factor) /
                 (config.steps_per_rev * config.microstep);
         }
     }
