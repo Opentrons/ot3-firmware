@@ -46,9 +46,9 @@ struct ReadCapacitanceCallback {
             convert_reads(polling_results[0], polling_results[1]), 1,
             current_offset_pf);
         // TODO (lc 1-2-2022) we should figure out a better strategy for
-        // adjusting the capdac. I am leaving this commented out as a reminder.
-        //        auto new_offset = update_offset(capacitance,
-        //        current_offset_pf); set_offset(new_offset);
+        // adjusting the capdac.
+        auto new_offset = update_offset(capacitance, current_offset_pf);
+        set_offset(new_offset);
         if (bind_sync) {
             if (capacitance > zero_threshold_pf) {
                 hardware.set_sync();
@@ -62,7 +62,8 @@ struct ReadCapacitanceCallback {
                 can::messages::ReadFromSensorResponse{
                     .sensor = can::ids::SensorType::capacitive,
                     .sensor_id = sensor_id,
-                    .sensor_data = convert_to_fixed_point(capacitance, 16)});
+                    .sensor_data =
+                        convert_to_fixed_point(capacitance, S15Q16_RADIX)});
         }
     }
 
@@ -88,13 +89,14 @@ struct ReadCapacitanceCallback {
             auto message = can::messages::ReadFromSensorResponse{
                 .sensor = SensorType::capacitive,
                 .sensor_id = sensor_id,
-                .sensor_data = convert_to_fixed_point(capacitance, 16)};
+                .sensor_data =
+                    convert_to_fixed_point(capacitance, S15Q16_RADIX)};
             can_client.send_can_message(can::ids::NodeId::host, message);
         }
         // TODO (lc 1-2-2022) we should figure out a better strategy for
-        // adjusting the capdac. I am leaving this commented out as a reminder.
-        //        auto new_offset = update_offset(capacitance,
-        //        current_offset_pf); set_offset(new_offset);
+        // adjusting the capdac.
+        auto new_offset = update_offset(capacitance, current_offset_pf);
+        set_offset(new_offset);
     }
 
     void reset_limited() {
@@ -144,7 +146,8 @@ struct ReadCapacitanceCallback {
         auto message = can::messages::SensorThresholdResponse{
             .sensor = SensorType::capacitive,
             .sensor_id = sensor_id,
-            .threshold = convert_to_fixed_point(zero_threshold_pf, 16),
+            .threshold =
+                convert_to_fixed_point(zero_threshold_pf, S15Q16_RADIX),
             .mode = from_mode};
         can_client.send_can_message(can::ids::NodeId::host, message);
     }
