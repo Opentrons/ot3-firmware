@@ -19,7 +19,7 @@ SCENARIO("Writing data revision") {
         auto data_rev_data = data_revision::DataRevisionType{1, 2};
 
         WHEN("the writing data revision") {
-            subject.write(data_rev_data);
+            subject.write(data_rev_data, 1234);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -40,6 +40,7 @@ SCENARIO("Writing data revision") {
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
+                    REQUIRE(write_message.message_index == 1234);
                     REQUIRE(write_message.memory_address ==
                             addresses::data_revision_address_begin +
                                 (i * types::max_data_length));
@@ -64,7 +65,7 @@ SCENARIO("Reading data revision") {
 
     GIVEN("A request to read the data revision") {
         WHEN("reading the data revision") {
-            subject.start_read();
+            subject.start_read(1234);
 
             THEN("there is an eeprom read") {
                 REQUIRE(
@@ -92,13 +93,14 @@ SCENARIO("Reading data revision") {
                                 (i * types::max_data_length));
                     REQUIRE(read_message.length == expected_bytes);
                     REQUIRE(read_message.callback_param == &subject);
+                    REQUIRE(read_message.message_index == 1234);
                 }
             }
         }
     }
 
     GIVEN("A request to read the data revision") {
-        subject.start_read();
+        subject.start_read(1234);
 
         WHEN("the read completes") {
             auto data_rev_data = data_revision::DataRevisionType{2, 4};
@@ -125,7 +127,8 @@ SCENARIO("Reading data revision") {
                     data_rev_data.cbegin() + (i * types::max_data_length),
                     num_bytes, data.begin());
                 read_message.callback(
-                    {.memory_address = read_message.memory_address,
+                    {.message_index = read_message.message_index,
+                     .memory_address = read_message.memory_address,
                      .length = num_bytes,
                      .data = data},
                     read_message.callback_param);

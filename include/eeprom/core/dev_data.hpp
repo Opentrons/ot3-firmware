@@ -56,6 +56,7 @@ class DevDataTailAccessor
         amount_to_read = std::min(bytes_remain, types::max_data_length);
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{
+                .message_index = 0,
                 .memory_address = read_addr,
                 .length = amount_to_read,
                 .callback = increase_tail_callback,
@@ -84,7 +85,7 @@ class DevDataTailAccessor
         std::ignore = bit_utils::int_to_bytes(
             current_data_length, new_data_length.begin(),
             new_data_length.begin() + addresses::lookup_table_tail_length);
-        this->write(new_data_length);
+        this->write(new_data_length, 0);
     }
 
     /**
@@ -132,7 +133,7 @@ class DevDataAccessor
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())),
           tail_accessor{DevDataTailAccessor<EEPromTaskClient>(
               eeprom_client, *this, data_tail_buff)} {
-        tail_accessor.start_read();
+        tail_accessor.start_read(0);
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
     }
@@ -178,7 +179,8 @@ class DevDataAccessor
         write_data(key, data.size(), 0, data);
     }
 
-    void get_data(uint16_t key, uint16_t len, uint16_t offset) {
+    void get_data(uint16_t key, uint16_t len, uint16_t offset,
+                  uint32_t message_index) {
         if (tail_updated && config_updated) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > data_tail) {
@@ -193,14 +195,19 @@ class DevDataAccessor
             // call a read to the table entry so we know where
             // to read the data
             this->eeprom_client.send_eeprom_queue(message::ReadEepromMessage{
+                .message_index = message_index,
                 .memory_address = table_location,
                 .length = static_cast<types::data_length>(2 * conf.addr_bytes),
                 .callback = table_action_callback,
                 .callback_param = this});
         }
     }
-    void get_data(uint16_t key, uint16_t len) { get_data(key, len, 0); }
-    void get_data(uint16_t key) { get_data(key, 0, 0); }
+    void get_data(uint16_t key, uint16_t len, uint32_t message_index) {
+        get_data(key, len, 0, message_index);
+    }
+    void get_data(uint16_t key, uint32_t message_index) {
+        get_data(key, 0, 0, message_index);
+    }
 
     template <std::size_t SIZE>
     void create_data_part(uint16_t key, uint16_t len,
@@ -234,7 +241,7 @@ class DevDataAccessor
                     }
                     this->write_at_offset(
                         accessor::AccessorBuffer(data.begin(), data.end()),
-                        new_ptr, len);
+                        new_ptr, len, 0);
                 }
             } else {
                 action_cmd_m =
@@ -272,7 +279,10 @@ class DevDataAccessor
         create_data_part(key, len, dummy);
     }
 
-    void read_complete() {
+    void read_complete(uint32_t message_index) {
+        // we don't need message_index since this is an internal call
+        // and not initatied from a can message
+        std::ignore = message_index;
         // test for non 0x00 elements
         if (data_tail_buff.end() ==
             std::find(data_tail_buff.begin(), data_tail_buff.end(), true)) {
@@ -280,7 +290,7 @@ class DevDataAccessor
             std::ignore = bit_utils::int_to_bytes(
                 addresses::data_address_begin, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);
-            tail_accessor.write(init_tail);
+            tail_accessor.write(init_tail, 0);
             data_tail = addresses::data_address_begin;
         } else {
             std::ignore = bit_utils::bytes_to_int(
@@ -359,7 +369,7 @@ class DevDataAccessor
                     if (do_initalize) {
                         this->write_at_offset(this->type_data,
                                               data_addr - action_cmd_m.len,
-                                              data_addr);
+                                              data_addr, m.message_index);
                     }
                 }
                 break;
@@ -370,12 +380,14 @@ class DevDataAccessor
                 if (action_cmd_m.len != 0) {
                     data_len = action_cmd_m.len;
                 }
-                this->start_read_at_offset(data_addr, data_addr + data_len);
+                this->start_read_at_offset(data_addr, data_addr + data_len,
+                                           m.message_index);
                 break;
             case TableAction::WRITE:
                 data_addr += action_cmd_m.offset;
                 this->write_at_offset(this->type_data, data_addr,
-                                      data_addr + action_cmd_m.len);
+                                      data_addr + action_cmd_m.len,
+                                      m.message_index);
                 break;
         }
     }

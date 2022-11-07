@@ -63,6 +63,7 @@ class EEPromMessageHandler {
                 std::copy_n(m.read_buffer.cbegin(),
                             std::min(m.bytes_read, data.size()), data.begin());
                 auto v = message::EepromMessage{
+                    .message_index = read_message.message_index,
                     .memory_address = read_message.memory_address,
                     .length = static_cast<types::data_length>(m.bytes_read),
                     .data = data};
@@ -128,6 +129,7 @@ class EEPromMessageHandler {
             iter);
         // A write transaction.
         auto transaction = i2c::messages::Transaction{
+            .message_index = m.message_index,
             .address = hardware_iface::get_i2c_device_address(
                 hw_iface.get_eeprom_chip_type()),
             .bytes_to_read = 0,
@@ -188,6 +190,7 @@ class EEPromMessageHandler {
             m.memory_address, iter, (iter + hw_iface.get_eeprom_addr_bytes()));
 
         auto transaction = i2c::messages::Transaction{
+            .message_index = m.message_index,
             .address = hardware_iface::get_i2c_device_address(
                 hw_iface.get_eeprom_chip_type()),
             .bytes_to_read = m.length,

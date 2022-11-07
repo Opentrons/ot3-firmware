@@ -44,7 +44,7 @@ class ReadListener {
     auto operator=(ReadListener&&) noexcept -> ReadListener& = default;
 
     virtual ~ReadListener() = default;
-    virtual void read_complete() = 0;
+    virtual void read_complete(uint32_t message_index) = 0;
 };
 
 /**
@@ -73,20 +73,25 @@ class EEPromAccessor {
     /**
      * Begin a read of the data
      */
-    auto start_read() -> void { start_read_at_offset(0, type_data.size()); }
+    auto start_read(uint32_t message_index) -> void {
+        start_read_at_offset(0, type_data.size(), message_index);
+    }
 
     /**
      * Write data to eeprom
      */
-    auto write(const AccessorBuffer& type_value) -> void {
-        write_at_offset(type_value, 0, type_data.size());
+    auto write(const AccessorBuffer& type_value, uint32_t message_index)
+        -> void {
+        write_at_offset(type_value, 0, type_data.size(), message_index);
     }
     /**
      * Overload to write to preserve functionality
      */
     template <std::size_t SIZE>
-    auto write(std::array<uint8_t, SIZE>& type_value) -> void {
-        write(AccessorBuffer(type_value.begin(), type_value.end()));
+    auto write(std::array<uint8_t, SIZE>& type_value, uint32_t message_index)
+        -> void {
+        write(AccessorBuffer(type_value.begin(), type_value.end()),
+              message_index);
     }
 
   protected:
@@ -99,7 +104,8 @@ class EEPromAccessor {
      * Write data to eeprom at a specified offset
      */
     auto write_at_offset(const AccessorBuffer& data, types::data_length offset,
-                         types::data_length limit_offset) -> void {
+                         types::data_length limit_offset,
+                         uint32_t message_index) -> void {
         types::data_length amount_to_write = 0;
         types::data_length write_remain = limit_offset - offset;
         auto write = types::EepromData{};
@@ -112,6 +118,7 @@ class EEPromAccessor {
 
             std::copy_n(type_iter, amount_to_write, write.begin());
             eeprom_client.send_eeprom_queue(eeprom::message::WriteEepromMessage{
+                .message_index = message_index,
                 .memory_address = write_addr,
                 .length = amount_to_write,
                 .data = write});
@@ -127,7 +134,8 @@ class EEPromAccessor {
      * Begin a read of the data at a specified offset
      */
     auto start_read_at_offset(types::data_length offset,
-                              types::data_length limit_offset) -> void {
+                              types::data_length limit_offset,
+                              uint32_t message_index) -> void {
         // reset bytes_recieved to 0 so the response handler knows how much data
         // to wait for
         bytes_recieved = 0;
@@ -144,11 +152,12 @@ class EEPromAccessor {
 
         while (bytes_remain > 0) {
             amount_to_read = std::min(bytes_remain, types::max_data_length);
-            eeprom_client.send_eeprom_queue(
-                eeprom::message::ReadEepromMessage{.memory_address = read_addr,
-                                                   .length = amount_to_read,
-                                                   .callback = callback,
-                                                   .callback_param = this});
+            eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
+                .message_index = message_index,
+                .memory_address = read_addr,
+                .length = amount_to_read,
+                .callback = callback,
+                .callback_param = this});
             bytes_remain -= amount_to_read;
             read_addr += amount_to_read;
         }
@@ -166,7 +175,7 @@ class EEPromAccessor {
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
         if (bytes_recieved == bytes_to_read) {
-            read_listener.read_complete();
+            read_listener.read_complete(msg.message_index);
         }
     }
 

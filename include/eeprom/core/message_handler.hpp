@@ -38,10 +38,13 @@ class EEPromHandler {
      */
     void visit(can::messages::WriteToEEPromRequest &can_msg) {
         auto msg = eeprom::message::WriteEepromMessage{
+            .message_index = can_msg.message_index,
             .memory_address = can_msg.address,
             .length = can_msg.data_length,
             .data{can_msg.data}};
         client.send_eeprom_queue(msg);
+        client.send_can_message(can::ids::NodeId::host,
+                                can::messages::ack_from_request(can_msg));
     }
 
     /**
@@ -50,6 +53,7 @@ class EEPromHandler {
      */
     void visit(can::messages::ReadFromEEPromRequest &can_msg) {
         auto msg = eeprom::message::ReadEepromMessage{
+            .message_index = can_msg.message_index,
             .memory_address = can_msg.address,
             .length = can_msg.data_length,
             .callback = callback,
@@ -68,7 +72,7 @@ class EEPromHandler {
             reinterpret_cast<EEPromHandler<EEPromTaskClient, CanClient> *>(
                 param);
         auto message = can::messages::ReadFromEEPromResponse::create(
-            msg.memory_address, msg.data.cbegin(),
+            msg.message_index, msg.memory_address, msg.data.cbegin(),
             msg.data.cbegin() + msg.length);
         self->can_client.send_can_message(can::ids::NodeId::host, message);
     }

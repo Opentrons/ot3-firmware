@@ -85,13 +85,14 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
      * A serial number read has completed.
      * @param sn The serial number.
      */
-    void read_complete() final {
+    void read_complete(uint32_t message_index) final {
         std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
         std::copy_n(sn_accessor_backing.begin(),
                     eeprom::addresses::serial_number_length, serial.begin());
         writer.send_can_message(
             can::ids::NodeId::host,
             can::messages::PipetteInfoResponse{
+                .message_index = message_index,
                 .name = get_name(sn_accessor_backing),
                 .model = get_model(sn_accessor_backing),
                 .serial = get_data_code(sn_accessor_backing)});
@@ -103,10 +104,10 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
     /**
      * Handle a request to get instrument info.
      */
-    void visit(const InstrumentInfoRequest &) {
+    void visit(const InstrumentInfoRequest &m) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
-        serial_number_accessor.start_read();
+        serial_number_accessor.start_read(m.message_index);
     }
 
     /**
@@ -116,7 +117,9 @@ class PipetteInfoMessageHandler : eeprom::accessor::ReadListener {
     void visit(const SetSerialNumber &m) {
         std::copy_n(m.serial.begin(), sn_accessor_backing.size(),
                     sn_accessor_backing.begin());
-        serial_number_accessor.write(sn_accessor_backing);
+        serial_number_accessor.write(sn_accessor_backing, m.message_index);
+        writer.send_can_message(can::ids::NodeId::host,
+                                can::messages::ack_from_request(m));
     }
 
     CanClient &writer;

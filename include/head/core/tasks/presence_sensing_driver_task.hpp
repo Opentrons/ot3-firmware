@@ -45,7 +45,7 @@ class PresenceSensingDriverMessageHandler {
   private:
     void visit(std::monostate&) {}
 
-    void visit(can::messages::ReadPresenceSensingVoltageRequest&) {
+    void visit(can::messages::ReadPresenceSensingVoltageRequest& m) {
         auto voltage_read = driver.get_readings();
 
         LOG("Received read presence sensing voltage request: z=%d, a=%d, "
@@ -53,6 +53,7 @@ class PresenceSensingDriverMessageHandler {
             voltage_read.z_motor, voltage_read.a_motor, voltage_read.gripper);
 
         can::messages::ReadPresenceSensingVoltageResponse resp{
+            .message_index = m.message_index,
             .z_motor = voltage_read.z_motor,
             .a_motor = voltage_read.a_motor,
             .gripper = voltage_read.gripper,
@@ -60,13 +61,14 @@ class PresenceSensingDriverMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
-    void visit(can::messages::AttachedToolsRequest&) {
+    void visit(can::messages::AttachedToolsRequest& m) {
         LOG("Received attached tools request");
         auto tools = driver.update_tools();
         auto new_tools = tools.second;
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::PushToolsDetectedNotification{
+                .message_index = m.message_index,
                 .z_motor = (new_tools.z_motor),
                 .a_motor = (new_tools.a_motor),
                 .gripper = (new_tools.gripper),
@@ -81,6 +83,8 @@ class PresenceSensingDriverMessageHandler {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::PushToolsDetectedNotification{
+                    // 0 message index to indicate async message
+                    .message_index = 0,
                     .z_motor = (new_tools.z_motor),
                     .a_motor = (new_tools.a_motor),
                     .gripper = (new_tools.gripper),

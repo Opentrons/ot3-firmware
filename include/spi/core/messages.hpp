@@ -19,6 +19,7 @@ struct TransactionIdentifier {
     uint32_t token;
     uint8_t command_type;
     bool requires_response;
+    uint32_t message_index;
 
     auto operator==(const TransactionIdentifier& other) const -> bool = default;
 };

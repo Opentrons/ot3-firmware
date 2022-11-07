@@ -68,7 +68,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
      * A serial number read has completed.
      * @param sn Serial number
      */
-    void read_complete() final {
+    void read_complete(uint32_t message_index) final {
         // TODO (al, 2022-05-19): Define model.
         std::array<uint8_t, eeprom::addresses::serial_number_length> serial{};
         std::copy_n(sn_accessor_backing.begin(),
@@ -76,6 +76,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         writer.send_can_message(
             can::ids::NodeId::host,
             GripperInfoResponse{
+                .message_index = message_index,
                 .model = get_gripper_model(sn_accessor_backing),
                 .serial = get_gripper_data_code(sn_accessor_backing)});
     }
@@ -86,7 +87,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
     /**
      * Handle request for instrument info.
      */
-    void visit(const InstrumentInfoRequest &) {
+    void visit(const InstrumentInfoRequest &m) {
         // Start a serial number read. Respond with CAN message when read
         // completes.
         // serial_number_accessor.start_read();
@@ -98,6 +99,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         writer.send_can_message(
             can::ids::NodeId::host,
             GripperInfoResponse{
+                .message_index = m.message_index,
                 .model = 0x0001,
                 .serial = eeprom::serial_number::SerialDataCodeType{
                     '2', '0', '2', '2', '1', '1', '1', '5', 'A', '0', '1'}});
@@ -110,7 +112,9 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
     void visit(const SetSerialNumber &m) {
         std::copy_n(m.serial.begin(), sn_accessor_backing.size(),
                     sn_accessor_backing.begin());
-        serial_number_accessor.write(sn_accessor_backing);
+        serial_number_accessor.write(sn_accessor_backing, m.message_index);
+        writer.send_can_message(can::ids::NodeId::host,
+                                can::messages::ack_from_request(m));
     }
 
     CanClient &writer;

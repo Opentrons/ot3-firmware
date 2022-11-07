@@ -18,7 +18,7 @@ SCENARIO("Writing revision") {
         auto rev_data = revision::RevisionType{0, 1, 2, 3};
 
         WHEN("the writing revision") {
-            subject.write(rev_data);
+            subject.write(rev_data, 1234);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -38,6 +38,7 @@ SCENARIO("Writing revision") {
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
+                    REQUIRE(write_message.message_index == 1234);
                     REQUIRE(write_message.memory_address ==
                             addresses::revision_address_begin +
                                 (i * types::max_data_length));
@@ -62,7 +63,7 @@ SCENARIO("Reading revision") {
 
     GIVEN("A request to read the revision") {
         WHEN("reading the revision") {
-            subject.start_read();
+            subject.start_read(1234);
 
             THEN("there is an eeprom read") {
                 REQUIRE(
@@ -89,13 +90,14 @@ SCENARIO("Reading revision") {
                                 (i * types::max_data_length));
                     REQUIRE(read_message.length == expected_bytes);
                     REQUIRE(read_message.callback_param == &subject);
+                    REQUIRE(read_message.message_index == 1234);
                 }
             }
         }
     }
 
     GIVEN("A request to read the revision") {
-        subject.start_read();
+        subject.start_read(1234);
 
         WHEN("the read completes") {
             rev_buffer.fill(0x00);
@@ -123,6 +125,7 @@ SCENARIO("Reading revision") {
 
                 read_message.callback(
                     message::EepromMessage{
+                        .message_index = read_message.message_index,
                         .memory_address = read_message.memory_address,
                         .length = num_bytes,
                         .data = data},

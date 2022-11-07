@@ -49,7 +49,8 @@ SCENARIO("Test the spi command queue writer") {
     GIVEN("a read request") {
         constexpr uint8_t TEST_REGISTER = 0x1;
         WHEN("we receive a read request") {
-            writer.read(TEST_REGISTER, 0x0, response_queue, empty_cs);
+            writer.read(TEST_REGISTER, 0x0, response_queue, empty_cs,
+                        0xdeadbeef);
             THEN("the queue should contain one message") {
                 REQUIRE(queue.get_size() == 2);
             }
@@ -69,12 +70,16 @@ SCENARIO("Test the spi command queue writer") {
                 AND_WHEN("we try and write a response") {
                     std::array check_buf{u8(1), u8(2), u8(3), u8(4), u8(5)};
                     response_msg.response_writer.write(
-                        spi::messages::TransactResponse{.id = {.token = 25},
-                                                        .rxBuffer = check_buf,
-                                                        .success = true});
+                        spi::messages::TransactResponse{
+                            .id = {.token = 25,
+                                   .message_index =
+                                       response_msg.id.message_index},
+                            .rxBuffer = check_buf,
+                            .success = true});
                     auto resp = test_mocks::get_response(response_queue);
                     THEN("the response is correct") {
                         REQUIRE(resp.id.token == 25);
+                        REQUIRE(resp.id.message_index == 0xdeadbeef);
                         REQUIRE(resp.success == true);
                         REQUIRE(resp.rxBuffer == check_buf);
                     }
