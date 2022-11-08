@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <memory>
 
 #include "common/core/freertos_synchronization.hpp"
@@ -14,6 +15,13 @@ using StateManager = state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>;
 using StateManagerHandle = std::shared_ptr<StateManager>;
 
+template <typename MSC>
+concept MotionSystemConfig = requires(MSC msc) {
+    std::is_arithmetic_v<decltype(msc.steps_per_rev)>
+        &&std::is_arithmetic_v<decltype(msc.microstep)>
+            &&std::is_arithmetic_v<decltype(msc.encoder_pulses_per_rev)>;
+};
+
 class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
   public:
     SimMotorHardwareIface(MoveMessageHardware id)
@@ -22,6 +30,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         if (_state_manager) {
             _state_manager->send_move_msg(_id, _direction);
         }
+        test_pulses += (_direction == Direction::POSITIVE) ? 1 : -1;
     }
     void unstep() final {}
     void positive_direction() final { _direction = Direction::POSITIVE; }
@@ -46,13 +55,28 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         return true;
     }
     void reset_encoder_pulses() final { test_pulses = 0; }
-    int32_t get_encoder_pulses() final { return test_pulses; }
-    void sim_set_encoder_pulses(uint32_t pulses) { test_pulses = pulses; }
+    int32_t get_encoder_pulses() final {
+        return static_cast<int32_t>(test_pulses * _encoder_ticks_per_pulse);
+    }
 
     void change_hardware_id(MoveMessageHardware id) { _id = id; }
 
     void provide_state_manager(StateManagerHandle handle) {
         _state_manager = handle;
+    }
+
+    template <MotionSystemConfig MSC>
+    void provide_mech_config(const MSC &config) {
+        // Exists to match the firmware's interrupt scheme
+        static constexpr float encoder_extra_factor = 4.0;
+        if (config.steps_per_rev == 0 || config.microstep == 0) {
+            _encoder_ticks_per_pulse = 0;
+        } else {
+            _encoder_ticks_per_pulse =
+                static_cast<float>(config.encoder_pulses_per_rev *
+                                   encoder_extra_factor) /
+                (config.steps_per_rev * config.microstep);
+        }
     }
 
   private:
@@ -61,6 +85,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     MoveMessageHardware _id;
     StateManagerHandle _state_manager = nullptr;
     Direction _direction = Direction::POSITIVE;
+    float _encoder_ticks_per_pulse = 0;
 };
 
 class SimBrushedMotorHardwareIface
@@ -90,7 +115,6 @@ class SimBrushedMotorHardwareIface
     }
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return 0; }
-    void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
 
     double update_control(int32_t encoder_error) {
         return controller_loop.compute(encoder_error);
@@ -115,10 +139,12 @@ class SimBrushedMotorHardwareIface
 class SimGearMotorHardwareIface
     : public motor_hardware::PipetteStepperMotorHardwareIface {
   public:
-    void step() final {}
+    void step() final {
+        test_pulses += (_direction == Direction::POSITIVE) ? 1 : -1;
+    }
     void unstep() final {}
-    void positive_direction() final {}
-    void negative_direction() final {}
+    void positive_direction() final { _direction = Direction::POSITIVE; }
+    void negative_direction() final { _direction = Direction::NEGATIVE; }
     void activate_motor() final {}
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
@@ -146,12 +172,24 @@ class SimGearMotorHardwareIface
         return true;
     }
     void reset_encoder_pulses() final { test_pulses = 0; }
-    int32_t get_encoder_pulses() final { return test_pulses; }
-    void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
+    int32_t get_encoder_pulses() final {
+        return static_cast<int32_t>(test_pulses * _encoder_ticks_per_pulse);
+    }
     void trigger_tip_sense() { tip_sense_status = true; }
 
     void provide_state_manager(StateManagerHandle handle) {
         _state_manager = handle;
+    }
+
+    template <MotionSystemConfig MSC>
+    void provide_mech_config(const MSC &config) {
+        if (config.steps_per_rev == 0 || config.microstep == 0) {
+            _encoder_ticks_per_pulse = 0;
+        } else {
+            _encoder_ticks_per_pulse =
+                config.encoder_pulses_per_rev /
+                (config.steps_per_rev * config.microstep);
+        }
     }
 
   private:
@@ -159,6 +197,8 @@ class SimGearMotorHardwareIface
     bool tip_sense_status = false;
     int32_t test_pulses = 0;
     StateManagerHandle _state_manager = nullptr;
+    Direction _direction = Direction::POSITIVE;
+    float _encoder_ticks_per_pulse = 0;
 };
 
 }  // namespace sim_motor_hardware_iface
