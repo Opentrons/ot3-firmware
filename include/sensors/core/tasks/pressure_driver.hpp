@@ -233,7 +233,6 @@ class MMR920C04 {
     }
 
     auto sensor_callback() -> void {
-        uint32_t data = 0x0;
         writer.transact_isr(mmr920C04::ADDRESS,
                             static_cast<uint8_t>(read_register),
                             static_cast<std::size_t>(3), own_queue,
@@ -246,8 +245,7 @@ class MMR920C04 {
         }
         if (stop_polling) {
             writer.write_isr(mmr920C04::ADDRESS,
-                             static_cast<uint8_t>(mmr920C04::Registers::RESET),
-                             data);
+                             static_cast<uint8_t>(mmr920C04::Registers::RESET));
         }
     }
 
