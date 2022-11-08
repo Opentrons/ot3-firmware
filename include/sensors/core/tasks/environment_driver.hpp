@@ -104,8 +104,8 @@ class HDC3020 {
                 break;
             case hdc3020::Registers::RESET:
                 poller.continuous_single_register_poll(
-                        hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 0,
-                        own_queue, build_environment_id(reg, tags));
+                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 0,
+                    own_queue, build_environment_id(reg, tags));
             default:
                 break;
         }
