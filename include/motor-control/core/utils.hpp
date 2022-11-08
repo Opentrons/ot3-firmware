@@ -7,6 +7,8 @@
  * functions to account for different radix positions.
  */
 
+static constexpr int S15Q16_RADIX = 16;
+
 auto convert_to_fixed_point(float value, int to_radix) -> sq0_31;
 
 auto convert_to_fixed_point_64_bit(float value, int to_radix) -> sq31_31;
