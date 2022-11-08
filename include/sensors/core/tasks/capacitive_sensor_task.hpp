@@ -151,8 +151,12 @@ class CapacitiveMessageHandler {
             static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
+        auto delay = DELAY;
+        if (m.binding == static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
+            delay = 0;
+        }
         poller.continuous_multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, DELAY,
+            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, delay,
             own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
