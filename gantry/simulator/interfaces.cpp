@@ -60,16 +60,13 @@ static tmc2130::configs::TMC2130DriverConfig driver_configs{
         .GPIO_handle = 0,
     }};
 
+static auto linear_motion_sys_config = utils::linear_motion_system_config();
+
 /**
  * The motor struct.
  */
 static motor_class::Motor motor{
-    lms::LinearMotionSystemConfig<lms::BeltConfig>{
-        .mech_config = lms::BeltConfig{.pulley_diameter = 12.7},
-        .steps_per_rev = 200,
-        .microstep = 64,
-        .encoder_pulses_per_rev = 1000},
-    motor_interface,
+    linear_motion_sys_config, motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
@@ -123,6 +120,7 @@ void interfaces::initialize_sim(int argc, char** argv) {
     state_manager_task_control.start(5, "state mgr task",
                                      &state_manager_connection);
     motor_interface.provide_state_manager(state_manager_connection);
+    motor_interface.provide_mech_config(linear_motion_sys_config);
 }
 
 std::shared_ptr<can::bus::CanBus> canbus;

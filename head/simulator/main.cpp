@@ -75,13 +75,15 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_interface_right);
 
-static motor_class::Motor motor_right{
+static auto motor_sys_config =
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
         .steps_per_rev = 200,
         .microstep = 32,
-        .encoder_pulses_per_rev = 1000},
-    motor_interface_right,
+        .encoder_pulses_per_rev = 1000};
+
+static motor_class::Motor motor_right{
+    motor_sys_config, motor_interface_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
@@ -92,12 +94,7 @@ static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_interface_left);
 
 static motor_class::Motor motor_left{
-    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
-        .steps_per_rev = 200,
-        .microstep = 32,
-        .encoder_pulses_per_rev = 1000.0},
-    motor_interface_left,
+    motor_sys_config, motor_interface_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
@@ -165,6 +162,9 @@ int main(int argc, char** argv) {
 
     motor_interface_right.provide_state_manager(state_manager_connection);
     motor_interface_left.provide_state_manager(state_manager_connection);
+
+    motor_interface_right.provide_mech_config(motor_sys_config);
+    motor_interface_left.provide_mech_config(motor_sys_config);
 
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
