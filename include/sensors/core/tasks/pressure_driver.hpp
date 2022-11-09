@@ -179,7 +179,8 @@ class MMR920C04 {
             convert_to_fixed_point(pressure, S15Q16_RADIX);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
-            .sensor = get_sensor_type(), .sensor_data = pressure_fixed_point};
+            .sensor = get_sensor_type(),
+            .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -190,7 +191,8 @@ class MMR920C04 {
             convert_to_fixed_point(pressure, S15Q16_RADIX);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
-            .sensor = get_sensor_type(), .sensor_data = pressure_fixed_point};
+            .sensor = get_sensor_type(),
+            .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
     }
 

@@ -131,7 +131,7 @@ enum class ErrorCode {
 enum class ErrorSeverity {
     warning = 0x1,
     recoverable = 0x2,
-    unrecoverable = 0x3, 
+    unrecoverable = 0x3,
 };
 
 /** Tool types detected on Head. */

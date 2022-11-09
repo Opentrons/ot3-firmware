@@ -130,7 +130,8 @@ class CapacitiveMessageHandler {
             m.threshold, m.sensor);
         if (m.mode == can::ids::SensorThresholdMode::absolute) {
             capacitance_handler.set_threshold(
-                fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode, m.message_index);
+                fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode,
+                m.message_index);
         } else {
             capacitance_handler.reset_limited();
             capacitance_handler.set_number_of_reads(10);
