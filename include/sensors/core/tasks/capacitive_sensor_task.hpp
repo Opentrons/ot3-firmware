@@ -150,7 +150,6 @@ class CapacitiveMessageHandler {
         }
     }
 
-
     void visit(can::messages::BindSensorOutputRequest &m) {
         capacitance_handler.set_echoing(
             m.binding &
