@@ -201,8 +201,7 @@ class HDC3020 {
                 default:
                     break;
             }
-            if ((sensor_binding &
-                 static_cast<uint8_t>(can::ids::SensorOutputBinding::report))) {
+            if (report_flag_set()) {
                 // TODO we need to store the humidity/temp values on
                 // eeprom at some point. TBD on implementation details.
                 send_hdc3020_data(humidity, temperature);
@@ -254,6 +253,12 @@ class HDC3020 {
             175.0 * (temperature * (1.0 / MAXIMUM_DATA_SIZE)) - 45.0;
         LOG("Temperature in celsius: %.4f", temp_celsius);
         return convert_to_fixed_point(temp_celsius, S15Q16_RADIX);
+    }
+
+    [[nodiscard]] auto report_flag_set() const -> bool {
+        return (sensor_binding &
+                static_cast<uint8_t>(can::ids::SensorOutputBinding::report)) ==
+               static_cast<uint8_t>(can::ids::SensorOutputBinding::report);
     }
 };
 
