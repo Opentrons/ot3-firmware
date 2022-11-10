@@ -142,7 +142,7 @@ inline auto update_offset(float capacitance_pf, float current_offset_pf)
 }
 
 inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & 0x7));
+    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & 0x3));
 }
 
 inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
