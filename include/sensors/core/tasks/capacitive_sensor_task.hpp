@@ -143,7 +143,8 @@ class CapacitiveMessageHandler {
     }
 
     inline auto delay_or_disable(uint8_t binding) -> uint8_t {
-        if (binding == static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
+        if (binding ==
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
             return 0;
         }
         return DELAY;
