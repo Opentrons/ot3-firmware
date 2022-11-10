@@ -404,20 +404,21 @@ SCENARIO("Test the i2c poller command queue") {
             }
         }
         WHEN("we request to terminate the poll") {
-            uint32_t data_1 = 1, data_2 = 3;
-            poller.continuous_multi_register_poll(
-                ADDRESS, data_1, i2c::messages::MAX_BUFFER_SIZE, data_2, 2,
-                0, queue, 15);
+            std::array small_1{u8(0x05)}, small_2{u8(0x06)};
+            poller.continuous_multi_register_poll(ADDRESS, small_1, 2, small_2,
+            3, 0, queue, 15);
             auto poll_msg = get_message<
-                i2c::messages::ConfigureMultiRegisterContinuousPolling>(queue);
+                    i2c::messages::ConfigureMultiRegisterContinuousPolling>(queue);
+            THEN("the top level members are correct") {
+                REQUIRE(poll_msg.delay_ms == 15);
+            }
             THEN("the transactions are correct") {
-                REQUIRE(poll_msg.first.bytes_to_write == 4);
-                REQUIRE(poll_msg.first.bytes_to_read ==
-                        i2c::messages::MAX_BUFFER_SIZE);
-                REQUIRE(poll_msg.first.write_buffer[0] == 1);
+                REQUIRE(poll_msg.first.bytes_to_write == 1);
+                REQUIRE(poll_msg.first.bytes_to_read == 2);
+                REQUIRE(poll_msg.first.write_buffer[0] == 5);
                 REQUIRE(poll_msg.second.bytes_to_write == 1);
                 REQUIRE(poll_msg.second.bytes_to_read == 3);
-                REQUIRE(poll_msg.second.write_buffer[0] == 3);
+                REQUIRE(poll_msg.second.write_buffer[0] == 6);
             }
             THEN("the top level members are correct") {
                 REQUIRE(poll_msg.delay_ms == 0);
@@ -432,15 +433,14 @@ SCENARIO("Test the i2c poller command queue") {
             }
             AND_WHEN("sending a response to the responder") {
                 auto resp = i2c::messages::TransactionResponse{
-                        .id = {.token = 0, .is_completed_poll = false},
-                        .bytes_read = 0,
-                        .read_buffer = {},
+                    .id = {.token = 0, .is_completed_poll = false},
+                    .bytes_read = 0,
+                    .read_buffer = {},
                 };
                 static_cast<void>(poll_msg.response_writer.write(resp));
                 THEN("the response is passed along correctly") {
                     auto resp_msg =
-                            get_message<i2c::messages::TransactionResponse>(
-                                    queue);
+                        get_message<i2c::messages::TransactionResponse>(queue);
                     REQUIRE(resp_msg == resp);
                 }
             }
