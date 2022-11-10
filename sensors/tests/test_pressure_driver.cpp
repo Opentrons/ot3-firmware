@@ -141,7 +141,7 @@ SCENARIO("Read pressure sensor values") {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x0, 0x85, 0x96, 0x0, 0x0, 0x0, 0x0, 0x0,
+                    .read_buffer = {0x0, 0xFF, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0,
                                     0x0}};
                 driver.handle_response(sensor_response);
                 THEN(
