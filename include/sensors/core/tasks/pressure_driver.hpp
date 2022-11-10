@@ -267,12 +267,14 @@ class MMR920C04 {
         const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
         data = data >> 8;
-        auto pressure = mmr920C04::Pressure::to_pressure(data);
+        auto pressure_fixed_point = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(pressure);
                 if (sync) {
-                    if (pressure > threshold_cmH20) {
+                    float threshold_float =
+                        fixed_point_to_float(threshold_cmH20, S15Q16_RADIX);
+                    if (pressure > threshold_float) {
                         hardware.set_sync();
                         stop_polling = true;
                     } else {
