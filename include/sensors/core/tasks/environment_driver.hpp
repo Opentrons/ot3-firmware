@@ -222,7 +222,7 @@ class HDC3020 {
     // (TODO: lc 7-26-2022) we need a can message that
     // allows a user to select the power consumption mode
     // to use for different commands.
-    hdc3020::LowPowerMode POWER_MODE{3};
+    hdc3020::LowPowerMode POWER_MODE{1};
     uint8_t sensor_binding{2};
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;

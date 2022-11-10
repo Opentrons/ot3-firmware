@@ -18,6 +18,13 @@ auto get_message(Queue& q) -> Message {
     return std::get<Message>(empty_msg);
 }
 
+template <typename Message, typename Queue>
+auto get_writer_message(Queue& q) -> Message {
+    i2c::writer::TaskMessage empty_msg{};
+    q.try_read(&empty_msg);
+    return std::get<Message>(empty_msg);
+}
+
 constexpr auto sensor_id = can::ids::SensorId::S0;
 constexpr uint8_t environment_id =
     static_cast<uint8_t>(can::ids::SensorType::environment);
@@ -104,6 +111,20 @@ SCENARIO("Environment Sensor Task Functionality") {
                 "ConfigureSingleRegisterContinuousPolling command") {
                 REQUIRE(i2c_poll_queue.get_size() == 1);
             }
+            AND_WHEN("we read the writer message from the queue") {
+                auto writer_message =
+                    get_writer_message<i2c::messages::Transact>(i2c_queue);
+                THEN("The command and register addresses are correct") {
+                    REQUIRE(writer_message.transaction.address ==
+                            hdc3020::ADDRESS);
+                    REQUIRE(writer_message.transaction.bytes_to_write == 2);
+                    REQUIRE(writer_message.transaction.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                hdc3020::Registers::AUTO_MEASURE_1M1S));
+                    REQUIRE(writer_message.transaction.write_buffer[1] == 0x26);
+                    REQUIRE(writer_message.transaction.bytes_to_read == 0);
+                }
+            }
             AND_WHEN("we read the message from the queue") {
                 auto transact_message = get_message<
                     i2c::messages::ConfigureSingleRegisterContinuousPolling>(
@@ -113,10 +134,11 @@ SCENARIO("Environment Sensor Task Functionality") {
                     REQUIRE(transact_message.first.address == hdc3020::ADDRESS);
                     REQUIRE(transact_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                hdc3020::Registers::AUTO_MEASURE_10M1S));
+                                hdc3020::Registers::AUTO_MEASURE_STATUS));
                     // measure mode 1 for this register
-                    REQUIRE(transact_message.first.write_buffer[1] == 0x21);
-                    REQUIRE(transact_message.delay_ms == 100);
+                    REQUIRE(transact_message.first.write_buffer[1] ==
+                            hdc3020::AutoMeasureStatus::GET_READINGS_CMD);
+                    REQUIRE(transact_message.delay_ms == 1000);
                 }
             }
         }

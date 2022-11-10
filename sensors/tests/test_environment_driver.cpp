@@ -78,7 +78,7 @@ SCENARIO("Test HDC3020 environment sensor driver") {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 6,
-                    .read_buffer = {0x20, 0x96, 0x31, 0x50, 0x90, 0x31, 0x0,
+                    .read_buffer = {0x50, 0x90, 0x31, 0x20, 0x96, 0x31, 0x0,
                                     0x0, 0x0}};
                 driver.handle_response(sensor_response);
                 THEN(
