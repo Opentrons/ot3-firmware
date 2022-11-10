@@ -267,7 +267,7 @@ class MMR920C04 {
         const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
         data = data >> 8;
-        auto pressure_fixed_point = mmr920C04::Pressure::to_pressure(data);
+        auto pressure = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(pressure);

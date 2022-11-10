@@ -204,7 +204,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
         }
         float pressure =
             static_cast<float>(static_cast<int32_t>(reg)) * PA_PER_COUNT;
-        return pressure
+        return pressure;
     }
 };
 
