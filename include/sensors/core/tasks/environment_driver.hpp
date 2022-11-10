@@ -38,9 +38,7 @@ class HDC3020 {
 
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
-    auto set_bind_flags(uint8_t binding) -> void {
-        sensor_binding = binding;
-    }
+    auto set_bind_flags(uint8_t binding) -> void { sensor_binding = binding; }
 
     auto initialize() -> void {
         std::array<uint8_t, 2> write_buffer{
@@ -165,8 +163,8 @@ class HDC3020 {
         const auto *iter = tm.read_buffer.cbegin();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         iter = bit_utils::bytes_to_int(iter, iter + 3, raw_temperature);
-        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(),
-                                       raw_humidity);
+        iter =
+            bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), raw_humidity);
 
         if (raw_humidity != 0x0 || raw_temperature != 0x0) {
             auto humidity_temp = check_data(raw_humidity, raw_temperature);
@@ -203,7 +201,8 @@ class HDC3020 {
                 default:
                     break;
             }
-            if ((sensor_binding & static_cast<uint8_t>(can::ids::SensorOutputBinding::report))) {
+            if ((sensor_binding &
+                 static_cast<uint8_t>(can::ids::SensorOutputBinding::report))) {
                 // TODO we need to store the humidity/temp values on
                 // eeprom at some point. TBD on implementation details.
                 send_hdc3020_data(humidity, temperature);
