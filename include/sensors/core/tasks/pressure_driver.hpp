@@ -316,7 +316,7 @@ class MMR920C04 {
     bool report = true;
     bool limited_poll = true;
     uint16_t number_of_reads = 0x1;
-    int32_t threshold_cmH20 = 0x0FFFFFFF;
+    int32_t threshold_cmH20 = 0x09999999;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;
