@@ -177,6 +177,8 @@ class HDC3020 {
                 case hdc3020::Registers::TRIGGER_ON_DEMAND_MODE:
                     _registers.trigger_measurement.humidity = humidity;
                     _registers.trigger_measurement.temperature = temperature;
+                    send_hdc3020_data(humidity, temperature);
+                    return;
                     break;
                 case hdc3020::Registers::AUTO_MEASURE_1M2S:
                     _registers.measure_mode_1m2s.humidity = humidity;
@@ -201,7 +203,7 @@ class HDC3020 {
                 default:
                     break;
             }
-            if (sensor_binding & static_cast<uint8_t>(can::ids::SensorOutputBinding::report)) {
+            if ((sensor_binding & static_cast<uint8_t>(can::ids::SensorOutputBinding::report))) {
                 // TODO we need to store the humidity/temp values on
                 // eeprom at some point. TBD on implementation details.
                 send_hdc3020_data(humidity, temperature);
