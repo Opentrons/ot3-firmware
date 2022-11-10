@@ -94,6 +94,8 @@ struct __attribute__((packed, __may_alias__)) AutoMeasureStatus {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
+    static constexpr uint8_t GET_READINGS_CMD = 0x00;
+
     uint8_t initialize : 1 = 1;
     uint8_t minimum_temperature : 1 = 0;
     uint8_t maximum_temperature : 1 = 0;

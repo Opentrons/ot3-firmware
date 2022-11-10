@@ -70,40 +70,49 @@ class HDC3020 {
     void auto_measure_mode(hdc3020::Registers reg) {
         std::array tags{utils::ResponseTag::POLL_IS_CONTINUOUS};
         auto reg_as_int = static_cast<uint8_t>(reg);
+        // This is the buffer to set the auto measure mode
         std::array<uint8_t, 2> command_buffer{reg_as_int};
+        // This is the buffer to request the latest reading
+        std::array<uint8_t, 2> begin_read_buffer{
+            static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_STATUS),
+            hdc3020::AutoMeasureStatus::GET_READINGS_CMD,
+        };
+        int delay = 0;
         switch (reg) {
             case hdc3020::Registers::AUTO_MEASURE_1M2S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_1m2s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 2000,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 2000;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_1M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_1m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 1000,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 1000;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_2M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_2m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 500,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 500;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_4M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_4m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 250,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 250;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_10M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_10m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 100,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 100;
                 break;
             default:
+                delay = 0;
                 break;
+        }
+        if (delay > 0) {
+            // First, the writer has to configure the current automeasure mode
+            writer.write(hdc3020::ADDRESS, command_buffer);
+            // Now, the poller can request readings with the AUTO MEASURE MODE
+            // reg
+            poller.continuous_single_register_poll(
+                hdc3020::ADDRESS, begin_read_buffer, RESPONSE_SIZE, delay,
+                own_queue,
+                build_environment_id(hdc3020::Registers::AUTO_MEASURE_STATUS,
+                                     tags));
         }
     }
 
