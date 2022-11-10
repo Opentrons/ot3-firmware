@@ -39,7 +39,7 @@ class HDC3020 {
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
     auto set_bind_flags(uint8_t binding) -> void {
-        sensor_binding = static_cast<can::ids::SensorOutputBinding>(binding);
+        sensor_binding = binding;
     }
 
     auto initialize() -> void {
@@ -164,9 +164,9 @@ class HDC3020 {
         uint32_t raw_temperature = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        iter = bit_utils::bytes_to_int(iter, iter + 3, raw_humidity);
+        iter = bit_utils::bytes_to_int(iter, iter + 3, raw_temperature);
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(),
-                                       raw_temperature);
+                                       raw_humidity);
 
         if (raw_humidity != 0x0 || raw_temperature != 0x0) {
             auto humidity_temp = check_data(raw_humidity, raw_temperature);
@@ -201,7 +201,7 @@ class HDC3020 {
                 default:
                     break;
             }
-            if (sensor_binding == can::ids::SensorOutputBinding::report) {
+            if (sensor_binding & static_cast<uint8_t>(can::ids::SensorOutputBinding::report)) {
                 // TODO we need to store the humidity/temp values on
                 // eeprom at some point. TBD on implementation details.
                 send_hdc3020_data(humidity, temperature);
@@ -222,8 +222,8 @@ class HDC3020 {
     // (TODO: lc 7-26-2022) we need a can message that
     // allows a user to select the power consumption mode
     // to use for different commands.
-    hdc3020::LowPowerMode POWER_MODE{1};
-    can::ids::SensorOutputBinding sensor_binding{2};
+    hdc3020::LowPowerMode POWER_MODE{3};
+    uint8_t sensor_binding{2};
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
     CanClient &can_client;
