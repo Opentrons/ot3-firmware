@@ -344,12 +344,8 @@ class MMR920C04 {
     }
 
     auto set_stop_polling(SensorOutputBinding binding) -> void {
-        if (static_cast<uint8_t>(binding) == 0) {
-            stop_polling;
-        } else {
-            stop_polling = false;
-        }
-    }
-};
+        stop_polling = (static_cast<uint8_t>(binding) ==
+                        static_cast<uint8_t>(SensorOutputBinding::none));
+    };
 };  // namespace tasks
 };  // namespace sensors
