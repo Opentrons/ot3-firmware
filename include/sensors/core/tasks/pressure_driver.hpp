@@ -10,6 +10,7 @@
 #include "sensors/core/mmr920C04.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
+#include "sensors/core/utils.hpp"
 
 namespace sensors {
 
@@ -184,10 +185,9 @@ class MMR920C04 {
     }
 
     auto send_pressure() -> void {
-        auto pressure =
-            mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto message = can::messages::ReadFromSensorResponse{
-            .sensor = get_sensor_type(), .sensor_data = pressure};
+            .sensor = get_sensor_type(),
+            .sensor_data = static_cast<int32_t>(_registers.pressure.reading)};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -267,11 +267,12 @@ class MMR920C04 {
         const auto *iter = tm.read_buffer.cbegin();
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
         data = data >> 8;
+        auto pressure = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
-                read_pressure(data);
+                read_pressure(pressure);
                 if (sync) {
-                    if (data > threshold_cmH20) {
+                    if (pressure > threshold_cmH20) {
                         hardware.set_sync();
                         stop_polling = true;
                     } else {
@@ -313,7 +314,7 @@ class MMR920C04 {
     bool report = true;
     bool limited_poll = true;
     uint16_t number_of_reads = 0x1;
-    int32_t threshold_cmH20 = 0x8;
+    int32_t threshold_cmH20 = 0x0FFFFFFF;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;
