@@ -141,8 +141,8 @@ SCENARIO("Read pressure sensor values") {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x0, 0xFF, 0xFF, 0xFF, 0x0, 0x0, 0x0, 0x0,
-                                    0x0}};
+                    .read_buffer = {0x0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                                    0xFF}};
                 driver.handle_response(sensor_response);
                 THEN(
                     "no data is sent via the CAN bus, and the sync pin is "
@@ -306,7 +306,7 @@ SCENARIO("Read pressure sensor values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 33.53677;
+                    float expected = 33.0;
                     REQUIRE(check_data == Approx(expected));
                     REQUIRE(hardware.get_sync_state_mock() == false);
                 }
