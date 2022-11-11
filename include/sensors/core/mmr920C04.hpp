@@ -229,16 +229,8 @@ struct __attribute__((packed, __may_alias__)) LowPassPressure {
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq15_16 {
-        // Sign extend pressure result
-        if ((reg & 0x00800000) != 0) {
-            reg |= 0xFF000000;
-        } else {
-            reg &= 0x007FFFFF;
-        }
-
-        float pressure = static_cast<float>(reg) * PA_PER_COUNT;
-        return convert_to_fixed_point(pressure, S15Q16_RADIX);
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
+        return Pressure::to_pressure(reg);
     }
 };
 

@@ -153,40 +153,30 @@ class MMR920C04 {
 
     auto read_pressure(uint32_t data) -> bool {
         LOG("Updated pressure reading is %u", data);
-        if (data != 0) {
-            _registers.pressure.reading = data;
-            return true;
-        }
-        return false;
+        _registers.pressure.reading = data;
+        return true;
     }
 
     auto read_pressure_low_pass(uint32_t data) -> bool {
-        if (data != 0) {
-            _registers.low_pass_pressure.reading = data;
-            return true;
-        }
-        return false;
+        _registers.low_pass_pressure.reading = data;
+        return true;
     }
 
     auto read_temperature(uint32_t data) -> bool {
-        if (data != 0) {
-            _registers.temperature.reading = data;
-            return true;
-        }
-        return false;
+        _registers.temperature.reading = data;
+        return true;
     }
 
     auto read_status(uint32_t data) -> bool {
-        if (data != 0) {
-            _registers.status.reading = data & mmr920C04::Status::value_mask;
-            return true;
-        }
-        return false;
+        _registers.status.reading = data & mmr920C04::Status::value_mask;
+        return true;
     }
 
     auto send_pressure() -> void {
+        auto pressure =
+            mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto pressure_fixed_point =
-            convert_to_fixed_point(_registers.pressure.reading, S15Q16_RADIX);
+            convert_to_fixed_point(pressure, S15Q16_RADIX);
         auto message = can::messages::ReadFromSensorResponse{
             .sensor = get_sensor_type(), .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
@@ -195,8 +185,10 @@ class MMR920C04 {
     auto send_pressure_low_pass() -> void {
         auto pressure = mmr920C04::LowPassPressure::to_pressure(
             _registers.low_pass_pressure.reading);
+        auto pressure_fixed_point =
+            convert_to_fixed_point(pressure, S15Q16_RADIX);
         auto message = can::messages::ReadFromSensorResponse{
-            .sensor = get_sensor_type(), .sensor_data = pressure};
+            .sensor = get_sensor_type(), .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
     }
 
@@ -264,14 +256,16 @@ class MMR920C04 {
     void set_limited_poll(bool _limited) { limited_poll = _limited; }
 
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
+        uint32_t raw_data = 0x00;
         int32_t data = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
-        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), data);
-        data = data >> 8;
+        // Pressure is always a three-byte value
+        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), raw_data);
+        data = raw_data >> 8;
         auto pressure = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
-                read_pressure(pressure);
+                read_pressure(data);
                 if (sync) {
                     if (pressure > threshold_cmH20) {
                         hardware.set_sync();
@@ -326,6 +320,7 @@ class MMR920C04 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
+    static constexpr size_t PRESSURE_DATA_BYTES = 3;
 
     template <mmr920C04::MMR920C04Register Reg>
     requires registers::WritableRegister<Reg>
