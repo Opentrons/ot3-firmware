@@ -62,7 +62,7 @@ class MMR920C04 {
     auto get_threshold() -> int32_t { return threshold_cmH20; }
 
     auto set_threshold(int32_t new_threshold) -> void {
-        threshold_cmH20 = new_threshold;
+        threshold_cmH20 = fixed_point_to_float(new_threshold, S15Q16_RADIX);
     }
 
     auto write(mmr920C04::Registers reg, uint32_t command_data) -> void {
@@ -273,9 +273,7 @@ class MMR920C04 {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(pressure);
                 if (sync) {
-                    float threshold_float =
-                        fixed_point_to_float(threshold_cmH20, S15Q16_RADIX);
-                    if (pressure > threshold_float) {
+                    if (pressure > threshold_cmH20) {
                         hardware.set_sync();
                         stop_polling = true;
                     } else {
@@ -317,7 +315,7 @@ class MMR920C04 {
     bool report = true;
     bool limited_poll = true;
     uint16_t number_of_reads = 0x1;
-    int32_t threshold_cmH20 = 0x09999999;
+    float threshold_cmH20 = 2457.0F;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;

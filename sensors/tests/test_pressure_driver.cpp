@@ -102,7 +102,7 @@ SCENARIO("Read pressure sensor values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 33.53677;
+                    float expected = 33.0;
                     REQUIRE(check_data == Approx(expected));
                     REQUIRE(hardware.get_sync_state_mock() == false);
                 }
@@ -112,6 +112,7 @@ SCENARIO("Read pressure sensor values") {
     GIVEN("An unlimited poll with sensor binding set to sync") {
         can_queue.reset();
         driver.set_limited_poll(false);
+        driver.set_threshold(convert_to_fixed_point(15.0F, S15Q16_RADIX));
         driver.get_pressure();
         driver.set_sync_bind(can::ids::SensorOutputBinding::sync);
         WHEN("the sensor_callback function is called") {
