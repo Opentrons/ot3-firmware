@@ -261,7 +261,7 @@ class MMR920C04 {
         const auto *iter = tm.read_buffer.cbegin();
         // Pressure is always a three-byte value
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), raw_data);
-        data = raw_data >> 8;
+        data = static_cast<int32_t>(raw_data >> 8);
         auto pressure = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
