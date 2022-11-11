@@ -82,7 +82,7 @@ class EnvironmentSensorMessageHandler {
             static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
             driver.auto_measure_mode(hdc3020::Registers::RESET);
         } else {
-            driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_10M1S);
+            driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_1M1S);
         }
     }
 

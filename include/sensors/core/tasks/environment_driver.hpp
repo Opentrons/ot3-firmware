@@ -38,9 +38,7 @@ class HDC3020 {
 
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
-    auto set_bind_flags(uint8_t binding) -> void {
-        sensor_binding = static_cast<can::ids::SensorOutputBinding>(binding);
-    }
+    auto set_bind_flags(uint8_t binding) -> void { sensor_binding = binding; }
 
     auto initialize() -> void {
         std::array<uint8_t, 2> write_buffer{
@@ -70,44 +68,53 @@ class HDC3020 {
     void auto_measure_mode(hdc3020::Registers reg) {
         std::array tags{utils::ResponseTag::POLL_IS_CONTINUOUS};
         auto reg_as_int = static_cast<uint8_t>(reg);
+        // This is the buffer to set the auto measure mode
         std::array<uint8_t, 2> command_buffer{reg_as_int};
+        // This is the buffer to request the latest reading
+        std::array<uint8_t, 2> begin_read_buffer{
+            static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_STATUS),
+            hdc3020::AutoMeasureStatus::GET_READINGS_CMD,
+        };
+        int delay = 0;
         switch (reg) {
             case hdc3020::Registers::AUTO_MEASURE_1M2S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_1m2s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 2000,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 2000;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_1M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_1m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 1000,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 1000;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_2M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_2m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 500,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 500;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_4M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_4m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 250,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 250;
                 break;
             case hdc3020::Registers::AUTO_MEASURE_10M1S:
                 command_buffer[1] = mode_lookup(_registers.measure_mode_10m1s);
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 100,
-                    own_queue, build_environment_id(reg, tags));
+                delay = 100;
                 break;
             case hdc3020::Registers::RESET:
                 poller.continuous_single_register_poll(
                     hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 0,
                     own_queue, build_environment_id(reg, tags));
             default:
+                delay = 0;
                 break;
+        }
+        if (delay > 0) {
+            // First, the writer has to configure the current automeasure mode
+            writer.write(hdc3020::ADDRESS, command_buffer);
+            // Now, the poller can request readings with the AUTO MEASURE MODE
+            // reg
+            poller.continuous_single_register_poll(
+                hdc3020::ADDRESS, begin_read_buffer, RESPONSE_SIZE, delay,
+                own_queue,
+                build_environment_id(hdc3020::Registers::AUTO_MEASURE_STATUS,
+                                     tags));
         }
     }
 
@@ -159,9 +166,9 @@ class HDC3020 {
         uint32_t raw_temperature = 0x0;
         const auto *iter = tm.read_buffer.cbegin();
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        iter = bit_utils::bytes_to_int(iter, iter + 3, raw_humidity);
-        iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(),
-                                       raw_temperature);
+        iter = bit_utils::bytes_to_int(iter, iter + 3, raw_temperature);
+        iter =
+            bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), raw_humidity);
 
         if (raw_humidity != 0x0 || raw_temperature != 0x0) {
             auto humidity_temp = check_data(raw_humidity, raw_temperature);
@@ -172,6 +179,8 @@ class HDC3020 {
                 case hdc3020::Registers::TRIGGER_ON_DEMAND_MODE:
                     _registers.trigger_measurement.humidity = humidity;
                     _registers.trigger_measurement.temperature = temperature;
+                    send_hdc3020_data(humidity, temperature);
+                    return;
                     break;
                 case hdc3020::Registers::AUTO_MEASURE_1M2S:
                     _registers.measure_mode_1m2s.humidity = humidity;
@@ -196,7 +205,7 @@ class HDC3020 {
                 default:
                     break;
             }
-            if (sensor_binding == can::ids::SensorOutputBinding::report) {
+            if (report_flag_set()) {
                 // TODO we need to store the humidity/temp values on
                 // eeprom at some point. TBD on implementation details.
                 send_hdc3020_data(humidity, temperature);
@@ -218,7 +227,7 @@ class HDC3020 {
     // allows a user to select the power consumption mode
     // to use for different commands.
     hdc3020::LowPowerMode POWER_MODE{1};
-    can::ids::SensorOutputBinding sensor_binding{2};
+    uint8_t sensor_binding{2};
     I2CQueueWriter &writer;
     I2CQueuePoller &poller;
     CanClient &can_client;
@@ -248,6 +257,12 @@ class HDC3020 {
             175.0 * (temperature * (1.0 / MAXIMUM_DATA_SIZE)) - 45.0;
         LOG("Temperature in celsius: %.4f", temp_celsius);
         return convert_to_fixed_point(temp_celsius, S15Q16_RADIX);
+    }
+
+    [[nodiscard]] auto report_flag_set() const -> bool {
+        return (sensor_binding &
+                static_cast<uint8_t>(can::ids::SensorOutputBinding::report)) ==
+               static_cast<uint8_t>(can::ids::SensorOutputBinding::report);
     }
 };
 
