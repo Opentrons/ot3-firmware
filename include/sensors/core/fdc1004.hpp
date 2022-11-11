@@ -80,7 +80,7 @@ constexpr float MAX_RAW_MEASUREMENT =
 // need to automatically reset our capdac to account for changing
 // gross-scale capacitance conditions, and we'll do it by bumping up
 // the capdac every time we get half way to either edge of our range.
-constexpr float CAPDAC_REZERO_THRESHOLD_PF = CAPDAC_PF_PER_LSB / 2;
+constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
 
 // Convert an accumulated raw reading, the number of reads that were
 // accumulated, and the current offset and turn it into a value in pF.
@@ -115,6 +115,8 @@ inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
 // Turn a capacitance value into the value to send to the capdac
 // control register to use that offset.
 inline auto get_capdac_raw(float offset_pf) -> uint8_t {
+    // Floor of 0
+    offset_pf = std::max(offset_pf, 0.0F);
     auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
     return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
 }
@@ -146,7 +148,7 @@ inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
 }
 
 inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & 0xff));
+    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & 0xe0));
 }
 
 };  // namespace fdc1004
