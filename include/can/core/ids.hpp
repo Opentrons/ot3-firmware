@@ -173,4 +173,11 @@ enum class PipetteTipActionType {
     drop = 0x1,
 };
 
+/** Flags for motor position validity. */
+enum class MotorPositionFlags {
+    stepper_position_ok = 0x1,
+    encoder_position_ok = 0x2,
+};
+
 }  // namespace can::ids
+

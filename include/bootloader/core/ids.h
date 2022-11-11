@@ -171,6 +171,12 @@ typedef enum {
     can_pipettetipactiontype_drop = 0x1,
 } CANPipetteTipActionType;
 
+/** Flags for motor position validity. */
+typedef enum {
+    can_motorpositionflags_stepper_position_ok = 0x1,
+    can_motorpositionflags_encoder_position_ok = 0x2,
+} CANMotorPositionFlags;
+
 /** A bit field of the arbitration id parts. */
 typedef struct {
     unsigned int function_code: 4;
