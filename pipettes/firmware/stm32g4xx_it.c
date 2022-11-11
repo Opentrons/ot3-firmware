@@ -122,6 +122,10 @@ void EXTI3_IRQHandler(void) {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
 }
 
+void EXTI15_10_IRQHandler(void) {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+}
+
 // TODO refer to schematic to check and see that the data ready
 // pin is the same across values.
 

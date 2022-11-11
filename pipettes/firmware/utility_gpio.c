@@ -56,7 +56,7 @@ void limit_switch_gpio_init() {
     if (pipette_type == NINETY_SIX_CHANNEL) {
         /*
          * Right gear -> PC10
-         * Left gear -> PB11
+         * Left gear -> PB12
          * Plunger -> PA4
          */
         enable_gpio_port(GPIOC);
@@ -64,7 +64,7 @@ void limit_switch_gpio_init() {
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
         enable_gpio_port(GPIOB);
-        GPIO_InitStruct.Pin = GPIO_PIN_11;
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         enable_gpio_port(GPIOA);
