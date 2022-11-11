@@ -315,6 +315,8 @@ class MMR920C04 {
     bool report = true;
     bool limited_poll = true;
     uint16_t number_of_reads = 0x1;
+    // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
+    // sure this is an arbitrarily large number to enable continuous reads.
     float threshold_cmH20 = 2457.0F;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
