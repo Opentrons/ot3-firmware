@@ -78,7 +78,12 @@ class EnvironmentSensorMessageHandler {
         // for the hdc sensor to at least set the power mode and
         // auto measure frequency.
         driver.set_bind_flags(m.binding);
-        driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_1M1S);
+        if (m.binding ==
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
+            driver.auto_measure_mode(hdc3020::Registers::RESET);
+        } else {
+            driver.auto_measure_mode(hdc3020::Registers::AUTO_MEASURE_1M1S);
+        }
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
