@@ -195,7 +195,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
     uint32_t C0 : 1 = 0;
     uint32_t reading : 24 = 0;
 
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> sq15_16 {
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
@@ -204,7 +204,7 @@ struct __attribute__((packed, __may_alias__)) Pressure {
         }
         float pressure =
             static_cast<float>(static_cast<int32_t>(reg)) * PA_PER_COUNT;
-        return convert_to_fixed_point(pressure, S15Q16_RADIX);
+        return pressure;
     }
 };
 
