@@ -97,10 +97,6 @@ class HDC3020 {
                 command_buffer[1] = mode_lookup(_registers.measure_mode_10m1s);
                 delay = 100;
                 break;
-            case hdc3020::Registers::RESET:
-                poller.continuous_single_register_poll(
-                    hdc3020::ADDRESS, command_buffer, RESPONSE_SIZE, 0,
-                    own_queue, build_environment_id(reg, tags));
             default:
                 delay = 0;
                 break;
