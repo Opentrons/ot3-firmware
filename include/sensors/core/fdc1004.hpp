@@ -57,6 +57,10 @@ constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
 constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
 constexpr uint16_t DEVICE_ID = 0x1004;
 
+constexpr uint8_t CAPDAC_MSB_MASK = 0x3;
+
+constexpr uint8_t CAPDAC_LSB_MASK = 0xE0;
+
 // Constants. The capdac is a synthetic comparison source intended to
 // eliminate common-mode values in the differential capacitance measurements.
 // The sensor has a narrow +-15pF measurement range, but that's on top
@@ -144,11 +148,11 @@ inline auto update_offset(float capacitance_pf, float current_offset_pf)
 }
 
 inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & 0x3));
+    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & CAPDAC_MSB_MASK));
 }
 
 inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & 0xe0));
+    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & CAPDAC_LSB_MASK));
 }
 
 };  // namespace fdc1004
