@@ -15,19 +15,19 @@ class HDC3020 : public I2CRegisterMap<uint8_t, uint64_t> {
               hdc3020::ADDRESS,
               {{static_cast<uint8_t>(
                     hdc3020::Registers::TRIGGER_ON_DEMAND_MODE),
-                0x209631509031},
+                0x509031209631},
                {static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_1M2S),
-                0x209631509031},
+                0x00},
                {static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_1M1S),
-                0x209631509031},
+                0x00},
                {static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_2M1S),
-                0x209631509031},
+                0x00},
                {static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_4M1S),
-                0x209631509031},
+                0x00},
                {static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_10M1S),
-                0x209631509031},
+                0x00},
                {static_cast<uint8_t>(hdc3020::Registers::AUTO_MEASURE_STATUS),
-                0x0}}) {}
+                0x509031209631}}) {}
 
     auto handle_write(const uint8_t *data, uint16_t size) -> bool {
         auto *iter = data;
