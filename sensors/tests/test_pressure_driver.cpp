@@ -102,7 +102,7 @@ SCENARIO("Read pressure sensor values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 33.0;
+                    float expected = 33.53677;
                     REQUIRE(check_data == Approx(expected));
                     REQUIRE(hardware.get_sync_state_mock() == false);
                 }
@@ -307,7 +307,7 @@ SCENARIO("Read pressure sensor values") {
                             can_msg.message);
                     float check_data =
                         fixed_point_to_float(response_msg.sensor_data, 16);
-                    float expected = 33.0;
+                    float expected = 33.53677;
                     REQUIRE(check_data == Approx(expected));
                     REQUIRE(hardware.get_sync_state_mock() == false);
                 }
