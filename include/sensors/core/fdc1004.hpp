@@ -57,6 +57,10 @@ constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
 constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
 constexpr uint16_t DEVICE_ID = 0x1004;
 
+constexpr uint8_t CAPDAC_MSB_MASK = 0x3;
+
+constexpr uint8_t CAPDAC_LSB_MASK = 0xE0;
+
 // Constants. The capdac is a synthetic comparison source intended to
 // eliminate common-mode values in the differential capacitance measurements.
 // The sensor has a narrow +-15pF measurement range, but that's on top
@@ -80,7 +84,7 @@ constexpr float MAX_RAW_MEASUREMENT =
 // need to automatically reset our capdac to account for changing
 // gross-scale capacitance conditions, and we'll do it by bumping up
 // the capdac every time we get half way to either edge of our range.
-constexpr float CAPDAC_REZERO_THRESHOLD_PF = CAPDAC_PF_PER_LSB / 2;
+constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
 
 // Convert an accumulated raw reading, the number of reads that were
 // accumulated, and the current offset and turn it into a value in pF.
@@ -115,6 +119,8 @@ inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
 // Turn a capacitance value into the value to send to the capdac
 // control register to use that offset.
 inline auto get_capdac_raw(float offset_pf) -> uint8_t {
+    // Floor of 0
+    offset_pf = std::max(offset_pf, 0.0F);
     auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
     return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
 }
@@ -142,11 +148,11 @@ inline auto update_offset(float capacitance_pf, float current_offset_pf)
 }
 
 inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & 0x7));
+    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & CAPDAC_MSB_MASK));
 }
 
 inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & 0xff));
+    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & CAPDAC_LSB_MASK));
 }
 
 };  // namespace fdc1004
