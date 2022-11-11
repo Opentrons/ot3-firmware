@@ -118,6 +118,7 @@ struct ReadCapacitanceCallback {
     }
 
     void set_offset(float new_offset) {
+        new_offset = std::max(new_offset, 0.0F);
         if (new_offset != current_offset_pf) {
             auto capdac_raw = get_capdac_raw(new_offset);
             std::array offset{CONFIGURATION_MEASUREMENT,
