@@ -27,6 +27,13 @@
 namespace sensors {
 namespace fdc1004 {
 
+enum class Channel {
+    CHAN_1 = 0,
+    CHAN_2 = 1,
+    CHAN_3 = 2,
+    CHAN_4 = 3,
+};
+
 // Capacitance Sensor Address and Registers
 constexpr uint16_t ADDRESS = 0x50 << 1;
 constexpr uint8_t MSB_MEASUREMENT_1 = 0x00;
@@ -60,6 +67,8 @@ constexpr uint16_t DEVICE_ID = 0x1004;
 constexpr uint8_t CAPDAC_MSB_MASK = 0x3;
 
 constexpr uint8_t CAPDAC_LSB_MASK = 0xE0;
+
+constexpr uint16_t FDC_RESET_BIT = 1 << 15;
 
 // Constants. The capdac is a synthetic comparison source intended to
 // eliminate common-mode values in the differential capacitance measurements.
@@ -153,6 +162,16 @@ inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
 
 inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
     return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & CAPDAC_LSB_MASK));
+}
+
+inline auto measurement_enabled_flag(Channel channel) -> uint16_t {
+    auto channel_int = static_cast<uint8_t>(channel);
+    return 0b10000000 >> channel_int;
+}
+
+inline auto measurement_done_flag(Channel channel) -> uint16_t {
+    auto channel_int = static_cast<uint8_t>(channel);
+    return 0b1000 >> channel_int;
 }
 
 };  // namespace fdc1004

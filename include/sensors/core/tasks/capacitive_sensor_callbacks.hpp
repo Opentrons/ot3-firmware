@@ -33,14 +33,45 @@ struct ReadCapacitanceCallback {
           hardware{hardware},
           sensor_id{id} {}
 
-    void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
+    enum class ReturnAction {
+        NONE,
+        POLL_MSB,
+        POLL_LSB,
+        POLL_FDC,
+    };
+
+    // When polling the sensor, our poller checks the FDC register in order
+    // to detect the status of the data rady bit. If the data is ready, kick
+    // off the transactions to read the latest data and pass the same token
+    // as the poller so we can handle it appropriately.
+    auto handle_fdc_response(i2c::messages::TransactionResponse &m)
+        -> ReturnAction {
+        uint16_t fdc;
+        static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
+                                                  m.read_buffer.cend(), fdc));
+        auto ready_flag = measurement_done_flag(Channel::CHAN_1);
+        if ((fdc & ready_flag) == ready_flag) {
+            return ReturnAction::POLL_MSB;
+        } else {
+            auto active_flag = measurement_enabled_flag(Channel::CHAN_1);
+            if((fdc & active_flag) != active_flag) {
+                write_sample_rate();
+            }
+            return ReturnAction::NONE;
+        }
+    }
+
+    auto handle_ongoing_response(i2c::messages::TransactionResponse &m)
+        -> ReturnAction {
+        size_t idx =
+            utils::reg_from_id<uint8_t>(m.id.token) == MSB_MEASUREMENT_1 ? 0
+                                                                         : 1;
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
-
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-            polling_results[m.id.transaction_index]));
-        if (m.id.transaction_index == 0) {
-            return;
+            polling_results[idx]));
+        if (idx == 0) {
+            return ReturnAction::POLL_LSB;
         }
         auto capacitance = convert_capacitance(
             convert_reads(polling_results[0], polling_results[1]), 1,
@@ -65,19 +96,24 @@ struct ReadCapacitanceCallback {
                     .sensor_data =
                         convert_to_fixed_point(capacitance, S15Q16_RADIX)});
         }
+        return ReturnAction::NONE;
     }
 
-    void handle_baseline_response(i2c::messages::TransactionResponse &m) {
+    auto handle_baseline_response(i2c::messages::TransactionResponse &m)
+        -> ReturnAction {
+        size_t idx =
+            utils::reg_from_id<uint8_t>(m.id.token) == MSB_MEASUREMENT_1 ? 0
+                                                                         : 1;
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
-            baseline_results[m.id.transaction_index]));
-        if (m.id.transaction_index == 0) {
-            return;
+            baseline_results[idx]));
+        if (idx == 0) {
+            return ReturnAction::POLL_LSB;
         }
         measurement += convert_reads(baseline_results[0], baseline_results[1]);
         if (!m.id.is_completed_poll) {
-            return;
+            return ReturnAction::NONE;
         }
         auto capacitance = convert_capacitance(measurement, number_of_reads,
                                                current_offset_pf);
@@ -97,6 +133,8 @@ struct ReadCapacitanceCallback {
         // adjusting the capdac.
         auto new_offset = update_offset(capacitance, current_offset_pf);
         set_offset(new_offset);
+
+        return ReturnAction::NONE;
     }
 
     void reset_limited() {
@@ -116,6 +154,12 @@ struct ReadCapacitanceCallback {
         bind_sync = should_bind;
         hardware.reset_sync();
     }
+    
+    void write_sample_rate() {
+        std::array configuration_data{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
+                                        SAMPLE_RATE_LSB};
+        i2c_writer.write(ADDRESS, configuration_data);
+    }
 
     void set_offset(float new_offset) {
         new_offset = std::max(new_offset, 0.0F);
@@ -126,15 +170,13 @@ struct ReadCapacitanceCallback {
                               device_configuration_lsb(capdac_raw)};
             i2c_writer.write(ADDRESS, offset);
             current_offset_pf = new_offset;
-            std::array configuration_data{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
-                                          SAMPLE_RATE_LSB};
-            i2c_writer.write(ADDRESS, configuration_data);
         }
     }
 
     void initialize() {
         current_offset_pf = -1;
         set_offset(0);
+        write_sample_rate();
     }
 
     auto prime_autothreshold(float next_autothresh_pf) -> void {

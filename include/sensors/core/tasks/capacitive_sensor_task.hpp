@@ -64,16 +64,56 @@ class CapacitiveMessageHandler {
     void visit(std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
-        if (utils::reg_from_id<uint8_t>(m.id.token) != MSB_MEASUREMENT_1) {
+        auto ret = ReturnAction::NONE;
+
+        if (!utils::tag_in_token(m.id.token,
+                                 utils::ResponseTag::IS_PART_OF_POLL)) {
             return;
         }
-        if (utils::tag_in_token(m.id.token,
-                                utils::ResponseTag::POLL_IS_CONTINUOUS)) {
-            capacitance_handler.handle_ongoing_response(m);
-            LOG("continuous transaction response");
-        } else {
-            capacitance_handler.handle_baseline_response(m);
-            LOG("limited transaction response");
+
+        if (utils::reg_from_id<uint8_t>(m.id.token) == FDC_CONFIGURATION) {
+            ret = capacitance_handler.handle_fdc_response(m);
+            LOG("fdc register response");
+        } else if (utils::reg_from_id<uint8_t>(m.id.token) ==
+                       MSB_MEASUREMENT_1 ||
+                   utils::reg_from_id<uint8_t>(m.id.token) ==
+                       LSB_MEASUREMENT_1) {
+            if (utils::tag_in_token(m.id.token,
+                                    utils::ResponseTag::POLL_IS_CONTINUOUS)) {
+                ret = capacitance_handler.handle_ongoing_response(m);
+                LOG("continuous transaction response");
+            } else {
+                ret = capacitance_handler.handle_baseline_response(m);
+                LOG("limited transaction response");
+            }
+        }
+
+        // All of these use a transact() overload which maintains the entire
+        // transaction identifier, so that any poller flags are available for
+        // all related messages.
+        i2c::messages::MaxMessageBuffer buf{};
+        auto tags = utils::tags_from_token(m.id.token);
+        switch (ret) {
+            case ReturnAction::NONE:
+                break;
+            case ReturnAction::POLL_MSB:
+                buf[0] = MSB_MEASUREMENT_1;
+                break;
+            case ReturnAction::POLL_LSB:
+                buf[0] = LSB_MEASUREMENT_1;
+                break;
+            case ReturnAction::POLL_FDC:
+                buf[0] = FDC_CONFIGURATION;
+                break;
+        }
+        if (ret != ReturnAction::NONE) {
+            // Copy everything from the ID except for the token, which
+            // we need to regenerate with the correct register.
+            auto id = i2c::messages::TransactionIdentifier{
+                .token = utils::build_id(ADDRESS, buf[0], tags),
+                .is_completed_poll = m.id.is_completed_poll,
+                .transaction_index = m.id.transaction_index};
+            writer.transact(ADDRESS, 1, buf, 2, id, own_queue);
         }
     }
 
@@ -96,9 +136,9 @@ class CapacitiveMessageHandler {
         } else {
             capacitance_handler.reset_limited();
             capacitance_handler.set_number_of_reads(1);
-            poller.multi_register_poll(
-                ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, 1, DELAY,
-                own_queue, utils::build_id(ADDRESS, MSB_MEASUREMENT_1, 1));
+            poller.single_register_poll(
+                ADDRESS, FDC_CONFIGURATION, 2, 1, DELAY, own_queue,
+                utils::build_id(ADDRESS, FDC_CONFIGURATION, 1));
         }
     }
 
@@ -113,10 +153,9 @@ class CapacitiveMessageHandler {
         capacitance_handler.set_number_of_reads(m.sample_rate);
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::IS_BASELINE};
-        poller.multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, m.sample_rate,
-            DELAY, own_queue,
-            utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
+        poller.single_register_poll(
+            ADDRESS, FDC_CONFIGURATION, 2, m.sample_rate, DELAY, own_queue,
+            utils::build_id(ADDRESS, FDC_CONFIGURATION,
                             utils::byte_from_tags(tags)));
     }
 
@@ -134,10 +173,9 @@ class CapacitiveMessageHandler {
                             utils::ResponseTag::IS_THRESHOLD_SENSE};
             capacitance_handler.prime_autothreshold(
                 fixed_point_to_float(m.threshold, S15Q16_RADIX));
-            poller.multi_register_poll(
-                ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2,
-                uint16_t(10), DELAY, own_queue,
-                utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
+            poller.single_register_poll(
+                ADDRESS, FDC_CONFIGURATION, 2, uint16_t(10), DELAY, own_queue,
+                utils::build_id(ADDRESS, FDC_CONFIGURATION,
                                 utils::byte_from_tags(tags)));
         }
     }
@@ -160,10 +198,9 @@ class CapacitiveMessageHandler {
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
         const auto delay = delay_or_disable(m.binding);
-        poller.continuous_multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, delay,
-            own_queue,
-            utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
+        poller.continuous_single_register_poll(
+            ADDRESS, FDC_CONFIGURATION, 2, delay, own_queue,
+            utils::build_id(ADDRESS, FDC_CONFIGURATION,
                             utils::byte_from_tags(tags)));
     }
 
@@ -190,6 +227,7 @@ class CapacitiveMessageHandler {
   public:
     // Kept public for testability
     ReadCapacitanceCallback<CanClient, I2CQueueWriter> capacitance_handler;
+    using ReturnAction = decltype(capacitance_handler)::ReturnAction;
 };
 
 /**
