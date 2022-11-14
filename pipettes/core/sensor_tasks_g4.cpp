@@ -1,5 +1,6 @@
 #include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
 
 static auto tasks = sensor_tasks::Tasks{};
@@ -23,20 +24,28 @@ static auto pressure_sensor_task_builder =
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
     sensor_tasks::I2CClient& i2c3_task_client,
-    sensor_tasks::I2CClient& i2c2_task_client,
     sensor_tasks::I2CPollerClient& i2c3_poller_client,
+    sensor_tasks::I2CClient& i2c2_task_client,
+    sensor_tasks::I2CPollerClient& i2c2_poller_client,
     sensors::hardware::SensorHardwareBase& sensor_hardware, can::ids::NodeId id,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
     auto& tasks = sensor_tasks::get_tasks();
 
+    auto& pressure_i2c_client = get_pipette_type() == EIGHT_CHANNEL
+                                    ? i2c2_task_client
+                                    : i2c3_task_client;
+    auto& pressure_i2c_poller = get_pipette_type() == EIGHT_CHANNEL
+                                    ? i2c2_poller_client
+                                    : i2c3_poller_client;
+
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
                                                   eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(
-        5, "pressure sensor", i2c3_task_client, i2c3_poller_client, queues,
+        5, "pressure sensor", pressure_i2c_client, pressure_i2c_poller, queues,
         sensor_hardware);
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(
