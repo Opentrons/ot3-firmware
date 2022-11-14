@@ -7,6 +7,8 @@ namespace fdc1004_simulator {
 using namespace sensors;
 using namespace i2c::hardware;
 
+// NOTE TO SELF need to patch this to return a 1 for the
+// data ready bit
 class FDC1004 : public I2CRegisterMap<uint8_t, uint16_t> {
   public:
     FDC1004()
