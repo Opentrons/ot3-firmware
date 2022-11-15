@@ -3,21 +3,22 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
-#include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
+#include "motor-control/core/motor_messages.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
 
-namespace brushed_motor_interrupt_driver{
+namespace brushed_motor_interrupt_driver {
 template <class StatusClient, class BrushedMotorHardware>
 class BrushedMotorInterruptDriver {
-    using InterruptQueue =
-        freertos_message_queue::FreeRTOSMessageQueue<motor_messages::BrushedMove>;
-    using InterruptHandler = brushed_motor_handler::BrushedMotorInterruptHandler<
-        freertos_message_queue::FreeRTOSMessageQueue, StatusClient>;
+    using InterruptQueue = freertos_message_queue::FreeRTOSMessageQueue<
+        motor_messages::BrushedMove>;
+    using InterruptHandler =
+        brushed_motor_handler::BrushedMotorInterruptHandler<
+            freertos_message_queue::FreeRTOSMessageQueue, StatusClient>;
 
   public:
     BrushedMotorInterruptDriver(InterruptQueue& q, InterruptHandler& h,
-                         BrushedMotorHardware& iface)
+                                BrushedMotorHardware& iface)
         : task_entry{q, h, iface}, task(task_entry) {
         task.start(5, "sim_motor_isr");
     }
@@ -45,18 +46,22 @@ class BrushedMotorInterruptDriver {
                                 LOG("Received Home Request, triggering limit "
                                     "switch\n");
                             }
-                            if (move.stop_condition == motor_messages::MoveStopCondition::none) {
+                            if (move.stop_condition ==
+                                motor_messages::MoveStopCondition::none) {
                                 LOG("Got Grip request, triggering idle\n");
                                 handler.set_enc_idle_state(true);
                             }
-                            if (move.stop_condition == motor_messages::MoveStopCondition::encoder_position) {
+                            if (move.stop_condition ==
+                                motor_messages::MoveStopCondition::
+                                    encoder_position) {
                                 LOG("Got move request, setting position\n");
                                 iface.set_encoder_pulses(move.encoder_position);
                             }
                         }
                         handler.run_interrupt();
 
-                    } while (handler.motor_state == brushed_motor_handler::ControlState::ACTIVE);
+                    } while (handler.motor_state ==
+                             brushed_motor_handler::ControlState::ACTIVE);
                     LOG("Move completed. Stopping interrupt simulation..");
                 }
             }
@@ -70,4 +75,3 @@ class BrushedMotorInterruptDriver {
     freertos_task::FreeRTOSTask<128, TaskEntry> task;
 };
 }  // namespace brushed_motor_interrupt_driver
-
