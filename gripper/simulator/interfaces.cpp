@@ -3,8 +3,10 @@
 #include "can/simlib/transport.hpp"
 #include "gripper/core/tasks.hpp"
 #include "gripper/simulation/sim_interfaces.hpp"
+#include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/simulation/brushed_motor_interrupt_driver.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_driver_hardware_iface.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
@@ -91,17 +93,28 @@ static auto brushed_motor_driver_iface =
     sim_brushed_motor_hardware_iface::SimBrushedMotorDriverIface();
 
 static auto brushed_motor_hardware_iface =
-    sim_motor_hardware_iface::SimBrushedMotorHardwareIface();
+    sim_motor_hardware_iface::SimBrushedMotorHardwareIface(
+        MoveMessageHardware::g);
+
+static auto gear_conf = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
+    .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+    .steps_per_rev = 0,
+    .microstep = 0,
+    .encoder_pulses_per_rev = 512,
+    .gear_ratio = 84.29};
 
 static auto grip_motor = brushed_motor::BrushedMotor(
-    lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
-        .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
-        .steps_per_rev = 0,
-        .microstep = 0,
-        .encoder_pulses_per_rev = 512,
-        .gear_ratio = 84.29},
-    brushed_motor_hardware_iface, brushed_motor_driver_iface,
+    gear_conf, brushed_motor_hardware_iface, brushed_motor_driver_iface,
     brushed_motor_queue);
+
+static brushed_motor_handler::BrushedMotorInterruptHandler
+    brushed_motor_interrupt(brushed_motor_queue,
+                            gripper_tasks::g_tasks::get_queues(),
+                            brushed_motor_hardware_iface,
+                            brushed_motor_driver_iface, gear_conf);
+
+static brushed_motor_interrupt_driver::BrushedMotorInterruptDriver G(
+    brushed_motor_queue, brushed_motor_interrupt, brushed_motor_hardware_iface);
 
 void z_motor_iface::initialize() {
     motor_interface.provide_mech_config(z_motor_sys_config);
