@@ -123,6 +123,7 @@ SCENARIO("message serializing works") {
                                      .seq_id = 2,
                                      .current_position_um = 0x3456789a,
                                      .encoder_position_um = 0x05803931,
+                                     .position_flags = 0x3,
                                      .ack_id = 1};
         auto arr = std::array<uint8_t, 12>{};
         auto body = std::span{arr};
@@ -139,9 +140,10 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[7] == 0x80);
                 REQUIRE(body.data()[8] == 0x39);
                 REQUIRE(body.data()[9] == 0x31);
-                REQUIRE(body.data()[10] == 1);
+                REQUIRE(body.data()[10] == 0x3);
+                REQUIRE(body.data()[11] == 1);
             }
-            THEN("size must be returned") { REQUIRE(size == 11); }
+            THEN("size must be returned") { REQUIRE(size == 12); }
         }
     }
 
