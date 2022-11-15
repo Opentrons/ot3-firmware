@@ -53,7 +53,8 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags, AckMessageId _id) -> Ack {
+    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
+                   AckMessageId _id) -> Ack {
         return Ack{
             .group_id = group_id,
             .seq_id = seq_id,
@@ -68,9 +69,10 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 struct GearMotorMove : public Move {
     can::ids::PipetteTipActionType action;
 
-    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags, AckMessageId _id)
-        -> GearMotorAck {
-        return GearMotorAck{group_id, seq_id, position, pulses, flags, _id, action};
+    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
+                   AckMessageId _id) -> GearMotorAck {
+        return GearMotorAck{group_id, seq_id, position, pulses,
+                            flags,    _id,    action};
     }
 };
 

@@ -38,6 +38,7 @@ SCENARIO("testing move status position translation") {
                                        .seq_id = 8,
                                        .current_position_steps = 0,
                                        .encoder_position = 0,
+                                       .position_flags = 0x3,
                                        .ack_id = AckMessageId::timeout});
             CHECK(mcc.queue.size() == 1);
 
@@ -47,6 +48,7 @@ SCENARIO("testing move status position translation") {
                 REQUIRE(resp_msg.group_id == 11);
                 REQUIRE(resp_msg.seq_id == 8);
                 REQUIRE(resp_msg.ack_id == 3);
+                REQUIRE(resp_msg.position_flags == 0x3);
             }
             THEN("the position value should still be 0") {
                 REQUIRE(resp_msg.current_position_um == 0);
@@ -60,6 +62,7 @@ SCENARIO("testing move status position translation") {
                                        .seq_id = 8,
                                        .current_position_steps = 0,
                                        .encoder_position = -1000,
+                                       .position_flags = 0x1,
                                        .ack_id = AckMessageId::timeout});
             CHECK(mcc.queue.size() == 1);
 
@@ -69,6 +72,7 @@ SCENARIO("testing move status position translation") {
                 REQUIRE(resp_msg.group_id == 11);
                 REQUIRE(resp_msg.seq_id == 8);
                 REQUIRE(resp_msg.ack_id == 3);
+                REQUIRE(resp_msg.position_flags == 0x1);
             }
             THEN("the position value should still be 0") {
                 REQUIRE(resp_msg.current_position_um == 0);
