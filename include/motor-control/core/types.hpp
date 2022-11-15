@@ -22,13 +22,13 @@ class MotorPositionStatus {
   public:
     using Flags = can::ids::MotorPositionFlags;
 
-    void set_flag(Flags flag);
+    auto set_flag(Flags flag) -> void;
 
-    void clear_flag(Flags flag);
+    auto clear_flag(Flags flag) -> void;
 
-    bool check_flag(Flags flag);
+    [[nodiscard]] auto check_flag(Flags flag) const -> bool;
 
-    uint8_t get_flags();
+    [[nodiscard]] auto get_flags() const -> uint8_t;
 
   private:
     std::atomic_uint8_t backing{0};
