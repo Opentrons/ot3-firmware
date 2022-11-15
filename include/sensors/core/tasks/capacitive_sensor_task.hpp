@@ -142,6 +142,14 @@ class CapacitiveMessageHandler {
         }
     }
 
+    inline auto delay_or_disable(uint8_t binding) -> uint8_t {
+        if (binding ==
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
+            return 0;
+        }
+        return DELAY;
+    }
+
     void visit(can::messages::BindSensorOutputRequest &m) {
         capacitance_handler.set_echoing(
             m.binding &
@@ -151,8 +159,9 @@ class CapacitiveMessageHandler {
             static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
+        const auto delay = delay_or_disable(m.binding);
         poller.continuous_multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, DELAY,
+            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, delay,
             own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));

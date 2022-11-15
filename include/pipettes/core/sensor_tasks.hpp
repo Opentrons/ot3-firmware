@@ -32,6 +32,7 @@ using I2CPollerClient =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
 
 void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+                 I2CPollerClient& i2c3_poller_client,
                  I2CClient& i2c1_task_client,
                  I2CPollerClient& i2c1_poller_client,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,

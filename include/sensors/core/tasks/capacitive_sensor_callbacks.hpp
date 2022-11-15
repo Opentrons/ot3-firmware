@@ -117,6 +117,12 @@ struct ReadCapacitanceCallback {
         hardware.reset_sync();
     }
 
+    void set_sample_rate() {
+        std::array configuration_data{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
+                                      SAMPLE_RATE_LSB};
+        i2c_writer.write(ADDRESS, configuration_data);
+    }
+
     void set_offset(float new_offset) {
         new_offset = std::max(new_offset, 0.0F);
         if (new_offset != current_offset_pf) {
@@ -126,15 +132,13 @@ struct ReadCapacitanceCallback {
                               device_configuration_lsb(capdac_raw)};
             i2c_writer.write(ADDRESS, offset);
             current_offset_pf = new_offset;
-            std::array configuration_data{FDC_CONFIGURATION, SAMPLE_RATE_MSB,
-                                          SAMPLE_RATE_LSB};
-            i2c_writer.write(ADDRESS, configuration_data);
         }
     }
 
     void initialize() {
         current_offset_pf = -1;
         set_offset(0);
+        set_sample_rate();
     }
 
     auto prime_autothreshold(float next_autothresh_pf) -> void {

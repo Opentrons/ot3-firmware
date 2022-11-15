@@ -104,6 +104,7 @@ auto initialize_motor_tasks(
     eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
+                              peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               fake_sensor_hw, id, sim_eeprom);
@@ -126,6 +127,7 @@ auto initialize_motor_tasks(
     eeprom::simulator::EEProm& sim_eeprom) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
+                              peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               fake_sensor_hw, id, sim_eeprom);
