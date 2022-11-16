@@ -43,29 +43,21 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     /**
      * @brief Get the current position tracker atomically
      */
-    [[nodiscard]] auto get_position_tracker() const -> q31_31;
+    [[nodiscard]] auto get_step_tracker() const -> uint32_t;
 
     /**
      * @brief Reset the position tracker to 0
      */
-    auto reset_position_tracker() -> void;
+    auto reset_step_tracker() -> void;
 
     /**
      * @brief Set the position tracker to a specified value
      */
-    auto set_position_tracker(q31_31) -> void;
-
-    /**
-     * @brief Increment the position tracker by a velocity. Can be positive
-     * or negative number.
-     *
-     * @return std::pair with position tracker value from BEFORE the
-     * increment, and then the value AFTER the increment.
-     */
-    auto increment_position_tracker(q31_31) -> std::pair<q31_31, q31_31>;
+    auto set_step_tracker(uint32_t) -> void;
 
   private:
-    std::atomic<q31_31> position_tracker{0};
+    // Used to track the position in microsteps.
+    std::atomic<uint32_t> step_tracker{0};
 };
 
 class PipetteStepperMotorHardwareIface

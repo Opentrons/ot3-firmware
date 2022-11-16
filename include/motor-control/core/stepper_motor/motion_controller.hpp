@@ -90,9 +90,7 @@ class MotionController {
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
     [[nodiscard]] auto read_motor_position() const {
-        return fixed_point_multiply(
-            um_per_step,
-            static_cast<uint32_t>(hardware.get_position_tracker() >> 31));
+        return fixed_point_multiply(um_per_step, hardware.get_step_tracker());
     }
 
     auto read_encoder_pulses() {
@@ -232,9 +230,7 @@ class PipetteMotionController {
     }
 
     [[nodiscard]] auto read_motor_position() const {
-        return fixed_point_multiply(
-            um_per_step,
-            static_cast<uint32_t>(hardware.get_position_tracker() >> 31));
+        return fixed_point_multiply(um_per_step, hardware.get_step_tracker());
     }
 
     [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {

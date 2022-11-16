@@ -68,6 +68,7 @@ class MotorInterruptHandler {
         }
         if (pulse()) {
             hardware.step();
+            update_hardware_step_tracker();
         }
         hardware.unstep();
     }
@@ -139,7 +140,8 @@ class MotorInterruptHandler {
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
-            hardware.reset_position_tracker();
+            position_tracker = 0;
+            hardware.reset_step_tracker();
             hardware.reset_encoder_pulses();
             hardware.position_flags.set_flag(
                 can::ids::MotorPositionFlags::stepper_position_ok);
@@ -161,18 +163,21 @@ class MotorInterruptHandler {
          * A function that increments the position tracker of a given motor.
          * The position tracker is the absolute position of a motor which can
          * only ever be positive (inclusive of zero).
+         *
+         * The caller must update the step position to the hardware iface
+         * if necessary.
          */
         tick_count++;
         buffered_move.velocity += buffered_move.acceleration;
-        q31_31 old_position, new_position;
-        std::tie(old_position, new_position) =
-            hardware.increment_position_tracker(buffered_move.velocity);
-        if (overflow(old_position, new_position)) {
-            hardware.set_position_tracker(old_position);
+        auto old_position = position_tracker;
+        position_tracker += buffered_move.velocity;
+        if (overflow(old_position, position_tracker)) {
+            position_tracker = old_position;
+            // Don't need to sync the hardware step counter
             return false;
         }
         // check to see when motor should step using velocity & tick count
-        return bool((old_position ^ new_position) & tick_flag);
+        return bool((old_position ^ position_tracker) & tick_flag);
     }
 
     [[nodiscard]] auto has_messages() const -> bool {
@@ -190,7 +195,8 @@ class MotorInterruptHandler {
         has_active_move = queue.try_read_isr(&buffered_move);
         if (has_active_move &&
             buffered_move.stop_condition == MoveStopCondition::limit_switch) {
-            hardware.set_position_tracker(0x7FFFFFFFFFFFFFFF);
+            position_tracker = 0x7FFFFFFFFFFFFFFF;
+            update_hardware_step_tracker();
         }
         // (TODO: lc) We should check the direction (and set respectively)
         // the direction pin for the motor once a move is being pulled off the
@@ -208,8 +214,7 @@ class MotorInterruptHandler {
         tick_count = 0x0;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
-                static_cast<uint32_t>(hardware.get_position_tracker() >> 31),
-                hardware.get_encoder_pulses(),
+                hardware.get_step_tracker(), hardware.get_encoder_pulses(),
                 hardware.position_flags.get_flags(), ack_msg_id);
 
             static_cast<void>(
@@ -224,7 +229,8 @@ class MotorInterruptHandler {
          * handler.
          */
         queue.reset();
-        hardware.reset_position_tracker();
+        position_tracker = 0;
+        update_hardware_step_tracker();
         tick_count = 0x0;
         has_active_move = false;
         hardware.reset_encoder_pulses();
@@ -244,10 +250,11 @@ class MotorInterruptHandler {
 
     // test interface
     [[nodiscard]] auto get_current_position() const -> q31_31 {
-        return hardware.get_position_tracker();
+        return position_tracker;
     }
     void set_current_position(q31_31 pos_tracker) {
-        hardware.set_position_tracker(pos_tracker);
+        position_tracker = pos_tracker;
+        update_hardware_step_tracker();
     }
     bool has_active_move = false;
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
@@ -258,9 +265,16 @@ class MotorInterruptHandler {
     }
 
   private:
+    void update_hardware_step_tracker() {
+        hardware.set_step_tracker(
+            static_cast<uint32_t>(position_tracker >> 31));
+    }
+
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
+    // Tracks position with sub-microstep accuracy
+    q31_31 position_tracker{0};
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
