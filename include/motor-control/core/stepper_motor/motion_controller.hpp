@@ -109,6 +109,8 @@ class MotionController {
 
     void disable_motor() {
         hardware.deactivate_motor();
+        hardware.position_flags.clear_flag(
+            can::ids::MotorPositionFlags::stepper_position_ok);
         enabled = false;
     }
 
@@ -217,6 +219,8 @@ class PipetteMotionController {
 
     void disable_motor() {
         hardware.deactivate_motor();
+        hardware.position_flags.clear_flag(
+            can::ids::MotorPositionFlags::stepper_position_ok);
         enabled = false;
     }
 
