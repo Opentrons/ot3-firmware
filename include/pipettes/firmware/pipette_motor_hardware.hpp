@@ -24,10 +24,10 @@ class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
     MotorHardware(const HardwareConfig& config, void* timer_handle,
                   void* encoder_handle)
         : pins(config), tim_handle(timer_handle), enc_handle(encoder_handle) {}
-    MotorHardware(const MotorHardware&) = default;
-    auto operator=(const MotorHardware&) -> MotorHardware& = default;
-    MotorHardware(MotorHardware&&) = default;
-    auto operator=(MotorHardware&&) -> MotorHardware& = default;
+    MotorHardware(const MotorHardware&) = delete;
+    auto operator=(const MotorHardware&) -> MotorHardware& = delete;
+    MotorHardware(MotorHardware&&) = delete;
+    auto operator=(MotorHardware&&) -> MotorHardware& = delete;
     void step() final;
     void unstep() final;
     void positive_direction() final;
