@@ -40,8 +40,7 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest,
-    can::messages::EncoderPositionRequest>;
+    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         head_tasks::HeadQueueClient>,

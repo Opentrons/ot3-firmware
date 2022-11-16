@@ -203,22 +203,27 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("an encoder position response") {
-        auto message = EncoderPositionResponse{.encoder_position = 0xABEF,
-                                               .position_flags = 0x2};
-        auto arr = std::array<uint8_t, 7>{0, 0, 0, 0, 0, 0, 0};
+        auto message = MotorPositionResponse{.current_position = 0xBA12CD,
+                                             .encoder_position = 0xABEF,
+                                             .position_flags = 0x2};
+        auto arr = std::array<uint8_t, 10>{0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized into a buffer larger than needed") {
             auto size = message.serialize(arr.begin(), arr.end());
             THEN("it is fully written into the buffer") {
                 REQUIRE(body.data()[0] == 0x00);
-                REQUIRE(body.data()[1] == 0x00);
-                REQUIRE(body.data()[2] == 0xAB);
-                REQUIRE(body.data()[3] == 0xEF);
-                REQUIRE(body.data()[4] == 0x02);
+                REQUIRE(body.data()[1] == 0xBA);
+                REQUIRE(body.data()[2] == 0x12);
+                REQUIRE(body.data()[3] == 0xCD);
+                REQUIRE(body.data()[4] == 0x00);
                 REQUIRE(body.data()[5] == 0x00);
-                REQUIRE(body.data()[6] == 0x00);
+                REQUIRE(body.data()[6] == 0xAB);
+                REQUIRE(body.data()[7] == 0xEF);
+                REQUIRE(body.data()[8] == 0x02);
+                REQUIRE(body.data()[9] == 0x00);
+                REQUIRE(body.data()[10] == 0x00);
             }
-            THEN("size must be returned") { REQUIRE(size == 5); }
+            THEN("size must be returned") { REQUIRE(size == 9); }
         }
     }
 

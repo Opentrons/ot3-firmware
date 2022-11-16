@@ -10,8 +10,8 @@ using MotionControlTaskMessage = std::variant<
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::EncoderPositionRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::HomeRequest>;
+    can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
+    can::messages::HomeRequest>;
 
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
@@ -36,8 +36,7 @@ using BrushedMotionControllerTaskMessage = std::variant<
     can::messages::EnableMotorRequest, can::messages::GripperGripRequest,
     can::messages::GripperHomeRequest,
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest,
-    can::messages::EncoderPositionRequest>;
+    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,

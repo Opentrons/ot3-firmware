@@ -127,7 +127,7 @@ using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
 
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
-using EncoderPositionRequest = Empty<MessageId::encoder_position_request>;
+using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     eeprom::types::address address;
@@ -354,20 +354,20 @@ struct MoveCompleted : BaseMessage<MessageId::move_completed> {
     auto operator==(const MoveCompleted& other) const -> bool = default;
 };
 
-struct EncoderPositionResponse
-    : BaseMessage<MessageId::encoder_position_response> {
+struct MotorPositionResponse : BaseMessage<MessageId::motor_position_response> {
+    uint32_t current_position;
     int32_t encoder_position;
     uint8_t position_flags;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
-        auto iter = bit_utils::int_to_bytes(encoder_position, body, limit);
+        auto iter = bit_utils::int_to_bytes(current_position, body, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
         iter = bit_utils::int_to_bytes(position_flags, iter, limit);
         return iter - body;
     }
 
-    auto operator==(const EncoderPositionResponse& other) const
-        -> bool = default;
+    auto operator==(const MotorPositionResponse& other) const -> bool = default;
 };
 
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
@@ -1063,10 +1063,9 @@ using ResponseMessageType = std::variant<
     GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
     ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
     PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    EncoderPositionResponse, ReadFromSensorResponse,
-    FirmwareUpdateStatusResponse, SensorThresholdResponse,
-    SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
-    BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
-    PeripheralStatusResponse>;
+    MotorPositionResponse, ReadFromSensorResponse, FirmwareUpdateStatusResponse,
+    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
+    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
+    TipActionResponse, PeripheralStatusResponse>;
 
 }  // namespace can::messages
