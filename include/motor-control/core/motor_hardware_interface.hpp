@@ -1,6 +1,8 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
+#include <utility>
 
 #include "motor-control/core/types.hpp"
 
@@ -35,6 +37,35 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void step() = 0;
     virtual void unstep() = 0;
     virtual void set_LED(bool status) = 0;
+
+    // Position tracker interface is the same for all steppers
+
+    /**
+     * @brief Get the current position tracker atomically
+     */
+    [[nodiscard]] auto get_position_tracker() const -> q31_31;
+
+    /**
+     * @brief Reset the position tracker to 0
+     */
+    auto reset_position_tracker() -> void;
+
+    /**
+     * @brief Set the position tracker to a specified value
+     */
+    auto set_position_tracker(q31_31) -> void;
+
+    /**
+     * @brief Increment the position tracker by a velocity. Can be positive
+     * or negative number.
+     *
+     * @return std::pair with position tracker value from BEFORE the
+     * increment, and then the value AFTER the increment.
+     */
+    auto increment_position_tracker(q31_31) -> std::pair<q31_31, q31_31>;
+
+  private:
+    std::atomic<q31_31> position_tracker{0};
 };
 
 class PipetteStepperMotorHardwareIface

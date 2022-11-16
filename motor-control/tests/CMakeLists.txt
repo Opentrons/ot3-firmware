@@ -17,6 +17,7 @@ add_executable(motor-control
         test_sync_handling.cpp
         test_brushed_motor_interrupt_handler.cpp
         test_motor_flags.cpp
+        test_motor_position_tracker.cpp
         )
 
 target_ot_motor_control(motor-control)
