@@ -206,7 +206,7 @@ SCENARIO("message serializing works") {
         auto message = MotorPositionResponse{.current_position = 0xBA12CD,
                                              .encoder_position = 0xABEF,
                                              .position_flags = 0x2};
-        auto arr = std::array<uint8_t, 10>{0, 0, 0, 0, 0, 0, 0};
+        auto arr = std::array<uint8_t, 10>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized into a buffer larger than needed") {
             auto size = message.serialize(arr.begin(), arr.end());
