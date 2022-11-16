@@ -141,9 +141,9 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             hardware.reset_encoder_pulses();
-            position_flags.set_flag(
+            hardware.position_flags.set_flag(
                 can::ids::MotorPositionFlags::stepper_position_ok);
-            position_flags.set_flag(
+            hardware.position_flags.set_flag(
                 can::ids::MotorPositionFlags::encoder_position_ok);
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
@@ -208,8 +208,8 @@ class MotorInterruptHandler {
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 static_cast<uint32_t>(position_tracker >> 31),
-                hardware.get_encoder_pulses(), position_flags.get_flags(),
-                ack_msg_id);
+                hardware.get_encoder_pulses(),
+                hardware.position_flags.get_flags(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
@@ -260,8 +260,7 @@ class MotorInterruptHandler {
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
-    q31_31 position_tracker = 0x0;         // in steps
-    MotorPositionStatus position_flags{};  // can/core/ids.hpp
+    q31_31 position_tracker = 0x0;  // in steps
     GenericQueue& queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;

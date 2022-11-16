@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "motor-control/core/types.hpp"
+
 namespace motor_hardware {
 
 class MotorHardwareIface {
@@ -22,6 +24,10 @@ class MotorHardwareIface {
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
     virtual void stop_timer_interrupt() = 0;
+
+    // This variable can remain public because the only public methods
+    // to it are thread-safe anyways.
+    MotorPositionStatus position_flags{};
 };
 
 class StepperMotorHardwareIface : virtual public MotorHardwareIface {

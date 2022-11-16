@@ -119,6 +119,10 @@ class MotionController {
         return motion_constraints;
     }
 
+    [[nodiscard]] auto get_position_flags() const -> uint8_t {
+        return hardware.position_flags.get_flags();
+    }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     StepperMotorHardwareIface& hardware;
@@ -218,6 +222,10 @@ class PipetteMotionController {
 
     [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {
         return motion_constraints;
+    }
+
+    [[nodiscard]] auto get_position_flags() const -> uint8_t {
+        return hardware.position_flags.get_flags();
     }
 
   private:
