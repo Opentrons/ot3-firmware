@@ -180,7 +180,7 @@ class HDC3020 {
                 case hdc3020::Registers::TRIGGER_ON_DEMAND_MODE:
                     _registers.trigger_measurement.humidity = humidity;
                     _registers.trigger_measurement.temperature = temperature;
-                    send_hdc3020_data(humidity, temperature);
+                    send_hdc3020_data(humidity, temperature, tm.message_index);
                     return;
                     break;
                 case hdc3020::Registers::AUTO_MEASURE_1M2S:

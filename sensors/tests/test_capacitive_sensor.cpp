@@ -223,6 +223,7 @@ SCENARIO("read capacitance sensor values") {
                 {}, 0xdeadbeef, capacitive_id, sensor_id_int, NUM_READS));
         WHEN("we call the capacitance handler") {
             sensor.handle_message(multi_read);
+            can_queue.reset();
             auto buffer_a = i2c::messages::MaxMessageBuffer{200, 80, 0, 0, 0};
             auto buffer_b = i2c::messages::MaxMessageBuffer{100, 10, 0, 0, 0};
             auto read_message =
@@ -241,7 +242,6 @@ SCENARIO("read capacitance sensor values") {
                 sensor.handle_message(first_resp);
                 sensor.handle_message(second_resp);
             }
-            can_queue.reset();
             THEN("it should adjust the offset accordingly") {
                 // check for the offset
                 auto read = sensors::utils::TaskMessage(
