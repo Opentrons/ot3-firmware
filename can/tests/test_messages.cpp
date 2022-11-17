@@ -221,7 +221,6 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[7] == 0xEF);
                 REQUIRE(body.data()[8] == 0x02);
                 REQUIRE(body.data()[9] == 0x00);
-                REQUIRE(body.data()[10] == 0x00);
             }
             THEN("size must be returned") { REQUIRE(size == 9); }
         }
