@@ -91,6 +91,8 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
 class SimBrushedMotorHardwareIface
     : public motor_hardware::BrushedMotorHardwareIface {
   public:
+    SimBrushedMotorHardwareIface(MoveMessageHardware id)
+        : motor_hardware::BrushedMotorHardwareIface(), _id(id) {}
     void positive_direction() final {}
     void negative_direction() final {}
     void activate_motor() final {}
@@ -104,6 +106,7 @@ class SimBrushedMotorHardwareIface
         }
         return false;
     }
+    void trigger_limit_switch() { limit_switch_status = true; }
     void grip() final {}
     void ungrip() final {}
     void stop_pwm() final {}
@@ -114,8 +117,8 @@ class SimBrushedMotorHardwareIface
         return true;
     }
     void reset_encoder_pulses() final { test_pulses = 0; }
-    int32_t get_encoder_pulses() final { return 0; }
-
+    int32_t get_encoder_pulses() final { return test_pulses; }
+    void set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
     double update_control(int32_t encoder_error) {
         return controller_loop.compute(encoder_error);
     }
@@ -127,13 +130,14 @@ class SimBrushedMotorHardwareIface
 
   private:
     bool limit_switch_status = false;
-    uint32_t test_pulses = 0;
+    int32_t test_pulses = 0;
     // these controller loop values were selected just because testing
     // does not emulate change in speed and these give us pretty good values
     // when the "motor" instantly goes to top speed then instantly stops
     ot_utils::pid::PID controller_loop{0.008,         0.0045, 0.000015,
                                        1.F / 32000.0, 7,      -7};
     StateManagerHandle _state_manager = nullptr;
+    MoveMessageHardware _id;
 };
 
 class SimGearMotorHardwareIface

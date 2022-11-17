@@ -17,7 +17,10 @@
 
 #include <array>
 #include <atomic>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <boost/asio.hpp>
+#pragma GCC diagnostic pop
 #include <boost/bind.hpp>
 #include <boost/program_options.hpp>
 #include <deque>

@@ -245,6 +245,7 @@ class BrushedMotorInterruptHandler {
 
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
+    ControlState motor_state = ControlState::IDLE;
 
   private:
     GenericQueue& queue;
@@ -253,7 +254,6 @@ class BrushedMotorInterruptHandler {
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
     BrushedMove buffered_move = BrushedMove{};
-    ControlState motor_state = ControlState::IDLE;
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
     int32_t acceptable_position_error = 0;
