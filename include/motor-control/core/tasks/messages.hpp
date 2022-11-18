@@ -27,7 +27,7 @@ using MoveGroupTaskMessage =
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::Ack,
-                 can::messages::ErrorMessage>;
+                 can::messages::ErrorMessage, can::messages::StopRequest>;
 
 using BrushedMotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::SetBrushedMotorVrefRequest,

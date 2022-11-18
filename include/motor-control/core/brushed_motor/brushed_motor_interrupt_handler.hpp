@@ -27,7 +27,8 @@ enum class ControlState {
     FORCE_CONTROLLING,
     POSITION_CONTROLLING,
     IDLE,
-    ACTIVE
+    ACTIVE,
+    ERROR
 };
 
 static constexpr uint32_t HOLDOFF_TICKS =
@@ -143,14 +144,25 @@ class BrushedMotorInterruptHandler {
     }
 
     void run_interrupt() {
-        if (tick < HOLDOFF_TICKS) {
-            tick++;
-            return;
-        }
-        if (motor_state == ControlState::ACTIVE) {
-            execute_active_move();
+        if (motor_state != ControlState::ERROR) {
+            if (estop_triggered()) {
+                cancel_and_clear_moves();
+                return;
+            }
+            if (tick < HOLDOFF_TICKS) {
+                tick++;
+                return;
+            }
+            if (motor_state == ControlState::ACTIVE) {
+                execute_active_move();
+            } else {
+                execute_idle_move();
+            }
         } else {
-            execute_idle_move();
+            // return out of error state once the estop is disabled
+            if (!estop_triggered()) {
+                motor_state = ControlState::IDLE;
+            }
         }
     }
 
@@ -211,6 +223,35 @@ class BrushedMotorInterruptHandler {
 
     auto limit_switch_triggered() -> bool {
         return hardware.check_limit_switch();
+    }
+
+    auto estop_triggered() -> bool { return hardware.check_estop_in(); }
+
+    void cancel_and_clear_moves() {
+        // If there is a currently running move send a error corrisponding
+        // to it so the hardware controller can know what move was running
+        // when the cancel happened
+        if (motor_state == ControlState::ACTIVE) {
+            static_cast<void>(
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                    can::messages::ErrorMessage{
+                        .message_index = buffered_move.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::hardware}));
+        }
+        // send out a async error regardless of running a move
+        static_cast<void>(
+            status_queue_client.send_brushed_move_status_reporter_queue(
+                can::messages::ErrorMessage{
+                    .message_index = 0,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code = can::ids::ErrorCode::hardware}));
+        // Broadcast a stop message
+        static_cast<void>(
+            status_queue_client.send_brushed_move_status_reporter_queue(
+                can::messages::StopRequest{.message_index = 0}));
+        // clear the queue
+        queue.reset();
     }
 
     void finish_current_move(
