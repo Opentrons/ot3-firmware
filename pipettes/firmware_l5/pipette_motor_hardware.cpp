@@ -23,6 +23,10 @@ auto MotorHardware::check_limit_switch() -> bool {
     return gpio::is_set(pins.limit_switch);
 }
 
+auto MotorHardware::check_estop_in() -> bool {
+    return gpio::is_set(pins.estop_in);
+}
+
 auto MotorHardware::check_sync_in() -> bool {
     return gpio::is_set(pins.sync_in);
 }
