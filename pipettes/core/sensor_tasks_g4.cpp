@@ -40,8 +40,12 @@ void sensor_tasks::start_tasks(
                                     ? i2c2_poller_client
                                     : i2c3_poller_client;
 
-    auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
-                                                  eeprom_hardware);
+    auto& eeprom_i2c_client = get_pipette_type() == NINETY_SIX_CHANNEL
+                                  ? i2c3_task_client
+                                  : i2c2_task_client;
+
+    auto& eeprom_task = eeprom_task_builder.start(
+        5, "eeprom", eeprom_i2c_client, eeprom_hardware);
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task = pressure_sensor_task_builder.start(

@@ -35,7 +35,7 @@ SCENARIO("Configuring EEProm Address Length") {
         }
         WHEN("Explicit 16 bit contructor used") {
             auto hw_16_bit_explicit =
-                MockEepromHardwareIface(EEPromChipType::ST_M24128);
+                MockEepromHardwareIface(EEPromChipType::ST_M24128_BF);
             THEN("address setting is 16 bit") {
                 REQUIRE(
                     hw_16_bit_explicit.get_eeprom_addr_bytes() ==
@@ -96,6 +96,27 @@ SCENARIO("WriteProtector class") {
             THEN("write protect is enabled then disabled") {
                 REQUIRE(hw.set_calls == std::vector<bool>{true, false});
             }
+        }
+    }
+}
+SCENARIO("looking up i2c address by chip type") {
+    WHEN("we have a MICROCHIP_24AA02T") {
+        THEN("the address should be 0x50 shifted left (0xA0)") {
+            REQUIRE(hardware_iface::get_i2c_device_address(
+                        hardware_iface::EEPromChipType::MICROCHIP_24AA02T) ==
+                    0xA0);
+        }
+    }
+    WHEN("we have a ST_M24128_BF") {
+        THEN("the address should be 0x50 shifted left (0xA0)") {
+            REQUIRE(hardware_iface::get_i2c_device_address(
+                        hardware_iface::EEPromChipType::ST_M24128_BF) == 0xA0);
+        }
+    }
+    WHEN("we have a ST_M24128_DF") {
+        THEN("the address should be 0x51 shifted left (0xA2)") {
+            REQUIRE(hardware_iface::get_i2c_device_address(
+                        hardware_iface::EEPromChipType::ST_M24128_DF) == 0xA2);
         }
     }
 }

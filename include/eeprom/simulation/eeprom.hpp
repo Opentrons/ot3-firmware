@@ -30,11 +30,11 @@ class EEProm : public I2CDeviceBase,
         return BackingStore::add_options(cmdline_desc, env_desc);
     }
     explicit EEProm(po::variables_map& options, const uint32_t backing_data = 0)
-        : I2CDeviceBase(types::DEVICE_ADDRESS),
+        : I2CDeviceBase(hardware_iface::get_i2c_device_address()),
           backing(options, backing_data) {}
     EEProm(hardware_iface::EEPromChipType chip, po::variables_map& options,
            const uint32_t backing_data = 0)
-        : I2CDeviceBase(types::DEVICE_ADDRESS),
+        : I2CDeviceBase(hardware_iface::get_i2c_device_address(chip)),
           hardware_iface::EEPromHardwareIface(chip),
           backing(options, backing_data) {}
 

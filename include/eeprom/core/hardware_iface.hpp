@@ -4,7 +4,7 @@
 namespace eeprom {
 namespace hardware_iface {
 
-enum class EEPromChipType { MICROCHIP_24AA02T, ST_M24128 };
+enum class EEPromChipType { MICROCHIP_24AA02T, ST_M24128_BF, ST_M24128_DF };
 
 enum class EEPromAddressType {
     EEPROM_ADDR_8_BIT = sizeof(uint8_t),
@@ -15,6 +15,14 @@ constexpr uint8_t ADDR_BITS_DIFFERENCE =
     8 * (sizeof(uint16_t) - sizeof(uint8_t));
 
 enum class EEpromMemorySize { MICROCHIP_256_BYTE = 256, ST_16_KBYTE = 16384 };
+
+inline auto get_i2c_device_address(
+    EEPromChipType chip = EEPromChipType::ST_M24128_BF) -> uint16_t {
+    if (chip == EEPromChipType::ST_M24128_DF) {
+        return 0x51 << 1;
+    }
+    return 0x50 << 1;
+}
 /**
  * Interface to eeprom. Must be implemented in FW and Simulation
  *
@@ -33,7 +41,13 @@ class EEPromHardwareIface {
                 eeprom_mem_size =
                     static_cast<size_t>(EEpromMemorySize::MICROCHIP_256_BYTE);
                 break;
-            case EEPromChipType::ST_M24128:
+            case EEPromChipType::ST_M24128_BF:
+                eeprom_addr_bytes =
+                    static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_16_BIT);
+                eeprom_mem_size =
+                    static_cast<size_t>(EEpromMemorySize::ST_16_KBYTE);
+                break;
+            case EEPromChipType::ST_M24128_DF:
                 eeprom_addr_bytes =
                     static_cast<size_t>(EEPromAddressType::EEPROM_ADDR_16_BIT);
                 eeprom_mem_size =
