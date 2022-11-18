@@ -67,7 +67,7 @@ class EEPromHardwareInterface
   public:
     EEPromHardwareInterface()
         : eeprom::hardware_iface::EEPromHardwareIface(
-              eeprom::hardware_iface::EEPromChipType::ST_M24128) {}
+              eeprom::hardware_iface::EEPromChipType::ST_M24128_DF) {}
     void set_write_protect(bool enable) final {
         if (enable) {
             disable_eeprom_write();

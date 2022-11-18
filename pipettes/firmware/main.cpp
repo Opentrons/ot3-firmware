@@ -52,12 +52,16 @@ static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_comms2 = i2c::hardware::I2C();
 static I2CHandlerStruct i2chandler_struct{};
 
+static auto eeprom_chip =
+    PIPETTE_TYPE == NINETY_SIX_CHANNEL
+        ? eeprom::hardware_iface::EEPromChipType::ST_M24128_DF
+        : eeprom::hardware_iface::EEPromChipType::ST_M24128_BF;
+
 class PipetteEEPromHardwareIface
     : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
     PipetteEEPromHardwareIface()
-        : eeprom::hardware_iface::EEPromHardwareIface(
-              eeprom::hardware_iface::EEPromChipType::ST_M24128) {}
+        : eeprom::hardware_iface::EEPromHardwareIface(eeprom_chip) {}
     void set_write_protect(bool enable) final {
         if (enable) {
             disable_eeprom_write();
