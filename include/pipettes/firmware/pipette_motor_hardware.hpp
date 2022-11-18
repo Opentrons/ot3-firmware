@@ -15,6 +15,7 @@ struct HardwareConfig {
     gpio::PinConfig led;
     gpio::PinConfig sync_in;
     gpio::PinConfig tip_sense;
+    gpio::PinConfig estop_in;
 };
 
 class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {

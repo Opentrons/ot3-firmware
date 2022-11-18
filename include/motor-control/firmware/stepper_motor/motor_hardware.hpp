@@ -14,6 +14,7 @@ struct HardwareConfig {
     gpio::PinConfig limit_switch;
     gpio::PinConfig led;
     gpio::PinConfig sync_in;
+    gpio::PinConfig estop_in;
 };
 
 class MotorHardware : public StepperMotorHardwareIface {

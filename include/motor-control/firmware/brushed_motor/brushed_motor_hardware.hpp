@@ -20,6 +20,7 @@ struct BrushedHardwareConfig {
     gpio::PinConfig enable;
     gpio::PinConfig limit_switch;
     gpio::PinConfig sync_in;
+    gpio::PinConfig estop_in;
     double encoder_interrupt_freq;
     double pid_kp;
     double pid_ki;

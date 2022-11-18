@@ -62,10 +62,16 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
     .led = {},
-    .sync_in = {
+    .sync_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_7,
+            .active_setting = GPIO_PIN_RESET},
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_7,
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -95,10 +101,16 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
     .led = {},
-    .sync_in = {
+    .sync_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_5,
+            .active_setting = GPIO_PIN_RESET},
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_5,
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
         .active_setting = GPIO_PIN_RESET}
 };
 

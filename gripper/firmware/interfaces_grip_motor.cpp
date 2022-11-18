@@ -39,6 +39,12 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
     .encoder_interrupt_freq = double(GRIPPER_JAW_PWM_FREQ_HZ),
 
     /* the expected behavior with these pid values is that the motor runs at
