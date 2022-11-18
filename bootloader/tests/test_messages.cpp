@@ -58,7 +58,7 @@ SCENARIO("update data") {
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
-            0xa, 0xb, 0xc, 0xd,
+            0x00, 0x20, 0x40, 0x60,
             // Size
             0x0,
             // Reserved
@@ -68,7 +68,7 @@ SCENARIO("update data") {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0,
             // Checksum.
-            0xfc, 0x9a};
+            0xfc, 0x08};
 
         WHEN("parsed") {
             UpdateData result;
@@ -76,11 +76,11 @@ SCENARIO("update data") {
             THEN("it returns ok") { REQUIRE(error == can_errorcode_ok); }
             THEN("its fields are populated") {
                 REQUIRE(result.message_index == 0xdeadbeef);
-                REQUIRE(result.address == 0x0a0b0c0d);
+                REQUIRE(result.address == 0x00204060);
                 REQUIRE(result.num_bytes == 0);
                 REQUIRE(result.reserved == 0);
                 REQUIRE(result.data == arr.data() + 10);
-                REQUIRE(result.checksum == 0xFC9A);
+                REQUIRE(result.checksum == 0xFC08);
             }
         }
     }
@@ -90,7 +90,7 @@ SCENARIO("update data") {
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
-            0x89, 0xab, 0xcd, 0xef,
+            0x00, 0x20, 0x40, 0x60,
             // Size
             48,
             // Reserved
@@ -101,7 +101,7 @@ SCENARIO("update data") {
             0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x40, 0x41, 0x42, 0x43, 0x44,
             0x45, 0x46, 0x47, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
             // Checksum.
-            0xF1, 0x80};
+            0xF3, 0xb0};
 
         WHEN("parsed") {
             UpdateData result;
@@ -109,11 +109,11 @@ SCENARIO("update data") {
             THEN("it returns ok") { REQUIRE(error == can_errorcode_ok); }
             THEN("its fields are populated") {
                 REQUIRE(result.message_index == 0xdeadbeef);
-                REQUIRE(result.address == 0x89abcdef);
+                REQUIRE(result.address == 0x00204060);
                 REQUIRE(result.num_bytes == 48);
                 REQUIRE(result.reserved == 0);
                 REQUIRE(result.data == arr.data() + 10);
-                REQUIRE(result.checksum == 0xF180);
+                REQUIRE(result.checksum == 0xf3b0);
             }
         }
     }
@@ -156,7 +156,7 @@ SCENARIO("update data errors") {
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
-            0xa, 0xb, 0xc, 0xd,
+            0x00, 0x20, 0x40, 0x60,
             // Size
             52,
             // Reserved
@@ -181,7 +181,7 @@ SCENARIO("update data errors") {
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
-            0x89, 0xab, 0xcd, 0xef,
+            0x00, 0x20, 0x40, 0x60,
             // Size
             48,
             // Reserved

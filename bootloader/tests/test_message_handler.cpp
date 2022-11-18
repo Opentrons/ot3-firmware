@@ -110,7 +110,7 @@ SCENARIO("update data bad checksum error") {
         request.data[4] = 0xC0;
         request.data[5] = 0xFF;
         request.data[6] = 0xEE;
-        request.data[7] = 0xBB;
+        request.data[7] = 0x00;
 
         request.size = 60;
 
@@ -138,7 +138,7 @@ SCENARIO("update data bad checksum error") {
                 REQUIRE(response.data[4] == 0xC0);
                 REQUIRE(response.data[5] == 0xFF);
                 REQUIRE(response.data[6] == 0xEE);
-                REQUIRE(response.data[7] == 0xBB);
+                REQUIRE(response.data[7] == 0x00);
                 REQUIRE(response.data[8] ==
                         ((can_errorcode_bad_checksum >> 8) & 0xFF));
                 REQUIRE(response.data[9] ==

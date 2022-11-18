@@ -20,7 +20,7 @@ typedef struct {
     uint16_t checksum;
 } UpdateData;
 
-#define UPDATE_DATA_MESSAGE_SIZE    64
+#define UPDATE_DATA_MESSAGE_SIZE    60
 // can't be (UPDATE_DATA_MESSAGE_SIZE - sizeof(UpdateData) - sizeof(uint8_t))
 // since c adds padding to align all struct members to 32bit addresses
 
