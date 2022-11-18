@@ -21,6 +21,7 @@ class MotorHardwareIface {
     virtual void activate_motor() = 0;
     virtual void deactivate_motor() = 0;
     virtual auto check_limit_switch() -> bool = 0;
+    virtual auto check_estop_in() -> bool = 0;
     virtual auto check_sync_in() -> bool = 0;
     virtual auto get_encoder_pulses() -> int32_t = 0;
     virtual void reset_encoder_pulses() = 0;

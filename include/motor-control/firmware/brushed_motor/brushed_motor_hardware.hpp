@@ -52,6 +52,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void activate_motor() final;
     void deactivate_motor() final;
     auto check_limit_switch() -> bool final;
+    auto check_estop_in() -> bool final;
     void grip() final;
     void ungrip() final;
     void stop_pwm() final;

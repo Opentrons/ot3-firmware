@@ -36,6 +36,10 @@ bool BrushedMotorHardware::check_limit_switch() {
     return gpio::is_set(pins.limit_switch);
 }
 
+bool BrushedMotorHardware::check_estop_in() {
+    return gpio::is_set(pins.estop_in);
+}
+
 void BrushedMotorHardware::grip() { positive_direction(); }
 
 void BrushedMotorHardware::ungrip() { negative_direction(); }

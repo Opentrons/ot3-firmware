@@ -25,6 +25,8 @@ bool MotorHardware::check_limit_switch() {
     return gpio::is_set(pins.limit_switch);
 }
 
+bool MotorHardware::check_estop_in() { return gpio::is_set(pins.estop_in); }
+
 bool MotorHardware::check_sync_in() { return gpio::is_set(pins.sync_in); }
 
 void MotorHardware::set_LED(bool status) {

@@ -1294,7 +1294,7 @@ using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
 
 using ResponseMessageType = std::variant<
     Acknowledgment, HeartbeatResponse, ErrorMessage, DeviceInfoResponse,
-    GetMotionConstraintsResponse, GetMoveGroupResponse,
+    GetMotionConstraintsResponse, GetMoveGroupResponse, StopRequest,
     ReadMotorDriverRegisterResponse, ReadFromEEPromResponse, MoveCompleted,
     ReadPresenceSensingVoltageResponse, PushToolsDetectedNotification,
     ReadLimitSwitchResponse, MotorPositionResponse, ReadFromSensorResponse,

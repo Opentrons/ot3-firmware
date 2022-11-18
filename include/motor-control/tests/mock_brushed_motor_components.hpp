@@ -26,6 +26,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void activate_motor() final {}
     void deactivate_motor() final {}
     auto check_limit_switch() -> bool final { return ls_val; }
+    auto check_estop_in() -> bool final { return estop_in_val; }
     void grip() final {
         positive_direction();
         is_gripping = true;
@@ -49,6 +50,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     auto get_is_gripping() -> bool { return is_gripping; }
     void set_encoder_value(int32_t val) { enc_val = val; }
     auto set_limit_switch(bool val) { ls_val = val; }
+    auto set_estop_in(bool val) { estop_in_val = val; }
 
     double update_control(int32_t encoder_error) {
         pid_controller_output = controller_loop.compute(encoder_error);
@@ -63,6 +65,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
     bool sync_val = false;
+    bool estop_in_val = false;
     bool is_gripping = false;
     double pid_controller_output = 0.0;
     int32_t enc_val = 0;
