@@ -184,6 +184,29 @@ void data_ready_gpio_init() {
     HAL_NVIC_EnableIRQ(exti_line);
 }
 
+
+void estop_input_gpio_init() {
+    PipetteType pipette_type = get_pipette_type();
+       /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        /*Configure GPIO pin EStopin : PB9 */
+        GPIO_InitStruct.Pin = GPIO_PIN_9;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    }
+    else {
+        /*Configure GPIO pin EStopin : PA10 */
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+    
+}
+
 void utility_gpio_init() {
     limit_switch_gpio_init();
     tip_sense_gpio_init();
@@ -191,4 +214,5 @@ void utility_gpio_init() {
     sync_drive_gpio_init();
     data_ready_gpio_init();
     encoder_gpio_init();
+    estop_input_gpio_init();
 }
