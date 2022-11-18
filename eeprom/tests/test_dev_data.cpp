@@ -131,7 +131,7 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
     auto hardware_iface =
-        MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128};
+        MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
 
     auto eeprom =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
@@ -295,7 +295,7 @@ SCENARIO("writing large data to partition") {
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
     auto hardware_iface =
-        MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128};
+        MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
 
     auto eeprom =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
@@ -490,7 +490,7 @@ SCENARIO("reading large data from partition") {
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
     writer.set_queue(&i2c_queue);
     auto hardware_iface =
-        MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128};
+        MockHardwareIface{hardware_iface::EEPromChipType::ST_M24128_BF};
 
     auto eeprom =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
