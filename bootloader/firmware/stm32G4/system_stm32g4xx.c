@@ -84,7 +84,7 @@
 #include "common/firmware/errors.h"
 
 #if !defined(HSE_VALUE)
-#define HSE_VALUE 24000000U /*!< Value of the External oscillator in Hz */
+#define HSE_VALUE 16000000U /*!< Value of the External oscillator in Hz */
 #endif                      /* HSE_VALUE */
 
 #if !defined(HSI_VALUE)
@@ -211,9 +211,9 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;
@@ -238,32 +238,7 @@ void SystemClock_Config(void) {
     {
         Error_Handler();
     }
-    /**
-     *  TODO (AL, 2021-15-07): Solidify clock configuration.
-     *   Above is copied directly from stm32_test project to
-     *   get CAN working.
-     *   Below is the original setup.
-     */
-    //
-    //  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    //  RCC_OscInitTypeDef RCC_OscInitStruct;
-    //
-    //  /* Enable HSE Oscillator and activate PLL with HSE as source */
-    //  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    //  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    //  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    //  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    //  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    //  HAL_RCC_OscConfig(&RCC_OscInitStruct);
-    //
-    //  /* Select PLL as system clock source and configure the HCLK, PCLK1 and
-    //  PCLK2 clocks dividers */ RCC_ClkInitStruct.ClockType =
-    //  (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 |
-    //  RCC_CLOCKTYPE_PCLK2); RCC_ClkInitStruct.SYSCLKSource =
-    //  RCC_SYSCLKSOURCE_PLLCLK; RCC_ClkInitStruct.AHBCLKDivider =
-    //  RCC_SYSCLK_DIV1; RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-    //  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-    //  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+
 }
 
 /**
