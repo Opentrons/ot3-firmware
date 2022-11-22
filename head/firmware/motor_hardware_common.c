@@ -192,7 +192,7 @@ void Encoder_GPIO_Init(void) {
     /* Encoder A Axis GPIO Configuration
     PA0     ------> CHANNEL A
     PA1     ------> CHANNEL B
-    PA5    ------> CHANNEL I
+    PA5    ------> CHANNEL I (UNUSED)
     */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
@@ -202,17 +202,10 @@ void Encoder_GPIO_Init(void) {
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
     /* Encoder Z Axis GPIO Configuration
     PA6     ------> CHANNEL A
     PA7     ------> CHANNEL B
-    PD2    ------> CHANNEL I
+    PD2    ------> CHANNEL I (UNUSED)
     */
     // ENC CHANNELA Z AXIS PIN Configure
     GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
@@ -221,14 +214,6 @@ void Encoder_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    // ENC CHANNELI Z AXIS PIN Configure
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 }
 
 /**
