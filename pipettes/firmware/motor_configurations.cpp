@@ -195,7 +195,7 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOA,
                      .pin = GPIO_PIN_6,
-                     .active_setting = GPIO_PIN_SET},
+                     .active_setting = GPIO_PIN_RESET},
                 .step =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOA,
