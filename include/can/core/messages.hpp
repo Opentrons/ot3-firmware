@@ -1266,13 +1266,14 @@ using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
  */
 
 using ResponseMessageType = std::variant<
-    Acknowledgment, HeartbeatResponse, ErrorMessage, DeviceInfoResponse, GetMotionConstraintsResponse,
-    GetMoveGroupResponse, ReadMotorDriverRegisterResponse,
-    ReadFromEEPromResponse, MoveCompleted, ReadPresenceSensingVoltageResponse,
-    PushToolsDetectedNotification, ReadLimitSwitchResponse,
-    MotorPositionResponse, ReadFromSensorResponse, FirmwareUpdateStatusResponse,
-    SensorThresholdResponse, SensorDiagnosticResponse, TaskInfoResponse,
-    PipetteInfoResponse, BindSensorOutputResponse, GripperInfoResponse,
-    TipActionResponse, PeripheralStatusResponse>;
+    Acknowledgment, HeartbeatResponse, ErrorMessage, DeviceInfoResponse,
+    GetMotionConstraintsResponse, GetMoveGroupResponse,
+    ReadMotorDriverRegisterResponse, ReadFromEEPromResponse, MoveCompleted,
+    ReadPresenceSensingVoltageResponse, PushToolsDetectedNotification,
+    ReadLimitSwitchResponse, MotorPositionResponse, ReadFromSensorResponse,
+    FirmwareUpdateStatusResponse, SensorThresholdResponse,
+    SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
+    BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
+    PeripheralStatusResponse>;
 
 }  // namespace can::messages
