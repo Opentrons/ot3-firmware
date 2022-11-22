@@ -1,6 +1,9 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
+
+#include "can/core/ids.hpp"
 
 using sq0_31 = int32_t;  // 0: signed bit,  1-31: fractional bits
 using sq15_16 =
@@ -14,3 +17,19 @@ using stepper_timer_ticks = uint64_t;
 using brushed_timer_ticks = uint64_t;
 using steps_per_tick = sq0_31;
 using steps_per_tick_sq = sq0_31;
+
+class MotorPositionStatus {
+  public:
+    using Flags = can::ids::MotorPositionFlags;
+
+    auto set_flag(Flags flag) -> void;
+
+    auto clear_flag(Flags flag) -> void;
+
+    [[nodiscard]] auto check_flag(Flags flag) const -> bool;
+
+    [[nodiscard]] auto get_flags() const -> uint8_t;
+
+  private:
+    std::atomic_uint8_t backing{0};
+};

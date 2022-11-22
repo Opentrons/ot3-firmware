@@ -123,6 +123,7 @@ SCENARIO("message serializing works") {
                                      .seq_id = 2,
                                      .current_position_um = 0x3456789a,
                                      .encoder_position_um = 0x05803931,
+                                     .position_flags = 0x3,
                                      .ack_id = 1};
         auto arr = std::array<uint8_t, 12>{};
         auto body = std::span{arr};
@@ -139,9 +140,10 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[7] == 0x80);
                 REQUIRE(body.data()[8] == 0x39);
                 REQUIRE(body.data()[9] == 0x31);
-                REQUIRE(body.data()[10] == 1);
+                REQUIRE(body.data()[10] == 0x3);
+                REQUIRE(body.data()[11] == 1);
             }
-            THEN("size must be returned") { REQUIRE(size == 11); }
+            THEN("size must be returned") { REQUIRE(size == 12); }
         }
     }
 
@@ -197,6 +199,30 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[16] == 0);
             }
             THEN("size must be returned") { REQUIRE(size == 16); }
+        }
+    }
+
+    GIVEN("an encoder position response") {
+        auto message = MotorPositionResponse{.current_position = 0xBA12CD,
+                                             .encoder_position = 0xABEF,
+                                             .position_flags = 0x2};
+        auto arr = std::array<uint8_t, 10>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        auto body = std::span{arr};
+        WHEN("serialized into a buffer larger than needed") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is fully written into the buffer") {
+                REQUIRE(body.data()[0] == 0x00);
+                REQUIRE(body.data()[1] == 0xBA);
+                REQUIRE(body.data()[2] == 0x12);
+                REQUIRE(body.data()[3] == 0xCD);
+                REQUIRE(body.data()[4] == 0x00);
+                REQUIRE(body.data()[5] == 0x00);
+                REQUIRE(body.data()[6] == 0xAB);
+                REQUIRE(body.data()[7] == 0xEF);
+                REQUIRE(body.data()[8] == 0x02);
+                REQUIRE(body.data()[9] == 0x00);
+            }
+            THEN("size must be returned") { REQUIRE(size == 9); }
         }
     }
 

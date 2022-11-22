@@ -1,16 +1,20 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
+#include <utility>
+
+#include "motor-control/core/types.hpp"
 
 namespace motor_hardware {
 
 class MotorHardwareIface {
   public:
     MotorHardwareIface() = default;
-    MotorHardwareIface(const MotorHardwareIface&) = default;
-    MotorHardwareIface(MotorHardwareIface&&) = default;
-    auto operator=(MotorHardwareIface&&) -> MotorHardwareIface& = default;
-    auto operator=(const MotorHardwareIface&) -> MotorHardwareIface& = default;
+    MotorHardwareIface(const MotorHardwareIface&) = delete;
+    MotorHardwareIface(MotorHardwareIface&&) = delete;
+    auto operator=(MotorHardwareIface&&) -> MotorHardwareIface& = delete;
+    auto operator=(const MotorHardwareIface&) -> MotorHardwareIface& = delete;
     virtual ~MotorHardwareIface() = default;
     virtual void positive_direction() = 0;
     virtual void negative_direction() = 0;
@@ -22,6 +26,10 @@ class MotorHardwareIface {
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
     virtual void stop_timer_interrupt() = 0;
+
+    // This variable can remain public because the only public methods
+    // to it are thread-safe anyways.
+    MotorPositionStatus position_flags{};
 };
 
 class StepperMotorHardwareIface : virtual public MotorHardwareIface {
@@ -29,6 +37,27 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void step() = 0;
     virtual void unstep() = 0;
     virtual void set_LED(bool status) = 0;
+
+    // Position tracker interface is the same for all steppers
+
+    /**
+     * @brief Get the current position tracker atomically
+     */
+    [[nodiscard]] auto get_step_tracker() const -> uint32_t;
+
+    /**
+     * @brief Reset the position tracker to 0
+     */
+    auto reset_step_tracker() -> void;
+
+    /**
+     * @brief Set the position tracker to a specified value
+     */
+    auto set_step_tracker(uint32_t) -> void;
+
+  private:
+    // Used to track the position in microsteps.
+    std::atomic<uint32_t> step_tracker{0};
 };
 
 class PipetteStepperMotorHardwareIface

@@ -37,6 +37,7 @@ struct Ack {
     uint8_t seq_id;
     uint32_t current_position_steps;
     int32_t encoder_position;
+    uint8_t position_flags;
     AckMessageId ack_id;
 };
 
@@ -52,12 +53,14 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id) -> Ack {
+    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
+                   AckMessageId _id) -> Ack {
         return Ack{
             .group_id = group_id,
             .seq_id = seq_id,
             .current_position_steps = position,
             .encoder_position = pulses,
+            .position_flags = flags,
             .ack_id = _id,
         };
     }
@@ -66,9 +69,10 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 struct GearMotorMove : public Move {
     can::ids::PipetteTipActionType action;
 
-    auto build_ack(uint32_t position, int32_t pulses, AckMessageId _id)
-        -> GearMotorAck {
-        return GearMotorAck{group_id, seq_id, position, pulses, _id, action};
+    auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
+                   AckMessageId _id) -> GearMotorAck {
+        return GearMotorAck{group_id, seq_id, position, pulses,
+                            flags,    _id,    action};
     }
 };
 
@@ -84,12 +88,13 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     int32_t encoder_position;
     MoveStopCondition stop_condition = MoveStopCondition::none;
 
-    auto build_ack(int32_t pulses, AckMessageId _id) -> Ack {
+    auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id) -> Ack {
         return Ack{
             .group_id = group_id,
             .seq_id = seq_id,
             .current_position_steps = 0,
             .encoder_position = pulses,
+            .position_flags = flags,
             .ack_id = _id,
         };
     }

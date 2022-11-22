@@ -96,6 +96,10 @@ class MotionController {
                                     radix_offset_0{});
     }
 
+    [[nodiscard]] auto get_position_flags() const -> uint8_t {
+        return hardware.position_flags.get_flags();
+    }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     BrushedMotorHardwareIface& hardware;

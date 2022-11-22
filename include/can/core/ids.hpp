@@ -45,8 +45,8 @@ enum class MessageId {
     clear_all_move_groups_request = 0x19,
     home_request = 0x20,
     move_completed = 0x13,
-    encoder_position_request = 0x12,
-    encoder_position_response = 0x14,
+    motor_position_request = 0x12,
+    motor_position_response = 0x14,
     set_motion_constraints = 0x101,
     get_motion_constraints_request = 0x102,
     get_motion_constraints_response = 0x103,
@@ -171,6 +171,12 @@ enum class SensorThresholdMode {
 enum class PipetteTipActionType {
     pick_up = 0x0,
     drop = 0x1,
+};
+
+/** Flags for motor position validity. */
+enum class MotorPositionFlags {
+    stepper_position_ok = 0x1,
+    encoder_position_ok = 0x2,
 };
 
 }  // namespace can::ids

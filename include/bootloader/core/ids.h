@@ -43,8 +43,8 @@ typedef enum {
     can_messageid_clear_all_move_groups_request = 0x19,
     can_messageid_home_request = 0x20,
     can_messageid_move_completed = 0x13,
-    can_messageid_encoder_position_request = 0x12,
-    can_messageid_encoder_position_response = 0x14,
+    can_messageid_motor_position_request = 0x12,
+    can_messageid_motor_position_response = 0x14,
     can_messageid_set_motion_constraints = 0x101,
     can_messageid_get_motion_constraints_request = 0x102,
     can_messageid_get_motion_constraints_response = 0x103,
@@ -170,6 +170,12 @@ typedef enum {
     can_pipettetipactiontype_pick_up = 0x0,
     can_pipettetipactiontype_drop = 0x1,
 } CANPipetteTipActionType;
+
+/** Flags for motor position validity. */
+typedef enum {
+    can_motorpositionflags_stepper_position_ok = 0x1,
+    can_motorpositionflags_encoder_position_ok = 0x2,
+} CANMotorPositionFlags;
 
 /** A bit field of the arbitration id parts. */
 typedef struct {

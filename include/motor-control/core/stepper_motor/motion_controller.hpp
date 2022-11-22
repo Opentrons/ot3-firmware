@@ -34,6 +34,8 @@ class MotionController {
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_steps_per_mm(), 31)),
+          um_per_step(convert_to_fixed_point_64_bit(
+              linear_motion_sys_config.get_um_per_step(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_encoder_um_per_pulse(), 31)),
           engage_at_startup(eng_on_strt) {}
@@ -87,6 +89,10 @@ class MotionController {
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
+    [[nodiscard]] auto read_motor_position() const {
+        return fixed_point_multiply(um_per_step, hardware.get_step_tracker());
+    }
+
     auto read_encoder_pulses() {
         return fixed_point_multiply(um_per_encoder_pulse,
                                     hardware.get_encoder_pulses(),
@@ -103,6 +109,8 @@ class MotionController {
 
     void disable_motor() {
         hardware.deactivate_motor();
+        hardware.position_flags.clear_flag(
+            can::ids::MotorPositionFlags::stepper_position_ok);
         enabled = false;
     }
 
@@ -119,12 +127,17 @@ class MotionController {
         return motion_constraints;
     }
 
+    [[nodiscard]] auto get_position_flags() const -> uint8_t {
+        return hardware.position_flags.get_flags();
+    }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
+    sq31_31 um_per_step{0};
     sq31_31 um_per_encoder_pulse{0};
     bool enabled = false;
 
@@ -155,7 +168,9 @@ class PipetteMotionController {
           motion_constraints(constraints),
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_steps_per_mm(), 31)) {}
+              linear_motion_sys_config.get_steps_per_mm(), 31)),
+          um_per_step(convert_to_fixed_point_64_bit(
+              linear_motion_sys_config.get_um_per_step(), 31)) {}
 
     auto operator=(const PipetteMotionController&)
         -> PipetteMotionController& = delete;
@@ -204,6 +219,8 @@ class PipetteMotionController {
 
     void disable_motor() {
         hardware.deactivate_motor();
+        hardware.position_flags.clear_flag(
+            can::ids::MotorPositionFlags::stepper_position_ok);
         enabled = false;
     }
 
@@ -216,8 +233,16 @@ class PipetteMotionController {
                               .max_acceleration = can_msg.max_acceleration};
     }
 
+    [[nodiscard]] auto read_motor_position() const {
+        return fixed_point_multiply(um_per_step, hardware.get_step_tracker());
+    }
+
     [[nodiscard]] auto get_motion_constraints() -> MotionConstraints {
         return motion_constraints;
+    }
+
+    [[nodiscard]] auto get_position_flags() const -> uint8_t {
+        return hardware.position_flags.get_flags();
     }
 
   private:
@@ -226,6 +251,7 @@ class PipetteMotionController {
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};
+    sq31_31 um_per_step{0};
     bool enabled = false;
 };
 
