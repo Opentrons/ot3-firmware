@@ -43,7 +43,8 @@ class I2CMessageHandler {
                 m.transaction.address, TIMEOUT);
         }
         static_cast<void>(m.response_writer.write(
-            TransactionResponse{.id = m.id,
+            TransactionResponse{.message_index = m.transaction.message_index,
+                                .id = m.id,
                                 .bytes_read = m.transaction.bytes_to_read,
                                 .read_buffer = read_buf}));
     }

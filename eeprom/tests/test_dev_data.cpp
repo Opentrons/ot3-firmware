@@ -442,13 +442,14 @@ SCENARIO("reading from data partition") {
                     data_tail_mock.begin());
         queue_client.messages.clear();
         THEN("reading from the data partition") {
-            subject.get_data(data_entry_key);
+            subject.get_data(data_entry_key, 1234);
             REQUIRE(queue_client.messages.size() == 1);
             // read back the data_table_entry
             read_message =
                 std::get<message::ReadEepromMessage>(queue_client.messages[0]);
             read_message.callback(
                 message::EepromMessage{
+                    .message_index = read_message.message_index,
                     .memory_address = read_message.memory_address,
                     .length = read_message.length,
                     .data = data_table_mock},
@@ -463,6 +464,7 @@ SCENARIO("reading from data partition") {
                         hardware_iface::EEpromMemorySize::MICROCHIP_256_BYTE) -
                         data_entry_length);
             REQUIRE(read_message.length == data_entry_length);
+            REQUIRE(read_message.message_index == 1234);
         }
     }
 }
@@ -548,13 +550,14 @@ SCENARIO("reading large data from partition") {
                     data_tail_mock.begin());
         queue_client.messages.clear();
         THEN("reading from the data partition") {
-            subject.get_data(data_entry_key);
+            subject.get_data(data_entry_key, 1234);
             REQUIRE(queue_client.messages.size() == 1);
             // read back the data_table_entry
             read_message =
                 std::get<message::ReadEepromMessage>(queue_client.messages[0]);
             read_message.callback(
                 message::EepromMessage{
+                    .message_index = read_message.message_index,
                     .memory_address = read_message.memory_address,
                     .length = read_message.length,
                     .data = data_table_mock},

@@ -56,24 +56,26 @@ class SystemMessageHandler {
   private:
     void visit(std::monostate &) {}
 
-    void visit(DeviceInfoRequest &) {
+    void visit(DeviceInfoRequest &m) {
+        can::messages::add_resp_ind(response, m);
         writer.send_can_message(can::ids::NodeId::host, response);
     }
 
     void visit(InitiateFirmwareUpdate &) { app_update_start(); }
 
-    void visit(FirmwareUpdateStatusRequest &) {
-        auto status_response =
-            FirmwareUpdateStatusResponse{.flags = app_update_flags()};
+    void visit(FirmwareUpdateStatusRequest &m) {
+        auto status_response = FirmwareUpdateStatusResponse{
+            .message_index = m.message_index, .flags = app_update_flags()};
         writer.send_can_message(can::ids::NodeId::host, status_response);
     }
 
-    void visit(TaskInfoRequest &) {
+    void visit(TaskInfoRequest &m) {
         auto tasks = std::array<TaskStatus_t, 20>{};
         auto num_tasks =
             uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
         for (UBaseType_t i = 0; i < num_tasks; i++) {
             auto r = TaskInfoResponse{};
+            can::messages::add_resp_ind(r, m);
             std::copy_n(tasks[i].pcTaskName, r.name.size(),  // NOLINT
                         r.name.begin());
             r.runtime_counter = tasks[i].ulRunTimeCounter;            // NOLINT

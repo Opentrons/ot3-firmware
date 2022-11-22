@@ -30,6 +30,7 @@ enum class MessageId {
     gripper_info_response = 0x308,
     set_serial_number = 0x30a,
     stop_request = 0x0,
+    error_message = 0x2,
     get_status_request = 0x1,
     get_status_response = 0x5,
     enable_motor_request = 0x6,
@@ -61,6 +62,7 @@ enum class MessageId {
     gripper_grip_request = 0x42,
     gripper_home_request = 0x43,
     add_brushed_linear_move_request = 0x44,
+    acknowledgement = 0x50,
     read_presence_sensing_voltage_request = 0x600,
     read_presence_sensing_voltage_response = 0x601,
     attached_tools_request = 0x700,
@@ -123,6 +125,13 @@ enum class ErrorCode {
     invalid_byte_count = 0x3,
     invalid_input = 0x4,
     hardware = 0x5,
+};
+
+/** Error Severity levels */
+enum class ErrorSeverity {
+    warning = 0x1,
+    recoverable = 0x2,
+    unrecoverable = 0x3,
 };
 
 /** Tool types detected on Head. */

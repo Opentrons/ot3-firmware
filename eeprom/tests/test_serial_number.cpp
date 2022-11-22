@@ -19,7 +19,7 @@ SCENARIO("Writing serial number") {
 
     GIVEN("A serial number to write") {
         WHEN("the writing serial number") {
-            subject.write(sn_data);
+            subject.write(sn_data, 1234);
 
             THEN("there is an eeprom write") {
                 REQUIRE(
@@ -39,6 +39,7 @@ SCENARIO("Writing serial number") {
 
                     write_message = std::get<message::WriteEepromMessage>(
                         queue_client.messages[i]);
+                    REQUIRE(write_message.message_index == 1234);
                     REQUIRE(write_message.memory_address ==
                             addresses::serial_number_address_begin +
                                 (i * types::max_data_length));
@@ -65,7 +66,7 @@ SCENARIO("Reading serial number") {
         queue_client, read_listener, sn_buffer};
     GIVEN("A request to read the serial number") {
         WHEN("reading the serial number") {
-            subject.start_read();
+            subject.start_read(1234);
 
             THEN("there is an eeprom read") {
                 REQUIRE(
@@ -93,13 +94,14 @@ SCENARIO("Reading serial number") {
                                 (i * types::max_data_length));
                     REQUIRE(read_message.length == expected_bytes);
                     REQUIRE(read_message.callback_param == &subject);
+                    REQUIRE(read_message.message_index == 1234);
                 }
             }
         }
     }
 
     GIVEN("A request to read the serial number") {
-        subject.start_read();
+        subject.start_read(1234);
 
         WHEN("the read completes") {
             message::ReadEepromMessage read_message;
@@ -123,6 +125,7 @@ SCENARIO("Reading serial number") {
                             num_bytes, data.begin());
                 read_message.callback(
                     message::EepromMessage{
+                        .message_index = read_message.message_index,
                         .memory_address = read_message.memory_address,
                         .length = num_bytes,
                         .data = data},

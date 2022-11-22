@@ -40,6 +40,7 @@ class MoveStatusMessageHandler {
      */
     void handle_message(const TaskMessage& message) {
         can::messages::TipActionResponse msg = {
+            .message_index = message.message_index,
             .group_id = message.group_id,
             .seq_id = message.seq_id,
             .encoder_position = message.encoder_position,

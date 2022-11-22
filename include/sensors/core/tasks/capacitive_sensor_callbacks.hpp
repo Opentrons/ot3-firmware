@@ -60,6 +60,7 @@ struct ReadCapacitanceCallback {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
+                    .message_index = m.message_index,
                     .sensor = can::ids::SensorType::capacitive,
                     .sensor_id = sensor_id,
                     .sensor_data =
@@ -84,9 +85,11 @@ struct ReadCapacitanceCallback {
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::IS_THRESHOLD_SENSE)) {
             set_threshold(capacitance + next_autothreshold_pf,
-                          can::ids::SensorThresholdMode::auto_baseline);
+                          can::ids::SensorThresholdMode::auto_baseline,
+                          m.message_index);
         } else {
             auto message = can::messages::ReadFromSensorResponse{
+                .message_index = m.message_index,
                 .sensor = SensorType::capacitive,
                 .sensor_id = sensor_id,
                 .sensor_data =
@@ -146,9 +149,11 @@ struct ReadCapacitanceCallback {
     }
 
     auto set_threshold(float threshold_pf,
-                       can::ids::SensorThresholdMode from_mode) -> void {
+                       can::ids::SensorThresholdMode from_mode,
+                       uint32_t message_index) -> void {
         zero_threshold_pf = threshold_pf;
         auto message = can::messages::SensorThresholdResponse{
+            .message_index = message_index,
             .sensor = SensorType::capacitive,
             .sensor_id = sensor_id,
             .threshold =

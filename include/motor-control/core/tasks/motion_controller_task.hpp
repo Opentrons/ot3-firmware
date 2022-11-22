@@ -39,24 +39,31 @@ class MotionControllerMessageHandler {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(const can::messages::StopRequest&) {
+    void handle(const can::messages::StopRequest& m) {
         LOG("Received stop request");
         controller.stop();
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
-    void handle(const can::messages::EnableMotorRequest&) {
+    void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
         controller.enable_motor();
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
-    void handle(const can::messages::DisableMotorRequest&) {
+    void handle(const can::messages::DisableMotorRequest& m) {
         LOG("Received disable motor request");
         controller.disable_motor();
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
-    void handle(const can::messages::GetMotionConstraintsRequest&) {
+    void handle(const can::messages::GetMotionConstraintsRequest& m) {
         auto constraints = controller.get_motion_constraints();
         can::messages::GetMotionConstraintsResponse response_msg{
+            .message_index = m.message_index,
             .min_velocity = constraints.min_velocity,
             .max_velocity = constraints.max_velocity,
             .min_acceleration = constraints.min_acceleration,
@@ -72,6 +79,8 @@ class MotionControllerMessageHandler {
             m.min_velocity, m.max_velocity, m.min_acceleration,
             m.max_acceleration);
         controller.set_motion_constraints(m);
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::AddLinearMoveRequest& m) {
@@ -89,20 +98,25 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-    void handle(const can::messages::ReadLimitSwitchRequest&) {
+    void handle(const can::messages::ReadLimitSwitchRequest& m) {
         auto response = static_cast<uint8_t>(controller.read_limit_switch());
         LOG("Received read limit switch: limit_switch=%d", response);
-        can::messages::ReadLimitSwitchResponse msg{{}, response};
+        can::messages::ReadLimitSwitchResponse msg{
+            .message_index = m.message_index, .switch_status = response};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
-    void handle(const can::messages::MotorPositionRequest&) {
+    void handle(const can::messages::MotorPositionRequest& m) {
         auto position = controller.read_motor_position();
         auto encoder = controller.read_encoder_pulses();
         auto flags = controller.get_position_flags();
         LOG("Received read encoder: position=%d encoder_pulses=%d flags=0x%2X",
             position, encoder, flags);
-        can::messages::MotorPositionResponse msg{{}, position, encoder, flags};
+        can::messages::MotorPositionResponse msg{
+            .message_index = m.message_index,
+            .current_position = position,
+            .encoder_position = encoder,
+            .position_flags = flags};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 

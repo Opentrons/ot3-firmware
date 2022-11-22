@@ -75,17 +75,20 @@ class MoveGroupMessageHandler {
         LOG("Received get move group request: groupid=%d", m.group_id);
         auto group = move_groups[m.group_id];
         auto response = can::messages::GetMoveGroupResponse{
+            .message_index = m.message_index,
             .group_id = m.group_id,
             .num_moves = static_cast<uint8_t>(group.size()),
             .total_duration = group.get_duration()};
         can_client.send_can_message(can::ids::NodeId::host, response);
     }
 
-    void handle(const can::messages::ClearAllMoveGroupsRequest&) {
+    void handle(const can::messages::ClearAllMoveGroupsRequest& m) {
         LOG("Received clear move groups request");
         for (auto& group : move_groups) {
             group.clear();
         }
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void handle(const can::messages::ExecuteMoveGroupRequest& m) {
@@ -95,6 +98,8 @@ class MoveGroupMessageHandler {
             auto move = group.get_move(i);
             std::visit([this](auto& m) { this->visit_move(m); }, move);
         }
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void visit_move(const std::monostate& m) { static_cast<void>(m); }

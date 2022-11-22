@@ -88,6 +88,7 @@ class CapacitiveMessageHandler {
         LOG("Received request to read from %d sensor", m.sensor);
         if (bool(m.offset_reading)) {
             auto message = can::messages::ReadFromSensorResponse{
+                .message_index = m.message_index,
                 .sensor = SensorType::capacitive,
                 .sensor_id = sensor_id,
                 .sensor_data = convert_to_fixed_point(
@@ -105,6 +106,8 @@ class CapacitiveMessageHandler {
     void visit(can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
         writer.write(ADDRESS, m.data);
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::BaselineSensorRequest &m) {
@@ -118,6 +121,8 @@ class CapacitiveMessageHandler {
             DELAY, own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::SetSensorThresholdRequest &m) {
@@ -125,7 +130,8 @@ class CapacitiveMessageHandler {
             m.threshold, m.sensor);
         if (m.mode == can::ids::SensorThresholdMode::absolute) {
             capacitance_handler.set_threshold(
-                fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode);
+                fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode,
+                m.message_index);
         } else {
             capacitance_handler.reset_limited();
             capacitance_handler.set_number_of_reads(10);
@@ -165,6 +171,8 @@ class CapacitiveMessageHandler {
             own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::PeripheralStatusRequest &m) {
@@ -172,6 +180,7 @@ class CapacitiveMessageHandler {
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::PeripheralStatusResponse{
+                .message_index = m.message_index,
                 .sensor = m.sensor,
                 .sensor_id = sensor_id,
                 .status = static_cast<uint8_t>(is_initialized)});
