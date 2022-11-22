@@ -93,8 +93,11 @@ class MotionControllerMessageHandler {
         auto flags = controller.get_position_flags();
         LOG("Received read encoder: encoder_pulses=%d flags=0x%2X", response,
             flags);
-        can::messages::MotorPositionResponse msg{{}, 0, response, flags};
-        can::messages::add_resp_ind(msg, m);
+        can::messages::MotorPositionResponse msg{
+            .message_index = m.message_index,
+            .current_position = 0,
+            .encoder_position = response,
+            .position_flags = flags};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
