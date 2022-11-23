@@ -112,7 +112,7 @@ SCENARIO("update data bad checksum error") {
         request.data[6] = 0xEE;
         request.data[7] = 0x00;
 
-        request.size = 60;
+        request.size = 64;
 
         WHEN("received") {
             Message response;

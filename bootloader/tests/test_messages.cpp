@@ -54,7 +54,7 @@ SCENARIO("empty message errors") {
 
 SCENARIO("update data") {
     GIVEN("a message with a data byte count of 0") {
-        auto arr = std::array<uint8_t, 60>{
+        auto arr = std::array<uint8_t, 64>{
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
@@ -86,7 +86,7 @@ SCENARIO("update data") {
     }
 
     GIVEN("a message with full data byte count") {
-        auto arr = std::array<uint8_t, 60>{
+        auto arr = std::array<uint8_t, 64>{
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
@@ -152,7 +152,7 @@ SCENARIO("update data errors") {
     }
 
     GIVEN("a message with invalid data byte count") {
-        auto arr = std::array<uint8_t, 60>{
+        auto arr = std::array<uint8_t, 64>{
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
@@ -177,7 +177,7 @@ SCENARIO("update data errors") {
     }
 
     GIVEN("a message with incorrect checksum") {
-        auto arr = std::array<uint8_t, 60>{
+        auto arr = std::array<uint8_t, 64>{
             // Message Index
             0xde, 0xad, 0xbe, 0xef,
             // Address
