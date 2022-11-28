@@ -141,7 +141,7 @@ HAL_I2C_HANDLE MX_I2C3_Init()
  */
 void enable_eeprom_write() {
     if (get_pipette_type() == NINETY_SIX_CHANNEL) {
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
     } else {
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
     }
