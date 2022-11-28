@@ -58,7 +58,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                     THEN("Encoder value is reset and homed ack is sent") {
                         REQUIRE(test_objs.hw.get_encoder_pulses() == 0);
                         REQUIRE(test_objs.reporter.messages.size() >= 1);
-                        Ack read_ack = test_objs.reporter.messages.back();
+                        Ack read_ack =
+                            std::get<Ack>(test_objs.reporter.messages.back());
                         REQUIRE(read_ack.encoder_position == 0);
                         REQUIRE(read_ack.ack_id ==
                                 AckMessageId::stopped_by_condition);
@@ -107,7 +108,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                             test_objs.handler.run_interrupt();
                             REQUIRE(test_objs.hw.get_encoder_pulses() == 30000);
                             REQUIRE(test_objs.reporter.messages.size() >= 1);
-                            Ack read_ack = test_objs.reporter.messages.back();
+                            Ack read_ack = std::get<Ack>(
+                                test_objs.reporter.messages.back());
                             REQUIRE(read_ack.encoder_position == 30000);
                             REQUIRE(read_ack.ack_id ==
                                     AckMessageId::complete_without_condition);
@@ -171,7 +173,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 test_objs.handler.run_interrupt();
                 REQUIRE(test_objs.driver.get_pwm_settings() == 0);
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
-                Ack read_ack = test_objs.reporter.messages.back();
+                Ack read_ack =
+                    std::get<Ack>(test_objs.reporter.messages.back());
                 // check if position is withen acceptable parameters
                 REQUIRE(
                     std::abs(read_ack.encoder_position - msg.encoder_position) <

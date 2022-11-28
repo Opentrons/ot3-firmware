@@ -299,7 +299,7 @@ TEST_CASE("Finishing a move") {
             "the ack message should contain the correct information when the "
             "move finishes") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
-            auto msg = test_objs.reporter.messages[0];
+            auto msg = std::get<Ack>(test_objs.reporter.messages[0]);
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position_steps == 100);
@@ -324,7 +324,7 @@ TEST_CASE("Finishing a move") {
             "the ack message should contain the correct information when the "
             "move finishes") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
-            auto msg = test_objs.reporter.messages[0];
+            auto msg = std::get<Ack>(test_objs.reporter.messages[0]);
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position_steps == 0);
@@ -345,7 +345,7 @@ TEST_CASE("Finishing a move") {
                     "the ack message should contain the correct information "
                     "when the move finishes") {
                     REQUIRE(test_objs.reporter.messages.size() == 1);
-                    auto msg = test_objs.reporter.messages[0];
+                    auto msg = std::get<Ack>(test_objs.reporter.messages[0]);
                     REQUIRE(msg.group_id == move.group_id);
                     REQUIRE(msg.seq_id == move.seq_id);
                     REQUIRE(msg.current_position_steps == 100);
