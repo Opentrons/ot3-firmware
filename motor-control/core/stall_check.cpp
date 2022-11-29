@@ -48,7 +48,7 @@ auto StallCheck::reset_itr_counts(int32_t stepper_steps) -> void {
     return false;
 }
 
-[[nodiscard]] auto StallCheck::check_stall(int32_t encoder_steps) const
+[[nodiscard]] auto StallCheck::check_stall_itr(int32_t encoder_steps) const
     -> bool {
     if (!has_encoder()) {
         return true;

@@ -52,7 +52,7 @@ class StallCheck {
      * @return True if the motor position is OK, false if the encoder
      * indicates a stall occurred.
      */
-    [[nodiscard]] auto check_stall(int32_t encoder_steps) const -> bool
+    [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool
         __attribute__((optimize(3)));
 
   private:

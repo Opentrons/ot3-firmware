@@ -8,22 +8,22 @@ TEST_CASE("stall itr check functionality") {
             subject.reset_itr_counts(0);
             THEN("acceptable encoder positions are not stalls") {
                 int32_t encoder_ticks = GENERATE(0, -10, 10);
-                REQUIRE(subject.check_stall(encoder_ticks));
+                REQUIRE(subject.check_stall_itr(encoder_ticks));
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(11, -11);
-                REQUIRE(!subject.check_stall(encoder_ticks));
+                REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
         WHEN("stepper count is set to 123") {
             subject.reset_itr_counts(123);
             THEN("acceptable encoder positions are not stalls") {
                 int32_t encoder_ticks = GENERATE(123, 113, 133);
-                REQUIRE(subject.check_stall(encoder_ticks));
+                REQUIRE(subject.check_stall_itr(encoder_ticks));
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(112, 134);
-                REQUIRE(!subject.check_stall(encoder_ticks));
+                REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
     }
@@ -33,22 +33,22 @@ TEST_CASE("stall itr check functionality") {
             subject.reset_itr_counts(123);
             THEN("acceptable encoder positions are not stalls") {
                 int32_t encoder_ticks = GENERATE(12, 3, 21);
-                REQUIRE(subject.check_stall(encoder_ticks));
+                REQUIRE(subject.check_stall_itr(encoder_ticks));
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(1, 23);
-                REQUIRE(!subject.check_stall(encoder_ticks));
+                REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
         WHEN("stepper count is set to 1230") {
             subject.reset_itr_counts(1230);
             THEN("acceptable encoder positions are not stalls") {
                 int32_t encoder_ticks = GENERATE(123, 113, 133);
-                REQUIRE(subject.check_stall(encoder_ticks));
+                REQUIRE(subject.check_stall_itr(encoder_ticks));
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(112, 134);
-                REQUIRE(!subject.check_stall(encoder_ticks));
+                REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
     }
@@ -58,11 +58,11 @@ TEST_CASE("stall itr check functionality") {
             subject.reset_itr_counts(123);
             THEN("acceptable encoder positions are not stalls") {
                 int32_t encoder_ticks = GENERATE(1230, 1130, 1330);
-                REQUIRE(subject.check_stall(encoder_ticks));
+                REQUIRE(subject.check_stall_itr(encoder_ticks));
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(1129, 1331);
-                REQUIRE(!subject.check_stall(encoder_ticks));
+                REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
     }
@@ -105,12 +105,12 @@ TEST_CASE("stall check isr step handling") {
                 float encoder_position = stepper_begin_um + stall_threshold_um;
                 THEN("valid encoder position returns true: "
                      << encoder_position) {
-                    REQUIRE(subject.check_stall(static_cast<int32_t>(
+                    REQUIRE(subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
                 }
                 THEN("invalid encoder position returns false") {
                     encoder_position += stall_threshold_um + 10;
-                    REQUIRE(!subject.check_stall(static_cast<int32_t>(
+                    REQUIRE(!subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
                 }
             }
@@ -130,12 +130,12 @@ TEST_CASE("stall check isr step handling") {
                 float encoder_position = stepper_begin_um - stall_threshold_um;
                 THEN("valid encoder position returns true: "
                      << encoder_position) {
-                    REQUIRE(subject.check_stall(static_cast<int32_t>(
+                    REQUIRE(subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
                 }
                 THEN("invalid encoder position returns false") {
                     encoder_position -= stall_threshold_um + 10;
-                    REQUIRE(!subject.check_stall(static_cast<int32_t>(
+                    REQUIRE(!subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
                 }
             }
@@ -160,7 +160,7 @@ TEST_CASE("stall check handling with no encoder") {
         }
         THEN("the interrupt stall check always returns true") {
             int32_t encoder = GENERATE(0, 100, 10000, 1000000);
-            REQUIRE(subject.check_stall(encoder));
+            REQUIRE(subject.check_stall_itr(encoder));
         }
     }
 }
