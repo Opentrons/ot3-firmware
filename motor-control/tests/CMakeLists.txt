@@ -18,6 +18,7 @@ add_executable(motor-control
         test_brushed_motor_interrupt_handler.cpp
         test_motor_flags.cpp
         test_motor_position_tracker.cpp
+        test_stall_check.cpp
         )
 
 target_ot_motor_control(motor-control)
