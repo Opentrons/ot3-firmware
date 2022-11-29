@@ -59,16 +59,12 @@ auto StallCheck::reset_itr_counts(int32_t stepper_steps) -> void {
 }
 
 [[nodiscard]] auto StallCheck::check_stall(int32_t encoder_steps,
-                                           int32_t stepper_steps) const
-    -> bool {
+                                           int32_t stepper_steps) -> bool {
     if (!has_encoder()) {
         return true;
     }
-    float encoder_um = encoder_steps * encoder_um_per_tick();
-    float stepper_um = stepper_steps * stepper_um_per_tick();
-
-    return std::labs(encoder_um - stepper_um) <=
-           static_cast<float>(_um_threshold);
+    reset_itr_counts(stepper_steps);
+    return check_stall_itr(encoder_steps);
 }
 
 [[nodiscard]] auto StallCheck::has_encoder() const -> bool {

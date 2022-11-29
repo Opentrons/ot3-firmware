@@ -56,7 +56,8 @@ class StallCheck {
 
     /**
      * @brief Given absolute step position of encoder and stepper, check
-     * whether a stall seems to have occurred.
+     * whether a stall seems to have occurred. As a byproduct, this resets
+     * the current position of the stepper motor within the object.
      * @note This function is NOT optimized for ISR use. It uses floating
      * point math and should only be called from a task context.
      *
@@ -65,8 +66,8 @@ class StallCheck {
      * @return true if the position is OK, false if the encoder indicates
      * a stall has occurred.
      */
-    [[nodiscard]] auto check_stall(int32_t encoder_steps,
-                                   int32_t stepper_steps) const -> bool;
+    [[nodiscard]] auto check_stall(int32_t encoder_steps, int32_t stepper_steps)
+        -> bool;
 
   private:
     [[nodiscard]] auto has_encoder() const -> bool;
