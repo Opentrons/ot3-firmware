@@ -41,7 +41,8 @@ class StallCheck {
      * @param[in] direction true for a positive step, false for a negative
      * step. Only one step may be taken at a time.
      */
-    [[nodiscard]] auto step_itr(bool direction) -> bool;
+    [[nodiscard]] auto step_itr(bool direction) -> bool
+        __attribute__((optimize(3)));
 
     /**
      * @brief Check the stall status of the motor.
@@ -50,11 +51,14 @@ class StallCheck {
      * @return True if the motor position is OK, false if the encoder
      * indicates a stall occurred.
      */
-    [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool;
+    [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool
+        __attribute__((optimize(3)));
 
     /**
      * @brief Given absolute step position of encoder and stepper, check
      * whether a stall seems to have occurred.
+     * @note This function is NOT optimized for ISR use. It uses floating
+     * point math and should only be called from a task context.
      *
      * @param encoder_steps Encoder position in ticks
      * @param stepper_steps Stepper position in microsteps
