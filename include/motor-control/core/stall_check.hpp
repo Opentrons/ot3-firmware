@@ -45,29 +45,15 @@ class StallCheck {
         __attribute__((optimize(3)));
 
     /**
-     * @brief Check the stall status of the motor.
+     * @brief Check the stall status of the motor. This function is optimized
+     * to be run in the high-frequency motor interrupt.
      *
      * @param encoder_steps Current microstep position of the encoder.
      * @return True if the motor position is OK, false if the encoder
      * indicates a stall occurred.
      */
-    [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool
+    [[nodiscard]] auto check_stall(int32_t encoder_steps) const -> bool
         __attribute__((optimize(3)));
-
-    /**
-     * @brief Given absolute step position of encoder and stepper, check
-     * whether a stall seems to have occurred. As a byproduct, this resets
-     * the current position of the stepper motor within the object.
-     * @note This function is NOT optimized for ISR use. It uses floating
-     * point math and should only be called from a task context.
-     *
-     * @param encoder_steps Encoder position in ticks
-     * @param stepper_steps Stepper position in microsteps
-     * @return true if the position is OK, false if the encoder indicates
-     * a stall has occurred.
-     */
-    [[nodiscard]] auto check_stall(int32_t encoder_steps, int32_t stepper_steps)
-        -> bool;
 
   private:
     [[nodiscard]] auto has_encoder() const -> bool;

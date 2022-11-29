@@ -48,7 +48,7 @@ auto StallCheck::reset_itr_counts(int32_t stepper_steps) -> void {
     return false;
 }
 
-[[nodiscard]] auto StallCheck::check_stall_itr(int32_t encoder_steps) const
+[[nodiscard]] auto StallCheck::check_stall(int32_t encoder_steps) const
     -> bool {
     if (!has_encoder()) {
         return true;
@@ -56,15 +56,6 @@ auto StallCheck::reset_itr_counts(int32_t stepper_steps) -> void {
     sq31_31 diff = std::labs(_encoder_ideal_counts -
                              (static_cast<sq31_31>(encoder_steps) << RADIX));
     return diff <= _encoder_step_threshold;
-}
-
-[[nodiscard]] auto StallCheck::check_stall(int32_t encoder_steps,
-                                           int32_t stepper_steps) -> bool {
-    if (!has_encoder()) {
-        return true;
-    }
-    reset_itr_counts(stepper_steps);
-    return check_stall_itr(encoder_steps);
 }
 
 [[nodiscard]] auto StallCheck::has_encoder() const -> bool {
