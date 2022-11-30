@@ -140,6 +140,34 @@ TEST_CASE("stall check isr step handling") {
                 }
             }
         }
+        WHEN("hitting the stall-check threshold 1000 times") {
+            int stallchecks = 0;
+            while (stallchecks < 1000) {
+                if (subject.step_itr(true)) {
+                    stallchecks++;
+                }
+            }
+            AND_WHEN("checking valid encoder positions") {
+                float error = GENERATE(-50, 50, 0);
+                float encoder_position = stepper_begin_um +
+                                         (stall_threshold_um * stallchecks) +
+                                         error;
+                THEN("the position is valid") {
+                    REQUIRE(subject.check_stall_itr(static_cast<int32_t>(
+                        encoder_position * encoder_tick_per_um)));
+                }
+            }
+            AND_WHEN("checking invalid encoder positions") {
+                float error = GENERATE(-51, 51, 1000);
+                float encoder_position = stepper_begin_um +
+                                         (stall_threshold_um * stallchecks) +
+                                         error;
+                THEN("the position is not valid") {
+                    REQUIRE(!subject.check_stall_itr(static_cast<int32_t>(
+                        encoder_position * encoder_tick_per_um)));
+                }
+            }
+        }
     }
 }
 
