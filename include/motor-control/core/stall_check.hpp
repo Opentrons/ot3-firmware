@@ -55,8 +55,9 @@ class StallCheck {
     [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool
         __attribute__((optimize(3)));
 
-  private:
     [[nodiscard]] auto has_encoder() const -> bool;
+
+  private:
     [[nodiscard]] auto encoder_um_per_tick() const -> float;
     [[nodiscard]] auto stepper_um_per_tick() const -> float;
 
