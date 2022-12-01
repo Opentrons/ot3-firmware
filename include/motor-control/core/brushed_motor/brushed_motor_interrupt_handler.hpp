@@ -151,7 +151,7 @@ class BrushedMotorInterruptHandler {
             int32_t move_delta = hardware.get_encoder_pulses() - hold_encoder_position;
             if (std::abs(move_delta) > acceptable_position_error) {
                 // we have likely dropped a labware or had a collision
-                cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+                cancel_and_clear_moves(can::ids::ErrorCode::labware_dropped);
             }
         }
     }
