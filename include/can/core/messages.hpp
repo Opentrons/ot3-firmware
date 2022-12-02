@@ -81,8 +81,10 @@ struct ErrorMessage : BaseMessage<MessageId::error_message> {
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
-        iter = bit_utils::int_to_bytes(uint16_t(severity), iter, limit);
-        iter = bit_utils::int_to_bytes(uint16_t(error_code), iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint16_t>(severity), iter,
+                                       limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint16_t>(error_code), iter,
+                                       limit);
         return iter - body;
     }
 
