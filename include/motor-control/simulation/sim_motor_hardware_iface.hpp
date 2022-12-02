@@ -79,6 +79,10 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         }
     }
 
+    bool check_estop_in() final { return estop_detected; }
+
+    void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+
   private:
     bool limit_switch_status = false;
     int32_t test_pulses = 0;
@@ -86,6 +90,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     StateManagerHandle _state_manager = nullptr;
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
+    bool estop_detected = false;
 };
 
 class SimBrushedMotorHardwareIface
@@ -128,6 +133,10 @@ class SimBrushedMotorHardwareIface
         _state_manager = handle;
     }
 
+    bool check_estop_in() final { return estop_detected; }
+
+    void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+
   private:
     bool limit_switch_status = false;
     int32_t test_pulses = 0;
@@ -138,6 +147,7 @@ class SimBrushedMotorHardwareIface
                                        1.F / 32000.0, 7,      -7};
     StateManagerHandle _state_manager = nullptr;
     MoveMessageHardware _id;
+    bool estop_detected = false;
 };
 
 class SimGearMotorHardwareIface
@@ -196,6 +206,10 @@ class SimGearMotorHardwareIface
         }
     }
 
+    bool check_estop_in() final { return estop_detected; }
+
+    void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+
   private:
     bool limit_switch_status = false;
     bool tip_sense_status = false;
@@ -203,6 +217,7 @@ class SimGearMotorHardwareIface
     StateManagerHandle _state_manager = nullptr;
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
+    bool estop_detected = false;
 };
 
 }  // namespace sim_motor_hardware_iface
