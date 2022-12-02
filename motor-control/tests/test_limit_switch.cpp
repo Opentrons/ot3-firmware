@@ -52,7 +52,8 @@ TEST_CASE("Move with stop condition == limit switch") {
                     "condition") {
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack = test_objs.reporter.messages.back();
+                    Ack read_ack =
+                        std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::stopped_by_condition);
                     REQUIRE(read_ack.encoder_position == 0);
@@ -88,7 +89,8 @@ TEST_CASE("Move with stop condition == limit switch, case 2") {
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack = test_objs.reporter.messages.back();
+                    Ack read_ack =
+                        std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::complete_without_condition);
                 }
@@ -124,7 +126,8 @@ TEST_CASE("Move with stop condition != limit switch") {
                     "the move should have ack_id complete_without_condition, "
                     "and position = 4") {
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack = test_objs.reporter.messages.back();
+                    Ack read_ack =
+                        std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::complete_without_condition);
                 }

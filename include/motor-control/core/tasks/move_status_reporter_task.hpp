@@ -35,11 +35,21 @@ class MoveStatusMessageHandler {
     auto operator=(const MoveStatusMessageHandler&& c) = delete;
     ~MoveStatusMessageHandler() = default;
 
+    void handle_message(const TaskMessage& message) {
+        std::visit([this](auto m) { this->handle_message(m); }, message);
+    }
+
+    void handle_message(std::monostate&) {}
+
+    void handle_message(const can::messages::ErrorMessage& msg) {
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     /**
      * Called upon arrival of new message
      * @param message
      */
-    void handle_message(const TaskMessage& message) {
+    void handle_message(const motor_messages::Ack& message) {
         can::messages::MoveCompleted msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,

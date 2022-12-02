@@ -75,14 +75,16 @@ static auto add_resp_ind(Resposne& resp, const Request& req) -> void {
 
 struct ErrorMessage : BaseMessage<MessageId::error_message> {
     uint32_t message_index;
-    uint16_t severity;
-    uint16_t error_code;
+    ErrorSeverity severity;
+    ErrorCode error_code;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
-        iter = bit_utils::int_to_bytes(severity, iter, limit);
-        iter = bit_utils::int_to_bytes(error_code, iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint16_t>(severity), iter,
+                                       limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint16_t>(error_code), iter,
+                                       limit);
         return iter - body;
     }
 
@@ -96,8 +98,8 @@ struct ErrorMessage : BaseMessage<MessageId::error_message> {
         body = bit_utils::bytes_to_int(body, limit, error_code);
 
         return ErrorMessage{.message_index = message_index,
-                            .severity = severity,
-                            .error_code = error_code};
+                            .severity = ErrorSeverity(severity),
+                            .error_code = ErrorCode(error_code)};
     }
 
     auto operator==(const ErrorMessage& other) const -> bool = default;

@@ -125,9 +125,12 @@ enum class ErrorCode {
     invalid_byte_count = 0x3,
     invalid_input = 0x4,
     hardware = 0x5,
+    timeout = 0x6,
+    estop_detected = 0x7,
+    collision_detected = 0x8,
 };
 
-/** Error Severity levels */
+/** Error Severity levels. */
 enum class ErrorSeverity {
     warning = 0x1,
     recoverable = 0x2,

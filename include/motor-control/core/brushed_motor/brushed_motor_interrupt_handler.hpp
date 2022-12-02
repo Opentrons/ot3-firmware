@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <atomic>
 
+#include "can/core/ids.hpp"
+#include "can/core/messages.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
