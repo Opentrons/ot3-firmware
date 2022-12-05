@@ -43,17 +43,19 @@ void linear_motor::encoder_interrupt(motor_hardware::MotorHardware& hw,
 }
 
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
-                                 LowThroughputInterruptQueues& queues)
+                                 LowThroughputInterruptQueues& queues,
+                                 stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(), hw);
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall);
 }
 
 auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
-                                 HighThroughputInterruptQueues& queues)
+                                 HighThroughputInterruptQueues& queues,
+                                 stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(), hw);
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall);
 }
 
 auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
@@ -89,19 +91,20 @@ auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
 }
 
 auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
-                                HighThroughputInterruptQueues& queues)
+                                HighThroughputInterruptQueues& queues,
+                                GearStallCheck& stall)
     -> gear_motor::GearInterruptHandlers {
     return gear_motor::GearInterruptHandlers{
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
-            hw.left),
+            hw.left, stall.left),
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
-            hw.right)};
+            hw.right, stall.right)};
 }
 
 auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,
-                                LowThroughputInterruptQueues&)
+                                LowThroughputInterruptQueues&, GearStallCheck&)
     -> gear_motor::UnavailableGearInterrupts {
     return gear_motor::UnavailableGearInterrupts{};
 }
