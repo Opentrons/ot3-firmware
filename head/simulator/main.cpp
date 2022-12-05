@@ -80,16 +80,16 @@ static auto linear_config = lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
     .encoder_pulses_per_rev = 1024.0};
 
 static stall_check::StallCheck stallcheck_right(
-    linear_config.get_encoder_pulses_per_mm() / 1000.0,
-    linear_config.get_steps_per_mm() / 1000.0, utils::STALL_THRESHOLD_UM);
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_steps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_interface_right,
     stallcheck_right);
 
 static stall_check::StallCheck stallcheck_left(
-    linear_config.get_encoder_pulses_per_mm() / 1000.0,
-    linear_config.get_steps_per_mm() / 1000.0, utils::STALL_THRESHOLD_UM);
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_steps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
 static auto motor_sys_config =
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{

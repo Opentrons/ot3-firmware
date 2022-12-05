@@ -89,9 +89,9 @@ static auto eeprom_hardware_iface = PipetteEEPromHardwareIface{};
 static auto linear_stall_check = stall_check::StallCheck(
     configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
             .get_encoder_pulses_per_mm() /
-        1000.0,
+        1000.0F,
     configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).get_steps_per_mm() /
-        1000.0,
+        1000.0F,
     configs::STALL_THRESHOLD_UM);
 
 // Gear motors have no encoders

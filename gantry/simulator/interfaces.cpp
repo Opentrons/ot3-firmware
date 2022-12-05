@@ -74,8 +74,8 @@ static motor_class::Motor motor{
     motor_queue};
 
 static stall_check::StallCheck stallcheck(
-    utils::linear_motion_system_config().get_encoder_pulses_per_mm() / 1000.0,
-    utils::linear_motion_system_config().get_steps_per_mm() / 1000.0,
+    utils::linear_motion_system_config().get_encoder_pulses_per_mm() / 1000.0F,
+    utils::linear_motion_system_config().get_steps_per_mm() / 1000.0F,
     utils::STALL_THRESHOLD_UM);
 
 /**
