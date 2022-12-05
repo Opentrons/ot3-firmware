@@ -86,14 +86,14 @@ class MotorInterruptHandler {
     }
     
     void run_interrupt() {
+        // handle error state
         if (in_error_state) {
             in_error_state = estop_triggered();
+        } else if (estop_triggered()) {
+            cancel_and_clear_moves();
         } else {
-            if (estop_triggered()) {
-                cancel_and_clear_moves();
-            } else {
-               run_normal_interrupt();
-            }
+            // Normal Move logic
+            run_normal_interrupt();
         }
     }
 
