@@ -90,7 +90,7 @@ class MotorInterruptHandler {
         if (in_error_state) {
             in_error_state = estop_triggered();
         } else if (estop_triggered()) {
-            cancel_and_clear_moves();
+            cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
         } else {
             // Normal Move logic
             run_normal_interrupt();
@@ -237,7 +237,8 @@ class MotorInterruptHandler {
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
     }
-    void cancel_and_clear_moves() {
+    void cancel_and_clear_moves(
+        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
         // If there is a currently running move send a error corrisponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
@@ -247,7 +248,7 @@ class MotorInterruptHandler {
                     can::messages::ErrorMessage{
                         .message_index = buffered_move.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = can::ids::ErrorCode::hardware}));
+                        .error_code = err_code}));
         } else {
             // send out a async error if there isn't a running a move
             static_cast<void>(
@@ -255,7 +256,7 @@ class MotorInterruptHandler {
                     can::messages::ErrorMessage{
                         .message_index = 0,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = can::ids::ErrorCode::hardware}));
+                        .error_code = err_code}));
         }
         // Broadcast a stop message
         static_cast<void>(status_queue_client.send_move_status_reporter_queue(

@@ -146,7 +146,7 @@ class BrushedMotorInterruptHandler {
     void run_interrupt() {
         if (motor_state != ControlState::ERROR) {
             if (estop_triggered()) {
-                cancel_and_clear_moves();
+                cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
                 return;
             }
             if (tick < HOLDOFF_TICKS) {
@@ -227,7 +227,8 @@ class BrushedMotorInterruptHandler {
 
     auto estop_triggered() -> bool { return hardware.check_estop_in(); }
 
-    void cancel_and_clear_moves() {
+    void cancel_and_clear_moves(
+        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
         // If there is a currently running move send a error corrisponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
@@ -237,7 +238,7 @@ class BrushedMotorInterruptHandler {
                     can::messages::ErrorMessage{
                         .message_index = buffered_move.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = can::ids::ErrorCode::hardware}));
+                        .error_code = err_code}));
         } else {
             // send out a async error if there isn't a running a move
             static_cast<void>(
@@ -245,7 +246,7 @@ class BrushedMotorInterruptHandler {
                     can::messages::ErrorMessage{
                         .message_index = 0,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = can::ids::ErrorCode::hardware}));
+                        .error_code = err_code}));
         }
         // Broadcast a stop message
         static_cast<void>(
