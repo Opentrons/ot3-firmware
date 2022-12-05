@@ -11,11 +11,14 @@ using namespace motor_handler;
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
 
+static constexpr float tick_per_um = 1;
+static constexpr uint32_t stall_threshold_um = 10;
+
 struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<Move> queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
-    stall_check::StallCheck stall{10, 10, 10};
+    stall_check::StallCheck stall{tick_per_um, tick_per_um, stall_threshold_um};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient, Move>
         handler{queue, reporter, hw, stall};
@@ -353,6 +356,42 @@ TEST_CASE("Finishing a move") {
                     REQUIRE(msg.encoder_position == 200);
                     REQUIRE(msg.position_flags == 0x3);
                 }
+            }
+        }
+    }
+}
+
+TEST_CASE("motor handler stall detection") {
+    HandlerContainer test_objs{};
+    using Flags = MotorPositionStatus::Flags;
+
+    test_objs.handler.set_current_position(0x0);
+    test_objs.hw.sim_set_encoder_pulses(0);
+    test_objs.hw.position_flags.set_flag(
+        MotorPositionStatus::Flags::encoder_position_ok);
+    test_objs.hw.position_flags.set_flag(
+        MotorPositionStatus::Flags::stepper_position_ok);
+    GIVEN("a duration of 1000 ticks and velocity at half a step per tick") {
+        Move msg1 = Move{.duration = 1000, .velocity = convert_velocity(0.5)};
+        test_objs.queue.try_write(msg1);
+        test_objs.handler.update_move();
+        WHEN("encoder doesn't update with the motor") {
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("the stall is detected") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+            }
+        }
+        WHEN("encoder updates with the motor") {
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.hw.sim_set_encoder_pulses(i / 2);
+                test_objs.handler.run_interrupt();
+            }
+            THEN("no stall is detected") {
+                REQUIRE(test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
             }
         }
     }
