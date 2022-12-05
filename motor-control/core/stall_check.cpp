@@ -53,7 +53,7 @@ auto StallCheck::reset_itr_counts(int32_t stepper_steps) -> void {
     if (!has_encoder()) {
         return true;
     }
-    sq31_31 diff = std::labs(_encoder_ideal_counts -
+    sq31_31 diff = std::llabs(_encoder_ideal_counts -
                              (static_cast<sq31_31>(encoder_steps) << RADIX));
     return diff <= _encoder_step_threshold;
 }
