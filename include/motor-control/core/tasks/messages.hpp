@@ -22,8 +22,8 @@ using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,
                  can::messages::ClearAllMoveGroupsRequest,
                  can::messages::ExecuteMoveGroupRequest,
-                 can::messages::GetMoveGroupRequest,
-                 can::messages::HomeRequest>;
+                 can::messages::GetMoveGroupRequest, can::messages::HomeRequest,
+                 can::messages::StopRequest>;
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::Ack,
@@ -45,6 +45,6 @@ using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::GripperGripRequest, can::messages::GripperHomeRequest,
-    can::messages::AddBrushedLinearMoveRequest>;
+    can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest>;
 
 }  // namespace motor_control_task_messages
