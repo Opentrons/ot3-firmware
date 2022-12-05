@@ -9,9 +9,10 @@ using namespace can::messages;
 template <pipettes::tasks::move_group_task::TaskClient Client>
 class GearMoveGroupHandler {
   public:
-    using MessageType = std::variant<std::monostate, ClearAllMoveGroupsRequest,
-                                     ExecuteMoveGroupRequest,
-                                     GetMoveGroupRequest, TipActionRequest>;
+    using MessageType =
+        std::variant<std::monostate, ClearAllMoveGroupsRequest,
+                     ExecuteMoveGroupRequest, GetMoveGroupRequest,
+                     TipActionRequest, StopRequest>;
     GearMoveGroupHandler(Client &task_client) : task_client{task_client} {}
     GearMoveGroupHandler(const GearMoveGroupHandler &) = delete;
     GearMoveGroupHandler(const GearMoveGroupHandler &&) = delete;

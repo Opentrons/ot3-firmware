@@ -24,13 +24,13 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::HomeRequest>;
+    can::messages::HomeRequest, can::messages::StopRequest>;
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::MotionHandler<z_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
-    can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
+    can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
+    can::messages::MotorPositionRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         gripper_tasks::QueueClient>,
@@ -44,15 +44,14 @@ using BrushedMotorDispatchTarget = can::dispatch::DispatchParseTarget<
 using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
-    can::messages::StopRequest, can::messages::ReadLimitSwitchRequest,
-    can::messages::MotorPositionRequest>;
+    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
 using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::BrushedMoveGroupHandler<
         g_tasks::QueueClient>,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::GripperGripRequest, can::messages::GripperHomeRequest,
-    can::messages::AddBrushedLinearMoveRequest>;
+    can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest>;
 using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     gripper_info::GripperInfoMessageHandler<gripper_tasks::QueueClient,
                                             gripper_tasks::QueueClient>,

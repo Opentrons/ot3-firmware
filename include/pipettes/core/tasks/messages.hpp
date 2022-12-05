@@ -29,7 +29,7 @@ using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::ClearAllMoveGroupsRequest,
                  can::messages::ExecuteMoveGroupRequest,
                  can::messages::GetMoveGroupRequest,
-                 can::messages::TipActionRequest>;
+                 can::messages::TipActionRequest, can::messages::StopRequest>;
 
 }  // namespace move_group_task_messages
 }  // namespace task_messages
