@@ -248,13 +248,15 @@ class MotorInterruptHandler {
                         .message_index = buffered_move.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
                         .error_code = can::ids::ErrorCode::hardware}));
+        } else {
+            // send out a async error if there isn't a running a move
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(
+                    can::messages::ErrorMessage{
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::hardware}));
         }
-        // send out a async error regardless of running a move
-        static_cast<void>(status_queue_client.send_move_status_reporter_queue(
-            can::messages::ErrorMessage{
-                .message_index = 0,
-                .severity = can::ids::ErrorSeverity::unrecoverable,
-                .error_code = can::ids::ErrorCode::hardware}));
         // Broadcast a stop message
         static_cast<void>(status_queue_client.send_move_status_reporter_queue(
             can::messages::StopRequest{.message_index = 0}));
