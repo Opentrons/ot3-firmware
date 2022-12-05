@@ -7,6 +7,8 @@
 
 namespace utils {
 
+constexpr float STALL_THRESHOLD_UM = 500.0;
+
 auto get_node_id_by_axis(enum GantryAxisType which) -> can::ids::NodeId;
 
 auto get_node_id() -> can::ids::NodeId;

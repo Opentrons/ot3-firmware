@@ -5,6 +5,8 @@
 
 namespace configs {
 
+constexpr float STALL_THRESHOLD_UM = 500.0;
+
 auto linear_motion_sys_config_by_axis(PipetteType which)
     -> lms::LinearMotionSystemConfig<lms::LeadScrewConfig>;
 
