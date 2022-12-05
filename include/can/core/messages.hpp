@@ -456,7 +456,7 @@ struct MotorPositionResponse : BaseMessage<MessageId::motor_position_response> {
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
-        iter = bit_utils::int_to_bytes(current_position, body, limit);
+        iter = bit_utils::int_to_bytes(current_position, iter, limit);
         iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
         iter = bit_utils::int_to_bytes(position_flags, iter, limit);
         return iter - body;
