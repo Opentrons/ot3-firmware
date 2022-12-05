@@ -52,7 +52,8 @@ TEST_CASE("Move with stop condition == cap sensor") {
                     "condition") {
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack = test_objs.reporter.messages.back();
+                    Ack read_ack =
+                        std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::stopped_by_condition);
                 }
@@ -81,7 +82,8 @@ TEST_CASE("Move with stop condition == cap sensor, case 2") {
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(!test_objs.handler.pulse());
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack = test_objs.reporter.messages.back();
+                    Ack read_ack =
+                        std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::complete_without_condition);
                 }
@@ -114,7 +116,8 @@ TEST_CASE("Move with stop condition != cap sensor") {
                     "the move should have ack_id complete_without_condition, "
                     "and position = 4") {
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack = test_objs.reporter.messages.back();
+                    Ack read_ack =
+                        std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::complete_without_condition);
                 }

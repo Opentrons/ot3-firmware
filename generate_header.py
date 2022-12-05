@@ -27,6 +27,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.MessageId, output)
         write_enum_cpp(constants_mod.NodeId, output)
         write_enum_cpp(constants_mod.ErrorCode, output)
+        write_enum_cpp(constants_mod.ErrorSeverity, output)
         write_enum_cpp(constants_mod.ToolType, output)
         write_enum_cpp(constants_mod.SensorType, output)
         write_enum_cpp(constants_mod.SensorId, output)

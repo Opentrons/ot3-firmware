@@ -62,7 +62,7 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: "Configure"
-        run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=debug
+        run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: "Format"
         run: cmake --build ./build-cross --target head-format-ci
       - name: "Build"

@@ -123,6 +123,9 @@ typedef enum {
     can_errorcode_invalid_byte_count = 0x3,
     can_errorcode_invalid_input = 0x4,
     can_errorcode_hardware = 0x5,
+    can_errorcode_timeout = 0x6,
+    can_errorcode_estop_detected = 0x7,
+    can_errorcode_collision_detected = 0x8,
 } CANErrorCode;
 
 /** Tool types detected on Head. */
