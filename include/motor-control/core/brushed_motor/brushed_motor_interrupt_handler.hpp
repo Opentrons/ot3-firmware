@@ -252,6 +252,7 @@ class BrushedMotorInterruptHandler {
                 can::messages::StopRequest{.message_index = 0}));
         // clear the queue
         queue.reset();
+        motor_state = ControlState::ERROR;
     }
 
     void finish_current_move(
