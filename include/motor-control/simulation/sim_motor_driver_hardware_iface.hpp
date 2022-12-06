@@ -16,6 +16,11 @@ class SimBrushedMotorDriverIface : public BrushedMotorDriverIface {
     auto pwm_active_duty_clamp(uint32_t duty_cycle) -> uint32_t final {
         return std::clamp(duty_cycle, uint32_t(7), uint32_t(100));
     }
-};
+    [[nodiscard]] auto get_current_vref() const -> float final {
+        return conf.vref;
+    };
+    [[nodiscard]] auto get_current_duty_cycle() const -> uint32_t final {
+        return current_duty_cycle;
+    }
 
 }  // namespace sim_brushed_motor_hardware_iface

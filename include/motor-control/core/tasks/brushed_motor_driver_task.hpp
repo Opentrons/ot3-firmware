@@ -58,6 +58,14 @@ class MotorDriverMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
+    void handle(const can::messages::BrushedMotorConfRequest& m) {
+        LOG("Received read motor config request");
+        can::messages::BrushedMotorConfResponse msg{
+                .message_index = m.message_index,
+                .v_ref =  static_cast<uint32_t>(convert_to_fixed_point(driver.get_current_vref(), 16)), .duty_cycle = driver.get_current_duty_cycle()};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     brushed_motor_driver::BrushedMotorDriverIface& driver;
     CanClient& can_client;
 };

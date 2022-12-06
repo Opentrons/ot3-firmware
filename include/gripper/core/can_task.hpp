@@ -39,7 +39,8 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
 using BrushedMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::BrushedMotorHandler<g_tasks::QueueClient>,
     can::messages::SetBrushedMotorVrefRequest,
-    can::messages::SetBrushedMotorPwmRequest>;
+    can::messages::SetBrushedMotorPwmRequest,
+    can::messages::BrushedMotorConfRequest>;
 using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
