@@ -48,6 +48,7 @@ enum class MessageId {
     move_completed = 0x13,
     motor_position_request = 0x12,
     motor_position_response = 0x14,
+    update_motor_position_request = 0x21,
     set_motion_constraints = 0x101,
     get_motion_constraints_request = 0x102,
     get_motion_constraints_response = 0x103,
@@ -128,6 +129,7 @@ enum class ErrorCode {
     timeout = 0x6,
     estop_detected = 0x7,
     collision_detected = 0x8,
+    labware_dropped = 0x9,
 };
 
 /** Error Severity levels. */
@@ -192,3 +194,4 @@ enum class MotorPositionFlags {
 };
 
 }  // namespace can::ids
+

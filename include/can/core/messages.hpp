@@ -184,6 +184,8 @@ using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 
+using UpdateMotorPositionRequest = Empty<MessageId::update_motor_position_request>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;
