@@ -217,7 +217,10 @@ static motor_class::Motor motor{
 static stall_check::StallCheck stallcheck(
     utils::linear_motion_system_config().get_encoder_pulses_per_mm() / 1000.0F,
     utils::linear_motion_system_config().get_steps_per_mm() / 1000.0F,
-    utils::STALL_THRESHOLD_UM);
+    static_cast<uint32_t>(
+        utils::linear_motion_system_config().get_um_per_step() *
+        utils::STALL_THRESHOLD_FULLSTEPS *
+        utils::linear_motion_system_config().microstep));
 
 /**
  * Handler of motor interrupts.

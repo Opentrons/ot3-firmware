@@ -2,6 +2,7 @@
 
 namespace utils {
 
-constexpr float STALL_THRESHOLD_UM = 500.0;
+// Number of full steps the stall threshold should equate to
+constexpr float STALL_THRESHOLD_FULLSTEPS = 2;;
 
 }

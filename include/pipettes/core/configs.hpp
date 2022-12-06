@@ -5,7 +5,9 @@
 
 namespace configs {
 
-constexpr float STALL_THRESHOLD_UM = 500.0;
+// Number of full steps the stall threshold should equate to
+constexpr float STALL_THRESHOLD_FULLSTEPS = 2;
+;
 
 auto linear_motion_sys_config_by_axis(PipetteType which)
     -> lms::LinearMotionSystemConfig<lms::LeadScrewConfig>;

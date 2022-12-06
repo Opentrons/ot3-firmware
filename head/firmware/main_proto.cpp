@@ -202,7 +202,10 @@ static auto linear_config = lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
 
 static stall_check::StallCheck stallcheck_right(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
-    linear_config.get_steps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
+    linear_config.get_steps_per_mm() / 1000.0F,
+    static_cast<uint32_t>(linear_config.get_um_per_step() *
+                          utils::STALL_THRESHOLD_FULLSTEPS *
+                          linear_config.microstep));
 
 /**
  * TODO: This motor class is only used in motor handler and should be
@@ -226,7 +229,10 @@ static motor_class::Motor motor_right{
 
 static stall_check::StallCheck stallcheck_left(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
-    linear_config.get_steps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
+    linear_config.get_steps_per_mm() / 1000.0F,
+    static_cast<uint32_t>(linear_config.get_um_per_step() *
+                          utils::STALL_THRESHOLD_FULLSTEPS *
+                          linear_config.microstep));
 
 static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7, &htim3);
