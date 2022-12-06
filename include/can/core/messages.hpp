@@ -867,7 +867,8 @@ struct SetBrushedMotorVrefRequest
 using BrushedMotorConfRequest = Empty<MessageId::brushed_motor_conf_request>;
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-struct BrushedMotorConfResponse : BaseMessage<MessageId::brushed_motor_conf_response> {
+struct BrushedMotorConfResponse
+    : BaseMessage<MessageId::brushed_motor_conf_response> {
     uint32_t message_index;
     uint32_t v_ref;
     uint32_t duty_cycle;
@@ -880,7 +881,8 @@ struct BrushedMotorConfResponse : BaseMessage<MessageId::brushed_motor_conf_resp
         return iter - body;
     }
 
-    auto operator==(const BrushedMotorConfResponse& other) const -> bool = default;
+    auto operator==(const BrushedMotorConfResponse& other) const
+        -> bool = default;
 };
 
 struct SetBrushedMotorPwmRequest

@@ -37,8 +37,9 @@ class MotorHandler {
 template <brushed_motor_driver_task::TaskClient BrushedMotorDriverTaskClient>
 class BrushedMotorHandler {
   public:
-    using MessageType = std::variant<std::monostate, SetBrushedMotorVrefRequest,
-                                     SetBrushedMotorPwmRequest, BrushedMotorConfRequest>;
+    using MessageType =
+        std::variant<std::monostate, SetBrushedMotorVrefRequest,
+                     SetBrushedMotorPwmRequest, BrushedMotorConfRequest>;
 
     BrushedMotorHandler(BrushedMotorDriverTaskClient &motor_client)
         : motor_client{motor_client} {}
