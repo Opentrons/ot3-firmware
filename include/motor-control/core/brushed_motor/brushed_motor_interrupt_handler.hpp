@@ -232,29 +232,21 @@ class BrushedMotorInterruptHandler {
         // If there is a currently running move send a error corrisponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
+        uint32_t message_index = 0;
         if (motor_state == ControlState::ACTIVE) {
-            static_cast<void>(
-                status_queue_client.send_brushed_move_status_reporter_queue(
-                    can::messages::ErrorMessage{
-                        .message_index = buffered_move.message_index,
-                        .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = err_code}));
-        } else {
-            // send out a async error if there isn't a running a move
-            static_cast<void>(
-                status_queue_client.send_brushed_move_status_reporter_queue(
-                    can::messages::ErrorMessage{
-                        .message_index = 0,
-                        .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = err_code}));
+            message_index = buffered_move.message_index;
         }
+        status_queue_client.send_brushed_move_status_reporter_queue(
+            can::messages::ErrorMessage{
+                .message_index = message_index,
+                .severity = can::ids::ErrorSeverity::unrecoverable,
+                .error_code = err_code});
         // Broadcast a stop message
-        static_cast<void>(
-            status_queue_client.send_brushed_move_status_reporter_queue(
-                can::messages::StopRequest{.message_index = 0}));
-        // clear the queue
-        queue.reset();
+        status_queue_client.send_brushed_move_status_reporter_queue(
+            can::messages::StopRequest{.message_index = 0});
         motor_state = ControlState::ERROR;
+        // the queue will get reset during the stop message processing
+        // we can't clear here from an interrupt context
     }
 
     void finish_current_move(
