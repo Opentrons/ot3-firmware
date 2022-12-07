@@ -87,9 +87,7 @@ class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
     uint32_t pwm_active_duty_clamp(uint32_t duty_cycle) {
         return std::clamp(duty_cycle, uint32_t(7), uint32_t(100));
     }
-    [[nodiscard]] auto get_current_vref() const -> float final {
-        return v_ref;
-    }
+    [[nodiscard]] auto get_current_vref() const -> float final { return v_ref; }
     [[nodiscard]] auto get_current_duty_cycle() const -> uint32_t final {
         return pwm_val;
     }

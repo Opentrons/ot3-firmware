@@ -31,7 +31,8 @@ using MoveStatusReporterTaskMessage =
 
 using BrushedMotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::SetBrushedMotorVrefRequest,
-                 can::messages::SetBrushedMotorPwmRequest, can::messages::BrushedMotorConfRequest>;
+                 can::messages::SetBrushedMotorPwmRequest,
+                 can::messages::BrushedMotorConfRequest>;
 
 using BrushedMotionControllerTaskMessage = std::variant<
     std::monostate, can::messages::DisableMotorRequest,

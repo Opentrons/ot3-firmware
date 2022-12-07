@@ -7,7 +7,7 @@ namespace sim_brushed_motor_hardware_iface {
 using namespace brushed_motor_driver;
 
 class SimBrushedMotorDriverIface : public BrushedMotorDriverIface {
-public:
+  public:
     bool start_digital_analog_converter() final { return true; }
 
     bool stop_digital_analog_converter() final { return true; }
@@ -25,9 +25,7 @@ public:
         return std::clamp(duty_cycle, uint32_t(7), uint32_t(100));
     }
 
-    [[nodiscard]] auto get_current_vref() const -> float final {
-        return v_ref;
-    }
+    [[nodiscard]] auto get_current_vref() const -> float final { return v_ref; }
 
     [[nodiscard]] auto get_current_duty_cycle() const -> uint32_t final {
         return duty_cycle;
@@ -36,6 +34,6 @@ public:
   private:
     float v_ref = 0;
     uint32_t duty_cycle = 0;
-    };
+};
 
 }  // namespace sim_brushed_motor_hardware_iface
