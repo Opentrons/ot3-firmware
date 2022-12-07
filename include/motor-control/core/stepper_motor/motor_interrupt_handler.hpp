@@ -84,7 +84,7 @@ class MotorInterruptHandler {
         }
         hardware.unstep();
     }
-    
+
     void run_interrupt() {
         // handle error state
         if (in_error_state) {

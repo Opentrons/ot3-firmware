@@ -89,7 +89,10 @@ class MotionController {
         enabled = false;
     }
 
-    void stop() { hardware.stop_pwm(); }
+    void stop() {
+        hardware.stop_pwm();
+        queue.reset();
+    }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
