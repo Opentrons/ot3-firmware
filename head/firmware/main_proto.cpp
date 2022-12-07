@@ -27,6 +27,7 @@
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
+#include "head/core/utils.hpp"
 #include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
@@ -193,6 +194,19 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
         .GPIO_handle = GPIOA,
     }};
 
+static auto linear_config = lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+    .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
+    .steps_per_rev = 200.0,
+    .microstep = 32.0,
+    .encoder_pulses_per_rev = 1024.0};
+
+static stall_check::StallCheck stallcheck_right(
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_steps_per_mm() / 1000.0F,
+    static_cast<uint32_t>(linear_config.get_um_per_step() *
+                          utils::STALL_THRESHOLD_FULLSTEPS *
+                          linear_config.microstep));
+
 /**
  * TODO: This motor class is only used in motor handler and should be
  * instantiated inside of the MotorHandler class. However, some refactors
@@ -202,33 +216,32 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
 static motor_hardware::MotorHardware motor_hardware_right(
     pin_configurations_right, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
-    motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right);
+    motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
+    stallcheck_right);
 
 static motor_class::Motor motor_right{
-    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
-        .steps_per_rev = 200.0,
-        .microstep = 32.0,
-        .encoder_pulses_per_rev = 1024.0},
-    motor_hardware_right,
+    linear_config, motor_hardware_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
     motor_queue_right};
 
+static stall_check::StallCheck stallcheck_left(
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_steps_per_mm() / 1000.0F,
+    static_cast<uint32_t>(linear_config.get_um_per_step() *
+                          utils::STALL_THRESHOLD_FULLSTEPS *
+                          linear_config.microstep));
+
 static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
-    motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left);
+    motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
+    stallcheck_left);
 
 static motor_class::Motor motor_left{
-    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
-        .steps_per_rev = 200.0,
-        .microstep = 32.0,
-        .encoder_pulses_per_rev = 1024.0},
-    motor_hardware_left,
+    linear_config, motor_hardware_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,

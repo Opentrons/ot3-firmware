@@ -19,6 +19,7 @@
 #include "i2c/firmware/i2c_comms.hpp"
 #include "mount_detection.hpp"
 #include "pipettes/core/central_tasks.hpp"
+#include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
@@ -85,6 +86,23 @@ auto convert_to_motor_hardware(
 
 static auto eeprom_hardware_iface = PipetteEEPromHardwareIface{};
 
+static auto linear_stall_check = stall_check::StallCheck(
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
+            .get_encoder_pulses_per_mm() /
+        1000.0F,
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).get_steps_per_mm() /
+        1000.0F,
+    static_cast<uint32_t>(
+        configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
+            .get_um_per_step() *
+        configs::STALL_THRESHOLD_FULLSTEPS *
+        configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).microstep));
+
+// Gear motors have no encoders
+static auto gear_stall_check = interfaces::gear_motor::GearStallCheck{
+    .left = stall_check::StallCheck(0, 0, 0),
+    .right = stall_check::StallCheck(0, 0, 0)};
+
 static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
 static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
@@ -93,15 +111,15 @@ static auto linear_motor_hardware =
     interfaces::linear_motor::get_motor_hardware(
         convert_to_motor_hardware(motor_config.hardware_pins.linear_motor));
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
-    linear_motor_hardware, interrupt_queues);
+    linear_motor_hardware, interrupt_queues, linear_stall_check);
 static auto linear_motion_control =
     interfaces::linear_motor::get_motion_control(linear_motor_hardware,
                                                  interrupt_queues);
 
 static auto gear_hardware =
     interfaces::gear_motor::get_motor_hardware(motor_config.hardware_pins);
-static auto gear_interrupts =
-    interfaces::gear_motor::get_interrupts(gear_hardware, interrupt_queues);
+static auto gear_interrupts = interfaces::gear_motor::get_interrupts(
+    gear_hardware, interrupt_queues, gear_stall_check);
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 

@@ -39,10 +39,11 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 }
 
 auto linear_motor::get_interrupt(
-    sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue)
+    sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
+    stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queue, linear_motor_tasks::get_queues(), hw);
+        queue, linear_motor_tasks::get_queues(), hw, stall);
 }
 
 auto linear_motor::get_interrupt_driver(
@@ -88,15 +89,16 @@ auto linear_motor::get_motion_control(
 }
 
 auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
-                                HighThroughputInterruptQueues& queues)
+                                HighThroughputInterruptQueues& queues,
+                                GearStallCheck& stall)
     -> gear_motor::GearInterruptHandlers {
     return gear_motor::GearInterruptHandlers{
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
-            hw.left),
+            hw.left, stall.left),
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
-            hw.right),
+            hw.right, stall.right),
     };
 }
 
@@ -112,7 +114,7 @@ auto gear_motor::get_interrupt_drivers(
 }
 
 auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,
-                                LowThroughputInterruptQueues&)
+                                LowThroughputInterruptQueues&, GearStallCheck&)
     -> gear_motor::UnavailableGearInterrupts {
     return gear_motor::UnavailableGearInterrupts{};
 }

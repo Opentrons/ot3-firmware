@@ -42,10 +42,25 @@ static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 
 static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
 
+static auto linear_stall_check = stall_check::StallCheck(
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
+            .get_encoder_pulses_per_mm() /
+        1000.0F,
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).get_steps_per_mm() /
+        1000.0F,
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).get_um_per_step() *
+        configs::STALL_THRESHOLD_FULLSTEPS *
+        configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).microstep);
+
+// Gear motors have no encoders
+static auto gear_stall_check = interfaces::gear_motor::GearStallCheck{
+    .left = stall_check::StallCheck(0, 0, 0),
+    .right = stall_check::StallCheck(0, 0, 0)};
+
 static auto linear_motor_hardware =
     interfaces::linear_motor::get_motor_hardware();
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
-    linear_motor_hardware, interrupt_queues.plunger_queue);
+    linear_motor_hardware, interrupt_queues.plunger_queue, linear_stall_check);
 static auto plunger_interrupt_driver =
     interfaces::linear_motor::get_interrupt_driver(
         linear_motor_hardware, interrupt_queues.plunger_queue,
@@ -56,8 +71,8 @@ static auto linear_motion_control =
 
 static auto gear_hardware =
     interfaces::gear_motor::get_motor_hardware(motor_config.hardware_pins);
-static auto gear_interrupts =
-    interfaces::gear_motor::get_interrupts(gear_hardware, interrupt_queues);
+static auto gear_interrupts = interfaces::gear_motor::get_interrupts(
+    gear_hardware, interrupt_queues, gear_stall_check);
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 

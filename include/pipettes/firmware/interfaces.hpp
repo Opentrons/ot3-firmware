@@ -1,6 +1,7 @@
 #pragma once
 
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/interfaces.hpp"
@@ -64,10 +65,12 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 namespace linear_motor {
 
 auto get_interrupt(pipette_motor_hardware::MotorHardware& hw,
-                   LowThroughputInterruptQueues& queues)
+                   LowThroughputInterruptQueues& queues,
+                   stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_interrupt(pipette_motor_hardware::MotorHardware& hw,
-                   HighThroughputInterruptQueues& queues)
+                   HighThroughputInterruptQueues& queues,
+                   stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware pins)
     -> pipette_motor_hardware::MotorHardware;
@@ -94,16 +97,21 @@ struct GearInterruptHandlers {
     GearMotorInterruptHandlerType<gear_motor_tasks::QueueClient> right;
 };
 
+struct GearStallCheck {
+    stall_check::StallCheck left;
+    stall_check::StallCheck right;
+};
+
 auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware)
     -> UnavailableGearHardware;
 auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)
     -> GearHardware;
 
-auto get_interrupts(UnavailableGearHardware&, LowThroughputInterruptQueues&)
-    -> UnavailableGearInterrupts;
+auto get_interrupts(UnavailableGearHardware&, LowThroughputInterruptQueues&,
+                    GearStallCheck&) -> UnavailableGearInterrupts;
 
-auto get_interrupts(GearHardware& hw, HighThroughputInterruptQueues& queues)
-    -> GearInterruptHandlers;
+auto get_interrupts(GearHardware& hw, HighThroughputInterruptQueues& queues,
+                    GearStallCheck& stall) -> GearInterruptHandlers;
 
 auto get_motion_control(UnavailableGearHardware&,
                         LowThroughputInterruptQueues& queues)

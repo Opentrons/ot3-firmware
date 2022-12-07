@@ -1,5 +1,6 @@
 #pragma once
 
+#include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
 #include "motor-control/simulation/sim_motor_hardware_iface.hpp"
@@ -58,7 +59,7 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 namespace linear_motor {
 
 auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-                   MoveQueue& queue)
+                   MoveQueue& queue, stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 
 auto get_interrupt_driver(
@@ -102,16 +103,21 @@ struct GearHardware {
     sim_motor_hardware_iface::SimGearMotorHardwareIface right;
 };
 
+struct GearStallCheck {
+    stall_check::StallCheck left;
+    stall_check::StallCheck right;
+};
+
 auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware)
     -> UnavailableGearHardware;
 auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)
     -> GearHardware;
 
-auto get_interrupts(UnavailableGearHardware&, LowThroughputInterruptQueues&)
-    -> UnavailableGearInterrupts;
+auto get_interrupts(UnavailableGearHardware&, LowThroughputInterruptQueues&,
+                    GearStallCheck&) -> UnavailableGearInterrupts;
 
-auto get_interrupts(GearHardware& hw, HighThroughputInterruptQueues& queues)
-    -> GearInterruptHandlers;
+auto get_interrupts(GearHardware& hw, HighThroughputInterruptQueues& queues,
+                    GearStallCheck& stall) -> GearInterruptHandlers;
 
 auto get_interrupt_drivers(GearInterruptHandlers& interrupts,
                            HighThroughputInterruptQueues& queues,
