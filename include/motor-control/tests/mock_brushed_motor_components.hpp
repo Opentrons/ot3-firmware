@@ -77,15 +77,23 @@ class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
   public:
     bool start_digital_analog_converter() final { return true; }
     bool stop_digital_analog_converter() final { return true; }
-    bool set_reference_voltage(float) final { return true; }
+    bool set_reference_voltage(float v) final {
+        v_ref = v;
+        return true;
+    }
     void setup() final {}
     void update_pwm_settings(uint32_t pwm_set) { pwm_val = pwm_set; }
     uint32_t get_pwm_settings() { return pwm_val; }
     uint32_t pwm_active_duty_clamp(uint32_t duty_cycle) {
         return std::clamp(duty_cycle, uint32_t(7), uint32_t(100));
     }
+    [[nodiscard]] auto get_current_vref() const -> float final { return v_ref; }
+    [[nodiscard]] auto get_current_duty_cycle() const -> uint32_t final {
+        return pwm_val;
+    }
 
   private:
+    float v_ref = 0;
     uint32_t pwm_val = 0;
 };
 

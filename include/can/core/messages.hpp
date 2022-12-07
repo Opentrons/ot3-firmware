@@ -864,6 +864,27 @@ struct SetBrushedMotorVrefRequest
         -> bool = default;
 };
 
+using BrushedMotorConfRequest = Empty<MessageId::brushed_motor_conf_request>;
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct BrushedMotorConfResponse
+    : BaseMessage<MessageId::brushed_motor_conf_response> {
+    uint32_t message_index;
+    uint32_t v_ref;
+    uint32_t duty_cycle;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(v_ref, iter, limit);
+        iter = bit_utils::int_to_bytes(duty_cycle, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const BrushedMotorConfResponse& other) const
+        -> bool = default;
+};
+
 struct SetBrushedMotorPwmRequest
     : BaseMessage<MessageId::set_brushed_motor_pwm_request> {
     uint32_t message_index;
@@ -1276,6 +1297,6 @@ using ResponseMessageType = std::variant<
     FirmwareUpdateStatusResponse, SensorThresholdResponse,
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
-    PeripheralStatusResponse>;
+    PeripheralStatusResponse, BrushedMotorConfResponse>;
 
 }  // namespace can::messages
