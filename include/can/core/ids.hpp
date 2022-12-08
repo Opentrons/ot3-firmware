@@ -130,6 +130,8 @@ enum class ErrorCode {
     timeout = 0x6,
     estop_detected = 0x7,
     collision_detected = 0x8,
+    labware_dropped = 0x9,
+    estop_released = 0xa,
 };
 
 /** Error Severity levels. */
@@ -194,3 +196,4 @@ enum class MotorPositionFlags {
 };
 
 }  // namespace can::ids
+

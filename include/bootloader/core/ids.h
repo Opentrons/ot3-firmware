@@ -128,6 +128,8 @@ typedef enum {
     can_errorcode_timeout = 0x6,
     can_errorcode_estop_detected = 0x7,
     can_errorcode_collision_detected = 0x8,
+    can_errorcode_labware_dropped = 0x9,
+    can_errorcode_estop_released = 0xa,
 } CANErrorCode;
 
 /** Tool types detected on Head. */
