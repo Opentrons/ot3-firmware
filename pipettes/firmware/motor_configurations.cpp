@@ -157,8 +157,8 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                 .led = {},
                 .sync_in =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_7,
+                     .port = GPIOD,
+                     .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     {// Located on the back sensor board
@@ -193,8 +193,8 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                 .led = {},
                 .sync_in =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_7,
+                     .port = GPIOD,
+                     .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     {// Located on the front sensor board
@@ -230,8 +230,8 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                 .led = {},
                 .sync_in =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOB,
-                     .pin = GPIO_PIN_7,
+                     .port = GPIOD,
+                     .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_RESET},
                 // tip sense will be checked on the two pipette
                 // tip pick up motors.
