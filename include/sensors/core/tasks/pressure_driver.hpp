@@ -59,10 +59,10 @@ class MMR920C04 {
 
     auto get_host_id() -> NodeId { return NodeId::host; }
 
-    auto get_threshold() -> int32_t { return threshold_cmH20; }
+    auto get_threshold() -> int32_t { return threshold_pascals; }
 
     auto set_threshold(int32_t new_threshold) -> void {
-        threshold_cmH20 = fixed_point_to_float(new_threshold, S15Q16_RADIX);
+        threshold_pascals = fixed_point_to_float(new_threshold, S15Q16_RADIX);
     }
 
     auto write(mmr920C04::Registers reg, uint32_t command_data) -> void {
@@ -173,10 +173,8 @@ class MMR920C04 {
     }
 
     auto send_pressure(uint32_t message_index) -> void {
-        auto pressure =
-            mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto pressure_fixed_point =
-            convert_to_fixed_point(pressure, S15Q16_RADIX);
+            convert_to_fixed_point(pressure_pascals, S15Q16_RADIX);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
             .sensor = get_sensor_type(),
@@ -271,12 +269,12 @@ class MMR920C04 {
         // Pressure is always a three-byte value
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), raw_data);
         data = static_cast<int32_t>(raw_data >> 8);
-        auto pressure = mmr920C04::Pressure::to_pressure(data);
+        pressure_pascals = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);
                 if (sync) {
-                    if (pressure > threshold_cmH20) {
+                    if (pressure_pascals > threshold_pascals) {
                         hardware.set_sync();
                         stop_polling = true;
                     } else {
@@ -322,7 +320,8 @@ class MMR920C04 {
     uint16_t number_of_reads = 0x1;
     // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
     // sure this is an arbitrarily large number to enable continuous reads.
-    float threshold_cmH20 = 2457.0F;
+    float threshold_pascals = 100.0F;
+    float pressure_pascals = 0.0F;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;
