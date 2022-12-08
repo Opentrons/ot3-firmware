@@ -9,6 +9,13 @@
 
 namespace motor_handler {
 
+static constexpr uint32_t ESTOP_HOLDOFF_TICKS =
+    4572;  // hold off for 25 ms (with a 200k Hz timer)
+// The Estop bounces around quite a bit when the button is pressed
+// partitally due to how quickly you hit the button and some other 
+// electrical bouncing. we're not going to disable the estop immediatly
+// so its ok to have a longer holdoff here
+
 using namespace motor_messages;
 /*
  *
@@ -88,8 +95,13 @@ class MotorInterruptHandler {
     void run_interrupt() {
         // handle error state
         if (in_error_state) {
-            in_error_state = estop_triggered();
+            // wait some time before coming out of estop state since
+            // the signal bounces 
+            if (estop_tick_count >= ESTOP_HOLDOFF_TICKS) {
+                in_error_state = estop_triggered();
+            } else { estop_tick_count++; }
         } else if (estop_triggered()) {
+            estop_tick_count = 0;
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
         } else {
             // Normal Move logic
@@ -328,6 +340,7 @@ class MotorInterruptHandler {
     }
 
     uint64_t tick_count = 0x0;
+    uint64_t estop_tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
     // Tracks position with sub-microstep accuracy
