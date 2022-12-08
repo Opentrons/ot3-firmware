@@ -81,6 +81,7 @@ auto convert_to_motor_hardware(
         .enable = motor_config.enable,
         .limit_switch = motor_config.limit_switch,
         .led = motor_config.led,
+        .sync_in = motor_config.sync_in,
     };
 }
 
