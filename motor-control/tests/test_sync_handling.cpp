@@ -13,9 +13,10 @@ struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::Move> queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
+    stall_check::StallCheck stall{10, 10, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient, Move>
-        handler{queue, reporter, hw};
+        handler{queue, reporter, hw, stall};
 };
 
 static constexpr sq0_31 default_velocity =

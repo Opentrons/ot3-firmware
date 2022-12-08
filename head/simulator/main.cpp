@@ -14,6 +14,7 @@
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
+#include "head/core/utils.hpp"
 #include "head/simulation/adc.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -72,8 +73,29 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
         .GPIO_handle = 0,
     }};
 
+static auto linear_config = lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
+    .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0},
+    .steps_per_rev = 200.0,
+    .microstep = 32.0,
+    .encoder_pulses_per_rev = 1024.0};
+
+static stall_check::StallCheck stallcheck_right(
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_steps_per_mm() / 1000.0F,
+    static_cast<uint32_t>(linear_config.get_um_per_step() *
+                          utils::STALL_THRESHOLD_FULLSTEPS *
+                          linear_config.microstep));
+
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
-    motor_queue_right, head_tasks::get_right_queues(), motor_interface_right);
+    motor_queue_right, head_tasks::get_right_queues(), motor_interface_right,
+    stallcheck_right);
+
+static stall_check::StallCheck stallcheck_left(
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_steps_per_mm() / 1000.0F,
+    static_cast<uint32_t>(linear_config.get_um_per_step() *
+                          utils::STALL_THRESHOLD_FULLSTEPS *
+                          linear_config.microstep));
 
 static auto motor_sys_config =
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
@@ -91,7 +113,8 @@ static motor_class::Motor motor_right{
     motor_queue_right};
 
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
-    motor_queue_left, head_tasks::get_left_queues(), motor_interface_left);
+    motor_queue_left, head_tasks::get_left_queues(), motor_interface_left,
+    stallcheck_left);
 
 static motor_class::Motor motor_left{
     motor_sys_config, motor_interface_left,

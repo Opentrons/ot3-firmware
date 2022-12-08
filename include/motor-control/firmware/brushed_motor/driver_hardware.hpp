@@ -38,16 +38,24 @@ class BrushedMotorDriver : public BrushedMotorDriverIface {
     auto set_reference_voltage(float val) -> bool final;
     void setup() final;
     void update_pwm_settings(uint32_t duty_cycle) final {
+        current_duty_cycle = duty_cycle;
         callback(duty_cycle);
     }
     auto pwm_active_duty_clamp(uint32_t duty_cycle) -> uint32_t final {
         return std::clamp(duty_cycle, conf.pwm_min, conf.pwm_max);
+    }
+    [[nodiscard]] auto get_current_vref() const -> float final {
+        return conf.vref;
+    }
+    [[nodiscard]] auto get_current_duty_cycle() const -> uint32_t final {
+        return current_duty_cycle;
     }
 
   private:
     DacConfig dac;
     DriverConfig conf;
     Callback callback;
+    uint32_t current_duty_cycle = 0;
 };
 
 };  // namespace brushed_motor_driver

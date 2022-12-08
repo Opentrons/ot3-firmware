@@ -12,7 +12,8 @@ SCENARIO("queue multiple move messages") {
         test_mocks::MockMessageQueue<Move> queue;
         test_mocks::MockMoveStatusReporterClient reporter{};
         test_mocks::MockMotorHardware hardware;
-        auto handler = MotorInterruptHandler(queue, reporter, hardware);
+        stall_check::StallCheck stall(10, 10, 10);
+        auto handler = MotorInterruptHandler(queue, reporter, hardware, stall);
 
         WHEN("add multiple moves to the queue") {
             THEN("all the moves should exist in order") {

@@ -4,6 +4,7 @@
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 
 namespace motor_handler {
@@ -47,10 +48,12 @@ class MotorInterruptHandler {
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(
         MoveQueue& incoming_move_queue, StatusClient& outgoing_queue,
-        motor_hardware::StepperMotorHardwareIface& hardware_iface)
+        motor_hardware::StepperMotorHardwareIface& hardware_iface,
+        stall_check::StallCheck& stall)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
-          hardware(hardware_iface) {}
+          hardware(hardware_iface),
+          stall_checker{stall} {}
     ~MotorInterruptHandler() = default;
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
     auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
@@ -61,14 +64,23 @@ class MotorInterruptHandler {
     // It will run motion math, handle the immediate move buffer, and set or
     // clear step, direction, and sometimes enable pins
     void run_interrupt() {
+        bool dir = true;
         if (set_direction_pin()) {
             hardware.positive_direction();
         } else {
             hardware.negative_direction();
+            dir = false;
         }
         if (pulse()) {
             hardware.step();
             update_hardware_step_tracker();
+            if (stall_checker.step_itr(dir)) {
+                if (!stall_checker.check_stall_itr(
+                        hardware.get_encoder_pulses())) {
+                    hardware.position_flags.clear_flag(
+                        MotorPositionStatus::Flags::stepper_position_ok);
+                }
+            }
         }
         hardware.unstep();
     }
@@ -143,10 +155,13 @@ class MotorInterruptHandler {
             position_tracker = 0;
             hardware.reset_step_tracker();
             hardware.reset_encoder_pulses();
+            stall_checker.reset_itr_counts(0);
             hardware.position_flags.set_flag(
                 can::ids::MotorPositionFlags::stepper_position_ok);
-            hardware.position_flags.set_flag(
-                can::ids::MotorPositionFlags::encoder_position_ok);
+            if (stall_checker.has_encoder()) {
+                hardware.position_flags.set_flag(
+                    can::ids::MotorPositionFlags::encoder_position_ok);
+            }
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -235,6 +250,7 @@ class MotorInterruptHandler {
         tick_count = 0x0;
         has_active_move = false;
         hardware.reset_encoder_pulses();
+        stall_checker.reset_itr_counts(0);
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -279,6 +295,7 @@ class MotorInterruptHandler {
     MoveQueue& move_queue;
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
+    stall_check::StallCheck& stall_checker;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
 };
 }  // namespace motor_handler

@@ -16,8 +16,8 @@ class StallCheck {
     /**
      * @brief Construct a new Stall Check object
      *
-     * @param _encoder_tick_per_um Ratio of ticks : µm for encoder
-     * @param _stepper_tick_per_um Ratio of ticks : µm for microsteps
+     * @param encoder_tick_per_um Ratio of ticks : µm for encoder
+     * @param stepper_tick_per_um Ratio of ticks : µm for microsteps
      * @param um_threshold If encoder and stepper position differs by
      * more than this, consider the stepper stalled.
      */
@@ -55,8 +55,9 @@ class StallCheck {
     [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool
         __attribute__((optimize(3)));
 
-  private:
     [[nodiscard]] auto has_encoder() const -> bool;
+
+  private:
     [[nodiscard]] auto encoder_um_per_tick() const -> float;
     [[nodiscard]] auto stepper_um_per_tick() const -> float;
 
