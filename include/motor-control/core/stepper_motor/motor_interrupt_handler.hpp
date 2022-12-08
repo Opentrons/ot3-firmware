@@ -10,7 +10,7 @@
 namespace motor_handler {
 
 static constexpr uint32_t ESTOP_HOLDOFF_TICKS =
-    4572;  // hold off for 25 ms (with a 200k Hz timer)
+    2500;  // hold off for 25 ms (with a 100k Hz timer)
 // The Estop bounces around quite a bit when the button is pressed
 // partitally due to how quickly you hit the button and some other 
 // electrical bouncing. we're not going to disable the estop immediatly
