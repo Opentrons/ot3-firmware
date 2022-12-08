@@ -85,13 +85,12 @@ class MotionController {
 
     void disable_motor() {
         hardware.deactivate_motor();
-        hardware.stop_timer_interrupt();
         enabled = false;
     }
 
     void stop() {
-        hardware.stop_pwm();
         queue.reset();
+        disable_motor();
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
