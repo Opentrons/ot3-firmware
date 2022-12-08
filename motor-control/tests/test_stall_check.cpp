@@ -190,5 +190,27 @@ TEST_CASE("stall check handling with no encoder") {
             int32_t encoder = GENERATE(0, 100, 10000, 1000000);
             REQUIRE(subject.check_stall_itr(encoder));
         }
+        THEN("converting encoder to microsteps always returns 0") {
+            uint32_t input = GENERATE(0, 100, 10000);
+            REQUIRE(subject.encoder_ticks_to_stepper_ticks(input) == 0);
+        }
+    }
+}
+
+TEST_CASE("stall check encoder to stepper conversions") {
+    float microstep_per_um = 10;
+    float encoder_per_um = GENERATE(1.0F, 10.0F, 15.0F);
+    auto ratio = microstep_per_um / encoder_per_um;
+    GIVEN("a stallcheck object") {
+        auto subject =
+            stall_check::StallCheck(encoder_per_um, microstep_per_um, 10);
+        uint32_t input = GENERATE(0, 100, 1000);
+        WHEN("converting an encoder tick count") {
+            auto ret = subject.encoder_ticks_to_stepper_ticks(input);
+            THEN("the conversion is correct") {
+                auto expected = static_cast<uint32_t>(ratio * input);
+                REQUIRE(expected == ret);
+            }
+        }
     }
 }
