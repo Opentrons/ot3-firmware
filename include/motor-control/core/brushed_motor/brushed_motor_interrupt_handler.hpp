@@ -37,14 +37,12 @@ static constexpr uint32_t HOLDOFF_TICKS =
 // using the logic analyzer it takes about 0.2-0.3 ms for the output
 // to stablize after changing directions of the PWM
 
-
 static constexpr uint32_t ESTOP_HOLDOFF_TICKS =
     800;  // hold off for 25 ms (with a 32k Hz timer)
 // The Estop bounces around quite a bit when the button is pressed
-// partitally due to how quickly you hit the button and some other 
+// partitally due to how quickly you hit the button and some other
 // electrical bouncing. we're not going to disable the estop immediatly
 // so its ok to have a longer holdoff here
-
 
 // upon advice from hardware, 0.01mm is a good limit for precision
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
@@ -159,11 +157,13 @@ class BrushedMotorInterruptHandler {
             if (!estop_triggered() && estop_tick >= ESTOP_HOLDOFF_TICKS) {
                 motor_state = ControlState::IDLE;
                 status_queue_client.send_brushed_move_status_reporter_queue(
-                can::messages::ErrorMessage{
-                    .message_index = 0,
-                    .severity = can::ids::ErrorSeverity::warning,
-                    .error_code = can::ids::ErrorCode::estop_released});
-            } else { estop_tick++; }
+                    can::messages::ErrorMessage{
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::warning,
+                        .error_code = can::ids::ErrorCode::estop_released});
+            } else {
+                estop_tick++;
+            }
         } else {
             if (estop_triggered()) {
                 estop_tick = 0;
@@ -262,7 +262,9 @@ class BrushedMotorInterruptHandler {
             can::messages::StopRequest{.message_index = 0});
         if (err_code == can::ids::ErrorCode::estop_detected) {
             motor_state = ControlState::ESTOP;
-        } else { motor_state= ControlState::ERROR; }
+        } else {
+            motor_state = ControlState::ERROR;
+        }
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
     }

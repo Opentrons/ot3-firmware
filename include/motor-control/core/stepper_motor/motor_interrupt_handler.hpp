@@ -12,7 +12,7 @@ namespace motor_handler {
 static constexpr uint32_t ESTOP_HOLDOFF_TICKS =
     2500;  // hold off for 25 ms (with a 100k Hz timer)
 // The Estop bounces around quite a bit when the button is pressed
-// partitally due to how quickly you hit the button and some other 
+// partitally due to how quickly you hit the button and some other
 // electrical bouncing. we're not going to disable the estop immediatly
 // so its ok to have a longer holdoff here
 
@@ -96,7 +96,7 @@ class MotorInterruptHandler {
         // handle error state
         if (in_estop) {
             // wait some time before coming out of estop state since
-            // the signal bounces 
+            // the signal bounces
             if (estop_tick_count >= ESTOP_HOLDOFF_TICKS) {
                 in_estop = estop_triggered();
                 if (!in_estop) {
@@ -106,7 +106,9 @@ class MotorInterruptHandler {
                             .severity = can::ids::ErrorSeverity::warning,
                             .error_code = can::ids::ErrorCode::estop_released});
                 }
-            } else { estop_tick_count++; }
+            } else {
+                estop_tick_count++;
+            }
         } else if (estop_triggered()) {
             estop_tick_count = 0;
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
@@ -279,7 +281,7 @@ class MotorInterruptHandler {
         // we can't clear here from an interrupt context
         has_active_move = false;
         if (err_code == can::ids::ErrorCode::estop_detected) {
-            in_estop = true; 
+            in_estop = true;
         }
     }
 

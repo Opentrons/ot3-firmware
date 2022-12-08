@@ -196,4 +196,3 @@ enum class MotorPositionFlags {
 };
 
 }  // namespace can::ids
-
