@@ -94,11 +94,18 @@ class MotorInterruptHandler {
 
     void run_interrupt() {
         // handle error state
-        if (in_error_state) {
+        if (in_estop) {
             // wait some time before coming out of estop state since
             // the signal bounces 
             if (estop_tick_count >= ESTOP_HOLDOFF_TICKS) {
-                in_error_state = estop_triggered();
+                in_estop = estop_triggered();
+                if (!in_estop) {
+                    status_queue_client.send_move_status_reporter_queue(
+                        can::messages::ErrorMessage{
+                            .message_index = 0,
+                            .severity = can::ids::ErrorSeverity::warning,
+                            .error_code = can::ids::ErrorCode::estop_released});
+                }
             } else { estop_tick_count++; }
         } else if (estop_triggered()) {
             estop_tick_count = 0;
@@ -271,7 +278,9 @@ class MotorInterruptHandler {
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
         has_active_move = false;
-        in_error_state = true;
+        if (err_code == can::ids::ErrorCode::estop_detected) {
+            in_estop = true; 
+        }
     }
 
     void finish_current_move(
@@ -325,7 +334,7 @@ class MotorInterruptHandler {
         update_hardware_step_tracker();
     }
     bool has_active_move = false;
-    bool in_error_state = false;
+    bool in_estop = false;
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }

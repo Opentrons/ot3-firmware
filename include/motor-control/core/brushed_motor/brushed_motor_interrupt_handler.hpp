@@ -28,7 +28,8 @@ enum class ControlState {
     POSITION_CONTROLLING,
     IDLE,
     ACTIVE,
-    ERROR
+    ERROR,
+    ESTOP
 };
 
 static constexpr uint32_t HOLDOFF_TICKS =
@@ -153,7 +154,17 @@ class BrushedMotorInterruptHandler {
     }
 
     void run_interrupt() {
-        if (motor_state != ControlState::ERROR) {
+        if (motor_state == ControlState::ESTOP) {
+            // return out of error state once the estop is disabled
+            if (!estop_triggered() && estop_tick >= ESTOP_HOLDOFF_TICKS) {
+                motor_state = ControlState::IDLE;
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                can::messages::ErrorMessage{
+                    .message_index = 0,
+                    .severity = can::ids::ErrorSeverity::warning,
+                    .error_code = can::ids::ErrorCode::estop_released});
+            } else { estop_tick++; }
+        } else {
             if (estop_triggered()) {
                 estop_tick = 0;
                 cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
@@ -168,16 +179,6 @@ class BrushedMotorInterruptHandler {
             } else {
                 execute_idle_move();
             }
-        } else {
-            // return out of error state once the estop is disabled
-            if (!estop_triggered() && estop_tick >= ESTOP_HOLDOFF_TICKS) {
-                motor_state = ControlState::IDLE;
-                status_queue_client.send_brushed_move_status_reporter_queue(
-                can::messages::ErrorMessage{
-                    .message_index = 0,
-                    .severity = can::ids::ErrorSeverity::warning,
-                    .error_code = can::ids::ErrorCode::estop_released});
-            } else { estop_tick++; }
         }
     }
 
@@ -259,7 +260,9 @@ class BrushedMotorInterruptHandler {
         // Broadcast a stop message
         status_queue_client.send_brushed_move_status_reporter_queue(
             can::messages::StopRequest{.message_index = 0});
-        motor_state = ControlState::ERROR;
+        if (err_code == can::ids::ErrorCode::estop_detected) {
+            motor_state = ControlState::ESTOP;
+        } else { motor_state= ControlState::ERROR; }
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
     }
