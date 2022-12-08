@@ -49,6 +49,7 @@ enum class MessageId {
     motor_position_request = 0x12,
     motor_position_response = 0x14,
     update_motor_position_request = 0x21,
+    update_motor_position_response = 0x22,
     set_motion_constraints = 0x101,
     get_motion_constraints_request = 0x102,
     get_motion_constraints_response = 0x103,
@@ -194,4 +195,3 @@ enum class MotorPositionFlags {
 };
 
 }  // namespace can::ids
-

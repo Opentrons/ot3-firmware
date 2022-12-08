@@ -258,6 +258,36 @@ SCENARIO("message serializing works") {
         }
     }
 
+    GIVEN("an update motor position response") {
+        auto message = UpdateMotorPositionResponse{.message_index = 0x1234,
+                                                   .current_position = 0xBA12CD,
+                                                   .encoder_position = 0xABEF,
+                                                   .position_flags = 0x2};
+        auto arr =
+            std::array<uint8_t, 14>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        auto body = std::span{arr};
+        WHEN("serialized into a buffer larger than needed") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is fully written into the buffer") {
+                REQUIRE(body.data()[0] == 0x00);
+                REQUIRE(body.data()[1] == 0x00);
+                REQUIRE(body.data()[2] == 0x12);
+                REQUIRE(body.data()[3] == 0x34);
+                REQUIRE(body.data()[4] == 0x00);
+                REQUIRE(body.data()[5] == 0xBA);
+                REQUIRE(body.data()[6] == 0x12);
+                REQUIRE(body.data()[7] == 0xCD);
+                REQUIRE(body.data()[8] == 0x00);
+                REQUIRE(body.data()[9] == 0x00);
+                REQUIRE(body.data()[10] == 0xAB);
+                REQUIRE(body.data()[11] == 0xEF);
+                REQUIRE(body.data()[12] == 0x02);
+                REQUIRE(body.data()[13] == 0x00);
+            }
+            THEN("size must be returned") { REQUIRE(size == 13); }
+        }
+    }
+
     GIVEN("a read from eeprom response") {
         auto data = std::array<uint8_t, 5>{0, 1, 2, 3, 4};
         auto message = ReadFromEEPromResponse::create(

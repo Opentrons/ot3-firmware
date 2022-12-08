@@ -184,7 +184,8 @@ using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 
-using UpdateMotorPositionRequest = Empty<MessageId::update_motor_position_request>;
+using UpdateMotorPositionRequest =
+    Empty<MessageId::update_motor_position_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
@@ -465,6 +466,27 @@ struct MotorPositionResponse : BaseMessage<MessageId::motor_position_response> {
     }
 
     auto operator==(const MotorPositionResponse& other) const -> bool = default;
+};
+
+// This response is the exact same payload as MotorPositionResponse
+struct UpdateMotorPositionResponse
+    : BaseMessage<MessageId::update_motor_position_response> {
+    uint32_t message_index;
+    uint32_t current_position;
+    int32_t encoder_position;
+    uint8_t position_flags;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(current_position, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
+        iter = bit_utils::int_to_bytes(position_flags, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const UpdateMotorPositionResponse& other) const
+        -> bool = default;
 };
 
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
