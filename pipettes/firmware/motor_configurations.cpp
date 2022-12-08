@@ -155,11 +155,6 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .sync_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     {// Located on the back sensor board
                      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -191,11 +186,6 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .sync_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     {// Located on the front sensor board
                      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
