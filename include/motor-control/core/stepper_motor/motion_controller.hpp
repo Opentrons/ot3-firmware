@@ -219,7 +219,8 @@ class PipetteMotionController {
         queue.try_write(msg);
     }
 
-    bool update_position(const can::messages::UpdateMotorPositionRequest&) {
+    [[nodiscard]] auto update_position(
+        const can::messages::UpdateMotorPositionRequest& can_msg) -> bool {
         // Not supported for gear motors - no encoder!
         return false;
     }
