@@ -18,7 +18,7 @@ using namespace motor_messages;
  * Public:
  * set_message_queue -> set the queue to be used by the global motor handler in
  * the `step_motor.cpp` file.
- * has_messages -> checks if there are messages available in the queue.
+ * has_move_messages -> checks if there are messages available in the queue.
  * can_step -> determines whether a motor can step or not. Currently, it only
  * checks to see whether the incrementer is less than the steps to move.
  * update_move -> public function which calls get move and resets the buffered
@@ -44,16 +44,20 @@ requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
+    using UpdatePositionQueue =
+        QueueImpl<can::messages::UpdateMotorPositionRequest>;
 
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(
         MoveQueue& incoming_move_queue, StatusClient& outgoing_queue,
         motor_hardware::StepperMotorHardwareIface& hardware_iface,
-        stall_check::StallCheck& stall)
+        stall_check::StallCheck& stall,
+        UpdatePositionQueue& incoming_update_position_queue)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
-          stall_checker{stall} {}
+          stall_checker{stall},
+          update_position_queue(incoming_update_position_queue) {}
     ~MotorInterruptHandler() = default;
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
     auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
@@ -110,7 +114,7 @@ class MotorInterruptHandler {
          * This function is called from a timer interrupt. See
          * `motor_hardware.cpp`.
          */
-        if (!has_active_move && has_messages()) {
+        if (!has_active_move && has_move_messages()) {
             update_move();
             return false;
         }
@@ -129,13 +133,17 @@ class MotorInterruptHandler {
             }
             if (!can_step()) {
                 finish_current_move();
-                if (has_messages()) {
+                if (has_move_messages()) {
                     update_move();
                     if (can_step() && tick()) {
                         return true;
                     }
                 }
                 return false;
+            }
+        } else {
+            if (update_position_queue.has_message_isr()) {
+                handle_update_position_queue();
             }
         }
         return false;
@@ -195,7 +203,7 @@ class MotorInterruptHandler {
         return bool((old_position ^ position_tracker) & tick_flag);
     }
 
-    [[nodiscard]] auto has_messages() const -> bool {
+    [[nodiscard]] auto has_move_messages() const -> bool {
         return move_queue.has_message_isr();
     }
     [[nodiscard]] auto can_step() const -> bool {
@@ -245,6 +253,7 @@ class MotorInterruptHandler {
          * handler.
          */
         move_queue.reset();
+        update_position_queue.reset();
         position_tracker = 0;
         update_hardware_step_tracker();
         tick_count = 0x0;
@@ -281,6 +290,37 @@ class MotorInterruptHandler {
         buffered_move = new_move;
     }
 
+    auto handle_update_position_queue() -> void {
+        can::messages::UpdateMotorPositionRequest msg;
+
+        if (update_position_queue.try_read_isr(&msg)) {
+            auto encoder_pulses = hardware.get_encoder_pulses();
+            // Only update position if:
+            // 1. We are not moving
+            // 2. The encoder position is valid
+            // 3. We have an encoder (implicitly checked by 2)
+            if (!has_active_move &&
+                hardware.position_flags.check_flag(
+                    MotorPositionStatus::Flags::encoder_position_ok)) {
+                auto stepper_tick_estimate =
+                    stall_checker.encoder_ticks_to_stepper_ticks(
+                        encoder_pulses);
+                set_current_position(static_cast<q31_31>(stepper_tick_estimate)
+                                     << 31);
+                hardware.position_flags.set_flag(
+                    MotorPositionStatus::Flags::stepper_position_ok);
+            }
+            // We send an ack even if the position wasn't updated
+            auto ack = motor_messages::UpdatePositionResponse{
+                .message_index = msg.message_index,
+                .stepper_position_counts = hardware.get_step_tracker(),
+                .encoder_pulses = encoder_pulses,
+                .position_flags = hardware.position_flags.get_flags()};
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(ack));
+        }
+    }
+
   private:
     void update_hardware_step_tracker() {
         hardware.set_step_tracker(
@@ -296,6 +336,7 @@ class MotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::StepperMotorHardwareIface& hardware;
     stall_check::StallCheck& stall_checker;
+    UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
 };
 }  // namespace motor_handler

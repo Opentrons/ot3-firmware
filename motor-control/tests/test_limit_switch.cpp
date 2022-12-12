@@ -12,11 +12,13 @@ using namespace motor_handler;
 struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::Move> queue{};
+    test_mocks::MockMessageQueue<can::messages::UpdateMotorPositionRequest>
+        update_position_queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
     stall_check::StallCheck stall{10, 10, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient, Move>
-        handler{queue, reporter, hw, stall};
+        handler{queue, reporter, hw, stall, update_position_queue};
 };
 
 static constexpr sq0_31 default_velocity =
