@@ -38,6 +38,10 @@ static auto motor_interface = sim_motor_hardware_iface::SimMotorHardwareIface(
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionRequest>
+    update_position_queue("Position Queue");
+
 static tmc2130::configs::TMC2130DriverConfig driver_configs{
     .registers = {.gconfig = {.en_pwm_mode = 1},
                   .ihold_irun = {.hold_current = 0x2,
@@ -71,7 +75,7 @@ static motor_class::Motor motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    motor_queue, update_position_queue};
 
 static stall_check::StallCheck stallcheck(
     utils::linear_motion_system_config().get_encoder_pulses_per_mm() / 1000.0F,
@@ -85,11 +89,13 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), motor_interface, stallcheck);
+    motor_queue, gantry::queues::get_queues(), motor_interface, stallcheck,
+    update_position_queue);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,
-                                                      motor_interface);
+                                                      motor_interface,
+                                                      update_position_queue);
 void interfaces::initialize() {}
 
 static po::variables_map options{};

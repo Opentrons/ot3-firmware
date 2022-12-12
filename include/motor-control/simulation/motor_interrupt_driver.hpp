@@ -13,27 +13,30 @@ template <class StatusClient, typename MotorMoveMessage, class MotorHardware>
 class MotorInterruptDriver {
     using InterruptQueue =
         freertos_message_queue::FreeRTOSMessageQueue<MotorMoveMessage>;
+    using MotorPositionUpdateQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<
+            can::messages::UpdateMotorPositionRequest>;
     using InterruptHandler = motor_handler::MotorInterruptHandler<
         freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
         MotorMoveMessage>;
 
   public:
     MotorInterruptDriver(InterruptQueue& q, InterruptHandler& h,
-                         MotorHardware& iface)
-        : task_entry{q, h, iface}, task(task_entry) {
+                         MotorHardware& iface, MotorPositionUpdateQueue& pq)
+        : task_entry{q, h, iface, pq}, task(task_entry) {
         task.start(5, "sim_motor_isr");
     }
 
   private:
     struct TaskEntry {
         TaskEntry(InterruptQueue& q, InterruptHandler& h,
-                  MotorHardware& motor_iface)
-            : queue{q}, handler{h}, iface{motor_iface} {}
+                  MotorHardware& motor_iface, MotorPositionUpdateQueue& pq)
+            : queue{q}, handler{h}, iface{motor_iface}, position_queue{pq} {}
 
         void operator()() {
             while (true) {
                 auto move = MotorMoveMessage{};
-                if (queue.peek(&move, queue.max_delay)) {
+                if (queue.peek(&move, 0)) {
                     LOG("Enabling motor interrupt handler for group %d, seq "
                         "%d, duration %ld",
                         move.group_id, move.seq_id, move.duration);
@@ -51,12 +54,20 @@ class MotorInterruptDriver {
 
                     } while (handler.has_active_move);
                     LOG("Move completed. Stopping interrupt simulation..");
+                } else if (position_queue.has_message()) {
+                    LOG("Running motor interrupt to update motor position from "
+                        "encoder");
+                    do {
+                        handler.run_interrupt();
+                    } while (position_queue.has_message());
                 }
+                taskYIELD();
             }
         }
         InterruptQueue& queue;
         InterruptHandler& handler;
         MotorHardware& iface;
+        MotorPositionUpdateQueue& position_queue;
     };
 
     TaskEntry task_entry;

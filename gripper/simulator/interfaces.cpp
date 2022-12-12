@@ -29,6 +29,10 @@ static auto motor_interface =
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionRequest>
+    update_position_queue("Position Queue");
+
 /**
  * The pending brushed move queue
  */
@@ -69,12 +73,15 @@ static auto z_motor_sys_config =
  * The motor struct.
  */
 static motor_class::Motor motor{
-    z_motor_sys_config, motor_interface,
+    z_motor_sys_config,
+    motor_interface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    motor_queue,
+    update_position_queue,
+    true};
 
 // There is no encoder so the ratio doesn't matter
 static stall_check::StallCheck stallcheck(0, 0, 500);
@@ -84,11 +91,12 @@ static stall_check::StallCheck stallcheck(0, 0, 500);
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gripper_tasks::z_tasks::get_queues(), motor_interface,
-    stallcheck);
+    stallcheck, update_position_queue);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,
-                                                      motor_interface);
+                                                      motor_interface,
+                                                      update_position_queue);
 
 /**
  * Brushed motor components

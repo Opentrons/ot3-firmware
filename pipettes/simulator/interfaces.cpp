@@ -7,15 +7,17 @@ using namespace interfaces;
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
     -> LowThroughputInterruptQueues {
-    return LowThroughputInterruptQueues{.plunger_queue =
-                                            MoveQueue{"Linear Motor Queue"}};
+    return LowThroughputInterruptQueues{
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear PUpdate Queue"}};
 }
 
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::EIGHT_CHANNEL>()
     -> LowThroughputInterruptQueues {
-    return LowThroughputInterruptQueues{.plunger_queue =
-                                            MoveQueue{"Linear Motor Queue"}};
+    return LowThroughputInterruptQueues{
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear PUpdate Queue"}};
 }
 
 template <>
@@ -23,10 +25,11 @@ auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}
-
-    };
+        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
+        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
 template <>
@@ -34,25 +37,30 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
+        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
+        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
 auto linear_motor::get_interrupt(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
-    stall_check::StallCheck& stall)
+    stall_check::StallCheck& stall, UpdatePositionQueue& update_queue)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queue, linear_motor_tasks::get_queues(), hw, stall);
+        queue, linear_motor_tasks::get_queues(), hw, stall, update_queue);
 }
 
 auto linear_motor::get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler,
+    UpdatePositionQueue& update_queue)
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface> {
-    return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw);
+    return motor_interrupt_driver::MotorInterruptDriver(queue, handler, hw,
+                                                        update_queue);
 }
 
 auto linear_motor::get_motor_hardware()
@@ -71,7 +79,7 @@ auto linear_motor::get_motion_control(
                                           .max_velocity = 2,
                                           .min_acceleration = 1,
                                           .max_acceleration = 2},
-        queues.plunger_queue};
+        queues.plunger_queue, queues.plunger_update_queue};
 }
 
 auto linear_motor::get_motion_control(
@@ -85,7 +93,7 @@ auto linear_motor::get_motion_control(
                                           .max_velocity = 2,
                                           .min_acceleration = 1,
                                           .max_acceleration = 2},
-        queues.plunger_queue};
+        queues.plunger_queue, queues.plunger_update_queue};
 }
 
 auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
@@ -95,10 +103,10 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
     return gear_motor::GearInterruptHandlers{
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
-            hw.left, stall.left),
+            hw.left, stall.left, queues.left_update_queue),
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
-            hw.right, stall.right),
+            hw.right, stall.right, queues.right_update_queue),
     };
 }
 
@@ -108,9 +116,11 @@ auto gear_motor::get_interrupt_drivers(
     -> gear_motor::GearInterruptDrivers {
     return gear_motor::GearInterruptDrivers{
         .left = motor_interrupt_driver::MotorInterruptDriver(
-            queues.left_motor_queue, interrupts.left, hw.left),
+            queues.left_motor_queue, interrupts.left, hw.left,
+            queues.left_update_queue),
         .right = motor_interrupt_driver::MotorInterruptDriver(
-            queues.left_motor_queue, interrupts.right, hw.right)};
+            queues.left_motor_queue, interrupts.right, hw.right,
+            queues.right_update_queue)};
 }
 
 auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,

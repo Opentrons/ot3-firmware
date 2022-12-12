@@ -46,6 +46,14 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_left("Motor Queue Left");
 
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionRequest>
+    update_position_queue_right("PQueue Right");
+
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionRequest>
+    update_position_queue_left("PQueue Left");
+
 static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
     .registers =
         {
@@ -88,7 +96,7 @@ static stall_check::StallCheck stallcheck_right(
 
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_interface_right,
-    stallcheck_right);
+    stallcheck_right, update_position_queue_right);
 
 static stall_check::StallCheck stallcheck_left(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
@@ -110,11 +118,11 @@ static motor_class::Motor motor_right{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue_right};
+    motor_queue_right, update_position_queue_right};
 
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_interface_left,
-    stallcheck_left);
+    stallcheck_left, update_position_queue_left);
 
 static motor_class::Motor motor_left{
     motor_sys_config, motor_interface_left,
@@ -122,12 +130,14 @@ static motor_class::Motor motor_left{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue_left};
+    motor_queue_left, update_position_queue_left};
 
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_right(
-    motor_queue_right, motor_interrupt_right, motor_interface_right);
+    motor_queue_right, motor_interrupt_right, motor_interface_right,
+    update_position_queue_right);
 static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
-    motor_queue_left, motor_interrupt_left, motor_interface_left);
+    motor_queue_left, motor_interrupt_left, motor_interface_left,
+    update_position_queue_left);
 
 static auto adc_comms = adc::SimADC{};
 
