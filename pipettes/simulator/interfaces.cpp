@@ -119,7 +119,7 @@ auto gear_motor::get_interrupt_drivers(
             queues.left_motor_queue, interrupts.left, hw.left,
             queues.left_update_queue),
         .right = motor_interrupt_driver::MotorInterruptDriver(
-            queues.left_motor_queue, interrupts.right, hw.right,
+            queues.right_motor_queue, interrupts.right, hw.right,
             queues.right_update_queue)};
 }
 
