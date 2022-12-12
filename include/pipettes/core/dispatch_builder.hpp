@@ -59,7 +59,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
+    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest,
+    can::messages::UpdateMotorPositionRequest>;
 
 using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,

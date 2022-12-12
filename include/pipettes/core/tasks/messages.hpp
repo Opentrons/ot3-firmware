@@ -17,7 +17,9 @@ using MotionControlTaskMessage = std::variant<
     can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest>;
 
 // TODO do we want the ack message to be slightly diff here?
-using MoveStatusReporterTaskMessage = motor_messages::GearMotorAck;
+using MoveStatusReporterTaskMessage =
+    std::variant<motor_messages::GearMotorAck,
+                 motor_messages::UpdatePositionResponse>;
 
 }  // namespace motor_control_task_messages
 

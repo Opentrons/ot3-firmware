@@ -7,15 +7,17 @@ using namespace interfaces;
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
     -> LowThroughputInterruptQueues {
-    return LowThroughputInterruptQueues{.plunger_queue =
-                                            MoveQueue{"Linear Motor Queue"}};
+    return LowThroughputInterruptQueues{
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear PUpdate Queue"}};
 }
 
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::EIGHT_CHANNEL>()
     -> LowThroughputInterruptQueues {
-    return LowThroughputInterruptQueues{.plunger_queue =
-                                            MoveQueue{"Linear Motor Queue"}};
+    return LowThroughputInterruptQueues{
+        .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear PUpdate Queue"}};
 }
 
 template <>
@@ -23,10 +25,11 @@ auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}
-
-    };
+        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
+        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
 template <>
@@ -34,8 +37,11 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputInterruptQueues {
     return HighThroughputInterruptQueues{
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
+        .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"}};
+        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
+        .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
+        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
 auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
@@ -43,7 +49,8 @@ auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
                                  stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall);
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
+        queues.plunger_update_queue);
 }
 
 auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
@@ -51,7 +58,8 @@ auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
                                  stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
     return motor_handler::MotorInterruptHandler(
-        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall);
+        queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
+        queues.plunger_update_queue);
 }
 auto linear_motor::get_motor_hardware(
     motor_configs::LowThroughputPipetteMotorHardware pins)
@@ -77,7 +85,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
                                           .max_velocity = 2,
                                           .min_acceleration = 1,
                                           .max_acceleration = 2},
-        queues.plunger_queue};
+        queues.plunger_queue, queues.plunger_update_queue};
 }
 
 auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
@@ -91,7 +99,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
                                           .max_velocity = 2,
                                           .min_acceleration = 1,
                                           .max_acceleration = 2},
-        queues.plunger_queue};
+        queues.plunger_queue, queues.plunger_update_queue};
 }
 
 auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
@@ -101,10 +109,10 @@ auto gear_motor::get_interrupts(gear_motor::GearHardware& hw,
     return gear_motor::GearInterruptHandlers{
         .left = motor_handler::MotorInterruptHandler(
             queues.left_motor_queue, gear_motor_tasks::get_left_gear_queues(),
-            hw.left, stall.left),
+            hw.left, stall.left, queues.left_update_queue),
         .right = motor_handler::MotorInterruptHandler(
             queues.right_motor_queue, gear_motor_tasks::get_right_gear_queues(),
-            hw.right, stall.right)};
+            hw.right, stall.right, queues.right_update_queue)};
 }
 
 auto gear_motor::get_interrupts(gear_motor::UnavailableGearHardware&,
@@ -142,7 +150,7 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                                   .max_velocity = 2,
                                                   .min_acceleration = 1,
                                                   .max_acceleration = 2},
-                queues.left_motor_queue},
+                queues.left_motor_queue, queues.left_update_queue},
         .right = pipette_motion_controller::PipetteMotionController{
             configs::linear_motion_sys_config_by_axis(
                 PipetteType::NINETY_SIX_CHANNEL),
@@ -151,7 +159,7 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                               .max_velocity = 2,
                                               .min_acceleration = 1,
                                               .max_acceleration = 2},
-            queues.right_motor_queue}};
+            queues.right_motor_queue, queues.right_update_queue}};
 }
 
 auto gear_motor::get_motion_control(gear_motor::UnavailableGearHardware&,

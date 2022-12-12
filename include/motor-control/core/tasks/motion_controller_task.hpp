@@ -121,7 +121,7 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::UpdateMotorPositionRequest& m) {
-        if ((!controller.enabled) || !controller.update_position(m)) {
+        if (!controller.update_position(m)) {
             // If the motor controller can't ask the interrupt handler to
             // handle the message, we respond with the current status as-is.
             can::messages::UpdateMotorPositionResponse response{
