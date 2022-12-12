@@ -91,8 +91,8 @@ class MotionController {
         queue.try_write(msg);
     }
 
-    bool update_position(
-        const can::messages::UpdateMotorPositionRequest& can_msg) {
+    [[nodiscard]] auto update_position(
+        const can::messages::UpdateMotorPositionRequest& can_msg) -> bool {
         if (!enabled) {
             return false;
         }
