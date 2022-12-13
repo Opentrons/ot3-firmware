@@ -94,16 +94,16 @@ TEST_CASE("motor interrupt handler queue functionality") {
                 can::messages::UpdateMotorPositionRequest{.message_index = 123};
             update_position_queue.try_write(update_msg);
             queue.try_write(move_msg);
-            THEN(
-                "the update messsage isn't handled until the move message "
-                "completes") {
-                do {
-                    static_cast<void>(handler.run_interrupt());
-                } while (handler.has_move_messages() ||
-                         handler.has_active_move);
-                REQUIRE(update_position_queue.has_message());
+            THEN("update message is ACK'd with an error") {
                 static_cast<void>(handler.run_interrupt());
-                REQUIRE(!update_position_queue.has_message());
+                REQUIRE(reporter.messages.size() > 0);
+                REQUIRE(std::holds_alternative<can::messages::ErrorMessage>(
+                    reporter.messages.front()));
+                auto response = std::get<can::messages::ErrorMessage>(
+                    reporter.messages.front());
+                REQUIRE(response.message_index == 123);
+                REQUIRE(response.error_code == can::ids::ErrorCode::motor_busy);
+                REQUIRE(response.severity == can::ids::ErrorSeverity::warning);
             }
         }
     }

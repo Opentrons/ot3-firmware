@@ -220,7 +220,7 @@ class PipetteMotionController {
     }
 
     [[nodiscard]] auto update_position(
-        const can::messages::UpdateMotorPositionRequest& can_msg) -> bool {
+        const can::messages::UpdateMotorPositionRequest&) -> bool {
         // Not supported for gear motors - no encoder!
         return false;
     }

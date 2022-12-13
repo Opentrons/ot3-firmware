@@ -39,6 +39,11 @@ class MoveStatusMessageHandler {
         std::visit([this](auto m) { this->handle_message(m); }, message);
     }
 
+    /** Errors are just forwarded over the canbus */
+    void handle_message(const can::messages::ErrorMessage& msg) {
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     /**
      * Handle Ack message
      */

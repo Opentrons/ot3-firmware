@@ -116,9 +116,11 @@ class MotorInterruptHandler {
          */
         if (!has_active_move && has_move_messages()) {
             update_move();
+            handle_update_position_queue_error();
             return false;
         }
         if (has_active_move) {
+            handle_update_position_queue_error();
             if (buffered_move.stop_condition ==
                     MoveStopCondition::limit_switch &&
                 homing_stopped()) {
@@ -290,6 +292,11 @@ class MotorInterruptHandler {
         buffered_move = new_move;
     }
 
+    /**
+     * @brief While a move is NOT active, this function should be called
+     * to check if there is a pending UpdateMotorPositionRequest message
+     * and update the motor position if such a message exists.
+     */
     auto handle_update_position_queue() -> void {
         can::messages::UpdateMotorPositionRequest msg;
 
@@ -318,6 +325,30 @@ class MotorInterruptHandler {
                 .position_flags = hardware.position_flags.get_flags()};
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));
+        }
+    }
+
+    /**
+     * @brief While a move is active, this function should be called to
+     * check if there is a pending UpdateMotorPositionRequest and send an
+     * error message over CAN if such a message exists.
+     *
+     */
+    auto handle_update_position_queue_error() -> void {
+        if (!update_position_queue.has_message_isr()) {
+            return;
+        }
+
+        can::messages::UpdateMotorPositionRequest msg;
+        if (update_position_queue.try_read_isr(&msg)) {
+            auto response = can::messages::ErrorMessage{
+                .message_index = msg.message_index,
+                .severity = can::ids::ErrorSeverity::warning,
+                .error_code = can::ids::ErrorCode::motor_busy,
+            };
+
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(response));
         }
     }
 
