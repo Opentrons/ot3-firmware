@@ -168,7 +168,21 @@ class MotorInterruptHandler {
         return false;
     }
 
-    auto sync_triggered() -> bool { return hardware.check_sync_in(); }
+    void sync_result(bool result) {
+        if (result) {
+            tick_count += 1;
+        }
+    }
+
+    auto sync_triggered() -> bool {
+        bool result = hardware.check_sync_in();
+        if (result == true) {
+            sync_result(result);
+            return true;
+        }
+        else {return false;}
+//        return hardware.check_sync_in();
+    }
 
     auto limit_switch_triggered() -> bool {
         return hardware.check_limit_switch();

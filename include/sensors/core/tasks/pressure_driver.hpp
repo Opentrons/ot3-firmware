@@ -262,6 +262,12 @@ class MMR920C04 {
 
     void set_limited_poll(bool _limited) { limited_poll = _limited; }
 
+//    void compare_pressure() {
+//        if (pressure_pascals > threshold_pascals) {
+//            hardware.set_sync();
+//        }
+//    }
+
     auto handle_response(const i2c::messages::TransactionResponse &tm) {
         uint32_t raw_data = 0x00;
         int32_t data = 0x0;
