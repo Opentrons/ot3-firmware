@@ -116,7 +116,7 @@ static motor_class::Motor z_motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue, true};
+    motor_queue};
 
 // There is no encoder so the ratio doesn't matter
 static stall_check::StallCheck stallcheck(0, 0, 0);
