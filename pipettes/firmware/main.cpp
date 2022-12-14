@@ -141,10 +141,10 @@ static auto pins_for_sensor =
 auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
-        sensor_hardware.data_ready();
-    }
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t) {
+    // if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
+    //     sensor_hardware.data_ready();
+    // }
 }
 
 // Unfortunately, these numbers need to be literals or defines
