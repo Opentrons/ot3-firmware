@@ -173,6 +173,9 @@ class MMR920C04 {
     }
 
     auto send_pressure(uint32_t message_index) -> void {
+        // Pressure is sent via CAN in pascals
+        auto pressure_pascals =
+            mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto pressure_fixed_point =
             convert_to_fixed_point(pressure_pascals, S15Q16_RADIX);
         auto message = can::messages::ReadFromSensorResponse{
@@ -269,7 +272,7 @@ class MMR920C04 {
         // Pressure is always a three-byte value
         iter = bit_utils::bytes_to_int(iter, tm.read_buffer.cend(), raw_data);
         data = static_cast<int32_t>(raw_data >> 8);
-        pressure_pascals = mmr920C04::Pressure::to_pressure(data);
+        auto pressure_pascals = mmr920C04::Pressure::to_pressure(data);
         switch (static_cast<mmr920C04::Registers>(tm.id.token)) {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);
@@ -321,7 +324,6 @@ class MMR920C04 {
     // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
     // sure this is an arbitrarily large number to enable continuous reads.
     float threshold_pascals = 100.0F;
-    float pressure_pascals = 0.0F;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;

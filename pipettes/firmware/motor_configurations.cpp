@@ -348,11 +348,11 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
     auto pins = motor_configs::HighThroughputSensorHardware{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
-            .sync_out =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOA,
-                 .pin = GPIO_PIN_9,
-                 .active_setting = GPIO_PIN_RESET},
+                .sync_out =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
                 .data_ready =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
