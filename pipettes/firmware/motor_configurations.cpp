@@ -307,11 +307,6 @@ auto motor_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
     -> motor_configs::LowThroughputSensorHardware {
     auto pins = motor_configs::LowThroughputSensorHardware{
         .primary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_7,
-                 .active_setting = GPIO_PIN_RESET},
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOB,

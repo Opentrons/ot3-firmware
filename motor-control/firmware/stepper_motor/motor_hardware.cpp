@@ -35,8 +35,6 @@ void MotorHardware::set_LED(bool status) {
     }
 }
 
-//void MotorHardware::set_sync
-
 int32_t MotorHardware::get_encoder_pulses() {
     // Since our overflow count is the high bits of a 32 bit value while
     // the counter is the low 16 bits (see below), we can just bit-pack
