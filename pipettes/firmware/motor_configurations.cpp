@@ -307,6 +307,11 @@ auto motor_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
     -> motor_configs::LowThroughputSensorHardware {
     auto pins = motor_configs::LowThroughputSensorHardware{
         .primary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_6,
+                 .active_setting = GPIO_PIN_RESET},
             .data_ready =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
@@ -323,6 +328,11 @@ auto motor_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
     -> motor_configs::LowThroughputSensorHardware {
     auto pins = motor_configs::LowThroughputSensorHardware{
         .primary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_6,
+                 .active_setting = GPIO_PIN_RESET},
             .data_ready =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
@@ -338,6 +348,11 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
     auto pins = motor_configs::HighThroughputSensorHardware{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
+                .sync_out =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
                 .data_ready =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
@@ -345,6 +360,11 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                      .active_setting = GPIO_PIN_RESET},
             },
         .secondary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOA,
+                 .pin = GPIO_PIN_9,
+                 .active_setting = GPIO_PIN_RESET},
             .data_ready =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
@@ -361,6 +381,11 @@ auto motor_configs::sensor_configurations<
     auto pins = motor_configs::HighThroughputSensorHardware{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
+                .sync_out =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
                 .data_ready =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
@@ -368,6 +393,11 @@ auto motor_configs::sensor_configurations<
                      .active_setting = GPIO_PIN_RESET},
             },
         .secondary = sensors::hardware::SensorHardwareConfiguration{
+            .sync_out =
+                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOA,
+                 .pin = GPIO_PIN_9,
+                 .active_setting = GPIO_PIN_RESET},
             .data_ready =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
