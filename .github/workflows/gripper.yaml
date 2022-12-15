@@ -106,6 +106,7 @@ jobs:
         with:
           repository: "Opentrons/opentrons"
           path: opentrons
+          fetch-depth: 0
 
       - name: Cache stm32-tools
         uses: "actions/cache@v2"
