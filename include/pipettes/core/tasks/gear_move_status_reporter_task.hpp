@@ -48,7 +48,8 @@ class MoveStatusMessageHandler {
             // TODO: In a follow-up PR, tip sense reporting will
             // actually update this value to true or false.
             .success = static_cast<uint8_t>(true),
-            .action = message.action};
+            .action = message.action,
+            .position_flags = 0};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 

@@ -1220,6 +1220,8 @@ struct TipActionResponse
     uint8_t ack_id;
     uint8_t success;
     can::ids::PipetteTipActionType action;
+    uint8_t position_flags;
+
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -1230,6 +1232,8 @@ struct TipActionResponse
         iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
         iter = bit_utils::int_to_bytes(ack_id, iter, limit);
         iter = bit_utils::int_to_bytes(success, iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(action), iter, limit);
+        iter = bit_utils::int_to_bytes(position_flags, iter, limit);
         return iter - body;
     }
 
