@@ -24,7 +24,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ot3-firmware
-          ref: ${{ github.ref_name }}
 
       - name: Setup Emulation
         uses: Opentrons/opentrons-emulation@5467e0b7e20d108821afb2ed4f44765dbc5b21fa
@@ -39,7 +38,7 @@ jobs:
           command: yaml-sub
           substitutions: >-
             [
-              ["otie", "source-location", "${{ github.sha }}"]
+              ["otie", "source-location", "${{ github.event.pull_request.head.sha }}"]
             ]
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ci/ot3_only.yaml
           output-file-location: ${{ github.workspace }}/output.yaml
