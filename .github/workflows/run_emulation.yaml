@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: Opentrons/opentrons-emulation
-          ref: 5467e0b7e20d108821afb2ed4f44765dbc5b21fa
+          ref: add-git-folder-when-downloading-source-RQA-427-RQA-428
 
       - name: Checkout ot3-firmware repo
         uses: actions/checkout@v3
@@ -26,19 +26,19 @@ jobs:
           path: ot3-firmware
 
       - name: Setup Emulation
-        uses: Opentrons/opentrons-emulation@5467e0b7e20d108821afb2ed4f44765dbc5b21fa
+        uses: Opentrons/opentrons-emulation@add-git-folder-when-downloading-source-RQA-427-RQA-428
         with:
           cache-break: ${{ github.event.inputs.cache-break }}
           command: setup-python-only
 
       - name: Substitute current sha into yaml
         id: sub-step
-        uses: Opentrons/opentrons-emulation@5467e0b7e20d108821afb2ed4f44765dbc5b21fa
+        uses: Opentrons/opentrons-emulation@add-git-folder-when-downloading-source-RQA-427-RQA-428
         with:
           command: yaml-sub
           substitutions: >-
             [
-              ["otie", "source-location", "${{ github.event.pull_request.head.sha }}"]
+              ["otie", "source-location", "${{ github.head_ref }}"]
             ]
           input-file: ${{ github.workspace }}/ot3-firmware/emulation_setups/ci/ot3_only.yaml
           output-file-location: ${{ github.workspace }}/output.yaml
@@ -48,13 +48,13 @@ jobs:
 
 
       - name: Build Emulator
-        uses: Opentrons/opentrons-emulation@5467e0b7e20d108821afb2ed4f44765dbc5b21fa
+        uses: Opentrons/opentrons-emulation@add-git-folder-when-downloading-source-RQA-427-RQA-428
         with:
           command: setup
           input-file: ${{ github.workspace }}/output.yaml
 
       - name: Run Emulation
-        uses: Opentrons/opentrons-emulation@5467e0b7e20d108821afb2ed4f44765dbc5b21fa
+        uses: Opentrons/opentrons-emulation@add-git-folder-when-downloading-source-RQA-427-RQA-428
         with:
           command: run
           input-file: ${{ github.workspace }}/output.yaml
@@ -66,7 +66,7 @@ jobs:
         run: "curl --request GET --header 'opentrons-version: *' http://localhost:31950/modules"
 
       - name: Teardown Emulation
-        uses: Opentrons/opentrons-emulation@5467e0b7e20d108821afb2ed4f44765dbc5b21fa
+        uses: Opentrons/opentrons-emulation@add-git-folder-when-downloading-source-RQA-427-RQA-428
         with:
           input-file: ${{ github.workspace }}/output.yaml
           command: teardown
