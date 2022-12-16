@@ -283,6 +283,29 @@ auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
     }),
     100);
 
+[[noreturn]] static auto button_task_fn() -> void {
+    while(true) {
+        vTaskDelay(1);
+        motor_hardware_left.estop = motor_hardware_left.check_estop_in();
+        motor_hardware_left.limit = motor_hardware_left.check_limit_switch();
+        motor_hardware_left.sync = motor_hardware_left.check_sync_in();
+        motor_hardware_right.estop = motor_hardware_right.check_estop_in();
+        motor_hardware_right.limit = motor_hardware_right.check_limit_switch();
+        motor_hardware_right.sync = motor_hardware_right.check_sync_in();
+    }
+}
+
+class ButtonTask {
+  public:
+    [[noreturn]] void operator()() {
+        button_task_fn();
+    }
+};
+
+static ButtonTask btntsk;
+
+static auto button_task = freertos_task::FreeRTOSTask<512, ButtonTask>(btntsk);
+
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -324,6 +347,7 @@ auto main() -> int {
                             motor_right.motion_controller, psd, spi_comms2,
                             spi_comms3, motor_driver_configs_left,
                             motor_driver_configs_right);
+    button_task.start(5, "button");
 
     timer_for_notifier.start();
 

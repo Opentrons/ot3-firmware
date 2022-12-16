@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
 
 #include "common/firmware/gpio.hpp"
@@ -45,6 +46,10 @@ class MotorHardware : public StepperMotorHardwareIface {
 
     // downward interface - call from timer overflow handler
     void encoder_overflow(int32_t direction);
+
+    std::atomic_bool estop = false;
+    std::atomic_bool limit = false;
+    std::atomic_bool sync = false;
 
   private:
     HardwareConfig pins;

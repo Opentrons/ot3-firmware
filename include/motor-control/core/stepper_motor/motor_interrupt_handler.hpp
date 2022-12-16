@@ -46,7 +46,7 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage>
+          typename MotorMoveMessage, class HardwareIface>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
   public:
@@ -55,7 +55,7 @@ class MotorInterruptHandler {
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
-        motor_hardware::StepperMotorHardwareIface& hardware_iface,
+        HardwareIface& hardware_iface,
         stall_check::StallCheck& stall)
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
@@ -201,13 +201,13 @@ class MotorInterruptHandler {
         return false;
     }
 
-    auto sync_triggered() -> bool { return hardware.check_sync_in(); }
+    auto sync_triggered() -> bool { return hardware.limit.load(); }
 
     auto limit_switch_triggered() -> bool {
-        return hardware.check_limit_switch();
+        return hardware.limit.load();
     }
 
-    auto estop_triggered() -> bool { return hardware.check_estop_in(); }
+    auto estop_triggered() -> bool { return hardware.estop.load(); }
 
     [[nodiscard]] auto tick() -> bool {
         /*
@@ -358,7 +358,7 @@ class MotorInterruptHandler {
     q31_31 position_tracker{0};
     GenericQueue& queue;
     StatusClient& status_queue_client;
-    motor_hardware::StepperMotorHardwareIface& hardware;
+    HardwareIface& hardware;
     stall_check::StallCheck& stall_checker;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
 };
