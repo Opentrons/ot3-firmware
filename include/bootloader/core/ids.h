@@ -128,6 +128,7 @@ typedef enum {
     can_errorcode_timeout = 0x6,
     can_errorcode_estop_detected = 0x7,
     can_errorcode_collision_detected = 0x8,
+    can_errorcode_labware_dropped = 0x9,
 } CANErrorCode;
 
 /** Tool types detected on Head. */
@@ -183,6 +184,16 @@ typedef enum {
     can_motorpositionflags_stepper_position_ok = 0x1,
     can_motorpositionflags_encoder_position_ok = 0x2,
 } CANMotorPositionFlags;
+
+/** Move Stop Condition. */
+typedef enum {
+    can_movestopcondition_none = 0x0,
+    can_movestopcondition_limit_switch = 0x1,
+    can_movestopcondition_cap_sensor = 0x2,
+    can_movestopcondition_encoder_position = 0x4,
+    can_movestopcondition_gripper_force = 0x5,
+    can_movestopcondition_stall = 0x6,
+} CANMoveStopCondition;
 
 /** A bit field of the arbitration id parts. */
 typedef struct {

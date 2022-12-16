@@ -18,12 +18,7 @@ struct MotionConstraints {
     um_per_tick_sq max_acceleration;
 };
 
-enum class MoveStopCondition : uint8_t {
-    none = 0x0,
-    limit_switch = 0x1,
-    cap_sensor = 0x2,
-    encoder_position = 0x3
-};
+using MoveStopCondition = can::ids::MoveStopCondition;
 
 enum class AckMessageId : uint8_t {
     complete_without_condition = 0x1,
