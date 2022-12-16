@@ -124,6 +124,13 @@ class MotorInterruptHandler {
                 calibration_stopped()) {
                 return false;
             }
+            if (buffered_move.stop_condition !=
+                    MoveStopCondition::stall &&
+                !hardware.position_flags.check_flag(
+                    MotorPositionStatus::Flags::stepper_position_ok)) {
+                queue.reset();
+                // SEND AN ERROR TODOOOOO
+            }
             if (can_step() && tick()) {
                 return true;
             }
