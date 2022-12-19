@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstdint>
 
 #include "common/firmware/gpio.hpp"
@@ -37,16 +38,24 @@ class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
     void deactivate_motor() final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
-    auto check_limit_switch() -> bool final;
-    auto check_estop_in() -> bool final;
+    auto check_limit_switch() -> bool { return limit.load(); }
+    auto check_estop_in() -> bool { return estop.load(); }
+    auto check_sync_in() -> bool { return sync.load(); }
+    auto check_tip_sense() -> bool { return tip_sense.load(); }
+    void read_limit_switch() final;
+    void read_estop_in() final;
+    void read_sync_in() final;
+    void read_tip_sense() final;
     void set_LED(bool status) final;
-    auto check_sync_in() -> bool final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
-    auto check_tip_sense() -> bool final;
     void encoder_overflow(int32_t direction);
 
   private:
+    std::atomic_bool estop = false;
+    std::atomic_bool limit = false;
+    std::atomic_bool sync = false;
+    std::atomic_bool tip_sense = false;
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;

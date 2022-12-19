@@ -23,6 +23,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool check_limit_switch() final { return mock_lim_sw_value; }
     bool check_estop_in() final { return mock_estop_in_value; }
     bool check_sync_in() final { return mock_sync_value; }
+    void read_limit_switch() final {}
+    void read_estop_in() final {}
+    void read_sync_in() final {}
     void set_LED(bool) final {}
     void set_mock_lim_sw(bool value) { mock_lim_sw_value = value; }
     void set_mock_estop_in(bool value) { mock_estop_in_value = value; }

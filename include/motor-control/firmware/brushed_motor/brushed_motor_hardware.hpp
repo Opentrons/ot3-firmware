@@ -51,12 +51,15 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void negative_direction() final;
     void activate_motor() final;
     void deactivate_motor() final;
-    auto check_limit_switch() -> bool final;
-    auto check_estop_in() -> bool final;
+    auto check_limit_switch() -> bool { return limit.load(); }
+    auto check_estop_in() -> bool { return estop.load(); }
+    auto check_sync_in() -> bool { return sync.load(); }
+    void read_limit_switch() final;
+    void read_estop_in() final;
+    void read_sync_in() final;
     void grip() final;
     void ungrip() final;
     void stop_pwm() final;
-    auto check_sync_in() -> bool final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
     void start_timer_interrupt() final;
@@ -68,6 +71,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
 
   private:
+    std::atomic_bool estop = false;
+    std::atomic_bool limit = false;
+    std::atomic_bool sync = false;
     BrushedHardwareConfig pins;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;
