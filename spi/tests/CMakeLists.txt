@@ -35,3 +35,5 @@ target_link_libraries(spi Catch2::Catch2 common-core)
 
 catch_discover_tests(spi)
 add_build_and_test_target(spi)
+
+add_coverage(spi)

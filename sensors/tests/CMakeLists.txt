@@ -38,3 +38,5 @@ target_i2c_simlib(sensors)
 
 catch_discover_tests(sensors)
 add_build_and_test_target(sensors)
+
+add_coverage(sensors)

@@ -36,3 +36,5 @@ target_link_libraries(common Catch2::Catch2 common-core)
 
 catch_discover_tests(common)
 add_build_and_test_target(common)
+
+add_coverage(common)

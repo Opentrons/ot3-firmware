@@ -33,3 +33,5 @@ target_i2c_simlib(pipettes)
 
 catch_discover_tests(pipettes)
 add_build_and_test_target(pipettes)
+
+add_coverage(pipettes)

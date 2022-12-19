@@ -33,3 +33,5 @@ target_link_libraries(gripper Catch2::Catch2)
 
 catch_discover_tests(gripper)
 add_build_and_test_target(gripper)
+
+add_coverage(gripper)

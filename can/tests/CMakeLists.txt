@@ -38,3 +38,5 @@ target_link_libraries(can can-core Catch2::Catch2)
 
 catch_discover_tests(can)
 add_build_and_test_target(can)
+
+add_coverage(can)

@@ -41,3 +41,5 @@ target_link_libraries(bootloader Catch2::Catch2 bootloader-core)
 
 catch_discover_tests(bootloader)
 add_build_and_test_target(bootloader)
+
+add_coverage(bootloader)

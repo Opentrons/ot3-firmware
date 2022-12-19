@@ -16,3 +16,5 @@ target_include_directories(bootloader-core
         PUBLIC
         ${CMAKE_BINARY_DIR}/include
         ${CMAKE_CURRENT_LIST_DIR}/../../include)
+
+add_coverage(bootloader-core)

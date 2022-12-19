@@ -39,3 +39,5 @@ target_i2c_simlib(eeprom)
 
 catch_discover_tests(eeprom)
 add_build_and_test_target(eeprom)
+
+add_coverage(eeprom)
