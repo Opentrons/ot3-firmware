@@ -124,12 +124,16 @@ class MotorInterruptHandler {
                 calibration_stopped()) {
                 return false;
             }
-            if (buffered_move.stop_condition !=
+            if (buffered_move.stop_condition ==
                     MoveStopCondition::stall &&
                 !hardware.position_flags.check_flag(
                     MotorPositionStatus::Flags::stepper_position_ok)) {
-                queue.reset();
-                // SEND AN ERROR TODOOOOO
+                auto error = can::messages::ErrorMessage {
+                    .message_index = buffered_move.message_index,
+                    .severity = can::ids::ErrorSeverity::recoverable,
+                    .error_code = can::ids::ErrorCode::collision_detected,
+                };
+                static_cast<void>(status_queue_client.send_move_status_reporter_queue(error));
             }
             if (can_step() && tick()) {
                 return true;

@@ -123,6 +123,8 @@ class BrushedMotorInterruptHandler {
                 break;
             // grip move
             case MoveStopCondition::none:
+            case MoveStopCondition::gripper_force:
+            case MoveStopCondition::stall:
                 if (is_sensing() && is_idle) {
                     finish_current_move(
                         AckMessageId::complete_without_condition);
@@ -192,6 +194,8 @@ class BrushedMotorInterruptHandler {
                 }
                 break;
             case MoveStopCondition::none:
+            case MoveStopCondition::gripper_force:
+            case MoveStopCondition::stall:
                 tick = 0;
                 hardware.grip();
                 break;
