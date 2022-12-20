@@ -37,7 +37,8 @@ void gear_motor_tasks::start_tasks(
     interfaces::gear_motor::GearMotionControl& motion_controllers,
     gear_motor_tasks::SPIWriterClient& spi_writer,
     motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
-    can::ids::NodeId id) {
+    can::ids::NodeId id,
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
     left_queue_client.set_node_id(id);
     right_queue_client.set_node_id(id);
 
@@ -93,6 +94,15 @@ void gear_motor_tasks::start_tasks(
     right_queues.move_group_queue = &move_group_right.get_queue();
     right_queues.move_status_report_queue =
         &move_status_reporter_right.get_queue();
+
+    auto gear_motor_hardware_task_left = freertos_task::FreeRTOSTask<
+        512, pipette_motor_hardware_task::PipetteMotorHardwareTask>(
+        gmh_tsks.left);
+    auto gear_motor_hardware_task_right = freertos_task::FreeRTOSTask<
+        512, pipette_motor_hardware_task::PipetteMotorHardwareTask>(
+        gmh_tsks.right);
+    gear_motor_hardware_task_left.start(5, "left gear motor hardware task");
+    gear_motor_hardware_task_right.start(5, "right gear motor hardware task");
 }
 
 gear_motor_tasks::QueueClient::QueueClient()

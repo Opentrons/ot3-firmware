@@ -5,6 +5,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "spi/core/spi.hpp"
 
@@ -31,6 +32,7 @@ auto get_spi() -> spi::hardware::SpiDeviceBase &;
  */
 auto get_tmc2130_driver_configs() -> tmc2130::configs::TMC2130DriverConfig &;
 
+auto get_z_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask &;
 }  // namespace z_motor_iface
 
 namespace grip_motor_iface {
@@ -43,5 +45,7 @@ void initialize();
  * @return The motor.
  */
 auto get_grip_motor() -> brushed_motor::BrushedMotor<lms::GearBoxConfig> &;
+
+auto get_grip_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask &;
 
 }  // namespace grip_motor_iface

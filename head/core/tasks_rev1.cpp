@@ -6,6 +6,7 @@
 #include "head/core/queues.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
@@ -70,7 +71,9 @@ void head_tasks::start_tasks(
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
     tmc2160::configs::TMC2160DriverConfig& left_driver_configs,
-    tmc2160::configs::TMC2160DriverConfig& right_driver_configs) {
+    tmc2160::configs::TMC2160DriverConfig& right_driver_configs,
+    motor_hardware_task::MotorHardwareTask& rmh_tsk,
+    motor_hardware_task::MotorHardwareTask& lmh_tsk) {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
@@ -129,6 +132,14 @@ void head_tasks::start_tasks(
     auto& right_move_status_reporter = right_move_status_task_builder.start(
         5, "right move status", right_queues,
         right_motion_controller.get_mechanical_config());
+
+    auto right_motor_hardware_task = freertos_task::FreeRTOSTask<
+        512, motor_hardware_task::MotorHardwareTask>(rmh_tsk);
+    auto left_motor_hardware_task = freertos_task::FreeRTOSTask<
+        512, motor_hardware_task::MotorHardwareTask>(lmh_tsk);
+
+    right_motor_hardware_task.start(5, "right motor hardware task");
+    left_motor_hardware_task.start(5, "left motor hardware task");
 
     // Assign right motor task collection task pointers
     right_tasks.motion_controller = &right_motion;

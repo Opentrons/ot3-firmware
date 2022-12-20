@@ -31,7 +31,7 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-    can::ids::NodeId id) {
+    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk) {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -61,6 +61,9 @@ void linear_motor_tasks::start_tasks(
     queues.motion_queue = &motion.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.move_status_report_queue = &move_status_reporter.get_queue();
+    auto linear_motor_hardware_task = freertos_task::FreeRTOSTask<
+        512, motor_hardware_task::MotorHardwareTask>(lmh_tsk);
+    linear_motor_hardware_task.start(5, "linear motor hardware task");
 }
 
 void linear_motor_tasks::start_tasks(
@@ -69,7 +72,7 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-    can::ids::NodeId id) {
+    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk) {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -100,6 +103,10 @@ void linear_motor_tasks::start_tasks(
     queues.motion_queue = &motion.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.move_status_report_queue = &move_status_reporter.get_queue();
+
+    auto linear_motor_hardware_task = freertos_task::FreeRTOSTask<
+        512, motor_hardware_task::MotorHardwareTask>(lmh_tsk);
+    linear_motor_hardware_task.start(5, "linear motor hardware task");
 }
 
 linear_motor_tasks::QueueClient::QueueClient()

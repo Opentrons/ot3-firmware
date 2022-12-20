@@ -6,6 +6,7 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
@@ -28,7 +29,9 @@ void start_tasks(
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
     tmc2160::configs::TMC2160DriverConfig& left_driver_configs,
-    tmc2160::configs::TMC2160DriverConfig& right_driver_configs);
+    tmc2160::configs::TMC2160DriverConfig& right_driver_configs,
+    motor_hardware_task::MotorHardwareTask& right_motor_hardware,
+    motor_hardware_task::MotorHardwareTask& left_motor_hardware);
 
 /**
  * Access to all tasks not associated with a motor. This will be a singleton.

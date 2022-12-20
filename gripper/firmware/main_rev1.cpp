@@ -115,7 +115,9 @@ auto main() -> int {
         canbus, z_motor_iface::get_z_motor(),
         grip_motor_iface::get_grip_motor(), z_motor_iface::get_spi(),
         z_motor_iface::get_tmc2130_driver_configs(), i2c_comms2, i2c_comms3,
-        sensor_hardware, eeprom_hw_iface);
+        sensor_hardware, eeprom_hw_iface,
+        z_motor_iface::get_z_motor_hardware_task(),
+        grip_motor_iface::get_grip_motor_hardware_task());
 
     iWatchdog.start(6);
 

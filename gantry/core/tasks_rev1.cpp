@@ -4,6 +4,7 @@
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
@@ -36,7 +37,8 @@ void gantry::tasks::start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
-    tmc2160::configs::TMC2160DriverConfig& driver_configs) {
+    tmc2160::configs::TMC2160DriverConfig& driver_configs,
+    motor_hardware_task::MotorHardwareTask& mh_tsk) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, "motion controller",
@@ -64,6 +66,10 @@ void gantry::tasks::start_tasks(
     ::queues.set_queue(&can_writer.get_queue());
     ::queues.move_status_report_queue = &move_status_reporter.get_queue();
     ::queues.spi_queue = &spi_task.get_queue();
+
+    auto motor_hardware_task = freertos_task::FreeRTOSTask<
+        512, motor_hardware_task::MotorHardwareTask>(mh_tsk);
+    motor_hardware_task.start(5, "motor hardware task");
 }
 
 gantry::queues::QueueClient::QueueClient(can::ids::NodeId this_fw)

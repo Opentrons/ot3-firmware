@@ -2,6 +2,7 @@
 #include "gripper/core/interfaces.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
 #pragma GCC diagnostic push
@@ -144,4 +145,11 @@ void grip_motor_iface::initialize() {
 auto grip_motor_iface::get_grip_motor()
     -> brushed_motor::BrushedMotor<lms::GearBoxConfig>& {
     return grip_motor;
+}
+
+static auto gmh_tsk =
+    motor_hardware_task::MotorHardwareTask{brushed_motor_hardware_iface};
+auto grip_motor_iface::get_grip_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask& {
+    return gmh_tsk;
 }
