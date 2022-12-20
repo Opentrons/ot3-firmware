@@ -43,7 +43,7 @@ jobs:
       - name: 'Run all tests'
         run: cmake --build --preset tests
       - name: 'Generate coverage'
-        run: cmake --build --preset host --target lcov-geninfo
+        run: cmake --build --preset tests --target lcov-geninfo
       - name: 'Convert coverage to xml'
         run: lcov_cobertura build-host/lcov/data/capture/all_targets.info
       - name: Upload coverage to Codecov
