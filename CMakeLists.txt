@@ -36,6 +36,7 @@ else()
     endfunction()
 endif ()
 
+find_package(Clang)
 
 # Set a default build type if none was specified
 # From https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -96,8 +97,6 @@ if(NOT ${CMAKE_CROSSCOMPILING})
 else ()
 	message(VERBOSE "You are cross-compiling. Not adding state_manager")
 endif ()
-
-find_package(Clang)
 
 # c++ linting is here but python linting is in the subdir
 file(GLOB_RECURSE SOURCES_FOR_FORMAT
