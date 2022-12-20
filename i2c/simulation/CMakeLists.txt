@@ -22,5 +22,3 @@ target_include_directories(i2c-simlib PUBLIC ${CMAKE_SOURCE_DIR}/include)
 function(target_i2c_simlib TARGET)
   target_link_libraries(${TARGET} PUBLIC i2c-simlib)
 endfunction()
-
-add_coverage(i2c-simlib)
