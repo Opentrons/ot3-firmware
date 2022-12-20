@@ -5,8 +5,6 @@ else()
   add_subdirectory(tests)
 endif()
 
-find_package(Clang)
-
 file(GLOB_RECURSE I2C_SOURCE_FOR_FORMAT ./*.cpp ./*.hpp ../include/i2c/*.hpp)
 
 add_custom_target(

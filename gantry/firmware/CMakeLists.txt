@@ -188,7 +188,6 @@ endforeach()
 
 add_custom_target(gantry-images DEPENDS ${IMAGES})
 add_custom_target(gantry-exes DEPENDS ${EXES})
-find_package(Clang)
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
 # which is a catch-all static analyzer/linter

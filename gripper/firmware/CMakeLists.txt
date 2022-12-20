@@ -4,7 +4,6 @@ find_package(STM32G4xx)
 add_STM32G4_driver("Gripper")
 add_STM32G4_freertos("Gripper")
 
-find_package(Clang)
 find_program(ARM_GDB
         arm-none-eabi-gdb-py
         PATHS "${CrossGCC_BINDIR}"

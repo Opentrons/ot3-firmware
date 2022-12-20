@@ -63,8 +63,6 @@ find_program(ARM_GDB
         NO_DEFAULT_PATH
         REQUIRED)
 
-find_package(Clang)
-
 add_custom_target(pipettes-rev1)
 
 function(add_pipettes_executable TARGET)
