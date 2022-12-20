@@ -34,7 +34,7 @@ target_compile_options(eeprom
         -Wextra-semi
         -Wctor-dtor-privacy)
 
-target_link_libraries(eeprom Catch2::Catch2)
+target_link_libraries(eeprom PUBLIC Catch2::Catch2 common-core)
 target_i2c_simlib(eeprom)
 
 catch_discover_tests(eeprom)
