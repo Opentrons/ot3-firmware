@@ -58,4 +58,6 @@ foreach(AXIS IN LISTS AXES)
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
+    
+  add_coverage(gantry-${AXIS}-simulator)
 endforeach()

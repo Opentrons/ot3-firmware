@@ -72,6 +72,8 @@ function(add_simulator_executable TARGET)
             CXX_STANDARD_REQUIRED TRUE
             C_STANDARD 11
             C_STANDARD_REQUIRED TRUE)
+
+    add_coverage(${TARGET})
 endfunction()
 
 add_simulator_executable(pipettes-single-simulator)

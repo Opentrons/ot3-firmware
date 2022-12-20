@@ -39,3 +39,5 @@ target_link_libraries(i2c Catch2::Catch2 common-core)
 
 catch_discover_tests(i2c)
 add_build_and_test_target(i2c)
+
+add_coverage(i2c)

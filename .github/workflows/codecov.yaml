@@ -39,7 +39,7 @@ jobs:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
       - name: 'Configure'
-        run: cmake --preset=host -DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug
+        run: cmake --preset=host-gcc10 -DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug
       - name: 'Run all tests'
         run: cmake --build --preset tests
       - name: 'Generate coverage'

@@ -26,7 +26,8 @@ if (NOT ${CMAKE_CROSSCOMPILING})
     # We can safely ignore test code and stm32-tools imports
     list(APPEND LCOV_REMOVE_PATTERNS 
         "'${PROJECT_SOURCE_DIR}/stm32-tools/*'"
-        "'${PROJECT_SOURCE_DIR}/**/tests/*.cpp'")
+        "'${PROJECT_SOURCE_DIR}/**/tests/*.cpp'"
+        "'${PROJECT_SOURCE_DIR}/**/simulator/*.cpp'")
 else()
     function(add_coverage TARGET)
     endfunction()
