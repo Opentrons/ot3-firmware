@@ -59,6 +59,3 @@ set_target_properties(gripper-simulator
         CXX_STANDARD_REQUIRED TRUE
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE)
-
-
-add_coverage(gripper-simulator)
