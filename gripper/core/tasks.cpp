@@ -117,13 +117,8 @@ void gripper_tasks::start_tasks(
     z_tasks::get_queues().set_queue(&can_writer.get_queue());
     g_tasks::get_queues().set_queue(&can_writer.get_queue());
 
-    auto z_motor_hardware_task = freertos_task::FreeRTOSTask<
-        512, motor_hardware_task::MotorHardwareTask>(zmh_tsk);
-    auto g_motor_hardware_task = freertos_task::FreeRTOSTask<
-        512, motor_hardware_task::MotorHardwareTask>(gmh_tsk);
-
-    z_motor_hardware_task.start(5, "z motor hardware task");
-    g_motor_hardware_task.start(5, "grip motor hardware task");
+    zmh_tsk.start_task();
+    gmh_tsk.start_task();
 }
 
 gripper_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)

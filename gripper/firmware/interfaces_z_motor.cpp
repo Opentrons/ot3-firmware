@@ -160,8 +160,8 @@ auto z_motor_iface::get_tmc2130_driver_configs()
     return MotorDriverConfigurations;
 }
 
-static auto zmh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_iface};
+static auto zmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_hardware_iface, "z motor hardware task"};
 auto z_motor_iface::get_z_motor_hardware_task()
     -> motor_hardware_task::MotorHardwareTask& {
     return zmh_tsk;

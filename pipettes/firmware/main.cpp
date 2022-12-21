@@ -165,8 +165,8 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-static auto lmh_tsk =
-    motor_hardware_task::MotorHardwareTask{linear_motor_hardware};
+static auto lmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &linear_motor_hardware, "linear motor hardware task"};
 static auto gmh_tsks =
     interfaces::gear_motor::get_motor_hardware_tasks(gear_hardware);
 

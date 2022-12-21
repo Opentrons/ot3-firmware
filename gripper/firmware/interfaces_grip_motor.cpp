@@ -147,8 +147,8 @@ auto grip_motor_iface::get_grip_motor()
     return grip_motor;
 }
 
-static auto gmh_tsk =
-    motor_hardware_task::MotorHardwareTask{brushed_motor_hardware_iface};
+static auto gmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &brushed_motor_hardware_iface, "grip motor hardware task"};
 auto grip_motor_iface::get_grip_motor_hardware_task()
     -> motor_hardware_task::MotorHardwareTask& {
     return gmh_tsk;

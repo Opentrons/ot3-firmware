@@ -306,8 +306,8 @@ auto interfaces::get_driver_config() -> tmc2160::configs::TMC2160DriverConfig& {
     return (get_axis_type() == gantry_x) ? motor_driver_config_x
                                          : motor_driver_config_y;
 }
-static auto mh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_iface};
+static auto mh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_hardware_iface, "motor hardware task"};
 auto interfaces::get_motor_hardware_task()
     -> motor_hardware_task::MotorHardwareTask& {
     return mh_tsk;

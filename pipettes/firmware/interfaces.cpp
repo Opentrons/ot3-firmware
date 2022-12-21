@@ -132,10 +132,10 @@ auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
 auto gear_motor::get_motor_hardware_tasks(gear_motor::GearHardware& hd_ware)
     -> gear_motor::GearMotorHardwareTasks {
     return gear_motor::GearMotorHardwareTasks{
-        .left =
-            pipette_motor_hardware_task::PipetteMotorHardwareTask(hd_ware.left),
+        .left = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+            &hd_ware.left, "left gear motor hardware task"),
         .right = pipette_motor_hardware_task::PipetteMotorHardwareTask(
-            hd_ware.right)};
+            &hd_ware.right, "right gear motor hardware task")};
 }
 
 auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,

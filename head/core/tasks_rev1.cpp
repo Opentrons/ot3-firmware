@@ -133,13 +133,8 @@ void head_tasks::start_tasks(
         5, "right move status", right_queues,
         right_motion_controller.get_mechanical_config());
 
-    auto right_motor_hardware_task = freertos_task::FreeRTOSTask<
-        512, motor_hardware_task::MotorHardwareTask>(rmh_tsk);
-    auto left_motor_hardware_task = freertos_task::FreeRTOSTask<
-        512, motor_hardware_task::MotorHardwareTask>(lmh_tsk);
-
-    right_motor_hardware_task.start(5, "right motor hardware task");
-    left_motor_hardware_task.start(5, "left motor hardware task");
+    rmh_tsk.start_task();
+    lmh_tsk.start_task();
 
     // Assign right motor task collection task pointers
     right_tasks.motion_controller = &right_motion;

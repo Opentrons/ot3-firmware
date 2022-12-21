@@ -303,9 +303,9 @@ static constexpr auto can_bit_timings =
                                  500 * can::bit_timings::KHZ, 800>{};
 
 static auto rmh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_right};
+    motor_hardware_task::MotorHardwareTask{&motor_hardware_right, "rmh task"};
 static auto lmh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_left};
+    motor_hardware_task::MotorHardwareTask{&motor_hardware_left, "lmh task"};
 
 auto main() -> int {
     HardwareInit();

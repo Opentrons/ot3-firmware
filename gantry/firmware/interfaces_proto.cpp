@@ -280,8 +280,8 @@ auto interfaces::get_driver_config() -> tmc2130::configs::TMC2130DriverConfig& {
     return motor_driver_config;
 }
 
-static auto mh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_iface};
+static auto mh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_hardware_iface, "motor hardware task"};
 auto interfaces::get_motor_hardware_task()
     -> motor_hardware_task::MotorHardwareTask& {
     return mh_tsk;

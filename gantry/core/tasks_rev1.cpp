@@ -67,9 +67,7 @@ void gantry::tasks::start_tasks(
     ::queues.move_status_report_queue = &move_status_reporter.get_queue();
     ::queues.spi_queue = &spi_task.get_queue();
 
-    auto motor_hardware_task = freertos_task::FreeRTOSTask<
-        512, motor_hardware_task::MotorHardwareTask>(mh_tsk);
-    motor_hardware_task.start(5, "motor hardware task");
+    mh_tsk.start_task();
 }
 
 gantry::queues::QueueClient::QueueClient(can::ids::NodeId this_fw)
