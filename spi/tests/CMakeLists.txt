@@ -30,8 +30,10 @@ target_compile_options(spi
         -Wctor-dtor-privacy)
 
 target_spi_simlib(spi)
-target_link_libraries(spi Catch2::Catch2 common-core)
+target_link_libraries(spi PUBLIC Catch2::Catch2 common-core)
 
 
 catch_discover_tests(spi)
 add_build_and_test_target(spi)
+
+add_coverage(spi)

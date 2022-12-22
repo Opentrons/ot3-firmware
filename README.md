@@ -174,3 +174,11 @@ Firmware update can be performed over the CAN bus.
 
 1. Create a `hex` file for the subsystem to be updated. There are `{subsystem}-hex` targets for each subsystem.
 2. Use [update firmware](https://github.com/Opentrons/opentrons/tree/edge/hardware#opentrons_update_fw) script.
+
+## code coverage
+
+This repository is configured to generate code coverage from the tests.
+
+To enable code coverage, configure the host toolchain for tests with the options `-DENABLE_COVERAGE=On -DCMAKE_BUILD_TYPE=Debug`. _In order for code coverage to be accurate, you must run the build-and-test target for all targets_. After running every build-and-test target, the target `lcov` will generate an HTMl report of the code coverage from the tests.
+
+In general, do not enable code coverage unless you need it. Test execution will be far slower.

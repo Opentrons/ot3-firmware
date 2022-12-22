@@ -7,8 +7,6 @@ endif()
 
 add_subdirectory(core)
 
-find_package(Clang)
-
 file(GLOB_RECURSE CAN_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/can/*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.

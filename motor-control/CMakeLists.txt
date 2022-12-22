@@ -31,8 +31,6 @@ else()
 endif()
 
 
-find_package(Clang)
-
 file(GLOB_RECURSE MOTORCONTROL_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/motor-control/*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
