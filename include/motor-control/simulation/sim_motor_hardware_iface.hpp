@@ -46,6 +46,9 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         }
         return false;
     }
+    void read_limit_switch() final {}
+    void read_estop_in() final {}
+    void read_sync_in() final {}
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
@@ -111,6 +114,9 @@ class SimBrushedMotorHardwareIface
         }
         return false;
     }
+    void read_limit_switch() final {}
+    void read_estop_in() final {}
+    void read_sync_in() final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     void grip() final {}
     void ungrip() final {}
@@ -177,6 +183,10 @@ class SimGearMotorHardwareIface
         }
         return false;
     }
+    void read_limit_switch() final {}
+    void read_estop_in() final {}
+    void read_sync_in() final {}
+    void read_tip_sense() final {}
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {

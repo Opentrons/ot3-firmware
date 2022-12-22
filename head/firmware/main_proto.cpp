@@ -306,10 +306,10 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-static auto rmh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_right};
-static auto lmh_tsk =
-    motor_hardware_task::MotorHardwareTask{motor_hardware_left};
+static auto rmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_hardware_right, "right motor hardware task"};
+static auto lmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_hardware_left, "left motor hardware task"};
 
 auto main() -> int {
     HardwareInit();

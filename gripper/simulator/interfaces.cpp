@@ -139,6 +139,13 @@ auto grip_motor_iface::get_grip_motor()
     return grip_motor;
 }
 
+static auto gmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &brushed_motor_hardware_iface, "grip motor hardware task"};
+auto grip_motor_iface::get_grip_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask& {
+    return gmh_tsk;
+}
+
 auto z_motor_iface::get_tmc2130_driver_configs()
     -> tmc2130::configs::TMC2130DriverConfig& {
     return MotorDriverConfigurations;
@@ -152,4 +159,11 @@ auto z_motor_iface::get_z_motor_interface()
 auto z_motor_iface::get_brushed_motor_interface()
     -> sim_motor_hardware_iface::SimBrushedMotorHardwareIface& {
     return brushed_motor_hardware_iface;
+}
+
+static auto zmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_interface, "z motor hardware task"};
+auto z_motor_iface::get_z_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask& {
+    return zmh_tsk;
 }
