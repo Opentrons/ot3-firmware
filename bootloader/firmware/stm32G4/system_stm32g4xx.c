@@ -322,10 +322,24 @@ void SystemCoreClockUpdate(void) {
     SystemCoreClock >>= tmp;
 }
 
+void LED_drive_gpio_init(void) {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    /*Configure GPIO pin : PB11 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+
 void HardwareInit(void) {
     HAL_Init();
     SystemClock_Config();
     SystemCoreClockUpdate();
+    LED_drive_gpio_init();
 }
 
 

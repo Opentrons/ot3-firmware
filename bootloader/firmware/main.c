@@ -145,7 +145,9 @@ void run_update() {
             rx_message.arbitration_id.id = rx_header.Identifier;
             rx_message.size = length_from_hal(rx_header.DataLength);
 
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
             HandleMessageReturn return_code = handle_message(&rx_message, &tx_message);
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
 
             if (return_code == handle_message_has_response) {
                 // Set the originating id to our node id
