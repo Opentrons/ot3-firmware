@@ -4,7 +4,7 @@
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/firmware/pipette_motor_hardware.hpp"
 
-#define TASK_STACK_DEPTH 512
+static constexpr uint32_t TASK_STACK_DEPTH = 512;
 
 namespace motor_hardware_task {
 
@@ -28,8 +28,8 @@ class MotorHardwareTask {
      * Task entry point.
      */
     [[noreturn]] static void task_function(void* hw_ptr) {
-        motor_hardware::MotorHardwareIface* hardware =
-            reinterpret_cast<motor_hardware::MotorHardwareIface*>(hw_ptr);
+        auto* hardware =
+            static_cast<motor_hardware::MotorHardwareIface*>(hw_ptr);
         for (;;) {
             vTaskDelay(10);
             hardware->read_estop_in();
@@ -72,8 +72,8 @@ class PipetteMotorHardwareTask {
      * Task entry point.
      */
     [[noreturn]] static void task_function(void* hw_ptr) {
-        motor_hardware::PipetteStepperMotorHardwareIface* hardware =
-            reinterpret_cast<motor_hardware::PipetteStepperMotorHardwareIface*>(
+        auto* hardware =
+            static_cast<motor_hardware::PipetteStepperMotorHardwareIface*>(
                 hw_ptr);
         for (;;) {
             vTaskDelay(10);
