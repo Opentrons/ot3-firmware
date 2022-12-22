@@ -29,7 +29,7 @@ class MotorHardwareTask {
     [[noreturn]] static void task_function(void *hw_ptr) {
         motor_hardware::MotorHardwareIface* hardware = reinterpret_cast<motor_hardware::MotorHardwareIface*>(hw_ptr);
         for (;;) {
-            vTaskDelay(1);
+            vTaskDelay(10);
             hardware->read_estop_in();
             hardware->read_limit_switch();
             hardware->read_sync_in();
@@ -72,7 +72,7 @@ class PipetteMotorHardwareTask {
      [[noreturn]] static void task_function(void *hw_ptr) {
         motor_hardware::PipetteStepperMotorHardwareIface* hardware = reinterpret_cast<motor_hardware::PipetteStepperMotorHardwareIface*>(hw_ptr);
         for (;;) {
-            vTaskDelay(1);
+            vTaskDelay(10);
             hardware->read_estop_in();
             hardware->read_limit_switch();
             hardware->read_sync_in();

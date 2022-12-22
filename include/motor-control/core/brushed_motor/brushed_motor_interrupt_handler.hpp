@@ -37,13 +37,6 @@ static constexpr uint32_t HOLDOFF_TICKS =
 // using the logic analyzer it takes about 0.2-0.3 ms for the output
 // to stablize after changing directions of the PWM
 
-static constexpr uint32_t ESTOP_HOLDOFF_TICKS =
-    800;  // hold off for 25 ms (with a 32k Hz timer)
-// The Estop bounces around quite a bit when the button is pressed
-// partitally due to how quickly you hit the button and some other
-// electrical bouncing. we're not going to disable the estop immediatly
-// so its ok to have a longer holdoff here
-
 // upon advice from hardware, 0.01mm is a good limit for precision
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
 
@@ -154,19 +147,16 @@ class BrushedMotorInterruptHandler {
     void run_interrupt() {
         if (motor_state == ControlState::ESTOP) {
             // return out of error state once the estop is disabled
-            if (!estop_triggered() && estop_tick >= ESTOP_HOLDOFF_TICKS) {
+            if (!estop_triggered()) {
                 motor_state = ControlState::IDLE;
                 status_queue_client.send_brushed_move_status_reporter_queue(
                     can::messages::ErrorMessage{
                         .message_index = 0,
                         .severity = can::ids::ErrorSeverity::warning,
                         .error_code = can::ids::ErrorCode::estop_released});
-            } else {
-                estop_tick++;
             }
         } else {
             if (estop_triggered()) {
-                estop_tick = 0;
                 cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
                 return;
             }
@@ -304,7 +294,6 @@ class BrushedMotorInterruptHandler {
 
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
-    uint32_t estop_tick = 0;
     ControlState motor_state = ControlState::IDLE;
 
   private:
