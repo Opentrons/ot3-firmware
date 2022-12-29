@@ -178,7 +178,11 @@ using StopRequest = Empty<MessageId::stop_request>;
 
 using EnableMotorRequest = Empty<MessageId::enable_motor_request>;
 
+using GearEnableMotorRequest = Empty<MessageId::gear_enable_motor_request>;
+
 using DisableMotorRequest = Empty<MessageId::disable_motor_request>;
+
+using GearDisableMotorRequest = Empty<MessageId::gear_disable_motor_request>;
 
 using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
@@ -1262,6 +1266,73 @@ struct TipActionResponse
     }
 
     auto operator==(const TipActionResponse& other) const -> bool = default;
+};
+
+struct GearWriteMotorCurrentRequest
+    : BaseMessage<MessageId::gear_set_current_request> {
+    uint32_t message_index;
+    uint32_t hold_current;
+    uint32_t run_current;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GearWriteMotorCurrentRequest {
+        uint32_t hold_current = 0;
+        uint32_t run_current = 0;
+        uint32_t msg_ind = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, hold_current);
+        body = bit_utils::bytes_to_int(body, limit, run_current);
+        return GearWriteMotorCurrentRequest{.message_index = msg_ind,
+                                            .hold_current = hold_current,
+                                            .run_current = run_current};
+    }
+
+    auto operator==(const GearWriteMotorCurrentRequest& other) const
+        -> bool = default;
+};
+
+struct GearWriteMotorDriverRegister
+    : BaseMessage<MessageId::gear_write_motor_driver_request> {
+    uint32_t message_index;
+    uint8_t reg_address;
+    uint32_t data;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GearWriteMotorDriverRegister {
+        uint8_t reg_address = 0;
+        uint32_t data = 0;
+        uint32_t msg_ind = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        body = bit_utils::bytes_to_int(body, limit, data);
+        return GearWriteMotorDriverRegister{
+            .message_index = msg_ind, .reg_address = reg_address, .data = data};
+    }
+
+    auto operator==(const GearWriteMotorDriverRegister& other) const
+        -> bool = default;
+};
+
+struct GearReadMotorDriverRegister
+    : BaseMessage<MessageId::gear_read_motor_driver_request> {
+    uint32_t message_index;
+    uint8_t reg_address;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> GearReadMotorDriverRegister {
+        uint8_t reg_address = 0;
+        uint32_t msg_ind = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, reg_address);
+        return GearReadMotorDriverRegister{.message_index = msg_ind,
+                                           .reg_address = reg_address};
+    }
+
+    auto operator==(const GearReadMotorDriverRegister& other) const
+        -> bool = default;
 };
 
 struct PeripheralStatusRequest

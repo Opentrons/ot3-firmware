@@ -34,6 +34,30 @@ class MotorHandler {
     Client &motor_client;
 };
 
+template <tmc::tasks::GearTaskClient Client>
+class GearMotorHandler {
+  public:
+    using MessageType = tmc::tasks::GearCanMessage;
+
+    GearMotorHandler(Client &motor_client) : motor_client{motor_client} {}
+    GearMotorHandler(const GearMotorHandler &) = delete;
+    GearMotorHandler(const GearMotorHandler &&) = delete;
+    auto operator=(const GearMotorHandler &) -> GearMotorHandler & = delete;
+    auto operator=(const GearMotorHandler &&) -> GearMotorHandler && = delete;
+    ~GearMotorHandler() = default;
+
+    void handle(MessageType &can_message) {
+        std::visit(
+            [this](auto m) -> void {
+                this->motor_client.send_motor_driver_queue(m);
+            },
+            can_message);
+    }
+
+  private:
+    Client &motor_client;
+};
+
 template <brushed_motor_driver_task::TaskClient BrushedMotorDriverTaskClient>
 class BrushedMotorHandler {
   public:

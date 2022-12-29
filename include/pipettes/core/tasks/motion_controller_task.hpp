@@ -52,7 +52,7 @@ class MotionControllerMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
-    void handle(const can::messages::EnableMotorRequest& m) {
+    void handle(const can::messages::GearEnableMotorRequest& m) {
         LOG("Received enable motor request");
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
@@ -61,7 +61,7 @@ class MotionControllerMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
-    void handle(const can::messages::DisableMotorRequest& m) {
+    void handle(const can::messages::GearDisableMotorRequest& m) {
         LOG("Received disable motor request");
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.

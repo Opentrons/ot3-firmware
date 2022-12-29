@@ -28,9 +28,9 @@ static auto can_move_group_handler =
         linear_motor_queue_client);
 
 static auto gear_motor_handler_left =
-    can::message_handlers::motor::MotorHandler{gear_left_queue_client};
+    can::message_handlers::motor::GearMotorHandler{gear_left_queue_client};
 static auto gear_motor_handler_right =
-    can::message_handlers::motor::MotorHandler{gear_right_queue_client};
+    can::message_handlers::motor::GearMotorHandler{gear_right_queue_client};
 
 static auto gear_motion_handler_left =
     gear_motion_handler::GearMotorMotionHandler{gear_left_queue_client};

@@ -85,6 +85,11 @@ enum class MessageId {
     limit_sw_response = 0x9,
     do_self_contained_tip_action_request = 0x501,
     do_self_contained_tip_action_response = 0x502,
+    gear_enable_motor_request = 0x503,
+    gear_disable_motor_request = 0x504,
+    gear_set_current_request = 0x505,
+    gear_write_motor_driver_request = 0x506,
+    gear_read_motor_driver_request = 0x507,
     read_sensor_request = 0x82,
     write_sensor_request = 0x83,
     baseline_sensor_request = 0x84,
@@ -97,6 +102,7 @@ enum class MessageId {
     bind_sensor_output_response = 0x8b,
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
+
 };
 
 /** Can bus arbitration id node id. */

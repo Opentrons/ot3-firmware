@@ -14,8 +14,11 @@ template <
     pipettes::tasks::motion_controller_task::TaskClient GearMotionTaskClient>
 class GearMotorMotionHandler {
   public:
-    using MessageType = pipettes::task_messages::motor_control_task_messages::
-        MotionControlTaskMessage;
+    using MessageType =
+        std::variant<std::monostate, GearDisableMotorRequest,
+                     GearEnableMotorRequest, GetMotionConstraintsRequest,
+                     SetMotionConstraints, StopRequest, ReadLimitSwitchRequest,
+                     TipActionRequest>;
 
     GearMotorMotionHandler(GearMotionTaskClient &motion_client)
         : motion_client{motion_client} {}
