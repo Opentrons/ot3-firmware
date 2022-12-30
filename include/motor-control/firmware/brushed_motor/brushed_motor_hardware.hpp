@@ -51,9 +51,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void negative_direction() final;
     void activate_motor() final;
     void deactivate_motor() final;
-    auto check_limit_switch() -> bool final { return limit.load(); }
-    auto check_estop_in() -> bool final { return estop.load(); }
-    auto check_sync_in() -> bool final { return sync.load(); }
+    auto check_limit_switch() -> bool final { return limit; }
+    auto check_estop_in() -> bool final { return estop; }
+    auto check_sync_in() -> bool final { return sync; }
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;

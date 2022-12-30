@@ -50,9 +50,7 @@ void BrushedMotorHardware::stop_pwm() {
     control_dir = ControlDirection::unset;
 }
 
-void BrushedMotorHardware::read_sync_in() {
-    sync = gpio::is_set(pins.limit_switch);
-}
+void BrushedMotorHardware::read_sync_in() { sync = gpio::is_set(pins.sync_in); }
 
 int32_t BrushedMotorHardware::get_encoder_pulses() {
     if (!enc_handle) {
