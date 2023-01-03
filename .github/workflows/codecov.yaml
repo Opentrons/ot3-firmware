@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - 'edge'
+      - 'main'
   workflow_dispatch:
 
 env:
