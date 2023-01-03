@@ -25,9 +25,7 @@ void MotorHardware::read_limit_switch() {
     limit = (gpio::is_set(pins.limit_switch));
 }
 
-void MotorHardware::read_estop_in() {
-    estop = gpio::is_set(pins.estop_in));
-}
+void MotorHardware::read_estop_in() { estop = gpio::is_set(pins.estop_in); }
 
 void MotorHardware::read_sync_in() { sync = (gpio::is_set(pins.sync_in)); }
 
