@@ -16,6 +16,7 @@ add_executable(motor-control
         test_move_status_handling.cpp
         test_sync_handling.cpp
         test_brushed_motor_interrupt_handler.cpp
+        test_motor_interrupt_handler.cpp
         test_motor_flags.cpp
         test_motor_position_tracker.cpp
         test_stall_check.cpp
