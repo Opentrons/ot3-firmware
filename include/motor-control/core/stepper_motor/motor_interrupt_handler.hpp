@@ -248,7 +248,7 @@ class MotorInterruptHandler {
     }
     void cancel_and_clear_moves(
         can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
-        // If there is a currently running move send a error corrisponding
+        // If there is a currently running move send a error corresponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
         uint32_t message_index = 0;

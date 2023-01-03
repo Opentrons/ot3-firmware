@@ -93,7 +93,7 @@ class MoveGroupMessageHandler {
     }
 
     void handle(const can::messages::StopRequest& m) {
-        LOG("Recieved StopRequest in MoveGroup");
+        LOG("Received StopRequest in MoveGroup");
         auto clear_req =
             can::messages::ClearAllMoveGroupsRequest{.message_index = 0};
         this->handle(clear_req);
