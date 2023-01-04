@@ -151,9 +151,9 @@ class BrushedMotorInterruptHandler {
             controlled_move_to(hold_encoder_position);
         } else if (motor_state == ControlState::FORCE_CONTROLLING_GRIP ||
                    motor_state == ControlState::FORCE_CONTROLLING_HOME) {
-            int32_t move_delta =
-                hardware.get_encoder_pulses() - hold_encoder_position;
-            if (std::abs(move_delta) > acceptable_position_error) {
+            if (!is_idle &&
+                std::abs(hardware.get_encoder_pulses() -
+                         hold_encoder_position) > acceptable_position_error) {
                 // we have likely dropped a labware or had a collision
                 auto err = motor_state == ControlState::FORCE_CONTROLLING_GRIP
                                ? can::ids::ErrorCode::labware_dropped
