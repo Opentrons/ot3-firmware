@@ -131,8 +131,8 @@ typedef enum {
     can_errorcode_estop_detected = 0x7,
     can_errorcode_collision_detected = 0x8,
     can_errorcode_labware_dropped = 0x9,
-    can_errorcode_motor_busy = 0xb,
     can_errorcode_estop_released = 0xa,
+    can_errorcode_motor_busy = 0xb,
 } CANErrorCode;
 
 /** Tool types detected on Head. */

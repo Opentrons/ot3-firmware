@@ -43,7 +43,7 @@ class MoveStatusMessageHandler {
     void handle_message(const can::messages::ErrorMessage& msg) {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
-    
+
     void handle_message(std::monostate&) {}
 
     /**
