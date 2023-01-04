@@ -11,12 +11,14 @@ using namespace motor_handler;
 struct MotorContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::Move> queue{};
+    test_mocks::MockMessageQueue<can::messages::UpdateMotorPositionRequest>
+        update_position_queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
     stall_check::StallCheck st{1, 1, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient,
                           motor_messages::Move>
-        handler{queue, reporter, hw, st};
+        handler{queue, reporter, hw, st, update_position_queue};
 };
 
 SCENARIO("estop pressed during motor interrupt handler") {
