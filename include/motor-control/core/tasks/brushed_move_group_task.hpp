@@ -102,6 +102,16 @@ class MoveGroupMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
+    void handle(const can::messages::StopRequest& m) {
+        LOG("Recieved StopRequest in MoveGroup");
+        auto clear_req =
+            can::messages::ClearAllMoveGroupsRequest{.message_index = 0};
+        this->handle(clear_req);
+        // pass the stop message to motion controller to kill pwm
+        // and any running moves
+        mc_client.send_brushed_motion_controller_queue(m);
+    }
+
     void visit_move(const std::monostate& m) { static_cast<void>(m); }
 
     void visit_move(const can::messages::GripperGripRequest& m) {

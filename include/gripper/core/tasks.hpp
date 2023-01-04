@@ -16,6 +16,7 @@
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/brushed_move_group_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
@@ -39,7 +40,9 @@ void start_tasks(can::bus::CanBus& can_bus,
                  tmc2130::configs::TMC2130DriverConfig& driver_configs,
                  i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
+                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
+                 motor_hardware_task::MotorHardwareTask& zmh_tsk,
+                 motor_hardware_task::MotorHardwareTask& gmh_tsk);
 
 /**
  * Access to all the message queues in the system.

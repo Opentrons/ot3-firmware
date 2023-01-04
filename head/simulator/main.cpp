@@ -155,6 +155,11 @@ static auto state_manager_task_control =
     freertos_task::FreeRTOSTask<512, decltype(state_manager_task)>{
         state_manager_task};
 
+static auto rmh_tsk =
+    motor_hardware_task::MotorHardwareTask{&motor_interface_right, "rmh task"};
+static auto lmh_tsk =
+    motor_hardware_task::MotorHardwareTask{&motor_interface_left, "lmh task"};
+
 void signal_handler(int signum) {
     LOG("Interrupt signal (%d) received.", signum);
     exit(signum);
@@ -205,7 +210,7 @@ int main(int argc, char** argv) {
     head_tasks::start_tasks(
         *canbus, motor_left.motion_controller, motor_right.motion_controller,
         presence_sense_driver, spi_comms_right, spi_comms_left,
-        MotorDriverConfigurations, MotorDriverConfigurations);
+        MotorDriverConfigurations, MotorDriverConfigurations, rmh_tsk, lmh_tsk);
 
     vTaskStartScheduler();
     return 0;

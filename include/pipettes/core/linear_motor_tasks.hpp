@@ -5,6 +5,7 @@
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
@@ -32,7 +33,8 @@ void start_tasks(CanWriterTask& can_writer,
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-                 can::ids::NodeId);
+                 can::ids::NodeId,
+                 motor_hardware_task::MotorHardwareTask& lmh_tsk);
 
 // 96/384 linear motor tasks
 void start_tasks(CanWriterTask& can_writer,
@@ -40,7 +42,8 @@ void start_tasks(CanWriterTask& can_writer,
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-                 can::ids::NodeId);
+                 can::ids::NodeId,
+                 motor_hardware_task::MotorHardwareTask& lmh_tsk);
 
 /**
  * Access to all the linear motion task queues on the pipette.

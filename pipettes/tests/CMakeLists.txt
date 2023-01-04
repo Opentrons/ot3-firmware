@@ -28,8 +28,10 @@ target_compile_options(pipettes
         -Wextra-semi
         -Wctor-dtor-privacy)
 
-target_link_libraries(pipettes Catch2::Catch2 common-core motor-utils)
+target_link_libraries(pipettes PUBLIC Catch2::Catch2 common-core motor-utils)
 target_i2c_simlib(pipettes)
 
 catch_discover_tests(pipettes)
 add_build_and_test_target(pipettes)
+
+add_coverage(pipettes)

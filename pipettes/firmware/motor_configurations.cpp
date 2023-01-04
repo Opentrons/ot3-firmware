@@ -114,11 +114,21 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN B11, active setting low
                 .led = {},
+                .sync_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_7,
+                     .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_2,
                      .active_setting = GPIO_PIN_SET},
+                .estop_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOA,
+                     .pin = GPIO_PIN_10,
+                     .active_setting = GPIO_PIN_RESET},
             };
     }
 }
@@ -156,6 +166,11 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .port = GPIOC,
                      .pin = GPIO_PIN_7,
                      .active_setting = GPIO_PIN_SET},
+                .estop_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
             };
         case TMC2160PipetteAxis::left_gear_motor:
             return pipette_motor_hardware::HardwareConfig{
@@ -187,6 +202,11 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .port = GPIOC,
                      .pin = GPIO_PIN_12,
                      .active_setting = GPIO_PIN_SET},
+                .estop_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
             };
         case TMC2160PipetteAxis::linear_motor:
         default:
@@ -213,10 +233,20 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
+                .sync_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOD,
+                     .pin = GPIO_PIN_2,
+                     .active_setting = GPIO_PIN_RESET},
                 // tip sense will be checked on the two pipette
                 // tip pick up motors.
                 // TODO need to think further about force pick up of tips
                 .tip_sense = {},
+                .estop_in =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_9,
+                     .active_setting = GPIO_PIN_RESET},
             };
     }
 }
@@ -297,11 +327,6 @@ auto motor_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
     -> motor_configs::LowThroughputSensorHardware {
     auto pins = motor_configs::LowThroughputSensorHardware{
         .primary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_7,
-                 .active_setting = GPIO_PIN_RESET},
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOB,
@@ -323,11 +348,6 @@ auto motor_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
     -> motor_configs::LowThroughputSensorHardware {
     auto pins = motor_configs::LowThroughputSensorHardware{
         .primary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_7,
-                 .active_setting = GPIO_PIN_RESET},
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOB,
@@ -348,11 +368,6 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
     auto pins = motor_configs::HighThroughputSensorHardware{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
-                .sync_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_RESET},
                 .sync_out =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOA,
@@ -365,11 +380,6 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                      .active_setting = GPIO_PIN_RESET},
             },
         .secondary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOD,
-                 .pin = GPIO_PIN_2,
-                 .active_setting = GPIO_PIN_RESET},
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOA,
@@ -391,11 +401,6 @@ auto motor_configs::sensor_configurations<
     auto pins = motor_configs::HighThroughputSensorHardware{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
-                .sync_in =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOD,
-                     .pin = GPIO_PIN_2,
-                     .active_setting = GPIO_PIN_RESET},
                 .sync_out =
                     {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOA,
@@ -408,11 +413,6 @@ auto motor_configs::sensor_configurations<
                      .active_setting = GPIO_PIN_RESET},
             },
         .secondary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_in =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOD,
-                 .pin = GPIO_PIN_2,
-                 .active_setting = GPIO_PIN_RESET},
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOA,

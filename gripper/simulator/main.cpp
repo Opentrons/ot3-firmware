@@ -113,11 +113,12 @@ int main(int argc, char** argv) {
         can::sim::bus::SimCANBus(can::sim::transport::create(options));
     z_motor_iface::initialize();
     grip_motor_iface::initialize();
-    gripper_tasks::start_tasks(canbus, z_motor_iface::get_z_motor(),
-                               grip_motor_iface::get_grip_motor(),
-                               z_motor_iface::get_spi(),
-                               z_motor_iface::get_tmc2130_driver_configs(),
-                               i2c2, *i2c3, fake_sensor_hw, *sim_eeprom);
+    gripper_tasks::start_tasks(
+        canbus, z_motor_iface::get_z_motor(),
+        grip_motor_iface::get_grip_motor(), z_motor_iface::get_spi(),
+        z_motor_iface::get_tmc2130_driver_configs(), i2c2, *i2c3,
+        fake_sensor_hw, *sim_eeprom, z_motor_iface::get_z_motor_hardware_task(),
+        grip_motor_iface::get_grip_motor_hardware_task());
 
     vTaskStartScheduler();
 }

@@ -117,7 +117,9 @@ auto initialize_motor_tasks(
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl& gear_motion,
     sim_mocks::MockSensorHardware& fake_sensor_hw,
-    eeprom::simulator::EEProm& sim_eeprom) {
+    eeprom::simulator::EEProm& sim_eeprom,
+    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c3_poller_client(),
@@ -127,12 +129,12 @@ auto initialize_motor_tasks(
 
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
 
     // TODO Convert gear motor tasks
-    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  gear_motion,
-                                  peripheral_tasks::get_spi_client(), conf, id);
+    gear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, gear_motion,
+        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks);
 }
 
 auto initialize_motor_tasks(
@@ -140,7 +142,9 @@ auto initialize_motor_tasks(
     motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&,
     sim_mocks::MockSensorHardware& fake_sensor_hw,
-    eeprom::simulator::EEProm& sim_eeprom) {
+    eeprom::simulator::EEProm& sim_eeprom,
+    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    interfaces::gear_motor::UnavailableGearHardwareTasks&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c3_poller_client(),
@@ -149,7 +153,7 @@ auto initialize_motor_tasks(
                               fake_sensor_hw, id, sim_eeprom);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
 }
 
 auto handle_options(int argc, char** argv) -> po::variables_map {
@@ -237,6 +241,11 @@ uint32_t temporary_serial_number(const PipetteType pipette_type) {
             PipetteType::NINETY_SIX_CHANNEL));
 }
 
+static auto lmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &linear_motor_hardware, "linear motor hardware task"};
+static auto gmh_tsks =
+    interfaces::gear_motor::get_motor_hardware_tasks(gear_hardware);
+
 int main(int argc, char** argv) {
     signal(SIGINT, signal_handler);
     LOG_INIT(PipetteTypeString[PIPETTE_TYPE], []() -> const char* {
@@ -285,7 +294,8 @@ int main(int argc, char** argv) {
     central_tasks::start_tasks(*can_bus_1, node);
     peripheral_tasks::start_tasks(*i2c3_comms, *i2c1_comms, spi_comms);
     initialize_motor_tasks(node, motor_config.driver_configs,
-                           gear_motion_control, *fake_sensor_hw, *sim_eeprom);
+                           gear_motion_control, *fake_sensor_hw, *sim_eeprom,
+                           lmh_tsk, gmh_tsks);
 
     vTaskStartScheduler();
 }

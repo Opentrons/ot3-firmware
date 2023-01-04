@@ -102,10 +102,16 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_SET},
     .led = {},
-    .sync_in = {
+    .sync_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_RESET},
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_8,
+        .port = GPIOB,
+        .pin = GPIO_PIN_4,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -135,10 +141,16 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .pin = GPIO_PIN_9,
             .active_setting = GPIO_PIN_SET},
     .led = {},
-    .sync_in = {
+    .sync_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_8,
+            .active_setting = GPIO_PIN_RESET},
+    .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_8,
+        .port = GPIOB,
+        .pin = GPIO_PIN_4,
         .active_setting = GPIO_PIN_RESET}
 };
 
@@ -298,6 +310,11 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
+static auto rmh_tsk =
+    motor_hardware_task::MotorHardwareTask{&motor_hardware_right, "rmh task"};
+static auto lmh_tsk =
+    motor_hardware_task::MotorHardwareTask{&motor_hardware_left, "lmh task"};
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -319,7 +336,7 @@ auto main() -> int {
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_right.motion_controller, psd, spi_comms2,
                             spi_comms3, motor_driver_configs_left,
-                            motor_driver_configs_right);
+                            motor_driver_configs_right, rmh_tsk, lmh_tsk);
 
     timer_for_notifier.start();
 

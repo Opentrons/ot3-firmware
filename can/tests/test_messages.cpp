@@ -368,4 +368,48 @@ SCENARIO("message serializing works") {
             }
         }
     }
+
+    GIVEN("a tip action response") {
+        constexpr uint8_t MESSAGE_SIZE = 18;
+        auto message =
+            TipActionResponse{.message_index = 0x1234,
+                              .group_id = 1,
+                              .seq_id = 2,
+                              .current_position_um = 0x3456789a,
+                              .encoder_position_um = 0x05803931,
+                              .ack_id = 0x1,
+                              .success = 0x1,
+                              .action = can::ids::PipetteTipActionType::pick_up,
+                              .position_flags = 0x0};
+        auto arr = std::array<uint8_t, MESSAGE_SIZE + 5>{0, 0, 0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0, 0, 0,
+                                                         0, 0, 0, 0, 0, 0, 0};
+        auto body = std::span{arr};
+        WHEN("serialized into a buffer exactly the size needed") {
+            auto size = message.serialize(arr.begin(), arr.end());
+            THEN("it is fully written into the buffer") {
+                REQUIRE(body.data()[0] == 0x0);
+                REQUIRE(body.data()[1] == 0x0);
+                REQUIRE(body.data()[2] == 0x12);
+                REQUIRE(body.data()[3] == 0x34);
+                REQUIRE(body.data()[4] == 0x01);
+                REQUIRE(body.data()[5] == 0x02);
+                REQUIRE(body.data()[6] == 0x34);
+                REQUIRE(body.data()[7] == 0x56);
+                REQUIRE(body.data()[8] == 0x78);
+                REQUIRE(body.data()[9] == 0x9a);
+                REQUIRE(body.data()[10] == 0x05);
+                REQUIRE(body.data()[11] == 0x80);
+                REQUIRE(body.data()[12] == 0x39);
+                REQUIRE(body.data()[13] == 0x31);
+                REQUIRE(body.data()[14] == 0x1);
+                REQUIRE(body.data()[15] == 0x1);
+                REQUIRE(body.data()[16] == 0x0);
+                REQUIRE(body.data()[17] == 0x0);
+            }
+            THEN("the total message size is the expected value") {
+                REQUIRE(size == MESSAGE_SIZE);
+            }
+        }
+    }
 }

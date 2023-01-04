@@ -161,3 +161,10 @@ auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
 auto interfaces::get_driver_config() -> tmc2130::configs::TMC2130DriverConfig& {
     return driver_configs;
 }
+
+static auto mh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_interface, "motor hardware task"};
+auto interfaces::get_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask& {
+    return mh_tsk;
+}

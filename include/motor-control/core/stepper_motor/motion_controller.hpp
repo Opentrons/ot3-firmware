@@ -99,7 +99,10 @@ class MotionController {
         return update_queue.try_write(can_msg);
     }
 
-    void stop() { hardware.stop_timer_interrupt(); }
+    void stop() {
+        queue.reset();
+        disable_motor();
+    }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
@@ -225,7 +228,10 @@ class PipetteMotionController {
         return false;
     }
 
-    void stop() { hardware.stop_timer_interrupt(); }
+    void stop() {
+        queue.reset();
+        disable_motor();
+    }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 

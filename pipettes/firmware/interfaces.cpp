@@ -133,6 +133,19 @@ auto gear_motor::get_motor_hardware(
                                                        &htim6, &htim2)};
 }
 
+auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
+    -> gear_motor::UnavailableGearHardwareTasks {
+    return gear_motor::UnavailableGearHardwareTasks{};
+}
+auto gear_motor::get_motor_hardware_tasks(gear_motor::GearHardware& hd_ware)
+    -> gear_motor::GearMotorHardwareTasks {
+    return gear_motor::GearMotorHardwareTasks{
+        .left = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+            &hd_ware.left, "left gear motor hardware task"),
+        .right = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+            &hd_ware.right, "right gear motor hardware task")};
+}
+
 auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                     HighThroughputInterruptQueues& queues)
     -> gear_motor::GearMotionControl {

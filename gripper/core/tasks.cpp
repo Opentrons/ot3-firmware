@@ -60,7 +60,9 @@ void gripper_tasks::start_tasks(
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
     sensors::hardware::SensorHardwareBase& sensor_hardware,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
+    motor_hardware_task::MotorHardwareTask& zmh_tsk,
+    motor_hardware_task::MotorHardwareTask& gmh_tsk) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     tasks.can_writer = &can_writer;
@@ -114,6 +116,9 @@ void gripper_tasks::start_tasks(
 
     z_tasks::get_queues().set_queue(&can_writer.get_queue());
     g_tasks::get_queues().set_queue(&can_writer.get_queue());
+
+    zmh_tsk.start_task();
+    gmh_tsk.start_task();
 }
 
 gripper_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)

@@ -4,6 +4,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "spi/core/spi.hpp"
 
 namespace interfaces {
@@ -45,4 +46,5 @@ auto get_motor() -> motor_class::Motor<lms::BeltConfig> &;
  */
 auto get_driver_config() -> tmc2160::configs::TMC2160DriverConfig &;
 
+auto get_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask &;
 }  // namespace interfaces

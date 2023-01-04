@@ -24,8 +24,6 @@ elseif (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
     add_subdirectory(stm32L5)
 endif()
 
-find_package(Clang)
-
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
 # which is a catch-all static analyzer/linter
 # the empty --config= tells clang-tidy to use the .clang-tidy file in the top level

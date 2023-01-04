@@ -67,7 +67,7 @@ class MotorInterruptHandler {
     // This is the function that should be called by the interrupt callback glue
     // It will run motion math, handle the immediate move buffer, and set or
     // clear step, direction, and sometimes enable pins
-    void run_interrupt() {
+    void run_normal_interrupt() {
         bool dir = true;
         if (set_direction_pin()) {
             hardware.positive_direction();
@@ -87,6 +87,27 @@ class MotorInterruptHandler {
             }
         }
         hardware.unstep();
+    }
+
+    void run_interrupt() {
+        // handle error state
+        if (in_estop) {
+            // wait some time before coming out of estop state since
+            // the signal bounces
+            in_estop = estop_triggered();
+            if (!in_estop) {
+                status_queue_client.send_move_status_reporter_queue(
+                    can::messages::ErrorMessage{
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::warning,
+                        .error_code = can::ids::ErrorCode::estop_released});
+            }
+        } else if (estop_triggered()) {
+            cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
+        } else {
+            // Normal Move logic
+            run_normal_interrupt();
+        }
     }
 
     // Start or stop the handler; this will also start or stop the timer
@@ -183,6 +204,9 @@ class MotorInterruptHandler {
     auto limit_switch_triggered() -> bool {
         return hardware.check_limit_switch();
     }
+
+    auto estop_triggered() -> bool { return hardware.check_estop_in(); }
+
     [[nodiscard]] auto tick() -> bool {
         /*
          * A function that increments the position tracker of a given motor.
@@ -231,6 +255,32 @@ class MotorInterruptHandler {
 
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
+    }
+    void cancel_and_clear_moves(
+        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
+        // If there is a currently running move send a error corresponding
+        // to it so the hardware controller can know what move was running
+        // when the cancel happened
+        uint32_t message_index = 0;
+        if (has_active_move) {
+            message_index = buffered_move.message_index;
+        }
+        status_queue_client.send_move_status_reporter_queue(
+            can::messages::ErrorMessage{
+                .message_index = message_index,
+                .severity = can::ids::ErrorSeverity::unrecoverable,
+                .error_code = err_code});
+
+        // Broadcast a stop message
+        status_queue_client.send_move_status_reporter_queue(
+            can::messages::StopRequest{.message_index = 0});
+
+        // the queue will get reset during the stop message processing
+        // we can't clear here from an interrupt context
+        has_active_move = false;
+        if (err_code == can::ids::ErrorCode::estop_detected) {
+            in_estop = true;
+        }
     }
 
     void finish_current_move(
@@ -285,6 +335,7 @@ class MotorInterruptHandler {
         update_hardware_step_tracker();
     }
     bool has_active_move = false;
+    bool in_estop = false;
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }

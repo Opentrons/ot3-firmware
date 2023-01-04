@@ -134,6 +134,7 @@ enum class ErrorCode {
     collision_detected = 0x8,
     labware_dropped = 0x9,
     motor_busy = 0xb,
+    estop_released = 0xa,
 };
 
 /** Error Severity levels. */

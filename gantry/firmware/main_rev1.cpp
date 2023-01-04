@@ -25,7 +25,8 @@ auto main() -> int {
 
     gantry::tasks::start_tasks(
         interfaces::get_can_bus(), interfaces::get_motor().motion_controller,
-        interfaces::get_spi(), interfaces::get_driver_config());
+        interfaces::get_spi(), interfaces::get_driver_config(),
+        interfaces::get_motor_hardware_task());
 
     vTaskStartScheduler();
 }
