@@ -5,6 +5,7 @@
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/motor_configurations.hpp"
@@ -33,7 +34,8 @@ void start_tasks(
     interfaces::gear_motor::GearMotionControl& motion_controllers,
     SPIWriterClient& spi_writer,
     motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
-    can::ids::NodeId id);
+    can::ids::NodeId id,
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks);
 
 /**
  * Access to all the gear motion tasks.

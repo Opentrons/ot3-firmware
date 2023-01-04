@@ -35,10 +35,16 @@ class MoveStatusMessageHandler {
     auto operator=(const MoveStatusMessageHandler&& c) = delete;
     ~MoveStatusMessageHandler() = default;
 
+    void handle_message(const TaskMessage& message) {
+        std::visit([this](auto m) { this->handle_message(m); }, message);
+    }
+
+    void handle_message(std::monostate&) {}
+
     /**
      * Handle Ack message
      */
-    void handle_message(const TaskMessage& message) {
+    void handle_message(const motor_messages::GearMotorAck& message) {
         can::messages::TipActionResponse msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,
@@ -53,6 +59,14 @@ class MoveStatusMessageHandler {
             .action = message.action,
             .position_flags = 0};
         can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
+    void handle_message(const can::messages::ErrorMessage& msg) {
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
+    void handle_message(const can::messages::StopRequest& msg) {
+        can_client.send_can_message(can::ids::NodeId::broadcast, msg);
     }
 
   private:

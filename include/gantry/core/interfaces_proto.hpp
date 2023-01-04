@@ -4,6 +4,7 @@
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "spi/core/spi.hpp"
 
 namespace interfaces {
@@ -24,7 +25,7 @@ auto get_can_bus() -> can::bus::CanBus &;
  * @return the SPI interface
  */
 auto get_spi() -> spi::hardware::SpiDeviceBase &;
-
+auto get_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask &;
 /**
  * Get the motor hardware interface
  * @return the motor hardware interface

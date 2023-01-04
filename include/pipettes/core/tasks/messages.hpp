@@ -17,7 +17,9 @@ using MotionControlTaskMessage = std::variant<
     can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest>;
 
 // TODO do we want the ack message to be slightly diff here?
-using MoveStatusReporterTaskMessage = motor_messages::GearMotorAck;
+using MoveStatusReporterTaskMessage =
+    std::variant<std::monostate, motor_messages::GearMotorAck,
+                 can::messages::StopRequest, can::messages::ErrorMessage>;
 
 }  // namespace motor_control_task_messages
 
@@ -27,7 +29,7 @@ using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::ClearAllMoveGroupsRequest,
                  can::messages::ExecuteMoveGroupRequest,
                  can::messages::GetMoveGroupRequest,
-                 can::messages::TipActionRequest>;
+                 can::messages::TipActionRequest, can::messages::StopRequest>;
 
 }  // namespace move_group_task_messages
 }  // namespace task_messages

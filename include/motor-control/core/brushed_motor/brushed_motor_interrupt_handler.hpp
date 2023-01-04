@@ -27,7 +27,9 @@ enum class ControlState {
     FORCE_CONTROLLING,
     POSITION_CONTROLLING,
     IDLE,
-    ACTIVE
+    ACTIVE,
+    ERROR,
+    ESTOP
 };
 
 static constexpr uint32_t HOLDOFF_TICKS =
@@ -143,14 +145,30 @@ class BrushedMotorInterruptHandler {
     }
 
     void run_interrupt() {
-        if (tick < HOLDOFF_TICKS) {
-            tick++;
-            return;
-        }
-        if (motor_state == ControlState::ACTIVE) {
-            execute_active_move();
+        if (motor_state == ControlState::ESTOP) {
+            // return out of error state once the estop is disabled
+            if (!estop_triggered()) {
+                motor_state = ControlState::IDLE;
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                    can::messages::ErrorMessage{
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::warning,
+                        .error_code = can::ids::ErrorCode::estop_released});
+            }
         } else {
-            execute_idle_move();
+            if (estop_triggered()) {
+                cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
+                return;
+            }
+            if (tick < HOLDOFF_TICKS) {
+                tick++;
+                return;
+            }
+            if (motor_state == ControlState::ACTIVE) {
+                execute_active_move();
+            } else {
+                execute_idle_move();
+            }
         }
     }
 
@@ -211,6 +229,34 @@ class BrushedMotorInterruptHandler {
 
     auto limit_switch_triggered() -> bool {
         return hardware.check_limit_switch();
+    }
+
+    auto estop_triggered() -> bool { return hardware.check_estop_in(); }
+
+    void cancel_and_clear_moves(
+        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
+        // If there is a currently running move send a error corresponding
+        // to it so the hardware controller can know what move was running
+        // when the cancel happened
+        uint32_t message_index = 0;
+        if (motor_state == ControlState::ACTIVE) {
+            message_index = buffered_move.message_index;
+        }
+        status_queue_client.send_brushed_move_status_reporter_queue(
+            can::messages::ErrorMessage{
+                .message_index = message_index,
+                .severity = can::ids::ErrorSeverity::unrecoverable,
+                .error_code = err_code});
+        // Broadcast a stop message
+        status_queue_client.send_brushed_move_status_reporter_queue(
+            can::messages::StopRequest{.message_index = 0});
+        if (err_code == can::ids::ErrorCode::estop_detected) {
+            motor_state = ControlState::ESTOP;
+        } else {
+            motor_state = ControlState::ERROR;
+        }
+        // the queue will get reset during the stop message processing
+        // we can't clear here from an interrupt context
     }
 
     void finish_current_move(

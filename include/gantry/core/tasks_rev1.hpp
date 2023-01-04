@@ -5,6 +5,7 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
@@ -22,7 +23,8 @@ void start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
-    tmc2160::configs::TMC2160DriverConfig& driver_configs);
+    tmc2160::configs::TMC2160DriverConfig& driver_configs,
+    motor_hardware_task::MotorHardwareTask& mh_tsk);
 
 /**
  * Access to all tasks in the system.
