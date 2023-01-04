@@ -24,7 +24,8 @@ using namespace motor_messages;
  */
 
 enum class ControlState {
-    FORCE_CONTROLLING,
+    FORCE_CONTROLLING_HOME,
+    FORCE_CONTROLLING_GRIP,
     POSITION_CONTROLLING,
     IDLE,
     ACTIVE,
@@ -148,12 +149,16 @@ class BrushedMotorInterruptHandler {
             update_and_start_move();
         } else if (motor_state == ControlState::POSITION_CONTROLLING) {
             controlled_move_to(hold_encoder_position);
-        } else if (motor_state == ControlState::FORCE_CONTROLLING) {
+        } else if (motor_state == ControlState::FORCE_CONTROLLING_GRIP ||
+                   motor_state == ControlState::FORCE_CONTROLLING_HOME) {
             int32_t move_delta =
                 hardware.get_encoder_pulses() - hold_encoder_position;
             if (std::abs(move_delta) > acceptable_position_error) {
                 // we have likely dropped a labware or had a collision
-                cancel_and_clear_moves(can::ids::ErrorCode::labware_dropped);
+                auto err = motor_state == ControlState::FORCE_CONTROLLING_GRIP
+                               ? can::ids::ErrorCode::labware_dropped
+                               : can::ids::ErrorCode::collision_detected;
+                cancel_and_clear_moves(err);
             }
         }
     }
@@ -288,7 +293,10 @@ class BrushedMotorInterruptHandler {
         } else if (buffered_move.stop_condition !=
                    MoveStopCondition::cap_sensor) {
             hold_encoder_position = hardware.get_encoder_pulses();
-            motor_state = ControlState::FORCE_CONTROLLING;
+            motor_state =
+                buffered_move.stop_condition == MoveStopCondition::limit_switch
+                    ? ControlState::FORCE_CONTROLLING_HOME
+                    : ControlState::FORCE_CONTROLLING_GRIP;
         }
 
         if (buffered_move.group_id != NO_GROUP) {
