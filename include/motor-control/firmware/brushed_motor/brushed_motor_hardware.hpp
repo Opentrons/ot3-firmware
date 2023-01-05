@@ -69,8 +69,11 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
 
     auto update_control(int32_t encoder_error) -> double final;
     void reset_control() final;
+    void set_stay_gripping(bool state) { stay_gripping = state; }
+    auto get_stay_gripping() -> bool { return stay_gripping; }
 
   private:
+    bool stay_gripping = false;
     std::atomic_bool estop = false;
     std::atomic_bool limit = false;
     std::atomic_bool sync = false;

@@ -265,6 +265,7 @@ SCENARIO("labware dropped during grip move") {
                     std::get<can::messages::StopRequest>(
                         test_objs.reporter.messages.back());
                 REQUIRE(stop.message_index == 0);
+                REQUIRE(test_objs.hw.get_stay_gripping() == true);
             }
         }
     }
@@ -319,6 +320,7 @@ SCENARIO("collision while homed") {
                     std::get<can::messages::StopRequest>(
                         test_objs.reporter.messages.back());
                 REQUIRE(stop.message_index == 0);
+                REQUIRE(test_objs.hw.get_stay_gripping() == false);
             }
         }
     }
@@ -406,6 +408,7 @@ SCENARIO("A collision during position controlled move") {
                     std::get<can::messages::StopRequest>(
                         test_objs.reporter.messages.back());
                 REQUIRE(stop.message_index == 0);
+                REQUIRE(test_objs.hw.get_stay_gripping() == false);
             }
         }
     }

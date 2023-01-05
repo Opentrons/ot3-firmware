@@ -217,7 +217,10 @@ class BrushedMotorInterruptHandler {
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
+        // clear the old states
         hardware.reset_control();
+        hardware.set_stay_gripping(false);
+
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
                 tick = 0;
@@ -266,6 +269,14 @@ class BrushedMotorInterruptHandler {
         if (motor_state == ControlState::ACTIVE) {
             message_index = buffered_move.message_index;
         }
+
+        // if we think we dropped a labware we don't want the controller
+        // to stop the motor in case we only slipped or collided and still
+        // have the labware in the jaws
+        if (err_code == can::ids::ErrorCode::labware_dropped) {
+            hardware.set_stay_gripping(true);
+        }
+
         status_queue_client.send_brushed_move_status_reporter_queue(
             can::messages::ErrorMessage{
                 .message_index = message_index,

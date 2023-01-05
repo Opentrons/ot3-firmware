@@ -90,7 +90,10 @@ class MotionController {
 
     void stop() {
         queue.reset();
-        disable_motor();
+        // if we're gripping something we need to flag this so we don't drop it
+        if (!hardware.get_stay_gripping()) {
+            disable_motor();
+        }
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
