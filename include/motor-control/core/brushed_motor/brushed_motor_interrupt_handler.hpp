@@ -117,7 +117,8 @@ class BrushedMotorInterruptHandler {
                 break;
             // linear move
             case MoveStopCondition::encoder_position:
-                move_delta = hardware.get_encoder_pulses() - buffered_move.encoder_position;
+                move_delta = hardware.get_encoder_pulses() -
+                             buffered_move.encoder_position;
                 controlled_move_to(move_delta);
                 if (std::abs(move_delta) < acceptable_position_error) {
                     finish_current_move(AckMessageId::stopped_by_condition);
@@ -142,10 +143,13 @@ class BrushedMotorInterruptHandler {
         if (has_messages()) {
             update_and_start_move();
         } else if (motor_state == ControlState::POSITION_CONTROLLING) {
-            int32_t move_delta = hardware.get_encoder_pulses() - hold_encoder_position;
+            int32_t move_delta =
+                hardware.get_encoder_pulses() - hold_encoder_position;
             controlled_move_to(move_delta);
-            // we use double the acceptable position here just to allow the pid loop the oppertunity to maintain small movements that occure from motion and vibration
-            if (move_delta > 2*acceptable_position_error) {
+            // we use double the acceptable position here just to allow the pid
+            // loop the oppertunity to maintain small movements that occure from
+            // motion and vibration
+            if (move_delta > 2 * acceptable_position_error) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
             }
         } else if (motor_state == ControlState::FORCE_CONTROLLING_GRIP ||
