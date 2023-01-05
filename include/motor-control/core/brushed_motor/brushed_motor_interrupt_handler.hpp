@@ -106,6 +106,11 @@ class BrushedMotorInterruptHandler {
     }
 
     void execute_active_move() {
+        if (timeout_ticks > buffered_move.duration) {
+            finish_current_move(AckMessageId::timeout);
+            return;
+        }
+        timeout_ticks++;
         switch (buffered_move.stop_condition) {
             // homing move
             case MoveStopCondition::limit_switch:
@@ -140,7 +145,7 @@ class BrushedMotorInterruptHandler {
             case MoveStopCondition::cap_sensor:
                 // TODO write cap sensor move code
                 break;
-        }
+        }        
     }
 
     void execute_idle_move() {
@@ -215,6 +220,7 @@ class BrushedMotorInterruptHandler {
     }
 
     void update_and_start_move() {
+        
         if (queue.try_read_isr(&buffered_move)) {
             motor_state = ControlState::ACTIVE;
         }
@@ -224,7 +230,7 @@ class BrushedMotorInterruptHandler {
         // clear the old states
         hardware.reset_control();
         hardware.set_stay_enabled(false);
-
+        timeout_ticks = 0;
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
                 tick = 0;
@@ -337,6 +343,7 @@ class BrushedMotorInterruptHandler {
 
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
+    uint32_t timeout_ticks = 0;
     ControlState motor_state = ControlState::IDLE;
 
   private:
