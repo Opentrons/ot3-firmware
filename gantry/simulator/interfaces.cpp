@@ -39,7 +39,7 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
 static freertos_message_queue::FreeRTOSMessageQueue<
-    can::messages::UpdateMotorPositionRequest>
+    can::messages::UpdateMotorPositionEstimationRequest>
     update_position_queue("Position Queue");
 
 static tmc2130::configs::TMC2130DriverConfig driver_configs{

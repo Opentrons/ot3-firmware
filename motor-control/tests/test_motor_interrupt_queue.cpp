@@ -10,7 +10,8 @@ TEST_CASE("motor interrupt handler queue functionality") {
     static constexpr sq0_31 default_velocity = 0x1 << 30;
     GIVEN("a motor interrupt handler") {
         test_mocks::MockMessageQueue<Move> queue;
-        test_mocks::MockMessageQueue<can::messages::UpdateMotorPositionRequest>
+        test_mocks::MockMessageQueue<
+            can::messages::UpdateMotorPositionEstimationRequest>
             update_position_queue;
         test_mocks::MockMoveStatusReporterClient reporter{};
         test_mocks::MockMotorHardware hardware;
@@ -46,7 +47,7 @@ TEST_CASE("motor interrupt handler queue functionality") {
             }
         }
 
-        WHEN("enqueuing an UpdateMotorPositionRequest") {
+        WHEN("enqueuing an UpdateMotorPositionEstimationRequest") {
             // Test both good & bad situations
             bool should_change = GENERATE(true, false);
             if (should_change) {
@@ -56,8 +57,8 @@ TEST_CASE("motor interrupt handler queue functionality") {
             REQUIRE(stall.encoder_ticks_to_stepper_ticks(1234) == 1234);
             hardware.sim_set_encoder_pulses(1234);
             handler.set_current_position(100);
-            auto msg =
-                can::messages::UpdateMotorPositionRequest{.message_index = 123};
+            auto msg = can::messages::UpdateMotorPositionEstimationRequest{
+                .message_index = 123};
             update_position_queue.try_write(msg);
             AND_WHEN("running the interrupt") {
                 handler.run_interrupt();
@@ -87,11 +88,14 @@ TEST_CASE("motor interrupt handler queue functionality") {
                 }
             }
         }
-        WHEN("enqueuing a move message AND an UpdateMotorPositionRequest") {
+        WHEN(
+            "enqueuing a move message AND an "
+            "UpdateMotorPositionEstimationRequest") {
             constexpr Move move_msg =
                 Move{.duration = 100, .velocity = default_velocity};
             auto update_msg =
-                can::messages::UpdateMotorPositionRequest{.message_index = 123};
+                can::messages::UpdateMotorPositionEstimationRequest{
+                    .message_index = 123};
             update_position_queue.try_write(update_msg);
             queue.try_write(move_msg);
             THEN("update message is ACK'd with an error") {

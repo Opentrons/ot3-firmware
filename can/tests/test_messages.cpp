@@ -259,10 +259,11 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("an update motor position response") {
-        auto message = UpdateMotorPositionResponse{.message_index = 0x1234,
-                                                   .current_position = 0xBA12CD,
-                                                   .encoder_position = 0xABEF,
-                                                   .position_flags = 0x2};
+        auto message =
+            UpdateMotorPositionEstimationResponse{.message_index = 0x1234,
+                                                  .current_position = 0xBA12CD,
+                                                  .encoder_position = 0xABEF,
+                                                  .position_flags = 0x2};
         auto arr =
             std::array<uint8_t, 14>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};

@@ -12,7 +12,8 @@ using namespace motor_handler;
 struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::Move> queue{};
-    test_mocks::MockMessageQueue<can::messages::UpdateMotorPositionRequest>
+    test_mocks::MockMessageQueue<
+        can::messages::UpdateMotorPositionEstimationRequest>
         update_position_queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
     stall_check::StallCheck stall{10, 10, 10};

@@ -16,7 +16,7 @@ using MotionControlType =
 using PipetteMotionControlType =
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
 using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
-    can::messages::UpdateMotorPositionRequest>;
+    can::messages::UpdateMotorPositionEstimationRequest>;
 
 struct LowThroughputInterruptQueues {
     MoveQueue plunger_queue;

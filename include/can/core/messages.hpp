@@ -184,8 +184,8 @@ using ReadLimitSwitchRequest = Empty<MessageId::limit_sw_request>;
 
 using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 
-using UpdateMotorPositionRequest =
-    Empty<MessageId::update_motor_position_request>;
+using UpdateMotorPositionEstimationRequest =
+    Empty<MessageId::update_motor_position_estimation_request>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
@@ -469,8 +469,8 @@ struct MotorPositionResponse : BaseMessage<MessageId::motor_position_response> {
 };
 
 // This response is the exact same payload as MotorPositionResponse
-struct UpdateMotorPositionResponse
-    : BaseMessage<MessageId::update_motor_position_response> {
+struct UpdateMotorPositionEstimationResponse
+    : BaseMessage<MessageId::update_motor_position_estimation_response> {
     uint32_t message_index;
     uint32_t current_position;
     int32_t encoder_position;
@@ -485,7 +485,7 @@ struct UpdateMotorPositionResponse
         return iter - body;
     }
 
-    auto operator==(const UpdateMotorPositionResponse& other) const
+    auto operator==(const UpdateMotorPositionEstimationResponse& other) const
         -> bool = default;
 };
 
@@ -1326,6 +1326,6 @@ using ResponseMessageType = std::variant<
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
-    UpdateMotorPositionResponse>;
+    UpdateMotorPositionEstimationResponse>;
 
 }  // namespace can::messages

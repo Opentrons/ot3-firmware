@@ -19,8 +19,8 @@ using namespace freertos_message_queue;
 template <lms::MotorMechanicalConfig MEConfig>
 struct Motor {
     using GenericQueue = FreeRTOSMessageQueue<Move>;
-    using UpdatePositionQueue =
-        FreeRTOSMessageQueue<can::messages::UpdateMotorPositionRequest>;
+    using UpdatePositionQueue = FreeRTOSMessageQueue<
+        can::messages::UpdateMotorPositionEstimationRequest>;
 
     /**
      * Construct a motor
@@ -30,7 +30,7 @@ struct Motor {
      * @param constraints Motion constraints
      * @param queue Input message queue containing motion commands.
      * @param update_queue Message queue to the Interrupt Handler containing
-     *                     UpdateMotorPositionRequest messages
+     *                     UpdateMotorPositionEstimationRequest messages
      * commands.
      */
     Motor(lms::LinearMotionSystemConfig<MEConfig> lms_config,

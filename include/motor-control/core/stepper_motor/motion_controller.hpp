@@ -25,7 +25,7 @@ class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
     using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
-        can::messages::UpdateMotorPositionRequest>;
+        can::messages::UpdateMotorPositionEstimationRequest>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      StepperMotorHardwareIface& hardware_iface,
                      MotionConstraints constraints, GenericQueue& queue,
@@ -92,7 +92,8 @@ class MotionController {
     }
 
     [[nodiscard]] auto update_position(
-        const can::messages::UpdateMotorPositionRequest& can_msg) -> bool {
+        const can::messages::UpdateMotorPositionEstimationRequest& can_msg)
+        -> bool {
         if (!enabled) {
             return false;
         }
@@ -223,7 +224,7 @@ class PipetteMotionController {
     }
 
     [[nodiscard]] auto update_position(
-        const can::messages::UpdateMotorPositionRequest&) -> bool {
+        const can::messages::UpdateMotorPositionEstimationRequest&) -> bool {
         // Not supported for gear motors - no encoder!
         return false;
     }

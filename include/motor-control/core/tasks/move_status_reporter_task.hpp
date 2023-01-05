@@ -69,7 +69,7 @@ class MoveStatusMessageHandler {
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {
-        can::messages::UpdateMotorPositionResponse msg = {
+        can::messages::UpdateMotorPositionEstimationResponse msg = {
             .message_index = message.message_index,
             .current_position = fixed_point_multiply(
                 um_per_step, message.stepper_position_counts),

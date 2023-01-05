@@ -49,14 +49,14 @@ static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_left("Motor Queue Left");
 
 static freertos_message_queue::FreeRTOSMessageQueue<
-    can::messages::UpdateMotorPositionRequest>
+    can::messages::UpdateMotorPositionEstimationRequest>
     update_position_queue_left("PQueue Left");
 
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
 
 static freertos_message_queue::FreeRTOSMessageQueue<
-    can::messages::UpdateMotorPositionRequest>
+    can::messages::UpdateMotorPositionEstimationRequest>
     update_position_queue_right("PQueue Right");
 
 /**
