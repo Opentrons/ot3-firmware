@@ -53,7 +53,9 @@ class MotorInterruptHandler {
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
-          stall_checker{stall} {}
+          stall_checker{stall} {
+        hardware.unstep();
+    }
     ~MotorInterruptHandler() = default;
     auto operator=(MotorInterruptHandler&) -> MotorInterruptHandler& = delete;
     auto operator=(MotorInterruptHandler&&) -> MotorInterruptHandler&& = delete;
@@ -64,25 +66,18 @@ class MotorInterruptHandler {
     // It will run motion math, handle the immediate move buffer, and set or
     // clear step, direction, and sometimes enable pins
     void run_normal_interrupt() {
-        bool dir = true;
-        if (set_direction_pin()) {
-            hardware.positive_direction();
-        } else {
-            hardware.negative_direction();
-            dir = false;
-        }
         if (pulse()) {
             hardware.step();
             update_hardware_step_tracker();
-            if (stall_checker.step_itr(dir)) {
+            if (stall_checker.step_itr(set_direction_pin())) {
                 if (!stall_checker.check_stall_itr(
                         hardware.get_encoder_pulses())) {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
                 }
             }
+            hardware.unstep();
         }
-        hardware.unstep();
     }
 
     void run_interrupt() {
@@ -232,6 +227,11 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = queue.try_read_isr(&buffered_move);
+        if (set_direction_pin()) {
+            hardware.positive_direction();
+        } else {
+            hardware.negative_direction();
+        }
         if (has_active_move &&
             buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
