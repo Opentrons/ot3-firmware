@@ -215,6 +215,10 @@ static auto canbus = can::hal::bus::HalCanBus(
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionEstimationRequest>
+    update_position_queue("Position Queue");
+
 /**
  * The motor struct.
  */
@@ -224,7 +228,7 @@ static motor_class::Motor motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    motor_queue, update_position_queue};
 
 static stall_check::StallCheck stallcheck(
     utils::linear_motion_system_config().get_encoder_pulses_per_mm() / 1000.0F,
@@ -238,8 +242,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), motor_hardware_iface,
-    stallcheck);
+    motor_queue, gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
+    update_position_queue);
 
 /**
  * Timer callback.

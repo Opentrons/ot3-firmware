@@ -48,8 +48,16 @@ static auto can_bus_1 = can::hal::bus::HalCanBus(
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_left("Motor Queue Left");
 
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionEstimationRequest>
+    update_position_queue_left("PQueue Left");
+
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue_right("Motor Queue Right");
+
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionEstimationRequest>
+    update_position_queue_right("PQueue Right");
 
 /**
  * @brief SPI MSP Initialization
@@ -229,7 +237,7 @@ static motor_hardware::MotorHardware motor_hardware_right(
     pin_configurations_right, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
-    stallcheck_right);
+    stallcheck_right, update_position_queue_right);
 
 static motor_class::Motor motor_right{
     linear_config, motor_hardware_right,
@@ -237,7 +245,7 @@ static motor_class::Motor motor_right{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue_right};
+    motor_queue_right, update_position_queue_right};
 
 static stall_check::StallCheck stallcheck_left(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
@@ -250,7 +258,7 @@ static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
-    stallcheck_left);
+    stallcheck_left, update_position_queue_left);
 
 static motor_class::Motor motor_left{
     linear_config, motor_hardware_left,
@@ -258,7 +266,7 @@ static motor_class::Motor motor_left{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue_left};
+    motor_queue_left, update_position_queue_left};
 
 extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();

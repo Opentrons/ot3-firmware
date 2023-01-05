@@ -14,11 +14,12 @@ using MotionControlTaskMessage = std::variant<
     can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest>;
+    can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest,
+    can::messages::UpdateMotorPositionEstimationRequest>;
 
-// TODO do we want the ack message to be slightly diff here?
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,
+                 motor_messages::UpdatePositionResponse,
                  can::messages::StopRequest, can::messages::ErrorMessage>;
 
 }  // namespace motor_control_task_messages

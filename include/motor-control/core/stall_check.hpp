@@ -57,6 +57,9 @@ class StallCheck {
 
     [[nodiscard]] auto has_encoder() const -> bool;
 
+    [[nodiscard]] auto encoder_ticks_to_stepper_ticks(
+        uint32_t encoder_steps) const -> uint32_t;
+
   private:
     [[nodiscard]] auto encoder_um_per_tick() const -> float;
     [[nodiscard]] auto stepper_um_per_tick() const -> float;
@@ -67,6 +70,8 @@ class StallCheck {
     // Fixed point representations of the hardware limits
     const float _encoder_tick_per_um;
     const float _stepper_tick_per_um;
+
+    const sq31_31 _stepper_ticks_to_encoder_ticks_ratio;
 
     // Stall threshold
     const uint32_t _um_threshold;

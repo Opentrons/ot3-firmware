@@ -107,6 +107,10 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
 static freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>
     motor_queue("Motor Queue");
 
+static freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateMotorPositionEstimationRequest>
+    update_position_queue("Position Queue");
+
 /**
  * The motor struct.
  */
@@ -122,7 +126,9 @@ static motor_class::Motor z_motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue};
+    motor_queue,
+    update_position_queue,
+    true};
 
 // There is no encoder so the ratio doesn't matter
 static stall_check::StallCheck stallcheck(0, 0, 0);
@@ -132,7 +138,7 @@ static stall_check::StallCheck stallcheck(0, 0, 0);
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gripper_tasks::z_tasks::get_queues(), motor_hardware_iface,
-    stallcheck);
+    stallcheck, update_position_queue);
 
 /**
  * Timer callback.

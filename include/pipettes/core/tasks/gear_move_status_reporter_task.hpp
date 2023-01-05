@@ -39,6 +39,11 @@ class MoveStatusMessageHandler {
         std::visit([this](auto m) { this->handle_message(m); }, message);
     }
 
+    /** Errors are just forwarded over the canbus */
+    void handle_message(const can::messages::ErrorMessage& msg) {
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     void handle_message(std::monostate&) {}
 
     /**
@@ -61,7 +66,13 @@ class MoveStatusMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
-    void handle_message(const can::messages::ErrorMessage& msg) {
+    void handle_message(const motor_messages::UpdatePositionResponse& message) {
+        can::messages::UpdateMotorPositionEstimationResponse msg = {
+            .message_index = message.message_index,
+            .current_position = fixed_point_multiply(
+                um_per_step, message.stepper_position_counts),
+            .encoder_position = 0,
+            .position_flags = message.position_flags};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
