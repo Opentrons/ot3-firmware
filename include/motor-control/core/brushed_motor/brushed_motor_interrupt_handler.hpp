@@ -147,7 +147,7 @@ class BrushedMotorInterruptHandler {
                 hardware.get_encoder_pulses() - hold_encoder_position;
             controlled_move_to(move_delta);
             // we use double the acceptable position here just to allow the pid
-            // loop the oppertunity to maintain small movements that occure from
+            // loop the opportunity to maintain small movements that occur from
             // motion and vibration
             if (move_delta > 2 * acceptable_position_error) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
