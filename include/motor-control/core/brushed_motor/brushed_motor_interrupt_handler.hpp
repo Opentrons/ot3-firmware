@@ -223,7 +223,7 @@ class BrushedMotorInterruptHandler {
         }
         // clear the old states
         hardware.reset_control();
-        hardware.set_stay_gripping(false);
+        hardware.set_stay_enabled(false);
 
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
@@ -278,7 +278,7 @@ class BrushedMotorInterruptHandler {
         // to stop the motor in case we only slipped or collided and still
         // have the labware in the jaws
         if (err_code == can::ids::ErrorCode::labware_dropped) {
-            hardware.set_stay_gripping(true);
+            hardware.set_stay_enabled(true);
         }
 
         status_queue_client.send_brushed_move_status_reporter_queue(

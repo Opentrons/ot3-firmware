@@ -91,7 +91,7 @@ class MotionController {
     void stop() {
         queue.reset();
         // if we're gripping something we need to flag this so we don't drop it
-        if (!hardware.get_stay_gripping()) {
+        if (!hardware.get_stay_enabled()) {
             disable_motor();
         }
     }
