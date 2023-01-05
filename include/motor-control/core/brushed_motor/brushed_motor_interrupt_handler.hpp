@@ -40,6 +40,7 @@ static constexpr uint32_t HOLDOFF_TICKS =
 
 // upon advice from hardware, 0.01mm is a good limit for precision
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
+static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
 
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
@@ -62,6 +63,9 @@ class BrushedMotorInterruptHandler {
         acceptable_position_error =
             int32_t(gear_conf.get_encoder_pulses_per_mm() *
                     ACCEPTABLE_DISTANCE_TOLERANCE_MM);
+        unwanted_movement_threshold =
+            int32_t(gear_conf.get_encoder_pulses_per_mm() *
+                    UNWANTED_MOVEMENT_DISTANCE_MM);
     }
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
@@ -149,14 +153,14 @@ class BrushedMotorInterruptHandler {
             // we use double the acceptable position here just to allow the pid
             // loop the opportunity to maintain small movements that occur from
             // motion and vibration
-            if (move_delta > 2 * acceptable_position_error) {
+            if (move_delta > unwanted_movement_threshold) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
             }
         } else if (motor_state == ControlState::FORCE_CONTROLLING_GRIP ||
                    motor_state == ControlState::FORCE_CONTROLLING_HOME) {
             if (!is_idle &&
                 std::abs(hardware.get_encoder_pulses() -
-                         hold_encoder_position) > acceptable_position_error) {
+                         hold_encoder_position) > unwanted_movement_threshold) {
                 // we have likely dropped a labware or had a collision
                 auto err = motor_state == ControlState::FORCE_CONTROLLING_GRIP
                                ? can::ids::ErrorCode::labware_dropped
@@ -345,5 +349,6 @@ class BrushedMotorInterruptHandler {
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
     int32_t acceptable_position_error = 0;
+    int32_t unwanted_movement_threshold = 0;
 };
 }  // namespace brushed_motor_handler
