@@ -180,8 +180,6 @@ set_target_properties(
         STM32G4xx_FreeRTOS_Head
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
-find_package(Clang)
-
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
 # which is a catch-all static analyzer/linter
 # the empty --config= tells clang-tidy to use the .clang-tidy file in the top level

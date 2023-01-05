@@ -131,6 +131,7 @@ enum class ErrorCode {
     estop_detected = 0x7,
     collision_detected = 0x8,
     labware_dropped = 0x9,
+    estop_released = 0xa,
 };
 
 /** Error Severity levels. */
@@ -192,16 +193,6 @@ enum class PipetteTipActionType {
 enum class MotorPositionFlags {
     stepper_position_ok = 0x1,
     encoder_position_ok = 0x2,
-};
-
-/** Move Stop Condition. */
-enum class MoveStopCondition {
-    none = 0x0,
-    limit_switch = 0x1,
-    cap_sensor = 0x2,
-    encoder_position = 0x4,
-    gripper_force = 0x5,
-    stall = 0x6,
 };
 
 }  // namespace can::ids

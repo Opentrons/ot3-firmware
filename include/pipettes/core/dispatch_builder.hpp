@@ -44,22 +44,22 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::HomeRequest>;
+    can::messages::HomeRequest, can::messages::StopRequest>;
 
 using GearMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_move_group_handler::GearMoveGroupHandler<
         gear_motor_tasks::QueueClient>,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::TipActionRequest>;
+    can::messages::TipActionRequest, can::messages::StopRequest>;
 
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::MotionHandler<
         linear_motor_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
-    can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
+    can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
+    can::messages::MotorPositionRequest>;
 
 using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,

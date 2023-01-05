@@ -172,10 +172,23 @@ int tip_present() {
     return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET;
 }
 
+
+void estop_input_gpio_init() {
+       /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    /*Configure GPIO pin EStopin : PA9 */
+    GPIO_InitStruct.Pin = GPIO_PIN_9;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
 void utility_gpio_init() {
     limit_switch_gpio_init();
     tip_sense_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
     data_ready_gpio_init();
+    estop_input_gpio_init();
 }

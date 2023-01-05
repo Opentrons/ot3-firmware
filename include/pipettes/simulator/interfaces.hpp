@@ -113,6 +113,10 @@ auto get_motor_hardware(motor_configs::LowThroughputPipetteMotorHardware)
 auto get_motor_hardware(motor_configs::HighThroughputPipetteMotorHardware pins)
     -> GearHardware;
 
+auto get_motor_hardware_tasks(UnavailableGearHardware&)
+    -> UnavailableGearHardwareTasks;
+auto get_motor_hardware_tasks(GearHardware& hd_ware) -> GearMotorHardwareTasks;
+
 auto get_interrupts(UnavailableGearHardware&, LowThroughputInterruptQueues&,
                     GearStallCheck&) -> UnavailableGearInterrupts;
 

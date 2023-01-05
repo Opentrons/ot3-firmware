@@ -6,8 +6,6 @@ else()
    add_subdirectory(simulation)
 endif()
 
-find_package(Clang)
-
 file(GLOB_RECURSE COMMON_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/common/*.hpp)
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.

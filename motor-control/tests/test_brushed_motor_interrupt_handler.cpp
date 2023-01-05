@@ -1,3 +1,4 @@
+#include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
@@ -180,6 +181,40 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                     std::abs(read_ack.encoder_position - msg.encoder_position) <
                     int32_t(gear_config.get_encoder_pulses_per_mm() * 0.01));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
+            }
+        }
+    }
+}
+
+SCENARIO("estop pressed during Brushed motor interrupt handler") {
+    BrushedMotorContainer test_objs{};
+
+    GIVEN("A message to home") {
+        auto msg =
+            BrushedMove{.duration = 0,
+                        .duty_cycle = 50,
+                        .group_id = 0,
+                        .seq_id = 0,
+                        .stop_condition = MoveStopCondition::limit_switch};
+        test_objs.queue.try_write_isr(msg);
+        WHEN("Estop is pressed") {
+            // Burn through the startup ticks
+            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                test_objs.handler.run_interrupt();
+            }
+            test_objs.hw.set_estop_in(true);
+            test_objs.handler.run_interrupt();
+            THEN("Errors are sent") {
+                REQUIRE(test_objs.reporter.messages.size() == 2);
+                can::messages::ErrorMessage err =
+                    std::get<can::messages::ErrorMessage>(
+                        test_objs.reporter.messages.front());
+                REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
+
+                can::messages::StopRequest stop =
+                    std::get<can::messages::StopRequest>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(stop.message_index == 0);
             }
         }
     }

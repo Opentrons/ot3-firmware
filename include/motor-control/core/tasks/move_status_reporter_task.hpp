@@ -45,6 +45,10 @@ class MoveStatusMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
+    void handle_message(const can::messages::StopRequest& msg) {
+        can_client.send_can_message(can::ids::NodeId::broadcast, msg);
+    }
+
     /**
      * Called upon arrival of new message
      * @param message

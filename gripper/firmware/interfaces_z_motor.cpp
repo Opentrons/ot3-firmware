@@ -4,6 +4,7 @@
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
@@ -55,6 +56,11 @@ struct motion_controller::HardwareConfig motor_pins {
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_SET},
     .led = {},
+    .estop_in = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOA,
+        .pin = GPIO_PIN_10,
+        .active_setting = GPIO_PIN_RESET},
 };
 
 /**
@@ -116,7 +122,7 @@ static motor_class::Motor z_motor{
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue, true};
+    motor_queue};
 
 // There is no encoder so the ratio doesn't matter
 static stall_check::StallCheck stallcheck(0, 0, 0);
@@ -152,4 +158,11 @@ auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig>& {
 auto z_motor_iface::get_tmc2130_driver_configs()
     -> tmc2130::configs::TMC2130DriverConfig& {
     return MotorDriverConfigurations;
+}
+
+static auto zmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &motor_hardware_iface, "z motor hardware task"};
+auto z_motor_iface::get_z_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask& {
+    return zmh_tsk;
 }

@@ -35,21 +35,38 @@ class MoveStatusMessageHandler {
     auto operator=(const MoveStatusMessageHandler&& c) = delete;
     ~MoveStatusMessageHandler() = default;
 
+    void handle_message(const TaskMessage& message) {
+        std::visit([this](auto m) { this->handle_message(m); }, message);
+    }
+
+    void handle_message(std::monostate&) {}
+
     /**
      * Handle Ack message
      */
-    void handle_message(const TaskMessage& message) {
+    void handle_message(const motor_messages::GearMotorAck& message) {
         can::messages::TipActionResponse msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,
             .seq_id = message.seq_id,
-            .encoder_position = message.encoder_position,
+            .current_position_um = fixed_point_multiply(
+                um_per_step, message.current_position_steps),
+            .encoder_position_um = 0,
             .ack_id = static_cast<uint8_t>(message.ack_id),
             // TODO: In a follow-up PR, tip sense reporting will
             // actually update this value to true or false.
             .success = static_cast<uint8_t>(true),
-            .action = message.action};
+            .action = message.action,
+            .position_flags = 0};
         can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
+    void handle_message(const can::messages::ErrorMessage& msg) {
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
+    void handle_message(const can::messages::StopRequest& msg) {
+        can_client.send_can_message(can::ids::NodeId::broadcast, msg);
     }
 
   private:

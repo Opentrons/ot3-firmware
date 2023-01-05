@@ -29,3 +29,5 @@ target_compile_options(can-core
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
         )
+
+add_coverage(can-core)

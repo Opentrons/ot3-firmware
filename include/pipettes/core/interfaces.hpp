@@ -3,6 +3,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/tasks/motor_hardware_task.hpp"
 
 namespace interfaces {
 
@@ -30,10 +31,16 @@ namespace gear_motor {
 struct UnavailableGearHardware {};
 struct UnavailableGearMotionControl {};
 struct UnavailableGearInterrupts {};
+struct UnavailableGearHardwareTasks {};
 
 struct GearMotionControl {
     PipetteMotionControlType left;
     PipetteMotionControlType right;
+};
+
+struct GearMotorHardwareTasks {
+    pipette_motor_hardware_task::PipetteMotorHardwareTask left;
+    pipette_motor_hardware_task::PipetteMotorHardwareTask right;
 };
 
 }  // namespace gear_motor

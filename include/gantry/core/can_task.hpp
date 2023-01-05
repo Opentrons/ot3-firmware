@@ -27,13 +27,13 @@ using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::AddLinearMoveRequest,
     can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
-    can::messages::HomeRequest>;
+    can::messages::HomeRequest, can::messages::StopRequest>;
 using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::MotionHandler<gantry::queues::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
-    can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest>;
+    can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
+    can::messages::MotorPositionRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         gantry::queues::QueueClient>,

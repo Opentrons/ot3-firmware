@@ -2,8 +2,6 @@ if (NOT ${CMAKE_CROSSCOMPILING})
     add_subdirectory(tests)
 endif()
 
-find_package(Clang)
-
 file(GLOB_RECURSE EEPROM_SOURCE_FOR_FORMAT ./*.cpp ./*.hpp ../include/eeprom/*.hpp)
 
 add_custom_target(

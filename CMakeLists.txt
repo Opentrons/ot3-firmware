@@ -10,13 +10,33 @@ project("OT3Firmware"
         LANGUAGES CXX C ASM
         DESCRIPTION "Firmware for OT-3 System")
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH 
+        "${PROJECT_SOURCE_DIR}/cmake" 
+        "${PROJECT_SOURCE_DIR}/cmake/codecov/cmake"
+        ${CMAKE_MODULE_PATH})
+
 set(ROOT_BOARD_FILE_PATH "${PROJECT_SOURCE_DIR}/include/firmware/" ${ROOT_BOARD_FILE_PATH})
+
 if (NOT ${CMAKE_CROSSCOMPILING})
     enable_testing()
     add_custom_target(build-and-test)
+
+    find_package(codecov)
+
+    # We can safely ignore test code and stm32-tools imports
+    list(APPEND LCOV_REMOVE_PATTERNS 
+        "'${PROJECT_SOURCE_DIR}/stm32-tools/*'"
+        "'${PROJECT_SOURCE_DIR}/**/tests/*.cpp'"
+        "'${PROJECT_SOURCE_DIR}/**/simulator/*.cpp'")
+else()
+    function(add_coverage TARGET)
+    endfunction()
+
+    function(coverage_evaluate)
+    endfunction()
 endif ()
 
+find_package(Clang)
 
 # Set a default build type if none was specified
 # From https://blog.kitware.com/cmake-and-the-default-build-type/
@@ -77,8 +97,6 @@ if(NOT ${CMAKE_CROSSCOMPILING})
 else ()
 	message(VERBOSE "You are cross-compiling. Not adding state_manager")
 endif ()
-
-find_package(Clang)
 
 # c++ linting is here but python linting is in the subdir
 file(GLOB_RECURSE SOURCES_FOR_FORMAT
@@ -150,3 +168,5 @@ add_custom_target(update-headers
         VERBATIM
         COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++"
         COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
+
+coverage_evaluate()

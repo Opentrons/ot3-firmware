@@ -5,8 +5,6 @@ else()
     add_subdirectory(tests)
 endif()
 
-find_package(Clang)
-
 file(GLOB_RECURSE SPI_SOURCE_FOR_FORMAT ./*.cpp ./*.hpp ../include/spi/*.hpp)
 
 add_custom_target(

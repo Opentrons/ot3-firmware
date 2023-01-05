@@ -165,10 +165,17 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
+static auto lmh_tsk = motor_hardware_task::MotorHardwareTask{
+    &linear_motor_hardware, "linear motor hardware task"};
+static auto gmh_tsks =
+    interfaces::gear_motor::get_motor_hardware_tasks(gear_hardware);
+
 auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
-    interfaces::gear_motor::GearMotionControl& gear_motion) {
+    interfaces::gear_motor::GearMotionControl& gear_motion,
+    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c3_poller_client(),
@@ -181,15 +188,17 @@ auto initialize_motor_tasks(
     initialize_enc_timer(encoder_callback);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
-    gear_motor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                                  gear_motion,
-                                  peripheral_tasks::get_spi_client(), conf, id);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
+    gear_motor_tasks::start_tasks(
+        *central_tasks::get_tasks().can_writer, gear_motion,
+        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks);
 }
 auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
-    interfaces::gear_motor::UnavailableGearMotionControl&) {
+    interfaces::gear_motor::UnavailableGearMotionControl&,
+    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    interfaces::gear_motor::UnavailableGearHardwareTasks&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
                               peripheral_tasks::get_i2c3_poller_client(),
@@ -201,7 +210,7 @@ auto initialize_motor_tasks(
     initialize_enc_timer(encoder_callback);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
 }
 
 auto main() -> int {
@@ -227,8 +236,8 @@ auto main() -> int {
 
     central_tasks::start_tasks(can_bus_1, id);
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms2, spi_comms);
-    initialize_motor_tasks(id, motor_config.driver_configs,
-                           gear_motion_control);
+    initialize_motor_tasks(id, motor_config.driver_configs, gear_motion_control,
+                           lmh_tsk, gmh_tsks);
 
     iWatchdog.start(6);
 

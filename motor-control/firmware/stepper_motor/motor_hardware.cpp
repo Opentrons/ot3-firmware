@@ -21,11 +21,13 @@ void MotorHardware::start_timer_interrupt() {
 void MotorHardware::stop_timer_interrupt() {
     motor_hardware_stop_timer(tim_handle);
 }
-bool MotorHardware::check_limit_switch() {
-    return gpio::is_set(pins.limit_switch);
+void MotorHardware::read_limit_switch() {
+    limit = (gpio::is_set(pins.limit_switch));
 }
 
-bool MotorHardware::check_sync_in() { return gpio::is_set(pins.sync_in); }
+void MotorHardware::read_estop_in() { estop = gpio::is_set(pins.estop_in); }
+
+void MotorHardware::read_sync_in() { sync = (gpio::is_set(pins.sync_in)); }
 
 void MotorHardware::set_LED(bool status) {
     if (status) {

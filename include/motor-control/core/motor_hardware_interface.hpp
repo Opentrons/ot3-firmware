@@ -21,7 +21,11 @@ class MotorHardwareIface {
     virtual void activate_motor() = 0;
     virtual void deactivate_motor() = 0;
     virtual auto check_limit_switch() -> bool = 0;
+    virtual auto check_estop_in() -> bool = 0;
     virtual auto check_sync_in() -> bool = 0;
+    virtual void read_limit_switch() = 0;
+    virtual void read_estop_in() = 0;
+    virtual void read_sync_in() = 0;
     virtual auto get_encoder_pulses() -> int32_t = 0;
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
@@ -64,6 +68,7 @@ class PipetteStepperMotorHardwareIface
     : virtual public StepperMotorHardwareIface {
   public:
     virtual auto check_tip_sense() -> bool = 0;
+    virtual void read_tip_sense() = 0;
 };
 
 class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
