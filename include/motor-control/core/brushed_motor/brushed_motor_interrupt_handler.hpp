@@ -25,7 +25,7 @@ using namespace motor_messages;
 
 enum class ControlState {
     FORCE_CONTROLLING_HOME,
-    FORCE_CONTROLLING_GRIP,
+    FORCE_CONTROLLING,
     POSITION_CONTROLLING,
     IDLE,
     ACTIVE,
@@ -156,13 +156,13 @@ class BrushedMotorInterruptHandler {
             if (move_delta > unwanted_movement_threshold) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
             }
-        } else if (motor_state == ControlState::FORCE_CONTROLLING_GRIP ||
+        } else if (motor_state == ControlState::FORCE_CONTROLLING ||
                    motor_state == ControlState::FORCE_CONTROLLING_HOME) {
             if (!is_idle &&
                 std::abs(hardware.get_encoder_pulses() -
                          hold_encoder_position) > unwanted_movement_threshold) {
                 // we have likely dropped a labware or had a collision
-                auto err = motor_state == ControlState::FORCE_CONTROLLING_GRIP
+                auto err = motor_state == ControlState::FORCE_CONTROLLING
                                ? can::ids::ErrorCode::labware_dropped
                                : can::ids::ErrorCode::collision_detected;
                 cancel_and_clear_moves(err);
@@ -314,7 +314,7 @@ class BrushedMotorInterruptHandler {
             motor_state =
                 buffered_move.stop_condition == MoveStopCondition::limit_switch
                     ? ControlState::FORCE_CONTROLLING_HOME
-                    : ControlState::FORCE_CONTROLLING_GRIP;
+                    : ControlState::FORCE_CONTROLLING;
         }
 
         if (buffered_move.group_id != NO_GROUP) {
