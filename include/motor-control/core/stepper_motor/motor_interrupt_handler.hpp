@@ -78,6 +78,11 @@ class MotorInterruptHandler {
                         hardware.get_encoder_pulses())) {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
+                    if (stalled_during_movement()) {
+                        cancel_and_clear_moves(
+                            can::ids::ErrorCode::collision_detected,
+                            can::ids::ErrorSeverity::recoverable);
+                    }
                 }
             }
             hardware.unstep();
@@ -99,9 +104,6 @@ class MotorInterruptHandler {
             }
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
-        } else if (stalled_during_movement()) {
-            cancel_and_clear_moves(can::ids::ErrorCode::collision_detected,
-                                   can::ids::ErrorSeverity::recoverable);
         } else {
             // Normal Move logic
             run_normal_interrupt();
