@@ -99,6 +99,9 @@ class MotorInterruptHandler {
             }
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
+        } else if (stalled_during_movement()) {
+            cancel_and_clear_moves(can::ids::ErrorCode::collision_detected,
+                                   can::ids::ErrorSeverity::recoverable);
         } else {
             // Normal Move logic
             run_normal_interrupt();
@@ -145,17 +148,6 @@ class MotorInterruptHandler {
             if (buffered_move.stop_condition == MoveStopCondition::cap_sensor &&
                 calibration_stopped()) {
                 return false;
-            }
-            if (buffered_move.stop_condition ==
-                    MoveStopCondition::stall &&
-                !hardware.position_flags.check_flag(
-                    MotorPositionStatus::Flags::stepper_position_ok)) {
-                auto error = can::messages::ErrorMessage {
-                    .message_index = buffered_move.message_index,
-                    .severity = can::ids::ErrorSeverity::recoverable,
-                    .error_code = can::ids::ErrorCode::collision_detected,
-                };
-                static_cast<void>(status_queue_client.send_move_status_reporter_queue(error));
             }
             if (can_step() && tick()) {
                 return true;
@@ -268,7 +260,9 @@ class MotorInterruptHandler {
         return (buffered_move.velocity > 0);
     }
     void cancel_and_clear_moves(
-        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
+        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware,
+        can::ids::ErrorSeverity severity =
+            can::ids::ErrorSeverity::unrecoverable) {
         // If there is a currently running move send a error corresponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
@@ -277,10 +271,9 @@ class MotorInterruptHandler {
             message_index = buffered_move.message_index;
         }
         status_queue_client.send_move_status_reporter_queue(
-            can::messages::ErrorMessage{
-                .message_index = message_index,
-                .severity = can::ids::ErrorSeverity::unrecoverable,
-                .error_code = err_code});
+            can::messages::ErrorMessage{.message_index = message_index,
+                                        .severity = severity,
+                                        .error_code = err_code});
 
         // Broadcast a stop message
         status_queue_client.send_move_status_reporter_queue(
@@ -412,6 +405,13 @@ class MotorInterruptHandler {
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(response));
         }
+    }
+
+    [[nodiscard]] auto stalled_during_movement() const -> bool {
+        return has_active_move &&
+               buffered_move.stop_condition == MoveStopCondition::stall &&
+               !hardware.position_flags.check_flag(
+                   MotorPositionStatus::Flags::stepper_position_ok);
     }
 
   private:
