@@ -3,6 +3,7 @@
 #include <variant>
 
 #include "can/core/messages.hpp"
+#include "pipettes/core/tasks/messages.hpp"
 #include "pipettes/core/tasks/motion_controller_task.hpp"
 
 namespace gear_motion_handler {
@@ -13,10 +14,8 @@ template <
     pipettes::tasks::motion_controller_task::TaskClient GearMotionTaskClient>
 class GearMotorMotionHandler {
   public:
-    using MessageType =
-        std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
-                     GetMotionConstraintsRequest, SetMotionConstraints,
-                     StopRequest, ReadLimitSwitchRequest, TipActionRequest>;
+    using MessageType = pipettes::task_messages::motor_control_task_messages::
+        MotionControlTaskMessage;
 
     GearMotorMotionHandler(GearMotionTaskClient &motion_client)
         : motion_client{motion_client} {}

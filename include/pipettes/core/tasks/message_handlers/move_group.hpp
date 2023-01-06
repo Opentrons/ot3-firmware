@@ -1,6 +1,7 @@
 #pragma once
 
 #include "can/core/messages.hpp"
+#include "pipettes/core/tasks/messages.hpp"
 
 namespace gear_move_group_handler {
 
@@ -10,9 +11,7 @@ template <pipettes::tasks::move_group_task::TaskClient Client>
 class GearMoveGroupHandler {
   public:
     using MessageType =
-        std::variant<std::monostate, ClearAllMoveGroupsRequest,
-                     ExecuteMoveGroupRequest, GetMoveGroupRequest,
-                     TipActionRequest, StopRequest>;
+        pipettes::task_messages::move_group_task_messages::MoveGroupTaskMessage;
     GearMoveGroupHandler(Client &task_client) : task_client{task_client} {}
     GearMoveGroupHandler(const GearMoveGroupHandler &) = delete;
     GearMoveGroupHandler(const GearMoveGroupHandler &&) = delete;

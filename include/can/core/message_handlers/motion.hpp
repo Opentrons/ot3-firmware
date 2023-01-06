@@ -16,7 +16,8 @@ class MotionHandler {
     using MessageType =
         std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
                      GetMotionConstraintsRequest, SetMotionConstraints,
-                     ReadLimitSwitchRequest, MotorPositionRequest>;
+                     ReadLimitSwitchRequest, MotorPositionRequest,
+                     UpdateMotorPositionEstimationRequest>;
 
     MotionHandler(MotionTaskClient &motion_client)
         : motion_client{motion_client} {}

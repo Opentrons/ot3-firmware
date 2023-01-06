@@ -59,12 +59,14 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 namespace linear_motor {
 
 auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-                   MoveQueue& queue, stall_check::StallCheck& stall)
+                   MoveQueue& queue, stall_check::StallCheck& stall,
+                   UpdatePositionQueue& update_queue)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw, MoveQueue& queue,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler)
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient>& handler,
+    UpdatePositionQueue& update_queue)
     -> motor_interrupt_driver::MotorInterruptDriver<
         linear_motor_tasks::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface>;

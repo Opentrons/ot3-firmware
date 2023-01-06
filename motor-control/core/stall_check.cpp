@@ -10,6 +10,11 @@ StallCheck::StallCheck(float encoder_tick_per_um, float stepper_tick_per_um,
                        uint32_t um_threshold)
     : _encoder_tick_per_um{encoder_tick_per_um},
       _stepper_tick_per_um{stepper_tick_per_um},
+      _stepper_ticks_to_encoder_ticks_ratio{convert_to_fixed_point_64_bit(
+          (encoder_tick_per_um == 0.0F)
+              ? 0
+              : _stepper_tick_per_um / _encoder_tick_per_um,
+          RADIX)},
       _um_threshold{um_threshold},
       _encoder_step_threshold{convert_to_fixed_point_64_bit(
           encoder_tick_per_um * um_threshold, RADIX)},
@@ -60,6 +65,12 @@ auto StallCheck::reset_itr_counts(int32_t stepper_steps) -> void {
 
 [[nodiscard]] auto StallCheck::has_encoder() const -> bool {
     return _encoder_tick_per_um != 0.0F;
+}
+
+[[nodiscard]] auto StallCheck::encoder_ticks_to_stepper_ticks(
+    uint32_t encoder_steps) const -> uint32_t {
+    return fixed_point_multiply(_stepper_ticks_to_encoder_ticks_ratio,
+                                encoder_steps);
 }
 
 [[nodiscard]] auto StallCheck::encoder_um_per_tick() const -> float {

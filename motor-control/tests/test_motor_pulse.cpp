@@ -17,11 +17,14 @@ static constexpr uint32_t stall_threshold_um = 10;
 struct HandlerContainer {
     test_mocks::MockMotorHardware hw{};
     test_mocks::MockMessageQueue<Move> queue{};
+    test_mocks::MockMessageQueue<
+        can::messages::UpdateMotorPositionEstimationRequest>
+        update_position_queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
     stall_check::StallCheck stall{tick_per_um, tick_per_um, stall_threshold_um};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient, Move>
-        handler{queue, reporter, hw, stall};
+        handler{queue, reporter, hw, stall, update_position_queue};
 };
 
 sq0_31 convert_velocity(float f) {

@@ -24,14 +24,18 @@ template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
+    using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
+        can::messages::UpdateMotorPositionEstimationRequest>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      StepperMotorHardwareIface& hardware_iface,
                      MotionConstraints constraints, GenericQueue& queue,
+                     UpdatePositionQueue& update_queue,
                      bool eng_on_strt = false)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           motion_constraints(constraints),
           queue(queue),
+          update_queue(update_queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_steps_per_mm(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
@@ -85,6 +89,15 @@ class MotionController {
             enable_motor();
         }
         queue.try_write(msg);
+    }
+
+    [[nodiscard]] auto update_position(
+        const can::messages::UpdateMotorPositionEstimationRequest& can_msg)
+        -> bool {
+        if (!enabled) {
+            return false;
+        }
+        return update_queue.try_write(can_msg);
     }
 
     void stop() {
@@ -141,6 +154,7 @@ class MotionController {
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
+    UpdatePositionQueue& update_queue;
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_step{0};
     sq31_31 um_per_encoder_pulse{0};
@@ -207,6 +221,12 @@ class PipetteMotionController {
             enable_motor();
         }
         queue.try_write(msg);
+    }
+
+    [[nodiscard]] auto update_position(
+        const can::messages::UpdateMotorPositionEstimationRequest&) -> bool {
+        // Not supported for gear motors - no encoder!
+        return false;
     }
 
     void stop() {

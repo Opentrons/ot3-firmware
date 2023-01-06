@@ -46,6 +46,8 @@ typedef enum {
     can_messageid_move_completed = 0x13,
     can_messageid_motor_position_request = 0x12,
     can_messageid_motor_position_response = 0x14,
+    can_messageid_update_motor_position_estimation_request = 0x21,
+    can_messageid_update_motor_position_estimation_response = 0x22,
     can_messageid_set_motion_constraints = 0x101,
     can_messageid_get_motion_constraints_request = 0x102,
     can_messageid_get_motion_constraints_response = 0x103,
@@ -130,6 +132,7 @@ typedef enum {
     can_errorcode_collision_detected = 0x8,
     can_errorcode_labware_dropped = 0x9,
     can_errorcode_estop_released = 0xa,
+    can_errorcode_motor_busy = 0xb,
 } CANErrorCode;
 
 /** Tool types detected on Head. */
