@@ -360,6 +360,7 @@ class MotorInterruptHandler {
             if (!has_active_move &&
                 hardware.position_flags.check_flag(
                     MotorPositionStatus::Flags::encoder_position_ok)) {
+                encoder_pulses = address_negative_encoder();
                 auto stepper_tick_estimate =
                     stall_checker.encoder_ticks_to_stepper_ticks(
                         encoder_pulses);
@@ -401,6 +402,15 @@ class MotorInterruptHandler {
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(response));
         }
+    }
+
+    auto address_negative_encoder() -> int32_t {
+        auto pulses = hardware.get_encoder_pulses();
+        if (pulses < 0) {
+            hardware.reset_encoder_pulses();
+            return 0;
+        }
+        return pulses;
     }
 
   private:
