@@ -39,8 +39,9 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage>
-requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
+          typename MotorMoveMessage, typename MotorHardware>
+requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
+    std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
@@ -48,11 +49,11 @@ class MotorInterruptHandler {
         QueueImpl<can::messages::UpdateMotorPositionEstimationRequest>;
 
     MotorInterruptHandler() = delete;
-    MotorInterruptHandler(
-        MoveQueue& incoming_move_queue, StatusClient& outgoing_queue,
-        motor_hardware::StepperMotorHardwareIface& hardware_iface,
-        stall_check::StallCheck& stall,
-        UpdatePositionQueue& incoming_update_position_queue)
+    MotorInterruptHandler(MoveQueue& incoming_move_queue,
+                          StatusClient& outgoing_queue,
+                          MotorHardware& hardware_iface,
+                          stall_check::StallCheck& stall,
+                          UpdatePositionQueue& incoming_update_position_queue)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
@@ -426,7 +427,7 @@ class MotorInterruptHandler {
     q31_31 position_tracker{0};
     MoveQueue& move_queue;
     StatusClient& status_queue_client;
-    motor_hardware::StepperMotorHardwareIface& hardware;
+    MotorHardware& hardware;
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};

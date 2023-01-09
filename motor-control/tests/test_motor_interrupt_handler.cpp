@@ -18,7 +18,7 @@ struct MotorContainer {
     stall_check::StallCheck st{1, 1, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient,
-                          motor_messages::Move>
+                          motor_messages::Move, test_mocks::MockMotorHardware>
         handler{queue, reporter, hw, st, update_position_queue};
 };
 
