@@ -88,6 +88,30 @@ TEST_CASE("motor interrupt handler queue functionality") {
                 }
             }
         }
+        GIVEN("negative encoder position") {
+            hardware.sim_set_encoder_pulses(-1);
+            hardware.position_flags.set_flag(
+                MotorPositionStatus::Flags::encoder_position_ok);
+            WHEN("enqueuing an UpdateMotorPositionEstimationRequest") {
+                auto msg = can::messages::UpdateMotorPositionEstimationRequest{
+                    .message_index = 555};
+                update_position_queue.try_write(msg);
+                AND_WHEN("running the interrupt") {
+                    handler.run_interrupt();
+                    THEN("the encoder value is reset to 0") {
+                        REQUIRE(hardware.get_encoder_pulses() == 0);
+                    }
+                    THEN("the response has the encoder reset to 0") {
+                        auto response =
+                            std::get<motor_messages::UpdatePositionResponse>(
+                                reporter.messages.front());
+                        REQUIRE(response.encoder_pulses == 0);
+                        REQUIRE(response.stepper_position_counts == 0);
+                        REQUIRE(response.message_index == msg.message_index);
+                    }
+                }
+            }
+        }
         WHEN(
             "enqueuing a move message AND an "
             "UpdateMotorPositionEstimationRequest") {
