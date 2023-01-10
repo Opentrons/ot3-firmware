@@ -6,7 +6,7 @@
 namespace configs {
 
 // Number of full steps the stall threshold should equate to
-constexpr float STALL_THRESHOLD_FULLSTEPS = 2;
+constexpr float STALL_THRESHOLD_UM = 500;
 ;
 
 auto linear_motion_sys_config_by_axis(PipetteType which)
