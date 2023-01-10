@@ -18,7 +18,7 @@ struct MotorContainer {
     stall_check::StallCheck st{1, 1, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
                           test_mocks::MockMoveStatusReporterClient,
-                          motor_messages::Move>
+                          motor_messages::Move, test_mocks::MockMotorHardware>
         handler{queue, reporter, hw, st, update_position_queue};
 };
 
@@ -47,6 +47,32 @@ SCENARIO("estop pressed during motor interrupt handler") {
                     std::get<can::messages::StopRequest>(
                         test_objs.reporter.messages.back());
                 REQUIRE(stop.message_index == 0);
+            }
+        }
+    }
+}
+
+SCENARIO("negative position reset") {
+    MotorContainer test_objs{};
+
+    GIVEN("current encoder position is negative") {
+        test_objs.hw.sim_set_encoder_pulses(-1);
+        WHEN("correcting negative encoder value") {
+            auto ret = test_objs.handler.address_negative_encoder();
+            THEN("the encoder count is raised to 0") {
+                REQUIRE(ret == 0);
+                REQUIRE(test_objs.hw.get_encoder_pulses() == 0);
+            }
+        }
+    }
+    GIVEN("current encoder position is positive") {
+        int32_t val = GENERATE(0, 100);
+        test_objs.hw.sim_set_encoder_pulses(val);
+        WHEN("correcting negative encoder value") {
+            auto ret = test_objs.handler.address_negative_encoder();
+            THEN("the encoder count is not changed") {
+                REQUIRE(ret == val);
+                REQUIRE(test_objs.hw.get_encoder_pulses() == val);
             }
         }
     }

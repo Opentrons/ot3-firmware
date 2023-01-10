@@ -23,7 +23,8 @@ struct HandlerContainer {
     test_mocks::MockMoveStatusReporterClient reporter{};
     stall_check::StallCheck stall{tick_per_um, tick_per_um, stall_threshold_um};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
-                          test_mocks::MockMoveStatusReporterClient, Move>
+                          test_mocks::MockMoveStatusReporterClient, Move,
+                          test_mocks::MockMotorHardware>
         handler{queue, reporter, hw, stall, update_position_queue};
 };
 
