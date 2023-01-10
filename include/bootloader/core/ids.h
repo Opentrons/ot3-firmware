@@ -195,8 +195,8 @@ typedef enum {
     can_movestopcondition_limit_switch = 0x1,
     can_movestopcondition_cap_sensor = 0x2,
     can_movestopcondition_encoder_position = 0x4,
-    can_movestopcondition_gripper_force = 0x5,
-    can_movestopcondition_stall = 0x6,
+    can_movestopcondition_gripper_force = 0x8,
+    can_movestopcondition_stall = 0x10,
 } CANMoveStopCondition;
 
 /** A bit field of the arbitration id parts. */

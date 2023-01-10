@@ -417,7 +417,7 @@ class MotorInterruptHandler {
                !hardware.position_flags.check_flag(
                    MotorPositionStatus::Flags::stepper_position_ok);
     }
-    
+
     auto address_negative_encoder() -> int32_t {
         auto pulses = hardware.get_encoder_pulses();
         if (pulses < 0) {

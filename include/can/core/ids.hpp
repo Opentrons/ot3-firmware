@@ -204,8 +204,8 @@ enum class MoveStopCondition {
     limit_switch = 0x1,
     cap_sensor = 0x2,
     encoder_position = 0x4,
-    gripper_force = 0x5,
-    stall = 0x6,
+    gripper_force = 0x8,
+    stall = 0x10,
 };
 
 }  // namespace can::ids
