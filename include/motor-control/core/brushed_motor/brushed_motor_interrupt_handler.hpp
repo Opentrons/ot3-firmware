@@ -106,7 +106,6 @@ class BrushedMotorInterruptHandler {
     }
 
     void execute_active_move() {
-        int32_t move_delta = 0;
         switch (buffered_move.stop_condition) {
             // homing move
             case MoveStopCondition::limit_switch:
@@ -120,14 +119,15 @@ class BrushedMotorInterruptHandler {
                 }
                 break;
             // linear move
-            case MoveStopCondition::encoder_position:
-                move_delta = hardware.get_encoder_pulses() -
-                             buffered_move.encoder_position;
+            case MoveStopCondition::encoder_position: {
+                int32_t move_delta = hardware.get_encoder_pulses() -
+                                     buffered_move.encoder_position;
                 controlled_move_to(move_delta);
                 if (std::abs(move_delta) < acceptable_position_error) {
                     finish_current_move(AckMessageId::stopped_by_condition);
                 }
                 break;
+            }
             // grip move
             case MoveStopCondition::none:
             case MoveStopCondition::gripper_force:
@@ -150,9 +150,9 @@ class BrushedMotorInterruptHandler {
             int32_t move_delta =
                 hardware.get_encoder_pulses() - hold_encoder_position;
             controlled_move_to(move_delta);
-            // we use double the acceptable position here just to allow the pid
-            // loop the opportunity to maintain small movements that occur from
-            // motion and vibration
+            // we use a value higher than the acceptable position here to allow
+            // the pid loop the opportunity to maintain small movements that
+            // occur from motion and vibration
             if (move_delta > unwanted_movement_threshold) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
             }
