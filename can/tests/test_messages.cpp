@@ -47,6 +47,61 @@ SCENARIO("message deserializing works") {
         }
     }
 
+    GIVEN("a gear read motor driver register message") {
+        auto arr = std::array<uint8_t, 5>{0xde, 0xad, 0xbe, 0xef, 0x12};
+        WHEN("constructed") {
+            auto r = GearReadMotorDriverRegister::parse(arr.begin(), arr.end());
+            THEN("it is converted to a the correct structure") {
+                REQUIRE(r.message_index == 0xdeadbeef);
+                REQUIRE(r.reg_address == 0x12);
+            }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.reg_address = 125;
+                REQUIRE(other != r);
+            }
+        }
+    }
+
+    GIVEN("a gear write motor driver register message") {
+        auto arr = std::array<uint8_t, 5>{0xde, 0xad, 0xbe, 0xef, 0x12};
+        WHEN("constructed") {
+            auto r =
+                GearWriteMotorDriverRegister::parse(arr.begin(), arr.end());
+            THEN("it is converted to a the correct structure") {
+                REQUIRE(r.message_index == 0xdeadbeef);
+                REQUIRE(r.reg_address == 0x12);
+            }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.reg_address = 125;
+                REQUIRE(other != r);
+            }
+        }
+    }
+
+    GIVEN("a gear write current message") {
+        auto arr = std::array<uint8_t, 12>{0xde, 0xad, 0xbe, 0xef, 0x0,  0x12,
+                                           0x0,  0x0,  0x0,  0x35, 0x20, 0x0};
+        WHEN("constructed") {
+            auto r =
+                GearWriteMotorCurrentRequest::parse(arr.begin(), arr.end());
+            THEN("it is converted to a the correct structure") {
+                REQUIRE(r.message_index == 0xdeadbeef);
+                REQUIRE(r.hold_current == 0x120000);
+                REQUIRE(r.run_current == 0x352000);
+            }
+            THEN("it can be compared for equality") {
+                auto other = r;
+                REQUIRE(other == r);
+                other.hold_current = 125;
+                REQUIRE(other != r);
+            }
+        }
+    }
+
     GIVEN("a write to eeprom message") {
         auto arr =
             std::array<uint8_t, sizeof(eeprom::message::EepromMessage)>{};
