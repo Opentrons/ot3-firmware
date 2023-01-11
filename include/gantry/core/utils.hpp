@@ -8,7 +8,7 @@
 namespace utils {
 
 // Number of full steps the stall threshold should equate to
-constexpr float STALL_THRESHOLD_FULLSTEPS = 2;
+constexpr float STALL_THRESHOLD_UM = 500;
 
 auto get_node_id_by_axis(enum GantryAxisType which) -> can::ids::NodeId;
 
