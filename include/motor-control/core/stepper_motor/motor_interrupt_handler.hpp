@@ -373,6 +373,7 @@ class MotorInterruptHandler {
                         encoder_pulses);
                 set_current_position(static_cast<q31_31>(stepper_tick_estimate)
                                      << 31);
+                stall_checker.reset_itr_counts(stepper_tick_estimate);
                 hardware.position_flags.set_flag(
                     MotorPositionStatus::Flags::stepper_position_ok);
             }
