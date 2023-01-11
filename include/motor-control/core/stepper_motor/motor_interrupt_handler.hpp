@@ -82,7 +82,7 @@ class MotorInterruptHandler {
                     if (stalled_during_movement()) {
                         cancel_and_clear_moves(
                             can::ids::ErrorCode::collision_detected,
-                            can::ids::ErrorSeverity::recoverable);
+                            can::ids::ErrorSeverity::recoverable, false);
                     }
                 }
             }
@@ -265,7 +265,8 @@ class MotorInterruptHandler {
     void cancel_and_clear_moves(
         can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware,
         can::ids::ErrorSeverity severity =
-            can::ids::ErrorSeverity::unrecoverable) {
+            can::ids::ErrorSeverity::unrecoverable,
+        bool send_stop_msg = true) {
         // If there is a currently running move send a error corresponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
@@ -279,8 +280,10 @@ class MotorInterruptHandler {
                                         .error_code = err_code});
 
         // Broadcast a stop message
-        status_queue_client.send_move_status_reporter_queue(
-            can::messages::StopRequest{.message_index = 0});
+        if (send_stop_msg) {
+            status_queue_client.send_move_status_reporter_queue(
+                can::messages::StopRequest{.message_index = 0});
+        }
 
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
