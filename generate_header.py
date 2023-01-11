@@ -35,6 +35,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.SensorThresholdMode, output)
         write_enum_cpp(constants_mod.PipetteTipActionType, output)
         write_enum_cpp(constants_mod.MotorPositionFlags, output)
+        write_enum_cpp(constants_mod.MoveStopCondition, output)
 
 
 def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: ModuleType) -> None:
@@ -51,6 +52,7 @@ def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: M
     write_enum_c(constants_mod.SensorThresholdMode, output, can)
     write_enum_c(constants_mod.PipetteTipActionType, output, can)
     write_enum_c(constants_mod.MotorPositionFlags, output, can)
+    write_enum_c(constants_mod.MoveStopCondition, output, can)
     write_arbitration_id_c(output, can, arbitration_id)
 
 
