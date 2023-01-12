@@ -18,12 +18,12 @@
 
 // todo check if needed
 #include "i2c/firmware/i2c_comms.hpp"
-#include "pipettes/core/mount_sense.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
+#include "pipettes/core/mount_sense.hpp"
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
