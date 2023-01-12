@@ -97,7 +97,9 @@ endmacro()
 add_executable(bootloader-head
         ${BOOTLOADER_FW_LINTABLE_SRCS}
         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/head_startup.c
+        )
 
 target_compile_definitions(bootloader-head PUBLIC node_id_head)
 
