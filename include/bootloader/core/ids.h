@@ -135,6 +135,14 @@ typedef enum {
     can_errorcode_motor_busy = 0xb,
 } CANErrorCode;
 
+/** Tool types detected on Head. */
+typedef enum {
+    can_tooltype_pipette = 0x0,
+    can_tooltype_gripper = 0x1,
+    can_tooltype_nothing_attached = 0x2,
+    can_tooltype_tool_error = 0x3,
+} CANToolType;
+
 /** Sensor types available. */
 typedef enum {
     can_sensortype_tip = 0x0,
