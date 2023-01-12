@@ -2,7 +2,6 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
-#include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -18,13 +17,6 @@ namespace head_tasks {
  */
 struct HeadQueueClient : can::message_writer::MessageWriter {
     HeadQueueClient();
-
-    void send_presence_sensing_driver_queue(
-        const presence_sensing_driver_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        presence_sensing_driver_task::TaskMessage>*
-        presence_sensing_driver_queue{nullptr};
 };
 
 /**

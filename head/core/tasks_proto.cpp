@@ -1,10 +1,8 @@
 #include "head/core/tasks_proto.hpp"
 
 #include "common/core/freertos_task.hpp"
-#include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
 #include "head/core/queues.hpp"
-#include "head/core/tasks/presence_sensing_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -49,9 +47,6 @@ static auto left_move_status_task_builder = freertos_task::TaskStarter<
 static auto right_move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
-static auto presence_sensing_driver_task_builder = freertos_task::TaskStarter<
-    512, presence_sensing_driver_task::PresenceSensingDriverTask>{};
-
 static auto spi2_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
 static auto spi3_task_builder =
@@ -66,7 +61,6 @@ void head_tasks::start_tasks(
         left_motion_controller,
     motion_controller::MotionController<lms::LeadScrewConfig>&
         right_motion_controller,
-    presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
     tmc2130::configs::TMC2130DriverConfig& left_driver_configs,
@@ -82,16 +76,11 @@ void head_tasks::start_tasks(
     auto& spi3_task = spi3_task_builder.start(5, "spi bus 3", spi3_device);
     spi3_task_client.set_queue(&spi3_task.get_queue());
 
-    auto& presence_sensing = presence_sensing_driver_task_builder.start(
-        5, "presence", presence_sensing_driver, head_queues);
-
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
-    head_tasks_col.presence_sensing_driver_task = &presence_sensing;
 
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());
-    head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
 
     // Start the left motor tasks
     auto& left_motion = left_mc_task_builder.start(
@@ -155,11 +144,6 @@ void head_tasks::start_tasks(
 
 head_tasks::HeadQueueClient::HeadQueueClient()
     : can::message_writer::MessageWriter{can::ids::NodeId::head} {}
-
-void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
-    const presence_sensing_driver_task::TaskMessage& m) {
-    presence_sensing_driver_queue->try_write(m);
-}
 
 // Implementation of MotorQueueClient
 

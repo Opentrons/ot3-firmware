@@ -8,7 +8,6 @@
 #include "can/core/message_handlers/motion.hpp"
 #include "can/core/message_handlers/motor.hpp"
 #include "can/core/message_handlers/move_group.hpp"
-#include "can/core/message_handlers/presence_sensing.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
@@ -47,16 +46,8 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
         head_tasks::HeadQueueClient>,
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
-using PresenceSensingDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::presence_sensing::PresenceSensingHandler<
-        head_tasks::HeadQueueClient>,
-    can::messages::ReadPresenceSensingVoltageRequest,
-    can::messages::AttachedToolsRequest>;
 
 /** The parsed message handler */
-static auto presence_sensing_handler =
-    can::message_handlers::presence_sensing::PresenceSensingHandler{
-        common_queues};
 static auto can_motor_handler_right =
     can::message_handlers::motor::MotorHandler{right_queues};
 static auto can_motor_handler_left =
@@ -80,9 +71,6 @@ static auto system_message_handler =
                   std::cend(version_get()->sha)));
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
-
-static auto presence_sensing_disptach_target =
-    PresenceSensingDispatchTarget{presence_sensing_handler};
 
 static auto motor_dispatch_target_right =
     MotorDispatchTarget{can_motor_handler_right};
@@ -137,8 +125,7 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
                 (node_id == can::ids::NodeId::head_l) ||
                 (node_id == can::ids::NodeId::head_r));
     },
-    dispatcher_right_motor, dispatcher_left_motor,
-    presence_sensing_disptach_target, system_dispatch_target);
+    dispatcher_right_motor, dispatcher_left_motor, system_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
