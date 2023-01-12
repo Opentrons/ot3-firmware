@@ -1272,7 +1272,6 @@ using ResponseMessageType = std::variant<
     Acknowledgment, HeartbeatResponse, ErrorMessage, DeviceInfoResponse,
     GetMotionConstraintsResponse, GetMoveGroupResponse, StopRequest,
     ReadMotorDriverRegisterResponse, ReadFromEEPromResponse, MoveCompleted,
-    ReadPresenceSensingVoltageResponse, PushToolsDetectedNotification,
     ReadLimitSwitchResponse, MotorPositionResponse, ReadFromSensorResponse,
     FirmwareUpdateStatusResponse, SensorThresholdResponse,
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
