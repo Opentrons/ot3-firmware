@@ -67,7 +67,24 @@ void estop_input_gpio_init() {
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
+void carrier_detect_gpio_init() {
+    // Z/left: PC5
+    // A/right: PB2
+    // G (unused): PB1
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
+    GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_1;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2 | GPIO_PIN_1, GPIO_PIN_RESET);
+}
+
 void utility_gpio_init() {
+    carrier_detect_gpio_init();
     limit_switch_gpio_init();
     estop_input_gpio_init();
     LED_drive_gpio_init();
