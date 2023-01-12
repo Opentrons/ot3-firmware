@@ -40,7 +40,8 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .port = GPIOC,
             .pin = GPIO_PIN_2,
             .active_setting = GPIO_PIN_SET},
-    .sync_in = {
+    .sync_in =
+        {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOB,
             .pin = GPIO_PIN_7,
