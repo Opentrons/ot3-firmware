@@ -62,12 +62,12 @@ void sync_drive_gpio_init() {
     GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 }
 
 void estop_input_gpio_init() {
        /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
 
     /*Configure GPIO pin EStopin : PA10 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
