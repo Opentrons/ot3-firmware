@@ -229,5 +229,7 @@ void utility_gpio_init() {
 }
 
 int utility_gpio_get_mount_id() {
-    return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) ? 1 : 0;
+    // If this line is low, it is a left pipette (returns 1)
+    // if this line is high, it is a right pipette (returns 0)
+    return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_RESET) ? 1 : 0;
 }
