@@ -33,10 +33,11 @@ using TMC2160MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::WriteMotorCurrentRequest>;
 
 using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
-    can::message_handlers::motor::MotorHandler<gear_motor_tasks::QueueClient>,
-    can::messages::ReadMotorDriverRegister,
-    can::messages::WriteMotorDriverRegister,
-    can::messages::WriteMotorCurrentRequest>;
+    can::message_handlers::motor::GearMotorHandler<
+        gear_motor_tasks::QueueClient>,
+    can::messages::GearReadMotorDriverRegister,
+    can::messages::GearWriteMotorDriverRegister,
+    can::messages::GearWriteMotorCurrentRequest>;
 
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
@@ -64,7 +65,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
 
 using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,
-    can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
+    can::messages::GearDisableMotorRequest,
+    can::messages::GearEnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest,
