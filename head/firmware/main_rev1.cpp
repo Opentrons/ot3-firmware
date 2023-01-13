@@ -13,7 +13,6 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "head/firmware/adc.h"
 #include "motor_hardware.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
@@ -24,11 +23,9 @@
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/gpio.hpp"
-#include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_rev1.hpp"
 #include "head/core/utils.hpp"
-#include "head/firmware/adc_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -271,20 +268,6 @@ extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
     motor_hardware_right.encoder_overflow(direction);
 }
 
-static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
-
-static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
-
-auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
-    "timer for notifier", ([] {
-        auto* presence_sensing_task =
-            head_tasks::get_tasks().presence_sensing_driver_task;
-        if (presence_sensing_task != nullptr) {
-            presence_sensing_task->notifier_callback();
-        }
-    }),
-    100);
-
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -328,11 +311,9 @@ auto main() -> int {
     utility_gpio_init();
     can_bus_1.start(can_bit_timings);
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
-                            motor_right.motion_controller, psd, spi_comms2,
+                            motor_right.motion_controller, spi_comms2,
                             spi_comms3, motor_driver_configs_left,
                             motor_driver_configs_right, rmh_tsk, lmh_tsk);
-
-    timer_for_notifier.start();
 
     iWatchdog.start(6);
 

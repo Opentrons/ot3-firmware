@@ -18,12 +18,12 @@
 
 // todo check if needed
 #include "i2c/firmware/i2c_comms.hpp"
-#include "mount_detection.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
+#include "pipettes/core/mount_sense.hpp"
 #include "pipettes/core/peripheral_tasks.hpp"
 #include "pipettes/core/pipette_type.h"
 #include "pipettes/core/sensor_tasks.hpp"
@@ -36,6 +36,7 @@
 #pragma GCC diagnostic ignored "-Wvolatile"
 //#include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
+#include "pipette_utility_gpio.h"
 //#include "motor_timer_hardware.h"
 #include "pipettes/firmware/i2c_setup.h"
 #pragma GCC diagnostic pop
@@ -193,9 +194,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     MX_ICACHE_Init();
     utility_gpio_init();
-    adc_init();
     initialize_enc(PIPETTE_TYPE);
-    auto id = pipette_mounts::detect_id();
+    auto id = pipette_mounts::decide_id(utility_gpio_get_mount_id() == 1);
 
     i2c_setup(&i2chandler_struct);
     i2c_comms3.set_handle(i2chandler_struct.i2c3);

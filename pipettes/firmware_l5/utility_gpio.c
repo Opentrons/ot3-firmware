@@ -9,7 +9,7 @@
  * @param None
  * @retval None
  */
-void tip_sense_gpio_init() {
+static void tip_sense_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -42,7 +42,7 @@ void tip_sense_gpio_init() {
  * @param None
  * @retval None
  */
-void limit_switch_gpio_init() {
+static void limit_switch_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     __HAL_RCC_GPIOC_CLK_ENABLE();
 
@@ -71,7 +71,7 @@ void limit_switch_gpio_init() {
  * @param None
  * @retval None
  */
-void LED_drive_gpio_init() {
+static void LED_drive_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     PipetteHardwarePin hardware =
         pipette_hardware_get_gpio(
@@ -94,7 +94,7 @@ void LED_drive_gpio_init() {
     HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 }
 
-void sync_drive_gpio_init() {
+static void sync_drive_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     PipetteHardwarePin sync_in_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_in);
@@ -121,7 +121,7 @@ void sync_drive_gpio_init() {
     HAL_GPIO_WritePin(sync_out_hardware.port, sync_out_hardware.pin, GPIO_PIN_SET);
 }
 
-void data_ready_gpio_init() {
+static void data_ready_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     PipetteHardwarePin hardware;
     IRQn_Type exti_line = get_interrupt_line(pipette_type);
@@ -168,12 +168,12 @@ void data_ready_gpio_init() {
     HAL_NVIC_EnableIRQ(exti_line);
 }
 
-int tip_present() {
-    return HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET;
+int utility_gpio_tip_present() {
+    return (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10) == GPIO_PIN_SET) ? 1 : 0;
 }
 
 
-void estop_input_gpio_init() {
+static void estop_input_gpio_init() {
        /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -184,11 +184,28 @@ void estop_input_gpio_init() {
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
+static void mount_id_init() {
+    // B1: mount id
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+
 void utility_gpio_init() {
+    mount_id_init();
     limit_switch_gpio_init();
     tip_sense_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
     data_ready_gpio_init();
     estop_input_gpio_init();
+}
+
+int utility_gpio_get_mount_id() {
+    // If this line is low, it is a left pipette (returns 1)
+    // if this line is high, it is a right pipette (returns 0)
+    return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET) ? 1 : 0;
 }

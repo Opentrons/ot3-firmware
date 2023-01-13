@@ -11,7 +11,6 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
-#include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
 #include "head/core/utils.hpp"
@@ -135,9 +134,6 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
 
 static auto adc_comms = adc::SimADC{};
 
-static auto presence_sense_driver =
-    presence_sensing_driver::PresenceSensingDriver(adc_comms);
-
 static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>
     state_manager_connection;
@@ -201,10 +197,10 @@ int main(int argc, char** argv) {
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
 
-    head_tasks::start_tasks(
-        *canbus, motor_left.motion_controller, motor_right.motion_controller,
-        presence_sense_driver, spi_comms_right, spi_comms_left,
-        MotorDriverConfigurations, MotorDriverConfigurations, rmh_tsk, lmh_tsk);
+    head_tasks::start_tasks(*canbus, motor_left.motion_controller,
+                            motor_right.motion_controller, spi_comms_right,
+                            spi_comms_left, MotorDriverConfigurations,
+                            MotorDriverConfigurations, rmh_tsk, lmh_tsk);
 
     vTaskStartScheduler();
     return 0;
