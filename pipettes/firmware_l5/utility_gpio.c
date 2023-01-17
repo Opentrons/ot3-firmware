@@ -207,5 +207,11 @@ void utility_gpio_init() {
 int utility_gpio_get_mount_id() {
     // If this line is low, it is a left pipette (returns 1)
     // if this line is high, it is a right pipette (returns 0)
-    return (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET) ? 1 : 0;
+    int level =  HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1);
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, (level == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    return (level == GPIO_PIN_RESET) ? 1 : 0;
 }

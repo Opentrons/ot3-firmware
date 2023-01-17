@@ -15,8 +15,15 @@ static CANNodeId update_dynamic_nodeid() {
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    return determine_pipette_node_id(
-        (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET));
+    int level = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1);
+    CANNodeId id = determine_pipette_node_id(level == GPIO_PIN_RESET);
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_PULL_NONE;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(
+        GPIOB,
+        GPIO_PIN_1,
+        ((level == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET));
 }
 
 static CANNodeId get_dynamic_nodeid() {
