@@ -13,7 +13,7 @@
 
 #pragma GCC diagnostic pop
 
-constexpr uint32_t PWM_MAX = 100;
+constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
 
 /**
@@ -104,7 +104,7 @@ static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
 static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     dac_config,
     brushed_motor_driver::DriverConfig{
-        .vref = 1, .pwm_min = PWM_MIN, .pwm_max = PWM_MAX},
+        .vref = 2.0, .pwm_min = PWM_MIN, .pwm_max = PWM_MAX},
     update_pwm);
 
 static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
