@@ -27,7 +27,6 @@ enum class AckMessageId : uint8_t {
     position_error = 0x4
 };
 
-
 struct Ack {
     uint32_t message_index;
     uint8_t group_id;
@@ -72,8 +71,9 @@ struct GearMotorMove : public Move {
 
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
                    AckMessageId _id, uint32_t message_index) -> GearMotorAck {
-        return GearMotorAck{message_index, group_id, seq_id, position,
-                            pulses,        flags,    _id,    action, gear_motor_id};
+        return GearMotorAck{message_index, group_id, seq_id,
+                            position,      pulses,   flags,
+                            _id,           action,   gear_motor_id};
     }
 };
 

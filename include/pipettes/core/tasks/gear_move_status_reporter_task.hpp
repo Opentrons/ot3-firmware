@@ -65,7 +65,8 @@ class MoveStatusMessageHandler {
                 // actually update this value to true or false.
                 .success = static_cast<uint8_t>(true),
                 .action = message.action,
-                .position_flags = 0};
+                .position_flags = 0,
+                .gear_motor_id = gear_motor_id};
             can_client.send_can_message(can::ids::NodeId::host, msg);
         }
     }
@@ -89,7 +90,6 @@ class MoveStatusMessageHandler {
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
     can::ids::GearMotorId gear_motor_id;
     sq31_31 um_per_step;
-
 };
 
 /**
@@ -101,7 +101,9 @@ class MoveStatusReporterTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    MoveStatusReporterTask(QueueType& queue, can::ids::GearMotorId gear_motor_id) : queue{queue}, gear_motor_id{gear_motor_id} {}
+    MoveStatusReporterTask(QueueType& queue,
+                           can::ids::GearMotorId gear_motor_id)
+        : queue{queue}, gear_motor_id{gear_motor_id} {}
     MoveStatusReporterTask(const MoveStatusReporterTask& c) = delete;
     MoveStatusReporterTask(const MoveStatusReporterTask&& c) = delete;
     auto operator=(const MoveStatusReporterTask& c) = delete;
@@ -116,7 +118,8 @@ class MoveStatusReporterTask {
     [[noreturn]] void operator()(
         CanClient* can_client,
         const lms::LinearMotionSystemConfig<LmsConfig>* config) {
-        auto handler = MoveStatusMessageHandler{*can_client, *config, gear_motor_id};
+        auto handler =
+            MoveStatusMessageHandler{*can_client, *config, gear_motor_id};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
