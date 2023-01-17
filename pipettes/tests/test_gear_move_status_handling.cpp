@@ -31,57 +31,61 @@ SCENARIO("testing gear move status response handling") {
             .steps_per_rev = 200, .microstep = 32,
             .encoder_pulses_per_rev = 1000,
         };
-		auto left_ack = GearMotorAck{
-			1,
-			11,
-			8,
-			100,
-			100,
-			0x1,
-			AckMessageId::complete_without_condition,
-			can::ids::PipetteTipActionType::pick_up,
-			can::ids::GearMotorId::left
-		};
+        auto left_ack = GearMotorAck{1,
+                                     11,
+                                     8,
+                                     100,
+                                     100,
+                                     0x1,
+                                     AckMessageId::complete_without_condition,
+                                     can::ids::PipetteTipActionType::pick_up,
+                                     can::ids::GearMotorId::left};
 
-		auto right_ack = GearMotorAck{
-			1,
-			11,
-			8,
-			100,
-			100,
-			0x1,
-			AckMessageId::complete_without_condition,
-			can::ids::PipetteTipActionType::pick_up,
-			can::ids::GearMotorId::right
-		};
+        auto right_ack = GearMotorAck{1,
+                                      11,
+                                      8,
+                                      100,
+                                      100,
+                                      0x1,
+                                      AckMessageId::complete_without_condition,
+                                      can::ids::PipetteTipActionType::pick_up,
+                                      can::ids::GearMotorId::right};
         auto mcc = MockCanClient();
-        auto left_handler = MoveStatusMessageHandler(mcc, linearConfig, can::ids::GearMotorId::left);
-		auto right_handler = MoveStatusMessageHandler(mcc, linearConfig, can::ids::GearMotorId::right);
+        auto left_handler = MoveStatusMessageHandler(
+            mcc, linearConfig, can::ids::GearMotorId::left);
+        auto right_handler = MoveStatusMessageHandler(
+            mcc, linearConfig, can::ids::GearMotorId::right);
         WHEN("Each handler is given the correct gear id") {
             left_handler.handle_message(left_ack);
-			right_handler.handle_message(right_ack);
+            right_handler.handle_message(right_ack);
             CHECK(mcc.queue.size() == 2);
 
             auto left_resp = mcc.queue.front();
-			auto right_resp = mcc.queue.back();
-            auto left_resp_msg = std::get<can::messages::TipActionResponse>(left_resp.second);
-			auto right_resp_msg = std::get<can::messages::TipActionResponse>(right_resp.second);
-            THEN("there should be a TipActionResponse and the id should match the handlers id") {
+            auto right_resp = mcc.queue.back();
+            auto left_resp_msg =
+                std::get<can::messages::TipActionResponse>(left_resp.second);
+            auto right_resp_msg =
+                std::get<can::messages::TipActionResponse>(right_resp.second);
+            THEN(
+                "there should be a TipActionResponse and the id should match "
+                "the handlers id") {
                 REQUIRE(left_resp_msg.group_id == 11);
                 REQUIRE(left_resp_msg.seq_id == 8);
-				REQUIRE(left_resp_msg.gear_motor_id == can::ids::GearMotorId::left);
-				
-				REQUIRE(right_resp_msg.group_id == 11);
+                REQUIRE(left_resp_msg.gear_motor_id ==
+                        can::ids::GearMotorId::left);
+
+                REQUIRE(right_resp_msg.group_id == 11);
                 REQUIRE(right_resp_msg.seq_id == 8);
-				REQUIRE(right_resp_msg.gear_motor_id == can::ids::GearMotorId::right);
+                REQUIRE(right_resp_msg.gear_motor_id ==
+                        can::ids::GearMotorId::right);
             }
         }
-		WHEN("Each handler is given the incorrect gear id") {
+        WHEN("Each handler is given the incorrect gear id") {
             left_handler.handle_message(right_ack);
-			right_handler.handle_message(left_ack);
+            right_handler.handle_message(left_ack);
             CHECK(mcc.queue.size() == 0);
             THEN("there should be no responses in the can queue") {
-				CHECK(mcc.queue.size() == 0);
+                CHECK(mcc.queue.size() == 0);
             }
         }
     }
