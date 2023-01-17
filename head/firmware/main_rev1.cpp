@@ -26,6 +26,7 @@
 #include "head/core/queues.hpp"
 #include "head/core/tasks_rev1.hpp"
 #include "head/core/utils.hpp"
+#include "head/firmware/presence_sensing_hardware.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -268,6 +269,30 @@ extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
     motor_hardware_right.encoder_overflow(direction);
 }
 
+static auto psd = presence_sensing_driver::PresenceSensingHardware{
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOC,
+                    .pin = GPIO_PIN_5,
+                    .active_setting = GPIO_PIN_SET},
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_2,
+                    .active_setting = GPIO_PIN_RESET},
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_1,
+                    .active_setting = GPIO_PIN_SET}};
+
+auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
+    "timer for notifier", ([] {
+        auto* presence_sensing_task =
+            head_tasks::get_tasks().presence_sensing_driver_task;
+        if (presence_sensing_task != nullptr) {
+            presence_sensing_task->notifier_callback();
+        }
+    }),
+    100);
+
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
 // correctly rely on the hal to get these numbers - they need
@@ -311,9 +336,11 @@ auto main() -> int {
     utility_gpio_init();
     can_bus_1.start(can_bit_timings);
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
-                            motor_right.motion_controller, spi_comms2,
+                            motor_right.motion_controller, psd, spi_comms2,
                             spi_comms3, motor_driver_configs_left,
                             motor_driver_configs_right, rmh_tsk, lmh_tsk);
+
+    timer_for_notifier.start();
 
     iWatchdog.start(6);
 
