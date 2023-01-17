@@ -19,7 +19,8 @@ static auto tmc2160_driver_task_builder_left =
 static auto move_group_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_left = freertos_task::TaskStarter<
-    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask,
+    can::ids::GearMotorId>(can::ids::GearMotorId::left);
 
 // right gear motor tasks
 static auto mc_task_builder_right = freertos_task::TaskStarter<
@@ -30,7 +31,8 @@ static auto tmc2160_driver_task_builder_right =
 static auto move_group_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_right = freertos_task::TaskStarter<
-    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask,
+    can::ids::GearMotorId>(can::ids::GearMotorId::right);
 
 void gear_motor_tasks::start_tasks(
     gear_motor_tasks::CanWriterTask& can_writer,

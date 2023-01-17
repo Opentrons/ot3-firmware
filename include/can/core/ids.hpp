@@ -102,7 +102,6 @@ enum class MessageId {
     bind_sensor_output_response = 0x8b,
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
-
 };
 
 /** Can bus arbitration id node id. */
@@ -198,6 +197,12 @@ enum class PipetteTipActionType {
     drop = 0x1,
 };
 
+/** Tip action types. */
+enum class GearMotorId {
+    left = 0x0,
+    right = 0x1,
+};
+
 /** Flags for motor position validity. */
 enum class MotorPositionFlags {
     stepper_position_ok = 0x1,
@@ -215,3 +220,4 @@ enum class MoveStopCondition {
 };
 
 }  // namespace can::ids
+

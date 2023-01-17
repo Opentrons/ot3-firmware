@@ -24,9 +24,11 @@ class MoveStatusMessageHandler {
   public:
     MoveStatusMessageHandler(
         CanClient& can_client,
-        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config)
+        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config,
+        can::ids::GearMotorId gear_motor_id)
         : can_client{can_client},
           lms_config(lms_config),
+          gear_motor_id(gear_motor_id),
           um_per_step(convert_to_fixed_point_64_bit(
               lms_config.get_um_per_step(), 31)) {}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
@@ -50,20 +52,22 @@ class MoveStatusMessageHandler {
      * Handle Ack message
      */
     void handle_message(const motor_messages::GearMotorAck& message) {
-        can::messages::TipActionResponse msg = {
-            .message_index = message.message_index,
-            .group_id = message.group_id,
-            .seq_id = message.seq_id,
-            .current_position_um = fixed_point_multiply(
-                um_per_step, message.current_position_steps),
-            .encoder_position_um = 0,
-            .ack_id = static_cast<uint8_t>(message.ack_id),
-            // TODO: In a follow-up PR, tip sense reporting will
-            // actually update this value to true or false.
-            .success = static_cast<uint8_t>(true),
-            .action = message.action,
-            .position_flags = 0};
-        can_client.send_can_message(can::ids::NodeId::host, msg);
+        if (message.gear_motor_id == gear_motor_id) {
+            can::messages::TipActionResponse msg = {
+                .message_index = message.message_index,
+                .group_id = message.group_id,
+                .seq_id = message.seq_id,
+                .current_position_um = fixed_point_multiply(
+                    um_per_step, message.current_position_steps),
+                .encoder_position_um = 0,
+                .ack_id = static_cast<uint8_t>(message.ack_id),
+                // TODO: In a follow-up PR, tip sense reporting will
+                // actually update this value to true or false.
+                .success = static_cast<uint8_t>(true),
+                .action = message.action,
+                .position_flags = 0};
+            can_client.send_can_message(can::ids::NodeId::host, msg);
+        }
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {
@@ -83,7 +87,9 @@ class MoveStatusMessageHandler {
   private:
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
+    can::ids::GearMotorId gear_motor_id;
     sq31_31 um_per_step;
+
 };
 
 /**
@@ -95,7 +101,7 @@ class MoveStatusReporterTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    MoveStatusReporterTask(QueueType& queue) : queue{queue} {}
+    MoveStatusReporterTask(QueueType& queue, can::ids::GearMotorId gear_motor_id) : queue{queue}, gear_motor_id{gear_motor_id} {}
     MoveStatusReporterTask(const MoveStatusReporterTask& c) = delete;
     MoveStatusReporterTask(const MoveStatusReporterTask&& c) = delete;
     auto operator=(const MoveStatusReporterTask& c) = delete;
@@ -110,7 +116,7 @@ class MoveStatusReporterTask {
     [[noreturn]] void operator()(
         CanClient* can_client,
         const lms::LinearMotionSystemConfig<LmsConfig>* config) {
-        auto handler = MoveStatusMessageHandler{*can_client, *config};
+        auto handler = MoveStatusMessageHandler{*can_client, *config, gear_motor_id};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -123,6 +129,7 @@ class MoveStatusReporterTask {
 
   private:
     QueueType& queue;
+    can::ids::GearMotorId gear_motor_id;
 };
 
 /**
