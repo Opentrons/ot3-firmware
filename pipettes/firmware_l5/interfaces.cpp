@@ -163,8 +163,7 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                                   .max_velocity = 2,
                                                   .min_acceleration = 1,
                                                   .max_acceleration = 2},
-                queues.left_motor_queue,
-                can::ids::GearMotorId::left},
+                queues.left_motor_queue, can::ids::GearMotorId::left},
         .right = pipette_motion_controller::PipetteMotionController{
             configs::linear_motion_sys_config_by_axis(
                 PipetteType::NINETY_SIX_CHANNEL),
@@ -173,8 +172,7 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                               .max_velocity = 2,
                                               .min_acceleration = 1,
                                               .max_acceleration = 2},
-            queues.right_motor_queue,
-            can::ids::GearMotorId::right}};
+            queues.right_motor_queue, can::ids::GearMotorId::right}};
 }
 
 auto gear_motor::get_motion_control(gear_motor::UnavailableGearHardware&,
