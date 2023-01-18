@@ -41,51 +41,21 @@ SCENARIO("testing gear move status response handling") {
                                      can::ids::PipetteTipActionType::pick_up,
                                      can::ids::GearMotorId::left};
 
-        auto right_ack = GearMotorAck{1,
-                                      11,
-                                      8,
-                                      100,
-                                      100,
-                                      0x1,
-                                      AckMessageId::complete_without_condition,
-                                      can::ids::PipetteTipActionType::pick_up,
-                                      can::ids::GearMotorId::right};
         auto mcc = MockCanClient();
-        auto left_handler = MoveStatusMessageHandler(
-            mcc, linearConfig, can::ids::GearMotorId::left);
-        auto right_handler = MoveStatusMessageHandler(
-            mcc, linearConfig, can::ids::GearMotorId::right);
+        auto handler = MoveStatusMessageHandler(mcc, linearConfig);
         WHEN("Each handler is given the correct gear id") {
-            left_handler.handle_message(left_ack);
-            right_handler.handle_message(right_ack);
-            CHECK(mcc.queue.size() == 2);
+            handler.handle_message(left_ack);
+            CHECK(mcc.queue.size() == 1);
 
-            auto left_resp = mcc.queue.front();
-            auto right_resp = mcc.queue.back();
-            auto left_resp_msg =
-                std::get<can::messages::TipActionResponse>(left_resp.second);
-            auto right_resp_msg =
-                std::get<can::messages::TipActionResponse>(right_resp.second);
+            auto resp = mcc.queue.front();
+            auto resp_msg =
+                std::get<can::messages::TipActionResponse>(resp.second);
             THEN(
                 "there should be a TipActionResponse and the id should match "
                 "the handlers id") {
-                REQUIRE(left_resp_msg.group_id == 11);
-                REQUIRE(left_resp_msg.seq_id == 8);
-                REQUIRE(left_resp_msg.gear_motor_id ==
-                        can::ids::GearMotorId::left);
-
-                REQUIRE(right_resp_msg.group_id == 11);
-                REQUIRE(right_resp_msg.seq_id == 8);
-                REQUIRE(right_resp_msg.gear_motor_id ==
-                        can::ids::GearMotorId::right);
-            }
-        }
-        WHEN("Each handler is given the incorrect gear id") {
-            left_handler.handle_message(right_ack);
-            right_handler.handle_message(left_ack);
-            CHECK(mcc.queue.size() == 0);
-            THEN("there should be no responses in the can queue") {
-                CHECK(mcc.queue.size() == 0);
+                REQUIRE(resp_msg.group_id == 11);
+                REQUIRE(resp_msg.seq_id == 8);
+                REQUIRE(resp_msg.gear_motor_id == can::ids::GearMotorId::left);
             }
         }
     }

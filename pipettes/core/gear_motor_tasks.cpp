@@ -19,8 +19,7 @@ static auto tmc2160_driver_task_builder_left =
 static auto move_group_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_left = freertos_task::TaskStarter<
-    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask,
-    can::ids::GearMotorId>(can::ids::GearMotorId::left);
+    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
 
 // right gear motor tasks
 static auto mc_task_builder_right = freertos_task::TaskStarter<
@@ -31,8 +30,7 @@ static auto tmc2160_driver_task_builder_right =
 static auto move_group_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_right = freertos_task::TaskStarter<
-    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask,
-    can::ids::GearMotorId>(can::ids::GearMotorId::right);
+    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
 
 void gear_motor_tasks::start_tasks(
     gear_motor_tasks::CanWriterTask& can_writer,
@@ -85,10 +83,10 @@ void gear_motor_tasks::start_tasks(
         5, "move status", right_queues,
         motion_controllers.right.get_mechanical_config());
 
-    right_tasks.driver = &tmc2160_driver_left;
-    right_tasks.motion_controller = &motion_left;
-    right_tasks.move_group = &move_group_left;
-    right_tasks.move_status_reporter = &move_status_reporter_left;
+    right_tasks.driver = &tmc2160_driver_right;
+    right_tasks.motion_controller = &motion_right;
+    right_tasks.move_group = &move_group_right;
+    right_tasks.move_status_reporter = &move_status_reporter_right;
 
     right_queues.set_queue(&can_writer.get_queue());
     right_queues.driver_queue = &tmc2160_driver_right.get_queue();
