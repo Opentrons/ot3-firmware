@@ -28,10 +28,9 @@ struct BrushedMotorContainer {
 
 SCENARIO("Brushed motor interrupt handler handle move messages") {
     BrushedMotorContainer test_objs{};
-
     GIVEN("A message to home") {
         auto msg =
-            BrushedMove{.duration = 0,
+            BrushedMove{.duration = 5 * 32000,
                         .duty_cycle = 50,
                         .group_id = 0,
                         .seq_id = 0,
@@ -69,10 +68,19 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 }
             }
         }
+        WHEN("Home message times out") {
+            test_objs.reporter.messages.clear();
+            while (test_objs.reporter.messages.size() == 0) {
+                test_objs.handler.run_interrupt();
+            }
+            REQUIRE(test_objs.reporter.messages.size() == 1);
+            Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
+            REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+        }
     }
 
     GIVEN("A message to grip") {
-        auto msg = BrushedMove{.duration = 0,
+        auto msg = BrushedMove{.duration = 5 * 32000,
                                .duty_cycle = 50,
                                .group_id = 0,
                                .seq_id = 0,
@@ -119,10 +127,21 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 }
             }
         }
+        WHEN("grip message times out") {
+            // make the gripper think its still moving
+            test_objs.handler.set_enc_idle_state(false);
+            test_objs.reporter.messages.clear();
+            while (test_objs.reporter.messages.size() == 0) {
+                test_objs.handler.run_interrupt();
+            }
+            REQUIRE(test_objs.reporter.messages.size() == 1);
+            Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
+            REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+        }
     }
     GIVEN("A message to move") {
         auto msg =
-            BrushedMove{.duration = 0,
+            BrushedMove{.duration = 5 * 32000,
                         .duty_cycle = 0,
                         .group_id = 0,
                         .seq_id = 0,
@@ -183,6 +202,15 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }
+        WHEN("move message times out") {
+            test_objs.reporter.messages.clear();
+            while (test_objs.reporter.messages.size() == 0) {
+                test_objs.handler.run_interrupt();
+            }
+            REQUIRE(test_objs.reporter.messages.size() == 1);
+            Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
+            REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+        }
     }
 }
 
@@ -191,7 +219,7 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
 
     GIVEN("A message to home") {
         auto msg =
-            BrushedMove{.duration = 0,
+            BrushedMove{.duration = 5 * 32000,
                         .duty_cycle = 50,
                         .group_id = 0,
                         .seq_id = 0,
@@ -254,7 +282,6 @@ SCENARIO("labware dropped during grip move") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                // printf(test_objs.reporter.messages.front());
                 REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
@@ -308,7 +335,6 @@ SCENARIO("collision while homed") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                // printf(test_objs.reporter.messages.front());
                 REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
@@ -329,7 +355,7 @@ SCENARIO("collision while homed") {
 SCENARIO("A collision during position controlled move") {
     BrushedMotorContainer test_objs{};
     auto msg =
-        BrushedMove{.duration = 0,
+        BrushedMove{.duration = 5 * 32000,
                     .duty_cycle = 0,
                     .group_id = 0,
                     .seq_id = 0,
@@ -396,7 +422,6 @@ SCENARIO("A collision during position controlled move") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                // printf(test_objs.reporter.messages.front());
                 REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(

@@ -145,7 +145,7 @@ class BrushedMotorInterruptHandler {
             case MoveStopCondition::cap_sensor:
                 // TODO write cap sensor move code
                 break;
-        }        
+        }
     }
 
     void execute_idle_move() {
@@ -220,7 +220,6 @@ class BrushedMotorInterruptHandler {
     }
 
     void update_and_start_move() {
-        
         if (queue.try_read_isr(&buffered_move)) {
             motor_state = ControlState::ACTIVE;
         }
