@@ -78,5 +78,7 @@ class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void stop_pwm() = 0;
     virtual auto update_control(int32_t encoder_error) -> double = 0;
     virtual void reset_control() = 0;
+    virtual void set_stay_enabled(bool state) = 0;
+    virtual auto get_stay_enabled() -> bool = 0;
 };
 };  // namespace motor_hardware

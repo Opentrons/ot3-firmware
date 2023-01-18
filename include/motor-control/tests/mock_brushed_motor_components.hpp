@@ -63,14 +63,18 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() { controller_loop.reset(); }
     double get_pid_controller_output() { return pid_controller_output; }
     PWM_DIRECTION get_direction() { return move_dir; }
+    void set_stay_enabled(bool state) { stay_enabled = state; }
+    auto get_stay_enabled() -> bool { return stay_enabled; }
 
   private:
+    bool stay_enabled = false;
     PWM_DIRECTION move_dir = PWM_DIRECTION::unset;
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
     bool sync_val = false;
     bool estop_in_val = false;
     bool is_gripping = false;
+    bool motor_enabled = false;
     double pid_controller_output = 0.0;
     int32_t enc_val = 0;
     // these controller loop values were selected just because testing
