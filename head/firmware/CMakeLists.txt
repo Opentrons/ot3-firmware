@@ -1,4 +1,4 @@
-# This CMakeLists.txt handles everything that is compiled only when
+git# This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
 find_package(STM32G4xx)
 add_STM32G4_driver("Head")
@@ -139,7 +139,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
   add_custom_command(
           OUTPUT ${REVISION_TARGET}-image.hex
           DEPENDS ${REVISION_TARGET}-hex bootloader-head-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
-          COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex ${REVISION_TARGET}.hex
+          COMMAND ${CMAKE_SOURCE_DIR}/scripts/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex ${REVISION_TARGET}.hex
           VERBATIM)
   add_custom_target(${REVISION_TARGET}-image-hex ALL
           DEPENDS ${REVISION_TARGET}-image.hex)

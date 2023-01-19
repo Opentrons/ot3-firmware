@@ -174,7 +174,7 @@ function(add_pipettes_executable TARGET)
     add_custom_command(
             OUTPUT ${TARGET}-image.hex
             DEPENDS ${TARGET}-hex bootloader-pipettes-rev1-hex $<TARGET_FILE_DIR:bootloader-pipettes-rev1>/bootloader-pipettes-rev1.hex ${TARGET}.hex
-            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-pipettes-rev1>/bootloader-pipettes-rev1.hex ${TARGET}.hex
+            COMMAND ${CMAKE_SOURCE_DIR}/scripts/hex_combine.py ${TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-pipettes-rev1>/bootloader-pipettes-rev1.hex ${TARGET}.hex
             VERBATIM)
     add_custom_target(${TARGET}-image-hex ALL
             DEPENDS ${TARGET}-image.hex)
