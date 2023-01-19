@@ -232,13 +232,17 @@ static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
     stallcheck_right, update_position_queue_right);
 
+// engaging motors on boot
 static motor_class::Motor motor_right{
-    linear_config, motor_hardware_right,
+    linear_config,
+    motor_hardware_right,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue_right, update_position_queue_right};
+    motor_queue_right,
+    update_position_queue_right,
+    true};
 
 static stall_check::StallCheck stallcheck_left(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
@@ -250,13 +254,17 @@ static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
     stallcheck_left, update_position_queue_left);
 
+// engaging motors on boot
 static motor_class::Motor motor_left{
-    linear_config, motor_hardware_left,
+    linear_config,
+    motor_hardware_left,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
                                       .min_acceleration = 1,
                                       .max_acceleration = 2},
-    motor_queue_left, update_position_queue_left};
+    motor_queue_left,
+    update_position_queue_left,
+    true};
 
 extern "C" void motor_callback_glue() {
     motor_interrupt_left.run_interrupt();
