@@ -426,7 +426,7 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a tip action response") {
-        constexpr uint8_t MESSAGE_SIZE = 18;
+        constexpr uint8_t MESSAGE_SIZE = 19;
         auto message =
             TipActionResponse{.message_index = 0x1234,
                               .group_id = 1,
@@ -436,7 +436,8 @@ SCENARIO("message serializing works") {
                               .ack_id = 0x1,
                               .success = 0x1,
                               .action = can::ids::PipetteTipActionType::pick_up,
-                              .position_flags = 0x0};
+                              .position_flags = 0x0,
+                              .gear_motor_id = can::ids::GearMotorId::left};
         auto arr = std::array<uint8_t, MESSAGE_SIZE + 5>{0, 0, 0, 0, 0, 0, 0, 0,
                                                          0, 0, 0, 0, 0, 0, 0, 0,
                                                          0, 0, 0, 0, 0, 0, 0};

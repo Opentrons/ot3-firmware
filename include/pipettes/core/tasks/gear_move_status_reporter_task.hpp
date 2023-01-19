@@ -62,7 +62,8 @@ class MoveStatusMessageHandler {
             // actually update this value to true or false.
             .success = static_cast<uint8_t>(true),
             .action = message.action,
-            .position_flags = 0};
+            .position_flags = 0,
+            .gear_motor_id = message.gear_motor_id};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 

@@ -102,7 +102,6 @@ enum class MessageId {
     bind_sensor_output_response = 0x8b,
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
-
 };
 
 /** Can bus arbitration id node id. */
@@ -196,6 +195,12 @@ enum class SensorThresholdMode {
 enum class PipetteTipActionType {
     pick_up = 0x0,
     drop = 0x1,
+};
+
+/** Tip action types. */
+enum class GearMotorId {
+    left = 0x0,
+    right = 0x1,
 };
 
 /** Flags for motor position validity. */

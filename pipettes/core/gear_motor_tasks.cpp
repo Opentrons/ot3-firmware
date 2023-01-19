@@ -83,10 +83,10 @@ void gear_motor_tasks::start_tasks(
         5, "move status", right_queues,
         motion_controllers.right.get_mechanical_config());
 
-    right_tasks.driver = &tmc2160_driver_left;
-    right_tasks.motion_controller = &motion_left;
-    right_tasks.move_group = &move_group_left;
-    right_tasks.move_status_reporter = &move_status_reporter_left;
+    right_tasks.driver = &tmc2160_driver_right;
+    right_tasks.motion_controller = &motion_right;
+    right_tasks.move_group = &move_group_right;
+    right_tasks.move_status_reporter = &move_status_reporter_right;
 
     right_queues.set_queue(&can_writer.get_queue());
     right_queues.driver_queue = &tmc2160_driver_right.get_queue();

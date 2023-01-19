@@ -83,6 +83,11 @@ typedef enum {
     can_messageid_limit_sw_response = 0x9,
     can_messageid_do_self_contained_tip_action_request = 0x501,
     can_messageid_do_self_contained_tip_action_response = 0x502,
+    can_messageid_gear_enable_motor_request = 0x503,
+    can_messageid_gear_disable_motor_request = 0x504,
+    can_messageid_gear_set_current_request = 0x505,
+    can_messageid_gear_write_motor_driver_request = 0x506,
+    can_messageid_gear_read_motor_driver_request = 0x507,
     can_messageid_read_sensor_request = 0x82,
     can_messageid_write_sensor_request = 0x83,
     can_messageid_baseline_sensor_request = 0x84,
@@ -182,6 +187,12 @@ typedef enum {
     can_pipettetipactiontype_pick_up = 0x0,
     can_pipettetipactiontype_drop = 0x1,
 } CANPipetteTipActionType;
+
+/** Tip action types. */
+typedef enum {
+    can_gearmotorid_left = 0x0,
+    can_gearmotorid_right = 0x1,
+} CANGearMotorId;
 
 /** Flags for motor position validity. */
 typedef enum {

@@ -9,13 +9,15 @@ namespace task_messages {
 
 namespace motor_control_task_messages {
 
-using MotionControlTaskMessage = std::variant<
-    std::monostate, can::messages::GearDisableMotorRequest,
-    can::messages::GearEnableMotorRequest,
-    can::messages::GetMotionConstraintsRequest,
-    can::messages::SetMotionConstraints, can::messages::StopRequest,
-    can::messages::ReadLimitSwitchRequest, can::messages::TipActionRequest,
-    can::messages::UpdateMotorPositionEstimationRequest>;
+using MotionControlTaskMessage =
+    std::variant<std::monostate, can::messages::TipActionRequest,
+                 can::messages::GearDisableMotorRequest,
+                 can::messages::GearEnableMotorRequest,
+                 can::messages::GetMotionConstraintsRequest,
+                 can::messages::SetMotionConstraints,
+                 can::messages::StopRequest,
+                 can::messages::ReadLimitSwitchRequest,
+                 can::messages::UpdateMotorPositionEstimationRequest>;
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,

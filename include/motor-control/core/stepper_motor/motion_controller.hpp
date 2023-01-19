@@ -181,7 +181,8 @@ class PipetteMotionController {
         freertos_message_queue::FreeRTOSMessageQueue<GearMotorMove>;
     PipetteMotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                             PipetteStepperMotorHardwareIface& hardware_iface,
-                            MotionConstraints constraints, GenericQueue& queue)
+                            MotionConstraints constraints, GenericQueue& queue,
+                            can::ids::GearMotorId gear_motor_id)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           motion_constraints(constraints),
@@ -189,7 +190,8 @@ class PipetteMotionController {
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_steps_per_mm(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_um_per_step(), 31)) {}
+              linear_motion_sys_config.get_um_per_step(), 31)),
+          gear_motor_id(gear_motor_id) {}
 
     auto operator=(const PipetteMotionController&)
         -> PipetteMotionController& = delete;
@@ -216,7 +218,8 @@ class PipetteMotionController {
             can_msg.group_id,
             can_msg.seq_id,
             static_cast<MoveStopCondition>(can_msg.request_stop_condition),
-            can_msg.action};
+            can_msg.action,
+            gear_motor_id};
         if (!enabled) {
             enable_motor();
         }
@@ -282,6 +285,7 @@ class PipetteMotionController {
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_step{0};
     bool enabled = false;
+    can::ids::GearMotorId gear_motor_id;
 };
 
 }  // namespace pipette_motion_controller
