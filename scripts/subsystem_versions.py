@@ -2,6 +2,7 @@
 
 import re
 import sys
+import json
 import argparse
 import subprocess
 
@@ -44,6 +45,10 @@ def main(args):
                 "shortsha": shortsha,
                 "branch": branch,
             }
+
+    if args.filepath:
+        with open(args.filepath, 'w') as fh:
+            json.dump(version_info, fh)
     return version_info
 
 
@@ -55,6 +60,10 @@ if __name__ == "__main__":
         nargs="+",
         choices=SUBSYSTEMS,
         help="subsystem to generate file for; leave blank for all.",
+    )
+    parser.add_argument(
+        "--filepath",
+        help="saves json output to given output path.",
     )
     args = parser.parse_args()
     print(main(args))
