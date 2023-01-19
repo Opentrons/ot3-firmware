@@ -216,7 +216,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
 
-    delay_start(500);
+    delay_start(2);
     auto id = pipette_mounts::decide_id(utility_gpio_get_mount_id() == 1);
 
     i2c_setup(&i2chandler_struct);
