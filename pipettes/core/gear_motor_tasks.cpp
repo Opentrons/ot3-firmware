@@ -14,7 +14,7 @@ static auto right_queue_client = gear_motor_tasks::QueueClient{};
 static auto mc_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
 static auto tmc2160_driver_task_builder_left =
-    freertos_task::TaskStarter<512, tmc2160::tasks::MotorDriverTask>{};
+    freertos_task::TaskStarter<512, tmc2160::tasks::gear::MotorDriverTask>{};
 
 static auto move_group_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
@@ -25,7 +25,7 @@ static auto move_status_task_builder_left = freertos_task::TaskStarter<
 static auto mc_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
 static auto tmc2160_driver_task_builder_right =
-    freertos_task::TaskStarter<512, tmc2160::tasks::MotorDriverTask>{};
+    freertos_task::TaskStarter<512, tmc2160::tasks::gear::MotorDriverTask>{};
 
 static auto move_group_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
@@ -110,7 +110,7 @@ void gear_motor_tasks::QueueClient::send_motion_controller_queue(
 }
 
 void gear_motor_tasks::QueueClient::send_motor_driver_queue(
-    const tmc2160::tasks::TaskMessage& m) {
+    const tmc2160::tasks::gear::TaskMessage& m) {
     driver_queue->try_write(m);
 }
 

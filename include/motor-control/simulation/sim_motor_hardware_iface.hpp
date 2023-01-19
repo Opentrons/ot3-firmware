@@ -143,7 +143,11 @@ class SimBrushedMotorHardwareIface
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
 
+    void set_stay_enabled(bool state) final { stay_enabled = state; }
+    auto get_stay_enabled() -> bool final { return stay_enabled; }
+
   private:
+    bool stay_enabled = false;
     bool limit_switch_status = false;
     int32_t test_pulses = 0;
     // these controller loop values were selected just because testing

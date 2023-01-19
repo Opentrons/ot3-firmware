@@ -187,10 +187,9 @@ void data_ready_gpio_init() {
 
 void estop_input_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
-       /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (pipette_type == NINETY_SIX_CHANNEL) {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
         /*Configure GPIO pin EStopin : PB9 */
         GPIO_InitStruct.Pin = GPIO_PIN_9;
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -198,6 +197,7 @@ void estop_input_gpio_init() {
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
     else {
+        __HAL_RCC_GPIOC_CLK_ENABLE();
         /*Configure GPIO pin EStopin : PC12*/
         GPIO_InitStruct.Pin = GPIO_PIN_12;
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;

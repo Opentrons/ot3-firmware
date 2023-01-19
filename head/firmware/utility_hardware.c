@@ -57,7 +57,7 @@ void sync_drive_gpio_init() {
 
 void estop_input_gpio_init() {
        /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
     /*Configure GPIO pin EStopin : PB4 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};

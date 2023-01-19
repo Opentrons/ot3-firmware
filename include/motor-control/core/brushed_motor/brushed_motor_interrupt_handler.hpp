@@ -24,6 +24,7 @@ using namespace motor_messages;
  */
 
 enum class ControlState {
+    FORCE_CONTROLLING_HOME,
     FORCE_CONTROLLING,
     POSITION_CONTROLLING,
     IDLE,
@@ -39,6 +40,7 @@ static constexpr uint32_t HOLDOFF_TICKS =
 
 // upon advice from hardware, 0.01mm is a good limit for precision
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
+static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
 
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
@@ -61,6 +63,9 @@ class BrushedMotorInterruptHandler {
         acceptable_position_error =
             int32_t(gear_conf.get_encoder_pulses_per_mm() *
                     ACCEPTABLE_DISTANCE_TOLERANCE_MM);
+        unwanted_movement_threshold =
+            int32_t(gear_conf.get_encoder_pulses_per_mm() *
+                    UNWANTED_MOVEMENT_DISTANCE_MM);
     }
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
@@ -74,8 +79,7 @@ class BrushedMotorInterruptHandler {
         return queue.has_message_isr();
     }
 
-    auto controlled_move_to(int32_t encoder_position) -> int32_t {
-        int32_t move_delta = hardware.get_encoder_pulses() - encoder_position;
+    void controlled_move_to(int32_t move_delta) {
         uint32_t old_control_pwm = current_control_pwm;
         // pass through early if we're already within acceptable position
         if (std::abs(move_delta) < acceptable_position_error) {
@@ -99,10 +103,14 @@ class BrushedMotorInterruptHandler {
         if (old_control_pwm != current_control_pwm) {
             driver_hardware.update_pwm_settings(current_control_pwm);
         }
-        return move_delta;
     }
 
     void execute_active_move() {
+        if (timeout_ticks > buffered_move.duration) {
+            finish_current_move(AckMessageId::timeout);
+            return;
+        }
+        timeout_ticks++;
         switch (buffered_move.stop_condition) {
             // homing move
             case MoveStopCondition::limit_switch:
@@ -116,13 +124,15 @@ class BrushedMotorInterruptHandler {
                 }
                 break;
             // linear move
-            case MoveStopCondition::encoder_position:
-                if (std::abs(
-                        controlled_move_to(buffered_move.encoder_position)) <
-                    acceptable_position_error) {
+            case MoveStopCondition::encoder_position: {
+                int32_t move_delta = hardware.get_encoder_pulses() -
+                                     buffered_move.encoder_position;
+                controlled_move_to(move_delta);
+                if (std::abs(move_delta) < acceptable_position_error) {
                     finish_current_move(AckMessageId::stopped_by_condition);
                 }
                 break;
+            }
             // grip move
             case MoveStopCondition::none:
             case MoveStopCondition::gripper_force:
@@ -142,7 +152,26 @@ class BrushedMotorInterruptHandler {
         if (has_messages()) {
             update_and_start_move();
         } else if (motor_state == ControlState::POSITION_CONTROLLING) {
-            controlled_move_to(hold_encoder_position);
+            int32_t move_delta =
+                hardware.get_encoder_pulses() - hold_encoder_position;
+            controlled_move_to(move_delta);
+            // we use a value higher than the acceptable position here to allow
+            // the pid loop the opportunity to maintain small movements that
+            // occur from motion and vibration
+            if (move_delta > unwanted_movement_threshold) {
+                cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+            }
+        } else if (motor_state == ControlState::FORCE_CONTROLLING ||
+                   motor_state == ControlState::FORCE_CONTROLLING_HOME) {
+            if (!is_idle &&
+                std::abs(hardware.get_encoder_pulses() -
+                         hold_encoder_position) > unwanted_movement_threshold) {
+                // we have likely dropped a labware or had a collision
+                auto err = motor_state == ControlState::FORCE_CONTROLLING
+                               ? can::ids::ErrorCode::labware_dropped
+                               : can::ids::ErrorCode::collision_detected;
+                cancel_and_clear_moves(err);
+            }
         }
     }
 
@@ -197,7 +226,10 @@ class BrushedMotorInterruptHandler {
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
+        // clear the old states
         hardware.reset_control();
+        hardware.set_stay_enabled(false);
+        timeout_ticks = 0;
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
                 tick = 0;
@@ -246,6 +278,14 @@ class BrushedMotorInterruptHandler {
         if (motor_state == ControlState::ACTIVE) {
             message_index = buffered_move.message_index;
         }
+
+        // if we think we dropped a labware we don't want the controller
+        // to stop the motor in case we only slipped or collided and still
+        // have the labware in the jaws
+        if (err_code == can::ids::ErrorCode::labware_dropped) {
+            hardware.set_stay_enabled(true);
+        }
+
         status_queue_client.send_brushed_move_status_reporter_queue(
             can::messages::ErrorMessage{
                 .message_index = message_index,
@@ -275,7 +315,11 @@ class BrushedMotorInterruptHandler {
             // type of message that we just pass through and return the ack
         } else if (buffered_move.stop_condition !=
                    MoveStopCondition::cap_sensor) {
-            motor_state = ControlState::FORCE_CONTROLLING;
+            hold_encoder_position = hardware.get_encoder_pulses();
+            motor_state =
+                buffered_move.stop_condition == MoveStopCondition::limit_switch
+                    ? ControlState::FORCE_CONTROLLING_HOME
+                    : ControlState::FORCE_CONTROLLING;
         }
 
         if (buffered_move.group_id != NO_GROUP) {
@@ -298,6 +342,7 @@ class BrushedMotorInterruptHandler {
 
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
+    uint32_t timeout_ticks = 0;
     ControlState motor_state = ControlState::IDLE;
 
   private:
@@ -310,5 +355,6 @@ class BrushedMotorInterruptHandler {
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
     int32_t acceptable_position_error = 0;
+    int32_t unwanted_movement_threshold = 0;
 };
 }  // namespace brushed_motor_handler
