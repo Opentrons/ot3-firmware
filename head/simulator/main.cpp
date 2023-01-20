@@ -11,11 +11,10 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
-#include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
 #include "head/core/utils.hpp"
-#include "head/simulation/adc.hpp"
+#include "head/simulator/presence_sensing.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
@@ -133,10 +132,8 @@ static motor_interrupt_driver::MotorInterruptDriver sim_interrupt_left(
     motor_queue_left, motor_interrupt_left, motor_interface_left,
     update_position_queue_left);
 
-static auto adc_comms = adc::SimADC{};
-
 static auto presence_sense_driver =
-    presence_sensing_driver::PresenceSensingDriver(adc_comms);
+    presence_sensing_driver::PresenceSensingSimulator();
 
 static std::shared_ptr<state_manager::StateManagerConnection<
     freertos_synchronization::FreeRTOSCriticalSection>>
