@@ -87,6 +87,7 @@ add_subdirectory(head)
 add_subdirectory(gripper)
 add_subdirectory(eeprom)
 add_subdirectory(bootloader)
+add_subdirectory(rear)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
 message(VERBOSE "Checking if cross-compiling.")
