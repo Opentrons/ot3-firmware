@@ -40,7 +40,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .GPIO_handle = GPIOB,
             };
-            tmc2160_conf.registers.chopconf.mres = 0x3;
+            tmc2160_conf.registers.chopconf.mres = 0x4;
             return tmc2160_conf;
         case TMC2160PipetteAxis::right_gear_motor:
             tmc2160_conf.chip_select = {
@@ -48,7 +48,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .GPIO_handle = GPIOC,
             };
-            tmc2160_conf.registers.chopconf.mres = 0x3;
+            tmc2160_conf.registers.chopconf.mres = 0x4;
             return tmc2160_conf;
         case TMC2160PipetteAxis::linear_motor:
         default:

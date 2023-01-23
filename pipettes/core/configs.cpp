@@ -26,6 +26,6 @@ auto configs::gear_motion_sys_config()
     return lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
         .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 2},
         .steps_per_rev = 200,
-        .microstep = 32,
-        .gear_ratio = 2};
+        .microstep = 16,
+        .gear_ratio = 0.48};
 }
