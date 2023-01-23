@@ -20,10 +20,8 @@
 #include "rear/firmware/i2c_setup.h"
 #include "rear/firmware/led_hardware.h"
 
-
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
- 
 /**
  * I2C handles
  */
@@ -46,14 +44,13 @@ class EEPromHardwareInterface
 };
 static auto eeprom_hw_iface = EEPromHardwareInterface();
 
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
 
     initialize_leds();
-    
+
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
 

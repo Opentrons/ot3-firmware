@@ -27,9 +27,9 @@ static auto i2c3_poll_client =
 /**
  * Start rear tasks.
  */
-void rear_tasks::start_tasks(i2c::hardware::I2CBase& i2c3,
+void rear_tasks::start_tasks(
+    i2c::hardware::I2CBase& i2c3,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
-   
     auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
 
@@ -40,11 +40,10 @@ void rear_tasks::start_tasks(i2c::hardware::I2CBase& i2c3,
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
 
-    
     tasks.i2c3_task = &i2c3_task;
     tasks.i2c3_poller_task = &i2c3_poller_task;
     tasks.eeprom_task = &eeprom_task;
-    
+
     queues.i2c3_queue = &i2c3_task.get_queue();
     queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     queues.eeprom_queue = &eeprom_task.get_queue();

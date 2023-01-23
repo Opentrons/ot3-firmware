@@ -1,12 +1,12 @@
 #pragma once
-#include "common/core/freertos_timer.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "common/core/freertos_timer.hpp"
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/task.hpp"
 #include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/messages.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
-#include "i2c/core/messages.hpp"
 #include "i2c/core/writer.hpp"
 
 namespace rear_tasks {
@@ -28,7 +28,7 @@ struct QueueClient {
     freertos_message_queue::FreeRTOSMessageQueue<i2c::poller::TaskMessage>*
         i2c3_poller_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
-        eeprom_queue{nullptr}; 
+        eeprom_queue{nullptr};
 };
 
 /**
