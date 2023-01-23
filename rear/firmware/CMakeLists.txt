@@ -40,6 +40,7 @@ set(REAR_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/led_hardware.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c

@@ -18,6 +18,7 @@
 #include "i2c/firmware/i2c_comms.hpp"
 #include "rear/core/tasks.hpp"
 #include "rear/firmware/i2c_setup.h"
+#include "rear/firmware/led_hardware.h"
 
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -51,6 +52,8 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
 
+    initialize_leds();
+    
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
 

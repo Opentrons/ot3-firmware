@@ -45,13 +45,9 @@
 
 /* External variables
    --------------------------------------------------------*/
-DMA_HandleTypeDef hdma_spi1_tx;
-DMA_HandleTypeDef hdma_spi1_rx;
-extern TIM_HandleTypeDef htim7;
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim15;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -123,45 +119,13 @@ void DebugMon_Handler(void) {}
 /******************************************************************************/
 
 /**
- * @brief This function handles DMA1 channel2 global interrupt.
+ * @brief This function handles TIM2,3,15 global interrupt.
  */
-void DMA1_Channel2_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_rx); }
+void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
-/**
- * @brief This function handles DMA1 channel3 global interrupt.
- */
-void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
-
-/**
- * @brief This function handles FDCAN1 interrupt 0.
- */
-void FDCAN1_IT0_IRQHandler(void) {
-    HAL_FDCAN_IRQHandler(can_get_device_handle());
-}
-
-/**
- * @brief This function handles TIM1 update interrupt and TIM16 global
- * interrupt.
- */
-void TIM1_UP_TIM16_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
-
-/**
- * @brief This function handles TIM1 capture/compare interrupt.
- */
-void TIM1_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
-
-/**
- * @brief This function handles TIM3 global interrupt.
- */
 void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
-void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
-
-void TIM4_IRQHandler(void) { HAL_TIM_IRQHandler(&htim4); }
-/**
- * @brief This function handles TIM7 global interrupt.
- */
-void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
+void TIM15_IRQHandler(void) { HAL_TIM_IRQHandler(&htim15); }
 
 extern void xPortSysTickHandler(void);
 void SysTick_Handler(void) {
