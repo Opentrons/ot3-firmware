@@ -21,34 +21,33 @@ SUBSYSTEMS = [
 
 def main(args):
     version_info = {}
-    for subsystem in SUBSYSTEMS:
-        if args.target == "all" or subsystem in args.target:
-            try:
-                version = (
-                    subprocess.check_output(
-                        ["git", "describe", "--tags", "--always", "--match=v*"]
-                    )
-                    .decode()
-                    .strip()
-                )
-                # version should be int
-                version = int(re.search(VERSION_REGEX, version).group(1)) if re.search(VERSION_REGEX, version) else 0
-                shortsha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
-                branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode().strip()
-            except Exception as e:
-                print(f"Could not get the version info for {subsystem}", file=sys.stderr)
-                exit(1)
+    subsystems = args.target or SUBSYSTEMS
 
-            # put the version_info together
-            version_info[subsystem] = {
-                "version": version,
-                "shortsha": shortsha,
-                "branch": branch,
-            }
+    try:
+        version = subprocess.check_output(["git", "describe", "--tags", "--always", "--match=v*"]).decode().strip()
+        # version should be int
+        version = int(re.search(VERSION_REGEX, version).group(1)) if re.search(VERSION_REGEX, version) else 0
+        shortsha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
+        branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode().strip()
+    except Exception as e:
+        print(f"Could not get the version info for {subsystem}", file=sys.stderr)
+        exit(1)
 
-    if args.filepath:
-        with open(args.filepath, 'w') as fh:
-            json.dump(version_info, fh)
+    for subsystem in subsystems:
+        if subsystem not in SUBSYSTEMS:
+            print(f"Unknown subsystem {subsystem}", file=sys.stderr)
+            continue
+
+        # put the version_info together
+        version_info[subsystem] = {
+            "version": version,
+            "shortsha": shortsha,
+            "branch": branch,
+        }
+
+    with args.output:
+        json.dump(version_info, args.output)
+
     return version_info
 
 
@@ -56,14 +55,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creates a json file of the submodule version info.")
     parser.add_argument(
         "--target",
-        default="all",
-        nargs="+",
-        choices=SUBSYSTEMS,
+        nargs="*",
         help="subsystem to generate file for; leave blank for all.",
     )
     parser.add_argument(
-        "--filepath",
-        help="saves json output to given output path.",
+        "--output",
+        type=argparse.FileType('w'),
+        default=sys.stdout,
+        help="saves json output to given output path or stdout."
     )
     args = parser.parse_args()
-    print(main(args))
+    main(args)

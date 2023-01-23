@@ -78,9 +78,9 @@
   ],
   "buildPresets": [
     {
-      "name": "all",
-      "displayName": "all binary",
-      "description": "Build all the hex binaries",
+      "name": "all-application-firmware",
+      "displayName": "all application hex binary",
+      "description": "Build all the hex binaries that will go on the OT3 filesystem.",
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
