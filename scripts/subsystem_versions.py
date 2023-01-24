@@ -30,7 +30,7 @@ def main(args):
         shortsha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
         branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode().strip()
     except Exception as e:
-        print(f"Could not get the version info for {subsystem}", file=sys.stderr)
+        print(f"Could not get the version info {e}", file=sys.stderr)
         exit(1)
 
     for subsystem in subsystems:
