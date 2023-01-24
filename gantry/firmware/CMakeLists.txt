@@ -156,7 +156,7 @@ foreach(REV IN LISTS REVISIONS)
     add_custom_command(
             OUTPUT gantry-${AXIS}-${REV}-image.hex
             DEPENDS gantry-${AXIS}-${REV}-hex bootloader-gantry-${AXIS}-hex gantry-${AXIS}-${REV}.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex
-            COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py gantry-${AXIS}-${REV}-image.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex gantry-${AXIS}-${REV}.hex
+            COMMAND ${CMAKE_SOURCE_DIR}/scripts/hex_combine.py gantry-${AXIS}-${REV}-image.hex $<TARGET_FILE_DIR:bootloader-gantry-${AXIS}>/bootloader-gantry-${AXIS}.hex gantry-${AXIS}-${REV}.hex
             VERBATIM)
     add_custom_target(gantry-${AXIS}-${REV}-image-hex ALL
             DEPENDS gantry-${AXIS}-${REV}-image.hex)
