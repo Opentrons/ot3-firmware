@@ -65,7 +65,8 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
 
 static auto z_motor_sys_config =
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4,
+                                            .gear_reduction_ratio = 1.0},
         .steps_per_rev = 200,
         .microstep = 16,
         .encoder_pulses_per_rev = 0};

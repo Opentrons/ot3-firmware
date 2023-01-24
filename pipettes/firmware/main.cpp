@@ -92,7 +92,8 @@ static auto linear_stall_check = stall_check::StallCheck(
     configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
             .get_encoder_pulses_per_mm() /
         1000.0F,
-    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).get_steps_per_mm() /
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
+            .get_usteps_per_mm() /
         1000.0F,
     configs::STALL_THRESHOLD_UM);
 
@@ -138,10 +139,10 @@ static auto pins_for_sensor =
 auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
-        sensor_hardware.data_ready();
-    }
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t) {
+    // if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
+    //     sensor_hardware.data_ready() ;
+    // }
 }
 
 // Unfortunately, these numbers need to be literals or defines

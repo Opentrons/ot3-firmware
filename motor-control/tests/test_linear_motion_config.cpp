@@ -11,7 +11,7 @@ TEST_CASE("Linear motion system using a leadscrew") {
             .encoder_pulses_per_rev = 1000,
         };
         THEN("the steps/mm calculation should match the known value") {
-            REQUIRE(linearConfig.get_steps_per_mm() == 3200);
+            REQUIRE(linearConfig.get_usteps_per_mm() == 3200);
         }
         THEN("the pulses/mm calculation should match the known value") {
             REQUIRE(linearConfig.get_encoder_pulses_per_mm() == 2000.0);
