@@ -18,83 +18,22 @@
  *                                 be called whenever the core clock is changed
  *                                 during program execution.
  *
- *   After each device reset the HSI (16 MHz) is used as system clock source.
- *   Then SystemInit() function is called, in "startup_stm32g4xx.s" file, to
- *   configure the system clock before to branch to main program.
- *
- *   This file configures the system clock as follows:
- *=============================================================================
- *-----------------------------------------------------------------------------
- *        System Clock source                    | HSI
- *-----------------------------------------------------------------------------
- *        SYSCLK(Hz)                             | 16000000
- *-----------------------------------------------------------------------------
- *        HCLK(Hz)                               | 16000000
- *-----------------------------------------------------------------------------
- *        AHB Prescaler                          | 1
- *-----------------------------------------------------------------------------
- *        APB1 Prescaler                         | 1
- *-----------------------------------------------------------------------------
- *        APB2 Prescaler                         | 1
- *-----------------------------------------------------------------------------
- *        PLL_M                                  | 1
- *-----------------------------------------------------------------------------
- *        PLL_N                                  | 16
- *-----------------------------------------------------------------------------
- *        PLL_P                                  | 7
- *-----------------------------------------------------------------------------
- *        PLL_Q                                  | 2
- *-----------------------------------------------------------------------------
- *        PLL_R                                  | 2
- *-----------------------------------------------------------------------------
- *        Require 48MHz for RNG                  | Disabled
- *-----------------------------------------------------------------------------
- *=============================================================================
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
- *
- ******************************************************************************
  */
 
-/** @addtogroup CMSIS
- * @{
- */
 
-/** @addtogroup stm32g4xx_system
- * @{
- */
-
-/** @addtogroup STM32G4xx_System_Private_Includes
- * @{
- */
-
-#include "system_stm32g4xx.h"
+#include "startup_system_stm32g4xx.h"
 
 #include "stm32g4xx.h"
 #include "stm32g4xx_hal.h"
 
-#include "common/firmware/errors.h"
-#include "bootloader/firmware/constants.h"
-
 #if !defined(HSE_VALUE)
-#define HSE_VALUE 16000000U /*!< Value of the External oscillator in Hz */
+#define HSE_VALUE 24000000U /*!< Value of the External oscillator in Hz */
 #endif                      /* HSE_VALUE */
 
 #if !defined(HSI_VALUE)
 #define HSI_VALUE 16000000U /*!< Value of the Internal oscillator in Hz*/
 #endif                      /* HSI_VALUE */
 
-/**
- * @}
- */
 
 /** @addtogroup STM32G4xx_System_Private_TypesDefinitions
  * @{
@@ -113,7 +52,7 @@
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
 
-#define VECT_TAB_OFFSET (0x8000) 
+#define VECT_TAB_OFFSET (0) 
             /*!< Vector Table base offset field. \
               This value must be a multiple of 0x200. */
 /******************************************************************************/
@@ -140,72 +79,20 @@
    there is no need to call the 2 first functions listed above, since
    SystemCoreClock variable is updated automatically.
 */
-uint32_t SystemCoreClock = HSE_VALUE;
+uint32_t SystemCoreClock = HSI_VALUE;
 
 const uint8_t AHBPrescTable[16] = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U,
                                    1U, 2U, 3U, 4U, 6U, 7U, 8U, 9U};
 const uint8_t APBPrescTable[8] = {0U, 0U, 0U, 0U, 1U, 2U, 3U, 4U};
 
-/**
- * @}
- */
-
-/** @addtogroup STM32G4xx_System_Private_FunctionPrototypes
- * @{
- */
-
-/**
- * @}
- */
-
-/** @addtogroup STM32G4xx_System_Private_Functions
- * @{
- */
-
-/**
- * @brief  Setup the microcontroller system.
- * @param  None
- * @retval None
- */
 
 void SystemInit(void) {
-/* FPU settings ------------------------------------------------------------*/
-#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-    SCB->CPACR |= ((3UL << (10 * 2)) |
-                   (3UL << (11 * 2))); /* set CP10 and CP11 Full Access */
-#endif
-
-    /* Configure the Vector Table location add offset address
-     * ------------------*/
-#ifdef VECT_TAB_SRAM
-    SCB->VTOR = SRAM_BASE |
-                VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
-#else
-    SCB->VTOR = FLASH_BASE |
-                VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
-#endif
+    SCB->VTOR = FLASH_BASE;
 }
 
-/**
- * @brief  System Clock Configuration
- *         The system Clock is configured as follow :
- *            System Clock source            = PLL (HSE)
- *            SYSCLK(Hz)                     = 72000000
- *            HCLK(Hz)                       = 72000000
- *            AHB Prescaler                  = 1
- *            APB1 Prescaler                 = 2
- *            APB2 Prescaler                 = 1
- *            HSE Frequency(Hz)              = 8000000
- *            PREDIV                         = RCC_PREDIV_DIV1 (1)
- *            PLLMUL                         = RCC_PLL_MUL9 (9)
- *            Flash Latency(WS)              = 2
- * @param  None
- * @retval None
- */
 void SystemClock_Config(void) {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
     /** Configure the main internal regulator output voltage
      */
@@ -213,11 +100,11 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
      * in the RCC_OscInitTypeDef structure.
      */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV4;
     RCC_OscInitStruct.PLL.PLLN = 85;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
@@ -235,11 +122,6 @@ void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
-    PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-    {
-        Error_Handler();
-    }
 }
 
 /**
@@ -324,21 +206,31 @@ void SystemCoreClockUpdate(void) {
 }
 
 void HardwareInit(void) {
+    HAL_DeInit();
     HAL_Init();
     SystemClock_Config();
     SystemCoreClockUpdate();
 }
 
-/**
- * @}
- */
+// Implementatino of Error_Handler for STM32 HAL drivers
+void Error_Handler(void) {
+    while(1) {}
+}
 
 /**
- * @}
- */
+  * Initializes the Global MSP.
+  */
+void HAL_MspInit(void)
+{
 
-/**
- * @}
- */
+  __HAL_RCC_SYSCFG_CLK_ENABLE();
+  __HAL_RCC_PWR_CLK_ENABLE();
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+  /* System interrupt init*/
+  /* PendSV_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(PendSV_IRQn, 15, 0);
+
+  /** Disable the internal Pull-Up in Dead Battery pins of UCPD peripheral
+  */
+  HAL_PWREx_DisableUCPDDeadBattery();
+}

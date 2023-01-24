@@ -3,6 +3,7 @@
 add_subdirectory(core)
 
 if (${CMAKE_CROSSCOMPILING})
+    add_subdirectory(startup)
     add_subdirectory(firmware)
 else()
    #add_subdirectory(simulator)

@@ -15,11 +15,9 @@ find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
         PATHS "${CrossGCC_BINDIR}"
         NO_DEFAULT_PATH
         REQUIRED)
-
+        
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
-
-set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg")
-
+set(COMMON_MCU_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../startup/STM32G491")
 
 # List of revisions of the rear that we support
 set(REVISIONS rear-rev1)
@@ -46,21 +44,52 @@ set(REAR_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         )
 
-add_executable(rear-rev1
-        ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-        ${REAR_FW_LINTABLE_SRCS}
-        ${REAR_FW_NON_LINTABLE_SRCS})
-target_rear_core_rev1(rear-rev1)
 
-set(IMAGES)
-set(EXES)
+target_include_directories(STM32G4xx_Drivers_Rear
+        PUBLIC .)
+target_include_directories(STM32G4xx_FreeRTOS_Rear
+        PUBLIC .)
+
+target_compile_definitions(STM32G4xx_Drivers_Rear
+        PUBLIC STM32G491xx)
+target_compile_definitions(STM32G4xx_FreeRTOS_Rear
+        PUBLIC STM32G491xx)
+
+set_target_properties(
+        STM32G4xx_FreeRTOS_Rear
+        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
+
+find_program(ARM_GDB
+  arm-none-eabi-gdb-py
+  PATHS "${CrossGCC_BINDIR}"
+  NO_DEFAULT_PATH
+  REQUIRED)
+message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
+
+find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
+  PATHS "${CrossGCC_BINDIR}"
+  NO_DEFAULT_PATH
+  REQUIRED)
+
 
 foreach(REVISION_TARGET IN LISTS REVISIONS )
+  add_executable(${REVISION_TARGET}
+          ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+          ${REAR_FW_LINTABLE_SRCS}
+          ${REAR_FW_NON_LINTABLE_SRCS})
+  # Incurs at least a relink when you change the linker file (and a recompile of main
+  # but hopefully that's quick)
+  set_source_files_properties(main.cpp
+    PROPERTIES
+    OBJECT_DEPENDS "${COMMON_MCU_DIR}/STM32G491VETx_FLASH.ld")
+  target_rear_core_rev1(${REVISION_TARGET})
   target_i2c_firmware(${REVISION_TARGET})
   
   target_link_libraries(${REVISION_TARGET}
-          PUBLIC STM32G491RETx
-          STM32G4xx_Drivers_Rear STM32G4xx_FreeRTOS_Rear
+          PUBLIC 
+          STM32G4xx_Drivers_Rear
+          STM32G4xx_FreeRTOS_Rear
+          rear-startup-STM32G491
           )
 
   set_target_properties(${REVISION_TARGET}
@@ -84,31 +113,54 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
           $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
           $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
           $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
-  # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
-  # this dir
+ 
   set_target_properties(${REVISION_TARGET}
-          PROPERTIES
-          CROSSCOMPILING_EMULATOR
-          "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
-  list(APPEND EXES ${REVISION_TARGET})
-
+    PROPERTIES
+    CROSSCOMPILING_EMULATOR
+    "${ARM_GDB};--command=${GDBINIT_PATH}")
+    
+    # Calculate and package the integrity info for this module
+  
+  add_custom_target(${REVISION_TARGET}-integrity ALL 
+    COMMAND echo ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-scratch.bin ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-integrity-info
+    COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} -Obinary 
+        ${REVISION_TARGET}-scratch.bin --gap-fill=0xFF
+    COMMAND ${CMAKE_SOURCE_DIR}/calculate_checksum.py 
+        ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-scratch.bin
+        ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}
+        "0x08008400"
+        ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-integrity-info
+    COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}
+        --update-section
+        .integrity_info=${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-integrity-info
+    DEPENDS ${REVISION_TARGET}
+    DEPENDS ${CMAKE_SOURCE_DIR}/calculate_checksum.py
+  )
+  
+  # The .hex target depends on the module's integrity-target in order to generate
+  # the integrity information expected by the startup app. Therefore, all other
+  # flashable targets should derive from the initial hex.
   add_custom_command(OUTPUT ${REVISION_TARGET}.hex
-          COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Oihex" ${REVISION_TARGET}.hex
-          DEPENDS ${REVISION_TARGET}
-          VERBATIM)
-
+    COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Oihex" ${REVISION_TARGET}.hex
+    DEPENDS ${REVISION_TARGET}
+    DEPENDS ${REVISION_TARGET}-integrity
+    DEPENDS ${CMAKE_SOURCE_DIR}/calculate_checksum.py
+    VERBATIM)
+  
   add_custom_target(${REVISION_TARGET}-hex ALL
-          DEPENDS ${REVISION_TARGET}.hex)
-  list(APPEND IMAGES ${REVISION_TARGET}-hex)
-
+    DEPENDS ${REVISION_TARGET}.hex)
+    
   add_custom_command(OUTPUT ${REVISION_TARGET}.bin
-          COMMAND ${CROSS_OBJCOPY} ARGS ${REVISION_TARGET} "-Obinary" ${REVISION_TARGET}.bin
-          DEPENDS ${REVISION_TARGET}
-          VERBATIM)
-
+    COMMAND ${CROSS_OBJCOPY} ARGS 
+      ${REVISION_TARGET}.hex 
+      "-Iihex" "-Obinary" "--gap-fill=0xFF"
+      ${REVISION_TARGET}.bin
+    DEPENDS ${REVISION_TARGET}.hex
+    VERBATIM)
   add_custom_target(${REVISION_TARGET}-bin ALL
-          DEPENDS ${REVISION_TARGET}.bin)
-
+    DEPENDS ${REVISION_TARGET}.bin)
+  add_dependencies(${REVISION_TARGET}-bin ${REVISION_TARGET}-hex)
+  
   # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
   # arguable misuse of the concept) to the appropriate cross-gdb with
   # remote-target. You should make sure st-util is running; that's not
@@ -116,54 +168,64 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
   # should be running the entire time and that's tough to accomplish
   # in a custom command
   add_custom_target(${REVISION_TARGET}-debug
-          COMMAND ${REVISION_TARGET}
-          USES_TERMINAL
-          )
+    COMMENT "Starting gdb and openocd"
+    COMMAND ${REVISION_TARGET}
+    DEPENDS ${REVISION_TARGET}-integrity
+    USES_TERMINAL
+    )
+
+  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}@${${REVISION_TARGET}_VERSION}.hex")
+
+  set(BIN_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_MODULE_NAME}@${${TARGET_MODULE_NAME}_VERSION}.bin")
+    
+  set(STARTUP_NAME ${REVISION_TARGET}-startup)
+
+  stm32g491_clear_target(${REVISION_TARGET}-clear)
+
+  stm32g491_startup(${STARTUP_NAME} ${REVISION_TARGET})
 
   # Targets to create full image hex file containing both bootloader and application
-  #add_custom_command(
-  #        OUTPUT ${REVISION_TARGET}-image.hex
-  #        DEPENDS ${REVISION_TARGET}-hex bootloader-head-hex ${REVISION_TARGET}.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex
-  #        COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${REVISION_TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-head>/bootloader-head.hex ${REVISION_TARGET}.hex
-  #        VERBATIM)
-  #add_custom_target(${REVISION_TARGET}-image-hex ALL
-  #        DEPENDS ${REVISION_TARGET}-image.hex)
+  add_custom_command(
+      OUTPUT ${HEX_IMG_NAME}
+      DEPENDS ${REVISION_TARGET}-hex
+      DEPENDS ${STARTUP_NAME}-hex
+      DEPENDS ${REVISION_TARGET}.hex
+      COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${HEX_IMG_NAME} $<TARGET_FILE_DIR:${STARTUP_NAME}>/${STARTUP_NAME}.hex ${REVISION_TARGET}.hex
+      VERBATIM)
+  add_custom_target(${REVISION_TARGET}-image-hex ALL
+      DEPENDS ${HEX_IMG_NAME})
+  add_dependencies(${REVISION_TARGET}-image-hex
+      ${REVISION_TARGET}-hex)
 
-  # Targets to flash bootloader and firmware
-  #add_custom_target(${REVISION_TARGET}-flash
-  #        COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.hex;reset;exit"
-  #        VERBATIM
-  #        COMMENT "Flashing board"
-  #        DEPENDS ${REVISION_TARGET}-image-hex)
+  add_custom_command(OUTPUT "${BIN_IMG_NAME}"
+      COMMAND ${CROSS_OBJCOPY} ARGS 
+          "-Iihex" "-Obinary" "--gap-fill=0xFF"
+          "${HEX_IMG_NAME}" "${BIN_IMG_NAME}"
+      DEPENDS "${HEX_IMG_NAME}"
+      DEPENDS ${REVISION_TARGET}-image-hex
+      VERBATIM)
+  add_custom_target(${REVISION_TARGET}-image-bin ALL
+      DEPENDS ${BIN_IMG_NAME})
+  add_dependencies(${REVISION_TARGET}-image-bin
+      ${REVISION_TARGET}-image-hex)
+
+   # Runs openocd to flash the board (without using a debugger)
+  add_custom_target(${REVISION_TARGET}-flash
+      COMMAND "${OpenOCD_EXECUTABLE}" 
+          "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg" 
+          "-c" "program ${REVISION_TARGET}.hex reset;exit"
+      VERBATIM
+      COMMENT "Flashing board"
+      DEPENDS ${REVISION_TARGET}.hex)
+  # Runs openocd to flash the board with the full image (startup included)
+  add_custom_target(${REVISION_TARGET}-image-flash
+      COMMAND "${OpenOCD_EXECUTABLE}" 
+          "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg" 
+          "-c" "program ${HEX_IMG_NAME} reset;exit"
+      VERBATIM
+      COMMENT "Flashing board"
+      DEPENDS ${HEX_IMG_NAME})
 endforeach()
-
-# Default targets
-add_custom_target(rear-debug DEPENDS ${DEFAULT_REVISION}-debug)
-add_custom_target(rear
-  ${CMAKE_COMMAND} -E copy ${DEFAULT_REVISION} rear
-  DEPENDS ${DEFAULT_REVISION})
-add_custom_command(OUTPUT rear-image.hex
-  COMMAND ${CMAKE_COMMAND} -E copy ${DEFAULT_REVISION}-image.hex rear-image.hex
-  DEPENDS ${DEFAULT_REVISION}-image-hex
-)
-add_custom_target(rear-image-hex DEPENDS rear-image.hex)
-add_custom_target(rear-flash DEPENDS ${DEFAULT_REVISION}-flash)
-add_custom_target(rear-exes DEPENDS rear ${EXES})
-add_custom_target(rear-images DEPENDS rear-image-hex ${IMAGES})
-
-target_include_directories(STM32G4xx_Drivers_Rear
-        PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Rear
-        PUBLIC .)
-
-target_compile_definitions(STM32G4xx_Drivers_Rear
-        PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Rear
-        PUBLIC STM32G491xx)
-
-set_target_properties(
-        STM32G4xx_FreeRTOS_Rear
-        PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
 # which is a catch-all static analyzer/linter
