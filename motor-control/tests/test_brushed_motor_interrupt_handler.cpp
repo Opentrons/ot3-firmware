@@ -9,11 +9,11 @@
 using namespace brushed_motor_handler;
 
 auto gear_config = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
-    .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+    .mech_config =
+        lms::GearBoxConfig{.gear_diameter = 9, .gear_reduction_ratio = 84.29},
     .steps_per_rev = 0,
     .microstep = 0,
-    .encoder_pulses_per_rev = 512,
-    .gear_ratio = 84.29};
+    .encoder_pulses_per_rev = 512};
 
 struct BrushedMotorContainer {
     test_mocks::MockBrushedMotorHardware hw{};

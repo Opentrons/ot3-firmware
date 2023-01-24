@@ -16,7 +16,7 @@ struct LeadScrewConfig {
     float lead_screw_pitch;      // mm/rev
     float gear_reduction_ratio;  // large teeth / small teeth
     [[nodiscard]] constexpr auto get_mm_per_rev() const -> float {
-        return lead_screw_pitch * (1.0 / gear_reduction_ratio);
+        return lead_screw_pitch / gear_reduction_ratio;
     }
 };
 
@@ -24,8 +24,8 @@ struct GearBoxConfig {
     float gear_diameter;         // mm
     float gear_reduction_ratio;  // large teeth / small teeth
     [[nodiscard]] constexpr auto get_mm_per_rev() const -> float {
-        return static_cast<float>(gear_diameter * std::numbers::pi *
-                                  (1.0 / gear_reduction_ratio));
+        return static_cast<float>((gear_diameter * std::numbers::pi) /
+                                  gear_reduction_ratio);
     }
 };
 

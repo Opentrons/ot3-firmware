@@ -6,7 +6,8 @@ using namespace lms;
 TEST_CASE("Linear motion system using a leadscrew") {
     GIVEN("OT2 GEN2 pipette config") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
-            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
+            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2,
+                                           .gear_reduction_ratio = 1.0},
             .steps_per_rev = 200, .microstep = 32,
             .encoder_pulses_per_rev = 1000,
         };
