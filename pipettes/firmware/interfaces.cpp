@@ -152,16 +152,14 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
     return gear_motor::GearMotionControl{
         .left =
             pipette_motion_controller::PipetteMotionController{
-                configs::gear_motion_sys_config(),
-                hw.left,
+                configs::gear_motion_sys_config(), hw.left,
                 motor_messages::MotionConstraints{.min_velocity = 1,
                                                   .max_velocity = 2,
                                                   .min_acceleration = 1,
                                                   .max_acceleration = 2},
                 queues.left_motor_queue, can::ids::GearMotorId::left},
         .right = pipette_motion_controller::PipetteMotionController{
-            configs::gear_motion_sys_config(),
-            hw.right,
+            configs::gear_motion_sys_config(), hw.right,
             motor_messages::MotionConstraints{.min_velocity = 1,
                                               .max_velocity = 2,
                                               .min_acceleration = 1,
