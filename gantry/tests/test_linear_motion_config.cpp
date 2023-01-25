@@ -10,7 +10,7 @@ TEST_CASE("Linear motion system using a belt") {
             .steps_per_rev = 200, .microstep = 32,
             .encoder_pulses_per_rev = 1000,
         };
-        REQUIRE(linearConfig.get_steps_per_mm() == 160.40813f);
+        REQUIRE(linearConfig.get_usteps_per_mm() == 160.40813f);
         REQUIRE(linearConfig.get_encoder_pulses_per_mm() == 100.25508f);
     }
 }

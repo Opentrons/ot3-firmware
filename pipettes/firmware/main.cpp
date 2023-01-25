@@ -92,7 +92,8 @@ static auto linear_stall_check = stall_check::StallCheck(
     configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
             .get_encoder_pulses_per_mm() /
         1000.0F,
-    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE).get_steps_per_mm() /
+    configs::linear_motion_sys_config_by_axis(PIPETTE_TYPE)
+            .get_usteps_per_mm() /
         1000.0F,
     configs::STALL_THRESHOLD_UM);
 

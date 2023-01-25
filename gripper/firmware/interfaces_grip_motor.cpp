@@ -108,11 +108,11 @@ static brushed_motor_driver::BrushedMotorDriver brushed_motor_driver_iface(
     update_pwm);
 
 static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
-    .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+    .mech_config =
+        lms::GearBoxConfig{.gear_diameter = 9, .gear_reduction_ratio = 103.81},
     .steps_per_rev = 0,
     .microstep = 0,
-    .encoder_pulses_per_rev = 512,
-    .gear_ratio = 103.81};
+    .encoder_pulses_per_rev = 512};
 
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,

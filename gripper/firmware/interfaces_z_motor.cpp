@@ -122,11 +122,11 @@ static freertos_message_queue::FreeRTOSMessageQueue<
  */
 static motor_class::Motor z_motor{
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12,
+                                            .gear_reduction_ratio = 1.8},
         .steps_per_rev = 200,
         .microstep = 32,
-        .encoder_pulses_per_rev = 0,
-        .gear_ratio = 1.8},
+        .encoder_pulses_per_rev = 0},
     motor_hardware_iface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,

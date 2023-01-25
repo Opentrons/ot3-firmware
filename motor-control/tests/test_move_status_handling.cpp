@@ -27,7 +27,8 @@ struct MockCanClient {
 SCENARIO("testing move status position translation") {
     GIVEN("a status handler with known LMS config") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
-            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
+            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2,
+                                           .gear_reduction_ratio = 1.0},
             .steps_per_rev = 200, .microstep = 32,
             .encoder_pulses_per_rev = 1000,
         };

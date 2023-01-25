@@ -37,7 +37,7 @@ class MotionController {
           queue(queue),
           update_queue(update_queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_steps_per_mm(), 31)),
+              linear_motion_sys_config.get_usteps_per_mm(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_um_per_step(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
@@ -188,7 +188,7 @@ class PipetteMotionController {
           motion_constraints(constraints),
           queue(queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_steps_per_mm(), 31)),
+              linear_motion_sys_config.get_usteps_per_mm(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_um_per_step(), 31)),
           gear_motor_id(gear_motor_id) {}

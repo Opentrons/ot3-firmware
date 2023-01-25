@@ -65,7 +65,8 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
 
 static auto z_motor_sys_config =
     lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4},
+        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 4,
+                                            .gear_reduction_ratio = 1.0},
         .steps_per_rev = 200,
         .microstep = 16,
         .encoder_pulses_per_rev = 0};
@@ -109,11 +110,11 @@ static auto brushed_motor_hardware_iface =
         MoveMessageHardware::g);
 
 static auto gear_conf = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
-    .mech_config = lms::GearBoxConfig{.gear_diameter = 9},
+    .mech_config =
+        lms::GearBoxConfig{.gear_diameter = 9, .gear_reduction_ratio = 84.29},
     .steps_per_rev = 0,
     .microstep = 0,
-    .encoder_pulses_per_rev = 512,
-    .gear_ratio = 84.29};
+    .encoder_pulses_per_rev = 512};
 
 static auto grip_motor = brushed_motor::BrushedMotor(
     gear_conf, brushed_motor_hardware_iface, brushed_motor_driver_iface,
