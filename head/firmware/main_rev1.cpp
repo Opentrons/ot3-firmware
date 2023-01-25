@@ -82,7 +82,7 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
             .pin = GPIO_PIN_1,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = GPIO_PIN_SET},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -121,7 +121,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
             .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = GPIO_PIN_SET},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
