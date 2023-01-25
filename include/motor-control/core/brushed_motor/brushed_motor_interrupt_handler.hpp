@@ -142,7 +142,7 @@ class BrushedMotorInterruptHandler {
                         AckMessageId::complete_without_condition);
                 }
                 break;
-            case MoveStopCondition::cap_sensor:
+            case MoveStopCondition::sync_line:
                 // TODO write cap sensor move code
                 break;
         }
@@ -249,7 +249,7 @@ class BrushedMotorInterruptHandler {
                 tick = 0;
                 hardware.grip();
                 break;
-            case MoveStopCondition::cap_sensor:
+            case MoveStopCondition::sync_line:
                 // this is an unused move stop condition for the brushed motor
                 // just return with no condition
                 // TODO creat can bus error messages and send that instead
@@ -314,7 +314,7 @@ class BrushedMotorInterruptHandler {
             // the cap sensor move isn't valid here, so make sure if we got that
             // type of message that we just pass through and return the ack
         } else if (buffered_move.stop_condition !=
-                   MoveStopCondition::cap_sensor) {
+                   MoveStopCondition::sync_line) {
             hold_encoder_position = hardware.get_encoder_pulses();
             motor_state =
                 buffered_move.stop_condition == MoveStopCondition::limit_switch

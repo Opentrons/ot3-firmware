@@ -37,7 +37,7 @@ TEST_CASE("Move with stop condition == cap sensor") {
                       .acceleration = 0,
                       .group_id = 1,
                       .seq_id = 0,
-                      .stop_condition = MoveStopCondition::cap_sensor};
+                      .stop_condition = MoveStopCondition::sync_line};
 
     GIVEN("the move is in progress") {
         test_objs.queue.try_write_isr(msg10);
@@ -73,7 +73,7 @@ TEST_CASE("Move with stop condition == cap sensor, case 2") {
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
-                     .stop_condition = MoveStopCondition::cap_sensor};
+                     .stop_condition = MoveStopCondition::sync_line};
     GIVEN("the sync line has not been set") {
         test_objs.queue.try_write_isr(msg1);
         test_objs.hw.set_mock_sync_line(false);

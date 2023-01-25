@@ -148,8 +148,8 @@ class MotorInterruptHandler {
                 homing_stopped()) {
                 return false;
             }
-            if (buffered_move.stop_condition == MoveStopCondition::cap_sensor &&
-                calibration_stopped()) {
+            if (buffered_move.stop_condition == MoveStopCondition::sync_line &&
+                sync_triggered()) {
                 return false;
             }
             if (can_step() && tick()) {
@@ -173,15 +173,6 @@ class MotorInterruptHandler {
         return false;
     }
 
-    auto calibration_stopped() -> bool {
-        if (sync_triggered()) {
-            // return the position
-            finish_current_move(AckMessageId::stopped_by_condition);
-            return true;
-        }
-        return false;
-    }
-
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             position_tracker = 0;
@@ -200,7 +191,13 @@ class MotorInterruptHandler {
         return false;
     }
 
-    auto sync_triggered() -> bool { return hardware.check_sync_in(); }
+    auto sync_triggered() -> bool {
+        if (hardware.check_sync_in()) {
+            finish_current_move(AckMessageId::stopped_by_condition);
+            return true;
+        }
+        return false;
+    }
 
     auto limit_switch_triggered() -> bool {
         return hardware.check_limit_switch();
