@@ -76,13 +76,19 @@ spi::hardware::SPI_interface SPI_intf3 = {
 };
 static spi::hardware::Spi spi_comms3(SPI_intf3);
 
+#if PCBA_PRIMARY_REVISION == 'b'
+static constexpr int direction_active_level = GPIO_PIN_RESET;
+#else
+static constexpr int direction_active_level = GPIO_PIN_SET;
+#endif
+
 struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
             .pin = GPIO_PIN_1,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = direction_active_level},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -121,7 +127,7 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
             .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = direction_active_level},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
