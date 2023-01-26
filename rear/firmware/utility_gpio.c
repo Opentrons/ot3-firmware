@@ -50,6 +50,7 @@ void estop_output_gpio_init() {
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    //disable estop for the other boards
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
 }
 
@@ -81,6 +82,6 @@ void deck_gpio_init() {
 void utility_gpio_init(void) {
     deck_gpio_init();
     //sync_drive_gpio_init();
-    //estop_output_gpio_init();
+    estop_output_gpio_init();
     //estop_input_gpio_init();
 }
