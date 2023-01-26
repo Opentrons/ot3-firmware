@@ -40,7 +40,7 @@ static constexpr uint32_t HOLDOFF_TICKS =
 
 // upon advice from hardware, 0.01mm is a good limit for precision
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
-static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
+static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.5;
 
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
