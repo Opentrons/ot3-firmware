@@ -35,18 +35,18 @@ _Min_Heap_Size = 0x800;	/* required amount of heap  */
 _Min_Stack_Size = 0x600;	/* required amount of stack */
 
 _flash_offset = 32K; /* first 32K is occupied by bootloader shim */
-_flash_start = 0x8000000;
+_flash_start = 0x08000000;
 _app_flash_start  = _flash_start + _flash_offset;
 _flash_size = 512K;
-/* Remaining space is 512K - 32K - 4K =  476. This is divided in half to
+/* Remaining space is 512K - 32K =  480. This is divided in half to
  * leave room for a backup image, giving 240K for the image.*/
-_app_flash_size = 238K;
+_app_flash_size = 240K;
 /* Memories definition */
 MEMORY
 {
   CCMSRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 16K
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 112K
-  ROM    (rx)    : ORIGIN = 0x08008000,   LENGTH = 512K
+  ROM    (rx)    : ORIGIN = _app_flash_start,   LENGTH = _app_flash_size
 }
 
 /* Sections */
@@ -59,15 +59,27 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >ROM
-
-  /* Location in RAM where firmware update flags are stored. */
-  .fw_update_flag_block 0x20000100 (NOLOAD) :
+  
+  /* Contains firmware authentication information */
+  .integrity_info BLOCK(0x200) :
   {
-    KEEP(*(.fw_update_flag_section))
-  } > RAM
+    . = ALIGN(4);
+    /* placeholder for CRC */
+    ._integrity_crc = .;
+    LONG(0);
+    /* placeholder for firmware length */
+    ._integrity_length = .;
+    LONG(0);
+    /* placeholder for firmware crc start address */
+    ._integrity_start = .;
+    LONG(0);
+    /* placeholder for start of firmware name */
+    ._integrity_name = .;
+    LONG(0);
+  } >ROM
 
   /* The program code and other data into "ROM" Rom type memory */
-  .text :
+  .text BLOCK(0x200) :
   {
     . = ALIGN(4);
     *(.text)           /* .text sections (code) */

@@ -59,13 +59,6 @@ set_target_properties(
         STM32G4xx_FreeRTOS_Rear
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
-find_program(ARM_GDB
-  arm-none-eabi-gdb-py
-  PATHS "${CrossGCC_BINDIR}"
-  NO_DEFAULT_PATH
-  REQUIRED)
-message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
-
 find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
   PATHS "${CrossGCC_BINDIR}"
   NO_DEFAULT_PATH
@@ -81,7 +74,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
   # but hopefully that's quick)
   set_source_files_properties(main.cpp
     PROPERTIES
-    OBJECT_DEPENDS "${COMMON_MCU_DIR}/STM32G491VETx_FLASH.ld")
+    OBJECT_DEPENDS "${COMMON_MCU_DIR}/STM32G491RETx_FLASH.ld")
   target_rear_core_rev1(${REVISION_TARGET})
   target_i2c_firmware(${REVISION_TARGET})
   
@@ -114,23 +107,25 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
           $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
           $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
  
-  set_target_properties(${REVISION_TARGET}
-    PROPERTIES
-    CROSSCOMPILING_EMULATOR
-    "${ARM_GDB};--command=${GDBINIT_PATH}")
+    # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
+    # this dir
+    set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+    set_target_properties(${REVISION_TARGET}
+            PROPERTIES
+            CROSSCOMPILING_EMULATOR
+            "${ARM_GDB};--command=${GDBINIT_FILE}")
     
     # Calculate and package the integrity info for this module
   
   add_custom_target(${REVISION_TARGET}-integrity ALL 
-    COMMAND echo ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-scratch.bin ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-integrity-info
     COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} -Obinary 
         ${REVISION_TARGET}-scratch.bin --gap-fill=0xFF
     COMMAND ${CMAKE_SOURCE_DIR}/calculate_checksum.py 
         ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-scratch.bin
-        ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}
+        ${REVISION_TARGET}
         "0x08008400"
         ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-integrity-info
-    COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}
+    COMMAND ${CROSS_OBJCOPY} ${REVISION_TARGET}
         --update-section
         .integrity_info=${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-integrity-info
     DEPENDS ${REVISION_TARGET}
@@ -174,9 +169,9 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
     USES_TERMINAL
     )
 
-  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}@${${REVISION_TARGET}_VERSION}.hex")
+  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/rear@${REVISION_TARGET}.hex")
 
-  set(BIN_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${TARGET_MODULE_NAME}@${${TARGET_MODULE_NAME}_VERSION}.bin")
+  set(BIN_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/rear@${REVISION_TARGET}.bin")
     
   set(STARTUP_NAME ${REVISION_TARGET}-startup)
 
@@ -219,7 +214,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
       DEPENDS ${REVISION_TARGET}.hex)
   # Runs openocd to flash the board with the full image (startup included)
   add_custom_target(${REVISION_TARGET}-image-flash
-      COMMAND "${OpenOCD_EXECUTABLE}" 
+      COMMAND "${OpenOCD_EXECUTABLE}" "-d"
           "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg" 
           "-c" "program ${HEX_IMG_NAME} reset;exit"
       VERBATIM
