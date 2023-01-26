@@ -14,40 +14,40 @@ There is also two spare IO pins that are currently unused for anything but get p
 
 ## Building
 
-like the rest of the system the this project uses cmake presets
-here is a list of targets that are built by the project
-rear-panel-rev1
-  build the main binary
-rear-panel-rev1-hex
-  dump the binary to a hex file
-rear-panel-rev1-startup
-  build the startup program binary
-rear-panel-rev1-startup-hex
-  dump the startup binary to hex
-rear-panel-rev1-integrity
-  calculate the checksum of the main binary
-  insert it into that the main binary's .integrity-info section
-rear-panel-rev1-image-hex
-  combines the hex file for the startup and mainbinary into a single hex for flashing
-rear-panel-rev1-flash
-  flash just the main program's section of memory and leave the startup app alone
-rear-panel-rev1-image-flash
-  flash both the startup and the main binary
-rear-panel-rev1-debug
-  debug the main binary
-rear-panel-rev1-startup-debug
-  debug the startup app
-rear-panel-rev1-clear
-  clear the write protect settings for the startup app, you need to call this between calls to rear-panel-rev1-image-flash 
+like the rest of the system the this project uses cmake presets  
+here is a list of targets that are built by the project  
+* `rear-panel-rev1`  
+  build the main binary  
+* `rear-panel-rev1-hex`  
+  dump the binary to a hex file  
+* `rear-panel-rev1-startup`  
+  build the startup program binary  
+* `rear-panel-rev1-startup-hex`  
+  dump the startup binary to hex  
+* `rear-panel-rev1-integrity`  
+  calculate the checksum of the main binary  
+  insert it into that the main binary's .integrity-info section  
+* `rear-panel-rev1-image-hex`  
+  combines the hex file for the startup and mainbinary into a single hex for flashing  
+* `rear-panel-rev1-flash`  
+  flash just the main program's section of memory and leave the startup app alone  
+* `rear-panel-rev1-image-flash`  
+  flash both the startup and the main binary  
+* `rear-panel-rev1-debug`  
+  debug the main binary  
+* `rear-panel-rev1-startup-debug`  
+  debug the startup app  
+* `rear-panel-rev1-clear`  
+  clear the write protect settings for the startup app, you need to call this between calls to rear-panel-rev1-image-flash   
 
-additionally it has the project wide targets such as format, lint etc.
+additionally it has the project wide targets such as format, lint etc.  
 
-## Flashing
+## Flashing  
 
-for the first time flash call:
-cmake --build --preset rear-panel --target rear-panel-rev1-image-flash
-if the project has had the startup app previously flashed to it you will need to call
-cmake --build --preset rear-panel --target rear-panel-rev1-clear
+for the first time flash call:  
+`cmake --build --preset rear-panel --target rear-panel-rev1-image-flash`  
+if the project has had the startup app previously flashed to it you will need to call  
+`cmake --build --preset rear-panel --target rear-panel-rev1-clear`  
 
-if you want to just update the program section 
-cmake --build --preset rear-panel --target rear-panel-rev1-flash
+if you want to just update the program section   
+`cmake --build --preset rear-panel --target rear-panel-rev1-flash`  
