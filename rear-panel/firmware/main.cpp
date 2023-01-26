@@ -48,12 +48,9 @@ static auto eeprom_hw_iface = EEPromHardwareInterface();
 
 static constexpr uint32_t TASK_STACK_DEPTH = 512;
 
-
-
 class LED_BLINK_TASK {
   public:
-    LED_BLINK_TASK(const char* task_name)
-        : task_name{task_name} {}
+    LED_BLINK_TASK(const char* task_name) : task_name{task_name} {}
     LED_BLINK_TASK(const LED_BLINK_TASK& c) = delete;
     LED_BLINK_TASK(const LED_BLINK_TASK&& c) = delete;
     auto operator=(const LED_BLINK_TASK& c) = delete;
@@ -62,7 +59,7 @@ class LED_BLINK_TASK {
 
     void start_task() {
         xTaskCreateStatic(this->task_function, task_name, TASK_STACK_DEPTH,
-                          ( void * ) 1, 6, backing.data(), &static_task);
+                          (void*)1, 6, backing.data(), &static_task);
     }
 
     /**
@@ -86,20 +83,19 @@ class LED_BLINK_TASK {
 
 static auto lbt = LED_BLINK_TASK{"Blinkenlights"};
 
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
 
-    //initialize_leds();
+    // initialize_leds();
 
-    //i2c_setup(&i2c_handles);
-    //i2c_comms3.set_handle(i2c_handlines.i2c3);
+    // i2c_setup(&i2c_handles);
+    // i2c_comms3.set_handle(i2c_handlines.i2c3);
 
-    //rear_tasks::start_tasks(i2c_comms3, eeprom_hw_iface);
+    // rear_tasks::start_tasks(i2c_comms3, eeprom_hw_iface);
     lbt.start_task();
-    
+
     iWatchdog.start(6);
 
     vTaskStartScheduler();
