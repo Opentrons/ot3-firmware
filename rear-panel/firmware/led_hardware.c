@@ -100,9 +100,7 @@ static void MX_TIM2_Init(void) {
 
     htim2.Instance = TIM2;
     /*
-     * Setting counter clock frequency to 32 kHz
-     * Note that brushed timer tick at a different frequency from the stepper
-     * motor timer.
+     * Setting counter clock frequency to 2 kHz
      */
     htim2.Init.Prescaler =
         calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
@@ -173,9 +171,7 @@ static void MX_TIM3_Init(void) {
 
     htim3.Instance = TIM3;
     /*
-     * Setting counter clock frequency to 32 kHz
-     * Note that brushed timer tick at a different frequency from the stepper
-     * motor timer.
+     * Setting counter clock frequency to 2 kHz
      */
     htim3.Init.Prescaler =
         calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
@@ -250,9 +246,7 @@ static void MX_TIM15_Init(void) {
 
     htim15.Instance = TIM15;
     /*
-     * Setting counter clock frequency to 32 kHz
-     * Note that brushed timer tick at a different frequency from the stepper
-     * motor timer.
+     * Setting counter clock frequency to 2 kHz
      */
     htim15.Init.Prescaler =
         calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);

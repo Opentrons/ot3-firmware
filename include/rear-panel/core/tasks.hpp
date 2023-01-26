@@ -12,7 +12,7 @@
 namespace rear_tasks {
 
 /**
- * Start gripper tasks.
+ * Start rear-panel tasks.
  */
 void start_tasks(i2c::hardware::I2CBase& i2c3,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
