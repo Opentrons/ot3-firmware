@@ -435,7 +435,7 @@ SCENARIO("message serializing works") {
                               .encoder_position_um = 0x05803931,
                               .ack_id = 0x1,
                               .success = 0x1,
-                              .action = can::ids::PipetteTipActionType::pick_up,
+                              .action = can::ids::PipetteTipActionType::clamp,
                               .position_flags = 0x0,
                               .gear_motor_id = can::ids::GearMotorId::left};
         auto arr = std::array<uint8_t, MESSAGE_SIZE + 5>{0, 0, 0, 0, 0, 0, 0, 0,

@@ -184,8 +184,8 @@ typedef enum {
 
 /** Tip action types. */
 typedef enum {
-    can_pipettetipactiontype_pick_up = 0x0,
-    can_pipettetipactiontype_drop = 0x1,
+    can_pipettetipactiontype_clamp = 0x0,
+    can_pipettetipactiontype_home = 0x1,
 } CANPipetteTipActionType;
 
 /** Tip action types. */

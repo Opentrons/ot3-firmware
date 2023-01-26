@@ -38,7 +38,7 @@ SCENARIO("testing gear move status response handling") {
                                      100,
                                      0x1,
                                      AckMessageId::complete_without_condition,
-                                     can::ids::PipetteTipActionType::pick_up,
+                                     can::ids::PipetteTipActionType::clamp,
                                      can::ids::GearMotorId::left};
 
         auto mcc = MockCanClient();

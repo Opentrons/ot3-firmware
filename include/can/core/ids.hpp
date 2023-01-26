@@ -193,8 +193,8 @@ enum class SensorThresholdMode {
 
 /** Tip action types. */
 enum class PipetteTipActionType {
-    pick_up = 0x0,
-    drop = 0x1,
+    clamp = 0x0,
+    home = 0x1,
 };
 
 /** Tip action types. */
@@ -220,3 +220,4 @@ enum class MoveStopCondition {
 };
 
 }  // namespace can::ids
+
