@@ -16,9 +16,9 @@
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
 //#include "i2c/firmware/i2c_comms.hpp"
-#include "rear/core/tasks.hpp"
-//#include "rear/firmware/i2c_setup.h"
-#include "rear/firmware/led_hardware.h"
+#include "rear-panel/core/tasks.hpp"
+//#include "rear-panel/firmware/i2c_setup.h"
+#include "rear-panel/firmware/led_hardware.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**

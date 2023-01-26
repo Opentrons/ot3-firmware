@@ -11,7 +11,7 @@
 //PB15 RED Drive
 	AF2 = TIM15_CH2
 **/
-#include "rear/firmware/led_hardware.h"
+#include "rear-panel/firmware/led_hardware.h"
 #include "common/firmware/errors.h"
 
 TIM_HandleTypeDef htim2;

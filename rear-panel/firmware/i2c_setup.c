@@ -1,4 +1,4 @@
-#include "rear/firmware/i2c_setup.h"
+#include "rear-panel/firmware/i2c_setup.h"
 
 #include "common/firmware/errors.h"
 #include "platform_specific_hal_conf.h"

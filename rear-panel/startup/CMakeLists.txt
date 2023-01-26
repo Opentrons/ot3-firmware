@@ -1,4 +1,4 @@
-set(TARGET_MODULE_NAME "rear-startup")
+set(TARGET_MODULE_NAME "rear-panel-startup")
 if (${CMAKE_CROSSCOMPILING})
   add_subdirectory(application-startup)    
   add_subdirectory(STM32G491)

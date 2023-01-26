@@ -1,4 +1,4 @@
-function(target_rear_core_rev1 TARGET)
+function(target_rear_panel_core_rev1 TARGET)
     target_sources(${TARGET} PUBLIC
             #${CMAKE_CURRENT_FUNCTION_LIST_DIR}/tasks.cpp
         )

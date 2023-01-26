@@ -216,13 +216,13 @@
       ]
     },
     {
-      "name": "rear",
-      "displayName": "rear binary",
+      "name": "rear-panel",
+      "displayName": "rear-panel binary",
       "description": "build the rear binary targets",
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "rear"
+        "rear-panel"
       ]
     },
     {

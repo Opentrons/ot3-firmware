@@ -6,7 +6,7 @@ set(G4_BOARD_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/stm32g4discovery.cfg")
 
 set(STM_HAL_PREFIX "stm32g4xx")
 configure_file(
-    ${CMAKE_SOURCE_DIR}/include/rear/firmware/hal_util.h.in 
+    ${CMAKE_SOURCE_DIR}/include/rear-panel/firmware/hal_util.h.in 
     firmware/hal_util.h)
 
 add_library(${TARGET_MODULE_NAME}-STM32G491 STATIC

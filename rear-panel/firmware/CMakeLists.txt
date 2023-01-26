@@ -1,8 +1,8 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
 find_package(STM32G4xx)
-add_STM32G4_driver("Rear")
-add_STM32G4_freertos("Rear")
+add_STM32G4_driver("RearPanel")
+add_STM32G4_freertos("RearPanel")
 
 find_program(ARM_GDB
         arm-none-eabi-gdb-py
@@ -19,20 +19,20 @@ find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 set(COMMON_MCU_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../startup/STM32G491")
 
-# List of revisions of the rear that we support
-set(REVISIONS rear-rev1)
+# List of revisions of the rear-panel that we support
+set(REVISIONS rear-panel-rev1)
 # The default revision that you'll get if you use targets not qualified
-# by revision (i.e. if you do cmake --build --preset=rear --target rear
-# rather than cmake --build --preset=rear --target rear-proto)
-set(DEFAULT_REVISION rear-rev1)
+# by revision (i.e. if you do cmake --build --preset=rear-panel --target rear-panel
+# rather than cmake --build --preset=rear-panel --target rear-panel-proto)
+set(DEFAULT_REVISION rear-panel-rev1)
 
 # Add source files that should be checked by clang-tidy here
-set(REAR_FW_LINTABLE_SRCS
+set(REAR_PANEL_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         )
 
-set(REAR_FW_NON_LINTABLE_SRCS
+set(REAR_PANEL_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32g4xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
@@ -45,18 +45,18 @@ set(REAR_FW_NON_LINTABLE_SRCS
         )
 
 
-target_include_directories(STM32G4xx_Drivers_Rear
+target_include_directories(STM32G4xx_Drivers_RearPanel
         PUBLIC .)
-target_include_directories(STM32G4xx_FreeRTOS_Rear
+target_include_directories(STM32G4xx_FreeRTOS_RearPanel
         PUBLIC .)
 
-target_compile_definitions(STM32G4xx_Drivers_Rear
+target_compile_definitions(STM32G4xx_Drivers_RearPanel
         PUBLIC STM32G491xx)
-target_compile_definitions(STM32G4xx_FreeRTOS_Rear
+target_compile_definitions(STM32G4xx_FreeRTOS_RearPanel
         PUBLIC STM32G491xx)
 
 set_target_properties(
-        STM32G4xx_FreeRTOS_Rear
+        STM32G4xx_FreeRTOS_RearPanel
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
 
 find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
@@ -68,21 +68,21 @@ find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
 foreach(REVISION_TARGET IN LISTS REVISIONS )
   add_executable(${REVISION_TARGET}
           ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-          ${REAR_FW_LINTABLE_SRCS}
-          ${REAR_FW_NON_LINTABLE_SRCS})
+          ${REAR_PANEL_FW_LINTABLE_SRCS}
+          ${REAR_PANEL_FW_NON_LINTABLE_SRCS})
   # Incurs at least a relink when you change the linker file (and a recompile of main
   # but hopefully that's quick)
   set_source_files_properties(main.cpp
     PROPERTIES
     OBJECT_DEPENDS "${COMMON_MCU_DIR}/STM32G491RETx_FLASH.ld")
-  target_rear_core_rev1(${REVISION_TARGET})
+  target_rear_panel_core_rev1(${REVISION_TARGET})
   target_i2c_firmware(${REVISION_TARGET})
   
   target_link_libraries(${REVISION_TARGET}
           PUBLIC 
-          STM32G4xx_Drivers_Rear
-          STM32G4xx_FreeRTOS_Rear
-          rear-startup-STM32G491
+          STM32G4xx_Drivers_RearPanel
+          STM32G4xx_FreeRTOS_RearPanel
+          rear-panel-startup-STM32G491
           )
 
   set_target_properties(${REVISION_TARGET}
@@ -120,7 +120,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
   add_custom_target(${REVISION_TARGET}-integrity ALL 
     COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} -Obinary 
         ${REVISION_TARGET}-scratch.bin --gap-fill=0xFF
-    COMMAND ${CMAKE_SOURCE_DIR}/calculate_checksum.py 
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/calculate_checksum.py 
         ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-scratch.bin
         ${REVISION_TARGET}
         "0x08008400"
@@ -169,9 +169,9 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
     USES_TERMINAL
     )
 
-  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/rear@${REVISION_TARGET}.hex")
+  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/rear-panel@${REVISION_TARGET}.hex")
 
-  set(BIN_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/rear@${REVISION_TARGET}.bin")
+  set(BIN_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/rear-panel@${REVISION_TARGET}.bin")
     
   set(STARTUP_NAME ${REVISION_TARGET}-startup)
 
@@ -185,7 +185,7 @@ foreach(REVISION_TARGET IN LISTS REVISIONS )
       DEPENDS ${REVISION_TARGET}-hex
       DEPENDS ${STARTUP_NAME}-hex
       DEPENDS ${REVISION_TARGET}.hex
-      COMMAND ${CMAKE_SOURCE_DIR}/hex_combine.py ${HEX_IMG_NAME} $<TARGET_FILE_DIR:${STARTUP_NAME}>/${STARTUP_NAME}.hex ${REVISION_TARGET}.hex
+      COMMAND ${CMAKE_SOURCE_DIR}/scripts/hex_combine.py ${HEX_IMG_NAME} $<TARGET_FILE_DIR:${STARTUP_NAME}>/${STARTUP_NAME}.hex ${REVISION_TARGET}.hex
       VERBATIM)
   add_custom_target(${REVISION_TARGET}-image-hex ALL
       DEPENDS ${HEX_IMG_NAME})
@@ -237,8 +237,8 @@ set(CLANG_EXTRA_ARGS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
 # This helps with clang accepting what GCC accepts around the implementations of the message queue
 list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
-add_custom_target(rear-lint
+add_custom_target(rear-panel-lint
         ALL
-        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${REAR_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
-list(APPEND LINT_TARGETS rear-lint)
+        COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${REAR_PANEL_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
+list(APPEND LINT_TARGETS rear-panel-lint)
 set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
