@@ -29,8 +29,8 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim15;
 
-void update_pwm(uint32_t duty_cycle, LED_DEVICE led);
-void initialize_leds();
+void led_hw_update_pwm(uint32_t duty_cycle, LED_DEVICE led);
+void led_hw_initialize_leds();
 
 #ifdef __cplusplus
 }  // extern "C"

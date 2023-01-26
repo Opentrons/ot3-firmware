@@ -309,7 +309,7 @@ static void MX_TIM15_Init(void) {
 }
 
 
-void update_pwm(uint32_t duty_cycle, LED_DEVICE led) {
+void led_hw_update_pwm(uint32_t duty_cycle, LED_DEVICE led) {
 	
 	switch(led) {
 		case DECK_LED:
@@ -330,7 +330,7 @@ void update_pwm(uint32_t duty_cycle, LED_DEVICE led) {
 	}
 }
 
-void initialize_leds() {
+void led_hw_initialize_leds() {
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_TIM15_Init();
