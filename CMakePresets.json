@@ -216,6 +216,16 @@
       ]
     },
     {
+      "name": "rear-panel",
+      "displayName": "rear-panel binary",
+      "description": "build the rear binary targets",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": [
+        "rear-panel"
+      ]
+    },
+    {
       "name": "tests",
       "displayName": "tests",
       "description": "build and run all tests",

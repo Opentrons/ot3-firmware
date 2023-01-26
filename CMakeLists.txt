@@ -87,6 +87,7 @@ add_subdirectory(head)
 add_subdirectory(gripper)
 add_subdirectory(eeprom)
 add_subdirectory(bootloader)
+add_subdirectory(rear-panel)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
 message(VERBOSE "Checking if cross-compiling.")
@@ -112,7 +113,8 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./i2c/*.hpp ./i2c/*.cpp
         ./sensors/*.hpp ./sensors/*.cpp
         ./spi/*.hpp ./spi/*.cpp
-        ./eeprom/*.hpp ./eeprom/*.cpp
+        ./eeprom/*.hpp ./eeprom/*.cpp ./rear-panel/*.hpp
+        ./rear-panel/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
