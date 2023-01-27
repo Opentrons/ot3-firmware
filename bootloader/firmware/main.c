@@ -79,7 +79,7 @@ int main() {
     // Enable the flash interrupt.
     HAL_NVIC_SetPriority(FLASH_IRQn, 15, 15);
     HAL_NVIC_EnableIRQ(FLASH_IRQn);
-
+    system_specific_startup();
     bool requires_update = requires_an_update();
 
     // Clear reset flags. Otherwise, they will persist for the lifetime of
@@ -235,3 +235,5 @@ void initialize_can(FDCAN_HandleTypeDef * can_handle) {
     filter_def.FilterID2 = 0;
     HAL_FDCAN_ConfigFilter(can_handle, &filter_def);
 }
+
+void __attribute__((weak)) system_specific_startup() {}

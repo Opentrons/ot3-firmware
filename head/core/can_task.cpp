@@ -50,7 +50,6 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
 using PresenceSensingDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::presence_sensing::PresenceSensingHandler<
         head_tasks::HeadQueueClient>,
-    can::messages::ReadPresenceSensingVoltageRequest,
     can::messages::AttachedToolsRequest>;
 
 /** The parsed message handler */
@@ -81,7 +80,7 @@ static auto system_message_handler =
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 
-static auto presence_sensing_disptach_target =
+static auto presence_sensing_dispatch_target =
     PresenceSensingDispatchTarget{presence_sensing_handler};
 
 static auto motor_dispatch_target_right =
@@ -138,7 +137,7 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
                 (node_id == can::ids::NodeId::head_r));
     },
     dispatcher_right_motor, dispatcher_left_motor,
-    presence_sensing_disptach_target, system_dispatch_target);
+    presence_sensing_dispatch_target, system_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.

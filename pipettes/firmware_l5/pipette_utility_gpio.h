@@ -4,7 +4,9 @@
 extern "C" {
 #endif  // __cplusplus
 
-void utility_gpio_init();
+// in both cases, 1 means present/high and 0 means absent/low
+int utility_gpio_tip_present();
+int utility_gpio_get_mount_id();
 
 #ifdef __cplusplus
 }  // extern "C"

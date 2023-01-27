@@ -1,13 +1,14 @@
 #include "common/firmware/utility_gpio.h"
 
 #include "platform_specific_hal_conf.h"
+#include "stm32g4xx_hal_gpio.h"
 
 /**
  * @brief Limit Switch GPIO Initialization Function
  * @param None
  * @retval None
  */
-void limit_switch_gpio_init(void) {
+static void limit_switch_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
 
@@ -29,9 +30,9 @@ void limit_switch_gpio_init(void) {
  * @param None
  * @retval None
  */
-void LED_drive_gpio_init(void) {
+static void LED_drive_gpio_init(void) {
     /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
 
     /*Configure GPIO pin : PC6 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -47,7 +48,7 @@ void LED_drive_gpio_init(void) {
  * @param None
  * @retval None
  */
-void sync_drive_gpio_init() {
+static void sync_drive_gpio_init() {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
 
@@ -65,7 +66,7 @@ void sync_drive_gpio_init() {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 }
 
-void estop_input_gpio_init() {
+static void estop_input_gpio_init() {
        /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -77,9 +78,19 @@ void estop_input_gpio_init() {
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
+static void tool_detect_gpio_init(void) {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+}
+
 void utility_gpio_init(void) {
     limit_switch_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
     estop_input_gpio_init();
+    tool_detect_gpio_init();
 }

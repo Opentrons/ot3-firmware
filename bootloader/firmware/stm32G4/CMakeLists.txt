@@ -97,7 +97,9 @@ endmacro()
 add_executable(bootloader-head
         ${BOOTLOADER_FW_LINTABLE_SRCS}
         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/head_startup.c
+        )
 
 target_compile_definitions(bootloader-head PUBLIC node_id_head)
 
@@ -124,7 +126,8 @@ target_stm32G4(bootloader-gantry-y)
 add_executable(bootloader-gripper
         ${BOOTLOADER_FW_LINTABLE_SRCS}
         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/gripper_startup.c)
 
 target_compile_definitions(bootloader-gripper PUBLIC node_id_gripper)
 

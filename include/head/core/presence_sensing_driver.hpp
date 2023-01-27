@@ -5,7 +5,6 @@
 
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
-#include "head/core/adc.hpp"
 #include "head/core/attached_tools.hpp"
 
 namespace presence_sensing_driver {
@@ -13,14 +12,18 @@ using namespace can::ids;
 
 class PresenceSensingDriver {
   public:
-    explicit PresenceSensingDriver(adc::BaseADC& adc)
-        : PresenceSensingDriver(adc, attached_tools::AttachedTools{}) {}
-    PresenceSensingDriver(adc::BaseADC& adc,
-                          attached_tools::AttachedTools current_tools)
-        : adc_comms(adc), current_tools(current_tools) {}
-    auto get_readings() -> adc::MillivoltsReadings {
-        return adc_comms.get_voltages();
-    }
+    PresenceSensingDriver()
+        : PresenceSensingDriver(attached_tools::AttachedTools{}) {}
+    explicit PresenceSensingDriver(const PresenceSensingDriver&) = default;
+    auto operator=(const PresenceSensingDriver&)
+        -> PresenceSensingDriver& = default;
+    explicit PresenceSensingDriver(PresenceSensingDriver&&) = default;
+    auto operator=(PresenceSensingDriver&&) -> PresenceSensingDriver& = default;
+    explicit PresenceSensingDriver(attached_tools::AttachedTools current_tools)
+        : current_tools(current_tools) {}
+    virtual auto get_readings() -> attached_tools::MountPinMeasurements = 0;
+    virtual ~PresenceSensingDriver() = default;
+
     auto get_current_tools() -> attached_tools::AttachedTools {
         return this->current_tools;
     }
@@ -33,15 +36,7 @@ class PresenceSensingDriver {
      * Determine if two attached tool structs are different enough from each
      * other that upstream should be notified of a change.
      *
-     * In some cases, hardware tolerances can be slightly incorrect, so readings
-     * can bounce between some valid reading and one of the holes in the ranges.
-     * This causes extreme canbus loading and bad behavior because upstream
-     * keeps getting notified that things break.
-     *
-     * To prevent this, we can suppress notifications for when we see a change
-     * from a valid setting to an unknown value.
-     *
-     * This function therefore returns a (bool, AttachedTools) tuple. The bool
+     * This function returns a (bool, AttachedTools) tuple. The bool
      * is true if the new value is different from what was previously cached.
      *
      * After the call, the internal tool cache will be the same as what is
@@ -70,7 +65,6 @@ class PresenceSensingDriver {
                tool_attached_changed(old_tools.gripper, new_tools.gripper);
     }
 
-    adc::BaseADC& adc_comms;
     attached_tools::AttachedTools current_tools;
 };
 
