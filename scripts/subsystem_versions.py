@@ -15,7 +15,7 @@ SUBSYSTEMS = [
     "pipettes-single",
     "pipettes-multi",
     "pipettes-96",
-    "pippetes-384",
+    "pipettes-384",
 ]
 
 
