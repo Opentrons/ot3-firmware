@@ -212,7 +212,7 @@ static auto linear_config = lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
     .steps_per_rev = 200,
     .microstep = 16,
     .encoder_pulses_per_rev = 1024.0,
-    .gear_ratio = 4.0};
+    .gear_ratio = 3.2};
 
 static stall_check::StallCheck stallcheck_right(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
