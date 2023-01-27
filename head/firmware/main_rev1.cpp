@@ -13,7 +13,6 @@
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
-#include "head/firmware/adc.h"
 #include "motor_hardware.h"
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_conf.h"
@@ -24,11 +23,10 @@
 #include "common/core/freertos_timer.hpp"
 #include "common/firmware/clocking.h"
 #include "common/firmware/gpio.hpp"
-#include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_rev1.hpp"
 #include "head/core/utils.hpp"
-#include "head/firmware/adc_comms.hpp"
+#include "head/firmware/presence_sensing_hardware.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -285,9 +283,19 @@ extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
     motor_hardware_right.encoder_overflow(direction);
 }
 
-static auto ADC_comms = adc::ADC(get_adc1_handle(), get_adc2_handle());
-
-static auto psd = presence_sensing_driver::PresenceSensingDriver{ADC_comms};
+static auto psd = presence_sensing_driver::PresenceSensingHardware{
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOC,
+                    .pin = GPIO_PIN_5,
+                    .active_setting = GPIO_PIN_SET},
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_2,
+                    .active_setting = GPIO_PIN_RESET},
+    gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .port = GPIOB,
+                    .pin = GPIO_PIN_1,
+                    .active_setting = GPIO_PIN_SET}};
 
 auto timer_for_notifier = freertos_timer::FreeRTOSTimer(
     "timer for notifier", ([] {

@@ -32,7 +32,6 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/mount_detect_hardware.c
     ${CMAKE_CURRENT_SOURCE_DIR}/hardware_config.c
     ${COMMON_EXECUTABLE_DIR}/errors/errors.c
     ${COMMON_EXECUTABLE_DIR}/system/app_update.c

@@ -20,7 +20,7 @@ target_compile_options(version-lib
 target_include_directories(version-lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
 add_dependencies(version-lib generate_version)
 
-add_library(common-core STATIC tool_detection.cpp ${CMAKE_CURRENT_BINARY_DIR}/version.c)
+add_library(common-core STATIC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 target_include_directories(common-core PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(common-core PUBLIC can-core version-lib)
 

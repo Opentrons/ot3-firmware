@@ -1,7 +1,6 @@
 #include "head/core/tasks_proto.hpp"
 
 #include "common/core/freertos_task.hpp"
-#include "head/core/adc.hpp"
 #include "head/core/can_task.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"

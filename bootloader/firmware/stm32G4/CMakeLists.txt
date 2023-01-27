@@ -29,15 +29,16 @@ macro(head_bootloader_loop)
 
 endmacro()
 
+set(head_sources ${_g4_sources} ${CMAKE_CURRENT_SOURCE_DIR}/head_startup.c)
+
 foreach_revision(
     PROJECT_NAME bootloader-head
     CALL_FOREACH_REV head_bootloader_loop
     REVISIONS A1 B1 C2
-    SOURCES _g4_sources _g4_sources _g4_sources
+    SOURCES head_sources head_sources head_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
-
 
 macro(gantry_bootloader_loop)
     set(_gbl_options)
@@ -78,6 +79,8 @@ foreach_revision(
     NO_CREATE_INSTALL_RULES
     )
 
+set(gripper_sources ${_g4_sources} ${CMAKE_CURRENT_SOURCE_DIR}/gripper_startup.c)
+
 macro(gripper_bootloader_loop)
   target_link_libraries(${REVISION_TARGET}
       PUBLIC STM32G491RETx_bootloader
@@ -91,7 +94,7 @@ foreach_revision(
     PROJECT_NAME bootloader-gripper
     CALL_FOREACH_REV gripper_bootloader_loop
     REVISIONS a1 b1 c1
-    SOURCES _g4_sources _g4_sources _g4_sources
+    SOURCES gripper_sources gripper_sources gripper_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )

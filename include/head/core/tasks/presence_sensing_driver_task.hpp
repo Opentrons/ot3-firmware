@@ -45,22 +45,6 @@ class PresenceSensingDriverMessageHandler {
   private:
     void visit(std::monostate&) {}
 
-    void visit(can::messages::ReadPresenceSensingVoltageRequest& m) {
-        auto voltage_read = driver.get_readings();
-
-        LOG("Received read presence sensing voltage request: z=%d, a=%d, "
-            "gripper=%d",
-            voltage_read.z_motor, voltage_read.a_motor, voltage_read.gripper);
-
-        can::messages::ReadPresenceSensingVoltageResponse resp{
-            .message_index = m.message_index,
-            .z_motor = voltage_read.z_motor,
-            .a_motor = voltage_read.a_motor,
-            .gripper = voltage_read.gripper,
-        };
-        can_client.send_can_message(can::ids::NodeId::host, resp);
-    }
-
     void visit(can::messages::AttachedToolsRequest& m) {
         LOG("Received attached tools request");
         auto tools = driver.update_tools();

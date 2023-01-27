@@ -22,9 +22,7 @@ class PresenceSensingHandler {
         -> PresenceSensingHandler && = delete;
     ~PresenceSensingHandler() = default;
 
-    using MessageType =
-        std::variant<std::monostate, ReadPresenceSensingVoltageRequest,
-                     AttachedToolsRequest>;
+    using MessageType = std::variant<std::monostate, AttachedToolsRequest>;
     void handle(const MessageType &m) {
         std::visit([this](auto &message) { handle_message(message); }, m);
     }

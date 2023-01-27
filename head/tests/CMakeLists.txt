@@ -7,9 +7,6 @@ include(AddBuildAndTestTarget)
 add_executable(
         head
         test_main.cpp
-        test_presence_sensing_queue.cpp
-        test_presence_sensing_driver.cpp
-        test_voltage_conversion.cpp       
 )
 
 add_revision(TARGET head REVISION a1)
