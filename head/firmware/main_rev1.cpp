@@ -213,9 +213,16 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_configs_left{
         .GPIO_handle = GPIOA,
     }};
 
+#if (PCBA_PRIMARY_REVISION == 'a' || PCBA_PRIMARY_REVISION == 'b')
+static constexpr float reduction_ratio = 4.0;
+#else
+static constexpr float reduction_ratio = 3.2;
+#endif
+
 static auto linear_config = lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-    .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12.0,
-                                        .gear_reduction_ratio = 4.0},
+    .mech_config =
+        lms::LeadScrewConfig{.lead_screw_pitch = 12.0,
+                             .gear_reduction_ratio = reduction_ratio},
     .steps_per_rev = 200,
     .microstep = 16,
     .encoder_pulses_per_rev = 1024.0};
