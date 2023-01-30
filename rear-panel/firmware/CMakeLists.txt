@@ -4,7 +4,6 @@ find_package(STM32G4xx)
 include(RevisionHandling)
 include(ClangTidy)
 
-
 find_program(ARM_GDB
         arm-none-eabi-gdb-py
         PATHS "${CrossGCC_BINDIR}"
@@ -30,6 +29,7 @@ set(DEFAULT_REVISION rear-panel-rev1)
 # Add source files that should be checked by clang-tidy here
 set(REAR_PANEL_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/freertos_comms_task.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         )
 
@@ -40,11 +40,13 @@ set(REAR_PANEL_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${CMAKE_CURRENT_SOURCE_DIR}/led_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/usbd_conf.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/usb_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/usbd_desc.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         )
-
 
 
 find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
@@ -68,14 +70,19 @@ macro(rearpanel_loop)
   set(_driver_suffix ${PROJECT_NAME}_${REVISION})
   add_STM32G4_driver(${_driver_suffix})
   add_STM32G4_freertos(${_driver_suffix})
+  add_STM32G4_usb(${_driver_suffix})
   target_include_directories(STM32G4xx_Drivers_${_driver_suffix}
         PUBLIC .)
   target_include_directories(STM32G4xx_FreeRTOS_${_driver_suffix}
         PUBLIC .)
+  target_include_directories(STM32G4xx_USB_${_driver_suffix}
+        PUBLIC set(COMMS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task")
 
   target_compile_definitions(STM32G4xx_Drivers_${_driver_suffix}
         PUBLIC STM32G491xx)
   target_compile_definitions(STM32G4xx_FreeRTOS_${_driver_suffix}
+        PUBLIC STM32G491xx)
+  target_compile_definitions(STM32G4xx_USB_${_driver_suffix}
         PUBLIC STM32G491xx)
 
   set_target_properties(
@@ -88,6 +95,7 @@ macro(rearpanel_loop)
           PUBLIC
           STM32G4xx_Drivers_${_driver_suffix}
           STM32G4xx_FreeRTOS_${_driver_suffix}
+          STM32G4xx_USB_${_driver_suffix}
           rear-panel-startup-STM32G491
           )
   add_custom_target(${REVISION_TARGET}-integrity ALL
