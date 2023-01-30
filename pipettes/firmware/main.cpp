@@ -140,7 +140,8 @@ auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin && PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
+    if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin &&
+        PIPETTE_TYPE == NINETY_SIX_CHANNEL) {
         sensor_hardware.data_ready();
     }
 }
