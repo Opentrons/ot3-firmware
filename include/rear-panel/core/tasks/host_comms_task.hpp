@@ -13,10 +13,10 @@ namespace host_comms_task {
 using TaskMessage =
     std::variant<std::monostate, messages::IncomingMessageFromHost>;
 
-template <class ResposneQueue>
+template <class ResponseQueue>
 class HostCommMessageHandler {
   public:
-    explicit HostCommMessageHandler(ResposneQueue &resp_queue)
+    explicit HostCommMessageHandler(ResponseQueue &resp_queue)
         : resp_queue{resp_queue} {}
     HostCommMessageHandler(const HostCommMessageHandler &) = delete;
     HostCommMessageHandler(const HostCommMessageHandler &&) = delete;
@@ -86,7 +86,7 @@ class HostCommMessageHandler {
             tx_into);
     }
 
-    ResposneQueue &resp_queue;
+    ResponseQueue &resp_queue;
 };
 
 /**
