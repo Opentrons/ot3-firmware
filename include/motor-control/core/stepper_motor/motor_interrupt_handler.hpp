@@ -39,9 +39,8 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage, typename MotorHardware>
-requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
-    std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
+          typename MotorMoveMessage, BaseMotorHardware MotorHardware>
+requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;

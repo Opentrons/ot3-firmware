@@ -43,7 +43,8 @@ static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
 static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
 
 template <template <class> class QueueImpl,
-          move_status_reporter_task::BrushedTaskClient StatusClient>
+          move_status_reporter_task::BrushedTaskClient StatusClient,
+          typename MotorHardware>
 requires MessageQueue<QueueImpl<BrushedMove>, BrushedMove>
 class BrushedMotorInterruptHandler {
   public:
@@ -52,7 +53,7 @@ class BrushedMotorInterruptHandler {
     BrushedMotorInterruptHandler() = delete;
     BrushedMotorInterruptHandler(
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
-        motor_hardware::BrushedMotorHardwareIface& hardware_iface,
+        MotorHardware& hardware_iface,
         brushed_motor_driver::BrushedMotorDriverIface& driver_iface,
         lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gearbox_config)
         : queue(incoming_queue),
@@ -348,7 +349,7 @@ class BrushedMotorInterruptHandler {
   private:
     GenericQueue& queue;
     StatusClient& status_queue_client;
-    motor_hardware::BrushedMotorHardwareIface& hardware;
+    MotorHardware& hardware;
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
     lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
     BrushedMove buffered_move = BrushedMove{};

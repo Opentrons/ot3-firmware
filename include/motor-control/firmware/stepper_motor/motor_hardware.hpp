@@ -18,11 +18,16 @@ struct HardwareConfig {
     gpio::PinConfig estop_in;
 };
 
-class MotorHardware : public StepperMotorHardwareIface {
+struct HardwareConfigForHead: public  HardwareConfig{
+    gpio::PinConfig ebrake;
+};
+
+template<typename HardwarePinConfigurations>
+class MotorHardware {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;
-    MotorHardware(const HardwareConfig& config, void* timer_handle,
+    MotorHardware(const HardwarePinConfigurations& config, void* timer_handle,
                   void* encoder_handle)
         : pins(config), tim_handle(timer_handle), enc_handle(encoder_handle) {}
     MotorHardware(const MotorHardware&) = delete;
@@ -54,10 +59,13 @@ class MotorHardware : public StepperMotorHardwareIface {
     std::atomic_bool estop = false;
     std::atomic_bool limit = false;
     std::atomic_bool sync = false;
-    HardwareConfig pins;
+    HardwarePinConfigurations pins;
     void* tim_handle;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;
+
+    // Used to track the position in microsteps.
+    std::atomic<uint32_t> step_tracker{0};
 };
 
-};  // namespace motor_hardware
+}  // namespace motor_hardware
