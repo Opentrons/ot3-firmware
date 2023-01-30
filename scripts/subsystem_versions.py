@@ -9,13 +9,13 @@ import subprocess
 VERSION_REGEX = re.compile("v([0-9])")
 SUBSYSTEMS = [
     "head",
-    "gantry-x",
-    "gantry-y",
+    "gantry_x",
+    "gantry_y",
     "gripper",
-    "pipettes-single",
-    "pipettes-multi",
-    "pipettes-96",
-    "pipettes-384",
+    "pipettes_single",
+    "pipettes_multi",
+    "pipettes_96",
+    "pipettes_384",
 ]
 
 
