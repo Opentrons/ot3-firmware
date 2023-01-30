@@ -68,7 +68,7 @@ void rear_tasks::QueueClient::send_eeprom_queue(
 */
 
 void rear_panel_tasks::QueueClient::send_host_comms_queue(
-    const host_comms_task::TaskMessage& m) {
+    const messages::HostCommTaskMessage& m) {
     host_comms_queue->try_write(m);
 }
 

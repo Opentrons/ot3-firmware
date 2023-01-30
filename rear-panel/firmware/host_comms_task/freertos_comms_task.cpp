@@ -35,7 +35,7 @@ namespace host_comms_control_task {
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static freertos_message_queue::FreeRTOSMessageQueue<
-    host_comms_task::TaskMessage>
+    messages::HostCommTaskMessage>
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     _comms_queue("Comms Message Queue");
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -157,7 +157,7 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
         remaining_buffer_count < static_cast<ssize_t>(CDC_BUFFER_SIZE)) {
         // there was a newline in this message, can pass on
         auto message =
-            host_comms_task::TaskMessage(messages::IncomingMessageFromHost{
+            messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 .buffer = reinterpret_cast<const char *>(
                     _local_task.rx_buf.committed()->data()),

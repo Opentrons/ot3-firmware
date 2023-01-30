@@ -29,8 +29,8 @@ class HostCommMessageHandler {
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
-    auto handle_message(TaskMessage &m, InputIt tx_into, InputLimit tx_limit)
-        -> InputIt {
+    auto handle_message(messages::HostCommTaskMessage &m, InputIt tx_into,
+                        InputLimit tx_limit) -> InputIt {
         // we need a this-capturing lambda to pass on the call to our set of
         // member function overloads because otherwise we would need a pointer
         // to member function, and you can't really do that with variant visit.
@@ -64,9 +64,26 @@ class HostCommMessageHandler {
         std::sized_sentinel_for<InputLimit, InputIt>
     auto visit_message(messages::IncomingMessageFromHost &msg, InputIt tx_into,
                        InputLimit tx_limit) -> InputIt {
-        return std::copy(msg.buffer,
-                         std::min(msg.limit, msg.buffer + (tx_into - tx_limit)),
-                         tx_into);
+						   
+        // TODO just doing this to echo when we build out the binary protocol in
+        // RET-1304 we can do the parsing and handling with variants and that
+        auto resp = messages::Echo{.length = uint16_t(tx_limit - tx_into),
+                                   .data = msg.buffer};
+
+        return visit_message(resp, tx_into, tx_limit);
+    }
+
+    // for this very basic first pass we just want to echo back any messages we
+    // receive from the host
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(messages::Echo &msg, InputIt tx_into,
+                       InputLimit tx_limit) -> InputIt {
+        return std::copy(
+            msg.data,
+            std::min(msg.data + msg.length, msg.data + (tx_limit - tx_into)),
+            tx_into);
     }
 
     ResposneQueue &resp_queue;
@@ -76,11 +93,12 @@ class HostCommMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+requires MessageQueue<QueueImpl<messages::HostCommTaskMessage>,
+                      messages::HostCommTaskMessage>
 class HostCommTask {
   public:
-    using Messages = TaskMessage;
-    using QueueType = QueueImpl<TaskMessage>;
+    using Messages = messages::HostCommTaskMessage;
+    using QueueType = QueueImpl<messages::HostCommTaskMessage>;
     HostCommTask(QueueType &queue) : queue{queue} {}
     HostCommTask(const HostCommTask &c) = delete;
     HostCommTask(const HostCommTask &&c) = delete;
@@ -109,7 +127,7 @@ class HostCommTask {
         std::sized_sentinel_for<InputLimit, InputIt>
     auto run_once(InputIt tx_into, InputLimit tx_limit) -> InputLimit {
         auto handler = HostCommMessageHandler{get_queue()};
-        TaskMessage message{};
+        messages::HostCommTaskMessage message{};
         queue.try_read(&message);
         // We should now be guaranteed to have a message, and can visit it to do
         // our actual work.
@@ -127,7 +145,8 @@ class HostCommTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage &m) {
+concept TaskClient = requires(Client client,
+                              const messages::HostCommTaskMessage &m) {
     {client.send_host_comms_queue(m)};
 };
 
