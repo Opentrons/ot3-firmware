@@ -57,6 +57,8 @@ class HostCommMessageHandler {
         return tx_into;
     }
 
+    // for this very basic first pass we just want to echo back any messages we
+    // receive from the host
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>

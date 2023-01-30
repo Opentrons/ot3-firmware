@@ -8,7 +8,7 @@ static auto tasks = rear_panel_tasks::AllTask{};
 
 static auto queues = rear_panel_tasks::QueueClient{};
 
-//TODO(ryan): CORETASKS compile in and process the other basic tasks
+// TODO(ryan): CORETASKS compile in and process the other basic tasks
 /*
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
@@ -35,7 +35,7 @@ void rear_panel_tasks::start_tasks(
     // i2c::hardware::I2CBase& i2c3,
     // eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
 ) {
-    //TODO(ryan): CORETASKS compile in and process the other basic tasks
+    // TODO(ryan): CORETASKS compile in and process the other basic tasks
     /*
     auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
@@ -59,7 +59,7 @@ void rear_panel_tasks::start_tasks(
     queues.host_comms_queue = &comms.task->get_queue();
 }
 
-//TODO(ryan): CORETASKS compile in and process the other basic tasks
+// TODO(ryan): CORETASKS compile in and process the other basic tasks
 /*
 void rear_tasks::QueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {
