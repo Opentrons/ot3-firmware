@@ -21,7 +21,7 @@
       "binaryDir": "${sourceDir}/build-cross",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
         "ARM_ARCH_TYPE": "cortex-m4"
@@ -36,7 +36,7 @@
       "binaryDir": "${sourceDir}/build-cross-pipettes",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
         "ARM_ARCH_TYPE": "cortex-m33"
