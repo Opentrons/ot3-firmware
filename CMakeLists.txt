@@ -1,6 +1,7 @@
 # CMake 3.19 is the first to include presets
 # (https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
 cmake_minimum_required(VERSION 3.20)
+cmake_policy(SET CMP0135 NEW)
 
 if (NOT DEFINED ENV{PRESET_IN_USE})
     message(FATAL_ERROR "Use a preset. Use cmake --list-presets to show available presets.")
