@@ -212,7 +212,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "head"
+        "head-images"
       ]
     },
     {

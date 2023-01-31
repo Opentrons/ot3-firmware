@@ -93,15 +93,28 @@ macro(target_stm32G4 TARGET)
             DEPENDS ${TARGET})
 endmacro()
 
+set(_g4_sources ${BOOTLOADER_FW_LINTABLE_SRCS} ${BOOTLOADER_FW_NON_LINTABLE_SRCS} ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
 
-add_executable(bootloader-head
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
 
-target_compile_definitions(bootloader-head PUBLIC node_id_head)
+macro(head_bootloader_loop)
+  message(STATUS "in the bootloader inner loop")
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-target_stm32G4(bootloader-head)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_head)
+
+endmacro()
+
+foreach_revision(
+    PROJECT_NAME bootloader-head
+    CALL_FOREACH_REV head_bootloader_loop
+    REVISIONS A1 B1 C2
+    SOURCES _g4_sources _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    )
+
 
 add_executable(bootloader-gantry-x
         ${BOOTLOADER_FW_LINTABLE_SRCS}
