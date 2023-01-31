@@ -33,6 +33,15 @@ struct version {
 
 const struct version* version_get();
 
+struct revision {
+    char primary;
+    char secondary;
+};
+
+#if defined(PCBA_REVISION)
+const struct revision* revision_get();
+#endif
+
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus
