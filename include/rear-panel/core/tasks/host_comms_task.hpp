@@ -64,7 +64,6 @@ class HostCommMessageHandler {
         std::sized_sentinel_for<InputLimit, InputIt>
     auto visit_message(messages::IncomingMessageFromHost &msg, InputIt tx_into,
                        InputLimit tx_limit) -> InputIt {
-						   
         // TODO just doing this to echo when we build out the binary protocol in
         // RET-1304 we can do the parsing and handling with variants and that
         auto resp = messages::Echo{.length = uint16_t(tx_limit - tx_into),
@@ -82,7 +81,11 @@ class HostCommMessageHandler {
                        InputLimit tx_limit) -> InputIt {
         return std::copy(
             msg.data,
-            std::min(msg.data + msg.length, msg.data + (tx_limit - tx_into)),
+            std::min(
+                msg.data +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    msg.length,
+                msg.data +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    (tx_limit - tx_into)),
             tx_into);
     }
 

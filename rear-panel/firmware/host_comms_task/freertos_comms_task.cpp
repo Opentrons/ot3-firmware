@@ -66,7 +66,7 @@ void run(void *param) {  // NOLINT(misc-unused-parameters)
     usb_hw_start();
     local_task->committed_rx_buf_ptr = local_task->rx_buf.committed()->data();
     while (true) {
-        char *tx_end =
+        auto *tx_end =
             top_task->run_once(local_task->tx_buf.accessible()->begin(),
                                local_task->tx_buf.accessible()->end());
         // if (!top_task->may_connect()) {
