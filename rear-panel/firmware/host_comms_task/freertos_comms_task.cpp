@@ -150,12 +150,7 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
         reinterpret_cast<char *>(Buf + *Len);
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    if ((std::find_if(Buf, Buf + *Len,
-                      [](auto ch) { return ch == '\n' || ch == '\r'; }) !=
-         (Buf +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-          *Len)) ||
-        remaining_buffer_count < static_cast<ssize_t>(CDC_BUFFER_SIZE)) {
-        // there was a newline in this message, can pass on
+    if (remaining_buffer_count < static_cast<ssize_t>(CDC_BUFFER_SIZE)) {
         auto message =
             messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
