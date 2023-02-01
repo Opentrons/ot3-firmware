@@ -2,6 +2,7 @@
  * Interface for the firmware-specifc parts of the host comms task
  */
 #pragma once
+#include <tuple>
 
 #include "FreeRTOS.h"
 #include "common/core/message_queue.hpp"
@@ -66,7 +67,7 @@ class HostCommMessageHandler {
                        InputLimit tx_limit) -> InputIt {
         // TODO just doing this to echo when we build out the binary protocol in
         // RET-1304 we can do the parsing and handling with variants and that
-        auto resp = messages::Echo{.length = uint16_t(tx_limit - tx_into),
+        auto resp = messages::Echo{.length = uint16_t(msg.limit - msg.buffer),
                                    .data = msg.buffer};
 
         return visit_message(resp, tx_into, tx_limit);

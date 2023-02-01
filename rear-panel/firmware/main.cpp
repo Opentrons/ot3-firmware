@@ -86,7 +86,7 @@ static auto lbt = LED_BLINK_TASK{"Blinkenlights"};
 
 auto main() -> int {
     HardwareInit();
-    RCC_Peripheral_Clock_Select();
+    //RCC_Peripheral_Clock_Select();
     utility_gpio_init();
 
     // initialize_leds();

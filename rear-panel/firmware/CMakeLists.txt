@@ -98,6 +98,39 @@ macro(rearpanel_loop)
           STM32G4xx_USB_${_driver_suffix}
           rear-panel-startup-STM32G491
           )
+
+  set_target_properties(${REVISION_TARGET}
+          PROPERTIES CXX_STANDARD 20
+          CXX_STANDARD_REQUIRED TRUE
+          C_STANDARD 11
+          C_STANDARD_REQUIRED TRUE)
+
+  target_include_directories(${REVISION_TARGET}
+          PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+  target_compile_options(${REVISION_TARGET}
+          PUBLIC
+          -Wall
+          -Werror
+          -Wextra
+          -Wno-missing-field-initializers
+          $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+          $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+          $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+ 
+    # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
+    # this dir
+    set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/rear-panel/startup/STM32G491/gdbinit")
+    set_target_properties(${REVISION_TARGET}
+            PROPERTIES
+            CROSSCOMPILING_EMULATOR
+            "${ARM_GDB};--command=${GDBINIT_FILE}")
+    
+    # Calculate and package the integrity info for this module
+  
   add_custom_target(${REVISION_TARGET}-integrity ALL
     COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} -Obinary
         ${REVISION_TARGET}-scratch.bin --gap-fill=0xFF
