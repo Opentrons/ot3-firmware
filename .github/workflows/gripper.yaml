@@ -67,24 +67,28 @@ jobs:
         run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: "Format"
         run: cmake --build ./build-cross --target gripper-format-ci
-      - name: "Build Proto"
-        run: cmake --build ./build-cross --target gripper gripper-image-hex
-      - name: "Build Rev1"
-        run: cmake --build ./build-cross --target gripper gripper-rev1-image-hex
-      - name: "Proto Lint"
-        run: cmake --build ./build-cross --target gripper-proto-lint
-      - name: "Rev1 Lint"
-        run: cmake --build ./build-cross --target gripper-rev1-lint
-      - name: "Upload artifacts"
+      - name: "Build"
+        run: cmake --build ./build-cross --target gripper-images gripper-applications
+      - name: "Lint"
+        run: cmake --build ./build-cross --target gripper-lint
+      - name: "Upload image artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
-          name: "gripper-${{github.ref_name}}"
+          name: "gripper-images-${{github.ref_name}}"
           path: |
-            build-cross/gripper/firmware/gripper-proto
-            build-cross/gripper/firmware/gripper-rev1
-            build-cross/gripper/firmware/gripper-proto-image.hex
-            build-cross/gripper/firmware/gripper-rev1-image.hex
+            build-cross/gripper/firmware/*image.hex
+      - name: "remove images"
+        if: github.event_name != 'pull_request'
+        run: |
+          rm build-cross/gripper/firmware/*image.hex
+      - name: "Upload application artifacts"
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: "gripper-applications-${{github.ref_name}}"
+          path: |
+            build-cross/gripper/firmware/*.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

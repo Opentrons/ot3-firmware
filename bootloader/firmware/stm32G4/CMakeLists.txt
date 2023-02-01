@@ -152,14 +152,22 @@ foreach_revision(
     NO_CREATE_IMAGE_HEX
     )
 
-add_executable(bootloader-gripper
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+macro(gripper_bootloader_loop)
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-target_compile_definitions(bootloader-gripper PUBLIC node_id_gripper)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_gripper)
+endmacro()
 
-target_stm32G4(bootloader-gripper)
+foreach_revision(
+    PROJECT_NAME bootloader-gripper
+    CALL_FOREACH_REV gripper_bootloader_loop
+    REVISIONS a1 b1 c1
+    SOURCES _g4_sources _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    )
 
 add_executable(bootloader-pipettes-rev1
         ${BOOTLOADER_FW_LINTABLE_SRCS}
