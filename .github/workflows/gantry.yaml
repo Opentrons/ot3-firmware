@@ -62,35 +62,27 @@ jobs:
       - name: "Format"
         run: cmake --build ./build-cross --target gantry-format-ci
       - name: "Build"
-        run: cmake --build --preset=gantry --target gantry-images gantry-exes
+        run: cmake --build --preset=gantry --target gantry-images gantry-applications
       - name: "Lint"
         run: cmake --build ./build-cross --target gantry-lint
-      - name: "Upload proto artifacts"
+      - name: "Upload image artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
-          name: "gantry-proto-${{github.ref_name}}"
+          name: "gantry-images-${{github.ref_name}}"
           path: |
-            build-cross/gantry/firmware/*-proto-image*.hex
-            build-cross/gantry/firmware/gantry-*-proto
-      - name: "Upload rev1 artifacts"
+            build-cross/gantry/firmware/*image.hex
+      - name: "remove images"
+        if: github.event_name != 'pull_request'
+        run: |
+          rm build-cross/gantry/firmware/*image.hex
+      - name: "Upload application artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
         with:
-          name: "gantry-rev1-${{github.ref_name}}"
+          name: "gantry-applications-${{github.ref_name}}"
           path: |
-            build-cross/gantry/firmware/*-rev1-image*.hex
-            build-cross/gantry/firmware/gantry-*-rev1
-      - name: "Upload default artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: "gantry-${{github.ref_name}}"
-          path: |
-            build-cross/gantry/firmware/gantry-x
-            build-cross/gantry/firmware/gantry-y
-            build-cross/gantry/firmware/gantry-x-image.hex
-            build-cross/gantry/firmware/gantry-y-image.hex
+            build-cross/gantry/firmware/*.hex
 
 
   host-compile-test:

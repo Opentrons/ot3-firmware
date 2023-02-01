@@ -177,10 +177,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "gantry-x-proto",
-        "gantry-y",
-        "gantry-x-rev1",
-        "gantry-y-rev1"
+        "gantry-images"
       ]
     },
     {
@@ -190,8 +187,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "gantry-x-proto",
-        "gantry-x-rev1"
+        "gantry-x-images"
       ]
     },
     {
@@ -201,8 +197,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "gantry-y-proto",
-        "gantry-y-rev1"
+        "gantry-y-images"
       ]
     },
     {
