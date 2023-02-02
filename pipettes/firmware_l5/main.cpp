@@ -165,7 +165,8 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl&,
-    motor_hardware_task::MotorHardwareTask<interfaces::DefinedMotorHardware>& lmh_tsk,
+    motor_hardware_task::MotorHardwareTask<interfaces::DefinedMotorHardware>&
+        lmh_tsk,
     interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -190,7 +191,8 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&,
-    motor_hardware_task::MotorHardwareTask<interfaces::DefinedMotorHardware>& lmh_tsk,
+    motor_hardware_task::MotorHardwareTask<interfaces::DefinedMotorHardware>&
+        lmh_tsk,
     interfaces::gear_motor::UnavailableGearHardwareTasks&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),

@@ -55,14 +55,16 @@ static auto capacitive_sensor_task_builder_rear =
 void gripper_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware>& z_motor,
-    brushed_motor::BrushedMotor<lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
+    brushed_motor::BrushedMotor<
+        lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
     sensors::hardware::SensorHardwareBase& sensor_hardware,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
     motor_hardware_task::MotorHardwareTask<DefinedZMotorHardware>& zmh_tsk,
-    motor_hardware_task::MotorHardwareTask<motor_hardware::BrushedMotorHardware>& gmh_tsk) {
+    motor_hardware_task::MotorHardwareTask<
+        motor_hardware::BrushedMotorHardware>& gmh_tsk) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     tasks.can_writer = &can_writer;

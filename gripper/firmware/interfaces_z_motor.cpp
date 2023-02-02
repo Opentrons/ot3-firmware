@@ -163,7 +163,9 @@ auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {
     return spi_comms;
 }
 
-auto z_motor_iface::get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig, z_motor_iface::DefinedZMotorHardware>& {
+auto z_motor_iface::get_z_motor()
+    -> motor_class::Motor<lms::LeadScrewConfig,
+                          z_motor_iface::DefinedZMotorHardware>& {
     return z_motor;
 }
 
@@ -175,6 +177,7 @@ auto z_motor_iface::get_tmc2130_driver_configs()
 static auto zmh_tsk = motor_hardware_task::MotorHardwareTask{
     &motor_hardware_iface, "z motor hardware task"};
 auto z_motor_iface::get_z_motor_hardware_task()
-    -> motor_hardware_task::MotorHardwareTask<z_motor_iface::DefinedZMotorHardware>& {
+    -> motor_hardware_task::MotorHardwareTask<
+        z_motor_iface::DefinedZMotorHardware>& {
     return zmh_tsk;
 }

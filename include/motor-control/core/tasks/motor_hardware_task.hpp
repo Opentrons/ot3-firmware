@@ -8,11 +8,10 @@ static constexpr uint32_t TASK_STACK_DEPTH = 512;
 
 namespace motor_hardware_task {
 
-template<motor_hardware::BaseMotorHardwareIface MotorHardware>
+template <motor_hardware::BaseMotorHardwareIface MotorHardware>
 class MotorHardwareTask {
   public:
-    MotorHardwareTask(MotorHardware* hardware,
-                      const char* task_name)
+    MotorHardwareTask(MotorHardware* hardware, const char* task_name)
         : hardware{hardware}, task_name{task_name} {}
     MotorHardwareTask(const MotorHardwareTask& c) = delete;
     MotorHardwareTask(const MotorHardwareTask&& c) = delete;
@@ -29,8 +28,7 @@ class MotorHardwareTask {
      * Task entry point.
      */
     [[noreturn]] static void task_function(void* hw_ptr) {
-        auto* hardware =
-            static_cast<MotorHardware*>(hw_ptr);
+        auto* hardware = static_cast<MotorHardware*>(hw_ptr);
         for (;;) {
             vTaskDelay(10);
             hardware->read_estop_in();
@@ -52,12 +50,12 @@ namespace pipette_motor_hardware_task {
 /**
  * The task entry point.
  */
-template<motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
+template <
+    motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
 class PipetteMotorHardwareTask {
   public:
-    PipetteMotorHardwareTask(
-        PipetteStepperHardware* hardware,
-        const char* task_name)
+    PipetteMotorHardwareTask(PipetteStepperHardware* hardware,
+                             const char* task_name)
         : hardware{hardware}, task_name{task_name} {}
     PipetteMotorHardwareTask(const PipetteMotorHardwareTask& c) = delete;
     PipetteMotorHardwareTask(const PipetteMotorHardwareTask&& c) = delete;
@@ -74,9 +72,7 @@ class PipetteMotorHardwareTask {
      * Task entry point.
      */
     [[noreturn]] static void task_function(void* hw_ptr) {
-        auto* hardware =
-            static_cast<PipetteStepperHardware*>(
-                hw_ptr);
+        auto* hardware = static_cast<PipetteStepperHardware*>(hw_ptr);
         for (;;) {
             vTaskDelay(10);
             hardware->read_estop_in();

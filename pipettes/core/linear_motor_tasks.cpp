@@ -27,11 +27,12 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
 
 void linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,
-    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
-        motion_controller,
+    motion_controller::MotionController<
+        lms::LeadScrewConfig, DefinedMotorHardware>& motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk) {
+    can::ids::NodeId id,
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk) {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -66,11 +67,12 @@ void linear_motor_tasks::start_tasks(
 
 void linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,
-    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
-        motion_controller,
+    motion_controller::MotionController<
+        lms::LeadScrewConfig, DefinedMotorHardware>& motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk) {
+    can::ids::NodeId id,
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk) {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 

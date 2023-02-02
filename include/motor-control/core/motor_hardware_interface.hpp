@@ -1,13 +1,13 @@
 #pragma once
 
 #include <atomic>
+#include <concepts>
 #include <cstdint>
 #include <utility>
-#include <concepts>
 
 namespace motor_hardware {
 
-template<class T>
+template <class T>
 concept BaseMotorHardwareIface = requires(T t) {
     { t.positive_direction() } -> std::same_as<void>;
     { t.negative_direction() } -> std::same_as<void>;
@@ -25,32 +25,32 @@ concept BaseMotorHardwareIface = requires(T t) {
     { t.stop_timer_interrupt() } -> std::same_as<void>;
 };
 
-template<class T>
+template <class T>
 concept StepperMotorHardwareIface = BaseMotorHardwareIface<T> && requires(T t) {
-  { t.step() } -> std::same_as<void>;
-  { t.unstep() } -> std::same_as<void>;
-  { t.set_LED(std::declval<bool>()) } -> std::same_as<void>;
-  { t.get_step_tracker() } -> std::same_as<uint32_t>;
-  { t.reset_step_tracker() } -> std::same_as<void>;
-  { t.set_step_tracker(std::declval<uint32_t>()) } -> std::same_as<void>;
+    { t.step() } -> std::same_as<void>;
+    { t.unstep() } -> std::same_as<void>;
+    { t.set_LED(std::declval<bool>()) } -> std::same_as<void>;
+    { t.get_step_tracker() } -> std::same_as<uint32_t>;
+    { t.reset_step_tracker() } -> std::same_as<void>;
+    { t.set_step_tracker(std::declval<uint32_t>()) } -> std::same_as<void>;
 };
 
-
-template<class T>
+template <class T>
 concept BrushedMotorHardwareIface = BaseMotorHardwareIface<T> && requires(T t) {
-  { t.grip() } -> std::same_as<void>;
-  { t.ungrip() } -> std::same_as<void>;
-  { t.stop_pwm() } -> std::same_as<void>;
-  { t.update_control(std::declval<int32_t>()) } -> std::same_as<double>;
-  { t.reset_control() } -> std::same_as<void>;
-  { t.set_stay_enabled(std::declval<bool>()) } -> std::same_as<void>;
-  { t.get_stay_enabled() } -> std::same_as<bool>;
+    { t.grip() } -> std::same_as<void>;
+    { t.ungrip() } -> std::same_as<void>;
+    { t.stop_pwm() } -> std::same_as<void>;
+    { t.update_control(std::declval<int32_t>()) } -> std::same_as<double>;
+    { t.reset_control() } -> std::same_as<void>;
+    { t.set_stay_enabled(std::declval<bool>()) } -> std::same_as<void>;
+    { t.get_stay_enabled() } -> std::same_as<bool>;
 };
 
-template<class T>
-concept PipetteStepperMotorHardwareIface = StepperMotorHardwareIface<T> && requires(T t) {
-  { t.check_tip_sense() } -> std::same_as<bool>;
-  { t.read_tip_sense() } -> std::same_as<void>;
+template <class T>
+concept PipetteStepperMotorHardwareIface = StepperMotorHardwareIface<T> &&
+    requires(T t) {
+    { t.check_tip_sense() } -> std::same_as<bool>;
+    { t.read_tip_sense() } -> std::same_as<void>;
 };
 
 }  // namespace motor_hardware

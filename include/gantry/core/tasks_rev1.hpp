@@ -16,14 +16,16 @@
 namespace gantry {
 namespace tasks {
 
-using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware =
+    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
 
 /**
  * Start gantry tasks.
  */
 void start_tasks(
     can::bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::BeltConfig, DefinedMotorHardware>& motion_controller,
+    motion_controller::MotionController<lms::BeltConfig, DefinedMotorHardware>&
+        motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2160::configs::TMC2160DriverConfig& driver_configs,
     motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& mh_tsk);

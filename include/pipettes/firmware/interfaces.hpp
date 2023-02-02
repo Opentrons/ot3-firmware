@@ -65,7 +65,6 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 
 namespace linear_motor {
 
-
 auto get_interrupt(DefinedMotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)

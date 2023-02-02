@@ -21,7 +21,8 @@ template <lms::MotorMechanicalConfig MEConfig,
           motor_hardware::StepperMotorHardwareIface StepperHardware>
 class MotionControllerMessageHandler {
   public:
-    using MotorControllerType = motion_controller::MotionController<MEConfig, StepperHardware>;
+    using MotorControllerType =
+        motion_controller::MotionController<MEConfig, StepperHardware>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
@@ -160,9 +161,9 @@ class MotionControllerTask {
     template <lms::MotorMechanicalConfig MEConfig,
               can::message_writer_task::TaskClient CanClient,
               motor_hardware::StepperMotorHardwareIface StepperHardware>
-    [[noreturn]] void operator()(
-        motion_controller::MotionController<MEConfig, StepperHardware>* controller,
-        CanClient* can_client) {
+    [[noreturn]] void operator()(motion_controller::MotionController<
+                                     MEConfig, StepperHardware>* controller,
+                                 CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
         bool first_run = true;

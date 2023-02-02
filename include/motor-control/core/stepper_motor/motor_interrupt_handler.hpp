@@ -39,7 +39,8 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage, motor_hardware::BaseMotorHardwareIface MotorHardware>
+          typename MotorMoveMessage,
+          motor_hardware::BaseMotorHardwareIface MotorHardware>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage>
 class MotorInterruptHandler {
   public:

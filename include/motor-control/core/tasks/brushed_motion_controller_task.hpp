@@ -128,9 +128,9 @@ class MotionControllerTask {
     template <lms::MotorMechanicalConfig MEConfig,
               can::message_writer_task::TaskClient CanClient,
               motor_hardware::BrushedMotorHardwareIface BrushedHardware>
-    [[noreturn]] void operator()(
-        brushed_motion_controller::MotionController<MEConfig, BrushedHardware>* controller,
-        CanClient* can_client) {
+    [[noreturn]] void operator()(brushed_motion_controller::MotionController<
+                                     MEConfig, BrushedHardware>* controller,
+                                 CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
         for (;;) {

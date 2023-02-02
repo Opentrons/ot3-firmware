@@ -28,7 +28,8 @@
 
 namespace interfaces {
 
-using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware =
+    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
 
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<

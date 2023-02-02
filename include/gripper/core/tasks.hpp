@@ -16,11 +16,11 @@
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/brushed_move_group_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
@@ -31,21 +31,25 @@
 
 namespace gripper_tasks {
 
-using DefinedZMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedZMotorHardware =
+    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
 
 /**
  * Start gripper tasks.
  */
-void start_tasks(can::bus::CanBus& can_bus,
-                 motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware>& z_motor,
-                 brushed_motor::BrushedMotor<lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
-                 spi::hardware::SpiDeviceBase& spi_device,
-                 tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                 i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
-                 motor_hardware_task::MotorHardwareTask<DefinedZMotorHardware>& zmh_tsk,
-                 motor_hardware_task::MotorHardwareTask<motor_hardware::BrushedMotorHardware>& gmh_tsk);
+void start_tasks(
+    can::bus::CanBus& can_bus,
+    motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware>& z_motor,
+    brushed_motor::BrushedMotor<
+        lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
+    spi::hardware::SpiDeviceBase& spi_device,
+    tmc2130::configs::TMC2130DriverConfig& driver_configs,
+    i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
+    sensors::hardware::SensorHardwareBase& sensor_hardware,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
+    motor_hardware_task::MotorHardwareTask<DefinedZMotorHardware>& zmh_tsk,
+    motor_hardware_task::MotorHardwareTask<
+        motor_hardware::BrushedMotorHardware>& gmh_tsk);
 
 /**
  * Access to all the message queues in the system.
@@ -156,10 +160,10 @@ struct AllTask {
 
 namespace z_tasks {
 
-void start_task(motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware>& z_motor,
-                spi::hardware::SpiDeviceBase& spi_device,
-                tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                AllTask& tasks);
+void start_task(
+    motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware>& z_motor,
+    spi::hardware::SpiDeviceBase& spi_device,
+    tmc2130::configs::TMC2130DriverConfig& driver_configs, AllTask& tasks);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
@@ -193,8 +197,10 @@ struct QueueClient : can::message_writer::MessageWriter {
 
 namespace g_tasks {
 
-void start_task(brushed_motor::BrushedMotor<lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
-                AllTask& gripper_tasks);
+void start_task(
+    brushed_motor::BrushedMotor<
+        lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
+    AllTask& gripper_tasks);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();

@@ -63,10 +63,10 @@ static auto spi3_task_builder =
  */
 void head_tasks::start_tasks(
     can::bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
-        left_motion_controller,
-    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
-        right_motion_controller,
+    motion_controller::MotionController<
+        lms::LeadScrewConfig, DefinedMotorHardware>& left_motion_controller,
+    motion_controller::MotionController<
+        lms::LeadScrewConfig, DefinedMotorHardware>& right_motion_controller,
     presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,

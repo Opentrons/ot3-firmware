@@ -108,17 +108,17 @@ struct motor_hardware::HardwareConfigForHead pin_configurations_left {
             .port = GPIOA,
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_RESET},
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_4,
+            .active_setting = GPIO_PIN_RESET},
     .ebrake = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_5,
-        .active_setting = GPIO_PIN_RESET
-    }
+        .active_setting = GPIO_PIN_RESET}
 };
 
 struct motor_hardware::HardwareConfigForHead pin_configurations_right {
@@ -153,17 +153,17 @@ struct motor_hardware::HardwareConfigForHead pin_configurations_right {
             .port = GPIOA,
             .pin = GPIO_PIN_8,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_RESET},
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_4,
+            .active_setting = GPIO_PIN_RESET},
     .ebrake = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_0,
-        .active_setting = GPIO_PIN_RESET
-    }
+        .active_setting = GPIO_PIN_RESET}
 };
 
 // TODO clean up the head main file by using interfaces.
@@ -238,8 +238,8 @@ static stall_check::StallCheck stallcheck_right(
  * should be made to avoid a pretty gross template signature.
  */
 
-static motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead> motor_hardware_right(
-    pin_configurations_right, &htim7, &htim2);
+static motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead>
+    motor_hardware_right(pin_configurations_right, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
     stallcheck_right, update_position_queue_right);
@@ -260,8 +260,8 @@ static stall_check::StallCheck stallcheck_left(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
     linear_config.get_usteps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
-static motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead> motor_hardware_left(
-    pin_configurations_left, &htim7, &htim3);
+static motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead>
+    motor_hardware_left(pin_configurations_left, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
     stallcheck_left, update_position_queue_left);

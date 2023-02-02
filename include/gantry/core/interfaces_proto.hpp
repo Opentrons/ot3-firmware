@@ -9,7 +9,8 @@
 
 namespace interfaces {
 
-using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware =
+    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
 /**
  * Initialize the hardware portability layer.
  */
@@ -26,7 +27,8 @@ auto get_can_bus() -> can::bus::CanBus &;
  * @return the SPI interface
  */
 auto get_spi() -> spi::hardware::SpiDeviceBase &;
-auto get_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask<DefinedMotorHardware> &;
+auto get_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask<DefinedMotorHardware> &;
 /**
  * Get the motor hardware interface
  * @return the motor hardware interface

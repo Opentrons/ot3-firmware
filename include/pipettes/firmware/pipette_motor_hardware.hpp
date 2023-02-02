@@ -4,8 +4,8 @@
 #include <cstdint>
 
 #include "common/firmware/gpio.hpp"
-#include "motor-control/core/types.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/types.hpp"
 
 namespace pipette_motor_hardware {
 
@@ -52,7 +52,9 @@ class MotorHardware {
     void reset_encoder_pulses();
     void encoder_overflow(int32_t direction);
 
-    [[nodiscard]] auto get_step_tracker() const -> uint32_t { return step_tracker.load();}
+    [[nodiscard]] auto get_step_tracker() const -> uint32_t {
+        return step_tracker.load();
+    }
     auto reset_step_tracker() -> void { set_step_tracker(0); }
     auto set_step_tracker(uint32_t val) -> void { step_tracker.store(val); }
 

@@ -9,7 +9,8 @@
 
 namespace interfaces {
 
-using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware =
+    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
 
 /**
  * Initialize the hardware portability layer.
@@ -48,5 +49,6 @@ auto get_motor() -> motor_class::Motor<lms::BeltConfig, DefinedMotorHardware> &;
  */
 auto get_driver_config() -> tmc2160::configs::TMC2160DriverConfig &;
 
-auto get_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask<DefinedMotorHardware> &;
+auto get_motor_hardware_task()
+    -> motor_hardware_task::MotorHardwareTask<DefinedMotorHardware> &;
 }  // namespace interfaces

@@ -61,10 +61,10 @@ auto linear_motor::get_interrupt(DefinedMotorHardware& hw,
         queues.plunger_queue, linear_motor_tasks::get_queues(), hw, stall,
         queues.plunger_update_queue);
 }
-auto linear_motor::get_motor_hardware(
-    motor_hardware::HardwareConfig pins)
+auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> DefinedMotorHardware {
-    return motor_hardware::MotorHardware<motor_hardware::HardwareConfig>(pins, &htim7, &htim2);
+    return motor_hardware::MotorHardware<motor_hardware::HardwareConfig>(
+        pins, &htim7, &htim2);
 }
 
 auto linear_motor::get_motion_control(DefinedMotorHardware& hw,

@@ -6,22 +6,26 @@
 
 namespace motor_hardware {
 
-template<>
-void MotorHardware<HardwareConfig>::activate_motor() { gpio::set(pins.enable); }
-
-template<>
-void MotorHardware<HardwareConfig>::deactivate_motor() { gpio::reset(pins.enable); }
-
-template<>
-void MotorHardware<HardwareConfigForHead>::activate_motor() {
-    gpio::reset(pins.ebrake);
-    gpio::set(pins.enable); 
+template <>
+void MotorHardware<HardwareConfig>::activate_motor() {
+    gpio::set(pins.enable);
 }
 
-template<>
+template <>
+void MotorHardware<HardwareConfig>::deactivate_motor() {
+    gpio::reset(pins.enable);
+}
+
+template <>
+void MotorHardware<HardwareConfigForHead>::activate_motor() {
+    gpio::reset(pins.ebrake);
+    gpio::set(pins.enable);
+}
+
+template <>
 void MotorHardware<HardwareConfigForHead>::deactivate_motor() {
     gpio::set(pins.ebrake);
     gpio::reset(pins.enable);
- }
-
 }
+
+}  // namespace motor_hardware

@@ -21,13 +21,15 @@ using TaskMessage = pipettes::task_messages::motor_control_task_messages::
 /**
  * The message queue message handler.
  */
-template <lms::MotorMechanicalConfig MEConfig,
-          can::message_writer_task::TaskClient CanClient,
-          motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
+template <
+    lms::MotorMechanicalConfig MEConfig,
+    can::message_writer_task::TaskClient CanClient,
+    motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType =
-        pipette_motion_controller::PipetteMotionController<MEConfig, PipetteStepperHardware>;
+        pipette_motion_controller::PipetteMotionController<
+            MEConfig, PipetteStepperHardware>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
@@ -145,12 +147,13 @@ class MotionControllerTask {
     /**
      * Task entry point.
      */
-    template <lms::MotorMechanicalConfig MEConfig,
-              can::message_writer_task::TaskClient CanClient,
-              motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
+    template <
+        lms::MotorMechanicalConfig MEConfig,
+        can::message_writer_task::TaskClient CanClient,
+        motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
     [[noreturn]] void operator()(
-        pipette_motion_controller::PipetteMotionController<MEConfig, PipetteStepperHardware>*
-            controller,
+        pipette_motion_controller::PipetteMotionController<
+            MEConfig, PipetteStepperHardware>* controller,
         CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};

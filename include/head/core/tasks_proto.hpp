@@ -15,7 +15,8 @@
 
 namespace head_tasks {
 
-using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead>;
+using DefinedMotorHardware =
+    motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead>;
 
 /**
  * Start head tasks.
@@ -23,17 +24,19 @@ using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::Hardw
 
 void start_tasks(
     can::bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
-        left_motion_controller,
-    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
-        right_motion_controller,
+    motion_controller::MotionController<
+        lms::LeadScrewConfig, DefinedMotorHardware>& left_motion_controller,
+    motion_controller::MotionController<
+        lms::LeadScrewConfig, DefinedMotorHardware>& right_motion_controller,
     presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
     tmc2130::configs::TMC2130DriverConfig& left_driver_configs,
     tmc2130::configs::TMC2130DriverConfig& right_driver_configs,
-    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& right_motor_hardware,
-    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& left_motor_hardware);
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>&
+        right_motor_hardware,
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>&
+        left_motor_hardware);
 
 /**
  * Access to all tasks not associated with a motor. This will be a singleton.

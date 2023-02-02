@@ -20,8 +20,10 @@ using namespace motor_hardware;
  * MotionController is responsible for motor movement and communicate with
  * the motor driver using the HAL driver API and SPI.
  */
-template <lms::MotorMechanicalConfig MEConfig, StepperMotorHardwareIface StepperHardware>
-// requires StepperMotorHardwareIface<MotorHardwareType<HardwareConfigurationsType>>
+template <lms::MotorMechanicalConfig MEConfig,
+          StepperMotorHardwareIface StepperHardware>
+// requires
+// StepperMotorHardwareIface<MotorHardwareType<HardwareConfigurationsType>>
 class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
@@ -176,7 +178,8 @@ using namespace motor_hardware;
 // TODO(lc 05-22-2022) We should have PipetteMotionController inherit
 // from MotionController, but that will require some template refactoring
 // to make it compile.
-template <lms::MotorMechanicalConfig MEConfig, PipetteStepperMotorHardwareIface MotorHardwareType>
+template <lms::MotorMechanicalConfig MEConfig,
+          PipetteStepperMotorHardwareIface MotorHardwareType>
 class PipetteMotionController {
   public:
     using GenericQueue =
