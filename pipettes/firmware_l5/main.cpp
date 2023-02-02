@@ -69,6 +69,21 @@ class EEPromHardwareIface : public eeprom::hardware_iface::EEPromHardwareIface {
         }
     }
 };
+
+auto convert_to_motor_hardware(
+    pipette_motor_hardware::HardwareConfig motor_config)
+    -> motor_hardware::HardwareConfig {
+    return motor_hardware::HardwareConfig{
+        .direction = motor_config.direction,
+        .step = motor_config.step,
+        .enable = motor_config.enable,
+        .limit_switch = motor_config.limit_switch,
+        .led = motor_config.led,
+        .sync_in = motor_config.sync_in,
+        .estop_in = motor_config.estop_in,
+    };
+}
+
 static auto eeprom_hardware_iface = EEPromHardwareIface();
 
 static auto linear_stall_check = stall_check::StallCheck(
@@ -90,7 +105,8 @@ static auto motor_config = motor_configs::motor_configurations<PIPETTE_TYPE>();
 static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
 
 static auto linear_motor_hardware =
-    interfaces::linear_motor::get_motor_hardware(motor_config.hardware_pins);
+    interfaces::linear_motor::get_motor_hardware(
+        convert_to_motor_hardware(motor_config.hardware_pins.linear_motor));
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
     linear_motor_hardware, interrupt_queues, linear_stall_check);
 static auto linear_motion_control =
@@ -149,7 +165,7 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl&,
-    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    motor_hardware_task::MotorHardwareTask<interfaces::DefinedMotorHardware>& lmh_tsk,
     interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),
@@ -174,7 +190,7 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&,
-    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    motor_hardware_task::MotorHardwareTask<interfaces::DefinedMotorHardware>& lmh_tsk,
     interfaces::gear_motor::UnavailableGearHardwareTasks&) {
     sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
                               peripheral_tasks::get_i2c3_client(),

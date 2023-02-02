@@ -7,14 +7,16 @@
 
 namespace interfaces {
 
+using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+
 using MoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
 using GearMoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::GearMotorMove>;
 using MotionControlType =
-    motion_controller::MotionController<lms::LeadScrewConfig>;
+    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>;
 using PipetteMotionControlType =
-    pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
+    pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig, pipette_motor_hardware::MotorHardware>;
 using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
     can::messages::UpdateMotorPositionEstimationRequest>;
 
@@ -45,8 +47,8 @@ struct GearMotionControl {
 };
 
 struct GearMotorHardwareTasks {
-    pipette_motor_hardware_task::PipetteMotorHardwareTask left;
-    pipette_motor_hardware_task::PipetteMotorHardwareTask right;
+    pipette_motor_hardware_task::PipetteMotorHardwareTask<pipette_motor_hardware::MotorHardware> left;
+    pipette_motor_hardware_task::PipetteMotorHardwareTask<pipette_motor_hardware::MotorHardware> right;
 };
 
 }  // namespace gear_motor

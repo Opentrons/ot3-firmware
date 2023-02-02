@@ -22,6 +22,8 @@
  */
 namespace linear_motor_tasks {
 
+using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+
 using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;
 using SPIWriterClient =
@@ -29,21 +31,21 @@ using SPIWriterClient =
 
 // single channel/8 channel linear motor tasks
 void start_tasks(CanWriterTask& can_writer,
-                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                 motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
                  can::ids::NodeId,
-                 motor_hardware_task::MotorHardwareTask& lmh_tsk);
+                 motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk);
 
 // 96/384 linear motor tasks
 void start_tasks(CanWriterTask& can_writer,
-                 motion_controller::MotionController<lms::LeadScrewConfig>&
+                 motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
                      motion_controller,
                  SPIWriterClient& spi_writer,
                  tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
                  can::ids::NodeId,
-                 motor_hardware_task::MotorHardwareTask& lmh_tsk);
+                 motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk);
 
 /**
  * Access to all the linear motion task queues on the pipette.

@@ -28,10 +28,12 @@
 
 namespace interfaces {
 
+using DefinedMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+
 template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
-    motor_hardware::MotorHardware>;
+    DefinedMotorHardware>;
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
@@ -74,23 +76,23 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 
 namespace linear_motor {
 
-auto get_interrupt(motor_hardware::MotorHardware& hw,
+auto get_interrupt(DefinedMotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
-auto get_interrupt(motor_hardware::MotorHardware& hw,
+auto get_interrupt(DefinedMotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient>;
 auto get_motor_hardware(motor_hardware::HardwareConfig pins)
-    -> motor_hardware::MotorHardware;
-auto get_motion_control(motor_hardware::MotorHardware& hw,
+    -> DefinedMotorHardware;
+auto get_motion_control(DefinedMotorHardware& hw,
                         LowThroughputInterruptQueues& queues)
     -> MotionControlType;
-auto get_motion_control(motor_hardware::MotorHardware& hw,
+auto get_motion_control(DefinedMotorHardware& hw,
                         HighThroughputInterruptQueues& queues)
     -> MotionControlType;
-void encoder_interrupt(motor_hardware::MotorHardware& hw, int32_t direction);
+void encoder_interrupt(DefinedMotorHardware& hw, int32_t direction);
 
 }  // namespace linear_motor
 

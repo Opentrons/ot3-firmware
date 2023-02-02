@@ -23,7 +23,6 @@ concept BaseMotorHardwareIface = requires(T t) {
     { t.reset_encoder_pulses() } -> std::same_as<void>;
     { t.start_timer_interrupt() } -> std::same_as<void>;
     { t.stop_timer_interrupt() } -> std::same_as<void>;
-    // { t.position_flags } -> MotorPositionStatus;
 };
 
 template<class T>
@@ -35,6 +34,7 @@ concept StepperMotorHardwareIface = BaseMotorHardwareIface<T> && requires(T t) {
   { t.reset_step_tracker() } -> std::same_as<void>;
   { t.set_step_tracker(std::declval<uint32_t>()) } -> std::same_as<void>;
 };
+
 
 template<class T>
 concept BrushedMotorHardwareIface = BaseMotorHardwareIface<T> && requires(T t) {
@@ -50,7 +50,7 @@ concept BrushedMotorHardwareIface = BaseMotorHardwareIface<T> && requires(T t) {
 template<class T>
 concept PipetteStepperMotorHardwareIface = StepperMotorHardwareIface<T> && requires(T t) {
   { t.check_tip_sense() } -> std::same_as<bool>;
-  { t.read_tip_sense() } -> std::same_as<int>;
+  { t.read_tip_sense() } -> std::same_as<void>;
 };
 
 }  // namespace motor_hardware
