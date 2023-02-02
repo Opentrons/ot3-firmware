@@ -11,6 +11,8 @@
 
 namespace z_motor_iface {
 
+using DefinedZMotorHardware = motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+
 void initialize();
 
 /**
@@ -18,7 +20,7 @@ void initialize();
  *
  * @return The motor.
  */
-auto get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig> &;
+auto get_z_motor() -> motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware> &;
 
 /**
  * Get the SPI interface
@@ -32,10 +34,11 @@ auto get_spi() -> spi::hardware::SpiDeviceBase &;
  */
 auto get_tmc2130_driver_configs() -> tmc2130::configs::TMC2130DriverConfig &;
 
-auto get_z_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask &;
+auto get_z_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask<DefinedZMotorHardware> &;
 }  // namespace z_motor_iface
 
 namespace grip_motor_iface {
+
 
 void initialize();
 
@@ -44,8 +47,8 @@ void initialize();
  *
  * @return The motor.
  */
-auto get_grip_motor() -> brushed_motor::BrushedMotor<lms::GearBoxConfig> &;
+auto get_grip_motor() -> brushed_motor::BrushedMotor<lms::GearBoxConfig, motor_hardware::BrushedMotorHardware> &;
 
-auto get_grip_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask &;
+auto get_grip_motor_hardware_task() -> motor_hardware_task::MotorHardwareTask<motor_hardware::BrushedMotorHardware> &;
 
 }  // namespace grip_motor_iface

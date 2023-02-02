@@ -149,13 +149,13 @@ void grip_motor_iface::initialize() {
 }
 
 auto grip_motor_iface::get_grip_motor()
-    -> brushed_motor::BrushedMotor<lms::GearBoxConfig>& {
+    -> brushed_motor::BrushedMotor<lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& {
     return grip_motor;
 }
 
 static auto gmh_tsk = motor_hardware_task::MotorHardwareTask{
     &brushed_motor_hardware_iface, "grip motor hardware task"};
 auto grip_motor_iface::get_grip_motor_hardware_task()
-    -> motor_hardware_task::MotorHardwareTask& {
+    -> motor_hardware_task::MotorHardwareTask<motor_hardware::BrushedMotorHardware>& {
     return gmh_tsk;
 }

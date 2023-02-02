@@ -30,7 +30,7 @@ static auto move_group_task_builder =
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
-void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig, DefinedZMotorHardware>& z_motor,
                          spi::hardware::SpiDeviceBase& spi_device,
                          tmc2130::configs::TMC2130DriverConfig& driver_configs,
                          AllTask& gripper_tasks) {

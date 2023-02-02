@@ -24,7 +24,7 @@ static auto brushed_move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
 void g_tasks::start_task(
-    brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
+    brushed_motor::BrushedMotor<lms::GearBoxConfig, motor_hardware::BrushedMotorHardware>& grip_motor,
     AllTask& gripper_tasks) {
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
