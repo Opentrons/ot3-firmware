@@ -69,23 +69,6 @@ jobs:
         run: cmake --build ./build-cross --target head-exes head-images head-applications
       - name: "Lint"
         run: cmake --build ./build-cross --target head-lint
-      - name: "Upload image artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: 'head-images-${{github.ref_name}}'
-          path: |
-            build-cross/head/firmware/head-*-image.hex
-      - name: "remove images"
-        run: |
-          rm build-cross/head/firmware/head-*-image.hex
-      - name: "Upload application artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: 'head-applications-${{github.ref_name}}'
-          path: |
-            build-cross/head/firmware/head-*.hex
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

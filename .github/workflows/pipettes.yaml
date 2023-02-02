@@ -75,24 +75,7 @@ jobs:
         run: cmake --build --preset=pipettes --target pipettes-images pipettes-applications
       - name: "Lint"
         run: cmake --build --preset=pipettes --target pipettes-lint
-      - name: "Upload image artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: 'pipettes-images-${{github.ref_name}}'
-          path: |
-            build-cross*/pipettes/firmware*/*image.hex
-      - name: "remove images"
-        if: github.event_name != 'pull_request'
-        run: |
-          rm build-cross*/pipettes/firmware*/*image.hex
-      - name: "Upload application artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: "pipettes-applications-${{github.ref_name}}"
-          path: |
-            build-cross*/pipettes/firmware*/*.hex
+
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"

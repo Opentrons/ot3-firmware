@@ -71,24 +71,7 @@ jobs:
         run: cmake --build ./build-cross --target gripper-images gripper-applications
       - name: "Lint"
         run: cmake --build ./build-cross --target gripper-lint
-      - name: "Upload image artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: "gripper-images-${{github.ref_name}}"
-          path: |
-            build-cross/gripper/firmware/*image.hex
-      - name: "remove images"
-        if: github.event_name != 'pull_request'
-        run: |
-          rm build-cross/gripper/firmware/*image.hex
-      - name: "Upload application artifacts"
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: "gripper-applications-${{github.ref_name}}"
-          path: |
-            build-cross/gripper/firmware/*.hex
+
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
