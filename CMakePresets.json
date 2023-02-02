@@ -217,7 +217,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "rear-panel"
+        "rear-panel-images"
       ]
     },
     {
