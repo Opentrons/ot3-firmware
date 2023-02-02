@@ -35,10 +35,10 @@ static auto spi_task_builder =
  */
 void gantry::tasks::start_tasks(
     can::bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::BeltConfig>& motion_controller,
+    motion_controller::MotionController<lms::BeltConfig, DefinedMotorHardware>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2160::configs::TMC2160DriverConfig& driver_configs,
-    motor_hardware_task::MotorHardwareTask& mh_tsk) {
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& mh_tsk) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, "motion controller",

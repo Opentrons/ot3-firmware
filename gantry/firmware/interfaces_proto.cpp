@@ -163,7 +163,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware motor_hardware_iface(
+static motor_hardware::MotorHardware<motor_hardware::HardwareConfig> motor_hardware_iface(
     (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
     nullptr);
 
@@ -269,11 +269,11 @@ auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
 }
 
 auto interfaces::get_motor_hardware_iface()
-    -> motor_hardware::StepperMotorHardwareIface& {
+    -> DefinedMotorHardware& {
     return motor_hardware_iface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
+auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig, DefinedMotorHardware>& {
     return motor;
 }
 
@@ -284,6 +284,6 @@ auto interfaces::get_driver_config() -> tmc2130::configs::TMC2130DriverConfig& {
 static auto mh_tsk = motor_hardware_task::MotorHardwareTask{
     &motor_hardware_iface, "motor hardware task"};
 auto interfaces::get_motor_hardware_task()
-    -> motor_hardware_task::MotorHardwareTask& {
+    -> motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& {
     return mh_tsk;
 }
