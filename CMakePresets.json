@@ -250,21 +250,25 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "bootloader-head",
-        "bootloader-gantry-x",
-        "bootloader-gantry-y",
-        "bootloader-gripper",
-        "bootloader-pipettes-rev1"
+        "bootloader-head-applications",
+        "bootloader-gantry-x-applications",
+        "bootloader-gantry-y-applications",
+        "bootloader-gripper-applications",
+        "bootloader-pipettes-single-applications",
+        "bootloader-pipettes-multi-applications",
+        "bootloader-pipettes-96-applications"
       ]
     },
     {
-      "name": "bootloader-pipettes",
+      "name": "bootloader-pipettes-a1",
       "displayName": "pipettes bootloader binary",
       "description": "build the pipettes bootloader binary targets",
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "bootloader-pipettes-proto"
+        "bootloader-pipettes-single-a1",
+        "bootloader-pipettes-multi-a1",
+        "bootloader-pipettes-96-a1"
       ]
     },
     {

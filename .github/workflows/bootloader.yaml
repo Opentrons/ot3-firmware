@@ -51,7 +51,7 @@ jobs:
       - name: "Configure l5"
         run: cmake --preset=cross-pipettes . -DCMAKE_BUILD_TYPE=debug
       - name: "Build l5"
-        run: cmake --build --preset=bootloader-pipettes
+        run: cmake --build --preset=bootloader-pipettes-a1
       - name: "Configure g4"
         run: cmake --preset=cross .
       - name: "Format"
