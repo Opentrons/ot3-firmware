@@ -101,10 +101,7 @@
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "pipettes-single-proto",
-        "pipettes-multi-proto",
-        "pipettes-96-proto",
-        "pipettes-384-proto"
+        "pipettes-images"
       ]
     },
     {

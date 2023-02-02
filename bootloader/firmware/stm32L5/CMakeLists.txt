@@ -6,6 +6,12 @@ add_STM32L5_driver("Bootloader")
 
 add_subdirectory("startup")
 
+target_include_directories(STM32L5xx_Drivers_Bootloader
+        PUBLIC .)
+
+target_compile_definitions(STM32L5xx_Drivers_Bootloader
+        PUBLIC STM32L562xx)
+
 set(BOOTLOADER_L5_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/system_stm32l5xx.c
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32l5xx_it.c
@@ -13,98 +19,38 @@ set(BOOTLOADER_L5_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/node_id_stm32l5xx.c)
 
-
-macro(target_stm32L5 TARGET)
-    ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's
-    target_link_libraries(${TARGET}
+macro(pipettes_bootloader_loop)
+    target_link_libraries(${REVISION_TARGET}
             PUBLIC STM32L562RETx_bootloader
             STM32L5xx_Drivers_Bootloader
             bootloader-core)
-
-    set_target_properties(${TARGET}
-            PROPERTIES CXX_STANDARD 20
-            CXX_STANDARD_REQUIRED TRUE
-            C_STANDARD 11
-            C_STANDARD_REQUIRED TRUE)
-
-    target_include_directories(${TARGET}
-            PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
-    target_compile_options(${TARGET}
-            PUBLIC
-            -Wall
-            -Werror
-            -Wextra
-            -Wno-missing-field-initializers
-            $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
-
-    find_program(ARM_GDB
-            arm-none-eabi-gdb-py
-            PATHS "${CrossGCC_BINDIR}"
-            NO_DEFAULT_PATH
-            REQUIRED)
-    message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
-    # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
-    # this dir
-    set_target_properties(${TARGET}
-            PROPERTIES
-            CROSSCOMPILING_EMULATOR
-            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L562RETx/gdbinit")
-
-    find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
-            PATHS "${CrossGCC_BINDIR}"
-            NO_DEFAULT_PATH
-            REQUIRED)
-    add_custom_command(OUTPUT ${TARGET}.hex
-            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Oihex" ${TARGET}.hex
-            DEPENDS ${TARGET}
-            VERBATIM)
-    add_custom_target(${TARGET}-hex ALL
-            DEPENDS ${TARGET}.hex)
-
-    add_custom_command(OUTPUT ${TARGET}.bin
-            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Obinary" ${TARGET}.bin
-            DEPENDS ${TARGET}
-            VERBATIM)
-    add_custom_target(${TARGET}-bin ALL
-            DEPENDS ${TARGET}.bin)
-
-    # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
-    # arguable misuse of the concept) to the appropriate cross-gdb with
-    # remote-target. You should make sure st-util is running; that's not
-    # done here because it won't be multi-os compatible, and also it
-    # should be running the entire time and that's tough to accomplish
-    # in a custom command
-    add_custom_target(${TARGET}-debug
-            COMMAND ${TARGET}
-            USES_TERMINAL
-            )
-
-    # Runs openocd to flash the board (without using a debugger)
-    add_custom_target(${TARGET}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg" "-c" "program $<TARGET_FILE:${TARGET}>;reset;exit"
-            VERBATIM
-            COMMENT "Flashing board"
-            DEPENDS ${TARGET})
-
+    target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_pipette_dynamic)
 endmacro()
 
-add_executable(bootloader-pipettes-proto
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_L5_FW_NON_LINTABLE_SRCS})
+set(srcs ${BOOTLOADER_FW_LINTABLE_SRCS}
+         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
+         ${BOOTLOADER_L5_FW_NON_LINTABLE_SRCS})
 
-target_compile_definitions(bootloader-pipettes-proto PUBLIC node_id_pipette_dynamic)
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-single
+    REVISIONS a1
+    SOURCES srcs
+    ARCHITECTURES STM32L5
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    NO_CREATE_IMAGE_HEX)
 
-target_stm32L5(bootloader-pipettes-proto)
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-multi
+    REVISIONS a1
+    SOURCES srcs
+    ARCHITECTURES STM32L5
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    NO_CREATE_IMAGE_HEX)
 
-target_include_directories(STM32L5xx_Drivers_Bootloader
-        PUBLIC .)
-
-target_compile_definitions(STM32L5xx_Drivers_Bootloader
-        PUBLIC STM32L562xx)
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-96
+    REVISIONS a1
+    SOURCES srcs
+    ARCHITECTURES STM32L5
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    NO_CREATE_IMAGE_HEX)

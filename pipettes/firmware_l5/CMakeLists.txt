@@ -2,8 +2,7 @@
 # cross-compiling, like the board support packages and special options.
 
 find_package(STM32L5xx)
-add_STM32L5_driver("Pipettes")
-add_STM32L5_freertos("Pipettes")
+include(RevisionHandling)
 
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 
@@ -42,159 +41,76 @@ set(PIPETTE_FW_NON_LINTABLE_SRCS
     )
 
 
-target_include_directories(STM32L5xx_Drivers_Pipettes
+macro(pipettes_l5_loop)
+    set(_driver_suffix ${PROJECT_NAME}_${REVISION})
+    add_STM32L5_driver(${_driver_suffix})
+    add_STM32L5_freertos(${_driver_suffix})
+
+
+    target_include_directories(STM32L5xx_Drivers_${_driver_suffix}
         PUBLIC .)
-target_include_directories(STM32L5xx_FreeRTOS_Pipettes
+    target_include_directories(STM32L5xx_FreeRTOS_${_driver_suffix}
         PUBLIC .)
 
-target_compile_definitions(STM32L5xx_Drivers_Pipettes
+    target_compile_definitions(STM32L5xx_Drivers_${_driver_suffix}
         PUBLIC STM32L562xx)
-target_compile_definitions(STM32L5xx_FreeRTOS_Pipettes
+    target_compile_definitions(STM32L5xx_FreeRTOS_${_driver_suffix}
         PUBLIC STM32L562xx)
 
-set_target_properties(
-        STM32L5xx_FreeRTOS_Pipettes
+    set_target_properties(
+        STM32L5xx_FreeRTOS_${_driver_suffix}
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
-
-
-find_program(ARM_GDB
-        arm-none-eabi-gdb-py
-        PATHS "${CrossGCC_BINDIR}"
-        NO_DEFAULT_PATH
-        REQUIRED)
-
-add_custom_target(pipettes)
-
-function(add_pipettes_executable TARGET)
-    add_executable(${TARGET}
-            ${PIPETTE_FW_LINTABLE_SRCS}
-            ${PIPETTE_FW_NON_LINTABLE_SRCS})
-    target_i2c_firmware(${TARGET})
-    target_ot_motor_control(${TARGET})
-
-    target_link_libraries(${TARGET}
+    target_i2c_firmware(${REVISION_TARGET})
+    target_ot_motor_control(${REVISION_TARGET})
+    target_link_libraries(${REVISION_TARGET}
             PUBLIC STM32L562RETx
-            STM32L5xx_Drivers_Pipettes STM32L5xx_FreeRTOS_Pipettes
+            STM32L5xx_Drivers_${_driver_suffix} STM32L5xx_FreeRTOS_${_driver_suffix}
             can-core common-core
             )
 
-    set_target_properties(${TARGET}
-            PROPERTIES CXX_STANDARD 20
-            CXX_STANDARD_REQUIRED TRUE
-            C_STANDARD 11
-            C_STANDARD_REQUIRED TRUE)
+endmacro()
 
-    target_include_directories(
-            ${TARGET}
-            PUBLIC ${CMAKE_SOURCE_DIR}/include)
+macro(pipettes_single_l5_loop)
+    target_pipettes_core_single(${REVISION_TARGET} "proto")
+    pipettes_l5_loop()
+endmacro()
 
-    target_compile_options(${TARGET}
-            PUBLIC
-            -Wall
-            -Wextra
-            -Wno-missing-field-initializers
-            -Werror
-            $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+macro(pipettes_multi_l5_loop)
+    target_pipettes_core_multi(${REVISION_TARGET} "proto")
+    pipettes_l5_loop()
+endmacro()
 
-    if(${TARGET} STREQUAL "pipettes-single-proto")
-            target_pipettes_core_single(${TARGET} "proto")
-    elseif(${TARGET} STREQUAL "pipettes-multi-proto")
-            target_pipettes_core_multi(${TARGET} "proto")
-    elseif(${TARGET} STREQUAL "pipettes-96-proto")
-            target_pipettes_core_96(${TARGET}  "proto")
-    elseif(${TARGET} STREQUAL "pipettes-384-proto")
-            target_pipettes_core_384(${TARGET} "proto")
-    else ()
-        message(FATAL_ERROR "Invalid pipette target provided.")
-    endif ()
+macro(pipettes_96_l5_loop)
+    target_pipettes_core_96(${REVISION_TARGET}  "proto")
+    pipettes_l5_loop()
+endmacro()
 
-    # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
-    # this dir
-    set_target_properties(${TARGET}
-            PROPERTIES
-            CROSSCOMPILING_EMULATOR
-            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32L562RETx/gdbinit")
+set(_srcs ${PIPETTE_FW_LINTABLE_SRCS} ${PIPETTE_FW_NON_LINTABLE_SRCS})
 
-    find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
-            PATHS "${CrossGCC_BINDIR}"
-            NO_DEFAULT_PATH
-            REQUIRED)
-    add_custom_command(OUTPUT ${TARGET}.hex
-            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Oihex" ${TARGET}.hex
-            DEPENDS ${TARGET}
-            VERBATIM)
-    add_custom_target(${TARGET}-hex ALL
-            DEPENDS ${TARGET}.hex)
+foreach_revision(
+    PROJECT_NAME pipettes-single
+    REVISIONS a1
+    SOURCES _srcs
+    ARCHITECTURES STM32L5
+    CALL_FOREACH_REV pipettes_single_l5_loop
+    )
 
-    add_custom_command(OUTPUT ${TARGET}.bin
-            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Obinary" ${TARGET}.bin
-            DEPENDS ${TARGET}
-            VERBATIM)
-    add_custom_target(${TARGET}-bin ALL
-            DEPENDS ${TARGET}.bin)
+foreach_revision(
+    PROJECT_NAME pipettes-multi
+    REVISIONS a1
+    SOURCES _srcs
+    ARCHITECTURES STM32L5
+    CALL_FOREACH_REV pipettes_multi_l5_loop
+    )
 
-    # # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
-    # # which is a catch-all static analyzer/linter
-    # # the empty --config= tells clang-tidy to use the .clang-tidy file in the top level
-    # # An odd thing about this target is that it requires the existance of a compiledb, which
-    # # is produced when you build, and may change if you change compilation options, so in a way
-    # # it depends on a build. But we also want to be able to run this when there wasn't a successful
-    # # build, so there's no explicit dependency set.
-    # # This awful transform is required because the implicit includes that gcc knows how to find (e.g. its
-    # # own implementation of the STL) don't get added to the compile db that clang-tidy uses to figure out
-    # # include directories. So we can use the actually fairly cool transform command to turn them all into
-    # # extra-arg invocations and it'll figure it out.
-    set(CLANG_EXTRA_ARGS ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-    list(TRANSFORM CLANG_EXTRA_ARGS PREPEND --extra-arg=-I)
-    # This helps with clang accepting what GCC accepts around the implementations of the message queue
-    list(APPEND CLANG_EXTRA_ARGS "--extra-arg=-frelaxed-template-template-args")
-    add_custom_target(${TARGET}-lint
-            ALL
-            COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${PIPETTE_FW_LINTABLE_SRCS} ${CORE_LINTABLE_SOURCES})
-    list(APPEND LINT_TARGETS ${TARGET}-lint)
-    set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
-    # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
-    # arguable misuse of the concept) to the appropriate cross-gdb with
-    # remote-target. You should make sure st-util is running; that's not
-    # done here because it won't be multi-os compatible, and also it
-    # should be running the entire time and that's tough to accomplish
-    # in a custom command
-    add_custom_target(${TARGET}-debug
-            COMMAND ${TARGET}
-            USES_TERMINAL
-            )
+foreach_revision(
+    PROJECT_NAME pipettes-96
+    REVISIONS a1
+    SOURCES _srcs
+    ARCHITECTURES STM32L5
+    CALL_FOREACH_REV pipettes_96_l5_loop
+    )
 
-
-    # Targets to create full image hex file containing both bootloader and application
-    add_custom_command(
-            OUTPUT ${TARGET}-image.hex
-            DEPENDS ${TARGET}-hex bootloader-pipettes-proto-hex $<TARGET_FILE_DIR:bootloader-pipettes-proto>/bootloader-pipettes-proto.hex ${TARGET}.hex
-            COMMAND ${CMAKE_SOURCE_DIR}/scripts/hex_combine.py ${TARGET}-image.hex $<TARGET_FILE_DIR:bootloader-pipettes-proto>/bootloader-pipettes-proto.hex ${TARGET}.hex
-            VERBATIM)
-    add_custom_target(${TARGET}-image-hex ALL
-            DEPENDS ${TARGET}-image.hex)
-    list(APPEND IMAGES ${TARGET}-image-hex)
-
-    set(DISCO_FILE "${COMMON_EXECUTABLE_DIR}/STM32L562RETx/stm32l5discovery.cfg")
-
-    # Targets to flash bootloader and firmware_l5
-    add_custom_target(${TARGET}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${DISCO_FILE}" "-c" "program ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-image.hex;reset;exit"
-            VERBATIM
-            COMMENT "Flashing board"
-            DEPENDS ${TARGET}-image-hex)
-
-    add_dependencies(pipettes ${TARGET})
-endfunction()
-add_custom_target(pipettes-images-hex DEPENDS ${IMAGES})
-
-add_pipettes_executable(pipettes-single-proto)
-add_pipettes_executable(pipettes-multi-proto)
-add_pipettes_executable(pipettes-96-proto)
-add_pipettes_executable(pipettes-384-proto)
-set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
+add_custom_target(pipettes-images DEPENDS pipettes-single-images pipettes-multi-images pipettes-96-images)
+add_custom_target(pipettes-applications DEPENDS pipettes-single-applications pipettes-multi-applications pipettes-96-applications)
+add_custom_target(pipettes-exes DEPENDS pipettes-single-exes pipettes-multi-exes pipettes-96-exes)
