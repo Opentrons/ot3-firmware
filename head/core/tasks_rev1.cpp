@@ -63,17 +63,17 @@ static auto spi3_task_builder =
  */
 void head_tasks::start_tasks(
     can::bus::CanBus& can_bus,
-    motion_controller::MotionController<lms::LeadScrewConfig>&
+    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
         left_motion_controller,
-    motion_controller::MotionController<lms::LeadScrewConfig>&
+    motion_controller::MotionController<lms::LeadScrewConfig, DefinedMotorHardware>&
         right_motion_controller,
     presence_sensing_driver::PresenceSensingDriver& presence_sensing_driver,
     spi::hardware::SpiDeviceBase& spi2_device,
     spi::hardware::SpiDeviceBase& spi3_device,
     tmc2160::configs::TMC2160DriverConfig& left_driver_configs,
     tmc2160::configs::TMC2160DriverConfig& right_driver_configs,
-    motor_hardware_task::MotorHardwareTask& rmh_tsk,
-    motor_hardware_task::MotorHardwareTask& lmh_tsk) {
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& rmh_tsk,
+    motor_hardware_task::MotorHardwareTask<DefinedMotorHardware>& lmh_tsk) {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
