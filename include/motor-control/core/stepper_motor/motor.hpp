@@ -7,16 +7,12 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
-namespace motor_hardware {
-class MotorHardwareIface;
-};
-
 namespace motor_class {
 
 using namespace motor_messages;
 using namespace freertos_message_queue;
 
-template <lms::MotorMechanicalConfig MEConfig>
+template <lms::MotorMechanicalConfig MEConfig, motor_hardware::StepperMotorHardwareIface StepperHardware>
 struct Motor {
     using GenericQueue = FreeRTOSMessageQueue<Move>;
     using UpdatePositionQueue = FreeRTOSMessageQueue<
@@ -34,7 +30,7 @@ struct Motor {
      * commands.
      */
     Motor(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-          motor_hardware::StepperMotorHardwareIface& hardware_iface,
+          StepperHardware& hardware_iface,
           MotionConstraints constraints, GenericQueue& queue,
           UpdatePositionQueue& update_queue, bool engage_on_boot = false)
 
@@ -45,7 +41,7 @@ struct Motor {
                                                        update_queue,
                                                        engage_on_boot} {}
     GenericQueue& pending_move_queue;
-    motion_controller::MotionController<MEConfig> motion_controller;
+    motion_controller::MotionController<MEConfig, StepperHardware> motion_controller;
 
     Motor(const Motor&) = delete;
     auto operator=(const Motor&) -> Motor& = delete;

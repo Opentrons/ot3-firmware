@@ -12,13 +12,13 @@ namespace brushed_motion_controller {
 using namespace motor_hardware;
 using namespace motor_messages;
 
-template <lms::MotorMechanicalConfig MEConfig>
+template <lms::MotorMechanicalConfig MEConfig, BrushedMotorHardwareIface BrushedHardware>
 class MotionController {
   public:
     using GenericQueue =
         freertos_message_queue::FreeRTOSMessageQueue<BrushedMove>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     BrushedMotorHardwareIface& hardware_iface,
+                     BrushedHardware& hardware_iface,
                      GenericQueue& queue)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
@@ -110,7 +110,7 @@ class MotionController {
 
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
-    BrushedMotorHardwareIface& hardware;
+    BrushedHardware& hardware;
     GenericQueue& queue;
     bool enabled = false;
     sq31_31 um_per_encoder_pulse{0};

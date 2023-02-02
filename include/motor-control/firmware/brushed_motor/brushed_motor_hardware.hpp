@@ -5,6 +5,7 @@
 
 #include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/types.hpp"
 #include "ot_utils/core/pid.hpp"
 
 namespace motor_hardware {
@@ -31,9 +32,9 @@ struct BrushedHardwareConfig {
 
 enum class ControlDirection { positive, negative, unset };
 
-class BrushedMotorHardware : public BrushedMotorHardwareIface {
+class BrushedMotorHardware {
   public:
-    ~BrushedMotorHardware() final = default;
+    ~BrushedMotorHardware() = default;
     BrushedMotorHardware() = delete;
     BrushedMotorHardware(const BrushedHardwareConfig& config,
                          void* encoder_handle)
@@ -47,30 +48,32 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
         -> BrushedMotorHardware& = delete;
     BrushedMotorHardware(BrushedMotorHardware&&) = delete;
     auto operator=(BrushedMotorHardware&&) -> BrushedMotorHardware& = delete;
-    void positive_direction() final;
-    void negative_direction() final;
-    void activate_motor() final;
-    void deactivate_motor() final;
-    auto check_limit_switch() -> bool final { return limit; }
-    auto check_estop_in() -> bool final { return estop; }
-    auto check_sync_in() -> bool final { return sync; }
-    void read_limit_switch() final;
-    void read_estop_in() final;
-    void read_sync_in() final;
-    void grip() final;
-    void ungrip() final;
-    void stop_pwm() final;
-    auto get_encoder_pulses() -> int32_t final;
-    void reset_encoder_pulses() final;
-    void start_timer_interrupt() final;
-    void stop_timer_interrupt() final;
+    void positive_direction();
+    void negative_direction();
+    void activate_motor();
+    void deactivate_motor();
+    auto check_limit_switch() -> bool { return limit; }
+    auto check_estop_in() -> bool { return estop; }
+    auto check_sync_in() -> bool { return sync; }
+    void read_limit_switch();
+    void read_estop_in();
+    void read_sync_in();
+    void grip();
+    void ungrip();
+    void stop_pwm();
+    auto get_encoder_pulses() -> int32_t;
+    void reset_encoder_pulses();
+    void start_timer_interrupt();
+    void stop_timer_interrupt();
 
     void encoder_overflow(int32_t direction);
 
-    auto update_control(int32_t encoder_error) -> double final;
-    void reset_control() final;
-    void set_stay_enabled(bool state) final { stay_enabled = state; }
-    auto get_stay_enabled() -> bool final { return stay_enabled; }
+    auto update_control(int32_t encoder_error) -> double;
+    void reset_control();
+    void set_stay_enabled(bool state) { stay_enabled = state; }
+    auto get_stay_enabled() -> bool { return stay_enabled; }
+
+    MotorPositionStatus position_flags{};
 
   private:
     bool stay_enabled = false;

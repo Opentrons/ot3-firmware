@@ -17,10 +17,11 @@ using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
  * The message queue message handler.
  */
 template <lms::MotorMechanicalConfig MEConfig,
-          can::message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient,
+          motor_hardware::StepperMotorHardwareIface StepperHardware>
 class MotionControllerMessageHandler {
   public:
-    using MotorControllerType = motion_controller::MotionController<MEConfig>;
+    using MotorControllerType = motion_controller::MotionController<MEConfig, StepperHardware>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
@@ -157,9 +158,10 @@ class MotionControllerTask {
      * Task entry point.
      */
     template <lms::MotorMechanicalConfig MEConfig,
-              can::message_writer_task::TaskClient CanClient>
+              can::message_writer_task::TaskClient CanClient,
+              motor_hardware::StepperMotorHardwareIface StepperHardware>
     [[noreturn]] void operator()(
-        motion_controller::MotionController<MEConfig>* controller,
+        motion_controller::MotionController<MEConfig, StepperHardware>* controller,
         CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};

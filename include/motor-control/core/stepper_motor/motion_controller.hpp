@@ -20,14 +20,16 @@ using namespace motor_hardware;
  * MotionController is responsible for motor movement and communicate with
  * the motor driver using the HAL driver API and SPI.
  */
-template <lms::MotorMechanicalConfig MEConfig>
+template <lms::MotorMechanicalConfig MEConfig, StepperMotorHardwareIface StepperHardware>
+// requires StepperMotorHardwareIface<MotorHardwareType<HardwareConfigurationsType>>
 class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
     using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
         can::messages::UpdateMotorPositionEstimationRequest>;
+    // using StepperHardware = MotorHardwareType<HardwareConfigurationsType>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                     StepperMotorHardwareIface& hardware_iface,
+                     StepperHardware& hardware_iface,
                      MotionConstraints constraints, GenericQueue& queue,
                      UpdatePositionQueue& update_queue,
                      bool eng_on_strt = false)
@@ -151,7 +153,7 @@ class MotionController {
 
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
-    StepperMotorHardwareIface& hardware;
+    StepperHardware& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     UpdatePositionQueue& update_queue;
@@ -174,13 +176,13 @@ using namespace motor_hardware;
 // TODO(lc 05-22-2022) We should have PipetteMotionController inherit
 // from MotionController, but that will require some template refactoring
 // to make it compile.
-template <lms::MotorMechanicalConfig MEConfig>
+template <lms::MotorMechanicalConfig MEConfig, PipetteStepperMotorHardwareIface MotorHardwareType>
 class PipetteMotionController {
   public:
     using GenericQueue =
         freertos_message_queue::FreeRTOSMessageQueue<GearMotorMove>;
     PipetteMotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                            PipetteStepperMotorHardwareIface& hardware_iface,
+                            MotorHardwareType& hardware_iface,
                             MotionConstraints constraints, GenericQueue& queue,
                             can::ids::GearMotorId gear_motor_id)
         : linear_motion_sys_config(lms_config),
@@ -279,7 +281,7 @@ class PipetteMotionController {
 
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
-    PipetteStepperMotorHardwareIface& hardware;
+    MotorHardwareType& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};

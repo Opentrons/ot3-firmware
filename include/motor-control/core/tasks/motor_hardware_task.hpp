@@ -8,9 +8,10 @@ static constexpr uint32_t TASK_STACK_DEPTH = 512;
 
 namespace motor_hardware_task {
 
+template<motor_hardware::BaseMotorHardwareIface MotorHardware>
 class MotorHardwareTask {
   public:
-    MotorHardwareTask(motor_hardware::MotorHardwareIface* hardware,
+    MotorHardwareTask(MotorHardware* hardware,
                       const char* task_name)
         : hardware{hardware}, task_name{task_name} {}
     MotorHardwareTask(const MotorHardwareTask& c) = delete;
@@ -29,7 +30,7 @@ class MotorHardwareTask {
      */
     [[noreturn]] static void task_function(void* hw_ptr) {
         auto* hardware =
-            static_cast<motor_hardware::MotorHardwareIface*>(hw_ptr);
+            static_cast<MotorHardware*>(hw_ptr);
         for (;;) {
             vTaskDelay(10);
             hardware->read_estop_in();
@@ -39,7 +40,7 @@ class MotorHardwareTask {
     }
 
   private:
-    motor_hardware::MotorHardwareIface* hardware;
+    MotorHardware* hardware;
     const char* task_name;
     std::array<StackType_t, TASK_STACK_DEPTH> backing{};
     StaticTask_t static_task{};
@@ -51,10 +52,11 @@ namespace pipette_motor_hardware_task {
 /**
  * The task entry point.
  */
+template<motor_hardware::PipetteStepperMotorHardwareIface PipetteStepperHardware>
 class PipetteMotorHardwareTask {
   public:
     PipetteMotorHardwareTask(
-        motor_hardware::PipetteStepperMotorHardwareIface* hardware,
+        PipetteStepperHardware* hardware,
         const char* task_name)
         : hardware{hardware}, task_name{task_name} {}
     PipetteMotorHardwareTask(const PipetteMotorHardwareTask& c) = delete;
@@ -73,7 +75,7 @@ class PipetteMotorHardwareTask {
      */
     [[noreturn]] static void task_function(void* hw_ptr) {
         auto* hardware =
-            static_cast<motor_hardware::PipetteStepperMotorHardwareIface*>(
+            static_cast<PipetteStepperHardware*>(
                 hw_ptr);
         for (;;) {
             vTaskDelay(10);
@@ -85,7 +87,7 @@ class PipetteMotorHardwareTask {
     }
 
   private:
-    motor_hardware::PipetteStepperMotorHardwareIface* hardware;
+    PipetteStepperHardware* hardware;
     const char* task_name;
     std::array<StackType_t, TASK_STACK_DEPTH> backing{};
     StaticTask_t static_task{};

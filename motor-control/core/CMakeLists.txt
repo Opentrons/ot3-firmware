@@ -1,5 +1,4 @@
 add_library(motor-utils STATIC 
-    motor_hardware_interface.cpp
     stall_check.cpp
     types.cpp    
     utils.cpp)

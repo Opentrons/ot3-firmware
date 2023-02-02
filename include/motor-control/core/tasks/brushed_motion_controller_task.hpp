@@ -20,11 +20,12 @@ using TaskMessage =
  * The handler of brushed motion controller messages
  */
 template <lms::MotorMechanicalConfig MEConfig,
-          can::message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient,
+          motor_hardware::BrushedMotorHardwareIface BrushedHardware>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType =
-        brushed_motion_controller::MotionController<MEConfig>;
+        brushed_motion_controller::MotionController<MEConfig, BrushedHardware>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client)
         : controller{controller}, can_client{can_client} {}
@@ -101,7 +102,7 @@ class MotionControllerMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
-    brushed_motion_controller::MotionController<MEConfig>& controller;
+    MotorControllerType& controller;
     CanClient& can_client;
 };
 
@@ -125,9 +126,10 @@ class MotionControllerTask {
      * Task entry point.
      */
     template <lms::MotorMechanicalConfig MEConfig,
-              can::message_writer_task::TaskClient CanClient>
+              can::message_writer_task::TaskClient CanClient,
+              motor_hardware::BrushedMotorHardwareIface BrushedHardware>
     [[noreturn]] void operator()(
-        brushed_motion_controller::MotionController<MEConfig>* controller,
+        brushed_motion_controller::MotionController<MEConfig, BrushedHardware>* controller,
         CanClient* can_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client};
         TaskMessage message{};
