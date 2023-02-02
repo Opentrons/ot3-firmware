@@ -7,6 +7,7 @@
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/types.hpp"
 #include "ot_utils/core/pid.hpp"
 
 namespace sim_motor_hardware_iface {
@@ -22,43 +23,43 @@ concept MotionSystemConfig = requires(MSC msc) {
             &&std::is_arithmetic_v<decltype(msc.encoder_pulses_per_rev)>;
 };
 
-class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
+class SimMotorHardwareIface {
   public:
     SimMotorHardwareIface(MoveMessageHardware id)
         : motor_hardware::StepperMotorHardwareIface(), _id(id) {}
-    void step() final {
+    void step() {
         if (_state_manager) {
             _state_manager->send_move_msg(_id, _direction);
         }
         test_pulses += (_direction == Direction::POSITIVE) ? 1 : -1;
     }
-    void unstep() final {}
-    void positive_direction() final { _direction = Direction::POSITIVE; }
-    void negative_direction() final { _direction = Direction::NEGATIVE; }
-    void activate_motor() final {}
-    void deactivate_motor() final {}
-    void start_timer_interrupt() final {}
-    void stop_timer_interrupt() final {}
-    bool check_limit_switch() final {
+    void unstep() {}
+    void positive_direction() { _direction = Direction::POSITIVE; }
+    void negative_direction() { _direction = Direction::NEGATIVE; }
+    void activate_motor() {}
+    void deactivate_motor() {}
+    void start_timer_interrupt() {}
+    void stop_timer_interrupt() {}
+    bool check_limit_switch() {
         if (limit_switch_status) {
             limit_switch_status = false;
             return true;
         }
         return false;
     }
-    void read_limit_switch() final {}
-    void read_estop_in() final {}
-    void read_sync_in() final {}
-    void set_LED(bool) final {}
+    void read_limit_switch() {}
+    void read_estop_in() {}
+    void read_sync_in() {}
+    void set_LED(bool) {}
     void trigger_limit_switch() { limit_switch_status = true; }
-    bool check_sync_in() final {
+    bool check_sync_in() {
         if (_state_manager) {
             return _state_manager->current_sync_state() == SyncPinState::HIGH;
         }
         return true;
     }
-    void reset_encoder_pulses() final { test_pulses = 0; }
-    int32_t get_encoder_pulses() final {
+    void reset_encoder_pulses() { test_pulses = 0; }
+    int32_t get_encoder_pulses() {
         return static_cast<int32_t>(test_pulses * _encoder_ticks_per_pulse);
     }
 
@@ -82,9 +83,17 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         }
     }
 
-    bool check_estop_in() final { return estop_detected; }
+    bool check_estop_in() { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+
+    [[nodiscard]] auto get_step_tracker() const -> uint32_t {
+        return step_tracker.load();
+    }
+    auto reset_step_tracker() -> void { set_step_tracker(0); }
+    auto set_step_tracker(uint32_t val) -> void { step_tracker.store(val); }
+
+    MotorPositionStatus position_flags{};
 
   private:
     bool limit_switch_status = false;
@@ -94,41 +103,43 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
+
+    // Used to track the position in microsteps.
+    std::atomic<uint32_t> step_tracker{0};
 };
 
-class SimBrushedMotorHardwareIface
-    : public motor_hardware::BrushedMotorHardwareIface {
+class SimBrushedMotorHardwareIface {
   public:
     SimBrushedMotorHardwareIface(MoveMessageHardware id)
         : motor_hardware::BrushedMotorHardwareIface(), _id(id) {}
-    void positive_direction() final {}
-    void negative_direction() final {}
-    void activate_motor() final {}
-    void deactivate_motor() final {}
-    void start_timer_interrupt() final {}
-    void stop_timer_interrupt() final {}
-    bool check_limit_switch() final {
+    void positive_direction() {}
+    void negative_direction() {}
+    void activate_motor() {}
+    void deactivate_motor() {}
+    void start_timer_interrupt() {}
+    void stop_timer_interrupt() {}
+    bool check_limit_switch() {
         if (limit_switch_status) {
             limit_switch_status = false;
             return true;
         }
         return false;
     }
-    void read_limit_switch() final {}
-    void read_estop_in() final {}
-    void read_sync_in() final {}
+    void read_limit_switch() {}
+    void read_estop_in() {}
+    void read_sync_in() {}
     void trigger_limit_switch() { limit_switch_status = true; }
-    void grip() final {}
-    void ungrip() final {}
-    void stop_pwm() final {}
-    bool check_sync_in() final {
+    void grip() {}
+    void ungrip() {}
+    void stop_pwm() {}
+    bool check_sync_in() {
         if (_state_manager) {
             return _state_manager->current_sync_state() == SyncPinState::HIGH;
         }
         return true;
     }
-    void reset_encoder_pulses() final { test_pulses = 0; }
-    int32_t get_encoder_pulses() final { return test_pulses; }
+    void reset_encoder_pulses() { test_pulses = 0; }
+    int32_t get_encoder_pulses() { return test_pulses; }
     void set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
     double update_control(int32_t encoder_error) {
         return controller_loop.compute(encoder_error);
@@ -139,12 +150,14 @@ class SimBrushedMotorHardwareIface
         _state_manager = handle;
     }
 
-    bool check_estop_in() final { return estop_detected; }
+    bool check_estop_in() { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
 
-    void set_stay_enabled(bool state) final { stay_enabled = state; }
-    auto get_stay_enabled() -> bool final { return stay_enabled; }
+    void set_stay_enabled(bool state) { stay_enabled = state; }
+    auto get_stay_enabled() -> bool { return stay_enabled; }
+
+    MotorPositionStatus position_flags{};
 
   private:
     bool stay_enabled = false;
@@ -160,47 +173,46 @@ class SimBrushedMotorHardwareIface
     bool estop_detected = false;
 };
 
-class SimGearMotorHardwareIface
-    : public motor_hardware::PipetteStepperMotorHardwareIface {
+class SimGearMotorHardwareIface {
   public:
-    void step() final {
+    void step() {
         test_pulses += (_direction == Direction::POSITIVE) ? 1 : -1;
     }
-    void unstep() final {}
-    void positive_direction() final { _direction = Direction::POSITIVE; }
-    void negative_direction() final { _direction = Direction::NEGATIVE; }
-    void activate_motor() final {}
-    void deactivate_motor() final {}
-    void start_timer_interrupt() final {}
-    void stop_timer_interrupt() final {}
-    bool check_limit_switch() final {
+    void unstep() {}
+    void positive_direction() { _direction = Direction::POSITIVE; }
+    void negative_direction() { _direction = Direction::NEGATIVE; }
+    void activate_motor() {}
+    void deactivate_motor() {}
+    void start_timer_interrupt() {}
+    void stop_timer_interrupt() {}
+    bool check_limit_switch() {
         if (limit_switch_status) {
             limit_switch_status = false;
             return true;
         }
         return false;
     }
-    bool check_tip_sense() final {
+    bool check_tip_sense() {
         if (tip_sense_status) {
             tip_sense_status = false;
             return true;
         }
         return false;
     }
-    void read_limit_switch() final {}
-    void read_estop_in() final {}
-    void read_sync_in() final {}
-    void read_tip_sense() final {}
-    void set_LED(bool) final {}
+    void read_limit_switch() {}
+    void read_estop_in() {}
+    void read_sync_in() {}
+    void read_tip_sense() {}
+    void set_LED(bool) {}
     void trigger_limit_switch() { limit_switch_status = true; }
-    bool check_sync_in() final {
+    bool check_sync_in() {
         if (_state_manager) {
             return _state_manager->current_sync_state() == SyncPinState::HIGH;
         }
         return true;
     }
-    void reset_encoder_pulses() final { test_pulses = 0; }
-    int32_t get_encoder_pulses() final {
+    void reset_encoder_pulses() { test_pulses = 0; }
+    int32_t get_encoder_pulses() {
         return static_cast<int32_t>(test_pulses * _encoder_ticks_per_pulse);
     }
     void trigger_tip_sense() { tip_sense_status = true; }
@@ -220,9 +232,11 @@ class SimGearMotorHardwareIface
         }
     }
 
-    bool check_estop_in() final { return estop_detected; }
+    bool check_estop_in() { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+
+    MotorPositionStatus position_flags{};
 
   private:
     bool limit_switch_status = false;
