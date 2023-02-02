@@ -63,7 +63,7 @@ macro(add_clang_tidy_target)
   list(APPEND _actt_clang_extra_args_${_actt_TARGET_NAME} "--extra-arg=-frelaxed-template-template-args")
   add_custom_target(${_actt_TARGET_NAME}
     ALL
-    COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${CLANG_EXTRA_ARGS} -p ${CMAKE_BINARY_DIR} ${_actt_LINT_SOURCES})
+    COMMAND ${Clang_CLANGTIDY_EXECUTABLE} "--extra-arg=-DOPENTRONS_CLANG_TIDY_WORKAROUND_44178" ${_actt_clang_extra_args_${_actt_TARGET_NAME}} -p ${CMAKE_BINARY_DIR} ${_actt_LINT_SOURCES})
   if (NOT ${_actt_NO_ADD_TO_LINT_TARGET})
     list(APPEND LINT_TARGETS ${_actt_TARGET_NAME})
     set(LINT_TARGETS ${LINT_TARGETS} PARENT_SCOPE)
