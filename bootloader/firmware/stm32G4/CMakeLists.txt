@@ -169,14 +169,39 @@ foreach_revision(
     NO_CREATE_IMAGE_HEX
     )
 
-add_executable(bootloader-pipettes-rev1
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+macro(pipettes_bootloader_loop)
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-target_compile_definitions(bootloader-pipettes-rev1 PUBLIC node_id_pipette_dynamic)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_pipette_dynamic)
+endmacro()
 
-target_stm32G4(bootloader-pipettes-rev1)
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-single
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    REVISIONS b1 c2
+    SOURCES _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    )
+
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-multi
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    SOURCES _g4_sources _g4_sources
+    REVISIONS b1 c2
+    NO_CREATE_IMAGE_HEX
+    )
+
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-96
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    REVISIONS b1 c1
+    SOURCES _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    )
+
 
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)
