@@ -34,6 +34,7 @@ foreach_revision(
     REVISIONS A1 B1 C2
     SOURCES _g4_sources _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 
@@ -64,6 +65,7 @@ foreach_revision(
     REVISIONS a1 b1 c1
     SOURCES _g4_sources _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 foreach_revision(
@@ -72,6 +74,7 @@ foreach_revision(
     REVISIONS a1 b1 c1
     SOURCES _g4_sources _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 macro(gripper_bootloader_loop)
@@ -89,6 +92,7 @@ foreach_revision(
     REVISIONS a1 b1 c1
     SOURCES _g4_sources _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 macro(pipettes_bootloader_loop)
@@ -106,6 +110,7 @@ foreach_revision(
     REVISIONS b1 c2
     SOURCES _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 foreach_revision(
@@ -114,6 +119,7 @@ foreach_revision(
     SOURCES _g4_sources _g4_sources
     REVISIONS b1 c2
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 foreach_revision(
@@ -122,6 +128,7 @@ foreach_revision(
     REVISIONS b1 c1
     SOURCES _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
     )
 
 

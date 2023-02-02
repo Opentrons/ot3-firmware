@@ -70,7 +70,11 @@ macro(pipettes_loop)
     set_target_properties(
         STM32G4xx_FreeRTOS_${_driver_suffix}
         PROPERTIES FREERTOS_HEAP_IMPLEMENTATION "heap_5")
-
+    install_if_latest_revision(
+        FILENAME ${REVISION_HEX_IMAGE_FILE}
+        COMPONENT pipette-images
+        THISREVISION ${REVISION}
+        REVISIONS ${REVISIONS})
 endmacro()
 
 macro(pipettes_single_loop)

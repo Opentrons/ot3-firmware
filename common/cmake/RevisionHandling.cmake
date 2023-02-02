@@ -21,6 +21,16 @@ Then, you can use the macros defined in here.
 Provided Macros
 ++++++++++++++++
 
+install_if_latest_revision(FILENAME name
+                           COMPONENT component
+                           THISREVISION revision
+                           REVISIONS revision1 revision2...)
+
+Create install rules for the specified file into the specified component, if and only
+if we're in a foreach_revision macro callback for the latest version. The file will be
+installed into a dist subdirectory named after the component.
+
+
 alias_for_revision(PROJECT_NAME name REVISION revision REVISION_ALIAS alias)
 
 Create dummy targets for all targets of a specific revision/project pair according to
@@ -47,8 +57,11 @@ foreach_revision(PROJECT_NAME name
                  [NO_CREATE_APPLICATION_HEX]
                  [NO_CREATE_IMAGE_HEX]
                  [NO_SET_COMMON_PROPERTIES]
-                 [NO_PROVIDE_REVISION_DEFINES])
+                 [NO_PROVIDE_REVISION_DEFINES]
                  [NO_CREATE_WRAPUP_TARGETS]
+                 [NO_CREATE_INSTALL_RULES]
+                 [NO_EXTEND_GLOBAL_TARGETS]
+                 )
 
 These paired macros introduce a foreach() loop that moves through the provided
 revisions provide various functionality
@@ -73,6 +86,12 @@ that is previously open-coded, such as:
   NO_CREATE_WRAPUP_TARGETS is set. These are built from the ${PROJECT_NAME}-IMAGES,
   ${PROJECT_NAME}-EXES, and ${PROJECT_NAME}-APPLICATIONS variables and thus anything that removes
   content from those variables will remove content from the targets.
+- create install rules unless NO_CREATE_INSTALL_RULES is set that will put hex files in (by default) dist/.
+  The can be changed by altering the cache variable FIRMWARE_INSTALL_DIRECTORY. image files will go in
+  dist/images; applications in  dist/applications. Images are given the component IMAGES and applications
+  the component APPLICATIONS.
+- add the image target as a dependency of firmware-images and the application target as a dependency of
+  firmware-applications unless NO_EXTEND_GLOBAL_TARGETS is set
 
 The start macro takes the following named arguments:
 
@@ -101,6 +120,9 @@ NO_SET_COMMON_PROPERTIES: If provided, do not set common c and C++ language prop
                           include directories
 NO_PROVIDE_REVISION_DEFINES: If provided, do not provide C/C++ preprocessor defines for the PCBA
                              revisions or compiled-in extern variables containing same.
+NO_CREATE_INSTALL_RULES: If provided, do not create rules that will install image and application
+                         hex to dist/.
+NO_EXTEND_GLOBAL_TARGETS: If provided, do not add the wrapup targets to the global wrapup targets.
 
 Inside the macro, the following variables are defined:
 - PROJECT_NAME: The project name passed in to the macro
@@ -138,7 +160,8 @@ set(_fer_options
     NO_CREATE_IMAGE_HEX
     NO_CREATE_DEBUG_TARGET
     NO_SET_COMMON_PROPERTIES
-    NO_PROVIDE_REVISION_DEFINES)
+    NO_PROVIDE_REVISION_DEFINES
+    NO_CREATE_INSTALL_RULES)
 set(_fer_onevalue PROJECT_NAME DEFAULT_REVISION CALL_FOREACH_REV)
 set(_fer_multivalue REVISIONS SOURCES ARCHITECTURES)
 cmake_parse_arguments(_fer "${_fer_options}" "${_fer_onevalue}" "${_fer_multivalue}" ${ARGN})
@@ -338,6 +361,23 @@ foreach(_REVISION_MIXEDCASE IN LISTS _fer_REVISIONS)
   else()
       message(VERBOSE "Not calling user-provided callback (not passed in CALL_FOREACH_REV) ")
   endif()
+  if (NOT _fer_NO_CREATE_INSTALL_RULES)
+    if (NOT CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+      install(
+          FILES ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_HEX_FILE}
+          DESTINATION applications/
+          COMPONENT Applications)
+      install(
+          FILES ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_HEX_IMAGE_FILE}
+          DESTINATION images/
+          COMPONENT Images)
+      message(STATUS "Creating install rule for ${HEX_FILE}")
+    else()
+      message(WARNING "CMAKE_INSTALL_PREFIX is not set, not creating install rules")
+    endif()
+  else()
+    message(VERBOSE "Not creating install rules (inhibited by NO_CREATE_INSTALL_RULES)")
+  endif()
 endforeach()
 if (_fer_DEFAULT_REVISION)
     if (NOT _fer_NO_CREATE_EXECUTABLE)
@@ -376,12 +416,29 @@ else()
     message(VERBOSE "Not creating default revision application .hex (no DEFAULT_REVISION passed)")
     message(VERBOSE "Not creating default revision debug target (no DEFAULT_REVISION passed)")
 endif()
-add_custom_target(${PROJECT_NAME}-exes DEPENDS ${${PROJECT_NAME}-EXES})
-add_custom_target(${PROJECT_NAME}-images DEPENDS ${${PROJECT_NAME}-IMAGES})
-add_custom_target(${PROJECT_NAME}-applications DEPENDS ${${PROJECT_NAME}-APPLICATIONS})
-message(STATUS "Created summary target ${PROJECT_NAME}-exes to build ${${PROJECT_NAME}-EXES}")
-message(STATUS "Created summary target ${PROJECT_NAME}-images to build ${${PROJECT_NAME}-IMAGES}")
-message(STATUS "Created summary target ${PROJECT_NAME}-applications to build ${${PROJECT_NAME}-APPLICATIONS}")
+if (NOT _fer_NO_CREATE_WRAPUP_TARGETS)
+    add_custom_target(${PROJECT_NAME}-exes DEPENDS ${${PROJECT_NAME}-EXES})
+    add_custom_target(${PROJECT_NAME}-images DEPENDS ${${PROJECT_NAME}-IMAGES})
+    add_custom_target(${PROJECT_NAME}-applications DEPENDS ${${PROJECT_NAME}-APPLICATIONS})
+    message(STATUS "Created summary target ${PROJECT_NAME}-exes to build ${${PROJECT_NAME}-EXES}")
+    message(STATUS "Created summary target ${PROJECT_NAME}-images to build ${${PROJECT_NAME}-IMAGES}")
+    message(STATUS "Created summary target ${PROJECT_NAME}-applications to build ${${PROJECT_NAME}-APPLICATIONS}")
+    if (NOT _fer_NO_EXTEND_GLOBAL_TARGET)
+        add_dependencies(firmware-images ${PROJECT_NAME}-images)
+        add_dependencies(firmware-applications ${PROJECT_NAME}-applications)
+        message(STATUS "Added ${PROJECT_NAME}-images to firmware-images")
+        message(STATUS "Added ${PROJECT_NAME}-applications to application-images")
+    else()
+        message(VERBOSE "Not adding ${PROJECT_NAME}-images to firmware-images (inhibited by NO_EXTEND_GLOBAL_TARGET)")
+        message(VERBOSE "Not adding ${PROJECT_NAME}-applications to firmware-applications (inhibited by NO_EXTEND_GLOBAL_TARGET)")
+    endif()
+else()
+    message(VERBOSE "Not creating summary target ${PROJECT_NAME}-exes (inhibited by NO_CREATE_WRAPUP_TARGETS)")
+    message(VERBOSE "Not creating summary target ${PROJECT_NAME}-images (inhibited by NO_CREATE_WRAPUP_TARGETS)")
+    message(VERBOSE "Not creating summary target ${PROJECT_NAME}-applications (inhibited by NO_CREATE_WRAPUP_TARGETS)")
+    message(VERBOSE "Not adding ${PROJECT_NAME}-images to firmware-images (inhibited by NO_CREATE_WRAPUP_TARGETS)")
+    message(VERBOSE "Not adding ${PROJECT_NAME}-applications to firmware-applications (inhibited by NO_CREATE_WRAPUP_TARGETS)")
+endif()
 list(POP_BACK CMAKE_MESSAGE_INDENT)
 endmacro()
 
@@ -398,4 +455,19 @@ macro(alias_for_revision)
   add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-flash DEPENDS ${_afr_PROJECT_NAME}-${_base_revision}-flash)
   add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-debug DEPENDS ${_afr_PROJECT_NAME}-${_base_revision}-debug)
   message(STATUS "Created alias ${_afr_PROJECT_NAME}-${_revision_alias} for ${_afr_PROJECT_NAME}-${_base_revision} exe, hex, flash, debug")
+endmacro()
+
+macro(install_if_latest_revision)
+  set(_ilr_options)
+  set(_ilr_onevalue FILENAME COMPONENT THISREVISION)
+  set(_ilr_multivalue REVISIONS)
+  cmake_parse_arguments(_ilr "${_irl_options}" "${_ilr_onevalue}" "${_ilr_multivalue}" ${ARGN})
+  list(GET _ilr_REVISIONS -1 _ilr_recent_rev)
+  if (_ilr_THISREVISION STREQUAL _ilr_recent_rev)
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/${_ilr_FILENAME}
+      DESTINATION ${_ilr_COMPONENT}
+      COMPONENT ${_ilr_COMPONENT}
+      )
+  endif()
 endmacro()

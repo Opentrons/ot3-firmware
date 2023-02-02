@@ -100,7 +100,12 @@ macro(gantry_loop_internal)
             STM32G4xx_Drivers_${_driver_suffix} STM32G4xx_FreeRTOS_${_driver_suffix}
             can-core)
 
-
+    install_if_latest_revision(
+        FILENAME ${REVISION_HEX_IMAGE_FILE}
+        COMPONENT robot-images
+        THISREVISION ${REVISION}
+        REVISIONS ${REVISIONS}
+    )
 endmacro()
 
 macro(gantry_loop_internal_x)

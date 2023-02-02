@@ -134,8 +134,8 @@ macro(rearpanel_loop)
     DEPENDS ${REVISION_TARGET}-integrity
     USES_TERMINAL
     )
-
-  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.hex")
+  set(HEX_IMG_FILENAME ${REVISION_TARGET}-image.hex)
+  set(HEX_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${HEX_IMG_FILENAME}")
 
   set(BIN_IMG_NAME "${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}-image.bin")
 
@@ -188,7 +188,11 @@ macro(rearpanel_loop)
       DEPENDS ${HEX_IMG_NAME})
   list(APPEND ${PROJECT_NAME}-IMAGES ${REVISION_TARGET}-image-hex)
   list(APPEND ${PROJECT_NAME}-APPLICATIONS ${REVISION_TARGET}-hex)
-
+  install_if_latest_revision(
+    FILENAME ${HEX_IMG_FILENAME}
+    COMPONENT robot-images
+    THISREVISION ${REVISION}
+    REVISIONS ${REVISIONS})
 endmacro()
 
 foreach_revision(PROJECT_NAME rear-panel

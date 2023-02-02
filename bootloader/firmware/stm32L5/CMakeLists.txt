@@ -37,7 +37,8 @@ foreach_revision(
     SOURCES srcs
     ARCHITECTURES STM32L5
     CALL_FOREACH_REV pipettes_bootloader_loop
-    NO_CREATE_IMAGE_HEX)
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES)
 
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-multi
@@ -45,7 +46,8 @@ foreach_revision(
     SOURCES srcs
     ARCHITECTURES STM32L5
     CALL_FOREACH_REV pipettes_bootloader_loop
-    NO_CREATE_IMAGE_HEX)
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES)
 
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-96
@@ -53,4 +55,5 @@ foreach_revision(
     SOURCES srcs
     ARCHITECTURES STM32L5
     CALL_FOREACH_REV pipettes_bootloader_loop
-    NO_CREATE_IMAGE_HEX)
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES)

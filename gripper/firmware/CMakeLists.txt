@@ -78,7 +78,12 @@ macro(gripper_loop)
             PUBLIC STM32G491RETx
             STM32G4xx_Drivers_${_driver_suffix} STM32G4xx_FreeRTOS_${_driver_suffix}
             can-core)
-
+    install_if_latest_revision(
+        FILENAME ${REVISION_HEX_IMAGE_FILE}
+        COMPONENT gripper-images
+        THISREVISION ${REVISION}
+        REVISIONS ${REVISIONS}
+    )
 endmacro()
 
 foreach_revision(

@@ -24,7 +24,8 @@
         "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
-        "ARM_ARCH_TYPE": "cortex-m4"
+        "ARM_ARCH_TYPE": "cortex-m4",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
       },
       "inherits": "configuration-ok"
     },
@@ -39,7 +40,8 @@
         "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
-        "ARM_ARCH_TYPE": "cortex-m33"
+        "ARM_ARCH_TYPE": "cortex-m33",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
       },
       "inherits": "configuration-ok"
     },
@@ -92,6 +94,28 @@
         "pipettes-multi-rev1-hex",
         "pipettes-96-rev1-hex",
         "pipettes-384-rev1-hex"
+      ]
+    },
+    {
+      "name": "firmware-g4",
+      "displayName": "All G4 Firmwares",
+      "description": "Environment to build all g4 firmware - see firmware-l5",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": [
+        "firmware-applications",
+        "firmware-images"
+      ]
+    },
+    {
+      "name": "firmware-l5",
+      "displayName": "All L5 Firmwares",
+      "description": "Environment to build all g4 firmware - see firmware-g4",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": [
+        "firmware-applications",
+        "firmware-images"
       ]
     },
     {

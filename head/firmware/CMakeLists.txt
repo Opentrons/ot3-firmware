@@ -91,7 +91,12 @@ macro(_loop_body)
           CXX_STANDARD_REQUIRED TRUE
           C_STANDARD 11
           C_STANDARD_REQUIRED TRUE)
-
+  install_if_latest_revision(
+    FILENAME ${REVISION_HEX_IMAGE_FILE}
+    COMPONENT robot-images
+    THISREVISION ${REVISION}
+    REVISIONS ${REVISIONS}
+    )
 endmacro(_loop_body)
 
 foreach_revision(

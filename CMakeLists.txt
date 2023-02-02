@@ -35,6 +35,8 @@ else()
 
     function(coverage_evaluate)
     endfunction()
+    add_custom_target(firmware-images)
+    add_custom_target(firmware-applications)
 endif ()
 
 find_package(Clang)
