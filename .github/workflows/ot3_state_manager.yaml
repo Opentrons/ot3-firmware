@@ -49,7 +49,7 @@ jobs:
           python-version: "3.8"
 
       - name: Cache stm32-tools
-        uses: "actions/cache@v2"
+        uses: "actions/cache@v3"
         with:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
