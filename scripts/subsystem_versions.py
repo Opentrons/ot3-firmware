@@ -6,6 +6,7 @@ import json
 import argparse
 import subprocess
 
+REVS = ["rev1"]
 VERSION_REGEX = re.compile("v([0-9])")
 SUBSYSTEMS = [
     "head",
@@ -42,6 +43,7 @@ def main(args):
         version_info[subsystem] = {
             "version": version,
             "shortsha": shortsha,
+            "files_by_revision": {rev: f"{subsystem}-{rev}.hex" for rev in REVS},
             "branch": branch,
         }
 
