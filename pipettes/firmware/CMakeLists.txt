@@ -124,6 +124,6 @@ alias_for_revision(PROJECT_NAME pipettes-96 REVISION b1 REVISION_ALIAS rev1)
 
 add_custom_target(pipettes-images DEPENDS pipettes-96-images pipettes-multi-images pipettes-single-images)
 add_custom_target(pipettes-exes DEPENDS pipette-96-exes pipettes-multi-exes pipettes-single-exes)
-add_custom_target(pipettes-applications DEPENDS pipettes-96-applications pipettes-multi-applicatiosn pipettes-single-applications)
+add_custom_target(pipettes-applications DEPENDS pipettes-96-applications pipettes-multi-applications pipettes-single-applications)
 
 add_clang_tidy_target(TARGET_NAME pipettes-lint LINT_SOURCES ${PIPETTE_FW_LINTABLE_SRCS})
