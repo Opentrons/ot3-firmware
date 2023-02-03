@@ -81,20 +81,11 @@
   "buildPresets": [
     {
       "name": "all-application-firmware",
-      "displayName": "all application hex binary",
+      "displayName": "all application hex binaries",
       "description": "Build all the hex binaries that will go on the OT3 filesystem.",
       "configurePreset": "cross",
       "jobs": 4,
-      "targets": [
-        "head-rev1-hex",
-        "gantry-x-rev1-hex",
-        "gantry-y-rev1-hex",
-        "gripper-rev1-hex",
-        "pipettes-single-rev1-hex",
-        "pipettes-multi-rev1-hex",
-        "pipettes-96-rev1-hex",
-        "pipettes-384-rev1-hex"
-      ]
+      "targets": ["firmware-applications"]
     },
     {
       "name": "firmware-g4",
