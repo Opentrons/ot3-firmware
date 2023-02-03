@@ -6,7 +6,7 @@ import json
 import argparse
 import subprocess
 
-BINARY_FILE_POSTFIX = "rev1.hex"  # TODO (BA, 02/03/2023): keeping fixed for now, but this needs to be more dynamic.
+REVS = ["rev1"]
 VERSION_REGEX = re.compile("v([0-9])")
 SUBSYSTEMS = [
     "head",
@@ -40,11 +40,10 @@ def main(args):
             continue
 
         # put the version_info together
-        filename = "%s-%s" % (subsystem, BINARY_FILE_POSTFIX)
         version_info[subsystem] = {
             "version": version,
             "shortsha": shortsha,
-            "filename": filename,
+            "files_by_revision": {rev: f"{subsystem}-{rev}.hex" for rev in REVS},
             "branch": branch,
         }
 
