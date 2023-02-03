@@ -16,6 +16,20 @@ Aside from the common directory, each repository should contain a `firmware`, `i
    definitions. It can be used by external python projects to deal with serializing and unserializing these
    messages, as well as being a source of truth for generating IDs in c++.
 
+## Revisions
+
+Each application - the executables that we compile to run on a specific microcontroller - is compiled for all the different PCBA revisions that we support. The revisions are defined based on the actual PCBA revisions that get manufactured. The expectation is that we'll always maintain firmware compatible with each revision, and pack executables for each revision of each PCBA into the robot software for in-field updates.
+
+The meaning of a revision is aligned with Opentrons electrical engineering product lifecycle management. A PCBA revision is PN.M, where
+- P is the primary revision and is a letter. The primary revision changes when traces, drills, manufacturing notes, etc on the PCBA designs change - anything that would require different board fabs. 
+- N is the secondary revision and is a number. The secondary revision changes when a schematic, assembly note, component, etc on the PCBA designs change - anything that has the same fabs, but functionally different PCBAs
+- M, which we don't care about, is the tertiary revision, and is a change that does not result in a functional change.
+
+Since we don't care about tertiary revisions, we compile firmware for each primary-secondary revision that gets manufactured, and we expose the primary and secondary revisions to the firmware in the generated revisions.c file, which is accessible by including versions.h.
+
+Application binaries are generated with different names for each revision and can be compiled separately by target - e.g. `cmake --build --preset=firmware-g4 --target gantry-x-b1-hex` generates the gantry-x firmware for revision B1, `cmake --build --preset=firmware-g4 --target pipettes-single-c2-image-hex` generates the single pipette firmware image (with bootloader) for revision c2. All revisions for a single application binary type (e.g. image, application, executable) are wrapped up in a target, so `cmake --build --preset=firmware-g4 --target gripper-images` builds the images hex files for all gripper revisions, `cmake --build --preset=firmware-g4 --target head-applications` builds the application hex files for all head revisions.
+
+This can end up being quite a lot of hex files scattered in various subdirectories, so if you run `cmake --install` cmake will helpfully copy them all to the `dist/` subdirectory for you. You can change where it installs by changing `CMAKE_INSTALL_PREFIX`.
 
 ## Working with CMake
 

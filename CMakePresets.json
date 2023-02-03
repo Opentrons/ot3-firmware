@@ -21,10 +21,11 @@
       "binaryDir": "${sourceDir}/build-cross",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
-        "ARM_ARCH_TYPE": "cortex-m4"
+        "ARM_ARCH_TYPE": "cortex-m4",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
       },
       "inherits": "configuration-ok"
     },
@@ -36,10 +37,11 @@
       "binaryDir": "${sourceDir}/build-cross-pipettes",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
         "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
-        "ARM_ARCH_TYPE": "cortex-m33"
+        "ARM_ARCH_TYPE": "cortex-m33",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
       },
       "inherits": "configuration-ok"
     },
@@ -79,85 +81,87 @@
   "buildPresets": [
     {
       "name": "all-application-firmware",
-      "displayName": "all application hex binary",
+      "displayName": "all application hex binaries",
       "description": "Build all the hex binaries that will go on the OT3 filesystem.",
       "configurePreset": "cross",
       "jobs": 4,
+      "targets": ["firmware-applications"]
+    },
+    {
+      "name": "firmware-g4",
+      "displayName": "All G4 Firmwares",
+      "description": "Environment to build all g4 firmware - see firmware-l5",
+      "configurePreset": "cross",
+      "jobs": 4,
       "targets": [
-        "head-rev1-hex",
-        "gantry-x-rev1-hex",
-        "gantry-y-rev1-hex",
-        "gripper-rev1-hex",
-        "pipettes-single-rev1-hex",
-        "pipettes-multi-rev1-hex",
-        "pipettes-96-rev1-hex",
-        "pipettes-384-rev1-hex"
+        "firmware-applications",
+        "firmware-images"
       ]
     },
     {
-      "name": "pipettes",
+      "name": "firmware-l5",
+      "displayName": "All L5 Firmwares",
+      "description": "Environment to build all g4 firmware - see firmware-g4",
+      "configurePreset": "cross-pipettes",
+      "jobs": 4,
+      "targets": [
+        "firmware-applications",
+        "firmware-images"
+      ]
+    },
+    {
+      "name": "pipettes-a1",
       "displayName": "pipettes binary",
       "description": "Build the pipettes cross binary",
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "pipettes-single-proto",
-        "pipettes-multi-proto",
-        "pipettes-96-proto",
-        "pipettes-384-proto"
+        "pipettes-images"
       ]
     },
     {
-      "name": "pipettes-rev1",
-      "displayName": "pipettes binary",
+      "name": "pipettes-proto",
+      "inherits": ["pipettes-a1"]
+    },
+    {
+      "name": "pipettes",
+      "displayName": "pipettes binaries",
       "description": "Build the pipettes cross binary",
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "pipettes-single-rev1",
-        "pipettes-multi-rev1",
-        "pipettes-96-rev1",
-        "pipettes-384-rev1"
+        "pipettes-images"
       ]
     },
     {
+      "name": "pipettes-rev1",
+      "inherits": ["pipettes"]
+    },
+    {
       "name": "pipettes-single",
-      "inherits": ["pipettes", "pipettes-rev1"],
+      "inherits": ["pipettes"],
       "displayName": "pipettes single binary",
       "description": "Build the single channel pipettes cross binary",
       "targets": [
-        "pipettes-single-proto",
-        "pipettes-single-rev1"
+        "pipettes-single-images"
       ]
     },
     {
       "name": "pipettes-multi",
-      "inherits": ["pipettes", "pipettes-rev1"],
+      "inherits": ["pipettes"],
       "displayName": "pipettes multi binary",
       "description": "Build the multi channel pipettes cross binary",
       "targets": [
-        "pipettes-multi-proto",
-        "pipettes-multi-rev1"
+        "pipettes-multi-images"
       ]
     },
     {
       "name": "pipettes-96",
-      "inherits": ["pipettes", "pipettes-rev1"],
+      "inherits": ["pipettes"],
       "displayName": "pipettes 96 channel binary",
       "description": "Build the 96 channel pipettes cross binary",
       "targets": [
-        "pipettes-96-proto",
-        "pipettes-96-rev1"
-      ]
-    },
-    {
-      "name": "pipettes-384",
-      "inherits": ["pipettes", "pipettes-rev1"],
-      "displayName": "pipettes 384 channel binary",
-      "description": "Build the 384 channel pipettes cross binary",
-      "targets": [
-        "pipettes-384-proto",
-        "pipettes-96-rev1"
+        "pipettes-96-images"
       ]
     },
     {
@@ -177,10 +181,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "gantry-x-proto",
-        "gantry-y",
-        "gantry-x-rev1",
-        "gantry-y-rev1"
+        "gantry-images"
       ]
     },
     {
@@ -190,8 +191,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "gantry-x-proto",
-        "gantry-x-rev1"
+        "gantry-x-images"
       ]
     },
     {
@@ -201,8 +201,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "gantry-y-proto",
-        "gantry-y-rev1"
+        "gantry-y-images"
       ]
     },
     {
@@ -212,7 +211,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "head"
+        "head-images"
       ]
     },
     {
@@ -222,7 +221,7 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "rear-panel"
+        "rear-panel-images"
       ]
     },
     {
@@ -242,21 +241,25 @@
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "bootloader-head",
-        "bootloader-gantry-x",
-        "bootloader-gantry-y",
-        "bootloader-gripper",
-        "bootloader-pipettes-rev1"
+        "bootloader-head-applications",
+        "bootloader-gantry-x-applications",
+        "bootloader-gantry-y-applications",
+        "bootloader-gripper-applications",
+        "bootloader-pipettes-single-applications",
+        "bootloader-pipettes-multi-applications",
+        "bootloader-pipettes-96-applications"
       ]
     },
     {
-      "name": "bootloader-pipettes",
+      "name": "bootloader-pipettes-a1",
       "displayName": "pipettes bootloader binary",
       "description": "build the pipettes bootloader binary targets",
       "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
-        "bootloader-pipettes-proto"
+        "bootloader-pipettes-single-a1",
+        "bootloader-pipettes-multi-a1",
+        "bootloader-pipettes-96-a1"
       ]
     },
     {

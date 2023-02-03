@@ -1,6 +1,7 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
 find_package(STM32G4xx)
+include(RevisionHandling)
 
 add_STM32G4_driver("Bootloader")
 
@@ -14,130 +15,123 @@ set(BOOTLOADER_G4FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/node_id_stm32g4xx.c)
 
-macro(target_stm32G4 TARGET)
-    ## todo: The bootloader project should have its own linker files. It cannot share the other subproject's
-    target_link_libraries(${TARGET}
-            PUBLIC STM32G491RETx_bootloader
-            STM32G4xx_Drivers_Bootloader
-            bootloader-core)
 
-    set_target_properties(${TARGET}
-            PROPERTIES CXX_STANDARD 20
-            CXX_STANDARD_REQUIRED TRUE
-            C_STANDARD 11
-            C_STANDARD_REQUIRED TRUE)
+set(_g4_sources ${BOOTLOADER_FW_LINTABLE_SRCS} ${BOOTLOADER_FW_NON_LINTABLE_SRCS} ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
 
-    target_include_directories(${TARGET}
-            PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-    target_compile_options(${TARGET}
-            PUBLIC
-            -Wall
-            -Werror
-            -Wextra
-            -Wno-missing-field-initializers
-            $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
-            $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
+macro(head_bootloader_loop)
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-    find_program(ARM_GDB
-            arm-none-eabi-gdb-py
-            PATHS "${CrossGCC_BINDIR}"
-            NO_DEFAULT_PATH
-            REQUIRED)
-    message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
-    # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
-    # this dir
-    set_target_properties(${TARGET}
-            PROPERTIES
-            CROSSCOMPILING_EMULATOR
-            "${ARM_GDB};--command=${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_head)
 
-    find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
-            PATHS "${CrossGCC_BINDIR}"
-            NO_DEFAULT_PATH
-            REQUIRED)
-    add_custom_command(OUTPUT ${TARGET}.hex
-            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Oihex" ${TARGET}.hex
-            DEPENDS ${TARGET}
-            VERBATIM)
-    add_custom_target(${TARGET}-hex ALL
-            DEPENDS ${TARGET}.hex)
-
-    add_custom_command(OUTPUT ${TARGET}.bin
-            COMMAND ${CROSS_OBJCOPY} ARGS ${TARGET} "-Obinary" ${TARGET}.bin
-            DEPENDS ${TARGET}
-            VERBATIM)
-    add_custom_target(${TARGET}-bin ALL
-            DEPENDS ${TARGET}.bin)
-
-    # Runs cross-gdb (since CMAKE_CROSSCOMPILING_EMULATOR is set in an
-    # arguable misuse of the concept) to the appropriate cross-gdb with
-    # remote-target. You should make sure st-util is running; that's not
-    # done here because it won't be multi-os compatible, and also it
-    # should be running the entire time and that's tough to accomplish
-    # in a custom command
-    add_custom_target(${TARGET}-debug
-            COMMAND ${TARGET}
-            USES_TERMINAL
-            )
-
-    # Runs openocd to flash the board (without using a debugger)
-    add_custom_target(${TARGET}-flash
-            COMMAND "${OpenOCD_EXECUTABLE}" "-f" "${COMMON_EXECUTABLE_DIR}/STM32G491RETx/stm32g4discovery.cfg" "-c" "program $<TARGET_FILE:${TARGET}>;reset;exit"
-            VERBATIM
-            COMMENT "Flashing board"
-            DEPENDS ${TARGET})
 endmacro()
 
+foreach_revision(
+    PROJECT_NAME bootloader-head
+    CALL_FOREACH_REV head_bootloader_loop
+    REVISIONS A1 B1 C2
+    SOURCES _g4_sources _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
-add_executable(bootloader-head
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
 
-target_compile_definitions(bootloader-head PUBLIC node_id_head)
+macro(gantry_bootloader_loop)
+    set(_gbl_options)
+    set(_gbl_onevalue AXIS)
+    set(_gbl_multivalue)
+    cmake_parse_arguments(_gbl "${_gbl_options}" "${_gbl_onevalue}" "${_gbl_multivalue}" ${ARGN})
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-target_stm32G4(bootloader-head)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_gantry_${_gbl_AXIS})
+endmacro()
 
-add_executable(bootloader-gantry-x
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+macro(gantry_x_bootloader_loop)
+    gantry_bootloader_loop(AXIS x)
+endmacro()
 
-target_compile_definitions(bootloader-gantry-x PUBLIC node_id_gantry_x)
+macro(gantry_y_bootloader_loop)
+    gantry_bootloader_loop(AXIS y)
+endmacro()
 
-target_stm32G4(bootloader-gantry-x)
+foreach_revision(
+    PROJECT_NAME bootloader-gantry-x
+    CALL_FOREACH_REV gantry_x_bootloader_loop
+    REVISIONS a1 b1 c1
+    SOURCES _g4_sources _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
-add_executable(bootloader-gantry-y
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+foreach_revision(
+    PROJECT_NAME bootloader-gantry-y
+    CALL_FOREACH_REV gantry_y_bootloader_loop
+    REVISIONS a1 b1 c1
+    SOURCES _g4_sources _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
-target_compile_definitions(bootloader-gantry-y PUBLIC node_id_gantry_y)
+macro(gripper_bootloader_loop)
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-target_stm32G4(bootloader-gantry-y)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_gripper)
+endmacro()
 
-add_executable(bootloader-gripper
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+foreach_revision(
+    PROJECT_NAME bootloader-gripper
+    CALL_FOREACH_REV gripper_bootloader_loop
+    REVISIONS a1 b1 c1
+    SOURCES _g4_sources _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
-target_compile_definitions(bootloader-gripper PUBLIC node_id_gripper)
+macro(pipettes_bootloader_loop)
+  target_link_libraries(${REVISION_TARGET}
+      PUBLIC STM32G491RETx_bootloader
+      STM32G4xx_Drivers_Bootloader
+      bootloader-core)
 
-target_stm32G4(bootloader-gripper)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_pipette_dynamic)
+endmacro()
 
-add_executable(bootloader-pipettes-rev1
-        ${BOOTLOADER_FW_LINTABLE_SRCS}
-        ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-single
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    REVISIONS b1 c2
+    SOURCES _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
-target_compile_definitions(bootloader-pipettes-rev1 PUBLIC node_id_pipette_dynamic)
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-multi
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    SOURCES _g4_sources _g4_sources
+    REVISIONS b1 c2
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
 
-target_stm32G4(bootloader-pipettes-rev1)
+foreach_revision(
+    PROJECT_NAME bootloader-pipettes-96
+    CALL_FOREACH_REV pipettes_bootloader_loop
+    REVISIONS b1 c1
+    SOURCES _g4_sources _g4_sources
+    NO_CREATE_IMAGE_HEX
+    NO_CREATE_INSTALL_RULES
+    )
+
 
 target_include_directories(STM32G4xx_Drivers_Bootloader
         PUBLIC .)

@@ -1,0 +1,10 @@
+#include "common/core/version.h"
+
+static const struct revision _revision = {
+    .primary = '${PRIMARY_REVISION}',
+    .secondary = '${SECONDARY_REVISION}'
+};
+
+const struct revision* revision_get() {
+    return &_revision;
+}
