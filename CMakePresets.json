@@ -111,7 +111,7 @@
       "name": "firmware-l5",
       "displayName": "All L5 Firmwares",
       "description": "Environment to build all g4 firmware - see firmware-g4",
-      "configurePreset": "cross",
+      "configurePreset": "cross-pipettes",
       "jobs": 4,
       "targets": [
         "firmware-applications",

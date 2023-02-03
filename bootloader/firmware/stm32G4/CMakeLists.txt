@@ -1,6 +1,7 @@
 # This CMakeLists.txt handles everything that is compiled only when
 # cross-compiling, like the board support packages and special options.
 find_package(STM32G4xx)
+include(RevisionHandling)
 
 add_STM32G4_driver("Bootloader")
 
