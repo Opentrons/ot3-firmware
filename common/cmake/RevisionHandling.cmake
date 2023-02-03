@@ -443,18 +443,33 @@ list(POP_BACK CMAKE_MESSAGE_INDENT)
 endmacro()
 
 macro(alias_for_revision)
-  set(_afr_options)
+  set(_afr_options NO_EXTEND_GLOBAL_TARGETS NO_EXTEND_WRAPUP_TARGETS)
   set(_afr_onevalue PROJECT_NAME REVISION REVISION_ALIAS)
   set(_afr_multivalue )
   cmake_parse_arguments(_afr "${_afr_options}" "${_afr_onevalue}" "${_afr_multivalue}" ${ARGN})
   string(TOLOWER ${_afr_REVISION} _base_revision)
   string(TOLOWER ${_afr_REVISION_ALIAS} _revision_alias)
   add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias} DEPENDS ${_afr_PROJECT_NAME}-${_base_revision})
-  add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-hex DEPENDS ${_afr_PROJECT_NAME}-${_base_revision})
+  add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-hex
+          ${CMAKE_COMMAND} -E copy ${_afr_PROJECT_NAME}-${_base_revision}.hex ${_afr_PROJECT_NAME}-${_revision_alias}.hex
+          DEPENDS ${_afr_PROJECT_NAME}-${_base_revision}-hex)
   add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-image-hex DEPENDS ${_afr_PROJECT_NAME}-${_base_revision}-image-hex)
   add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-flash DEPENDS ${_afr_PROJECT_NAME}-${_base_revision}-flash)
   add_custom_target(${_afr_PROJECT_NAME}-${_revision_alias}-debug DEPENDS ${_afr_PROJECT_NAME}-${_base_revision}-debug)
+  install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/${_afr_PROJECT_NAME}-${_revision_alias}.hex
+      DESTINATION applications/
+      COMPONENT Applications)
   message(STATUS "Created alias ${_afr_PROJECT_NAME}-${_revision_alias} for ${_afr_PROJECT_NAME}-${_base_revision} exe, hex, flash, debug")
+  if (NOT _afr_NO_EXTEND_WRAPUP_TARGETS)
+      message(STATUS "Added ${_afr_PROJECT_NAME}-${_revision_alias}-hex to wrapup target ${_afr_PROJECT_NAME}-applications")
+      add_dependencies(${_afr_PROJECT_NAME}-applications ${_afr_PROJECT_NAME}-${_revision_alias}-hex)
+  endif()
+  if (NOT _afr_NO_EXTEND_GLOBAL_TARGETS)
+      message(STATUS "Added ${_afr_PROJECT_NAME}-${_revision_alias}-hex to global target firmware-applications")
+      add_dependencies(firmware-applications ${_afr_PROJECT_NAME}-${_revision_alias}-hex)
+  endif()
+
 endmacro()
 
 macro(install_if_latest_revision)

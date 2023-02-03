@@ -136,6 +136,7 @@ add_custom_target(gantry-applications DEPENDS gantry-x-applications gantry-y-app
 
 alias_for_revision(PROJECT_NAME gantry-x REVISION a1 REVISION_ALIAS proto)
 alias_for_revision(PROJECT_NAME gantry-y REVISION a1 REVISION_ALIAS proto)
+
 alias_for_revision(PROJECT_NAME gantry-x REVISION b1 REVISION_ALIAS rev1)
 alias_for_revision(PROJECT_NAME gantry-y REVISION b1 REVISION_ALIAS rev1)
 
