@@ -34,7 +34,7 @@ jobs:
       - name: 'Build images'
         run: |
           cmake --build --preset=firmware-g4 --target firmware-images firmware-applications
-          cmake --build --preset=firmware-l5 --target firnware-images firmware-applications
+          cmake --build --preset=firmware-l5 --target firmware-images firmware-applications
       - name: 'Prep images for upload'
         run: |
           cmake --install ./build-cross
