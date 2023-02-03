@@ -10,13 +10,13 @@ BINARY_FILE_POSTFIX = "rev1.hex"  # TODO (BA, 02/03/2023): keeping fixed for now
 VERSION_REGEX = re.compile("v([0-9])")
 SUBSYSTEMS = [
     "head",
-    "gantry_x",
-    "gantry_y",
+    "gantry-x",
+    "gantry-y",
     "gripper",
-    "pipettes_single",
-    "pipettes_multi",
-    "pipettes_96",
-    "pipettes_384",
+    "pipettes-single",
+    "pipettes-multi",
+    "pipettes-96",
+    "pipettes-384",
 ]
 
 
