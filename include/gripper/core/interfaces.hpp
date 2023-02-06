@@ -6,13 +6,13 @@
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "spi/core/spi.hpp"
 
 namespace z_motor_iface {
 
-using DefinedZMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedZMotorHardware = motor_hardware::MotorHardware;
 
 void initialize();
 

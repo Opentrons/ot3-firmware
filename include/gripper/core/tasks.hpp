@@ -20,6 +20,7 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
@@ -31,8 +32,7 @@
 
 namespace gripper_tasks {
 
-using DefinedZMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedZMotorHardware = motor_hardware::MotorHardware;
 
 /**
  * Start gripper tasks.
