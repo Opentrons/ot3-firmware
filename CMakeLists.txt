@@ -1,7 +1,15 @@
 # CMake 3.19 is the first to include presets
 # (https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
 cmake_minimum_required(VERSION 3.20)
-cmake_policy(SET CMP0135 NEW)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.24)
+    # CMP0135: use the time of archive extraction as timestamp for downloaded files.
+    #          introduced 3.26, prior behavior was to keep the timestamps from the
+    #          downloaded archive which could prevent recompilation.
+    message(STATUS "set version")
+    cmake_policy(SET CMP0135 NEW)
+else()
+    message(STATUS "no set version")
+endif()
 
 if (NOT DEFINED ENV{PRESET_IN_USE})
     message(FATAL_ERROR "Use a preset. Use cmake --list-presets to show available presets.")
