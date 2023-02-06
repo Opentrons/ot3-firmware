@@ -39,8 +39,8 @@ class MotorHardware {
     void positive_direction() { gpio::set(pins.direction); }
     void negative_direction() { gpio::reset(pins.direction); }
 
-    void activate_motor() { }
-    void deactivate_motor();
+    void activate_motor() { gpio::set(pins.enable); }
+    void deactivate_motor() { gpio::reset(pins.enable); }
 
     void start_timer_interrupt() {
         LOG("Starting timer interrupt")

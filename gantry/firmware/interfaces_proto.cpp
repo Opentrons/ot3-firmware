@@ -163,7 +163,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
 /**
  * The motor hardware interface.
  */
-static motor_hardware::MotorHardware<motor_hardware::HardwareConfig>
+static motor_hardware::MotorHardware
     motor_hardware_iface((get_axis_type() == gantry_x) ? motor_pins_x
                                                        : motor_pins_y,
                          &htim7, nullptr);

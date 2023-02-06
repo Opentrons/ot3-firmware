@@ -4,6 +4,7 @@
 #include "can/core/message_writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -16,8 +17,7 @@
 namespace gantry {
 namespace tasks {
 
-using DefinedMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware = motor_hardware::MotorHardware;
 
 /**
  * Start gantry tasks.

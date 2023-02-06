@@ -1,16 +1,15 @@
 #pragma once
 
 #include "can/core/can_bus.hpp"
-#include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "spi/core/spi.hpp"
 
 namespace interfaces {
 
-using DefinedMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware = motor_hardware::MotorHardware;
 
 /**
  * Initialize the hardware portability layer.
