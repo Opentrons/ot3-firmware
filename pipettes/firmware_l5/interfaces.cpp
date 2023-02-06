@@ -63,8 +63,7 @@ auto linear_motor::get_interrupt(DefinedMotorHardware& hw,
 }
 auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> DefinedMotorHardware {
-    return motor_hardware::MotorHardware<motor_hardware::HardwareConfig>(
-        pins, &htim7, &htim2);
+    return motor_hardware::MotorHardware(pins, &htim7, &htim2);
 }
 
 auto linear_motor::get_motion_control(DefinedMotorHardware& hw,

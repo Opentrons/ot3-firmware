@@ -47,7 +47,9 @@ class MotorHardware {
         motor_hardware_start_timer(tim_handle);
     }
 
-    void stop_timer_interrupt() { motor_hardware_stop_timer(tim_handle); }
+    void stop_timer_interrupt() {
+        motor_hardware_stop_timer(tim_handle);
+    }
     auto check_limit_switch() -> bool { return limit.load(); }
     auto check_estop_in() -> bool { return estop.load(); }
     auto check_sync_in() -> bool { return sync.load(); }

@@ -10,6 +10,9 @@
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
+
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+
 #include "spi/core/writer.hpp"
 
 /**
@@ -22,8 +25,7 @@
  */
 namespace linear_motor_tasks {
 
-using DefinedMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware = motor_hardware::MotorHardware;
 
 using CanWriterTask = can::message_writer_task::MessageWriterTask<
     freertos_message_queue::FreeRTOSMessageQueue>;

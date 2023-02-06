@@ -5,10 +5,12 @@
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "pipettes/firmware/pipette_motor_hardware.hpp"
+
 namespace interfaces {
 
-using DefinedMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfig>;
+using DefinedMotorHardware = motor_hardware::MotorHardware;
 
 using MoveQueue =
     freertos_message_queue::FreeRTOSMessageQueue<motor_messages::Move>;
