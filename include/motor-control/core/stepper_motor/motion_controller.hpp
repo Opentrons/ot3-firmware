@@ -22,14 +22,11 @@ using namespace motor_hardware;
  */
 template <lms::MotorMechanicalConfig MEConfig,
           StepperMotorHardwareIface StepperHardware>
-// requires
-// StepperMotorHardwareIface<MotorHardwareType<HardwareConfigurationsType>>
 class MotionController {
   public:
     using GenericQueue = freertos_message_queue::FreeRTOSMessageQueue<Move>;
     using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
         can::messages::UpdateMotorPositionEstimationRequest>;
-    // using StepperHardware = MotorHardwareType<HardwareConfigurationsType>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      StepperHardware& hardware_iface,
                      MotionConstraints constraints, GenericQueue& queue,

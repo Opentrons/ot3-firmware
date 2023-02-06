@@ -8,7 +8,7 @@
 #include "motor-control/core/types.hpp"
 #include "motor-control/firmware/motor_control_hardware.h"
 
-namespace motor_hardware {
+namespace head_motor_hardware {
 
 struct HardwareConfig {
     gpio::PinConfig direction;
@@ -18,6 +18,7 @@ struct HardwareConfig {
     gpio::PinConfig led;
     gpio::PinConfig sync_in;
     gpio::PinConfig estop_in;
+    gpio::PinConfig ebrake;
 };
 
 class MotorHardware {
@@ -39,8 +40,14 @@ class MotorHardware {
     void positive_direction() { gpio::set(pins.direction); }
     void negative_direction() { gpio::reset(pins.direction); }
 
-    void activate_motor() { }
-    void deactivate_motor();
+    void activate_motor() {
+		gpio::reset(pins.ebrake);
+    	gpio::set(pins.enable);
+	}
+    void deactivate_motor() {
+		gpio::set(pins.ebrake);
+    	gpio::reset(pins.enable);
+	}
 
     void start_timer_interrupt() {
         LOG("Starting timer interrupt")
@@ -114,4 +121,4 @@ class MotorHardware {
     std::atomic<uint32_t> step_tracker{0};
 };
 
-}  // namespace motor_hardware
+}  // namespace head_motor_hardware

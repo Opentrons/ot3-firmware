@@ -7,6 +7,7 @@
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
+#include "head/firmware/head_motor_hardware.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2160_motor_driver_task.hpp"
@@ -15,8 +16,7 @@
 
 namespace head_tasks {
 
-using DefinedMotorHardware =
-    motor_hardware::MotorHardware<motor_hardware::HardwareConfigForHead>;
+using DefinedMotorHardware = head_motor_hardware::MotorHardware;
 
 /**
  * Start head tasks.

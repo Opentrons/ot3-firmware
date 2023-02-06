@@ -26,7 +26,7 @@ concept MotionSystemConfig = requires(MSC msc) {
 class SimMotorHardwareIface {
   public:
     SimMotorHardwareIface(MoveMessageHardware id)
-        : motor_hardware::StepperMotorHardwareIface(), _id(id) {}
+        : _id(id) {}
     void step() {
         if (_state_manager) {
             _state_manager->send_move_msg(_id, _direction);
@@ -111,7 +111,7 @@ class SimMotorHardwareIface {
 class SimBrushedMotorHardwareIface {
   public:
     SimBrushedMotorHardwareIface(MoveMessageHardware id)
-        : motor_hardware::BrushedMotorHardwareIface(), _id(id) {}
+        : _id(id) {}
     void positive_direction() {}
     void negative_direction() {}
     void activate_motor() {}

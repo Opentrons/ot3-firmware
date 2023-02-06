@@ -13,7 +13,7 @@
 #include "common/simulation/state_manager.hpp"
 #include "head/core/presence_sensing_driver.hpp"
 #include "head/core/queues.hpp"
-#include "head/core/tasks_proto.hpp"
+#include "head/simulation/tasks_proto.hpp"
 #include "head/core/utils.hpp"
 #include "head/simulation/adc.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"

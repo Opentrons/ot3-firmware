@@ -1,8 +1,7 @@
 #pragma once
 
 #include "motor-control/core/motor_hardware_interface.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
-#include "pipettes/firmware/pipette_motor_hardware.hpp"
+
 
 static constexpr uint32_t TASK_STACK_DEPTH = 512;
 
