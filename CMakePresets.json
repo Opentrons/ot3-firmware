@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 21,
     "patch": 0
   },
   "configurePresets": [
@@ -13,21 +13,26 @@
         "PRESET_IN_USE": "1"
       }
     },
-    {
-      "name": "cross",
-      "displayName": "STM32 G4 OT-3 cross-compilation",
-      "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
+    {"name": "cross-no-directory-reqs",
+      "displayName": "STM32 G4 OT-3 cross-compilation with no directory specifications",
+      "description": "Build application firmware for OT-3 systems that use STM32",
       "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/build-cross",
+      "toolchainFile": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
         "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM4GCCCrossToolchain.cmake",
-        "ARM_ARCH_TYPE": "cortex-m4",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
+        "ARM_ARCH_TYPE": "cortex-m4"
       },
       "inherits": "configuration-ok"
+    },
+    {
+      "name": "cross",
+      "displayName": "STM32 G4 OT-3 cross-compilation",
+      "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
+      "installDir": "${sourceDir}/dist",
+      "binaryDir": "${sourceDir}/build-cross",
+      "inherits": "cross-no-directory-reqs"
     },
     {
       "name": "cross-pipettes",
@@ -35,13 +40,13 @@
       "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build-cross-pipettes",
+      "installDir": "${sourceDir}/dist",
+      "toolchainFile": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
         "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
-        "ARM_ARCH_TYPE": "cortex-m33",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
+        "ARM_ARCH_TYPE": "cortex-m33"
       },
       "inherits": "configuration-ok"
     },
@@ -83,7 +88,7 @@
       "name": "all-application-firmware",
       "displayName": "all application hex binaries",
       "description": "Build all the hex binaries that will go on the OT3 filesystem.",
-      "configurePreset": "cross",
+      "configurePreset": "cross-no-directory-reqs",
       "jobs": 4,
       "targets": ["firmware-applications"]
     },
