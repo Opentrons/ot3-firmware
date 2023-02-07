@@ -1,4 +1,4 @@
-#include "gantry/simulator/interfaces.hpp"
+
 
 #include <iostream>
 #include <memory>
@@ -11,13 +11,13 @@
 #include "common/core/freertos_task.hpp"
 #include "common/simulation/state_manager.hpp"
 #include "gantry/core/axis_type.h"
-#include "gantry/core/interfaces_proto.hpp"
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/simulation/motor_interrupt_driver.hpp"
-#include "motor-control/simulation/sim_motor_hardware_iface.hpp"
-#include "spi/simulation/spi.hpp"
+
+#include "gantry/simulator/interfaces.hpp"
+
 
 namespace po = boost::program_options;
 /**
@@ -147,11 +147,11 @@ auto interfaces::get_spi() -> spi::hardware::SpiDeviceBase& {
 }
 
 auto interfaces::get_motor_hardware_iface()
-    -> motor_hardware::StepperMotorHardwareIface& {
+    -> DefinedSimulatedMotorHardware& {
     return motor_interface;
 }
 
-auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig>& {
+auto interfaces::get_motor() -> motor_class::Motor<lms::BeltConfig, DefinedSimulatedMotorHardware>& {
     return motor;
 }
 

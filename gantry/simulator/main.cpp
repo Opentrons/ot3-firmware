@@ -2,7 +2,6 @@
 
 #include "FreeRTOS.h"
 #include "gantry/core/axis_type.h"
-#include "gantry/core/interfaces_proto.hpp"
 #include "gantry/core/tasks_proto.hpp"
 #include "gantry/simulator/interfaces.hpp"
 #include "task.h"
