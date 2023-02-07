@@ -21,9 +21,9 @@
 constexpr size_t CDC_BUFFER_SIZE = 512U;
 
 struct CommsTaskFreeRTOS {
-    double_buffer::DoubleBuffer<char, CDC_BUFFER_SIZE * 4> rx_buf;
-    double_buffer::DoubleBuffer<char, CDC_BUFFER_SIZE * 4> tx_buf;
-    char *committed_rx_buf_ptr;
+    double_buffer::DoubleBuffer<uint8_t, CDC_BUFFER_SIZE * 4> rx_buf;
+    double_buffer::DoubleBuffer<uint8_t, CDC_BUFFER_SIZE * 4> tx_buf;
+    uint8_t *committed_rx_buf_ptr;
 };
 
 static auto cdc_init_handler() -> uint8_t *;
@@ -147,7 +147,7 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
          + _local_task.rx_buf.committed()->size()) -
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic,cppcoreguidelines-pro-type-reinterpret-cast)
-        reinterpret_cast<char *>(Buf + *Len);
+        reinterpret_cast<uint8_t *>(Buf + *Len);
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     if ((std::find_if(Buf, Buf + *Len,
@@ -159,10 +159,10 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
         auto message =
             messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                .buffer = reinterpret_cast<const char *>(
+                .buffer = reinterpret_cast<const uint8_t *>(
                     _local_task.rx_buf.committed()->data()),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                .limit = reinterpret_cast<const char *>(
+                .limit = reinterpret_cast<const uint8_t *>(
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     Buf + *Len)});
         static_cast<void>(_top_task.get_queue().try_write_isr(message));

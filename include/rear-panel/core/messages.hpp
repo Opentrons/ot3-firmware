@@ -5,8 +5,8 @@
 namespace messages {
 
 struct IncomingMessageFromHost {
-    const char* buffer;
-    const char* limit;
+    const uint8_t* buffer;
+    const uint8_t* limit;
 };
 
 // TODO(ryan): as part of RET-1307 create an auto gen of the ids like the can
@@ -19,7 +19,7 @@ template <MessageType MType>
 struct BinaryFormatMessage {
     static const auto message_type = MType;
     const uint16_t length;
-    const char* data;
+    const uint8_t* data;
     auto operator==(const BinaryFormatMessage& other) const -> bool = default;
 };
 
