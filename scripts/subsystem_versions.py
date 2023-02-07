@@ -5,8 +5,8 @@ import sys
 import json
 import argparse
 import subprocess
+import os
 
-REVS = ["rev1"]
 VERSION_REGEX = re.compile("v([0-9])")
 SUBSYSTEMS = [
     "head",
@@ -18,11 +18,22 @@ SUBSYSTEMS = [
     "pipettes-96",
 ]
 
+def find_files(hexdir):
+    for direntry in os.scandir(hexdir):
+        if not direntry.name.endswith('.hex'):
+            print(f'ignoring file {direntry.name}, not a hex file', file=sys.stderr)
+        nameparts = direntry.name.split('.')[0].split('-')
+        revision = nameparts[-1]
+        subsystem = '-'.join(nameparts[:-1])
+        if subsystem in SUBSYSTEMS:
+            yield (subsystem, revision, direntry.name)
+        else:
+            print(f'ignoring file {direntry.name}, not in subsystems', file=sys.stderr)
 
 def main(args):
     version_info = {}
-    subsystems = args.target or SUBSYSTEMS
-
+    subsystems = args.subsystem or SUBSYSTEMS
+    hexdir = args.hex_dir
     try:
         version = subprocess.check_output(["git", "describe", "--tags", "--always", "--match=v*"]).decode().strip()
         # version should be int
@@ -33,6 +44,11 @@ def main(args):
         print(f"Could not get the version info {e}", file=sys.stderr)
         exit(1)
 
+    files = {k: {} for k in SUBSYSTEMS}
+
+    for subsystem, revision, name in find_files(hexdir):
+        files[subsystem][revision] = name
+
     for subsystem in subsystems:
         if subsystem not in SUBSYSTEMS:
             print(f"Unknown subsystem {subsystem}", file=sys.stderr)
@@ -42,12 +58,11 @@ def main(args):
         version_info[subsystem] = {
             "version": version,
             "shortsha": shortsha,
-            "files_by_revision": {rev: f"{subsystem}-{rev}.hex" for rev in REVS},
+            "files_by_revision": files[subsystem],
             "branch": branch,
         }
 
-    with args.output:
-        json.dump(version_info, args.output)
+    json.dump(version_info, args.output)
 
     return version_info
 
@@ -55,12 +70,17 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creates a json file of the submodule version info.")
     parser.add_argument(
-        "--target",
+        "--subsystem",
         nargs="*",
         help="subsystem to generate file for; leave blank for all.",
     )
     parser.add_argument(
-        "--output",
+        '--hex-dir',
+        default='dist/applications',
+        help='Directory for the hex files to find'
+    )
+    parser.add_argument(
+        "output", metavar='OUTPUT',
         type=argparse.FileType('w'),
         default=sys.stdout,
         help="saves json output to given output path or stdout."
