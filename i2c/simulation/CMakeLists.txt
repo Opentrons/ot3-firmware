@@ -11,11 +11,13 @@ target_compile_options(i2c-simlib
         -Werror
         -Wextra
         -Wno-missing-field-initializers
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
 
 target_include_directories(i2c-simlib PUBLIC ${CMAKE_SOURCE_DIR}/include)
 

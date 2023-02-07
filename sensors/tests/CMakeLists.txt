@@ -25,13 +25,15 @@ target_compile_options(sensors
         PUBLIC
         -Wall
         -Werror
-        -Weffc++
         -Wextra
         -Wno-missing-field-initializers
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
 
 target_link_libraries(sensors PUBLIC Catch2::Catch2 common-core motor-utils)
 target_i2c_simlib(sensors)

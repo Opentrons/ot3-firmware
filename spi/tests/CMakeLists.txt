@@ -23,11 +23,13 @@ target_compile_options(spi
         -Wextra
         -Wno-missing-field-initializers
         -Werror
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
 
 target_spi_simlib(spi)
 target_link_libraries(spi PUBLIC Catch2::Catch2 common-core)

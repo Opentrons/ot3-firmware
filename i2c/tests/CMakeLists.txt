@@ -25,13 +25,16 @@ target_compile_options(i2c
         PUBLIC
         -Wall
         -Werror
-        -Weffc++
         -Wextra
         -Wno-missing-field-initializers
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
+
 
 target_i2c_simlib(i2c)
 target_link_libraries(i2c PUBLIC Catch2::Catch2 common-core)
