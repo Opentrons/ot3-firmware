@@ -30,6 +30,8 @@ target_compile_options(gripper
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
+add_revision(TARGET gripper REVISION a1)
+
 target_link_libraries(gripper Catch2::Catch2)
 
 catch_discover_tests(gripper)

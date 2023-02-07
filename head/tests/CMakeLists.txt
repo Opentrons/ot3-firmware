@@ -12,6 +12,7 @@ add_executable(
         test_voltage_conversion.cpp       
 )
 
+add_revision(TARGET head REVISION a1)
 
 target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(head

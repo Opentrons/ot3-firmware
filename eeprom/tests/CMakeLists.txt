@@ -36,6 +36,8 @@ target_compile_options(eeprom
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
 
+add_revision(TARGET eeprom REVISION a1)
+
 target_link_libraries(eeprom PUBLIC Catch2::Catch2 common-core)
 target_i2c_simlib(eeprom)
 

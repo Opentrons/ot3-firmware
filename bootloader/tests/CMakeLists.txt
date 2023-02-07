@@ -40,6 +40,8 @@ target_compile_options(bootloader
 )
 target_link_libraries(bootloader Catch2::Catch2 bootloader-core)
 
+add_revision(TARGET bootloader REVISION a1)
+
 catch_discover_tests(bootloader)
 add_build_and_test_target(bootloader)
 

@@ -37,6 +37,8 @@ add_executable(
         ${BOOTLOADER_SIMULATOR_SRC}
         )
 
+add_revision(TARGET bootloader-simulator REVISION a1)
+
 target_compile_options(
         bootloader-simulator
         PRIVATE

@@ -42,6 +42,9 @@ target_compile_options(motor-control
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
+
+add_revision(TARGET motor-control REVISION a1)
+
 target_link_libraries(motor-control PUBLIC Catch2::Catch2 motor-utils)
 
 catch_discover_tests(motor-control)

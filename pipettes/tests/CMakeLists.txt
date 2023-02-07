@@ -31,6 +31,8 @@ target_compile_options(pipettes
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
 
+add_revision(TARGET pipettes REVISION b1)
+
 target_link_libraries(pipettes PUBLIC Catch2::Catch2 common-core motor-utils)
 target_i2c_simlib(pipettes)
 

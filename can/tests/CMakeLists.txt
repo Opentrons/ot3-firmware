@@ -36,6 +36,9 @@ target_compile_options(can
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
 
+add_revision(TARGET can REVISION a1)
+
+target_link_libraries(can PUBLIC can-core version-lib Catch2::Catch2)
 
 catch_discover_tests(can)
 add_build_and_test_target(can)

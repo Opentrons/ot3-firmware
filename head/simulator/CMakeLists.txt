@@ -33,6 +33,8 @@ add_executable(
         ${HEAD-CORE-SRC}
 )
 
+add_revision(TARGET head-simulator REVISION a1)
+
 if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(head-simulator PUBLIC USE_SOCKETCAN)
 endif()

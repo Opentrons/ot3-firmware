@@ -19,6 +19,7 @@ set_target_properties(spi
 
 target_compile_options(spi
         PUBLIC
+
         -Wall
         -Wextra
         -Wno-missing-field-initializers
@@ -30,6 +31,8 @@ target_compile_options(spi
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
+
+add_revision(TARGET spi REVISION a1)
 
 target_spi_simlib(spi)
 target_link_libraries(spi PUBLIC Catch2::Catch2 common-core)

@@ -35,6 +35,7 @@ target_compile_options(i2c
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
 
+add_revision(TARGET i2c REVISION a1)
 
 target_i2c_simlib(i2c)
 target_link_libraries(i2c PUBLIC Catch2::Catch2 common-core)

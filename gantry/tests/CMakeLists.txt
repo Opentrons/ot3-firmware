@@ -32,6 +32,8 @@ target_compile_options(gantry
 )
 target_link_libraries(gantry Catch2::Catch2)
 
+add_revision(TARGET gantry REVISION a1)
+
 catch_discover_tests(gantry)
 add_build_and_test_target(gantry)
 

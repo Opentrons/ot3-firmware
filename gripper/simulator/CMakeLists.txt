@@ -37,6 +37,8 @@ add_executable(
         ${GRIPPER_SIMULATOR_SRC}
 )
 
+add_revision(TARGET gripper-simulator REVISION a1)
+
 
 if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
     target_compile_definitions(gripper-simulator PUBLIC USE_SOCKETCAN)
