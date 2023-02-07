@@ -68,7 +68,7 @@ SCENARIO("device info") {
                         can_messageid_device_info_response);
             }
             THEN("it populates response body") {
-                REQUIRE(response.size == 20);
+                REQUIRE(response.size == 24);
                 REQUIRE(response.data[0] == 0xD3);
                 REQUIRE(response.data[1] == 0x4D);
                 REQUIRE(response.data[2] == 0xB3);
@@ -89,6 +89,10 @@ SCENARIO("device info") {
                 REQUIRE(response.data[17] == 'f');
                 REQUIRE(response.data[18] == '0');
                 REQUIRE(response.data[19] == 0);
+                REQUIRE(response.data[20] == 'a');
+                REQUIRE(response.data[21] == '1');
+                REQUIRE(response.data[22] == 0);
+                REQUIRE(response.data[23] == 0);
             }
         }
     }

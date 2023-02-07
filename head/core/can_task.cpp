@@ -77,7 +77,8 @@ static auto system_message_handler =
     can::message_handlers::system::SystemMessageHandler(
         common_queues, version_get()->version, version_get()->flags,
         std::span(std::cbegin(version_get()->sha),
-                  std::cend(version_get()->sha)));
+                  std::cend(version_get()->sha)),
+        revision_get()->primary, revision_get()->secondary);
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 

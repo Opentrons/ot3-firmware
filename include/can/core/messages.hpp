@@ -113,25 +113,20 @@ using DeviceInfoRequest = Empty<MessageId::device_info_request>;
 
 struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     /**
-     *   TODO (al, 2021-09-13)
-     *   Seth's thoughts on future of payload
-     *   IMO we should set this up for a couple more things than just version,
-     * and then can care about version in general a little less. I don't think
-     * it's necessarily critical to get right the first time, but we could do
-     * something like:
-     *   - two bits of build type (dev, testing, release)
-     *   - a byte or two of like message schema version
-     *   - a four byte incrementing version seems fine i suppose
-     *   - a byte or two for well-known-id system identification through some
-     * centrally defined enum
-     *   - at some point we'll want a serial number probably
-     *   - a hardware revision unless we want to fold that into the
-     * well-known-id
+     * The device info tells us some information that's useful for all nodes on
+     * the canbus - e.g., nothing specific to pipettes or grippers, but what's
+     * useful for everything. That includes versions, which encompass the
+     * version number, the git sha, and some flags about whether or not this was
+     * a CI build or a dev build; and the hardware revision, which is necessary
+     * to specify what firmware this device should be updated with.
      */
     uint32_t message_index;
     uint32_t version;
     uint32_t flags;
     std::array<char, VERSION_SHORTSHA_SIZE> shortsha;
+    char primary_revision;
+    char secondary_revision;
+    std::array<char, 2> tertiary_revision;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -143,7 +138,16 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
                         std::min(limit - iter,
                                  static_cast<ptrdiff_t>(VERSION_SHORTSHA_SIZE)),
                         iter);
-
+        iter = std::copy_n(
+            &primary_revision,
+            std::min(limit - iter, ptrdiff_t(sizeof(primary_revision))), iter);
+        iter = std::copy_n(
+            &secondary_revision,
+            std::min(limit - iter, ptrdiff_t(sizeof(secondary_revision))),
+            iter);
+        iter = std::copy_n(
+            &tertiary_revision[0],
+            std::min(limit - iter, ptrdiff_t(sizeof(tertiary_revision))), iter);
         return iter - body;
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;

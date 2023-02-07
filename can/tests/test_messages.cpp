@@ -4,6 +4,7 @@
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
 #include "common/core/bit_utils.hpp"
+#include "common/core/version.h"
 
 using namespace can::messages;
 
@@ -219,11 +220,17 @@ SCENARIO("message serializing works") {
     }
 
     GIVEN("a device info response message") {
-        auto message = DeviceInfoResponse{.message_index = 0xdeadbeef,
-                                          .version = 0x00220033,
-                                          .flags = 0x11445566,
-                                          .shortsha{"abcdef0"}};
-        auto arr = std::array<uint8_t, 21>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        auto message =
+            DeviceInfoResponse{.message_index = 0xdeadbeef,
+                               .version = 0x00220033,
+                               .flags = 0x11445566,
+                               .shortsha{"abcdef0"},
+                               .primary_revision = revision_get()->primary,
+                               .secondary_revision = revision_get()->secondary};
+        message.tertiary_revision[0] = '.';
+        message.tertiary_revision[1] = '2';
+        auto arr = std::array<uint8_t, 30>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         auto body = std::span{arr};
         WHEN("serialized into a buffer too small for its values") {
@@ -275,11 +282,16 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[17] == 'f');
                 REQUIRE(body.data()[18] == '0');
                 REQUIRE(body.data()[19] == '\0');
+
+                REQUIRE(body.data()[20] == revision_get()->primary);
+                REQUIRE(body.data()[21] == revision_get()->secondary);
+                REQUIRE(body.data()[22] == '.');
+                REQUIRE(body.data()[23] == '2');
             }
             THEN("it does not write past the end of the buffer") {
-                REQUIRE(body.data()[20] == 0);
+                REQUIRE(body.data()[24] == 0);
             }
-            THEN("size must be returned") { REQUIRE(size == 20); }
+            THEN("size must be returned") { REQUIRE(size == 24); }
         }
     }
 
