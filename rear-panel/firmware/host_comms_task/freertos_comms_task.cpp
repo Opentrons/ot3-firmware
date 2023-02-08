@@ -74,11 +74,8 @@ void run(void *param) {  // NOLINT(misc-unused-parameters)
         //} else
         if (tx_end != local_task->tx_buf.accessible()->data()) {
             local_task->tx_buf.swap();
-            usb_hw_send(
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                reinterpret_cast<uint8_t *>(
-                    local_task->tx_buf.committed()->data()),
-                tx_end - local_task->tx_buf.committed()->data());
+            usb_hw_send(local_task->tx_buf.committed()->data(),
+                        tx_end - local_task->tx_buf.committed()->data());
         }
     }
 }
@@ -97,8 +94,7 @@ auto start() -> rear_panel_tasks::Task<
 static auto cdc_init_handler() -> uint8_t * {
     using namespace host_comms_control_task;
     _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    return reinterpret_cast<uint8_t *>(_local_task.committed_rx_buf_ptr);
+    return _local_task.committed_rx_buf_ptr;
 }
 
 static auto cdc_deinit_handler() -> void {
@@ -144,16 +140,12 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     using namespace host_comms_control_task;
     auto message =
         messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            .buffer = reinterpret_cast<const uint8_t *>(
-                _local_task.rx_buf.committed()->data()),
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            .limit = reinterpret_cast<const uint8_t *>(
+            .buffer = _local_task.rx_buf.committed()->data(),
+            .limit =
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                Buf + *Len)});
+            Buf + *Len});
     static_cast<void>(_top_task.get_queue().try_write_isr(message));
     _local_task.rx_buf.swap();
-    _local_task.committed_rx_buf_ptr =
-        _local_task.rx_buf.committed()->data();
-    return reinterpret_cast<uint8_t *>(_local_task.committed_rx_buf_ptr);
+    _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();
+    return _local_task.committed_rx_buf_ptr;
 }
