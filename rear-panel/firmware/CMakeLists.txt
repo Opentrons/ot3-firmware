@@ -76,7 +76,7 @@ macro(rearpanel_loop)
   target_include_directories(STM32G4xx_FreeRTOS_${_driver_suffix}
         PUBLIC .)
   target_include_directories(STM32G4xx_USB_${_driver_suffix}
-        PUBLIC set(COMMS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task")
+        PUBLIC set(COMMS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task"))
 
   target_compile_definitions(STM32G4xx_Drivers_${_driver_suffix}
         PUBLIC STM32G491xx)
