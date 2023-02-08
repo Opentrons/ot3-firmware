@@ -8,11 +8,9 @@
 #include "common/core/message_queue.hpp"
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
+#include "rear-panel/core/binary_parse.hpp"
 
 namespace host_comms_task {
-
-using TaskMessage =
-    std::variant<std::monostate, messages::IncomingMessageFromHost>;
 
 template <class ResponseQueue>
 class HostCommMessageHandler {
@@ -63,33 +61,17 @@ class HostCommMessageHandler {
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
-    auto visit_message(messages::IncomingMessageFromHost &msg, InputIt tx_into,
-                       InputLimit tx_limit) -> InputIt {
-        // TODO just doing this to echo when we build out the binary protocol in
-        // RET-1304 we can do the parsing and handling with variants and that
-        auto resp = messages::Echo{.length = uint16_t(msg.limit - msg.buffer),
-                                   .data = msg.buffer};
-
-        return visit_message(resp, tx_into, tx_limit);
-    }
-
-    // for this very basic first pass we just want to echo back any messages we
-    // receive from the host
-    template <typename InputIt, typename InputLimit>
-    requires std::forward_iterator<InputIt> &&
-        std::sized_sentinel_for<InputLimit, InputIt>
     auto visit_message(messages::Echo &msg, InputIt tx_into,
                        InputLimit tx_limit) -> InputIt {
         return std::copy(
-            msg.data,
+            msg.data.begin(),
             std::min(
-                msg.data +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                msg.data.begin() +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     msg.length,
-                msg.data +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                msg.data.begin() +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     (tx_limit - tx_into)),
             tx_into);
     }
-
     ResponseQueue &resp_queue;
 };
 

@@ -109,40 +109,22 @@ static auto cdc_deinit_handler() -> void {
 ** from the hardware-isolated USB packet memory area has been copied; Len is a
 ** pointer to the length of data.
 **
-** Because the host may send any number of characters in one USB packet - for
-** instance, a host that is using programmatic access to the serial device may
-** send an entire message, while a host that is someone typing into a serial
-** terminal may send one character per packet - we have to accumulate characters
-** somewhere until a full message is assembled. To avoid excessive copying, we
-** do this by changing the exact location of the rx buffer we give the
-** USB infrastructure. The rules are
-**
 ** - We always start after a buffer swap with the beginning of the committed
 **   buffer
-** - When we receive a message
-**   - if there's a newline (indicating a complete message), we swap the buffers
+** - When we receive a message we swap the buffers
 **     and  send the one that just got swapped out to the task for parsing
-**   - if there's not a newline,
-**     - if, after the message we just received, there is not enough space for
-**       an entire packet in the buffer, we swap the buffers and send the
-**       swapped-out one to the task, where it will probably be ignored
-**     - if, after the message we just received, there's enough space in the
-**       buffer, we don't swap the buffers, but advance our read pointer to just
-**       after the message we received
-**
-** Just about every line of this function has a NOLINT annotation. This is bad.
-** But the goal is that this is one of a very few functions like this, and
-** changes to this function require extra scrutiny and testing.
 */
 
 // NOLINTNEXTLINE(readability-non-const-parameter)
 static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     using namespace host_comms_control_task;
+    uint16_t type;
+    std::ignore = bit_utils::bytes_to_int(Buf, Buf + sizeof(messages::MessageType), type);
     auto message =
-        messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
-            .buffer = _local_task.rx_buf.committed()->data(),
-            .limit =
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        messages::rear_panel_parser.parse(
+            messages::MessageType(type),
+            _local_task.rx_buf.committed()->data(),
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             Buf + *Len});
     static_cast<void>(_top_task.get_queue().try_write_isr(message));
     _local_task.rx_buf.swap();

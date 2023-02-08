@@ -9,7 +9,7 @@
 namespace binary_parse {
 
 /**
- * The concept describing the interface of a parsable can message
+ * The concept describing the interface of a parsable message
  * @tparam T
  */
 template <class T>
@@ -39,7 +39,7 @@ class Parser {
      * @return A Result variant
      */
     template <bit_utils::ByteIterator Iterator>
-    auto parse(MessageType message_type, const Iterator& payload,
+    auto parse(messages::MessageType message_type, const Iterator& payload,
                const Iterator& limit) -> Result {
         auto result = Result{std::monostate{}};
         // Fold expression over Parsable template type.
