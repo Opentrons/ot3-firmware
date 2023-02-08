@@ -6,9 +6,10 @@
 
 #include "FreeRTOS.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/version.h"
+#include "rear-panel/core/binary_parse.hpp"
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
-#include "rear-panel/core/binary_parse.hpp"
 
 namespace host_comms_task {
 
@@ -71,6 +72,24 @@ class HostCommMessageHandler {
                 msg.data.begin() +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     (tx_limit - tx_into)),
             tx_into);
+    }
+    // Create and transmit a device info response that includes the version information
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(messages::DeviceInfoRequest &msg, InputIt tx_into,
+                       InputLimit tx_limit) -> InputIt {
+        std::ignore = msg;
+        const auto *ver_info = version_get();
+        auto length =
+            uint16_t(sizeof(ver_info->version) + sizeof(ver_info->flags) +
+                     VERSION_SHORTSHA_SIZE);
+        auto response =
+            messages::DeviceInfoResponse{.length = length,
+                                         .version = ver_info->version,
+                                         .flags = ver_info->flags};
+        std::copy_n(&ver_info->sha[0], VERSION_SHORTSHA_SIZE, response.shortsha.begin());
+        return response.serialize(tx_into, tx_limit);
     }
     ResponseQueue &resp_queue;
 };

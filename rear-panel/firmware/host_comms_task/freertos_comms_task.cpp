@@ -118,14 +118,14 @@ static auto cdc_deinit_handler() -> void {
 // NOLINTNEXTLINE(readability-non-const-parameter)
 static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     using namespace host_comms_control_task;
-    uint16_t type;
-    std::ignore = bit_utils::bytes_to_int(Buf, Buf + sizeof(messages::MessageType), type);
-    auto message =
-        messages::rear_panel_parser.parse(
-            messages::MessageType(type),
-            _local_task.rx_buf.committed()->data(),
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            Buf + *Len});
+    uint16_t type = 0;
+    std::ignore =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        bit_utils::bytes_to_int(Buf, Buf + sizeof(messages::MessageType), type);
+    auto message = messages::rear_panel_parser.parse(
+        messages::MessageType(type), _local_task.rx_buf.committed()->data(),
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        Buf + *Len);
     static_cast<void>(_top_task.get_queue().try_write_isr(message));
     _local_task.rx_buf.swap();
     _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();
