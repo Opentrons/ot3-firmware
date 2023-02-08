@@ -142,37 +142,18 @@ static auto cdc_deinit_handler() -> void {
 // NOLINTNEXTLINE(readability-non-const-parameter)
 static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     using namespace host_comms_control_task;
-    ssize_t remaining_buffer_count =
-        (_local_task.rx_buf.committed()->data()
-         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-         + _local_task.rx_buf.committed()->size()) -
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic,cppcoreguidelines-pro-type-reinterpret-cast)
-        reinterpret_cast<uint8_t *>(Buf + *Len);
-
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    if ((std::find_if(Buf, Buf + *Len,
-                      [](auto ch) { return ch == '\n' || ch == '\r'; }) !=
-         (Buf +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-          *Len)) ||
-        remaining_buffer_count < static_cast<ssize_t>(CDC_BUFFER_SIZE)) {
-        // there was a newline in this message, can pass on
-        auto message =
-            messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                .buffer = reinterpret_cast<const uint8_t *>(
-                    _local_task.rx_buf.committed()->data()),
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-                .limit = reinterpret_cast<const uint8_t *>(
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    Buf + *Len)});
-        static_cast<void>(_top_task.get_queue().try_write_isr(message));
-        _local_task.rx_buf.swap();
-        _local_task.committed_rx_buf_ptr =
-            _local_task.rx_buf.committed()->data();
-    } else {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        _local_task.committed_rx_buf_ptr += *Len;
-    }
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+    auto message =
+        messages::HostCommTaskMessage(messages::IncomingMessageFromHost{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            .buffer = reinterpret_cast<const uint8_t *>(
+                _local_task.rx_buf.committed()->data()),
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            .limit = reinterpret_cast<const uint8_t *>(
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                Buf + *Len)});
+    static_cast<void>(_top_task.get_queue().try_write_isr(message));
+    _local_task.rx_buf.swap();
+    _local_task.committed_rx_buf_ptr =
+        _local_task.rx_buf.committed()->data();
     return reinterpret_cast<uint8_t *>(_local_task.committed_rx_buf_ptr);
 }
