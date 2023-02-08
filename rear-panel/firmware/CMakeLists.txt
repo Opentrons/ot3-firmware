@@ -221,8 +221,8 @@ macro(rearpanel_loop)
       DEPENDS ${REVISION_TARGET}.hex)
   # Runs openocd to flash the board with the full image (startup included)
   add_custom_target(${REVISION_TARGET}-image-flash
-      COMMAND "${OpenOCD_EXECUTABLE}" "-d"
-          "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg"
+      COMMAND "${OpenOCD_EXECUTABLE}"
+          "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg" 
           "-c" "program ${HEX_IMG_NAME} reset;exit"
       VERBATIM
       COMMENT "Flashing board"
