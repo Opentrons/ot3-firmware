@@ -33,11 +33,11 @@ void BrushedMotorHardware::activate_motor() { gpio::set(pins.enable); }
 void BrushedMotorHardware::deactivate_motor() { gpio::reset(pins.enable); }
 
 void BrushedMotorHardware::read_limit_switch() {
-    gpio::debounce_update(gpio::is_set(pins.limit_switch), limit, limit_bounce);
+    limit.debounce_update(gpio::is_set(pins.limit_switch));
 }
 
 void BrushedMotorHardware::read_estop_in() {
-    gpio::debounce_update(gpio::is_set(pins.estop_in), estop, estop_bounce);
+    estop.debounce_update(gpio::is_set(pins.estop_in));
 }
 
 void BrushedMotorHardware::grip() { positive_direction(); }
@@ -51,7 +51,7 @@ void BrushedMotorHardware::stop_pwm() {
 }
 
 void BrushedMotorHardware::read_sync_in() {
-    gpio::debounce_update(gpio::is_set(pins.sync_in), sync, sync_bounce);
+    sync.debounce_update(gpio::is_set(pins.sync_in));
 }
 
 int32_t BrushedMotorHardware::get_encoder_pulses() {

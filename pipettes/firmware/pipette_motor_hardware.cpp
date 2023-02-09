@@ -21,20 +21,19 @@ void MotorHardware::stop_timer_interrupt() {
 }
 
 void MotorHardware::read_limit_switch() {
-    gpio::debounce_update(gpio::is_set(pins.limit_switch), limit, limit_bounce);
+    limit.debounce_update(gpio::is_set(pins.limit_switch));
 }
 
 void MotorHardware::read_estop_in() {
-    gpio::debounce_update(gpio::is_set(pins.estop_in), estop, estop_bounce);
+    estop.debounce_update(gpio::is_set(pins.estop_in));
 }
 
 void MotorHardware::read_sync_in() {
-    gpio::debounce_update(gpio::is_set(pins.sync_in), sync, sync_bounce);
+    sync.debounce_update(gpio::is_set(pins.sync_in));
 }
 
 void MotorHardware::read_tip_sense() {
-    gpio::debounce_update(gpio::is_set(pins.tip_sense), tip_sense,
-                         tip_sense_bounce);
+    tip_sense.debounce_update(gpio::is_set(pins.tip_sense));
 }
 
 void MotorHardware::set_LED(bool status) {
