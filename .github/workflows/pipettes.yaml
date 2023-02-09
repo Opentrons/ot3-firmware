@@ -128,10 +128,6 @@ jobs:
         run: cmake --build ./build-host --target pipettes-96-simulator
         working-directory: ot3-firmware
 
-      - name: 'Build 384 simulator'
-        run: cmake --build ./build-host --target pipettes-384-simulator
-        working-directory: ot3-firmware
-
       - name: "Upload artifacts"
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v3
