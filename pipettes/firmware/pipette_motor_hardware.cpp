@@ -21,39 +21,20 @@ void MotorHardware::stop_timer_interrupt() {
 }
 
 void MotorHardware::read_limit_switch() {
-    // only set the state if the bounce matches the current gpio_is_set
-    // on the first state change it won't match but on the second tick it will
-    // and we can set it to the new state.
-    std::atomic_bool new_state = gpio::is_set(pins.estop_in);
-    limit.store(new_state == limit_bounce ? new_state : limit);
-    limit_bounce.store(new_state);
+    gpio::debouce_update(gpio::is_set(pins.limit_switch), limit, limit_bounce);
 }
 
 void MotorHardware::read_estop_in() {
-    // only set the state if the bounce matches the current gpio_is_set
-    // on the first state change it won't match but on the second tick it will
-    // and we can set it to the new state.
-    std::atomic_bool new_state = gpio::is_set(pins.estop_in);
-    estop.store(new_state == estop_bounce ? new_state : estop);
-    estop_bounce.store(new_state);
+    gpio::debouce_update(gpio::is_set(pins.estop_in), estop, estop_bounce);
 }
 
 void MotorHardware::read_sync_in() {
-    // only set the state if the bounce matches the current gpio_is_set
-    // on the first state change it won't match but on the second tick it will
-    // and we can set it to the new state.
-    std::atomic_bool new_state = gpio::is_set(pins.sync_in);
-    sync.store(new_state == sync_bounce ? new_state : sync);
-    sync_bounce.store(new_state);
+    gpio::debouce_update(gpio::is_set(pins.sync_in), sync, sync_bounce);
 }
 
 void MotorHardware::read_tip_sense() {
-    // only set the state if the bounce matches the current gpio_is_set
-    // on the first state change it won't match but on the second tick it will
-    // and we can set it to the new state.
-    std::atomic_bool new_state = gpio::is_set(pins.tip_sense);
-    tip_sense.store(new_state == tip_sense_bounce ? new_state : tip_sense);
-    tip_sense_bounce.store(new_state);
+    gpio::debouce_update(gpio::is_set(pins.tip_sense), tip_sense,
+                         tip_sense_bounce);
 }
 
 void MotorHardware::set_LED(bool status) {
