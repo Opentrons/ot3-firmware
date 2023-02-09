@@ -66,6 +66,7 @@ class HostCommMessageHandler {
                        InputLimit tx_limit) -> InputIt {
         return msg.serialize(tx_into, tx_limit);
     }
+    
     // Create and transmit a device info response that includes the version information
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
@@ -83,6 +84,24 @@ class HostCommMessageHandler {
                                          .flags = ver_info->flags};
         std::copy_n(&ver_info->sha[0], VERSION_SHORTSHA_SIZE, response.shortsha.begin());
         return response.serialize(tx_into, tx_limit);
+    }
+    
+    // transmit the ack
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(messages::Ack &msg, InputIt tx_into,
+                       InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
+    }
+    
+    // transmit the ack_failed
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(messages::AckFailed &msg, InputIt tx_into,
+                       InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
     }
     ResponseQueue &resp_queue;
 };
