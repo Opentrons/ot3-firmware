@@ -27,8 +27,13 @@ class SystemMessageHandler {
      * @param version The firmware version on this device
      */
     SystemMessageHandler(CanClient &writer, uint32_t version, uint32_t flags,
-                         std::span<const char> version_sha)
-        : writer(writer), response{.version = version, .flags = flags} {
+                         std::span<const char> version_sha,
+                         char primary_revision, char secondary_revision)
+        : writer(writer),
+          response{.version = version,
+                   .flags = flags,
+                   .primary_revision = primary_revision,
+                   .secondary_revision = secondary_revision} {
         std::copy_n(version_sha.begin(),
                     std::min(version_sha.size(), response.shortsha.size()),
                     response.shortsha.begin());

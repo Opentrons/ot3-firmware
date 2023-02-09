@@ -44,3 +44,24 @@ target_compile_options(common-core
 )
 
 add_coverage(common-core)
+
+function(add_revision)
+  set(_ar_options)
+  set(_ar_onevalue TARGET REVISION)
+  set(_ar_multivalue)
+  cmake_parse_arguments(_ar "${_ar_options}" "${_ar_onevalue}" "${_ar_multivalue}" ${ARGN})
+  message(STATUS "add_revision has target ${_ar_TARGET} and revision ${_ar_REVISION}")
+  string(SUBSTRING ${_ar_REVISION} 0 1 PRIMARY_REVISION)
+  string(SUBSTRING ${_ar_REVISION} 1 1 SECONDARY_REVISION)
+
+  configure_file(${CMAKE_SOURCE_DIR}/common/core/revision.c.in ${CMAKE_CURRENT_BINARY_DIR}/${_ar_TARGET}_revision.c)
+
+  target_sources(${_ar_TARGET} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/${_ar_TARGET}_revision.c)
+
+  target_compile_definitions(${_ar_TARGET} PUBLIC
+      PCBA_REVISION=${_ar_REVISION}
+      PCBA_PRIMARY_REVISION=${PRIMARY_REVISION}
+      PCBA_SECONDARY_REVISION=${SECONDARY_REVISION})
+  set(_add_revision_PRIMARY_REVISION ${PRIMARY_REVISION} PARENT_SCOPE)
+  set(_add_revision_SECONDARY_REVISION ${SECONDARY_REVISION} PARENT_SCOPE)
+endfunction()

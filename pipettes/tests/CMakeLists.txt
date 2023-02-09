@@ -23,11 +23,15 @@ target_compile_options(pipettes
         -Werror
         -Wextra
         -Wno-missing-field-initializers
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
+
+add_revision(TARGET pipettes REVISION b1)
 
 target_link_libraries(pipettes PUBLIC Catch2::Catch2 common-core motor-utils)
 target_i2c_simlib(pipettes)

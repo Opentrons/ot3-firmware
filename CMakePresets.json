@@ -277,7 +277,6 @@
         "pipettes-single-simulator",
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
-        "pipettes-384-simulator",
         "gripper-simulator"
       ]
     },
@@ -296,7 +295,6 @@
         "pipettes-single-simulator",
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
-        "pipettes-384-simulator",
         "gripper-simulator"
       ]
     }

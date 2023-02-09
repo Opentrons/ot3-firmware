@@ -12,6 +12,7 @@ add_executable(
         test_voltage_conversion.cpp       
 )
 
+add_revision(TARGET head REVISION a1)
 
 target_include_directories(head PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(head
@@ -23,14 +24,14 @@ target_compile_options(head
         PUBLIC
         -Wall
         -Werror
-        -Weffc++
-        -Wextra
         -Wno-missing-field-initializers
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy
-        -fno-rtti)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
 
 target_link_libraries(head PUBLIC Catch2::Catch2 common-core)
 

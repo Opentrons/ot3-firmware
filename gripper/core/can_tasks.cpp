@@ -32,9 +32,13 @@ static auto sensor_handler = sensors::handlers::SensorHandler{main_queues};
 /** Handler of system messages. */
 static auto system_message_handler =
     can::message_handlers::system::SystemMessageHandler{
-        main_queues, version_get()->version, version_get()->flags,
+        main_queues,
+        version_get()->version,
+        version_get()->flags,
         std::span(std::cbegin(version_get()->sha),
-                  std::cend(version_get()->sha))};
+                  std::cend(version_get()->sha)),
+        revision_get()->primary,
+        revision_get()->secondary};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
 

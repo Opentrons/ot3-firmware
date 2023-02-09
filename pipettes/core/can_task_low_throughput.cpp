@@ -29,9 +29,13 @@ static auto eeprom_handler = eeprom::message_handler::EEPromHandler{
 
 static auto system_message_handler =
     can::message_handlers::system::SystemMessageHandler{
-        central_queue_client, version_get()->version, version_get()->flags,
+        central_queue_client,
+        version_get()->version,
+        version_get()->flags,
         std::span(std::cbegin(version_get()->sha),
-                  std::cend(version_get()->sha))};
+                  std::cend(version_get()->sha)),
+        revision_get()->primary,
+        revision_get()->secondary};
 
 static auto sensor_handler =
     sensors::handlers::SensorHandler{sensor_queue_client};

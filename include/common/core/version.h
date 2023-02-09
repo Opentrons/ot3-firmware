@@ -38,9 +38,7 @@ struct revision {
     char secondary;
 };
 
-#if defined(PCBA_REVISION)
 const struct revision* revision_get();
-#endif
 
 #ifdef __cplusplus
 } // extern "C"

@@ -38,6 +38,7 @@ foreach(AXIS IN LISTS AXES)
           gantry-${AXIS}-simulator
           ${GANTRY_SIMULATOR_SRC}
   )
+  add_revision(TARGET gantry-${AXIS}-simulator REVISION a1)
 
   if("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux" AND DEFINED ENV{USE_SOCKETCAN})
       target_compile_definitions(gantry-${AXIS}-simulator PUBLIC USE_SOCKETCAN)

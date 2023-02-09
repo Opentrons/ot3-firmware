@@ -4,6 +4,8 @@ include(CTest)
 include(Catch)
 include(AddBuildAndTestTarget)
 
+
+
 add_executable(
         common
         test_main.cpp
@@ -13,6 +15,8 @@ add_executable(
         test_tool_detection.cpp
         test_voltage_conversion.cpp
 )
+
+add_revision(TARGET common REVISION "a1")
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 set_target_properties(common
@@ -26,12 +30,13 @@ target_compile_options(common
   -Werror
   -Wextra
   -Wno-missing-field-initializers
-  -Weffc++
-  -Wreorder
-  -Wsign-promo
-  -Wextra-semi
-  -Wctor-dtor-privacy
-  -fno-rtti)
+  $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+  $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+  $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+  $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+  $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+  $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
 target_link_libraries(common Catch2::Catch2 common-core)
 
 catch_discover_tests(common)

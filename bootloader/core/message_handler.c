@@ -75,14 +75,25 @@ HandleMessageReturn handle_device_info_request(const Message* request, Message* 
     response->arbitration_id.parts.node_id = can_nodeid_host;
     response->arbitration_id.parts.originating_node_id = get_node_id();
     const struct version *vstruct = version_get();
+    const struct revision *rstruct = revision_get();
     uint32_t message_index;
     parse_empty_message(request->data, request->size, &message_index);
-    response->size = sizeof(*vstruct) + sizeof(uint32_t);
+    response->size =
+        sizeof(*vstruct)   // all version info is in that struct
+        + sizeof(uint32_t) // message index
+        + sizeof(char)     // primary revision
+        + sizeof(char)     // secondary revision
+        + sizeof(char[2]); // tertiary revision (usually empty)
     uint8_t* p = response->data;
     p = write_uint32(p, message_index);
     p = write_uint32(p, vstruct->version);
     p = write_uint32(p, vstruct->flags);
     p = memcpy(p, &vstruct->sha[0], sizeof(vstruct->sha));
+    p += sizeof(vstruct->sha);
+    *p++ = rstruct->primary;
+    *p++ = rstruct->secondary;
+    *p++ = 0;
+    *p++ = 0;
     return handle_message_has_response;
 }
 

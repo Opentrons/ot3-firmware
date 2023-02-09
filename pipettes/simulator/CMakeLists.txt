@@ -35,6 +35,7 @@ function(add_simulator_executable TARGET)
             ${CMAKE_CURRENT_SOURCE_DIR}/motor_configurations.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
             )
+    add_revision(TARGET ${TARGET} REVISION b1)
     target_include_directories(${TARGET} PUBLIC ${PIPETTE_SIM_INCLUDE})
     target_i2c_simlib(${TARGET})
 
@@ -77,4 +78,3 @@ endfunction()
 add_simulator_executable(pipettes-single-simulator)
 add_simulator_executable(pipettes-multi-simulator)
 add_simulator_executable(pipettes-96-simulator)
-add_simulator_executable(pipettes-384-simulator)

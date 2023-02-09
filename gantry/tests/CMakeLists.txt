@@ -23,13 +23,16 @@ target_compile_options(gantry
         -Werror
         -Wextra
         -Wno-missing-field-initializers
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy
-        -fno-rtti)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
 target_link_libraries(gantry Catch2::Catch2)
+
+add_revision(TARGET gantry REVISION a1)
 
 catch_discover_tests(gantry)
 add_build_and_test_target(gantry)

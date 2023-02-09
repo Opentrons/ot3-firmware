@@ -221,17 +221,9 @@ foreach(_REVISION_MIXEDCASE IN LISTS _fer_REVISIONS)
   endif()
 
   if (NOT _fer_NO_SET_REVISION_DEFINES)
-    string(SUBSTRING ${REVISION} 0 1 PRIMARY_REVISION)
-    string(SUBSTRING ${REVISION} 1 1 SECONDARY_REVISION)
-    target_compile_definitions(${REVISION_TARGET} PUBLIC
-      PCBA_REVISION=${REVISION}
-      PCBA_PRIMARY_REVISION=${REVISION_PRIMARY}
-      PCBA_SECONDARY_REVISION=${REVISION_SECONDARY})
-    configure_file(
-      ${CMAKE_SOURCE_DIR}/common/core/revision.c.in
-      ${CMAKE_BINARY_DIR}/common/core/revision-${REVISION_TARGET}.c)
-    target_sources(${REVISION_TARGET} PRIVATE
-      ${CMAKE_BINARY_DIR}/common/core/revision-${REVISION_TARGET}.c)
+    add_revision(TARGET ${REVISION_TARGET} REVISION ${REVISION})
+    set(PRIMARY_REVISION ${_add_revision_PRIMARY_REVISION})
+    set(SECONDARY_REVISION ${_add_revision_SECONDARY_REVISION})
     message(VERBOSE "Added revision defines primary ${PRIMARY_REVISION} secondary ${SECONDARY_REVISION}")
   else()
     message(VERBOSE "Not adding revision defines (inhibited by NO_SET_REVISION_DEFINES)")

@@ -28,13 +28,17 @@ target_compile_options(can
         -Werror
         -Wextra
         -Wno-missing-field-initializers
-        -Weffc++
-        -Wreorder
-        -Wsign-promo
-        -Wextra-semi
-        -Wctor-dtor-privacy
-        -fno-rtti)
-target_link_libraries(can can-core Catch2::Catch2)
+        $<$<COMPILE_LANGUAGE:CXX>:-Weffc++>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wreorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+)
+
+add_revision(TARGET can REVISION a1)
+
+target_link_libraries(can PUBLIC can-core version-lib Catch2::Catch2)
 
 catch_discover_tests(can)
 add_build_and_test_target(can)
