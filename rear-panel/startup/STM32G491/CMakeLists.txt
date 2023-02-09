@@ -8,6 +8,9 @@ set(STM_HAL_PREFIX "stm32g4xx")
 configure_file(
     ${CMAKE_SOURCE_DIR}/include/rear-panel/firmware/hal_util.h.in 
     firmware/hal_util.h)
+    
+# Fills in the template with values specified by the find_package(OpenOCD) call above
+configure_file(./gdbinit.template ./gdbinit)
 
 add_library(${TARGET_MODULE_NAME}-STM32G491 STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/startup_stm32g491xx.s)
@@ -67,7 +70,7 @@ function(stm32g491_startup TARGET FW_NAME)
     message(STATUS "Found svd exe at ${GDBSVDTools_gdbsvd_EXECUTABLE}")
     # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
     # this dir
-    set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/common/firmware/STM32G491RETx/gdbinit")
+    set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/rear-panel/startup/STM32G491/gdbinit")
     set_target_properties(${TARGET}
         PROPERTIES
         CROSSCOMPILING_EMULATOR
