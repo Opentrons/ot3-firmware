@@ -15,7 +15,7 @@ struct Debouncer {
         }
         state_bounce = new_state;
     }
-    auto debounce_state() -> bool { return state.load(); }
+    [[nodiscard]] auto debounce_state() const -> bool { return state.load(); }
 };
 
 }  // namespace debouncer
