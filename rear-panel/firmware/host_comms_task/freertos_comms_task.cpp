@@ -102,6 +102,38 @@ static auto cdc_deinit_handler() -> void {
     _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();
 }
 
+// these casting helper functions make it possible to send an element from one variant
+// to a variant type that is a super set of that variant. If it is not a super set this will not compile
+template <class... Args>
+struct variant_cast_proxy
+{
+    std::variant<Args...> v;
+
+    // extracted into helper function
+    template <class... ToArgs>
+    static constexpr bool is_convertible() noexcept {
+        return (std::is_convertible_v<Args, std::variant<ToArgs...>> && ...);
+    }
+
+    template<class... ToArgs, std::enable_if_t<is_convertible<ToArgs...>(), int> = 0>
+    operator std::variant<ToArgs...>() const
+    {
+         return std::visit(
+            [](auto&& arg) -> std::variant<ToArgs...> { 
+                if constexpr (std::is_convertible_v<decltype(arg), std::variant<ToArgs...>>)
+                    return arg;
+            },
+            v
+        );
+    }
+};
+
+template <class... Args>
+auto variant_cast(const std::variant<Args...>& v) -> variant_cast_proxy<Args...>
+{
+    return { v };
+}
+
 /*
 ** CDC_Receive is a callback hook invoked from the CDC class internals in an
 **
@@ -126,7 +158,12 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
         messages::MessageType(type), _local_task.rx_buf.committed()->data(),
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         Buf + *Len);
-    static_cast<void>(_top_task.get_queue().try_write_isr(message));
+    // if parse didn't return anything it means it was malformed so send an ack_failed
+    if (message.index() == 0) {
+        static_cast<void>(_top_task.get_queue().try_write_isr(messages::AckFailed{.length = 0}));
+    } else {
+        static_cast<void>(_top_task.get_queue().try_write_isr(variant_cast(message)));
+    }
     _local_task.rx_buf.swap();
     _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();
     return _local_task.committed_rx_buf_ptr;
