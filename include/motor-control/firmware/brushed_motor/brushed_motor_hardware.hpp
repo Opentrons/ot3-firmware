@@ -76,11 +76,8 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
   private:
     bool stay_enabled = false;
     debouncer::Debouncer estop = debouncer::Debouncer{};
-    ;
     debouncer::Debouncer limit = debouncer::Debouncer{};
-    ;
     debouncer::Debouncer sync = debouncer::Debouncer{};
-    ;
     BrushedHardwareConfig pins;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;

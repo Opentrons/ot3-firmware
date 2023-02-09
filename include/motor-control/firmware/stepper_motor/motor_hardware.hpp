@@ -54,9 +54,7 @@ class MotorHardware : public StepperMotorHardwareIface {
   private:
     debouncer::Debouncer estop = debouncer::Debouncer{};
     debouncer::Debouncer limit = debouncer::Debouncer{};
-    ;
     debouncer::Debouncer sync = debouncer::Debouncer{};
-    ;
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;

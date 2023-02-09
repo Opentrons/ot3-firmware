@@ -54,13 +54,9 @@ class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
 
   private:
     debouncer::Debouncer estop = debouncer::Debouncer{};
-    ;
     debouncer::Debouncer limit = debouncer::Debouncer{};
-    ;
     debouncer::Debouncer sync = debouncer::Debouncer{};
-    ;
     debouncer::Debouncer tip_sense = debouncer::Debouncer{};
-    ;
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
