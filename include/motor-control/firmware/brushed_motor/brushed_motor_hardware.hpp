@@ -77,6 +77,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     std::atomic_bool estop = false;
     std::atomic_bool limit = false;
     std::atomic_bool sync = false;
+    std::atomic_bool estop_bounce = false;
+    std::atomic_bool limit_bounce = false;
+    std::atomic_bool sync_bounce = false;
     BrushedHardwareConfig pins;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;

@@ -56,6 +56,10 @@ class MotorHardware : public motor_hardware::PipetteStepperMotorHardwareIface {
     std::atomic_bool limit = false;
     std::atomic_bool sync = false;
     std::atomic_bool tip_sense = false;
+    std::atomic_bool estop_bounce = false;
+    std::atomic_bool limit_bounce = false;
+    std::atomic_bool sync_bounce = false;
+    std::atomic_bool tip_sense_bounce = false;
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;

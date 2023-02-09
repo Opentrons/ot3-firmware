@@ -33,11 +33,21 @@ void BrushedMotorHardware::activate_motor() { gpio::set(pins.enable); }
 void BrushedMotorHardware::deactivate_motor() { gpio::reset(pins.enable); }
 
 void BrushedMotorHardware::read_limit_switch() {
-    limit = gpio::is_set(pins.limit_switch);
+    // only set the state if the bounce matches the current gpio_is_set
+    // on the first state change it won't match but on the second tick it will
+    // and we can set it to the new state.
+    std::atomic_bool new_state = gpio::is_set(pins.estop_in);
+    limit.store(new_state == limit_bounce ? new_state : limit);
+    limit_bounce.store(new_state);
 }
 
 void BrushedMotorHardware::read_estop_in() {
-    estop = gpio::is_set(pins.estop_in);
+    // only set the state if the bounce matches the current gpio_is_set
+    // on the first state change it won't match but on the second tick it will
+    // and we can set it to the new state.
+    std::atomic_bool new_state = gpio::is_set(pins.estop_in);
+    estop.store(new_state == estop_bounce ? new_state : estop);
+    estop_bounce.store(new_state);
 }
 
 void BrushedMotorHardware::grip() { positive_direction(); }
@@ -50,7 +60,14 @@ void BrushedMotorHardware::stop_pwm() {
     control_dir = ControlDirection::unset;
 }
 
-void BrushedMotorHardware::read_sync_in() { sync = gpio::is_set(pins.sync_in); }
+void BrushedMotorHardware::read_sync_in() {
+    // only set the state if the bounce matches the current gpio_is_set
+    // on the first state change it won't match but on the second tick it will
+    // and we can set it to the new state.
+    std::atomic_bool new_state = gpio::is_set(pins.sync_in);
+    sync.store(new_state == sync_bounce ? new_state : sync);
+    sync_bounce.store(new_state);
+}
 
 int32_t BrushedMotorHardware::get_encoder_pulses() {
     if (!enc_handle) {

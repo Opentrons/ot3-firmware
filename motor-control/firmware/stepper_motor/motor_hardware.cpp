@@ -22,12 +22,31 @@ void MotorHardware::stop_timer_interrupt() {
     motor_hardware_stop_timer(tim_handle);
 }
 void MotorHardware::read_limit_switch() {
-    limit = (gpio::is_set(pins.limit_switch));
+    // only set the state if the bounce matches the current gpio_is_set
+    // on the first state change it won't match but on the second tick it will
+    // and we can set it to the new state.
+    std::atomic_bool new_state = gpio::is_set(pins.estop_in);
+    limit.store(new_state == limit_bounce ? new_state : limit);
+    limit_bounce.store(new_state);
 }
 
-void MotorHardware::read_estop_in() { estop = gpio::is_set(pins.estop_in); }
+void MotorHardware::read_estop_in() {
+    // only set the state if the bounce matches the current gpio_is_set
+    // on the first state change it won't match but on the second tick it will
+    // and we can set it to the new state.
+    std::atomic_bool new_state = gpio::is_set(pins.estop_in);
+    estop.store(new_state == estop_bounce ? new_state : estop);
+    estop_bounce.store(new_state);
+}
 
-void MotorHardware::read_sync_in() { sync = (gpio::is_set(pins.sync_in)); }
+void MotorHardware::read_sync_in() {
+    // only set the state if the bounce matches the current gpio_is_set
+    // on the first state change it won't match but on the second tick it will
+    // and we can set it to the new state.
+    std::atomic_bool new_state = gpio::is_set(pins.sync_in);
+    sync.store(new_state == sync_bounce ? new_state : sync);
+    sync_bounce.store(new_state);
+}
 
 void MotorHardware::set_LED(bool status) {
     if (status) {
