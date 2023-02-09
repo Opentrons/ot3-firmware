@@ -54,9 +54,9 @@ function(add_revision)
   string(SUBSTRING ${_ar_REVISION} 0 1 PRIMARY_REVISION)
   string(SUBSTRING ${_ar_REVISION} 1 1 SECONDARY_REVISION)
 
-  configure_file(${CMAKE_SOURCE_DIR}/common/core/revision.c.in ${CMAKE_CURRENT_BINARY_DIR}/revision.c)
+  configure_file(${CMAKE_SOURCE_DIR}/common/core/revision.c.in ${CMAKE_CURRENT_BINARY_DIR}/${_ar_TARGET}_revision.c)
 
-  target_sources(${_ar_TARGET} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/revision.c)
+  target_sources(${_ar_TARGET} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/${_ar_TARGET}_revision.c)
 
   target_compile_definitions(${_ar_TARGET} PUBLIC
       PCBA_REVISION=${_ar_REVISION}
