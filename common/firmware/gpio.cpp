@@ -14,7 +14,7 @@ auto gpio::is_set(const gpio::PinConfig& pc) -> bool {
     return gpio_is_set(pc.port, pc.pin, pc.active_setting);
 }
 
-auto gpio::debouce_update(bool new_state, std::atomic_bool& value,
+auto gpio::debounce_update(bool new_state, std::atomic_bool& value,
                           std::atomic_bool& value_bounce) -> void {
     // only set the state if the bounce matches the current gpio_is_set
     // on the first state change it won't match but on the second tick it will
