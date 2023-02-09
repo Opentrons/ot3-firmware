@@ -22,7 +22,7 @@ set(VIRTUAL_ENVIRONMENTS_ROOT_PATH ${CMAKE_BINARY_DIR}/.venv)
 file(MAKE_DIRECTORY ${VIRTUAL_ENVIRONMENTS_ROOT_PATH})
 # Have to run poetry command to see if venv exists.
 execute_process(
-	COMMAND ${Poetry_EXECUTABLE} env info --path
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env info --path
 	OUTPUT_VARIABLE STATE_MANAGER_VIRTUALENV_DIR
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -33,9 +33,9 @@ add_custom_command(
 	OUTPUT ${STATE_MANAGER_VIRTUALENV_ACTIVATE_FILE}
 	DEPENDS pyproject.toml poetry.lock
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} env use 3.8
-	COMMAND ${Poetry_EXECUTABLE} install
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.8
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi install
 )
 
 add_custom_command(
@@ -43,7 +43,7 @@ add_custom_command(
 	COMMENT "Generating header file and storing to ${MESSAGE_IDS_PATH}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
-	COMMAND ${Poetry_EXECUTABLE} run generate-headers message-ids ${MESSAGE_IDS_PATH}
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run generate-headers message-ids ${MESSAGE_IDS_PATH}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
@@ -53,7 +53,7 @@ add_custom_command(
 	COMMENT "Generating header file and storing to ${MOVE_MESSAGE_HW_IDS_PATH}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
-	COMMAND ${Poetry_EXECUTABLE} run generate-headers move-message-hardware-ids ${MOVE_MESSAGE_HW_IDS_PATH}
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run generate-headers move-message-hardware-ids ${MOVE_MESSAGE_HW_IDS_PATH}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
@@ -63,7 +63,7 @@ add_custom_command(
 	COMMENT "Generating header file and storing to ${DIRECTION_PATH}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
-	COMMAND ${Poetry_EXECUTABLE} run generate-headers direction ${DIRECTION_PATH}
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run generate-headers direction ${DIRECTION_PATH}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
@@ -73,7 +73,7 @@ add_custom_command(
 	COMMENT "Generating header file and storing to ${SYNC_PIN_STATE_PATH}"
 	VERBATIM
 	DEPENDS ${PYSRC_DIR}/messages.py
-	COMMAND ${Poetry_EXECUTABLE} run generate-headers sync-pin-state ${SYNC_PIN_STATE_PATH}
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run generate-headers sync-pin-state ${SYNC_PIN_STATE_PATH}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
@@ -86,9 +86,9 @@ target_include_directories(state_manager INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(
 	state-manager-setup
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} env use 3.8
-	COMMAND ${Poetry_EXECUTABLE} install
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.8
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi install
 	WORKING_DIRECTORY ../../state_manager
 )
 
@@ -96,32 +96,32 @@ add_dependencies(state-manager-headers state-manager-setup)
 
 add_custom_target(
 	state-manager-update
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} env use 3.8
-	COMMAND ${Poetry_EXECUTABLE} update
-	COMMAND ${Poetry_EXECUTABLE} install
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.8
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi update
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi install
 	WORKING_DIRECTORY ../../state_manager
 )
 
 add_custom_target(
 	state-manager-teardown
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} env info -p | xargs basename | xargs ${Poetry_EXECUTABLE} env remove
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env info -p | xargs basename | xargs ${Poetry_EXECUTABLE} --no-ansi env remove
 	WORKING_DIRECTORY ../../state_manager
 )
 
 add_custom_target(
 	state-manager-build
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} build
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi build
 	WORKING_DIRECTORY ../../state_manager
 	DEPENDS ${STATE_MANAGER_VIRTUALENV_ACTIVATE_FILE}
 )
 
 add_custom_target(
 	state-manager-test
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} run py.test tests --cov=state_manager --cov-report term-missing:skip-covered --cov-report xml:coverage.xml
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run py.test tests --cov=state_manager --cov-report term-missing:skip-covered --cov-report xml:coverage.xml
 	WORKING_DIRECTORY ../../state_manager
 	DEPENDS ${STATE_MANAGER_VIRTUALENV_ACTIVATE_FILE}
 )
@@ -129,12 +129,12 @@ add_custom_target(
 add_custom_target(
 	state-manager-lint
 	COMMENT "Running linting on state_manager project"
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-    COMMAND ${Poetry_EXECUTABLE} run python -m mypy state_manager tests/ generate_state_manager_headers.py
-	COMMAND ${Poetry_EXECUTABLE} run python -m isort --check state_manager tests generate_state_manager_headers.py
-	COMMAND ${Poetry_EXECUTABLE} run python -m black --check --line-length 88 state_manager tests generate_state_manager_headers.py
-	COMMAND ${Poetry_EXECUTABLE} run python -m flake8 state_manager tests generate_state_manager_headers.py
-	COMMAND ${Poetry_EXECUTABLE} run python -m mdformat --check README.md
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+    COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m mypy state_manager tests/ generate_state_manager_headers.py
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m isort --check state_manager tests generate_state_manager_headers.py
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m black --check --line-length 88 state_manager tests generate_state_manager_headers.py
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m flake8 state_manager tests generate_state_manager_headers.py
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m mdformat --check README.md
 	WORKING_DIRECTORY ../../state_manager
 	DEPENDS ${STATE_MANAGER_VIRTUALENV_ACTIVATE_FILE}
 )
@@ -144,10 +144,10 @@ add_custom_target(
 	state-manager-format
 	# Have to wrap this isort command in a bash -c for some reason because otherwise it fails on the -m for no reason
 	# other than cmake is dumb sometimes.
-	COMMAND ${Poetry_EXECUTABLE} config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND bash -c "${Poetry_EXECUTABLE} run python -m isort state_manager tests generate_state_manager_headers.py"
-	COMMAND ${Poetry_EXECUTABLE} run python -m black state_manager tests generate_state_manager_headers.py
-	COMMAND ${Poetry_EXECUTABLE} run python -m mdformat README.md
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
+	COMMAND bash -c "${Poetry_EXECUTABLE} --no-ansi run python -m isort state_manager tests generate_state_manager_headers.py"
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m black state_manager tests generate_state_manager_headers.py
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi run python -m mdformat README.md
 	WORKING_DIRECTORY ../../state_manager
 	DEPENDS ${STATE_MANAGER_VIRTUALENV_ACTIVATE_FILE}
 )
