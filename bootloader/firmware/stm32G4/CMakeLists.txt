@@ -136,7 +136,8 @@ target_stm32G4(bootloader-gripper)
 add_executable(bootloader-pipettes-rev1
         ${BOOTLOADER_FW_LINTABLE_SRCS}
         ${BOOTLOADER_FW_NON_LINTABLE_SRCS}
-        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS})
+        ${BOOTLOADER_G4FW_NON_LINTABLE_SRCS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/pipette_startup.c)
 
 target_compile_definitions(bootloader-pipettes-rev1 PUBLIC node_id_pipette_dynamic)
 
