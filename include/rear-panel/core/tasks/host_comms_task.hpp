@@ -64,14 +64,7 @@ class HostCommMessageHandler {
         std::sized_sentinel_for<InputLimit, InputIt>
     auto visit_message(messages::Echo &msg, InputIt tx_into,
                        InputLimit tx_limit) -> InputIt {
-        return std::copy(
-            msg.data.begin(),
-            std::min(
-                msg.data.begin() +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    msg.length,
-                msg.data.begin() +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    (tx_limit - tx_into)),
-            tx_into);
+        return msg.serialize(tx_into, tx_limit);
     }
     // Create and transmit a device info response that includes the version information
     template <typename InputIt, typename InputLimit>
