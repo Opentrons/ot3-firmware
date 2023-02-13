@@ -76,7 +76,7 @@ class PipetteMotorHardwareTask {
             static_cast<motor_hardware::PipetteStepperMotorHardwareIface*>(
                 hw_ptr);
         for (;;) {
-            vTaskDelay(10);
+            vTaskDelay(5);
             hardware->read_estop_in();
             hardware->read_limit_switch();
             hardware->read_sync_in();

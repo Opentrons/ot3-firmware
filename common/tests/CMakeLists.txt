@@ -14,6 +14,7 @@ add_executable(
         test_allocator.cpp
         test_tool_detection.cpp
         test_voltage_conversion.cpp
+        test_debounce.cpp
 )
 
 add_revision(TARGET common REVISION "a1")

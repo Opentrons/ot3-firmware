@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstdint>
 
+#include "common/core/debounce.hpp"
 #include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "ot_utils/core/pid.hpp"
@@ -51,9 +52,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void negative_direction() final;
     void activate_motor() final;
     void deactivate_motor() final;
-    auto check_limit_switch() -> bool final { return limit; }
-    auto check_estop_in() -> bool final { return estop; }
-    auto check_sync_in() -> bool final { return sync; }
+    auto check_limit_switch() -> bool final { return limit.debounce_state(); }
+    auto check_estop_in() -> bool final { return estop.debounce_state(); }
+    auto check_sync_in() -> bool final { return sync.debounce_state(); }
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
@@ -74,9 +75,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
 
   private:
     bool stay_enabled = false;
-    std::atomic_bool estop = false;
-    std::atomic_bool limit = false;
-    std::atomic_bool sync = false;
+    debouncer::Debouncer estop = debouncer::Debouncer{};
+    debouncer::Debouncer limit = debouncer::Debouncer{};
+    debouncer::Debouncer sync = debouncer::Debouncer{};
     BrushedHardwareConfig pins;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;

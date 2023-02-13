@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstdint>
 
+#include "common/core/debounce.hpp"
 #include "common/firmware/gpio.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 
@@ -37,9 +38,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     void deactivate_motor() final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
-    auto check_limit_switch() -> bool final { return limit.load(); }
-    auto check_estop_in() -> bool final { return estop.load(); }
-    auto check_sync_in() -> bool final { return sync.load(); }
+    auto check_limit_switch() -> bool final { return limit.debounce_state(); }
+    auto check_estop_in() -> bool final { return estop.debounce_state(); }
+    auto check_sync_in() -> bool final { return sync.debounce_state(); }
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
@@ -51,9 +52,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     void encoder_overflow(int32_t direction);
 
   private:
-    std::atomic_bool estop = false;
-    std::atomic_bool limit = false;
-    std::atomic_bool sync = false;
+    debouncer::Debouncer estop = debouncer::Debouncer{};
+    debouncer::Debouncer limit = debouncer::Debouncer{};
+    debouncer::Debouncer sync = debouncer::Debouncer{};
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
