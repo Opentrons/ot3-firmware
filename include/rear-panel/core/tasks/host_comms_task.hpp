@@ -76,10 +76,8 @@ class HostCommMessageHandler {
                        InputIt tx_into, InputLimit tx_limit) -> InputIt {
         std::ignore = msg;
         const auto *ver_info = version_get();
-        auto length = uint16_t(sizeof(ver_info->version) +
-                               sizeof(ver_info->flags) + VERSION_SHORTSHA_SIZE);
         auto response = rearpanel::messages::DeviceInfoResponse{
-            .length = length,
+            .length = rearpanel::messages::DeviceInfoResponse::get_length(),
             .version = ver_info->version,
             .flags = ver_info->flags};
         std::copy_n(&ver_info->sha[0], VERSION_SHORTSHA_SIZE,

@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cstdint>
 #include <variant>
 
@@ -113,6 +114,11 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
                         iter);
 
         return iter;
+    }
+
+    static auto get_length() -> uint16_t {
+        //         version              flags          shortsha
+        return sizeof(uint32_t) + sizeof(uint32_t) + VERSION_SHORTSHA_SIZE;
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
