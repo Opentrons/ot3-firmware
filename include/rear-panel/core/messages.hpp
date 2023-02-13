@@ -9,7 +9,7 @@
 #include "rear-panel/core/binary_parse.hpp"
 
 // this is the max size of the double_buffer used in freertos_message_queue
-constexpr size_t MAX_MESSAGE_SIZE = 512U * 4;
+constexpr size_t MAX_MESSAGE_SIZE = 512U * 2;
 namespace rearpanel {
 namespace messages {
 
