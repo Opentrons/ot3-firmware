@@ -111,7 +111,7 @@ struct variant_cast_proxy {
 
     // extracted into helper function
     template <class... ToArgs>
-    static constexpr bool is_convertible() noexcept {
+    static constexpr auto is_convertible() noexcept -> bool {
         return (std::is_convertible_v<Args, std::variant<ToArgs...>> && ...);
     }
 
@@ -121,8 +121,9 @@ struct variant_cast_proxy {
         return std::visit(
             [](auto &&arg) -> std::variant<ToArgs...> {
                 if constexpr (std::is_convertible_v<decltype(arg),
-                                                    std::variant<ToArgs...>>)
+                                                    std::variant<ToArgs...>>) {
                     return arg;
+                }
             },
             v);
     }
@@ -151,10 +152,9 @@ auto variant_cast(const std::variant<Args...> &v)
 static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     using namespace host_comms_control_task;
     uint16_t type = 0;
-    std::ignore =
+    std::ignore = bit_utils::bytes_to_int(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        bit_utils::bytes_to_int(
-            Buf, Buf + sizeof(rearpanel::messages::MessageType), type);
+        Buf, Buf + sizeof(rearpanel::messages::MessageType), type);
     auto message = rearpanel::messages::rear_panel_parser.parse(
         rearpanel::messages::MessageType(type),
         _local_task.rx_buf.committed()->data(),
