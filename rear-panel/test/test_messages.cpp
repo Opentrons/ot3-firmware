@@ -32,7 +32,10 @@ SCENARIO("message serializing works") {
             DeviceInfoResponse{.length = DeviceInfoResponse::get_length(),
                                .version = 0x00220033,
                                .flags = 0x11445566,
-                               .shortsha{"abcdef0"}};
+                               .shortsha{"abcdef0"},
+                               .primary_revision = 'A',
+                               .secondary_revision = 'B',
+                               .tertiary_revision{"C"}};
         auto arr = std::array<uint8_t, 30>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -86,12 +89,16 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[16] == 'e');
                 REQUIRE(body.data()[17] == 'f');
                 REQUIRE(body.data()[18] == '0');
+                REQUIRE(body.data()[19] == 0);
+                REQUIRE(body.data()[20] == 'A');
+                REQUIRE(body.data()[21] == 'B');
+                REQUIRE(body.data()[22] == 'C');
             }
             THEN("it does not write past the end of the buffer") {
-                REQUIRE(body.data()[19] == 0);
+                REQUIRE(body.data()[23] == 0);
             }
             THEN("size must be returned") {
-                REQUIRE(next_free == arr.begin() + 20);
+                REQUIRE(next_free == arr.begin() + 24);
             }
         }
     }

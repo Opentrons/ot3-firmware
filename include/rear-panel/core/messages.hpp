@@ -99,6 +99,9 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     uint32_t version;
     uint32_t flags;
     std::array<char, VERSION_SHORTSHA_SIZE> shortsha;
+    char primary_revision;
+    char secondary_revision;
+    std::array<char, 2> tertiary_revision;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
@@ -112,7 +115,16 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
                         std::min(limit - iter,
                                  static_cast<ptrdiff_t>(VERSION_SHORTSHA_SIZE)),
                         iter);
-
+        iter = std::copy_n(
+            &primary_revision,
+            std::min(limit - iter, ptrdiff_t(sizeof(primary_revision))), iter);
+        iter = std::copy_n(
+            &secondary_revision,
+            std::min(limit - iter, ptrdiff_t(sizeof(secondary_revision))),
+            iter);
+        iter = std::copy_n(
+            &tertiary_revision[0],
+            std::min(limit - iter, ptrdiff_t(sizeof(tertiary_revision))), iter);
         return iter;
     }
 
