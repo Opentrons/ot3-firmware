@@ -47,7 +47,7 @@ def main(args):
     files = {k: {} for k in SUBSYSTEMS}
 
     for subsystem, revision, name in find_files(hexdir):
-        files[subsystem][revision] = name
+        files[subsystem][revision] = os.path.join(args.prefix, name)
 
     for subsystem in subsystems:
         if subsystem not in SUBSYSTEMS:
@@ -62,7 +62,9 @@ def main(args):
             "branch": branch,
         }
 
-    json.dump(version_info, args.output)
+
+    manifest = {'manifest_version': 1, 'subsystems': version_info}
+    json.dump(manifest, args.output)
 
     return version_info
 
@@ -84,6 +86,12 @@ if __name__ == "__main__":
         type=argparse.FileType('w'),
         default=sys.stdout,
         help="saves json output to given output path or stdout."
+    )
+    parser.add_argument(
+        '--prefix', '-p',
+        type=str,
+        default='',
+        help='Define a prefix for the hex file paths on the target'
     )
     args = parser.parse_args()
     main(args)

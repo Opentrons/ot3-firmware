@@ -22,7 +22,8 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
         "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
-        "ARM_ARCH_TYPE": "cortex-m4"
+        "ARM_ARCH_TYPE": "cortex-m4",
+        "FIRMWARE_DESTINATION_PREFIX": "/usr/lib/firmware/"
       },
       "inherits": "configuration-ok"
     },
@@ -46,7 +47,8 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": true,
         "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
         "CMAKE_FIND_APPBUNDLE": "NEVER",
-        "ARM_ARCH_TYPE": "cortex-m33"
+        "ARM_ARCH_TYPE": "cortex-m33",
+        "FIRMWARE_DESTINATION_PREFIX": "/usr/lib/firmware/"
       },
       "inherits": "configuration-ok"
     },
