@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+namespace rearpanel {
 namespace messages {
 // TODO(ryan): as part of RET-1307 create an auto gen of the ids like the can
 // messages
@@ -12,3 +13,4 @@ enum class MessageType : uint16_t {
 };
 
 };  // namespace messages
+};  // namespace rearpanel

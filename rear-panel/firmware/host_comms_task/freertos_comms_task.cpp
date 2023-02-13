@@ -35,7 +35,7 @@ namespace host_comms_control_task {
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static freertos_message_queue::FreeRTOSMessageQueue<
-    messages::HostCommTaskMessage>
+    rearpanel::messages::HostCommTaskMessage>
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     _comms_queue("Comms Message Queue");
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -102,11 +102,11 @@ static auto cdc_deinit_handler() -> void {
     _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();
 }
 
-// these casting helper functions make it possible to send an element from one variant
-// to a variant type that is a super set of that variant. If it is not a super set this will not compile
+// these casting helper functions make it possible to send an element from one
+// variant to a variant type that is a super set of that variant. If it is not a
+// super set this will not compile
 template <class... Args>
-struct variant_cast_proxy
-{
+struct variant_cast_proxy {
     std::variant<Args...> v;
 
     // extracted into helper function
@@ -115,23 +115,23 @@ struct variant_cast_proxy
         return (std::is_convertible_v<Args, std::variant<ToArgs...>> && ...);
     }
 
-    template<class... ToArgs, std::enable_if_t<is_convertible<ToArgs...>(), int> = 0>
-    operator std::variant<ToArgs...>() const
-    {
-         return std::visit(
-            [](auto&& arg) -> std::variant<ToArgs...> { 
-                if constexpr (std::is_convertible_v<decltype(arg), std::variant<ToArgs...>>)
+    template <class... ToArgs,
+              std::enable_if_t<is_convertible<ToArgs...>(), int> = 0>
+    operator std::variant<ToArgs...>() const {
+        return std::visit(
+            [](auto &&arg) -> std::variant<ToArgs...> {
+                if constexpr (std::is_convertible_v<decltype(arg),
+                                                    std::variant<ToArgs...>>)
                     return arg;
             },
-            v
-        );
+            v);
     }
 };
 
 template <class... Args>
-auto variant_cast(const std::variant<Args...>& v) -> variant_cast_proxy<Args...>
-{
-    return { v };
+auto variant_cast(const std::variant<Args...> &v)
+    -> variant_cast_proxy<Args...> {
+    return {v};
 }
 
 /*
@@ -153,16 +153,21 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     uint16_t type = 0;
     std::ignore =
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        bit_utils::bytes_to_int(Buf, Buf + sizeof(messages::MessageType), type);
-    auto message = messages::rear_panel_parser.parse(
-        messages::MessageType(type), _local_task.rx_buf.committed()->data(),
+        bit_utils::bytes_to_int(
+            Buf, Buf + sizeof(rearpanel::messages::MessageType), type);
+    auto message = rearpanel::messages::rear_panel_parser.parse(
+        rearpanel::messages::MessageType(type),
+        _local_task.rx_buf.committed()->data(),
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         Buf + *Len);
-    // if parse didn't return anything it means it was malformed so send an ack_failed
+    // if parse didn't return anything it means it was malformed so send an
+    // ack_failed
     if (message.index() == 0) {
-        static_cast<void>(_top_task.get_queue().try_write_isr(messages::AckFailed{.length = 0}));
+        static_cast<void>(_top_task.get_queue().try_write_isr(
+            rearpanel::messages::AckFailed{.length = 0}));
     } else {
-        static_cast<void>(_top_task.get_queue().try_write_isr(variant_cast(message)));
+        static_cast<void>(
+            _top_task.get_queue().try_write_isr(variant_cast(message)));
     }
     _local_task.rx_buf.swap();
     _local_task.committed_rx_buf_ptr = _local_task.rx_buf.committed()->data();

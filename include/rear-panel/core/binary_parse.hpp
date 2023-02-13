@@ -39,13 +39,14 @@ class Parser {
      * @return A Result variant
      */
     template <bit_utils::ByteIterator Iterator>
-    auto parse(messages::MessageType message_type, const Iterator& payload,
-               const Iterator& limit) -> Result {
+    auto parse(rearpanel::messages::MessageType message_type,
+               const Iterator& payload, const Iterator& limit) -> Result {
         auto result = Result{std::monostate{}};
         // Fold expression over Parsable template type.
         // Create a lambda that accepts the type and body.
         ((([&result, message_type, &payload, &limit]() -> void {
-             // If message type matches Parsable's type parse will build the result.
+             // If message type matches Parsable's type parse will build the
+             // result.
              if (message_type == T::message_type) {
                  result = T::parse(payload, limit);
              }

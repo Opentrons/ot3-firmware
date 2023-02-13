@@ -9,7 +9,7 @@
 
 // this is the max size of the double_buffer used in freertos_message_queue
 constexpr size_t MAX_MESSAGE_SIZE = 512U * 4;
-
+namespace rearpanel {
 namespace messages {
 
 template <MessageType MType>
@@ -38,10 +38,11 @@ struct Echo : BinaryFormatMessage<MessageType::ECHO> {
         std::copy_n(body, len, data.begin());
         return Echo{.length = len, .data = data};
     }
-    
+
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
-        auto iter = bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
         iter = bit_utils::int_to_bytes(length, iter, limit);
         iter = std::copy_n(data.begin(), length, iter);
         return iter;
@@ -54,7 +55,8 @@ struct Ack : BinaryFormatMessage<MessageType::ACK> {
     uint16_t length;
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
-        auto iter = bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
         iter = bit_utils::int_to_bytes(length, iter, limit);
         return iter;
     }
@@ -64,7 +66,8 @@ struct AckFailed : BinaryFormatMessage<MessageType::ACK_FAILED> {
     uint16_t length;
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
-        auto iter = bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
         iter = bit_utils::int_to_bytes(length, iter, limit);
         return iter;
     }
@@ -98,7 +101,8 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
-        auto iter = bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
         iter = bit_utils::int_to_bytes(length, iter, limit);
         iter = bit_utils::int_to_bytes(version, iter, limit);
         iter = bit_utils::int_to_bytes(flags, iter, limit);
@@ -113,8 +117,10 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
-using HostCommTaskMessage = std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed>;
+using HostCommTaskMessage =
+    std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed>;
 
 static auto rear_panel_parser = binary_parse::Parser<Echo, DeviceInfoRequest>{};
 
 };  // namespace messages
+};  // namespace rearpanel
