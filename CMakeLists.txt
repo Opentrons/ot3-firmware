@@ -210,7 +210,7 @@ add_custom_target(update-headers
         COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
 
 set(_install_cmd "execute_process(\
-        COMMAND ${SHELL_FOR_PYTHON} -c \"python ${CMAKE_SOURCE_DIR}/scripts/subsystem_versions.py\
+        COMMAND ${SHELL_FOR_PYTHON} -c \"python3 ${CMAKE_SOURCE_DIR}/scripts/subsystem_versions.py\
                                                --prefix=${FIRMWARE_DESTINATION_PREFIX}\
                                                --hex-dir=${CMAKE_INSTALL_PREFIX}/applications\
                                                ${CMAKE_INSTALL_PREFIX}/applications/opentrons-firmware.json\"\
