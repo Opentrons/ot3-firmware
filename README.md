@@ -31,6 +31,8 @@ Application binaries are generated with different names for each revision and ca
 
 This can end up being quite a lot of hex files scattered in various subdirectories, so if you run `cmake --install` cmake will helpfully copy them all to the `dist/` subdirectory for you. You can change where it installs by changing `CMAKE_INSTALL_PREFIX`.
 
+The `--install` command will now helpfully build the manifest required for firmware update. That means that you can do `cmake --build --preset=firmware-g4 --target firmware-applications`, then `cmake --install ./build-cross --component Applications` and then you'll have everything you need in `dist/applications` to do firmware update, so you can do `scp ./dist/applications/* robotip:/usr/lib/firmware/` and get things restarted. This is not currently integrated into cmake because the robot ip is a runtime argument which is hard to get cmake to want to do.
+
 ## Working with CMake
 
 This project uses cmake as a build and configuration system. It uses [cmake presets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) to ease remembering commands. It requires at least CMake 3.20 (to support build presets) to run.
