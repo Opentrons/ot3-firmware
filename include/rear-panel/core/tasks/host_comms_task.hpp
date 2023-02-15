@@ -10,14 +10,13 @@
 #include "rear-panel/core/binary_parse.hpp"
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
+#include "rear-panel/core/queues.hpp"
 
 namespace host_comms_task {
 
-template <class ResponseQueue>
 class HostCommMessageHandler {
   public:
-    explicit HostCommMessageHandler(ResponseQueue &resp_queue)
-        : resp_queue{resp_queue} {}
+    explicit HostCommMessageHandler() {}
     HostCommMessageHandler(const HostCommMessageHandler &) = delete;
     HostCommMessageHandler(const HostCommMessageHandler &&) = delete;
     auto operator=(const HostCommMessageHandler &)
@@ -44,6 +43,8 @@ class HostCommMessageHandler {
         // return (aka how much data they wrote, if any) to the caller.
         return std::visit(visit_helper, m);
     }
+
+    auto may_connect() -> bool { return may_connect_latch; }
 
   private:
     template <typename InputIt, typename InputLimit>
@@ -105,7 +106,30 @@ class HostCommMessageHandler {
                        InputLimit tx_limit) -> InputIt {
         return msg.serialize(tx_into, tx_limit);
     }
-    ResponseQueue &resp_queue;
+
+    // Shutdown the hardware and enter the bootloader the ack_failed
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::EnterBootlader &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_system_queue(msg);
+
+        auto resp = rearpanel::messages::Ack{};
+        return visit_message(resp, tx_into, tx_limit);
+    }
+
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::EnterBootloaderResponse &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        may_connect_latch = !msg.success;
+        return msg.serialize(tx_into, tx_limit);
+    }
+
+    bool may_connect_latch = true;
 };
 
 /**
@@ -118,7 +142,7 @@ class HostCommTask {
   public:
     using Messages = rearpanel::messages::HostCommTaskMessage;
     using QueueType = QueueImpl<rearpanel::messages::HostCommTaskMessage>;
-    HostCommTask(QueueType &queue) : queue{queue} {}
+    HostCommTask(QueueType &queue) : queue{queue}, handler{} {}
     HostCommTask(const HostCommTask &c) = delete;
     HostCommTask(const HostCommTask &&c) = delete;
     auto operator=(const HostCommTask &c) = delete;
@@ -145,7 +169,6 @@ class HostCommTask {
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
     auto run_once(InputIt tx_into, InputLimit tx_limit) -> InputLimit {
-        auto handler = HostCommMessageHandler{get_queue()};
         rearpanel::messages::HostCommTaskMessage message{};
         queue.try_read(&message);
         // We should now be guaranteed to have a message, and can visit it to do
@@ -154,9 +177,11 @@ class HostCommTask {
     }
 
     [[nodiscard]] auto get_queue() const -> QueueType & { return queue; }
+    [[nodiscard]] auto may_connect() -> bool { return handler.may_connect(); }
 
   private:
     QueueType &queue;
+    HostCommMessageHandler handler;
 };
 
 /**

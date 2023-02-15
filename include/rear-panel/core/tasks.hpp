@@ -2,7 +2,9 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/message_queue.hpp"
 #include "rear-panel/core/messages.hpp"
+#include "rear-panel/core/queues.hpp"
 #include "rear-panel/core/tasks/host_comms_task.hpp"
+#include "rear-panel/core/tasks/system_task.hpp"
 
 // TODO(ryan): CORETASKS compile in and process the other basic tasks
 //#include "common/core/freertos_timer.hpp"
@@ -32,28 +34,6 @@ void start_tasks(
 );
 
 /**
- * Access to all the message queues in the system.
- */
-struct QueueClient {
-    /*
-     //TODO(ryan): CORETASKS compile in and process the other basic tasks
-
-     void send_eeprom_queue(const eeprom::task::TaskMessage& m);
-
-     freertos_message_queue::FreeRTOSMessageQueue<i2c::writer::TaskMessage>*
-         i2c3_queue{nullptr};
-     freertos_message_queue::FreeRTOSMessageQueue<i2c::poller::TaskMessage>*
-         i2c3_poller_queue{nullptr};
-     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
-         eeprom_queue{nullptr};
-     */
-    void send_host_comms_queue(
-        const rearpanel::messages::HostCommTaskMessage& m);
-    freertos_message_queue::FreeRTOSMessageQueue<
-        rearpanel::messages::HostCommTaskMessage>* host_comms_queue{nullptr};
-};
-
-/**
  * Access to all tasks in the system.
  */
 struct AllTask {
@@ -70,6 +50,9 @@ struct AllTask {
     */
     host_comms_task::HostCommTask<freertos_message_queue::FreeRTOSMessageQueue>*
         host_comms_task{nullptr};
+
+    system_task::SystemTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        system_task{nullptr};
 };
 
 /**
@@ -77,11 +60,5 @@ struct AllTask {
  * @return
  */
 [[nodiscard]] auto get_all_tasks() -> AllTask&;
-
-/**
- * Access to the queues singleton
- * @return
- */
-[[nodiscard]] auto get_main_queues() -> QueueClient&;
 
 }  // namespace rear_panel_tasks

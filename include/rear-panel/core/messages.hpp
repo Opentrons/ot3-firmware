@@ -135,10 +135,51 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
-using HostCommTaskMessage =
-    std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed>;
+struct EnterBootlader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
+    uint16_t length;
 
-static auto rear_panel_parser = binary_parse::Parser<Echo, DeviceInfoRequest>{};
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> EnterBootlader {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            // we got something wrong from this figure out what we want to
+            // do in this situation
+            len = 0;
+        }
+        return EnterBootlader{.length = len};
+    }
+
+    auto operator==(const EnterBootlader& other) const -> bool = default;
+};
+
+struct EnterBootloaderResponse
+    : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER_RESPONSE> {
+    uint16_t length = sizeof(bool);
+    bool success;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(success, iter, limit);
+        return iter;
+    }
+    auto operator==(const EnterBootloaderResponse& other) const
+        -> bool = default;
+};
+// HostCommTaskMessage list must be a superset of the messages in the parser
+using HostCommTaskMessage =
+    std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
+                 EnterBootlader, EnterBootloaderResponse>;
+
+using SystemTaskMessage = std::variant<std::monostate, EnterBootlader>;
+
+static auto rear_panel_parser =
+    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootlader>{};
 
 };  // namespace messages
 };  // namespace rearpanel
