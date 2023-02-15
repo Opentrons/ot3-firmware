@@ -22,7 +22,7 @@ concept Parsable = requires(std::array<uint8_t, 0> buffer) {
 };
 
 /**
- * Parser of can message bodies.
+ * Parser of usb message bodies.
  *
  * @tparam T The types of Parsables (messages) this parser will support.
  */
