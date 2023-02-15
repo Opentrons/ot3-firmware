@@ -47,9 +47,10 @@ struct QueueClient {
      freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
          eeprom_queue{nullptr};
      */
-    void send_host_comms_queue(const messages::HostCommTaskMessage& m);
-    freertos_message_queue::FreeRTOSMessageQueue<messages::HostCommTaskMessage>*
-        host_comms_queue{nullptr};
+    void send_host_comms_queue(
+        const rearpanel::messages::HostCommTaskMessage& m);
+    freertos_message_queue::FreeRTOSMessageQueue<
+        rearpanel::messages::HostCommTaskMessage>* host_comms_queue{nullptr};
 };
 
 /**

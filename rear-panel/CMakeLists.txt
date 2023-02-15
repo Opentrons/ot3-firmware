@@ -7,7 +7,7 @@ if (${CMAKE_CROSSCOMPILING})
     add_subdirectory(firmware)
 else()
    #add_subdirectory(simulator)
-   #add_subdirectory(tests)
+   add_subdirectory(test)
 endif()
 
 file(GLOB_RECURSE REAR_PANEL_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/rear-panel/*.hpp)

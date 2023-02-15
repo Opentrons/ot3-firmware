@@ -6,13 +6,12 @@
 
 #include "FreeRTOS.h"
 #include "common/core/message_queue.hpp"
+#include "common/core/version.h"
+#include "rear-panel/core/binary_parse.hpp"
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
 
 namespace host_comms_task {
-
-using TaskMessage =
-    std::variant<std::monostate, messages::IncomingMessageFromHost>;
 
 template <class ResponseQueue>
 class HostCommMessageHandler {
@@ -30,8 +29,8 @@ class HostCommMessageHandler {
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
-    auto handle_message(messages::HostCommTaskMessage &m, InputIt tx_into,
-                        InputLimit tx_limit) -> InputIt {
+    auto handle_message(rearpanel::messages::HostCommTaskMessage &m,
+                        InputIt tx_into, InputLimit tx_limit) -> InputIt {
         // we need a this-capturing lambda to pass on the call to our set of
         // member function overloads because otherwise we would need a pointer
         // to member function, and you can't really do that with variant visit.
@@ -63,33 +62,49 @@ class HostCommMessageHandler {
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
-    auto visit_message(messages::IncomingMessageFromHost &msg, InputIt tx_into,
+    auto visit_message(rearpanel::messages::Echo &msg, InputIt tx_into,
                        InputLimit tx_limit) -> InputIt {
-        // TODO just doing this to echo when we build out the binary protocol in
-        // RET-1304 we can do the parsing and handling with variants and that
-        auto resp = messages::Echo{.length = uint16_t(msg.limit - msg.buffer),
-                                   .data = msg.buffer};
-
-        return visit_message(resp, tx_into, tx_limit);
+        return msg.serialize(tx_into, tx_limit);
     }
 
-    // for this very basic first pass we just want to echo back any messages we
-    // receive from the host
+    // Create and transmit a device info response that includes the version
+    // information
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
-    auto visit_message(messages::Echo &msg, InputIt tx_into,
-                       InputLimit tx_limit) -> InputIt {
-        return std::copy(
-            msg.data,
-            std::min(
-                msg.data +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    msg.length,
-                msg.data +  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-                    (tx_limit - tx_into)),
-            tx_into);
+    auto visit_message(rearpanel::messages::DeviceInfoRequest &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        std::ignore = msg;
+        const auto *ver_info = version_get();
+        const auto *rev_info = revision_get();
+        auto response = rearpanel::messages::DeviceInfoResponse{
+            .length = rearpanel::messages::DeviceInfoResponse::get_length(),
+            .version = ver_info->version,
+            .flags = ver_info->flags,
+            .primary_revision = rev_info->primary,
+            .secondary_revision = rev_info->secondary};
+        std::copy_n(&ver_info->sha[0], VERSION_SHORTSHA_SIZE,
+                    response.shortsha.begin());
+        return response.serialize(tx_into, tx_limit);
     }
 
+    // transmit the ack
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::Ack &msg, InputIt tx_into,
+                       InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
+    }
+
+    // transmit the ack_failed
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::AckFailed &msg, InputIt tx_into,
+                       InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
+    }
     ResponseQueue &resp_queue;
 };
 
@@ -97,12 +112,12 @@ class HostCommMessageHandler {
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<messages::HostCommTaskMessage>,
-                      messages::HostCommTaskMessage>
+requires MessageQueue<QueueImpl<rearpanel::messages::HostCommTaskMessage>,
+                      rearpanel::messages::HostCommTaskMessage>
 class HostCommTask {
   public:
-    using Messages = messages::HostCommTaskMessage;
-    using QueueType = QueueImpl<messages::HostCommTaskMessage>;
+    using Messages = rearpanel::messages::HostCommTaskMessage;
+    using QueueType = QueueImpl<rearpanel::messages::HostCommTaskMessage>;
     HostCommTask(QueueType &queue) : queue{queue} {}
     HostCommTask(const HostCommTask &c) = delete;
     HostCommTask(const HostCommTask &&c) = delete;
@@ -131,7 +146,7 @@ class HostCommTask {
         std::sized_sentinel_for<InputLimit, InputIt>
     auto run_once(InputIt tx_into, InputLimit tx_limit) -> InputLimit {
         auto handler = HostCommMessageHandler{get_queue()};
-        messages::HostCommTaskMessage message{};
+        rearpanel::messages::HostCommTaskMessage message{};
         queue.try_read(&message);
         // We should now be guaranteed to have a message, and can visit it to do
         // our actual work.
@@ -149,8 +164,8 @@ class HostCommTask {
  * @tparam Client
  */
 template <typename Client>
-concept TaskClient = requires(Client client,
-                              const messages::HostCommTaskMessage &m) {
+concept TaskClient =
+    requires(Client client, const rearpanel::messages::HostCommTaskMessage &m) {
     {client.send_host_comms_queue(m)};
 };
 
