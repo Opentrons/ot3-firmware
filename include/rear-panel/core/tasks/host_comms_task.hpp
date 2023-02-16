@@ -11,6 +11,7 @@
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/queues.hpp"
+#include "rear-panel/firmware/system_hardware.h"
 
 namespace host_comms_task {
 
@@ -115,7 +116,7 @@ class HostCommMessageHandler {
                        InputIt tx_into, InputLimit tx_limit) -> InputIt {
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_system_queue(msg);
-
+        may_connect_latch = false;
         auto resp = rearpanel::messages::Ack{};
         return visit_message(resp, tx_into, tx_limit);
     }
@@ -125,7 +126,6 @@ class HostCommMessageHandler {
         std::sized_sentinel_for<InputLimit, InputIt>
     auto visit_message(rearpanel::messages::EnterBootloaderResponse &msg,
                        InputIt tx_into, InputLimit tx_limit) -> InputIt {
-        may_connect_latch = !msg.success;
         return msg.serialize(tx_into, tx_limit);
     }
 

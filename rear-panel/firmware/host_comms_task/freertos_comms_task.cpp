@@ -69,13 +69,13 @@ void run(void *param) {  // NOLINT(misc-unused-parameters)
         auto *tx_end =
             top_task->run_once(local_task->tx_buf.accessible()->begin(),
                                local_task->tx_buf.accessible()->end());
-        // if (!top_task->may_connect()) {
-        //    usb_hw_stop();
-        //} else
         if (tx_end != local_task->tx_buf.accessible()->data()) {
             local_task->tx_buf.swap();
             usb_hw_send(local_task->tx_buf.committed()->data(),
                         tx_end - local_task->tx_buf.committed()->data());
+        }
+        if (!top_task->may_connect()) {
+            usb_hw_stop();
         }
     }
 }
@@ -85,7 +85,7 @@ auto start() -> rear_panel_tasks::Task<
     TaskHandle_t, host_comms_task::HostCommTask<
                       freertos_message_queue::FreeRTOSMessageQueue>> {
     auto *handle = xTaskCreateStatic(run, "HostCommsControl", stack.size(),
-                                     &_tasks, 1, stack.data(), &data);
+                                     &_tasks, 5, stack.data(), &data);
     return rear_panel_tasks::Task<TaskHandle_t, decltype(_top_task)>{
         .handle = handle, .task = &_top_task};
 }

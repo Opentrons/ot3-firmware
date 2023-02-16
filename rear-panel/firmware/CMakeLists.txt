@@ -40,6 +40,7 @@ set(REAR_PANEL_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${CMAKE_CURRENT_SOURCE_DIR}/led_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/system_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/usbd_conf.c
         ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/usb_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/usbd_desc.c

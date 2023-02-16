@@ -11,6 +11,7 @@
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/tasks.hpp"
+#include "rear-panel/firmware/system_hardware.h"
 
 namespace system_task {
 
@@ -39,9 +40,8 @@ class SystemMessageHandler {
 
     void handle(rearpanel::messages::EnterBootlader& m) {
         std::ignore = m;
-        auto resp =
-            rearpanel::messages::EnterBootloaderResponse{.success = true};
-        resp_queue.try_write(resp);
+        system_hardware_enter_bootloader();
+        // above function does not return
     }
 
     ResponseQueue& resp_queue;
