@@ -17,7 +17,7 @@ namespace host_comms_task {
 
 class HostCommMessageHandler {
   public:
-    explicit HostCommMessageHandler() {}
+    explicit HostCommMessageHandler() = default;
     HostCommMessageHandler(const HostCommMessageHandler &) = delete;
     HostCommMessageHandler(const HostCommMessageHandler &&) = delete;
     auto operator=(const HostCommMessageHandler &)
@@ -45,7 +45,7 @@ class HostCommMessageHandler {
         return std::visit(visit_helper, m);
     }
 
-    auto may_connect() -> bool { return may_connect_latch; }
+    [[nodiscard]] auto may_connect() const -> bool { return may_connect_latch; }
 
   private:
     template <typename InputIt, typename InputLimit>
@@ -142,7 +142,7 @@ class HostCommTask {
   public:
     using Messages = rearpanel::messages::HostCommTaskMessage;
     using QueueType = QueueImpl<rearpanel::messages::HostCommTaskMessage>;
-    HostCommTask(QueueType &queue) : queue{queue}, handler{} {}
+    HostCommTask(QueueType &queue) : queue{queue} {}
     HostCommTask(const HostCommTask &c) = delete;
     HostCommTask(const HostCommTask &&c) = delete;
     auto operator=(const HostCommTask &c) = delete;
