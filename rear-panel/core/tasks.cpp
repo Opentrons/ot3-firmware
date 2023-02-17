@@ -35,7 +35,7 @@ void rear_panel_tasks::start_tasks(
     // i2c::hardware::I2CBase& i2c3,
     // eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
 ) {
-    auto queues = queue_client::get_main_queues();
+    auto& queues = queue_client::get_main_queues();
     // TODO(ryan): CORETASKS compile in and process the other basic tasks
     /*
     auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3);
@@ -59,8 +59,7 @@ void rear_panel_tasks::start_tasks(
     // queues.i2c3_queue = &i2c3_task.get_queue();
     // queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     // queues.eeprom_queue = &eeprom_task.get_queue();
-    auto& systemctl_task =
-        system_task_builder.start(5, "system", *queues.host_comms_queue);
+    auto& systemctl_task = system_task_builder.start(5, "system");
     tasks.system_task = &systemctl_task;
     queues.system_queue = &systemctl_task.get_queue();
 }

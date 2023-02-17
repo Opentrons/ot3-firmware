@@ -16,13 +16,10 @@
 namespace system_task {
 
 using TaskMessage = rearpanel::messages::SystemTaskMessage;
-using ResponseMessage = rearpanel::messages::HostCommTaskMessage;
 
-template <class ResponseQueue>
 class SystemMessageHandler {
   public:
-    explicit SystemMessageHandler(ResponseQueue* resp_queue)
-        : resp_queue{*resp_queue} {}
+    explicit SystemMessageHandler() = default;
     SystemMessageHandler(const SystemMessageHandler&) = delete;
     SystemMessageHandler(const SystemMessageHandler&&) = delete;
     auto operator=(const SystemMessageHandler&)
@@ -36,15 +33,12 @@ class SystemMessageHandler {
     }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    static void handle(std::monostate&) {}
 
-    void handle(rearpanel::messages::EnterBootlader& m) {
-        std::ignore = m;
+    static void handle(rearpanel::messages::EnterBootlader&) {
         system_hardware_enter_bootloader();
         // above function does not return
     }
-
-    ResponseQueue& resp_queue;
 };
 
 /**
@@ -66,10 +60,8 @@ class SystemTask {
     /**
      * Task entry point.
      */
-    template <template <class> class ReplyQueueImpl>
-    requires MessageQueue<ReplyQueueImpl<ResponseMessage>, ResponseMessage>
-    [[noreturn]] void operator()(ReplyQueueImpl<ResponseMessage>* resp_queue) {
-        auto handler = SystemMessageHandler{resp_queue};
+    [[noreturn]] void operator()() {
+        auto handler = SystemMessageHandler{};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

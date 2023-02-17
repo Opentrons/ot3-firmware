@@ -181,7 +181,7 @@ class HostCommTask {
 
   private:
     QueueType &queue;
-    HostCommMessageHandler handler;
+    HostCommMessageHandler handler = HostCommMessageHandler{};
 };
 
 /**
