@@ -31,7 +31,7 @@
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
-#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
+#include "head/firmware/head_motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -80,7 +80,7 @@ static constexpr int direction_active_level = GPIO_PIN_RESET;
 static constexpr int direction_active_level = GPIO_PIN_SET;
 #endif
 
-struct motor_hardware::HardwareConfig pin_configurations_left {
+struct head_motor_hardware::HeadHardwareConfig pin_configurations_left {{
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -111,16 +111,23 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOA,
             .pin = GPIO_PIN_8,
-            .active_setting = GPIO_PIN_RESET},
+            .active_setting = GPIO_PIN_RESET}
+    },
     .estop_in = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET}},
+    .ebrake= {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOB,
+        .pin = GPIO_PIN_5,
+        .active_setting = GPIO_PIN_RESET
+    }
 };
 
-struct motor_hardware::HardwareConfig pin_configurations_right {
-    .direction =
+struct head_motor_hardware::HeadHardwareConfig pin_configurations_right {
+    {.direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
             .port = GPIOC,
@@ -155,7 +162,14 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET}},
+    {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOB,
+        .pin = GPIO_PIN_0,
+        .active_setting = GPIO_PIN_RESET
+    }
+
 };
 
 // TODO clean up the head main file by using interfaces.
