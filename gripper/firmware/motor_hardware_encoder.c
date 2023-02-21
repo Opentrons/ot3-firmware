@@ -21,8 +21,8 @@ void Encoder_GPIO_Init(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __GPIOA_CLK_ENABLE();
     /* Encoder G Axis GPIO Configuration
-    PA0     ------> CHANNEL B
-    PA1     ------> CHANNEL A
+    PA0     ------> CHANNEL A
+    PA1     ------> CHANNEL B
     PA5    ------> CHANNEL I
     */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -32,17 +32,13 @@ void Encoder_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* There is no need to configure GPIO pin : PA5
-     * for clarity I have left this here commented, as it describes the defualt
-     * state for this pin at startup
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    */
 }
+
+#if PCBA_PRIMARY_REVISION = "a"
+uint32_t ic2_polarity = TIM_ICPOLARITY_RISING;
+#else
+uint32_t ic2_polarity = TIM_ICPOLARITY_FALLING;
+#endif
 
 void TIM2_EncoderG_Init(void) {
     TIM_Encoder_InitTypeDef sConfig = {0};
@@ -59,7 +55,7 @@ void TIM2_EncoderG_Init(void) {
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
     sConfig.IC1Filter = 0;
-    sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
+    sConfig.IC2Polarity = ic2_polarity;
     sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
     sConfig.IC2Filter = 0;
