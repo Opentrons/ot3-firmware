@@ -136,6 +136,11 @@ class MotorInterruptHandler {
          * This function is called from a timer interrupt. See
          * `motor_hardware.cpp`.
          */
+        if (clear_queue_until_empty && has_move_messages()) {
+            if (!pop_and_discard_move()) {
+                clear_queue_until_empty = false;
+            }
+        }
         if (!has_active_move && has_move_messages()) {
             update_move();
             handle_update_position_queue_error();
@@ -256,6 +261,18 @@ class MotorInterruptHandler {
         // hardware pin configurations out of motion controller.
     }
 
+    /**
+     * @brief Pop the next message out of the motion queue and discard it.
+     *
+     * @return true if the queue still has another message, false if this
+     * was the last message in the queue.
+     */
+    auto pop_and_discard_move() -> bool {
+        MotorMoveMessage scratch = MotorMoveMessage{};
+        std::ignore = move_queue.try_read_isr(&scratch);
+        return has_move_messages();
+    }
+
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
     }
@@ -280,6 +297,13 @@ class MotorInterruptHandler {
         if (send_stop_msg) {
             status_queue_client.send_move_status_reporter_queue(
                 can::messages::StopRequest{.message_index = 0});
+        } else {
+            // Even if we don't emit a stop message, we have to make sure that
+            // other steps in the queue DO NOT execute. A stop message will
+            // clear the whole queue from an interrupt, but with this flag we
+            // will clear out the interrupt's queue without having to send
+            // more messages around the system.
+            clear_queue_until_empty = true;
         }
 
         // the queue will get reset during the stop message processing
@@ -445,5 +469,6 @@ class MotorInterruptHandler {
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
+    bool clear_queue_until_empty = false;
 };
 }  // namespace motor_handler
