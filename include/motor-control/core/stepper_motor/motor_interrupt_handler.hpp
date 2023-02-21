@@ -136,11 +136,6 @@ class MotorInterruptHandler {
          * This function is called from a timer interrupt. See
          * `motor_hardware.cpp`.
          */
-        if (clear_queue_until_empty && has_move_messages()) {
-            if (!pop_and_discard_move()) {
-                clear_queue_until_empty = false;
-            }
-        }
         if (!has_active_move && has_move_messages()) {
             update_move();
             handle_update_position_queue_error();
@@ -244,21 +239,21 @@ class MotorInterruptHandler {
     }
 
     void update_move() {
-        has_active_move = move_queue.try_read_isr(&buffered_move);
-        if (set_direction_pin()) {
-            hardware.positive_direction();
+        if (clear_queue_until_empty) {
+            clear_queue_until_empty = pop_and_discard_move();
         } else {
-            hardware.negative_direction();
+            has_active_move = move_queue.try_read_isr(&buffered_move);
+            if (set_direction_pin()) {
+                hardware.positive_direction();
+            } else {
+                hardware.negative_direction();
+            }
+            if (has_active_move && buffered_move.stop_condition ==
+                                       MoveStopCondition::limit_switch) {
+                position_tracker = 0x7FFFFFFFFFFFFFFF;
+                update_hardware_step_tracker();
+            }
         }
-        if (has_active_move &&
-            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
-            position_tracker = 0x7FFFFFFFFFFFFFFF;
-            update_hardware_step_tracker();
-        }
-        // (TODO: lc) We should check the direction (and set respectively)
-        // the direction pin for the motor once a move is being pulled off the
-        // move_queue stack. We'll probably want to think about moving the
-        // hardware pin configurations out of motion controller.
     }
 
     /**
@@ -268,7 +263,7 @@ class MotorInterruptHandler {
      * was the last message in the queue.
      */
     auto pop_and_discard_move() -> bool {
-        MotorMoveMessage scratch = MotorMoveMessage{};
+        auto scratch = MotorMoveMessage{};
         std::ignore = move_queue.try_read_isr(&scratch);
         return has_move_messages();
     }
