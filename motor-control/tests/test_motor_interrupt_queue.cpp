@@ -35,15 +35,15 @@ TEST_CASE("motor interrupt handler queue functionality") {
                 queue.try_write(msg4);
                 REQUIRE(queue.get_size() == 4);
                 REQUIRE(handler.has_move_messages() == true);
-            }
-        }
 
-        WHEN("moves have been issued") {
-            THEN("the step motor command should execute all of them") {
-                while (handler.has_move_messages()) {
-                    static_cast<void>(handler.run_interrupt());
+                WHEN("moves have been issued") {
+                    THEN("the step motor command should execute all of them") {
+                        while (handler.has_move_messages()) {
+                            static_cast<void>(handler.run_interrupt());
+                        }
+                        REQUIRE(handler.has_move_messages() == false);
+                    }
                 }
-                REQUIRE(handler.has_move_messages() == false);
             }
         }
 
