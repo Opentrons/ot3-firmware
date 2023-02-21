@@ -1,4 +1,4 @@
-#include "motor_encoder_hardware.h"
+#include "motor_hardware.h"
 
 #include "common/firmware/errors.h"
 #include "stm32g4xx_hal.h"

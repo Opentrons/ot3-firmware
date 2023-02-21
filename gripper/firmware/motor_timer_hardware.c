@@ -1,4 +1,3 @@
-#include "motor_encoder_hardware.h"
 #include "motor_hardware.h"
 #include "system_stm32g4xx.h"
 
