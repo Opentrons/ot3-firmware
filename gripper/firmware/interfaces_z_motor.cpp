@@ -154,8 +154,8 @@ void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
-
-    initialize_timer(call_motor_handler);
+    initialize_hardware_z();
+    set_z_motor_timer_callback(call_motor_handler);
 }
 
 auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {

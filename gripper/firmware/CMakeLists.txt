@@ -28,9 +28,9 @@ set(GRIPPER_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_encoder.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_g.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_z.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_shared.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c

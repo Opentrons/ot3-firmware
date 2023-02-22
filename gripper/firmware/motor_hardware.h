@@ -23,31 +23,28 @@ extern "C" {
 
 // Z motor specific
 extern SPI_HandleTypeDef hspi2;
-
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim7;
-extern DAC_HandleTypeDef hdac1;
 
 typedef void (*motor_interrupt_callback)();
 
 HAL_StatusTypeDef initialize_spi();
+void initialize_hardware_z();
 
-void initialize_timer(motor_interrupt_callback callback);
-
-void initialize_dac();
-
+void set_z_motor_timer_callback(motor_interrupt_callback callback);
 
 
 // G motor specific
+extern DAC_HandleTypeDef hdac1;
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 
 typedef void (*brushed_motor_interrupt_callback)();
 typedef void (*encoder_overflow_callback)(int32_t);
 typedef void (*encoder_idle_state_callback)(bool);
 
-void initialize_enc();
+void initialize_hardware_g();
 
 void update_pwm(uint32_t duty_cycle);
 
