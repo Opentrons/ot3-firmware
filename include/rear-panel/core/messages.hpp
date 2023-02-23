@@ -137,7 +137,8 @@ struct EnterBootlader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> std::variant<std::monostate, EnterBootlader> {
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, EnterBootlader> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);

@@ -118,7 +118,9 @@ SCENARIO("message parsing") {
                 arr.end());
             THEN("monostate is not returned") { REQUIRE(message.index() != 0); }
             THEN("DeviceInfoRequest is returned") {
-                auto typed = std::get_if<rearpanel::messages::DeviceInfoRequest>(&message);
+                auto typed =
+                    std::get_if<rearpanel::messages::DeviceInfoRequest>(
+                        &message);
                 REQUIRE(typed != 0);
             }
         }
@@ -130,7 +132,7 @@ SCENARIO("message parsing") {
                 rearpanel::messages::MessageType(0x0003), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
-            THEN("monostate is returned") { 
+            THEN("monostate is returned") {
                 REQUIRE(message.index() == 0);
                 auto typed = std::get_if<std::monostate>(&message);
                 REQUIRE(typed != 0);
@@ -144,7 +146,7 @@ SCENARIO("message parsing") {
                 rearpanel::messages::MessageType(0xABCD), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
-            THEN("monostate is returned") { 
+            THEN("monostate is returned") {
                 REQUIRE(message.index() == 0);
                 auto typed = std::get_if<std::monostate>(&message);
                 REQUIRE(typed != 0);
