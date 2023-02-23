@@ -82,6 +82,7 @@ static void TIM1_PWM_Init(void) {
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
     htim1.Instance = TIM1;
+    htim1.State = HAL_TIM_STATE_RESET;
     /*
      * Setting counter clock frequency to 32 kHz
      * Note that brushed timer tick at a different frequency from the stepper
@@ -154,6 +155,7 @@ static void TIM3_PWM_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     htim3.Instance = TIM3;
+    htim3.State = HAL_TIM_STATE_RESET;
     /*
      * Setting counter clock frequency to 32 kHz
      * Note that brushed timer tick at a different frequency from the stepper
@@ -207,6 +209,7 @@ void TIM2_EncoderG_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     __HAL_RCC_TIM2_CLK_ENABLE();
     htim2.Instance = TIM2;
+    htim2.State = HAL_TIM_STATE_RESET;
     htim2.Init.Prescaler = 0;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim2.Init.Period = UINT16_MAX;
@@ -265,6 +268,7 @@ void TIM4_EncoderGSpeed_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_IC_InitTypeDef sConfigIC = {0};
     htim4.Instance = TIM4;
+    htim4.State = HAL_TIM_STATE_RESET;
     htim4.Init.Prescaler =
         calc_prescaler(SystemCoreClock, GRIPPER_ENCODER_SPEED_TIMER_FREQ);
     htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -328,6 +332,7 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
  */
 static void DAC1_Init(void) {
     hdac1.Instance = DAC1;
+    hdac1.State = HAL_TIM_STATE_RESET;
     if (HAL_DAC_Init(&hdac1) != HAL_OK) {
         Error_Handler();
     }

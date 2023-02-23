@@ -4,7 +4,7 @@ TIM_HandleTypeDef htim7;
 
 static void TIM7_Base_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
-
+    htim7.State = HAL_TIM_STATE_RESET;
     htim7.Instance = TIM7;
     /*
      * Setting counter clock frequency to 100 kHz
@@ -27,6 +27,7 @@ static void TIM7_Base_Init(void) {
 
 SPI_HandleTypeDef hspi2 = {
     .Instance = SPI2,
+    .State = HAL_TIM_STATE_RESET,
     .Init = {.Mode = SPI_MODE_MASTER,
              .Direction = SPI_DIRECTION_2LINES,
              .DataSize = SPI_DATASIZE_8BIT,
@@ -62,6 +63,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
 
 HAL_StatusTypeDef initialize_spi() {
     __HAL_RCC_SPI2_CLK_ENABLE();
+
     return HAL_SPI_Init(&hspi2);
 }
 
