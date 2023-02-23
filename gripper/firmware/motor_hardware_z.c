@@ -77,7 +77,7 @@ static void TIM8_EncoderZ_Init(void)
     HAL_TIM_Encoder_Start_IT(&htim8, TIM_CHANNEL_ALL);
 }
 #else
-static void MX_TIM8_Init(void);
+static void TIM8_EncoderZ_Init(void) {};
 #endif
 
 

@@ -134,6 +134,7 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
             PC6     ------> TIM8_CH1
             PC7     ------> TIM8_CH2
         */
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -187,6 +188,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
 
     }
+}
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
     if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
