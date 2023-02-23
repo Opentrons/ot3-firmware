@@ -3,6 +3,18 @@
 #include "platform_specific_hal_conf.h"
 #include "stm32g4xx_hal_gpio.h"
 
+#if PCBA_PRIMARY_REVISION == 'c'
+static uint16_t led_gpio_pin = GPIO_PIN_10;
+static uint16_t limit_sw_pin = GPIO_PIN_13;
+static GPIO_TypeDef* nsync_out_port = GPIOD;
+static uint16_t nsync_out_pin = GPIO_PIN_2;
+#else
+static uint16_t led_gpio_pin = GPIO_PIN_6;
+static uint16_t limit_sw_pin = GPIO_PIN_7;
+static GPIO_TypeDef* nsync_out_port = GPIOB;
+static uint16_t nsync_out_pin = GPIO_PIN_6;
+#endif
+
 /**
  * @brief Limit Switch GPIO Initialization Function
  * @param None
@@ -12,7 +24,7 @@ static void limit_switch_gpio_init(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /*Configure GPIO pin Gripper : PC7 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_7;
+    GPIO_InitStruct.Pin = limit_sw_pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -32,7 +44,7 @@ static void LED_drive_gpio_init(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     /*Configure GPIO pin : PC6 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    GPIO_InitStruct.Pin = led_gpio_pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -54,10 +66,10 @@ static void sync_drive_gpio_init() {
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /*Configure sync out GPIO pin : PB6*/
-    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    GPIO_InitStruct.Pin = nsync_out_pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+    HAL_GPIO_Init(nsync_out_port, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(nsync_out_port, nsync_out_pin, GPIO_PIN_SET);
 }
 
 static void estop_input_gpio_init() {
