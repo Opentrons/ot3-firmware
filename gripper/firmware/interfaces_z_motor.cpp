@@ -68,7 +68,6 @@ struct motion_controller::HardwareConfig motor_pins {
         .active_setting = GPIO_PIN_RESET}
 };
 
-
 /**
  * The motor hardware interface.
  */
@@ -155,7 +154,9 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
  * Timer callback.
  */
 extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
-extern "C" void call_enc_handler(int32_t direction) { motor_hardware_iface.encoder_overflow(direction); }
+extern "C" void call_enc_handler(int32_t direction) {
+    motor_hardware_iface.encoder_overflow(direction);
+}
 
 void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
