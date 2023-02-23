@@ -24,16 +24,15 @@ struct Echo : BinaryFormatMessage<MessageType::ECHO> {
     std::array<uint8_t, MAX_MESSAGE_SIZE> data;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> Echo {
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, Echo> {
         uint16_t type = 0;
         uint16_t len = 0;
         std::array<uint8_t, MAX_MESSAGE_SIZE> data{};
         body = bit_utils::bytes_to_int(body, limit, type);
         body = bit_utils::bytes_to_int(body, limit, len);
         if (body + len > limit) {
-            // we got something wrong from this figure out what we want to
-            // do in this situation
-            len = uint16_t(limit - body);
+            return std::monostate{};
         }
         len = std::min(static_cast<size_t>(len), data.size());
         std::copy_n(body, len, data.begin());
@@ -78,15 +77,14 @@ struct DeviceInfoRequest : BinaryFormatMessage<MessageType::DEVICE_INFO_REQ> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> DeviceInfoRequest {
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, DeviceInfoRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
         body = bit_utils::bytes_to_int(body, limit, len);
         if (len > 0) {
-            // we got something wrong from this figure out what we want to
-            // do in this situation
-            len = 0;
+            return std::monostate{};
         }
         return DeviceInfoRequest{.length = len};
     }
@@ -139,15 +137,13 @@ struct EnterBootlader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> EnterBootlader {
+    static auto parse(Input body, Limit limit) -> std::variant<std::monostate, EnterBootlader> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
         body = bit_utils::bytes_to_int(body, limit, len);
         if (len > 0) {
-            // we got something wrong from this figure out what we want to
-            // do in this situation
-            len = 0;
+            return std::monostate{};
         }
         return EnterBootlader{.length = len};
     }

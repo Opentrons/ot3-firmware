@@ -162,7 +162,7 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
         Buf + *Len);
     // if parse didn't return anything it means it was malformed so send an
     // ack_failed
-    if (message.index() == 0) {
+    if (std::get_if<std::monostate>(&message) != nullptr) {
         static_cast<void>(_top_task.get_queue().try_write_isr(
             rearpanel::messages::AckFailed{.length = 0}));
     } else {
