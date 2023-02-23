@@ -90,8 +90,6 @@ static void g_motor_gpio_init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                   &GPIO_InitStruct);
-
-
 }
 
 static void z_motor_gpio_init(void) {

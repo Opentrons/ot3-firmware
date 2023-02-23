@@ -1,6 +1,7 @@
 #include "motor_hardware.h"
 
 TIM_HandleTypeDef htim7;
+TIM_HandleTypeDef htim8;
 
 
 /** Simple time base for Z motor interrupt **/
@@ -25,6 +26,59 @@ static void TIM7_Base_Init(void) {
         Error_Handler();
     }
 }
+
+#if PCBA_PRIMARY_REVISION == 'c'
+/**
+  * @brief TIM8 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void TIM8_EncoderZ_Init(void)
+{
+    TIM_Encoder_InitTypeDef sConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    htim8.Instance = TIM8;
+    htim8.State = HAL_TIM_STATE_RESET;
+    htim8.Init.Prescaler = 0;
+    htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim8.Init.Period = UINT16_MAX;
+    htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim8.Init.RepetitionCounter = 0;
+    htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+    sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
+    sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
+    sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
+    sConfig.IC1Filter = 0;
+    sConfig.IC2Polarity = TIM_ICPOLARITY_FALLING;
+    sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
+    sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
+    sConfig.IC2Filter = 0;
+    if (HAL_TIM_Encoder_Init(&htim8, &sConfig) != HAL_OK) {
+        Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    /* Reset counter */
+    __HAL_TIM_SET_COUNTER(&htim8, 0);
+    /* Clear interrupt flag bit */
+    __HAL_TIM_CLEAR_FLAG(&htim8, TIM_FLAG_UPDATE);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim8, TIM_IT_UPDATE);
+    /* Set update event request source as: counter overflow */
+    __HAL_TIM_URS_ENABLE(&htim8);
+    /* Enable encoder interface */
+    HAL_TIM_Encoder_Start_IT(&htim8, TIM_CHANNEL_ALL);
+}
+#else
+static void MX_TIM8_Init(void);
+#endif
 
 
 /** SPI for configuring Z motor driver **/
@@ -101,4 +155,5 @@ HAL_StatusTypeDef initialize_spi() {
 
 void initialize_hardware_z() {
     TIM7_Base_Init();
+    TIM8_EncoderZ_Init();
 }
