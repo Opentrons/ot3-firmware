@@ -13,14 +13,18 @@ SCENARIO("message deserializing works") {
         auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x00};
         WHEN("constructed") {
             auto r = DeviceInfoRequest::parse(arr.begin(), arr.end());
+            REQUIRE(r.index() != 0);
+            auto msg_ptr = std::get_if<DeviceInfoRequest>(&r);
+            REQUIRE(msg_ptr != 0);
+            auto msg = *msg_ptr;
             THEN("it is converted to a the correct structure") {
-                REQUIRE(r.length == 0x0000);
+                REQUIRE(msg.length == 0x0000);
             }
             THEN("it can be compared for equality") {
-                auto other = r;
-                REQUIRE(other == r);
+                auto other = msg;
+                REQUIRE(other == msg);
                 other.length = 10;
-                REQUIRE(other != r);
+                REQUIRE(other != msg);
             }
         }
     }
@@ -99,6 +103,53 @@ SCENARIO("message serializing works") {
             }
             THEN("size must be returned") {
                 REQUIRE(next_free == arr.begin() + 24);
+            }
+        }
+    }
+}
+
+SCENARIO("message parsing") {
+    GIVEN("a valid message id body") {
+        auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x00};
+        WHEN("constructed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                rearpanel::messages::MessageType(0x0003), arr.begin(),
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                arr.end());
+            THEN("monostate is not returned") { REQUIRE(message.index() != 0); }
+            THEN("DeviceInfoRequest is returned") {
+                auto typed =
+                    std::get_if<rearpanel::messages::DeviceInfoRequest>(
+                        &message);
+                REQUIRE(typed != 0);
+            }
+        }
+    }
+    GIVEN("a invalid message length") {
+        auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x0A};
+        WHEN("constructed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                rearpanel::messages::MessageType(0x0003), arr.begin(),
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                arr.end());
+            THEN("monostate is returned") {
+                REQUIRE(message.index() == 0);
+                auto typed = std::get_if<std::monostate>(&message);
+                REQUIRE(typed != 0);
+            }
+        }
+    }
+    GIVEN("a invalid message id body") {
+        auto arr = std::array<uint8_t, 4>{0xAB, 0xCD, 0x00, 0x00};
+        WHEN("constructed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                rearpanel::messages::MessageType(0xABCD), arr.begin(),
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                arr.end());
+            THEN("monostate is returned") {
+                REQUIRE(message.index() == 0);
+                auto typed = std::get_if<std::monostate>(&message);
+                REQUIRE(typed != 0);
             }
         }
     }
