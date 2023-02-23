@@ -16,6 +16,7 @@ SUBSYSTEMS = [
     "pipettes-single",
     "pipettes-multi",
     "pipettes-96",
+    "rear-panel",
 ]
 
 def find_files(hexdir):
