@@ -3,14 +3,18 @@
 
 
 static motor_interrupt_callback timer_callback = NULL;
+static z_encoder_overflow_callback z_enc_overflow_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
 static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
     NULL;
 
 
-void set_z_motor_timer_callback(motor_interrupt_callback callback) {
+void set_z_motor_timer_callback(
+        motor_interrupt_callback callback,
+        z_encoder_overflow_callback enc_callback) {
     timer_callback = callback;
+    z_enc_overflow_callback = enc_callback;
 }
 
 void set_brushed_motor_timer_callback(
@@ -138,14 +142,8 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
         /* TIM8 interrupt Init */
-        HAL_NVIC_SetPriority(TIM8_BRK_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(TIM8_BRK_IRQn);
-        HAL_NVIC_SetPriority(TIM8_UP_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(TIM8_UP_IRQn, 7, 0);
         HAL_NVIC_EnableIRQ(TIM8_UP_IRQn);
-        HAL_NVIC_SetPriority(TIM8_TRG_COM_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(TIM8_TRG_COM_IRQn);
-        HAL_NVIC_SetPriority(TIM8_CC_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(TIM8_CC_IRQn);
     }
 }
 
@@ -161,10 +159,7 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef *htim) {
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1);
     } else if (htim == &htim8) {
         __HAL_RCC_TIM8_CLK_DISABLE();
-        HAL_NVIC_DisableIRQ(TIM8_BRK_IRQn);
         HAL_NVIC_DisableIRQ(TIM8_UP_IRQn);
-        HAL_NVIC_DisableIRQ(TIM8_TRG_COM_IRQn);
-        HAL_NVIC_DisableIRQ(TIM8_CC_IRQn);
         HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6|GPIO_PIN_7);
     }
 }
@@ -186,8 +181,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     } else if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
         gripper_enc_idle_state_overflow_callback(true);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+    } else if (htim == &htim8 && z_enc_overflow_callback) {
+        uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
+        z_enc_overflow_callback(direction ? -1 : 1);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+
     }
-}
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
     if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
