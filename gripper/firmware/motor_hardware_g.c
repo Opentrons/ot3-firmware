@@ -48,8 +48,8 @@ static void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (htim->Instance == TIM1) {
         __HAL_RCC_GPIOC_CLK_ENABLE();
-        /**TIM1 GPIO Configuration
-        PC0     ------> TIM1_CH1
+        /** TIM1 GPIO Configuration
+            PC0     ------> TIM1_CH1
         */
         GPIO_InitStruct.Pin = GPIO_PIN_0;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -59,8 +59,8 @@ static void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     } else if (htim->Instance == TIM3) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
-        /**TIM3 GPIO Configuration
-        PA6     ------> TIM3_CH1
+        /** TIM3 GPIO Configuration
+            PA6     ------> TIM3_CH1
         */
         GPIO_InitStruct.Pin = GPIO_PIN_6;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -315,13 +315,46 @@ void TIM4_EncoderGSpeed_Init(void) {
     HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
 }
 
+/**
+  * @brief  Initializes the TIM Encoder Interface MSP.
+  * @param  htim TIM Encoder Interface handle
+  * @retval None
+  */
 void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
     if (htim == &htim2) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM2_CLK_ENABLE();
+
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
+        /* Encoder G Axis GPIO Configuration
+            PA0     ------> CHANNEL A
+            PA1     ------> CHANNEL B
+            PA5    ------> CHANNEL I (UNUSED)
+        */
+        GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
         /* TIM2 interrupt Init */
         HAL_NVIC_SetPriority(TIM2_IRQn, 7, 0);
         HAL_NVIC_EnableIRQ(TIM2_IRQn);
+    }
+}
+
+/**
+  * @brief  DeInitializes TIM Encoder Interface MSP.
+  * @param  htim TIM Encoder Interface handle
+  * @retval None
+  */
+void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef *htim) {
+    if (htim == &htim2) {
+        __HAL_RCC_TIM2_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(TIM2_IRQn);
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1);
     }
 }
 

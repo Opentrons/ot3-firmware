@@ -22,25 +22,12 @@ void set_brushed_motor_timer_callback(
     gripper_enc_idle_state_overflow_callback = g_enc_idle_callback;
 }
 
-void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base) {
-    if (htim_base->Instance == TIM1) {
-        /* Peripheral clock disable */
-        __HAL_RCC_TIM1_CLK_DISABLE();
-        /* TIM1 interrupt DeInit */
-        HAL_NVIC_DisableIRQ(TIM1_UP_TIM16_IRQn);
-        HAL_NVIC_DisableIRQ(TIM1_CC_IRQn);
-    } else if (htim_base->Instance == TIM3) {
-        /* Peripheral clock disable */
-        __HAL_RCC_TIM3_CLK_DISABLE();
-        /* TIM3 interrupt DeInit */
-        HAL_NVIC_DisableIRQ(TIM3_IRQn);
-    } else if (htim_base->Instance == TIM4) {
-        /* Peripheral clock disable */
-        __HAL_RCC_TIM4_CLK_DISABLE();
-    }
-}
 
-
+/**
+  * @brief  Initializes the TIM Base MSP.
+  * @param  htim TIM Base handle
+  * @retval None
+  */
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
     if (htim == &htim7) {
         /* Peripheral clock enable */
@@ -48,6 +35,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
         /* TIM7 interrupt Init */
         HAL_NVIC_SetPriority(TIM7_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM7_IRQn);
+
     } else if (htim == &htim1) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM1_CLK_ENABLE();
@@ -56,20 +44,56 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
         HAL_NVIC_EnableIRQ(TIM1_UP_TIM16_IRQn);
         HAL_NVIC_SetPriority(TIM1_CC_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
+        // GPIO init being handled in HAL_TIM_Base_MspPostInit
+
     } else if (htim == &htim3) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM3_CLK_ENABLE();
         /* TIM3 interrupt Init */
         HAL_NVIC_SetPriority(TIM3_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM3_IRQn);
+        // GPIO init being handled in HAL_TIM_Base_MspPostInit
+
     } else if (htim == &htim4) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM4_CLK_ENABLE();
         /* TIM4 interrupt Init */
         HAL_NVIC_SetPriority(TIM4_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM4_IRQn);
+
     }
 }
+
+
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base) {
+    if (htim_base->Instance == TIM7) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM7_CLK_DISABLE();
+        /* TIM7 interrupt DeInit */
+        HAL_NVIC_DisableIRQ(TIM7_IRQn);
+
+    } else if (htim_base->Instance == TIM1) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM1_CLK_DISABLE();
+        /* TIM1 interrupt DeInit */
+        HAL_NVIC_DisableIRQ(TIM1_UP_TIM16_IRQn);
+        HAL_NVIC_DisableIRQ(TIM1_CC_IRQn);
+        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_0);
+
+    } else if (htim_base->Instance == TIM3) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM3_CLK_DISABLE();
+        /* TIM3 interrupt DeInit */
+        HAL_NVIC_DisableIRQ(TIM3_IRQn);
+        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6);
+
+    } else if (htim_base->Instance == TIM4) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM4_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(TIM4_IRQn);
+    }
+}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // Check which version of the timer triggered this callback

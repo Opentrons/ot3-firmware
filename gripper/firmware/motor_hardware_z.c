@@ -2,6 +2,8 @@
 
 TIM_HandleTypeDef htim7;
 
+
+/** Simple time base for Z motor interrupt **/
 static void TIM7_Base_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     htim7.State = HAL_TIM_STATE_RESET;
@@ -25,6 +27,7 @@ static void TIM7_Base_Init(void) {
 }
 
 
+/** SPI for configuring Z motor driver **/
 SPI_HandleTypeDef hspi2 = {
     .Instance = SPI2,
     .State = HAL_SPI_STATE_RESET,
@@ -45,8 +48,38 @@ SPI_HandleTypeDef hspi2 = {
 };
 
 /**
+* @brief  Initialize the SPI MSP.
+* @param  hspi pointer to a SPI_HandleTypeDef structure that contains
+*         the configuration information for SPI module.
+* @retval None
+*/
+void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
+    if (hspi->Instance == SPI2) {
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
+        /* Peripheral clock enable */
+        __HAL_RCC_SPI2_CLK_ENABLE();
+        /* SPI2 GPIO Configuration
+        PB12  ------> SPI2_CS
+        PB13  ------> SPI2_SCK
+        PB14  ------> SPI2_MISO
+        PB15  ------> SPI2_MOSI
+        */
+        GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = GPIO_PIN_12;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    }
+}
+
+/**
  * @brief SPI MSP De-Initialization
- * This function freeze the hardware resources used in this example
  * @param hspi: SPI handle pointer
  * @retval None
  */
@@ -55,15 +88,13 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi) {
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 |
-                                   GPIO_PIN_15 | GPIO_PIN_1 | GPIO_PIN_10);
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9);
+                                   GPIO_PIN_15);
     }
 }
 
 
 HAL_StatusTypeDef initialize_spi() {
     __HAL_RCC_SPI2_CLK_ENABLE();
-
     return HAL_SPI_Init(&hspi2);
 }
 
