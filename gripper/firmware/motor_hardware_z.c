@@ -27,7 +27,7 @@ static void TIM7_Base_Init(void) {
 
 SPI_HandleTypeDef hspi2 = {
     .Instance = SPI2,
-    .State = HAL_TIM_STATE_RESET,
+    .State = HAL_SPI_STATE_RESET,
     .Init = {.Mode = SPI_MODE_MASTER,
              .Direction = SPI_DIRECTION_2LINES,
              .DataSize = SPI_DATASIZE_8BIT,

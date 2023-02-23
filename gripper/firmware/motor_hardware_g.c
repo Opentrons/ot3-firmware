@@ -332,7 +332,7 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
  */
 static void DAC1_Init(void) {
     hdac1.Instance = DAC1;
-    hdac1.State = HAL_TIM_STATE_RESET;
+    hdac1.State = HAL_DAC_STATE_RESET;
     if (HAL_DAC_Init(&hdac1) != HAL_OK) {
         Error_Handler();
     }
