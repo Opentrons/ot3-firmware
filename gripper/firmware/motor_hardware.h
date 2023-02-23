@@ -53,9 +53,6 @@ void set_brushed_motor_timer_callback(
     encoder_overflow_callback g_enc_f_callback,
     encoder_idle_state_callback g_enc_idle_callback);
 
-uint32_t round_closest(uint32_t dividend, uint32_t divisor);
-uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -9,6 +9,7 @@
  * @retval None
  */
 static void limit_switch_gpio_init(void) {
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     /*Configure GPIO pin Gripper : PC7 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_7;
@@ -28,6 +29,7 @@ static void limit_switch_gpio_init(void) {
  * @retval None
  */
 static void LED_drive_gpio_init(void) {
+    __HAL_RCC_GPIOC_CLK_ENABLE();
     /*Configure GPIO pin : PC6 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_6;
@@ -43,6 +45,7 @@ static void LED_drive_gpio_init(void) {
  * @retval None
  */
 static void sync_drive_gpio_init() {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /*Configure sync in GPIO pin : PB7*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_7;
@@ -58,6 +61,7 @@ static void sync_drive_gpio_init() {
 }
 
 static void estop_input_gpio_init() {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     /*Configure GPIO pin EStopin : PA10 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_10;
@@ -67,6 +71,7 @@ static void estop_input_gpio_init() {
 }
 
 static void tool_detect_gpio_init(void) {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -76,6 +81,8 @@ static void tool_detect_gpio_init(void) {
 
 
 static void g_motor_gpio_init(void) {
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     /* enable pin GPIO: C11 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_11;
@@ -100,6 +107,8 @@ static void g_motor_gpio_init(void) {
 }
 
 static void z_motor_gpio_init(void) {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     /* Peripheral clock enable */
     __HAL_RCC_SPI2_CLK_ENABLE();
@@ -148,10 +157,7 @@ static void z_motor_gpio_init(void) {
 
 void utility_gpio_init(void) {
     /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOF_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
 
     limit_switch_gpio_init();
     LED_drive_gpio_init();

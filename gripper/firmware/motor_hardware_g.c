@@ -14,11 +14,11 @@ TIM_OC_InitTypeDef htim1_sConfigOC = {0};
 TIM_OC_InitTypeDef htim3_sConfigOC = {0};
 
 
-uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
+static uint32_t round_closest(uint32_t dividend, uint32_t divisor) {
     return (dividend + (divisor / 2)) / divisor;
 }
 
-uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
+static uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
     return timer_clk_freq >= counter_clk_freq
                ? round_closest(timer_clk_freq, counter_clk_freq) - 1U
                : 0U;
