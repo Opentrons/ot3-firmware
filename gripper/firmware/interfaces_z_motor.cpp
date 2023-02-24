@@ -1,6 +1,7 @@
 
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
+#include "gripper/core/utils.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
@@ -72,7 +73,7 @@ struct motion_controller::HardwareConfig motor_pins {
  * The motor hardware interface.
  */
 #if PCBA_PRIMARY_REVISION == 'c'
-static constexpr void* enc_handle = &htim7;
+static constexpr void* enc_handle = &htim8;
 #else
 static void* enc_handle = nullptr;
 #endif
@@ -121,16 +122,33 @@ static freertos_message_queue::FreeRTOSMessageQueue<
     can::messages::UpdateMotorPositionEstimationRequest>
     update_position_queue("Position Queue");
 
+#if PCBA_PRIMARY_REVISION == 'c'
+static constexpr float encoder_pulses = 1024.0;
+#else
+static constexpr float encoder_pulses = 0.0;
+#endif
+
+static lms::LinearMotionSystemConfig<lms::LeadScrewConfig> linear_config{
+    .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12,
+                                        .gear_reduction_ratio = 1.8},
+    .steps_per_rev = 200,
+    .microstep = 32,
+    .encoder_pulses_per_rev = encoder_pulses};
+
+#if PCBA_PRIMARY_REVISION == 'c'
+static auto stallcheck = stall_check::StallCheck(
+        linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+        linear_config.get_usteps_per_mm() / 1000.0F,
+        utils::STALL_THRESHOLD_UM);
+#else
+static auto stallcheck = stall_check::StallCheck(0, 0, 0);
+#endif
+
 /**
  * The motor struct.
  */
 static motor_class::Motor z_motor{
-    lms::LinearMotionSystemConfig<lms::LeadScrewConfig>{
-        .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12,
-                                            .gear_reduction_ratio = 1.8},
-        .steps_per_rev = 200,
-        .microstep = 32,
-        .encoder_pulses_per_rev = 0},
+    linear_config,
     motor_hardware_iface,
     motor_messages::MotionConstraints{.min_velocity = 1,
                                       .max_velocity = 2,
@@ -140,8 +158,6 @@ static motor_class::Motor z_motor{
     update_position_queue,
     true};
 
-// There is no encoder so the ratio doesn't matter
-static stall_check::StallCheck stallcheck(0, 0, 0);
 
 /**
  * Handler of motor interrupts.

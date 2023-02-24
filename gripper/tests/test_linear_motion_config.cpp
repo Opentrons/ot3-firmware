@@ -8,10 +8,11 @@ TEST_CASE("Linear motion system using a leadscrew and gears") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
             .mech_config = LeadScrewConfig{.lead_screw_pitch = 12,
                                            .gear_reduction_ratio = 1.8},
-            .steps_per_rev = 200, .microstep = 16, .encoder_pulses_per_rev = 0,
+            .steps_per_rev = 200, .microstep = 16,
+            .encoder_pulses_per_rev = 1024.0,
         };
         REQUIRE(linearConfig.get_usteps_per_mm() == 479.99997f);
-        REQUIRE(linearConfig.get_encoder_pulses_per_mm() == 0.0);
+        REQUIRE(linearConfig.get_encoder_pulses_per_mm() == 614.39996f);
     }
 }
 
