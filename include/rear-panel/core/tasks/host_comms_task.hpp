@@ -112,7 +112,7 @@ class HostCommMessageHandler {
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&
         std::sized_sentinel_for<InputLimit, InputIt>
-    auto visit_message(rearpanel::messages::EnterBootlader &msg,
+    auto visit_message(rearpanel::messages::EnterBootloader &msg,
                        InputIt tx_into, InputLimit tx_limit) -> InputIt {
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_system_queue(msg);
