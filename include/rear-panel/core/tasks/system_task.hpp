@@ -35,7 +35,7 @@ class SystemMessageHandler {
   private:
     static void handle(std::monostate&) {}
 
-    static void handle(rearpanel::messages::EnterBootlader&) {
+    static void handle(rearpanel::messages::EnterBootloader&) {
         system_hardware_enter_bootloader();
         // above function does not return
     }

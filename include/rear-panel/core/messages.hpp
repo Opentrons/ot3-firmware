@@ -133,12 +133,12 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
-struct EnterBootlader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
+struct EnterBootloader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit)
-        -> std::variant<std::monostate, EnterBootlader> {
+        -> std::variant<std::monostate, EnterBootloader> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
@@ -146,10 +146,10 @@ struct EnterBootlader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
         if (len > 0) {
             return std::monostate{};
         }
-        return EnterBootlader{.length = len};
+        return EnterBootloader{.length = len};
     }
 
-    auto operator==(const EnterBootlader& other) const -> bool = default;
+    auto operator==(const EnterBootloader& other) const -> bool = default;
 };
 
 struct EnterBootloaderResponse
@@ -171,12 +171,12 @@ struct EnterBootloaderResponse
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
-                 EnterBootlader, EnterBootloaderResponse>;
+                 EnterBootloader, EnterBootloaderResponse>;
 
-using SystemTaskMessage = std::variant<std::monostate, EnterBootlader>;
+using SystemTaskMessage = std::variant<std::monostate, EnterBootloader>;
 
 static auto rear_panel_parser =
-    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootlader>{};
+    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader>{};
 
 };  // namespace messages
 };  // namespace rearpanel
