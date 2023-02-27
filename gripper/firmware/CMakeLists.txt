@@ -28,8 +28,9 @@ set(GRIPPER_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_timer_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_g.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_z.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_shared.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
@@ -40,13 +41,11 @@ set(GRIPPER_SRCS_A1
         ${GRIPPER_FW_LINTABLE_SRCS}
         ${GRIPPER_FW_NON_LINTABLE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/main_proto.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware_proto.c
- )
+        )
 set(GRIPPER_SRCS_B1
         ${GRIPPER_FW_LINTABLE_SRCS}
         ${GRIPPER_FW_NON_LINTABLE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/motor_encoder_hardware_rev1.c
 )
 set(GRIPPER_SRCS_C1 ${GRIPPER_SRCS_B1})
 
