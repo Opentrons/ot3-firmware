@@ -7,4 +7,14 @@ typedef enum Type {
     THREE_EIGHTY_FOUR_CHANNEL
 } PipetteType;
 
+
+#ifdef PIPETTE_TYPE_DEFINE
+
 static inline PipetteType get_pipette_type() { return PIPETTE_TYPE_DEFINE; }
+
+#else
+
+static inline PipetteType get_pipette_type() { return SINGLE_CHANNEL; }
+#endif  // pipette type define
+
+
