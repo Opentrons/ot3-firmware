@@ -26,12 +26,12 @@
 #include "head/core/queues.hpp"
 #include "head/core/tasks_rev1.hpp"
 #include "head/core/utils.hpp"
-#include "head/firmware/head_motor_hardware.hpp"
 #include "head/firmware/presence_sensing_hardware.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
@@ -80,7 +80,7 @@ static constexpr int direction_active_level = GPIO_PIN_RESET;
 static constexpr int direction_active_level = GPIO_PIN_SET;
 #endif
 
-struct head_motor_hardware::HardwareConfig pin_configurations_left {
+struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -118,14 +118,15 @@ struct head_motor_hardware::HardwareConfig pin_configurations_left {
             .port = GPIOB,
             .pin = GPIO_PIN_4,
             .active_setting = GPIO_PIN_RESET},
-    .ebrake = {
+    .ebrake = gpio::PinConfig{
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_5,
         .active_setting = GPIO_PIN_RESET}
 };
 
-struct head_motor_hardware::HardwareConfig pin_configurations_right {
+
+struct motor_hardware::HardwareConfig pin_configurations_right {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -163,7 +164,7 @@ struct head_motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOB,
             .pin = GPIO_PIN_4,
             .active_setting = GPIO_PIN_RESET},
-    .ebrake = {
+    .ebrake = gpio::PinConfig{
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_0,
@@ -249,7 +250,7 @@ static stall_check::StallCheck stallcheck_right(
  * should be made to avoid a pretty gross template signature.
  */
 
-static head_motor_hardware::MotorHardware motor_hardware_right(
+static motor_hardware::MotorHardware motor_hardware_right(
     pin_configurations_right, &htim7, &htim2);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
@@ -271,7 +272,7 @@ static stall_check::StallCheck stallcheck_left(
     linear_config.get_encoder_pulses_per_mm() / 1000.0F,
     linear_config.get_usteps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
-static head_motor_hardware::MotorHardware motor_hardware_left(
+static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7, &htim3);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,

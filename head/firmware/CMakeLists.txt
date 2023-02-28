@@ -22,7 +22,6 @@ set(DEFAULT_REVISION c2)
 set(HEAD_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/presence_sensing_hardware.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/head_motor_hardware.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${CAN_FW_DIR}/hal_can.c
         ${CAN_FW_DIR}/hal_can_bus.cpp

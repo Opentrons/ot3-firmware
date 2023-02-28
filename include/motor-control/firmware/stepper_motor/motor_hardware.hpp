@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <optional>
 
 #include "common/core/debounce.hpp"
 #include "common/firmware/gpio.hpp"
@@ -17,6 +18,7 @@ struct HardwareConfig {
     gpio::PinConfig led;
     gpio::PinConfig sync_in;
     gpio::PinConfig estop_in;
+    std::optional<gpio::PinConfig> ebrake = std::nullopt;
 };
 
 class MotorHardware : public StepperMotorHardwareIface {

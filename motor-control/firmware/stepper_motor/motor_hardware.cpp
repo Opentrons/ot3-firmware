@@ -12,8 +12,16 @@ void MotorHardware::unstep() { gpio::reset(pins.step); }
 
 void MotorHardware::positive_direction() { gpio::set(pins.direction); }
 void MotorHardware::negative_direction() { gpio::reset(pins.direction); }
-void MotorHardware::activate_motor() { gpio::set(pins.enable); }
-void MotorHardware::deactivate_motor() { gpio::reset(pins.enable); }
+void MotorHardware::activate_motor() { 
+    if (pins.ebrake.has_value()) {
+        gpio::reset(pins.ebrake.value());
+    }
+    gpio::set(pins.enable); }
+void MotorHardware::deactivate_motor() {
+    if (pins.ebrake.has_value()) {
+        gpio::set(pins.ebrake.value());
+    }
+    gpio::reset(pins.enable); }
 void MotorHardware::start_timer_interrupt() {
     LOG("Starting timer interrupt")
     motor_hardware_start_timer(tim_handle);
