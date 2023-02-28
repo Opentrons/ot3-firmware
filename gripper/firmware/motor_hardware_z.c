@@ -27,7 +27,6 @@ static void TIM7_Base_Init(void) {
     }
 }
 
-#if PCBA_PRIMARY_REVISION == 'c'
 /**
   * @brief TIM8 Initialization Function
   * @param None
@@ -76,9 +75,7 @@ static void TIM8_EncoderZ_Init(void)
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim8, TIM_CHANNEL_ALL);
 }
-#else
-static void TIM8_EncoderZ_Init(void) {};
-#endif
+
 
 
 /** SPI for configuring Z motor driver **/
@@ -155,5 +152,7 @@ HAL_StatusTypeDef initialize_spi() {
 
 void initialize_hardware_z() {
     TIM7_Base_Init();
-    TIM8_EncoderZ_Init();
+    #if PCBA_PRIMARY_REVISION == 'b' && PCBA_PRIMARY_REVISION != 'a'
+        TIM8_EncoderZ_Init();
+    #endif
 }

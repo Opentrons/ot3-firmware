@@ -3,16 +3,16 @@
 #include "platform_specific_hal_conf.h"
 #include "stm32g4xx_hal_gpio.h"
 
-#if PCBA_PRIMARY_REVISION == 'c'
-static uint16_t led_gpio_pin = GPIO_PIN_10;
-static uint16_t z_limit_sw_pin = GPIO_PIN_13;
-static GPIO_TypeDef* nsync_out_port = GPIOD;
-static uint16_t nsync_out_pin = GPIO_PIN_2;
-#else
+#if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
 static uint16_t led_gpio_pin = GPIO_PIN_6;
 static uint16_t z_limit_sw_pin = GPIO_PIN_7;
 static GPIO_TypeDef* nsync_out_port = GPIOB;
 static uint16_t nsync_out_pin = GPIO_PIN_6;
+#else
+static uint16_t led_gpio_pin = GPIO_PIN_10;
+static uint16_t z_limit_sw_pin = GPIO_PIN_13;
+static GPIO_TypeDef* nsync_out_port = GPIOD;
+static uint16_t nsync_out_pin = GPIO_PIN_2;
 #endif
 
 /**
