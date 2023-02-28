@@ -32,7 +32,7 @@ static void TIM7_Base_Init(void) {
   * @param None
   * @retval None
   */
-static void TIM8_EncoderZ_Init(void)
+inline static void TIM8_EncoderZ_Init(void)
 {
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
