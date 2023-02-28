@@ -220,4 +220,3 @@ enum class MoveStopCondition {
 };
 
 }  // namespace can::ids
-
