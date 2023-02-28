@@ -21,4 +21,16 @@ TEST_CASE("Linear motion system using a leadscrew") {
             REQUIRE(linearConfig.get_um_per_step() == 0.3125);
         }
     }
+
+    GIVEN("Linear motion system without an encoder") {
+        struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
+            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2,
+                                           .gear_reduction_ratio = 1.0},
+            .steps_per_rev = 200, .microstep = 32,
+            .encoder_pulses_per_rev = 0.0,
+        };
+        THEN("the um/pulse calculation should be zero") {
+            REQUIRE(linearConfig.get_encoder_um_per_pulse() == 0.0);
+        }
+    }
 }
