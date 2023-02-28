@@ -136,9 +136,8 @@ static lms::LinearMotionSystemConfig<lms::LeadScrewConfig> linear_config{
 static auto stallcheck = stall_check::StallCheck(0, 0, 0);
 #else
 static auto stallcheck = stall_check::StallCheck(
-        linear_config.get_encoder_pulses_per_mm() / 1000.0F,
-        linear_config.get_usteps_per_mm() / 1000.0F,
-        utils::STALL_THRESHOLD_UM);
+    linear_config.get_encoder_pulses_per_mm() / 1000.0F,
+    linear_config.get_usteps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 #endif
 
 /**
@@ -154,7 +153,6 @@ static motor_class::Motor z_motor{
     motor_queue,
     update_position_queue,
     true};
-
 
 /**
  * Handler of motor interrupts.
