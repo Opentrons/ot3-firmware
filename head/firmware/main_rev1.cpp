@@ -118,13 +118,11 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
             .port = GPIOB,
             .pin = GPIO_PIN_4,
             .active_setting = GPIO_PIN_RESET},
-    .ebrake = gpio::PinConfig{
+    .ebrake = gpio::PinConfig {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_5,
-        .active_setting = GPIO_PIN_RESET}
+        .port = GPIOB, .pin = GPIO_PIN_5, .active_setting = GPIO_PIN_RESET
+    }
 };
-
 
 struct motor_hardware::HardwareConfig pin_configurations_right {
     .direction =
@@ -164,11 +162,10 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
             .port = GPIOB,
             .pin = GPIO_PIN_4,
             .active_setting = GPIO_PIN_RESET},
-    .ebrake = gpio::PinConfig{
+    .ebrake = gpio::PinConfig {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_0,
-        .active_setting = GPIO_PIN_RESET}
+        .port = GPIOB, .pin = GPIO_PIN_0, .active_setting = GPIO_PIN_RESET
+    }
 };
 
 // TODO clean up the head main file by using interfaces.
