@@ -239,21 +239,33 @@ class MotorInterruptHandler {
     }
 
     void update_move() {
-        has_active_move = move_queue.try_read_isr(&buffered_move);
-        if (set_direction_pin()) {
-            hardware.positive_direction();
+        if (clear_queue_until_empty) {
+            clear_queue_until_empty = pop_and_discard_move();
         } else {
-            hardware.negative_direction();
+            has_active_move = move_queue.try_read_isr(&buffered_move);
+            if (set_direction_pin()) {
+                hardware.positive_direction();
+            } else {
+                hardware.negative_direction();
+            }
+            if (has_active_move && buffered_move.stop_condition ==
+                                       MoveStopCondition::limit_switch) {
+                position_tracker = 0x7FFFFFFFFFFFFFFF;
+                update_hardware_step_tracker();
+            }
         }
-        if (has_active_move &&
-            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
-            position_tracker = 0x7FFFFFFFFFFFFFFF;
-            update_hardware_step_tracker();
-        }
-        // (TODO: lc) We should check the direction (and set respectively)
-        // the direction pin for the motor once a move is being pulled off the
-        // move_queue stack. We'll probably want to think about moving the
-        // hardware pin configurations out of motion controller.
+    }
+
+    /**
+     * @brief Pop the next message out of the motion queue and discard it.
+     *
+     * @return true if the queue still has another message, false if this
+     * was the last message in the queue.
+     */
+    auto pop_and_discard_move() -> bool {
+        auto scratch = MotorMoveMessage{};
+        std::ignore = move_queue.try_read_isr(&scratch);
+        return has_move_messages();
     }
 
     [[nodiscard]] auto set_direction_pin() const -> bool {
@@ -280,6 +292,13 @@ class MotorInterruptHandler {
         if (send_stop_msg) {
             status_queue_client.send_move_status_reporter_queue(
                 can::messages::StopRequest{.message_index = 0});
+        } else {
+            // Even if we don't emit a stop message, we have to make sure that
+            // other steps in the queue DO NOT execute. A stop message will
+            // clear the whole queue from an interrupt, but with this flag we
+            // will clear out the interrupt's queue without having to send
+            // more messages around the system.
+            clear_queue_until_empty = true;
         }
 
         // the queue will get reset during the stop message processing
@@ -445,5 +464,6 @@ class MotorInterruptHandler {
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
+    bool clear_queue_until_empty = false;
 };
 }  // namespace motor_handler
