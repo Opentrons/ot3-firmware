@@ -161,7 +161,7 @@ class SimBrushedMotorHardwareIface
 };
 
 class SimGearMotorHardwareIface
-    : public motor_hardware::PipetteStepperMotorHardwareIface {
+    : public motor_hardware::StepperMotorHardwareIface {
   public:
     void step() final {
         test_pulses += (_direction == Direction::POSITIVE) ? 1 : -1;
@@ -180,17 +180,9 @@ class SimGearMotorHardwareIface
         }
         return false;
     }
-    bool check_tip_sense() final {
-        if (tip_sense_status) {
-            tip_sense_status = false;
-            return true;
-        }
-        return false;
-    }
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
-    void read_tip_sense() final {}
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
