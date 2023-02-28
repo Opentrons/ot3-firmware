@@ -72,11 +72,14 @@ struct motion_controller::HardwareConfig motor_pins {
 /**
  * The motor hardware interface.
  */
-#if PCBA_PRIMARY_REVISION == 'c'
-static constexpr void* enc_handle = &htim8;
-#else
+#if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
 static void* enc_handle = nullptr;
+static constexpr float encoder_pulses = 0.0;
+#else
+static constexpr void* enc_handle = &htim8;
+static constexpr float encoder_pulses = 1024.0;
 #endif
+
 static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
                                                           enc_handle);
 
@@ -122,12 +125,6 @@ static freertos_message_queue::FreeRTOSMessageQueue<
     can::messages::UpdateMotorPositionEstimationRequest>
     update_position_queue("Position Queue");
 
-#if PCBA_PRIMARY_REVISION == 'c'
-static constexpr float encoder_pulses = 1024.0;
-#else
-static constexpr float encoder_pulses = 0.0;
-#endif
-
 static lms::LinearMotionSystemConfig<lms::LeadScrewConfig> linear_config{
     .mech_config = lms::LeadScrewConfig{.lead_screw_pitch = 12,
                                         .gear_reduction_ratio = 1.8},
@@ -135,13 +132,13 @@ static lms::LinearMotionSystemConfig<lms::LeadScrewConfig> linear_config{
     .microstep = 32,
     .encoder_pulses_per_rev = encoder_pulses};
 
-#if PCBA_PRIMARY_REVISION == 'c'
+#if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
+static auto stallcheck = stall_check::StallCheck(0, 0, 0);
+#else
 static auto stallcheck = stall_check::StallCheck(
         linear_config.get_encoder_pulses_per_mm() / 1000.0F,
         linear_config.get_usteps_per_mm() / 1000.0F,
         utils::STALL_THRESHOLD_UM);
-#else
-static auto stallcheck = stall_check::StallCheck(0, 0, 0);
 #endif
 
 /**
