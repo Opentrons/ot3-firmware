@@ -17,8 +17,12 @@ concept Parsable = requires(std::array<uint8_t, 0> buffer) {
     /**
      * It has a static parse factory method.
      */
-    { T::parse(buffer.begin(), buffer.end()) } -> std::same_as<T>;
-    { T::parse(buffer.cbegin(), buffer.cend()) } -> std::same_as<T>;
+    {
+        T::parse(buffer.begin(), buffer.end())
+        } -> std::same_as<std::variant<std::monostate, T>>;
+    {
+        T::parse(buffer.cbegin(), buffer.cend())
+        } -> std::same_as<std::variant<std::monostate, T>>;
 };
 
 /**
@@ -48,7 +52,13 @@ class Parser {
              // If message type matches Parsable's type parse will build the
              // result.
              if (message_type == T::message_type) {
-                 result = T::parse(payload, limit);
+                 auto msg = T::parse(payload, limit);
+                 // if the message type is valid but the message failed
+                 // to parse don't change result
+                 auto result_ptr = std::get_if<T>(&msg);
+                 if (result_ptr != nullptr) {
+                     result = *result_ptr;
+                 }
              }
          })()),
          ...);

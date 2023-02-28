@@ -77,7 +77,6 @@ static void TIM8_EncoderZ_Init(void)
 }
 
 
-
 /** SPI for configuring Z motor driver **/
 SPI_HandleTypeDef hspi2 = {
     .Instance = SPI2,

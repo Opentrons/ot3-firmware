@@ -52,6 +52,9 @@ struct LinearMotionSystemConfig {
         return (encoder_pulses_per_rev * 4.0) / (mech_config.get_mm_per_rev());
     }
     [[nodiscard]] constexpr auto get_encoder_um_per_pulse() const -> float {
+        if (encoder_pulses_per_rev == 0.0) {
+            return 0.0;
+        }
         return (mech_config.get_mm_per_rev()) / (encoder_pulses_per_rev * 4.0) *
                1000.0;
     }

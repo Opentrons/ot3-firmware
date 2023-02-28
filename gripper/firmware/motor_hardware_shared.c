@@ -165,7 +165,6 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef *htim) {
     }
 }
 
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7 && timer_callback) {
@@ -182,11 +181,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     } else if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
         gripper_enc_idle_state_overflow_callback(true);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+        
     } else if (htim == &htim8 && z_enc_overflow_callback) {
         uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
         z_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
-
     }
 }
 

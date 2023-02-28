@@ -6,6 +6,7 @@ import json
 import argparse
 import subprocess
 import os
+from itertools import chain
 
 VERSION_REGEX = re.compile("v([0-9])")
 SUBSYSTEMS = [
@@ -17,6 +18,9 @@ SUBSYSTEMS = [
     "pipettes-multi",
     "pipettes-96",
 ]
+USB_SUBSYSTEMS = [
+    "rear-panel",
+]
 
 def find_files(hexdir):
     for direntry in os.scandir(hexdir):
@@ -25,13 +29,15 @@ def find_files(hexdir):
         nameparts = direntry.name.split('.')[0].split('-')
         revision = nameparts[-1]
         subsystem = '-'.join(nameparts[:-1])
-        if subsystem in SUBSYSTEMS:
+        if subsystem in SUBSYSTEMS or subsystem in USB_SUBSYSTEMS:
             yield (subsystem, revision, direntry.name)
         else:
             print(f'ignoring file {direntry.name}, not in subsystems', file=sys.stderr)
 
 def main(args):
     version_info = {}
+    usb_version_info = {}
+    usb_subsystems = args.usb_subsystem or USB_SUBSYSTEMS
     subsystems = args.subsystem or SUBSYSTEMS
     hexdir = args.hex_dir
     try:
@@ -44,7 +50,8 @@ def main(args):
         print(f"Could not get the version info {e}", file=sys.stderr)
         exit(1)
 
-    files = {k: {} for k in SUBSYSTEMS}
+    all_subsystems = chain(SUBSYSTEMS, USB_SUBSYSTEMS)
+    files = {k: {} for k in all_subsystems}
 
     for subsystem, revision, name in find_files(hexdir):
         files[subsystem][revision] = os.path.join(args.prefix, name)
@@ -62,8 +69,22 @@ def main(args):
             "branch": branch,
         }
 
+    for usb_subsystem in usb_subsystems:
+        if usb_subsystem not in USB_SUBSYSTEMS:
+            print(f"Unknown subsystem {subsystem}", file=sys.stderr)
+            continue
 
-    manifest = {'manifest_version': 1, 'subsystems': version_info}
+        # put the version_info together
+        usb_version_info[usb_subsystem] = {
+            "version": version,
+            "shortsha": shortsha,
+            "files_by_revision": files[usb_subsystem],
+            "branch": branch,
+        }
+
+
+
+    manifest = {'manifest_version': 2, 'subsystems': version_info, 'usb_subsystems': usb_version_info}
     json.dump(manifest, args.output)
 
     return version_info
@@ -73,6 +94,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creates a json file of the submodule version info.")
     parser.add_argument(
         "--subsystem",
+        nargs="*",
+        help="subsystem to generate file for; leave blank for all.",
+    )
+    parser.add_argument(
+        "--usb_subsystem",
         nargs="*",
         help="subsystem to generate file for; leave blank for all.",
     )

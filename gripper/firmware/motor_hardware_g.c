@@ -204,7 +204,7 @@ uint32_t ic2_polarity = TIM_ICPOLARITY_RISING;
 uint32_t ic2_polarity = TIM_ICPOLARITY_FALLING;
 #endif
 
-void TIM2_EncoderG_Init(void) {
+static void TIM2_EncoderG_Init(void) {
     TIM_Encoder_InitTypeDef sConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     __HAL_RCC_TIM2_CLK_ENABLE();
@@ -263,7 +263,7 @@ void TIM2_EncoderG_Init(void) {
  * movement below 333Hz, which is about 0.2184 mm/s
  * is rejected and that we can safely assume the encoder has stopped moving.
  **/
-void TIM4_EncoderGSpeed_Init(void) {
+static void TIM4_EncoderGSpeed_Init(void) {
     TIM_SlaveConfigTypeDef sSlaveConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_IC_InitTypeDef sConfigIC = {0};

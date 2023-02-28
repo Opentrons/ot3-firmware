@@ -1,3 +1,4 @@
+#include "can/core/ids.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -35,15 +36,39 @@ TEST_CASE("motor interrupt handler queue functionality") {
                 queue.try_write(msg4);
                 REQUIRE(queue.get_size() == 4);
                 REQUIRE(handler.has_move_messages() == true);
-            }
-        }
 
-        WHEN("moves have been issued") {
-            THEN("the step motor command should execute all of them") {
-                while (handler.has_move_messages()) {
-                    static_cast<void>(handler.run_interrupt());
+                WHEN("moves have been issued") {
+                    THEN("the step motor command should execute all of them") {
+                        while (handler.has_move_messages()) {
+                            static_cast<void>(handler.run_interrupt());
+                        }
+                        REQUIRE(handler.has_move_messages() == false);
+                    }
                 }
-                REQUIRE(handler.has_move_messages() == false);
+                WHEN("a movement stalls") {
+                    handler.run_interrupt();
+                    handler.cancel_and_clear_moves(
+                        can::ids::ErrorCode::hardware,
+                        can::ids::ErrorSeverity::warning, false);
+                    THEN("the other pending movements are cancelled") {
+                        REQUIRE(handler.has_move_messages());
+                        // There are 3 more messages to clear
+                        for (auto i = 0; i < 3; ++i) {
+                            handler.run_interrupt();
+                        }
+                        REQUIRE(!handler.has_move_messages());
+                        AND_WHEN("more moves are enqueued") {
+                            queue.try_write(msg1);
+                            queue.try_write(msg2);
+                            THEN("the move is executed normallly") {
+                                for (auto i = 0; i < 3; ++i) {
+                                    handler.run_interrupt();
+                                }
+                                REQUIRE(handler.has_move_messages());
+                            }
+                        }
+                    }
+                }
             }
         }
 
