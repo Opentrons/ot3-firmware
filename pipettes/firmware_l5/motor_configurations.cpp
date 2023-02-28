@@ -114,11 +114,6 @@ auto motor_configs::hardware_config_by_axis(TMC2130PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                .tip_sense =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                     .port = GPIOA,
-                     .pin = GPIO_PIN_10,
-                     .active_setting = GPIO_PIN_SET},
                 .estop_in = {
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOA,
@@ -213,10 +208,6 @@ auto motor_configs::hardware_config_by_axis(TMC2160PipetteAxis which)
                      .active_setting = GPIO_PIN_SET},
                 // LED PIN C11, active setting low
                 .led = {},
-                // tip sense will be checked on the two pipette
-                // tip pick up motors.
-                // TODO need to think further about force pick up of tips
-                .tip_sense = {},
                 .estop_in = {
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOA,
