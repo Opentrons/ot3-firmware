@@ -219,7 +219,8 @@ auto main() -> int {
     utility_gpio_init();
 
     delay_start(2);
-    auto id = pipette_mounts::decide_id(utility_gpio_get_mount_id() == 1);
+    auto id =
+        pipette_mounts::decide_id(utility_gpio_get_mount_id(PIPETTE_TYPE) == 1);
 
     i2c_setup(&i2chandler_struct);
     i2c_comms3.set_handle(i2chandler_struct.i2c3);

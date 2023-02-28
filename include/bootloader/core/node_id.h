@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "bootloader/core/ids.h"
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus

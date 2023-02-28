@@ -195,8 +195,7 @@ static void estop_input_gpio_init() {
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    }
-    else {
+    } else {
         __HAL_RCC_GPIOC_CLK_ENABLE();
         /*Configure GPIO pin EStopin : PC12*/
         GPIO_InitStruct.Pin = GPIO_PIN_12;
@@ -204,17 +203,27 @@ static void estop_input_gpio_init() {
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
-    
 }
 
 static void mount_id_init() {
-    // B0: mount id
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    PipetteType pipette_type = get_pipette_type();
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        // C3: mount id
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
+        GPIO_InitStruct.Pin = GPIO_PIN_3;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    } else {
+        // B0: mount id
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
+        GPIO_InitStruct.Pin = GPIO_PIN_0;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    }
 }
 
 void utility_gpio_init() {
@@ -228,14 +237,26 @@ void utility_gpio_init() {
     estop_input_gpio_init();
 }
 
-int utility_gpio_get_mount_id() {
+int utility_gpio_get_mount_id(PipetteType pipette_type) {
     // If this line is low, it is a left pipette (returns 1)
     // if this line is high, it is a right pipette (returns 0)
-    int level =  HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0);
+    int level = 0;
+
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, (level == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+    void* port;
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        port = GPIOC;
+        level = HAL_GPIO_ReadPin(port, GPIO_PIN_3);
+        GPIO_InitStruct.Pin = GPIO_PIN_3;
+        HAL_GPIO_Init(port, &GPIO_InitStruct);
+    } else {
+        port = GPIOB;
+        level =  HAL_GPIO_ReadPin(port, GPIO_PIN_0);
+        GPIO_InitStruct.Pin = GPIO_PIN_0;
+        HAL_GPIO_Init(port, &GPIO_InitStruct);
+    }
+
+    HAL_GPIO_WritePin(port, GPIO_InitStruct.Pin, (level == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET);
     return (level == GPIO_PIN_RESET) ? 1 : 0;
 }

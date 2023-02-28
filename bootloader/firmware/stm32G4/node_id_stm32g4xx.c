@@ -1,30 +1,43 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "bootloader/core/node_id.h"
+#include "bootloader/core/pipette_type.h"
 #include "stm32g4xx_hal.h"
 
 #if defined(node_id_pipette_dynamic)
-
 
 static CANNodeId dynamic_id_backing = can_nodeid_broadcast;
 
 
 static CANNodeId update_dynamic_nodeid() {
-    // B0: mount id
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    PipetteType pipette_type = get_pipette_type();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
+
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    void* port;
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        // C3: mount id
+        __HAL_RCC_GPIOC_CLK_ENABLE();
+        GPIO_InitStruct.Pin = GPIO_PIN_3;
+        port = GPIOC;
+    } else {
+        // B0: mount id
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        GPIO_InitStruct.Pin = GPIO_PIN_0;
+        port = GPIOB;
+    }
+
+    HAL_GPIO_Init(port, &GPIO_InitStruct);
     HAL_Delay(2);
-    int level = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0);
+    int level = HAL_GPIO_ReadPin(port, GPIO_InitStruct.Pin);
     CANNodeId id = determine_pipette_node_id(level == GPIO_PIN_RESET);
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_Init(port, &GPIO_InitStruct);
     HAL_GPIO_WritePin(
-        GPIOB,
-        GPIO_PIN_0,
+        port,
+        GPIO_InitStruct.Pin,
         ((level == GPIO_PIN_SET) ? GPIO_PIN_RESET : GPIO_PIN_SET));
     return id;
 }

@@ -99,18 +99,37 @@ foreach_revision(
     NO_CREATE_INSTALL_RULES
     )
 
-macro(pipettes_bootloader_loop)
-  target_link_libraries(${REVISION_TARGET}
-      PUBLIC STM32G491RETx_bootloader
-      STM32G4xx_Drivers_Bootloader
-      bootloader-core)
+macro(pipettes_single_bootloader_loop)
 
-  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_pipette_dynamic)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC PIPETTE_TYPE_DEFINE=SINGLE_CHANNEL node_id_pipette_dynamic)
+  
+  target_link_libraries(${REVISION_TARGET}
+    PUBLIC STM32G491RETx_bootloader
+    STM32G4xx_Drivers_Bootloader
+    bootloader-core)
+endmacro()
+
+macro(pipettes_multi_bootloader_loop)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC  PIPETTE_TYPE_DEFINE=EIGHT_CHANNEL node_id_pipette_dynamic)
+
+  target_link_libraries(${REVISION_TARGET}
+    PUBLIC STM32G491RETx_bootloader
+    STM32G4xx_Drivers_Bootloader
+    bootloader-core)
+endmacro()
+
+macro(pipettes_ninety_six_bootloader_loop)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC  PIPETTE_TYPE_DEFINE=NINETY_SIX_CHANNEL node_id_pipette_dynamic)
+
+  target_link_libraries(${REVISION_TARGET}
+    PUBLIC STM32G491RETx_bootloader
+    STM32G4xx_Drivers_Bootloader
+    bootloader-core)
 endmacro()
 
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-single
-    CALL_FOREACH_REV pipettes_bootloader_loop
+    CALL_FOREACH_REV pipettes_single_bootloader_loop
     REVISIONS b1 c2
     SOURCES _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
@@ -119,7 +138,7 @@ foreach_revision(
 
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-multi
-    CALL_FOREACH_REV pipettes_bootloader_loop
+    CALL_FOREACH_REV pipettes_multi_bootloader_loop
     SOURCES _g4_sources _g4_sources
     REVISIONS b1 c2
     NO_CREATE_IMAGE_HEX
@@ -128,7 +147,7 @@ foreach_revision(
 
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-96
-    CALL_FOREACH_REV pipettes_bootloader_loop
+    CALL_FOREACH_REV pipettes_ninety_six_bootloader_loop
     REVISIONS b1 c1
     SOURCES _g4_sources _g4_sources
     NO_CREATE_IMAGE_HEX
