@@ -24,13 +24,18 @@ extern "C" {
 // Z motor specific
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim8;
 
 typedef void (*motor_interrupt_callback)();
+typedef void (*z_encoder_overflow_callback)(int32_t);
+
 
 HAL_StatusTypeDef initialize_spi();
 void initialize_hardware_z();
 
-void set_z_motor_timer_callback(motor_interrupt_callback callback);
+void set_z_motor_timer_callback(
+        motor_interrupt_callback callback,
+        z_encoder_overflow_callback enc_callback);
 
 
 // G motor specific

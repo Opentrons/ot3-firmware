@@ -69,7 +69,7 @@ static auto z_motor_sys_config =
                                             .gear_reduction_ratio = 1.0},
         .steps_per_rev = 200,
         .microstep = 16,
-        .encoder_pulses_per_rev = 0};
+        .encoder_pulses_per_rev = 1024};
 /**
  * The motor struct.
  */
@@ -85,7 +85,9 @@ static motor_class::Motor motor{
     true};
 
 // There is no encoder so the ratio doesn't matter
-static stall_check::StallCheck stallcheck(0, 0, 500);
+static stall_check::StallCheck stallcheck(
+    z_motor_sys_config.get_encoder_pulses_per_mm() / 1000.0F,
+    z_motor_sys_config.get_usteps_per_mm() / 1000.0F, 500);
 
 /**
  * Handler of motor interrupts.
