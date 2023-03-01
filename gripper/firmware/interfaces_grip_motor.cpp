@@ -114,14 +114,13 @@ static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
     .microstep = 0,
     .encoder_pulses_per_rev = 512};
 
-
-static error_tolerance_config::BrushedMotorErrorTolerance error_conf(gear_config);
+static error_tolerance_config::BrushedMotorErrorTolerance error_conf(
+    gear_config);
 
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,
                                               brushed_motor_driver_iface,
-                                              motor_queue,
-                                              error_conf);
+                                              motor_queue, error_conf);
 
 /**
  * Handler of brushed motor interrupts.

@@ -1391,13 +1391,14 @@ struct PeripheralStatusResponse
 using InstrumentInfoRequest = Empty<MessageId::instrument_info_request>;
 
 struct SetGripperErrorToleranceRequest
-        : BaseMessage<MessageId::set_gripper_error_tolerance> {
+    : BaseMessage<MessageId::set_gripper_error_tolerance> {
     uint32_t message_index;
     uint32_t max_pos_error_mm;
     uint32_t max_unwanted_movement_mm;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> SetGripperErrorToleranceRequest {
+    static auto parse(Input body, Limit limit)
+        -> SetGripperErrorToleranceRequest {
         uint32_t pos_error = 0;
         uint32_t unwanted_movement = 0;
         uint32_t msg_ind = 0;
@@ -1406,12 +1407,12 @@ struct SetGripperErrorToleranceRequest
         body = bit_utils::bytes_to_int(body, limit, pos_error);
         body = bit_utils::bytes_to_int(body, limit, unwanted_movement);
         return SetGripperErrorToleranceRequest{
-                .message_index = msg_ind,
-                .max_pos_error_mm = pos_error,
-                .max_unwanted_movement_mm = unwanted_movement};
+            .message_index = msg_ind,
+            .max_pos_error_mm = pos_error,
+            .max_unwanted_movement_mm = unwanted_movement};
     }
     auto operator==(const SetGripperErrorToleranceRequest& other) const
-    -> bool = default;
+        -> bool = default;
 };
 
 /**
