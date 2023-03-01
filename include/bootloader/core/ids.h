@@ -64,6 +64,7 @@ typedef enum {
     can_messageid_add_brushed_linear_move_request = 0x44,
     can_messageid_brushed_motor_conf_request = 0x45,
     can_messageid_brushed_motor_conf_response = 0x46,
+    can_messageid_set_gripper_error_tolerance = 0x47,
     can_messageid_acknowledgement = 0x50,
     can_messageid_read_presence_sensing_voltage_request = 0x600,
     can_messageid_read_presence_sensing_voltage_response = 0x601,
