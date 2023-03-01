@@ -126,11 +126,10 @@ auto gear_motor::get_motor_hardware(
 auto gear_motor::get_motor_hardware(
     motor_configs::HighThroughputPipetteMotorHardware pins)
     -> gear_motor::GearHardware {
-    return gear_motor::GearHardware{
-        .left = pipette_motor_hardware::MotorHardware(pins.left_gear_motor,
-                                                      &htim6, &htim2),
-        .right = pipette_motor_hardware::MotorHardware(pins.right_gear_motor,
-                                                       &htim6, &htim2)};
+    return gear_motor::GearHardware{.left = motor_hardware::MotorHardware(
+                                        pins.left_gear_motor, &htim6, &htim2),
+                                    .right = motor_hardware::MotorHardware(
+                                        pins.right_gear_motor, &htim6, &htim2)};
 }
 
 auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
@@ -140,9 +139,9 @@ auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
 auto gear_motor::get_motor_hardware_tasks(gear_motor::GearHardware& hd_ware)
     -> gear_motor::GearMotorHardwareTasks {
     return gear_motor::GearMotorHardwareTasks{
-        .left = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+        .left = motor_hardware_task::MotorHardwareTask(
             &hd_ware.left, "left gear motor hardware task"),
-        .right = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+        .right = motor_hardware_task::MotorHardwareTask(
             &hd_ware.right, "right gear motor hardware task")};
 }
 

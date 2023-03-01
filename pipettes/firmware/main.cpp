@@ -73,20 +73,6 @@ class PipetteEEPromHardwareIface
     }
 };
 
-auto convert_to_motor_hardware(
-    pipette_motor_hardware::HardwareConfig motor_config)
-    -> motor_hardware::HardwareConfig {
-    return motor_hardware::HardwareConfig{
-        .direction = motor_config.direction,
-        .step = motor_config.step,
-        .enable = motor_config.enable,
-        .limit_switch = motor_config.limit_switch,
-        .led = motor_config.led,
-        .sync_in = motor_config.sync_in,
-        .estop_in = motor_config.estop_in,
-    };
-}
-
 static auto eeprom_hardware_iface = PipetteEEPromHardwareIface{};
 
 static auto linear_stall_check = stall_check::StallCheck(
@@ -109,7 +95,7 @@ static auto interrupt_queues = interfaces::get_interrupt_queues<PIPETTE_TYPE>();
 
 static auto linear_motor_hardware =
     interfaces::linear_motor::get_motor_hardware(
-        convert_to_motor_hardware(motor_config.hardware_pins.linear_motor));
+        motor_config.hardware_pins.linear_motor);
 static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
     linear_motor_hardware, interrupt_queues, linear_stall_check);
 static auto linear_motion_control =

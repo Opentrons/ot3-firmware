@@ -9,7 +9,6 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
 #include "pipettes/core/motor_configurations.hpp"
 #include "pipettes/core/pipette_type.h"
-#include "pipettes/firmware/pipette_motor_hardware.hpp"
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -35,7 +34,7 @@ using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
-    motor_messages::GearMotorMove, pipette_motor_hardware::MotorHardware>;
+    motor_messages::GearMotorMove, motor_hardware::MotorHardware>;
 
 template <PipetteType P>
 auto get_interrupt_queues()
@@ -97,8 +96,8 @@ void encoder_interrupt(motor_hardware::MotorHardware& hw, int32_t direction);
 namespace gear_motor {
 
 struct GearHardware {
-    pipette_motor_hardware::MotorHardware left;
-    pipette_motor_hardware::MotorHardware right;
+    motor_hardware::MotorHardware left;
+    motor_hardware::MotorHardware right;
 };
 
 struct GearInterruptHandlers {

@@ -44,7 +44,7 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
         .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
-auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  LowThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
@@ -53,7 +53,7 @@ auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
         queues.plunger_update_queue);
 }
 
-auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
                                  HighThroughputInterruptQueues& queues,
                                  stall_check::StallCheck& stall)
     -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient> {
@@ -63,19 +63,17 @@ auto linear_motor::get_interrupt(pipette_motor_hardware::MotorHardware& hw,
 }
 auto linear_motor::get_motor_hardware(
     motor_configs::LowThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware {
-    return pipette_motor_hardware::MotorHardware(pins.linear_motor, &htim7,
-                                                 &htim2);
+    -> motor_hardware::MotorHardware {
+    return motor_hardware::MotorHardware(pins.linear_motor, &htim7, &htim2);
 }
 
 auto linear_motor::get_motor_hardware(
     motor_configs::HighThroughputPipetteMotorHardware pins)
-    -> pipette_motor_hardware::MotorHardware {
-    return pipette_motor_hardware::MotorHardware(pins.linear_motor, &htim7,
-                                                 &htim2);
+    -> motor_hardware::MotorHardware {
+    return motor_hardware::MotorHardware(pins.linear_motor, &htim7, &htim2);
 }
 
-auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
                                       LowThroughputInterruptQueues& queues)
     -> MotionControlType {
     return motion_controller::MotionController{
@@ -88,7 +86,7 @@ auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
         queues.plunger_queue, queues.plunger_update_queue};
 }
 
-auto linear_motor::get_motion_control(pipette_motor_hardware::MotorHardware& hw,
+auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
                                       HighThroughputInterruptQueues& queues)
     -> MotionControlType {
     return motion_controller::MotionController{
@@ -130,11 +128,10 @@ auto gear_motor::get_motor_hardware(
 auto gear_motor::get_motor_hardware(
     motor_configs::HighThroughputPipetteMotorHardware pins)
     -> gear_motor::GearHardware {
-    return gear_motor::GearHardware{
-        .left = pipette_motor_hardware::MotorHardware(pins.left_gear_motor,
-                                                      &htim6, &htim2),
-        .right = pipette_motor_hardware::MotorHardware(pins.right_gear_motor,
-                                                       &htim6, &htim2)};
+    return gear_motor::GearHardware{.left = motor_hardware::MotorHardware(
+                                        pins.left_gear_motor, &htim6, &htim2),
+                                    .right = motor_hardware::MotorHardware(
+                                        pins.right_gear_motor, &htim6, &htim2)};
 }
 
 auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
@@ -144,9 +141,9 @@ auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
 auto gear_motor::get_motor_hardware_tasks(gear_motor::GearHardware& hd_ware)
     -> gear_motor::GearMotorHardwareTasks {
     return gear_motor::GearMotorHardwareTasks{
-        .left = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+        .left = motor_hardware_task::MotorHardwareTask(
             &hd_ware.left, "left gear motor hardware task"),
-        .right = pipette_motor_hardware_task::PipetteMotorHardwareTask(
+        .right = motor_hardware_task::MotorHardwareTask(
             &hd_ware.right, "right gear motor hardware task")};
 }
 

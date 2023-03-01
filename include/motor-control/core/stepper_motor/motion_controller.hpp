@@ -180,7 +180,7 @@ class PipetteMotionController {
     using GenericQueue =
         freertos_message_queue::FreeRTOSMessageQueue<GearMotorMove>;
     PipetteMotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                            PipetteStepperMotorHardwareIface& hardware_iface,
+                            StepperMotorHardwareIface& hardware_iface,
                             MotionConstraints constraints, GenericQueue& queue,
                             can::ids::GearMotorId gear_motor_id)
         : linear_motion_sys_config(lms_config),
@@ -241,8 +241,6 @@ class PipetteMotionController {
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
-    auto check_tip_sense() -> bool { return hardware.check_tip_sense(); }
-
     void enable_motor() {
         hardware.start_timer_interrupt();
         hardware.activate_motor();
@@ -279,7 +277,7 @@ class PipetteMotionController {
 
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
-    PipetteStepperMotorHardwareIface& hardware;
+    StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
     sq31_31 steps_per_mm{0};

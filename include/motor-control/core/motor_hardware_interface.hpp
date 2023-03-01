@@ -64,13 +64,6 @@ class StepperMotorHardwareIface : virtual public MotorHardwareIface {
     std::atomic<uint32_t> step_tracker{0};
 };
 
-class PipetteStepperMotorHardwareIface
-    : virtual public StepperMotorHardwareIface {
-  public:
-    virtual auto check_tip_sense() -> bool = 0;
-    virtual void read_tip_sense() = 0;
-};
-
 class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
   public:
     virtual void grip() = 0;

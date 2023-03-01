@@ -45,8 +45,8 @@ struct GearMotionControl {
 };
 
 struct GearMotorHardwareTasks {
-    pipette_motor_hardware_task::PipetteMotorHardwareTask left;
-    pipette_motor_hardware_task::PipetteMotorHardwareTask right;
+    motor_hardware_task::MotorHardwareTask left;
+    motor_hardware_task::MotorHardwareTask right;
 };
 
 }  // namespace gear_motor

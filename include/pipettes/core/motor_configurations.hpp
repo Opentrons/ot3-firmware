@@ -4,9 +4,9 @@
 
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
+#include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/pipette_type.h"
-#include "pipettes/firmware/pipette_motor_hardware.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 
 namespace motor_configs {
@@ -43,13 +43,13 @@ struct LowThroughputSensorHardware {
 };
 
 struct LowThroughputPipetteMotorHardware {
-    pipette_motor_hardware::HardwareConfig linear_motor;
+    motor_hardware::HardwareConfig linear_motor;
 };
 
 struct HighThroughputPipetteMotorHardware {
-    pipette_motor_hardware::HardwareConfig right_gear_motor;
-    pipette_motor_hardware::HardwareConfig left_gear_motor;
-    pipette_motor_hardware::HardwareConfig linear_motor;
+    motor_hardware::HardwareConfig right_gear_motor;
+    motor_hardware::HardwareConfig left_gear_motor;
+    motor_hardware::HardwareConfig linear_motor;
 };
 
 struct LowThroughputMotorConfigurations {
@@ -69,10 +69,10 @@ auto driver_config_by_axis(TMC2160PipetteAxis which)
     -> tmc2160::configs::TMC2160DriverConfig;
 
 auto hardware_config_by_axis(TMC2130PipetteAxis which)
-    -> pipette_motor_hardware::HardwareConfig;
+    -> motor_hardware::HardwareConfig;
 
 auto hardware_config_by_axis(TMC2160PipetteAxis which)
-    -> pipette_motor_hardware::HardwareConfig;
+    -> motor_hardware::HardwareConfig;
 
 template <PipetteType P>
 auto motor_configurations()
