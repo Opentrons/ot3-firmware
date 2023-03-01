@@ -232,20 +232,20 @@ void MX_GPIO_Init(void) {
 }
 
 #if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
-    static const int encoder_direction = TIM_ICPOLARITY_RISING;
+    static const int encoder_chan1_direction = TIM_ICPOLARITY_RISING;
 #else
-    static const int encoder_direction = TIM_ICPOLARITY_FALLING;
+    static const int encoder_chan1_direction = TIM_ICPOLARITY_FALLING;
 #endif
 
 
 void encoder_init(TIM_HandleTypeDef *htim) {
     TIM_Encoder_InitTypeDef sConfig = {
         .EncoderMode = TIM_ENCODERMODE_TI12,
-        .IC1Polarity = encoder_direction,
+        .IC1Polarity = encoder_chan1_direction,
         .IC1Selection = TIM_ICSELECTION_DIRECTTI,
         .IC1Prescaler = TIM_ICPSC_DIV1,
         .IC1Filter = 0,
-        .IC2Polarity = encoder_direction,
+        .IC2Polarity = TIM_ICPOLARITY_RISING,
         .IC2Selection = TIM_ICSELECTION_DIRECTTI,
         .IC2Prescaler = TIM_ICPSC_DIV1,
         .IC2Filter = 0,
