@@ -8,6 +8,7 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
@@ -38,10 +39,6 @@ static constexpr uint32_t HOLDOFF_TICKS =
 // using the logic analyzer it takes about 0.2-0.3 ms for the output
 // to stablize after changing directions of the PWM
 
-// upon advice from hardware, 0.01mm is a good limit for precision
-static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
-static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
-
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
 requires MessageQueue<QueueImpl<BrushedMove>, BrushedMove>
@@ -54,19 +51,13 @@ class BrushedMotorInterruptHandler {
         GenericQueue& incoming_queue, StatusClient& outgoing_queue,
         motor_hardware::BrushedMotorHardwareIface& hardware_iface,
         brushed_motor_driver::BrushedMotorDriverIface& driver_iface,
-        lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gearbox_config)
+        error_tolerance_config::BrushedMotorErrorTolerance&
+            error_tolerance_conf)
         : queue(incoming_queue),
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
           driver_hardware(driver_iface),
-          gear_conf(gearbox_config) {
-        acceptable_position_error =
-            int32_t(gear_conf.get_encoder_pulses_per_mm() *
-                    ACCEPTABLE_DISTANCE_TOLERANCE_MM);
-        unwanted_movement_threshold =
-            int32_t(gear_conf.get_encoder_pulses_per_mm() *
-                    UNWANTED_MOVEMENT_DISTANCE_MM);
-    }
+          error_conf(error_tolerance_conf) {}
     ~BrushedMotorInterruptHandler() = default;
     auto operator=(BrushedMotorInterruptHandler&)
         -> BrushedMotorInterruptHandler& = delete;
@@ -82,7 +73,7 @@ class BrushedMotorInterruptHandler {
     void controlled_move_to(int32_t move_delta) {
         uint32_t old_control_pwm = current_control_pwm;
         // pass through early if we're already within acceptable position
-        if (std::abs(move_delta) < acceptable_position_error) {
+        if (std::abs(move_delta) < error_conf.acceptable_position_error) {
             current_control_pwm = 0;
         } else {
             if (move_delta < 0) {
@@ -128,7 +119,8 @@ class BrushedMotorInterruptHandler {
                 int32_t move_delta = hardware.get_encoder_pulses() -
                                      buffered_move.encoder_position;
                 controlled_move_to(move_delta);
-                if (std::abs(move_delta) < acceptable_position_error) {
+                if (std::abs(move_delta) <
+                    error_conf.acceptable_position_error) {
                     finish_current_move(AckMessageId::stopped_by_condition);
                 }
                 break;
@@ -158,14 +150,14 @@ class BrushedMotorInterruptHandler {
             // we use a value higher than the acceptable position here to allow
             // the pid loop the opportunity to maintain small movements that
             // occur from motion and vibration
-            if (move_delta > unwanted_movement_threshold) {
+            if (move_delta > error_conf.unwanted_movement_threshold) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
             }
         } else if (motor_state == ControlState::FORCE_CONTROLLING ||
                    motor_state == ControlState::FORCE_CONTROLLING_HOME) {
-            if (!is_idle &&
-                std::abs(hardware.get_encoder_pulses() -
-                         hold_encoder_position) > unwanted_movement_threshold) {
+            if (!is_idle && std::abs(hardware.get_encoder_pulses() -
+                                     hold_encoder_position) >
+                                error_conf.unwanted_movement_threshold) {
                 // we have likely dropped a labware or had a collision
                 auto err = motor_state == ControlState::FORCE_CONTROLLING
                                ? can::ids::ErrorCode::labware_dropped
@@ -350,11 +342,9 @@ class BrushedMotorInterruptHandler {
     StatusClient& status_queue_client;
     motor_hardware::BrushedMotorHardwareIface& hardware;
     brushed_motor_driver::BrushedMotorDriverIface& driver_hardware;
-    lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
+    error_tolerance_config::BrushedMotorErrorTolerance& error_conf;
     BrushedMove buffered_move = BrushedMove{};
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
-    int32_t acceptable_position_error = 0;
-    int32_t unwanted_movement_threshold = 0;
 };
 }  // namespace brushed_motor_handler

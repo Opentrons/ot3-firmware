@@ -2,7 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "common/core/freertos_message_queue.hpp"
-#include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/utils.hpp"
@@ -11,6 +11,7 @@ namespace brushed_motion_controller {
 
 using namespace motor_hardware;
 using namespace motor_messages;
+using namespace error_tolerance_config;
 
 template <lms::MotorMechanicalConfig MEConfig>
 class MotionController {
@@ -19,12 +20,14 @@ class MotionController {
         freertos_message_queue::FreeRTOSMessageQueue<BrushedMove>;
     MotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                      BrushedMotorHardwareIface& hardware_iface,
-                     GenericQueue& queue)
+                     GenericQueue& queue,
+                     BrushedMotorErrorTolerance& error_conf)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           queue(queue),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
-              linear_motion_sys_config.get_encoder_um_per_pulse(), 31)) {}
+              linear_motion_sys_config.get_encoder_um_per_pulse(), 31)),
+          error_config(error_conf) {}
 
     auto operator=(const MotionController&) -> MotionController& = delete;
     auto operator=(MotionController&&) -> MotionController&& = delete;
@@ -108,12 +111,21 @@ class MotionController {
         return hardware.position_flags.get_flags();
     }
 
+    void set_error_tolerance(
+        const can::messages::SetGripperErrorToleranceRequest& can_msg) {
+        error_config.update_tolerance(
+            fixed_point_to_float(can_msg.max_pos_error_mm, S15Q16_RADIX),
+            fixed_point_to_float(can_msg.max_unwanted_movement_mm,
+                                 S15Q16_RADIX));
+    }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     BrushedMotorHardwareIface& hardware;
     GenericQueue& queue;
     bool enabled = false;
     sq31_31 um_per_encoder_pulse{0};
+    BrushedMotorErrorTolerance& error_config;
 };
 
 }  // namespace brushed_motion_controller
