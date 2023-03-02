@@ -9,26 +9,27 @@ static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
 static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
 
 class BrushedMotorErrorTolerance {
-public:
+  public:
     BrushedMotorErrorTolerance(
-            lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gearbox_config
-    ): gear_conf(gearbox_config) {
+        lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gearbox_config)
+        : gear_conf(gearbox_config) {
         acceptable_position_error =
-                int32_t(gear_conf.get_encoder_pulses_per_mm() *
-                        ACCEPTABLE_DISTANCE_TOLERANCE_MM);
+            int32_t(gear_conf.get_encoder_pulses_per_mm() *
+                    ACCEPTABLE_DISTANCE_TOLERANCE_MM);
         unwanted_movement_threshold =
-                int32_t(gear_conf.get_encoder_pulses_per_mm() *
-                        UNWANTED_MOVEMENT_DISTANCE_MM);
+            int32_t(gear_conf.get_encoder_pulses_per_mm() *
+                    UNWANTED_MOVEMENT_DISTANCE_MM);
     }
 
     void update_tolerance(double pos_error, double unwanted_movement) {
-        acceptable_position_error = int32_t(gear_conf.get_encoder_pulses_per_mm() * pos_error);
-        unwanted_movement_threshold = int32_t(gear_conf.get_encoder_pulses_per_mm() * unwanted_movement);
+        acceptable_position_error =
+            int32_t(gear_conf.get_encoder_pulses_per_mm() * pos_error);
+        unwanted_movement_threshold =
+            int32_t(gear_conf.get_encoder_pulses_per_mm() * unwanted_movement);
     }
     lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
     int32_t acceptable_position_error = 0;
     int32_t unwanted_movement_threshold = 0;
 };
 
-}
-
+}  // namespace error_tolerance_config
