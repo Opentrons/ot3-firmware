@@ -2,6 +2,7 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/tests/mock_brushed_motor_components.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
@@ -14,6 +15,8 @@ auto gear_config = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
     .steps_per_rev = 0,
     .microstep = 0,
     .encoder_pulses_per_rev = 512};
+auto error_config =
+    error_tolerance_config::BrushedMotorErrorTolerance{gear_config};
 
 struct BrushedMotorContainer {
     test_mocks::MockBrushedMotorHardware hw{};
@@ -23,7 +26,7 @@ struct BrushedMotorContainer {
     BrushedMotorInterruptHandler<
         test_mocks::MockMessageQueue,
         test_mocks::MockBrushedMoveStatusReporterClient>
-        handler{queue, reporter, hw, driver, gear_config};
+        handler{queue, reporter, hw, driver, error_config};
 };
 
 SCENARIO("Brushed motor interrupt handler handle move messages") {
