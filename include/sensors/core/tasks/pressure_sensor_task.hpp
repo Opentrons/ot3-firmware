@@ -56,7 +56,7 @@ class PressureMessageHandler {
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             driver.set_sync_bind(can::ids::SensorOutputBinding::report);
             driver.set_limited_poll(true);
-            driver.set_number_of_reads(1);
+            driver.set_baseline_values(1);
             if (!driver.get_pressure()) {
                 LOG("Could not send read pressure command");
             }
@@ -82,21 +82,6 @@ class PressureMessageHandler {
             can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
-    void visit(const can::messages::BaselineSensorRequest &m) {
-        LOG("Received request to read from %d sensor\n", m.sensor);
-        // poll a specific register, or default to a pressure read.
-        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.set_sync_bind(can::ids::SensorOutputBinding::report);
-            driver.set_limited_poll(true);
-            driver.set_number_of_reads(m.sample_rate);
-            driver.get_pressure();
-        } else {
-            driver.get_temperature();
-        }
-        driver.get_can_client().send_can_message(
-            can::ids::NodeId::host, can::messages::ack_from_request(m));
-    }
-
     void visit(const can::messages::SetSensorThresholdRequest &m) {
         LOG("Received request to set threshold to %d from %d sensor\n",
             m.threshold, m.sensor);
@@ -115,6 +100,17 @@ class PressureMessageHandler {
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host, can::messages::ack_from_request(m));
+    }
+
+    void visit(const can::messages::BaselineSensorRequest &m) {
+        LOG("received baseline request");
+        static_cast<void>(m);
+        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
+            driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+            driver.set_limited_poll(true);
+            driver.set_baseline_values(m.sample_rate);
+            driver.get_pressure();
+        }
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {
