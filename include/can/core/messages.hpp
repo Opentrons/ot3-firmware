@@ -800,6 +800,27 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
     auto operator==(const BaselineSensorRequest& other) const -> bool = default;
 };
 
+struct BaselineSensorResponse
+    : BaseMessage<MessageId::baseline_sensor_response> {
+    uint32_t message_index = 0;
+    can::ids::SensorType sensor{};
+    can::ids::SensorId sensor_id{};
+    int32_t offset_average = 0;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter =
+            bit_utils::int_to_bytes(static_cast<uint8_t>(sensor), iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
+        iter = bit_utils::int_to_bytes(offset_average, iter, limit);
+        return iter - body;
+    }
+    auto operator==(const BaselineSensorResponse& other) const
+        -> bool = default;
+};
+
 struct ReadFromSensorResponse : BaseMessage<MessageId::read_sensor_response> {
     uint32_t message_index = 0;
     can::ids::SensorType sensor{};
@@ -1404,6 +1425,6 @@ using ResponseMessageType = std::variant<
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
-    UpdateMotorPositionEstimationResponse>;
+    UpdateMotorPositionEstimationResponse, BaselineSensorResponse>;
 
 }  // namespace can::messages
