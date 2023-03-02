@@ -318,7 +318,11 @@ auto motor_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
                  .port = GPIOC,
                  .pin = GPIO_PIN_3,
                  .active_setting = GPIO_PIN_RESET},
-        }};
+            .tip_sense = gpio::PinConfig{
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                .port = GPIOC,
+                .pin = GPIO_PIN_2,
+                .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }
 
@@ -339,7 +343,11 @@ auto motor_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
                  .port = GPIOC,
                  .pin = GPIO_PIN_3,
                  .active_setting = GPIO_PIN_RESET},
-        }};
+            .tip_sense = gpio::PinConfig{
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                .port = GPIOC,
+                .pin = GPIO_PIN_2,
+                .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }
 
@@ -359,7 +367,12 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                      .port = GPIOC,
                      .pin = GPIO_PIN_11,
                      .active_setting = GPIO_PIN_RESET},
-            },
+                .tip_sense =
+                    gpio::PinConfig{
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                        .port = GPIOC,
+                        .pin = GPIO_PIN_12,
+                        .active_setting = GPIO_PIN_RESET}},
         .secondary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -371,7 +384,11 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                  .port = GPIOC,
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},
-        }};
+            .tip_sense = gpio::PinConfig{
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                .port = GPIOC,
+                .pin = GPIO_PIN_7,
+                .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }
 
@@ -392,7 +409,12 @@ auto motor_configs::sensor_configurations<
                      .port = GPIOC,
                      .pin = GPIO_PIN_11,
                      .active_setting = GPIO_PIN_RESET},
-            },
+                .tip_sense =
+                    gpio::PinConfig{
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                        .port = GPIOC,
+                        .pin = GPIO_PIN_12,
+                        .active_setting = GPIO_PIN_RESET}},
         .secondary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -404,6 +426,10 @@ auto motor_configs::sensor_configurations<
                  .port = GPIOC,
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},
-        }};
+            .tip_sense = gpio::PinConfig{
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                .port = GPIOC,
+                .pin = GPIO_PIN_7,
+                .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include "common/firmware/gpio.hpp"
 
@@ -11,6 +12,7 @@ struct SensorHardwareConfiguration {
     gpio::PinConfig sync_in;
     gpio::PinConfig sync_out;
     gpio::PinConfig data_ready;
+    std::optional<gpio::PinConfig> tip_sense = std::nullopt;
 };
 
 /** abstract sensor hardware device for a sync line */
@@ -25,6 +27,7 @@ class SensorHardwareBase {
 
     virtual auto set_sync() -> void = 0;
     virtual auto reset_sync() -> void = 0;
+    virtual auto check_tip_presence() -> bool = 0;
     virtual auto add_data_ready_callback(std::function<void()> callback)
         -> bool = 0;
 };
