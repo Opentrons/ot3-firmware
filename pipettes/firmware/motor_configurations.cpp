@@ -314,7 +314,8 @@ auto motor_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},
             .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                gpio::PinConfig{
+                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
                  .pin = GPIO_PIN_3,
                  .active_setting = GPIO_PIN_RESET},
@@ -339,7 +340,8 @@ auto motor_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},
             .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                gpio::PinConfig{
+                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
                  .pin = GPIO_PIN_3,
                  .active_setting = GPIO_PIN_RESET},
@@ -363,7 +365,8 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                      .pin = GPIO_PIN_9,
                      .active_setting = GPIO_PIN_RESET},
                 .data_ready =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    gpio::PinConfig{
+                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_11,
                      .active_setting = GPIO_PIN_RESET},
@@ -380,7 +383,8 @@ auto motor_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                  .pin = GPIO_PIN_9,
                  .active_setting = GPIO_PIN_RESET},
             .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                gpio::PinConfig{
+                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},
@@ -405,7 +409,8 @@ auto motor_configs::sensor_configurations<
                      .pin = GPIO_PIN_9,
                      .active_setting = GPIO_PIN_RESET},
                 .data_ready =
-                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    gpio::PinConfig{
+                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                      .port = GPIOC,
                      .pin = GPIO_PIN_11,
                      .active_setting = GPIO_PIN_RESET},
@@ -422,7 +427,8 @@ auto motor_configs::sensor_configurations<
                  .pin = GPIO_PIN_9,
                  .active_setting = GPIO_PIN_RESET},
             .data_ready =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                gpio::PinConfig{
+                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOC,
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},

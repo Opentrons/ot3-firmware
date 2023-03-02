@@ -9,9 +9,9 @@ namespace sensors {
 namespace hardware {
 
 struct SensorHardwareConfiguration {
-    gpio::PinConfig sync_in;
-    gpio::PinConfig sync_out;
-    gpio::PinConfig data_ready;
+    gpio::PinConfig sync_in{};
+    gpio::PinConfig sync_out{};
+    std::optional<gpio::PinConfig> data_ready = std::nullopt;
     std::optional<gpio::PinConfig> tip_sense = std::nullopt;
 };
 

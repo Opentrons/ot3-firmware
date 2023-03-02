@@ -17,7 +17,7 @@ class SensorHardware : public SensorHardwareBase {
         if (hardware.tip_sense.has_value()) {
             return gpio::is_set(hardware.tip_sense.value());
         }
-        return 0;
+        return false;
     }
     // TODO: change data_ready's input parameter to an std::map object, so that
     //  the function being called is definitely the callback corresponding to
