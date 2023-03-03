@@ -21,6 +21,7 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
             _state_manager->send_sync_msg(SyncPinState::LOW);
         }
     }
+    auto check_tip_presence() -> bool override { return false; }
     std::array<std::function<void()>, 5> data_ready_callbacks = {};
     auto add_data_ready_callback(std::function<void()> callback)
         -> bool override {
