@@ -1,5 +1,6 @@
 #pragma once
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "ot_utils/core/pid.hpp"
@@ -8,6 +9,7 @@ namespace test_mocks {
 
 using namespace brushed_motor_driver;
 using namespace motor_hardware;
+using namespace error_tolerance_config;
 
 enum class PWM_DIRECTION { positive, negative, unset };
 
@@ -115,6 +117,17 @@ struct MockBrushedMoveStatusReporterClient {
     }
 
     std::vector<move_status_reporter_task::TaskMessage> messages{};
+};
+
+struct MockBrushedMotionController {
+    void set_error_tolerance(
+        const can::messages::SetGripperErrorToleranceRequest& can_msg) {
+        error_config.update_tolerance(
+            fixed_point_to_float(can_msg.max_pos_error_mm, S15Q16_RADIX),
+            fixed_point_to_float(can_msg.max_unwanted_movement_mm,
+                                 S15Q16_RADIX));
+    }
+    BrushedMotorErrorTolerance& error_config;
 };
 
 };  // namespace test_mocks
