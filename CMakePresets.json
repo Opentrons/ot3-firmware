@@ -36,23 +36,6 @@
       "inherits": "cross-no-directory-reqs"
     },
     {
-      "name": "cross-pipettes",
-      "displayName": "STM32 L5 OT-3 cross-compilation",
-      "description": "Build application firmware for OT-3 systems that use STM32, for flashing onto boards",
-      "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/build-cross-pipettes",
-      "installDir": "${sourceDir}/dist",
-      "toolchainFile": "${sourceDir}/cmake/STM32CortexM33GCCCrossToolchain.cmake",
-      "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_MODULE_PATH": "${sourceDir}/cmake;${sourceDir}/common/cmake",
-        "CMAKE_FIND_APPBUNDLE": "NEVER",
-        "ARM_ARCH_TYPE": "cortex-m33",
-        "FIRMWARE_DESTINATION_PREFIX": "/usr/lib/firmware/"
-      },
-      "inherits": "configuration-ok"
-    },
-    {
       "name": "host",
       "displayName": "STM32 OT-3 host compilation for tests",
       "description": "Build libraries and test executables for OT-3 systems that use STM32",
@@ -104,31 +87,6 @@
         "firmware-applications",
         "firmware-images"
       ]
-    },
-    {
-      "name": "firmware-l5",
-      "displayName": "All L5 Firmwares",
-      "description": "Environment to build all g4 firmware - see firmware-g4",
-      "configurePreset": "cross-pipettes",
-      "jobs": 4,
-      "targets": [
-        "firmware-applications",
-        "firmware-images"
-      ]
-    },
-    {
-      "name": "pipettes-a1",
-      "displayName": "pipettes binary",
-      "description": "Build the pipettes cross binary",
-      "configurePreset": "cross-pipettes",
-      "jobs": 4,
-      "targets": [
-        "pipettes-images"
-      ]
-    },
-    {
-      "name": "pipettes-proto",
-      "inherits": ["pipettes-a1"]
     },
     {
       "name": "pipettes",
@@ -255,18 +213,6 @@
         "bootloader-pipettes-single-applications",
         "bootloader-pipettes-multi-applications",
         "bootloader-pipettes-96-applications"
-      ]
-    },
-    {
-      "name": "bootloader-pipettes-a1",
-      "displayName": "pipettes bootloader binary",
-      "description": "build the pipettes bootloader binary targets",
-      "configurePreset": "cross-pipettes",
-      "jobs": 4,
-      "targets": [
-        "bootloader-pipettes-single-a1",
-        "bootloader-pipettes-multi-a1",
-        "bootloader-pipettes-96-a1"
       ]
     },
     {
