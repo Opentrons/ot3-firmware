@@ -13,6 +13,12 @@ class SensorHardware : public SensorHardwareBase {
         : hardware(hardware) {}
     auto set_sync() -> void override { gpio::set(hardware.sync_out); }
     auto reset_sync() -> void override { gpio::reset(hardware.sync_out); }
+    auto check_tip_presence() -> bool override {
+        if (hardware.tip_sense.has_value()) {
+            return gpio::is_set(hardware.tip_sense.value());
+        }
+        return false;
+    }
     // TODO: change data_ready's input parameter to an std::map object, so that
     //  the function being called is definitely the callback corresponding to
     //  the correct GPIO interrupt

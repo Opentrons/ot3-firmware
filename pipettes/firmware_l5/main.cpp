@@ -117,8 +117,10 @@ static auto pins_for_sensor =
 auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
 
+auto data_ready_gpio = pins_for_sensor.primary.data_ready.value();
+
 extern "C" void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == pins_for_sensor.primary.data_ready.pin) {
+    if (GPIO_Pin == data_ready_gpio.pin) {
         sensor_hardware.data_ready();
     }
 }
