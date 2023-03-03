@@ -36,7 +36,6 @@ jobs:
       - name: 'Prep images for upload'
         run: |
           cmake --install ./build-cross
-          cmake --install ./build-cross-pipettes
       - name: 'Upload application artifact'
         uses: actions/upload-artifact@v3
         with:
