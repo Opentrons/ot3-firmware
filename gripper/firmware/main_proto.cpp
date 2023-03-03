@@ -77,18 +77,14 @@ static auto eeprom_hw_iface = EEPromHardwareInterface();
 
 auto sensor_pins = sensors::hardware::SensorHardwareConfiguration{
     .sync_in =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_7,
-            .active_setting = GPIO_PIN_RESET},
-    .sync_out =
-        {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_6,
-            .active_setting = GPIO_PIN_RESET}
-};
+        {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+         .port = GPIOB,
+         .pin = GPIO_PIN_7,
+         .active_setting = GPIO_PIN_RESET},
+    .sync_out = {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                 .port = GPIOB,
+                 .pin = GPIO_PIN_6,
+                 .active_setting = GPIO_PIN_RESET}};
 
 auto sensor_hardware = sensors::hardware::SensorHardware(sensor_pins);
 
