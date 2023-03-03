@@ -54,10 +54,6 @@ To setup this directory to run on an STM32G4 system board (gantry and head), you
 2. `cmake --build --preset=gantry --target <TARGET>` or `cmake --build --preset=head --target <TARGET>`
 3. To build a specific gantry you can also use the `gantry_x` and `gantry_y` targets
 
-To setup this directory to run on an STML5 nucleo board (pipettes), you should run:
-
-1. `cmake --preset=cross-pipettes .`
-2. `cmake --build --preset=pipettes --target <TARGET>`
 
 To setup this directory to run tests, you should run:
 

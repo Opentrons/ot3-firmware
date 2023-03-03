@@ -30,11 +30,9 @@ jobs:
       - name: 'CMake configure'
         run: |
           cmake --preset=cross . -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          cmake --preset=cross-pipettes . -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: 'Build images'
         run: |
           cmake --build --preset=firmware-g4 --target firmware-images firmware-applications
-          cmake --build --preset=firmware-l5 --target firmware-images firmware-applications
       - name: 'Prep images for upload'
         run: |
           cmake --install ./build-cross
