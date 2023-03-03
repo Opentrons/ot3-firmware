@@ -63,18 +63,14 @@ jobs:
         with:
           path: "./stm32-tools"
           key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
-      - name: "Configure proto"
-        run: cmake --preset=cross-pipettes . -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: "Configure current revs"
         run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=RelWithDebInfo
-      - name: "Format"
-        run: cmake --build --preset=pipettes-a1 --target pipettes-format-ci
-      - name: "Build proto"
-        run: cmake --build --preset=pipettes-a1 --target pipettes-images pipettes-applications
       - name: "Build current revs"
         run: cmake --build --preset=pipettes --target pipettes-images pipettes-applications
       - name: "Lint"
         run: cmake --build --preset=pipettes --target pipettes-lint
+      - name: "Format"
+        run: cmake --build --preset=pipettes --target pipettes-format-ci
 
   host-compile-test:
     name: "Host-Compile/Test"

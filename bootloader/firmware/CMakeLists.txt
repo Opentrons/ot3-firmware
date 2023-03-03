@@ -18,11 +18,7 @@ set(BOOTLOADER_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/crc32.c
         )
 
-if (${ARM_ARCH_TYPE} STREQUAL "cortex-m4")
-    add_subdirectory(stm32G4)
-elseif (${ARM_ARCH_TYPE} STREQUAL "cortex-m33")
-    add_subdirectory(stm32L5)
-endif()
+add_subdirectory(stm32G4)
 
 # runs clang-tidy https://releases.llvm.org/11.0.1/tools/clang/tools/extra/docs/clang-tidy/index.html
 # which is a catch-all static analyzer/linter
