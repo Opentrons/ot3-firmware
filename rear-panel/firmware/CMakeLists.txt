@@ -235,11 +235,10 @@ macro(rearpanel_loop)
     COMPONENT robot-images
     THISREVISION ${REVISION}
     REVISIONS ${REVISIONS})
-  install_if_latest_revision(
-    FILENAME "${REVISION_TARGET}.bin"
-    COMPONENT applications
-    THISREVISION ${REVISION}
-    REVISIONS ${REVISIONS})
+  install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}.bin
+    DESTINATION applications/
+    COMPONENT applications)
   install_if_latest_revision(
     FILENAME "${REVISION_TARGET}-image.hex"
     COMPONENT images
