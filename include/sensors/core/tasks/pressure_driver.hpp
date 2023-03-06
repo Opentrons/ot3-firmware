@@ -302,7 +302,7 @@ class MMR920C04 {
                         hardware.reset_sync();
                     }
                 }
-                if (report && !limited_poll) {
+                if (report) {
                     send_pressure(tm.message_index);
                 }
                 if (limited_poll) {
