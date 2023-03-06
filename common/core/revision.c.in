@@ -2,7 +2,8 @@
 
 static const struct revision _revision = {
     .primary = '${PRIMARY_REVISION}',
-    .secondary = '${SECONDARY_REVISION}'
+    .secondary = '${SECONDARY_REVISION}',
+    .tertiary = {0x00,0x00}
 };
 
 const struct revision* revision_get() {
