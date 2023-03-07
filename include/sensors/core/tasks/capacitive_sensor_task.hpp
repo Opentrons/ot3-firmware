@@ -117,8 +117,8 @@ class CapacitiveMessageHandler {
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::IS_BASELINE};
         poller.multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, m.number_of_reads,
-            DELAY, own_queue,
+            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2,
+            m.number_of_reads, DELAY, own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
         can_client.send_can_message(can::ids::NodeId::host,
