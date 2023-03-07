@@ -106,9 +106,14 @@ class PressureMessageHandler {
         LOG("received baseline request");
         static_cast<void>(m);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+            if (m.report) {
+                driver.set_sync_bind(can::ids::SensorOutputBinding::report);
+            }
+            else {
+                driver.set_sync_bind(can::ids::SensorOutputBinding::none);
+            }
             driver.set_limited_poll(true);
-            driver.set_baseline_values(m.sample_rate);
+            driver.set_number_of_reads(m.sample_rate);
             driver.get_pressure();
         }
     }
