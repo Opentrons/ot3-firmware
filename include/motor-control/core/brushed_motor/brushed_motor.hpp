@@ -3,6 +3,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "driver_interface.hpp"
 #include "motor-control/core/brushed_motor/brushed_motion_controller.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_messages.hpp"
 
@@ -23,9 +24,10 @@ struct BrushedMotor {
     BrushedMotor(lms::LinearMotionSystemConfig<MEConfig> lms_config,
                  motor_hardware::BrushedMotorHardwareIface& hardware_iface,
                  brushed_motor_driver::BrushedMotorDriverIface& driver_iface,
-                 GenericQueue& queue)
+                 GenericQueue& queue,
+                 error_tolerance_config::BrushedMotorErrorTolerance& error_conf)
         : driver(driver_iface),
-          motion_controller{lms_config, hardware_iface, queue} {}
+          motion_controller{lms_config, hardware_iface, queue, error_conf} {}
 
     brushed_motor_driver::BrushedMotorDriverIface& driver;
     brushed_motion_controller::MotionController<MEConfig> motion_controller;

@@ -66,6 +66,7 @@ enum class MessageId {
     add_brushed_linear_move_request = 0x44,
     brushed_motor_conf_request = 0x45,
     brushed_motor_conf_response = 0x46,
+    set_gripper_error_tolerance = 0x47,
     acknowledgement = 0x50,
     read_presence_sensing_voltage_request = 0x600,
     read_presence_sensing_voltage_response = 0x601,

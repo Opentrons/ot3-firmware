@@ -101,6 +101,12 @@ class MotionControllerMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
+    void handle(const can::messages::SetGripperErrorToleranceRequest& m) {
+        controller.set_error_tolerance(m);
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
+    }
+
     brushed_motion_controller::MotionController<MEConfig>& controller;
     CanClient& can_client;
 };

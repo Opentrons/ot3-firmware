@@ -2,6 +2,7 @@
 #include "gripper/core/interfaces.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/firmware/brushed_motor/brushed_motor_hardware.hpp"
 #include "motor-control/firmware/brushed_motor/driver_hardware.hpp"
@@ -113,10 +114,13 @@ static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
     .microstep = 0,
     .encoder_pulses_per_rev = 512};
 
+static error_tolerance_config::BrushedMotorErrorTolerance error_conf(
+    gear_config);
+
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,
                                               brushed_motor_driver_iface,
-                                              motor_queue);
+                                              motor_queue, error_conf);
 
 /**
  * Handler of brushed motor interrupts.
@@ -124,7 +128,7 @@ static brushed_motor::BrushedMotor grip_motor(gear_config,
 static brushed_motor_handler::BrushedMotorInterruptHandler
     brushed_motor_interrupt(motor_queue, gripper_tasks::g_tasks::get_queues(),
                             brushed_motor_hardware_iface,
-                            brushed_motor_driver_iface, gear_config);
+                            brushed_motor_driver_iface, error_conf);
 
 extern "C" void call_brushed_motor_handler(void) {
     brushed_motor_interrupt.run_interrupt();

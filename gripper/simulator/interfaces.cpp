@@ -4,6 +4,7 @@
 #include "gripper/core/tasks.hpp"
 #include "gripper/simulation/sim_interfaces.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
+#include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/simulation/brushed_motor_interrupt_driver.hpp"
@@ -118,15 +119,17 @@ static auto gear_conf = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
     .microstep = 0,
     .encoder_pulses_per_rev = 512};
 
+static error_tolerance_config::BrushedMotorErrorTolerance error_conf(gear_conf);
+
 static auto grip_motor = brushed_motor::BrushedMotor(
     gear_conf, brushed_motor_hardware_iface, brushed_motor_driver_iface,
-    brushed_motor_queue);
+    brushed_motor_queue, error_conf);
 
 static brushed_motor_handler::BrushedMotorInterruptHandler
     brushed_motor_interrupt(brushed_motor_queue,
                             gripper_tasks::g_tasks::get_queues(),
                             brushed_motor_hardware_iface,
-                            brushed_motor_driver_iface, gear_conf);
+                            brushed_motor_driver_iface, error_conf);
 
 static brushed_motor_interrupt_driver::BrushedMotorInterruptDriver G(
     brushed_motor_queue, brushed_motor_interrupt, brushed_motor_hardware_iface);
