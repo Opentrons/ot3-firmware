@@ -330,26 +330,27 @@ SCENARIO("Read pressure sensor values") {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-                                    0x0, 0x0}};
+                    .read_buffer = {0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
                 driver.handle_response(sensor_response);
             }
             for (int i = 0; i < 5; i++) {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x20, 0x0, 0x0, 0x0 0x0, 0x0, 0x0,
-                                    0x0, 0x0}};
+                    .read_buffer = {0x20, 0x0, 0x0, 0x0 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
                 driver.handle_response(sensor_response);
             }
         }
-        THEN("a BaselineSensorResponse is sent with the correct calculated average") {
+        THEN(
+            "a BaselineSensorResponse is sent with the correct calculated "
+            "average") {
             can::message_writer_task::TaskMessage can_msg{};
 
             can_queue.try_read(&can_msg);
-            auto response_msg =
-                std::get<can::messages::BaselineSensorResponse>(
-                    can_msg.message);
+            auto response_msg = std::get<can::messages::BaselineSensorResponse>(
+                can_msg.message);
             float check_data =
                 fixed_point_to_float(response_msg.offset_average, 16);
             float expected = 30.0;

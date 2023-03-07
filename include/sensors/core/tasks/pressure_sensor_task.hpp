@@ -108,8 +108,7 @@ class PressureMessageHandler {
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             if (m.report) {
                 driver.set_sync_bind(can::ids::SensorOutputBinding::report);
-            }
-            else {
+            } else {
                 driver.set_sync_bind(can::ids::SensorOutputBinding::none);
             }
             driver.set_limited_poll(true);
