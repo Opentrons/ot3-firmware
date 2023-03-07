@@ -127,11 +127,27 @@ static void z_motor_gpio_init(void) {
                   &GPIO_InitStruct);
 }
 
+static void ebrake_gpio_init(void) {
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+}
+
 void utility_gpio_init(void) {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOF_CLK_ENABLE();
 
-    limit_switch_gpio_init();
+    #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
+        ebrake_gpio_init();
+    #endif
+
+        limit_switch_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
     estop_input_gpio_init();

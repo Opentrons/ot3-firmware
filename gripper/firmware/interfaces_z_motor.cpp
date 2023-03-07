@@ -27,6 +27,20 @@ static spi::hardware::SPI_interface SPI_intf = {
  */
 static spi::hardware::Spi spi_comms(SPI_intf);
 
+#if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
+static void* enc_handle = nullptr;
+static constexpr float encoder_pulses = 0.0;
+static constexpr std::optional<gpio::PinConfig> ebrake = std::nullopt;
+#else
+static constexpr void* enc_handle = &htim8;
+static constexpr float encoder_pulses = 1024.0;
+static gpio::PinConfig ebrake = {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+    .port = GPIOB,
+    .pin = GPIO_PIN_5,
+    .active_setting = GPIO_PIN_RESET};
+#endif
+
 /**
  * Motor pin configuration.
  */
@@ -62,23 +76,18 @@ struct motion_controller::HardwareConfig motor_pins {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
-        .active_setting = GPIO_PIN_RESET}
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
+    .ebrake = ebrake,
 };
 
 /**
  * The motor hardware interface.
  */
-#if PCBA_PRIMARY_REVISION == 'b' || PCBA_PRIMARY_REVISION == 'a'
-static void* enc_handle = nullptr;
-static constexpr float encoder_pulses = 0.0;
-#else
-static constexpr void* enc_handle = &htim8;
-static constexpr float encoder_pulses = 1024.0;
-#endif
 
 static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
                                                           enc_handle);
