@@ -127,7 +127,7 @@ static void z_motor_gpio_init(void) {
                   &GPIO_InitStruct);
 }
 
-static void ebrake_gpio_init(void) {
+inline static void ebrake_gpio_init(void) {
     __HAL_RCC_GPIOB_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_5;
