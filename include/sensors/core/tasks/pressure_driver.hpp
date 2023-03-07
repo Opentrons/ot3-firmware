@@ -254,8 +254,8 @@ class MMR920C04 {
                             static_cast<std::size_t>(3), own_queue,
                             static_cast<uint8_t>(read_register));
         if (limited_poll && !stop_polling) {
-            number_of_reads++;
-            if (number_of_reads >= total_baseline_reads) {
+            readings_taken++;
+            if (readings_taken >= total_baseline_reads) {
                 stop_polling = true;
             }
         }
@@ -274,7 +274,7 @@ class MMR920C04 {
 
     void set_baseline_values(uint16_t number_of_reads) {
         this->total_baseline_reads = number_of_reads;
-        this->number_of_reads = 0;
+        this->readings_taken = 0;
         this->running_total = 0;
         this->offset_average = 0;
     }
@@ -308,8 +308,8 @@ class MMR920C04 {
                 if (limited_poll) {
                     running_total += pressure_pascals;
                     offset_average =
-                        running_total / static_cast<float>(number_of_reads);
-                    if (number_of_reads == total_baseline_reads) {
+                        running_total / static_cast<float>(readings_taken);
+                    if (readings_taken == total_baseline_reads) {
                         send_baseline_response(tm.message_index);
                         set_baseline_values(0);
                     }
@@ -347,7 +347,7 @@ class MMR920C04 {
     bool sync = false;
     bool report = true;
     bool limited_poll = true;
-    uint16_t number_of_reads = 0x1;
+    uint16_t readings_taken = 0x1;
     float running_total = 0;
     uint16_t total_baseline_reads = 0x8;
     // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
