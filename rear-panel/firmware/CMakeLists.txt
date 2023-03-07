@@ -229,10 +229,19 @@ macro(rearpanel_loop)
       COMMENT "Flashing board"
       DEPENDS ${HEX_IMG_NAME})
   list(APPEND ${PROJECT_NAME}-IMAGES ${REVISION_TARGET}-image-hex)
-  list(APPEND ${PROJECT_NAME}-APPLICATIONS ${REVISION_TARGET}-hex)
+  list(APPEND ${PROJECT_NAME}-APPLICATIONS ${REVISION_TARGET}-bin)
   install_if_latest_revision(
     FILENAME ${HEX_IMG_FILENAME}
     COMPONENT robot-images
+    THISREVISION ${REVISION}
+    REVISIONS ${REVISIONS})
+  install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}.bin
+    DESTINATION applications/
+    COMPONENT applications)
+  install_if_latest_revision(
+    FILENAME "${REVISION_TARGET}-image.hex"
+    COMPONENT images
     THISREVISION ${REVISION}
     REVISIONS ${REVISIONS})
 endmacro()
@@ -243,6 +252,7 @@ foreach_revision(PROJECT_NAME rear-panel
   CALL_FOREACH_REV rearpanel_loop
   NO_CREATE_IMAGE_HEX
   NO_CREATE_APPLICATION_HEX
+  NO_CREATE_INSTALL_RULES
   NO_CREATE_DEBUG_TARGET
   )
 

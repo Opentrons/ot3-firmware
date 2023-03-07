@@ -36,6 +36,7 @@ const struct version* version_get();
 struct revision {
     char primary;
     char secondary;
+    char tertiary[2];
 };
 
 const struct revision* revision_get();

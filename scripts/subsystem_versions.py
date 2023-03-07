@@ -24,8 +24,8 @@ USB_SUBSYSTEMS = [
 
 def find_files(hexdir):
     for direntry in os.scandir(hexdir):
-        if not direntry.name.endswith('.hex'):
-            print(f'ignoring file {direntry.name}, not a hex file', file=sys.stderr)
+        if not (direntry.name.endswith('.hex') or direntry.name.endswith('.bin')):
+            print(f'ignoring file {direntry.name}, not a hex or bin file', file=sys.stderr)
         nameparts = direntry.name.split('.')[0].split('-')
         revision = nameparts[-1]
         subsystem = '-'.join(nameparts[:-1])
