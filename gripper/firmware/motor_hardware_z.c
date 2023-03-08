@@ -151,7 +151,7 @@ HAL_StatusTypeDef initialize_spi() {
 
 void initialize_hardware_z() {
     TIM7_Base_Init();
-    #if PCBA_PRIMARY_REVISION == 'b' && PCBA_PRIMARY_REVISION != 'a'
+    #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
         TIM8_EncoderZ_Init();
     #endif
 }
