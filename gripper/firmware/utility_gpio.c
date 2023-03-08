@@ -147,7 +147,7 @@ void utility_gpio_init(void) {
         ebrake_gpio_init();
     #endif
 
-        limit_switch_gpio_init();
+    limit_switch_gpio_init();
     LED_drive_gpio_init();
     sync_drive_gpio_init();
     estop_input_gpio_init();
