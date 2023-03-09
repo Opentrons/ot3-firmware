@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+
+"""
+Push a firmware set to an OT-3.
+
+Since we build all the firmware and build a manifest here, we can enforce a
+build + install and then just scp dist/applications/* to /usr/lib/firmware.
+"""
+
+import argparse
+import subprocess
+import os
+import sys
+import shutil
+from itertools import chain
+from zipfile import ZipFile
+import tempfile
+from contextlib import contextmanager
+
+_DEFAULT_EXTRAS = {'stdout': sys.stdout, 'stderr': sys.stderr}
+_SSH_EXTRA_OPTS = ['-o', 'StrictHostKeyChecking=no',
+                   '-o', 'UserKnownHostsFile=/dev/null']
+
+class CantFindUtilityException(RuntimeError):
+    def __init__(self, which_util):
+        self.util = which_util
+
+def _ssh(ssh_util, host, cmd, **extras):
+    _cmd(
+        [ssh_util]
+        + _SSH_EXTRA_OPTS
+        + ['root@{host}'.format(host=host), cmd],
+        **extras)
+
+def _scp_to_robot(scp_util, host, local, remote, **extras):
+    _cmd(
+        [scp_util]
+        + _SSH_EXTRA_OPTS
+        + [local, 'root@{host}:{remote}'.format(host=host, remote=remote)],
+        **extras
+    )
+
+
+def _cmd(cmdlist, **extras):
+    _extras = {k: v for k, v in chain(_DEFAULT_EXTRAS.items(), extras.items())}
+    print(' '.join(cmdlist))
+    subprocess.run(cmdlist, **_extras).check_returncode()
+
+@contextmanager
+def _controlled_tempdir():
+    td = tempfile.mkdtemp()
+    try:
+        yield td
+    finally:
+        shutil.rmtree(td)
+
+def _build_fw(zip_path, apps_path):
+    with ZipFile(zip_path, 'w') as zf:
+        for fname in os.listdir(apps_path):
+            zf.write(os.path.join(apps_path, fname), fname)
+
+def _transfer_firmware(host, repo_path, scp, ssh):
+    apps_path = os.path.join(repo_path, 'dist', 'applications')
+    with _controlled_tempdir() as td:
+        local_zip_path = os.path.join(td, 'fw.zip')
+        robot_zip_path = '/tmp/fw.zip'
+        _build_fw(local_zip_path, apps_path)
+        _scp_to_robot(scp, host, local_zip_path, robot_zip_path)
+        _ssh(ssh, host, 'unzip -o {zip_path} -d /usr/lib/firmware/'.format(zip_path=robot_zip_path))
+        _ssh(ssh, host, 'rm {zip_path}'.format(zip_path=robot_zip_path))
+
+def _prep_firmware(repo_path, cmake):
+    _cmd([cmake, '--build', '--preset=firmware-g4', '--target', 'firmware-applications'], cwd=repo_path)
+    _cmd([cmake, '--install', './build-cross', '--component', 'Applications'], cwd=repo_path)
+
+@contextmanager
+def _prep_robot(host, ssh):
+    _ssh(ssh, host, 'mount -o remount,rw /')
+    try:
+        yield
+    finally:
+        _ssh(ssh, host, 'mount -o remount,ro /')
+
+def _find_utils():
+    ssh = shutil.which('ssh')
+    if not ssh:
+        raise CantFindUtilityException('ssh')
+    scp = shutil.which('scp')
+    if not scp:
+        raise CantFindUtilityException('scp')
+    cmake = shutil.which('cmake')
+    if not cmake:
+        raise CantFindUtilityException('cmake')
+    return ssh, scp, cmake
+
+def _restart_robot(host, ssh):
+    _ssh(ssh, host, 'systemctl restart opentrons-robot-server')
+
+def _do_push(host, repo_path, build, restart):
+    ssh, scp, cmake = _find_utils()
+    if build:
+        _prep_firmware(repo_path, cmake)
+    with _prep_robot(host, ssh):
+        _transfer_firmware(host, repo_path, scp, ssh)
+    if restart:
+        _restart_robot(host, ssh)
+
+def push(host, repo_path=None, build=True, restart=True):
+    repo = repo_path or os.dirname(__file__)
+    try:
+        _do_push(host, repo, build, restart)
+        return 0
+    except subprocess.CalledProcessError as e:
+        print(
+            '{cmd}: {returncode}'.format(cmd=e.cmd[0], returncode=e.returncode),
+            file=sys.stderr)
+        return -1
+    except CantFindUtilityException as e:
+        print(
+            'Could not find {util}. Is it installed?'.format(util=e.util),
+            file=sys.stderr)
+        return -1
+
+def _push_from_argparse(args):
+    return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart)
+
+def _arg_parser(parent=None):
+    parents = []
+    if parent:
+        parents.append(parent)
+    parser = argparse.ArgumentParser(
+        prog='push', description='Push firmware to an OT-3', parents=parents)
+    parser.add_argument(
+        'host', type=str, help='The host (e.g. IP) of the robot to push to')
+    parser.add_argument(
+        '--repo-path',
+        type=str,
+        default='.',
+        help=('The path to the ot3-firmware repo; if not specified, it will be '
+              'the one containing this file'))
+    parser.add_argument(
+        '--no-build',
+        action='store_true',
+        help='Skip building firmware'
+    )
+    parser.add_argument(
+        '--no-restart',
+        action='store_true',
+        help='Skip restarting robot server'
+    )
+    return parser
+
+def _main():
+     parser = _arg_parser()
+     args = parser.parse_args()
+     return _push_from_argparse(args)
+
+if __name__ == '__main__':
+    sys.exit(_main())
