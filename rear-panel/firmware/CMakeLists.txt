@@ -15,7 +15,7 @@ find_program(CROSS_OBJCOPY "${CrossGCC_TRIPLE}-objcopy"
         PATHS "${CrossGCC_BINDIR}"
         NO_DEFAULT_PATH
         REQUIRED)
-        
+
 set(COMMON_EXECUTABLE_DIR "${CMAKE_SOURCE_DIR}/common/firmware")
 set(COMMON_MCU_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../startup/STM32G491")
 
@@ -121,7 +121,7 @@ macro(rearpanel_loop)
           $<$<COMPILE_LANGUAGE:CXX>:-Wextra-semi>
           $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
           $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>)
- 
+
     # Configure gdb (full path to cross-gdb set in the toolchain) to use the gdbinit in
     # this dir
     set(GDBINIT_FILE "${CMAKE_BINARY_DIR}/rear-panel/startup/STM32G491/gdbinit")
@@ -129,9 +129,9 @@ macro(rearpanel_loop)
             PROPERTIES
             CROSSCOMPILING_EMULATOR
             "${ARM_GDB};--command=${GDBINIT_FILE}")
-    
+
     # Calculate and package the integrity info for this module
-  
+
   add_custom_target(${REVISION_TARGET}-integrity ALL
     COMMAND ${CROSS_OBJCOPY} ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET} -Obinary
         ${REVISION_TARGET}-scratch.bin --gap-fill=0xFF
@@ -223,7 +223,7 @@ macro(rearpanel_loop)
   # Runs openocd to flash the board with the full image (startup included)
   add_custom_target(${REVISION_TARGET}-image-flash
       COMMAND "${OpenOCD_EXECUTABLE}"
-          "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg" 
+          "-f" "${COMMON_MCU_DIR}/stm32g4discovery.cfg"
           "-c" "program ${HEX_IMG_NAME} reset;exit"
       VERBATIM
       COMMENT "Flashing board"
@@ -238,7 +238,7 @@ macro(rearpanel_loop)
   install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/${REVISION_TARGET}.bin
     DESTINATION applications/
-    COMPONENT applications)
+    COMPONENT Applications)
   install_if_latest_revision(
     FILENAME "${REVISION_TARGET}-image.hex"
     COMPONENT images
