@@ -90,19 +90,70 @@ class MotorInterruptHandler {
         }
     }
 
+    auto estop_update() -> bool {
+        /**
+         * Run tasks that need to occur in the steady state where the estop
+         * remains triggered.
+         *
+         * Returns the current state of the estop line.
+         * */
+        auto estop_status = estop_triggered();
+        if (!estop_status) {
+            // estop is now not triggered, say we're good
+            status_queue_client.send_move_status_reporter_queue(
+                can::messages::ErrorMessage{
+                    .message_index = 0,
+                    .severity = can::ids::ErrorSeverity::warning,
+                    .error_code = can::ids::ErrorCode::estop_released});
+        } else {
+            if (has_move_messages()) {
+                // If we're currently in the estop and we have messages, then
+                // either we're still clearing out the queued messages that we
+                // hadn't yet executed when the estop happened; or somebody sent
+                // us new moves while we were in the estop. In either case, we
+                // want the same top-level behavior: one such move gets an error
+                // response, and the others get deleted.
+                if (!clear_queue_until_empty) {
+                    // Nothing has set clear_queue_until_empty. That flag is set
+                    // from false to true by the code below; by
+                    // cancel_and_clear_moves; and nowhere else. That means that
+                    // no move from the group that is in the queue was currently
+                    // being executed when estop asserted (or it would have been
+                    // cancelled by cancel_and_clear_moves) and no move from the
+                    // group that is in the queue has been responded to with an
+                    // error (or the code below would have run and set the
+                    // flag). Therefore, we need to send an error, and set the
+                    // flag to consume the rest of the group.
+                    auto scratch = MotorMoveMessage{};
+                    std::ignore = move_queue.try_read_isr(&scratch);
+                    status_queue_client.send_move_status_reporter_queue(
+                        can::messages::ErrorMessage{
+                            .message_index = scratch.message_index,
+                            .severity = can::ids::ErrorSeverity::unrecoverable,
+                            .error_code = can::ids::ErrorCode::estop_detected});
+                    clear_queue_until_empty = move_queue.has_message_isr();
+                } else {
+                    // If we were executing a move when estop asserted, and
+                    // what's in the queue is the remaining enqueued moves from
+                    // that group, then we will have called
+                    // cancel_and_clear_moves and clear_queue_until_empty will
+                    // be true. That means we should pop out the queue.
+                    // clear_queue_until_empty will also be true if we were in
+                    // the steady-state estop asserted; got new messages; and
+                    // the other branch of this if asserted. In either case, an
+                    // error message has been sent, so we need to just keep
+                    // clearing the queue.
+                    clear_queue_until_empty = pop_and_discard_move();
+                }
+            }
+        }
+        return estop_status;
+    }
+
     void run_interrupt() {
         // handle error state
         if (in_estop) {
-            // wait some time before coming out of estop state since
-            // the signal bounces
-            in_estop = estop_triggered();
-            if (!in_estop) {
-                status_queue_client.send_move_status_reporter_queue(
-                    can::messages::ErrorMessage{
-                        .message_index = 0,
-                        .severity = can::ids::ErrorSeverity::warning,
-                        .error_code = can::ids::ErrorCode::estop_released});
-            }
+            in_estop = estop_update();
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
         } else {
