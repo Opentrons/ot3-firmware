@@ -20,7 +20,7 @@ void sync_drive_gpio_init();
 
 // SYNC_MCU_OUT PA6
 static GPIO_TypeDef* SYNC_MCU_OUT_PORT = GPIOA;
-static uint16_t SYNC_MCU_OUT_PIN = GPIO_PIN_6;
+static uint16_t SYNC_MCU_OUT_PIN = GPIO_PIN_1;
 static uint8_t SYNC_MCU_OUT_AS = GPIO_PIN_SET;
 // ESTOP_MCU_OUT PA0
 static GPIO_TypeDef* ESTOP_MCU_OUT_PORT = GPIOA;
@@ -35,7 +35,7 @@ static uint8_t ESTOP_MCU_OUT_AS = GPIO_PIN_RESET;
 
 // SYNC_MCU_IN PA1
 static GPIO_TypeDef* SYNC_MCU_IN_PORT = GPIOA;
-static uint16_t SYNC_MCU_IN_PIN = GPIO_PIN_1;
+static uint16_t SYNC_MCU_IN_PIN = GPIO_PIN_6;
 // ESTOP_MCU_IN PA7
 static GPIO_TypeDef* ESTOP_MCU_IN_PORT = GPIOA;
 static uint16_t ESTOP_MCU_IN_PIN = GPIO_PIN_7;

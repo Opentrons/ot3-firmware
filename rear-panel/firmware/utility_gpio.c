@@ -34,7 +34,7 @@ void sync_drive_gpio_init() {
     GPIO_InitStruct.Pin = SYNC_MCU_OUT_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     HAL_GPIO_Init(SYNC_MCU_OUT_PORT, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(SYNC_MCU_OUT_PORT, GPIO_PIN_6, SYNC_MCU_OUT_AS);
+    HAL_GPIO_WritePin(SYNC_MCU_OUT_PORT, SYNC_MCU_OUT_PIN, SYNC_MCU_OUT_AS);
 }
 
 void estop_output_gpio_init() {
