@@ -7,10 +7,12 @@
 #include "FreeRTOS.h"
 #include "common/core/message_queue.hpp"
 #include "common/core/version.h"
+#include "common/firmware/gpio.hpp"
 #include "rear-panel/core/binary_parse.hpp"
 #include "rear-panel/core/double_buffer.hpp"
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/tasks.hpp"
+#include "rear-panel/firmware/gpio_drive_hardware.hpp"
 #include "rear-panel/firmware/system_hardware.h"
 
 namespace system_task {
@@ -19,7 +21,9 @@ using TaskMessage = rearpanel::messages::SystemTaskMessage;
 
 class SystemMessageHandler {
   public:
-    explicit SystemMessageHandler() = default;
+    explicit SystemMessageHandler(
+        gpio_drive_hardware::GpioDrivePins& drive_pins)
+        : drive_pins{drive_pins} {}
     SystemMessageHandler(const SystemMessageHandler&) = delete;
     SystemMessageHandler(const SystemMessageHandler&&) = delete;
     auto operator=(const SystemMessageHandler&)
@@ -39,6 +43,27 @@ class SystemMessageHandler {
         system_hardware_enter_bootloader();
         // above function does not return
     }
+    void handle(const rearpanel::messages::EnableEstopRequest&) const {
+        gpio::set(drive_pins.estop_out);
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
+    }
+    void handle(const rearpanel::messages::DisableEstopRequest&) const {
+        gpio::reset(drive_pins.estop_out);
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
+    }
+    void handle(const rearpanel::messages::EnableSyncRequest&) const {
+        gpio::set(drive_pins.sync_out);
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
+    }
+    void handle(const rearpanel::messages::DisableSyncRequest&) const {
+        gpio::reset(drive_pins.sync_out);
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
+    }
+    gpio_drive_hardware::GpioDrivePins& drive_pins;
 };
 
 /**
@@ -60,8 +85,9 @@ class SystemTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()() {
-        auto handler = SystemMessageHandler{};
+    [[noreturn]] void operator()(
+        gpio_drive_hardware::GpioDrivePins* drive_pins) {
+        auto handler = SystemMessageHandler{*drive_pins};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

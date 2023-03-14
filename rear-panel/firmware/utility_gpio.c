@@ -1,6 +1,4 @@
-#include "utility_gpio.h"
-
-#include "platform_specific_hal_conf.h"
+#include "rear-panel/firmware/utility_gpio.h"
 
 /*  TODO
     IO1_MCU_OUT PA4
@@ -27,16 +25,16 @@ void sync_drive_gpio_init() {
 
     /*Configure sync in GPIO pin : PA6*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    GPIO_InitStruct.Pin = SYNC_MCU_IN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(SYNC_MCU_IN_PORT, &GPIO_InitStruct);
 
     /*Configure sync out GPIO pin : PA1*/
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
+    GPIO_InitStruct.Pin = SYNC_MCU_OUT_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+    HAL_GPIO_Init(SYNC_MCU_OUT_PORT, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(SYNC_MCU_OUT_PORT, GPIO_PIN_6, SYNC_MCU_OUT_AS);
 }
 
 void estop_output_gpio_init() {
@@ -45,13 +43,13 @@ void estop_output_gpio_init() {
 
     /*Configure GPIO pin EStopin : PA0 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_0;
+    GPIO_InitStruct.Pin = ESTOP_MCU_OUT_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(ESTOP_MCU_OUT_PORT, &GPIO_InitStruct);
     //disable estop for the other boards
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ESTOP_MCU_OUT_PORT, ESTOP_MCU_OUT_PIN, ESTOP_MCU_OUT_AS);
 }
 
 void estop_input_gpio_init() {
@@ -60,11 +58,12 @@ void estop_input_gpio_init() {
 
     /*Configure GPIO pin EStopin : PA7 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_7;
+    GPIO_InitStruct.Pin = ESTOP_MCU_IN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(ESTOP_MCU_IN_PORT, &GPIO_InitStruct);
 }
+
 void deck_gpio_init() {
        /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -81,7 +80,7 @@ void deck_gpio_init() {
 
 void utility_gpio_init(void) {
     deck_gpio_init();
-    //sync_drive_gpio_init();
+    sync_drive_gpio_init();
     estop_output_gpio_init();
     //estop_input_gpio_init();
 }

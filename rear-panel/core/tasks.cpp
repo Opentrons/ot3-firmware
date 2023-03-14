@@ -3,6 +3,13 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "rear-panel/firmware/freertos_comms_task.hpp"
+#include "rear-panel/firmware/gpio_drive_hardware.hpp"
+
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include "rear-panel/firmware/utility_gpio.h"
+#pragma GCC diagnostic pop
 
 static auto tasks = rear_panel_tasks::AllTask{};
 
@@ -25,6 +32,14 @@ static auto i2c3_poll_task_builder =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 */
+
+static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
+    .estop_out = gpio::PinConfig{.port = ESTOP_MCU_OUT_PORT,
+                                 .pin = ESTOP_MCU_OUT_PIN,
+                                 .active_setting = ESTOP_MCU_OUT_AS},
+    .sync_out = gpio::PinConfig{.port = SYNC_MCU_OUT_PORT,
+                                .pin = SYNC_MCU_OUT_PIN,
+                                .active_setting = SYNC_MCU_OUT_AS}};
 
 static auto system_task_builder =
     freertos_task::TaskStarter<512, system_task::SystemTask>{};
@@ -59,7 +74,8 @@ void rear_panel_tasks::start_tasks(
     // queues.i2c3_queue = &i2c3_task.get_queue();
     // queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     // queues.eeprom_queue = &eeprom_task.get_queue();
-    auto& systemctl_task = system_task_builder.start(5, "system");
+    auto& systemctl_task =
+        system_task_builder.start(5, "system", gpio_drive_pins);
     tasks.system_task = &systemctl_task;
     queues.system_queue = &systemctl_task.get_queue();
 }
