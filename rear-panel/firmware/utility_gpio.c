@@ -48,8 +48,8 @@ void estop_output_gpio_init() {
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(ESTOP_MCU_OUT_PORT, &GPIO_InitStruct);
-    //disable estop for the other boards
-    HAL_GPIO_WritePin(ESTOP_MCU_OUT_PORT, ESTOP_MCU_OUT_PIN, ESTOP_MCU_OUT_AS);
+    //disable estop for the other boards, we don't use the ESTOP_MCU_OUT_AS value here since that would enable estop
+    HAL_GPIO_WritePin(ESTOP_MCU_OUT_PORT, ESTOP_MCU_OUT_PIN, GPIO_PIN_SET);
 }
 
 void estop_input_gpio_init() {
