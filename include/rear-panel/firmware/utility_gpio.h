@@ -17,6 +17,14 @@ void sync_drive_gpio_init();
 }  // extern "C"
 #endif  // __cplusplus
 
+/* The Following variables sometimes complain since some are unused
+ * some are only used in the c side or just the c++
+ */
+
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 
 // SYNC_MCU_OUT PA6
 static GPIO_TypeDef* SYNC_MCU_OUT_PORT = GPIOA;
@@ -26,13 +34,6 @@ static uint8_t SYNC_MCU_OUT_AS = GPIO_PIN_SET;
 static GPIO_TypeDef* ESTOP_MCU_OUT_PORT = GPIOA;
 static uint16_t ESTOP_MCU_OUT_PIN = GPIO_PIN_0;
 static uint8_t ESTOP_MCU_OUT_AS = GPIO_PIN_RESET;
-
-/// The Following variables are either only used in the C code or not used yet
-
-#pragma GCC diagnostic push
-// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
 // SYNC_MCU_IN PA1
 static GPIO_TypeDef* SYNC_MCU_IN_PORT = GPIOA;
 static uint16_t SYNC_MCU_IN_PIN = GPIO_PIN_6;
