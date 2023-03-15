@@ -159,7 +159,7 @@ SCENARIO("Read pressure sensor values") {
         driver.set_sync_bind(can::ids::SensorOutputBinding::report);
         WHEN("a limited poll for 3 reads is set") {
             i2c_queue.reset();
-            driver.set_number_of_reads(4);
+            driver.set_baseline_values(4);
             driver.set_limited_poll(true);
             driver.get_pressure();
             THEN("the i2c queue receives a MEASURE_MODE_4 command") {
@@ -193,7 +193,7 @@ SCENARIO("Read pressure sensor values") {
         }
         WHEN("A single read command is sent") {
             driver.set_limited_poll(true);
-            driver.set_number_of_reads(1);
+            driver.set_baseline_values(1);
             driver.get_pressure();
             THEN("the i2c queue receives a MEASURE_MODE_4 command") {
                 REQUIRE(i2c_queue.get_size() == 1);
@@ -258,7 +258,7 @@ SCENARIO("Read pressure sensor values") {
             "executed") {
             driver.set_sync_bind(can::ids::SensorOutputBinding::report);
             driver.set_limited_poll(true);
-            driver.set_number_of_reads(1);
+            driver.set_baseline_values(1);
             driver.get_pressure();
             driver.sensor_callback();
             THEN(
@@ -338,7 +338,7 @@ SCENARIO("Read pressure sensor values") {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x20, 0x0, 0x0, 0x0 0x0, 0x0, 0x0, 0x0,
+                    .read_buffer = {0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                                     0x0}};
                 driver.handle_response(sensor_response);
             }

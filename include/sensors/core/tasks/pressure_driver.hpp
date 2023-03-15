@@ -307,9 +307,8 @@ class MMR920C04 {
                 }
                 if (limited_poll) {
                     running_total += pressure_pascals;
-                    offset_average =
-                        running_total / static_cast<float>(readings_taken);
                     if (readings_taken == total_baseline_reads) {
+                        offset_average = running_total / total_baseline_reads;
                         send_baseline_response(tm.message_index);
                         set_baseline_values(0);
                     }
