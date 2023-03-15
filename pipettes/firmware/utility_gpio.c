@@ -31,7 +31,6 @@ static void tip_sense_gpio_init() {
          * */
         GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_7;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
     } else {
         /*Configure GPIO pin : C2 */
         GPIO_InitStruct.Pin = GPIO_PIN_2;
