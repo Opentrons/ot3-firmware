@@ -33,10 +33,21 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
     }
 }
 
-IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
-    switch (pipette_type) {
-        case NINETY_SIX_CHANNEL:
-        case THREE_EIGHTY_FOUR_CHANNEL:
+
+static IRQn_Type get_interrupt_line_lt(PipetteGPIOInterrupt gpio_pin_type) {
+    switch (gpio_pin_type) {
+        case pipette_gpio_data_ready:
+            return EXTI3_IRQn;
+        case pipette_gpio_tip_sense:
+        default:
+            // External interrupt line 3
+            return EXTI3_IRQn;
+    }
+}
+
+static IRQn_Type get_interrupt_line_ht(PipetteGPIOInterrupt gpio_pin_type) {
+    switch (gpio_pin_type) {
+        case pipette_gpio_data_ready:
             // External interrupt lines 15:10
             // TODO(lc: 10-20-2022) This will only
             // return the front sensor board data ready line
@@ -44,12 +55,24 @@ IRQn_Type get_interrupt_line(const PipetteType pipette_type) {
             // for the 96-chan and 8-chan
             // PC6 -> GPIO_EXTI6 (EXTI9_5_IRQn)
             // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
-            return EXTI15_10_IRQn;
-        case SINGLE_CHANNEL:
-        case EIGHT_CHANNEL:
+            return EXTI15_10_IRQn | EXTI9_5_IRQn;
+        case pipette_gpio_tip_sense:
         default:
             // External interrupt line 3
             return EXTI3_IRQn;
+    }
+}
+
+
+IRQn_Type get_interrupt_line(const PipetteType pipette_type, PipetteGPIOInterrupt gpio_pin_type) {
+    switch (pipette_type) {
+        case NINETY_SIX_CHANNEL:
+        case THREE_EIGHTY_FOUR_CHANNEL:
+            return get_interrupt_line_ht(gpio_pin_type);
+        case SINGLE_CHANNEL:
+        case EIGHT_CHANNEL:
+        default:
+            return get_interrupt_line_lt(gpio_pin_type);
     }
 }
 
