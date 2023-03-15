@@ -127,7 +127,6 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     }
 
     static auto get_length() -> uint16_t {
-        //         version              flags          shortsha revision
         return sizeof(uint32_t) + sizeof(uint32_t) + VERSION_SHORTSHA_SIZE +
                sizeof(revision);
     }
