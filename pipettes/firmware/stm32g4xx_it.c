@@ -118,12 +118,37 @@ void DebugMon_Handler(void) {}
 /*  file (startup_stm32g4xxxx.s).                                             */
 /******************************************************************************/
 
+void EXTI2_IRQHandler(void) {
+    EXTI->PR1 = EXTI_LINE_2;
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
 void EXTI3_IRQHandler(void) {
+    EXTI->PR1 = EXTI_LINE_3;
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
 }
 
+void EXTI9_5_IRQHandler(void) {
+    if (EXTI->PR1 & (1 << 6)) {
+        // clear pending
+        EXTI->PR1 = EXTI_LINE_6;
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+    } else if (EXTI->PR1 & (1 << 2)) {
+        // clear pending
+        EXTI->PR1 = EXTI_LINE_7;
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7); 
+    }
+}
+
+
 void EXTI15_10_IRQHandler(void) {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+    if (EXTI->PR1 & (1 << 12)) {
+        EXTI->PR1 = EXTI_LINE_12;
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+    } else if (EXTI->PR1 & (1 << 11)) {
+        EXTI->PR1 = EXTI_LINE_11;
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+    }
 }
 
 // TODO refer to schematic to check and see that the data ready
