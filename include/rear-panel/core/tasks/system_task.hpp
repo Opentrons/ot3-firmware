@@ -43,22 +43,22 @@ class SystemMessageHandler {
         system_hardware_enter_bootloader();
         // above function does not return
     }
-    void handle(const rearpanel::messages::EnableEstopRequest&) const {
+    void handle(const rearpanel::messages::EngageEstopRequest&) const {
         gpio::set(drive_pins.estop_out);
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
     }
-    void handle(const rearpanel::messages::DisableEstopRequest&) const {
+    void handle(const rearpanel::messages::ReleaseEstopRequest&) const {
         gpio::reset(drive_pins.estop_out);
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
     }
-    void handle(const rearpanel::messages::EnableSyncRequest&) const {
+    void handle(const rearpanel::messages::EngageSyncRequest&) const {
         gpio::set(drive_pins.sync_out);
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
     }
-    void handle(const rearpanel::messages::DisableSyncRequest&) const {
+    void handle(const rearpanel::messages::ReleaseSyncRequest&) const {
         gpio::reset(drive_pins.sync_out);
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(rearpanel::messages::Ack{});

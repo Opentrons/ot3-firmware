@@ -170,13 +170,13 @@ struct EnterBootloaderResponse
         -> bool = default;
 };
 
-struct EnableEstopRequest
-    : BinaryFormatMessage<MessageType::ENABLE_ESTOP_REQUEST> {
+struct EngageEstopRequest
+    : BinaryFormatMessage<MessageType::ENGAGE_ESTOP_REQUEST> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit)
-        -> std::variant<std::monostate, EnableEstopRequest> {
+        -> std::variant<std::monostate, EngageEstopRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
@@ -184,19 +184,19 @@ struct EnableEstopRequest
         if (len > 0) {
             return std::monostate{};
         }
-        return EnableEstopRequest{.length = len};
+        return EngageEstopRequest{.length = len};
     }
 
-    auto operator==(const EnableEstopRequest& other) const -> bool = default;
+    auto operator==(const EngageEstopRequest& other) const -> bool = default;
 };
 
-struct DisableEstopRequest
-    : BinaryFormatMessage<MessageType::DISABLE_ESTOP_REQUEST> {
+struct ReleaseEstopRequest
+    : BinaryFormatMessage<MessageType::RELEASE_ESTOP_REQUEST> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit)
-        -> std::variant<std::monostate, DisableEstopRequest> {
+        -> std::variant<std::monostate, ReleaseEstopRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
@@ -204,19 +204,19 @@ struct DisableEstopRequest
         if (len > 0) {
             return std::monostate{};
         }
-        return DisableEstopRequest{.length = len};
+        return ReleaseEstopRequest{.length = len};
     }
 
-    auto operator==(const DisableEstopRequest& other) const -> bool = default;
+    auto operator==(const ReleaseEstopRequest& other) const -> bool = default;
 };
 
-struct EnableSyncRequest
-    : BinaryFormatMessage<MessageType::ENABLE_SYNC_REQUEST> {
+struct EngageSyncRequest
+    : BinaryFormatMessage<MessageType::ENGAGE_SYNC_REQUEST> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit)
-        -> std::variant<std::monostate, EnableSyncRequest> {
+        -> std::variant<std::monostate, EngageSyncRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
@@ -224,19 +224,19 @@ struct EnableSyncRequest
         if (len > 0) {
             return std::monostate{};
         }
-        return EnableSyncRequest{.length = len};
+        return EngageSyncRequest{.length = len};
     }
 
-    auto operator==(const EnableSyncRequest& other) const -> bool = default;
+    auto operator==(const EngageSyncRequest& other) const -> bool = default;
 };
 
-struct DisableSyncRequest
-    : BinaryFormatMessage<MessageType::DISABLE_SYNC_REQUEST> {
+struct ReleaseSyncRequest
+    : BinaryFormatMessage<MessageType::RELEASE_SYNC_REQUEST> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit)
-        -> std::variant<std::monostate, DisableSyncRequest> {
+        -> std::variant<std::monostate, ReleaseSyncRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
@@ -244,25 +244,25 @@ struct DisableSyncRequest
         if (len > 0) {
             return std::monostate{};
         }
-        return DisableSyncRequest{.length = len};
+        return ReleaseSyncRequest{.length = len};
     }
 
-    auto operator==(const DisableSyncRequest& other) const -> bool = default;
+    auto operator==(const ReleaseSyncRequest& other) const -> bool = default;
 };
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
-                 EnterBootloader, EnterBootloaderResponse, EnableEstopRequest,
-                 EnableSyncRequest, DisableEstopRequest, DisableSyncRequest>;
+                 EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
+                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
 
 using SystemTaskMessage =
-    std::variant<std::monostate, EnterBootloader, EnableEstopRequest,
-                 EnableSyncRequest, DisableEstopRequest, DisableSyncRequest>;
+    std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
+                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
 
 static auto rear_panel_parser =
     binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
-                         EnableEstopRequest, EnableSyncRequest,
-                         DisableEstopRequest, DisableSyncRequest>{};
+                         EngageEstopRequest, EngageSyncRequest,
+                         ReleaseEstopRequest, ReleaseSyncRequest>{};
 
 };  // namespace messages
 };  // namespace rearpanel
