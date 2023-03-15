@@ -20,6 +20,7 @@ static void enable_gpio_port(void* port) {
  */
 static void tip_sense_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
+    IRQn_Type exti_line = get_interrupt_line(pipette_type, pipette_gpio_tip_sense);
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -36,6 +37,9 @@ static void tip_sense_gpio_init() {
         GPIO_InitStruct.Pin = GPIO_PIN_2;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
+    /* EXTI interrupt init*/
+    HAL_NVIC_SetPriority(exti_line, 10, 0);
+    HAL_NVIC_EnableIRQ(exti_line);
 }
 
 
@@ -152,7 +156,7 @@ static void data_ready_gpio_init() {
             pipette_hardware_get_gpio(
                 pipette_type, pipette_hardware_device_data_ready_front);
     enable_gpio_port(hardware.port);
-    IRQn_Type exti_line = get_interrupt_line(pipette_type);
+    IRQn_Type exti_line = get_interrupt_line(pipette_type, pipette_gpio_data_ready);
     if (pipette_type != SINGLE_CHANNEL && pipette_type != EIGHT_CHANNEL) {
         PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(
             pipette_type, pipette_hardware_device_data_ready_rear);
@@ -165,9 +169,9 @@ static void data_ready_gpio_init() {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 
-        /* EXTI interrupt init*/
-        HAL_NVIC_SetPriority(exti_line, 10, 0);
-        HAL_NVIC_EnableIRQ(exti_line);
+        // /* EXTI interrupt init*/
+        // HAL_NVIC_SetPriority(exti_line, 10, 0);
+        // HAL_NVIC_EnableIRQ(exti_line);
     }
 
     /*Configure GPIO pin*/
