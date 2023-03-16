@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -173,7 +175,7 @@ class MMR920C04 {
     }
 
     auto send_pressure(uint32_t message_index) -> void {
-        // Pressure is sent via CAN in pascals
+        // Pressure is sent via CAN in pascals as a fixed point value
         auto pressure_pascals =
             mmr920C04::Pressure::to_pressure(_registers.pressure.reading);
         auto pressure_fixed_point =
@@ -183,6 +185,17 @@ class MMR920C04 {
             .sensor = get_sensor_type(),
             .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
+    }
+
+    auto send_baseline_response(uint32_t message_index) -> void {
+        auto offset_fixed_point =
+            convert_to_fixed_point(offset_average, S15Q16_RADIX);
+        auto message = can::messages::BaselineSensorResponse{
+            .message_index = message_index,
+            .sensor = get_sensor_type(),
+            .offset_average = offset_fixed_point};
+        auto host_id = get_host_id();
+        can_client.send_can_message(host_id, message);
     }
 
     auto send_pressure_low_pass(uint32_t message_index) -> void {
@@ -241,8 +254,8 @@ class MMR920C04 {
                             static_cast<std::size_t>(3), own_queue,
                             static_cast<uint8_t>(read_register));
         if (limited_poll && !stop_polling) {
-            number_of_reads--;
-            if (number_of_reads < 1) {
+            readings_taken++;
+            if (readings_taken >= total_baseline_reads) {
                 stop_polling = true;
             }
         }
@@ -259,8 +272,21 @@ class MMR920C04 {
         set_stop_polling(binding);
     }
 
+    auto handle_baseline_poll(uint32_t message_index, float data) -> void {
+        running_total += data;
+        if (readings_taken == total_baseline_reads) {
+            offset_average = running_total / total_baseline_reads;
+            send_baseline_response(message_index);
+            set_number_of_reads(0);
+        }
+    }
+
     void set_number_of_reads(uint16_t number_of_reads) {
-        this->number_of_reads = number_of_reads;
+        this->total_baseline_reads = number_of_reads;
+        this->readings_taken = 0;
+        this->running_total = 0;
+        this->offset_average = 0;
+        this->stop_polling = false;
     }
 
     void set_limited_poll(bool _limited) { limited_poll = _limited; }
@@ -277,7 +303,9 @@ class MMR920C04 {
             case mmr920C04::Registers::PRESSURE_READ:
                 read_pressure(data);
                 if (sync) {
-                    if (pressure_pascals > threshold_pascals) {
+                    if (std::fabs(pressure_pascals) -
+                            std::fabs(offset_average) >
+                        threshold_pascals) {
                         hardware.set_sync();
                         stop_polling = true;
                     } else {
@@ -287,6 +315,9 @@ class MMR920C04 {
                 if (report) {
                     send_pressure(tm.message_index);
                 }
+                if (limited_poll) {
+                    handle_baseline_poll(tm.message_index, pressure_pascals);
+                }
                 break;
             case mmr920C04::Registers::LOW_PASS_PRESSURE_READ:
                 read_pressure_low_pass(data);
@@ -294,7 +325,14 @@ class MMR920C04 {
                 break;
             case mmr920C04::Registers::TEMPERATURE_READ:
                 read_temperature(data);
-                send_temperature(tm.message_index);
+                if (report) {
+                    send_temperature(tm.message_index);
+                }
+                if (limited_poll) {
+                    auto temperature_celsius =
+                        mmr920C04::Temperature::to_temperature(data);
+                    handle_baseline_poll(tm.message_index, temperature_celsius);
+                }
                 break;
             case mmr920C04::Registers::STATUS:
                 read_status(data);
@@ -320,10 +358,13 @@ class MMR920C04 {
     bool sync = false;
     bool report = true;
     bool limited_poll = true;
-    uint16_t number_of_reads = 0x1;
+    uint16_t readings_taken = 0x1;
+    float running_total = 0;
+    uint16_t total_baseline_reads = 0x8;
     // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
     // sure this is an arbitrarily large number to enable continuous reads.
     float threshold_pascals = 100.0F;
+    float offset_average = 0;
     const uint16_t DELAY = 20;
     mmr920C04::Registers read_register = mmr920C04::Registers::PRESSURE_READ;
     I2CQueueWriter &writer;

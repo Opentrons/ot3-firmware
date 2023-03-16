@@ -12,6 +12,7 @@
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 #include "sensors/tests/mock_hardware.hpp"
+
 /*
  * NOTE: pressure_sensor_task.hpp is included here just because
  * the linter throws an unused-function error and NOLINT doesn't
@@ -62,6 +63,7 @@ SCENARIO("Read pressure sensor values") {
     GIVEN("A single read of the pressure sensor, with output set to report") {
         driver.set_sync_bind(can::ids::SensorOutputBinding::report);
         driver.set_limited_poll(true);
+        driver.set_number_of_reads(1);
         WHEN("the sensor_callback function is called") {
             driver.sensor_callback();
             THEN(
@@ -311,6 +313,53 @@ SCENARIO("Read pressure sensor values") {
                     REQUIRE(check_data == Approx(expected));
                     REQUIRE(hardware.get_sync_state_mock() == false);
                 }
+            }
+        }
+    }
+    GIVEN("a baseline sensor request with 10 reads is processed") {
+        int num_reads = 10;
+        driver.set_sync_bind(can::ids::SensorOutputBinding::none);
+        driver.set_limited_poll(true);
+        driver.set_number_of_reads(num_reads);
+        driver.get_pressure();
+        WHEN("pressure driver receives the requested sensor readings") {
+            auto id = i2c::messages::TransactionIdentifier{
+                .token = static_cast<uint32_t>(
+                    sensors::mmr920C04::Registers::PRESSURE_READ),
+                .is_completed_poll = false,
+                .transaction_index = static_cast<uint8_t>(0)};
+            for (int i = 0; i < 5; i++) {
+                auto sensor_response = i2c::messages::TransactionResponse{
+                    .id = id,
+                    .bytes_read = 3,
+                    .read_buffer = {0x0, 0x54, 0x0, 0x00, 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
+                driver.sensor_callback();
+                driver.handle_response(sensor_response);
+            }
+            for (int i = 0; i < 5; i++) {
+                auto sensor_response = i2c::messages::TransactionResponse{
+                    .id = id,
+                    .bytes_read = 3,
+                    .read_buffer = {0x00, 0x9B, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                                    0x0}};
+                driver.sensor_callback();
+                driver.handle_response(sensor_response);
+            }
+            THEN(
+                "a BaselineSensorResponse is sent with the correct calculated "
+                "average") {
+                can::message_writer_task::TaskMessage can_msg{};
+
+                can_queue.try_read(&can_msg);
+                auto response_msg =
+                    std::get<can::messages::BaselineSensorResponse>(
+                        can_msg.message);
+
+                float check_data =
+                    fixed_point_to_float(response_msg.offset_average, 16);
+                float expected = 30.00048;
+                REQUIRE(check_data == Approx(expected));
             }
         }
     }

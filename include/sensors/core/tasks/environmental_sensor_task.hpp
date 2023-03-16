@@ -55,7 +55,7 @@ class EnvironmentSensorMessageHandler {
     }
 
     void visit(const can::messages::BaselineSensorRequest &m) {
-        driver.trigger_on_demand(m.sample_rate);
+        driver.trigger_on_demand(m.number_of_reads);
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host, can::messages::ack_from_request(m));
     }

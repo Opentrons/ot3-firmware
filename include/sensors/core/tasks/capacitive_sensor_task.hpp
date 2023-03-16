@@ -113,12 +113,12 @@ class CapacitiveMessageHandler {
     void visit(can::messages::BaselineSensorRequest &m) {
         LOG("Received request to baseline %d sensor", m.sensor);
         capacitance_handler.reset_limited();
-        capacitance_handler.set_number_of_reads(m.sample_rate);
+        capacitance_handler.set_number_of_reads(m.number_of_reads);
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::IS_BASELINE};
         poller.multi_register_poll(
-            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2, m.sample_rate,
-            DELAY, own_queue,
+            ADDRESS, MSB_MEASUREMENT_1, 2, LSB_MEASUREMENT_1, 2,
+            m.number_of_reads, DELAY, own_queue,
             utils::build_id(ADDRESS, MSB_MEASUREMENT_1,
                             utils::byte_from_tags(tags)));
         can_client.send_can_message(can::ids::NodeId::host,

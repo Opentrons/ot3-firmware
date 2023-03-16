@@ -778,23 +778,23 @@ struct BaselineSensorRequest : BaseMessage<MessageId::baseline_sensor_request> {
     uint32_t message_index = 0;
     uint8_t sensor = 0;
     uint8_t sensor_id = 0;
-    uint16_t sample_rate = 1;
+    uint16_t number_of_reads = 1;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> BaselineSensorRequest {
         uint8_t sensor = 0;
         uint8_t sensor_id = 0;
-        uint16_t sample_rate = 0;
+        uint16_t number_of_reads = 0;
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
         body = bit_utils::bytes_to_int(body, limit, sensor);
         body = bit_utils::bytes_to_int(body, limit, sensor_id);
-        body = bit_utils::bytes_to_int(body, limit, sample_rate);
+        body = bit_utils::bytes_to_int(body, limit, number_of_reads);
         return BaselineSensorRequest{.message_index = msg_ind,
                                      .sensor = sensor,
                                      .sensor_id = sensor_id,
-                                     .sample_rate = sample_rate};
+                                     .number_of_reads = number_of_reads};
     }
 
     auto operator==(const BaselineSensorRequest& other) const -> bool = default;
