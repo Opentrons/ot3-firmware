@@ -72,6 +72,7 @@ enum class MessageId {
     read_presence_sensing_voltage_response = 0x601,
     attached_tools_request = 0x700,
     tools_detected_notification = 0x701,
+    tip_presence_notification = 0x702,
     fw_update_initiate = 0x60,
     fw_update_data = 0x61,
     fw_update_data_ack = 0x62,
@@ -103,7 +104,6 @@ enum class MessageId {
     bind_sensor_output_response = 0x8b,
     peripheral_status_request = 0x8c,
     peripheral_status_response = 0x8d,
-    baseline_sensor_response = 0x8e,
 };
 
 /** Can bus arbitration id node id. */
@@ -222,3 +222,4 @@ enum class MoveStopCondition {
 };
 
 }  // namespace can::ids
+
