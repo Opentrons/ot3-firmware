@@ -105,11 +105,14 @@ class PressureMessageHandler {
     void visit(const can::messages::BaselineSensorRequest &m) {
         LOG("received baseline request");
         static_cast<void>(m);
+        driver.set_sync_bind(can::ids::SensorOutputBinding::none);
+        driver.set_limited_poll(true);
+        driver.set_number_of_reads(m.number_of_reads);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.set_sync_bind(can::ids::SensorOutputBinding::none);
-            driver.set_limited_poll(true);
-            driver.set_number_of_reads(m.number_of_reads);
             driver.get_pressure();
+        } else if (can::ids::SensorType(m.sensor) ==
+                   can::ids::SensorType::temperature) {
+            driver.get_temperature();
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host, can::messages::ack_from_request(m));
