@@ -1222,6 +1222,22 @@ struct BindSensorOutputResponse
         -> bool = default;
 };
 
+struct PushTipPresenceNotification
+    : BaseMessage<MessageId::tip_presence_notification> {
+    uint32_t message_index;
+    uint8_t ejector_flag_status;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(ejector_flag_status, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const PushTipPresenceNotification& other) const
+        -> bool = default;
+};
+
 struct TipActionRequest
     : BaseMessage<MessageId::do_self_contained_tip_action_request> {
     uint32_t message_index;

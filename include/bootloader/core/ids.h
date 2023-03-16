@@ -70,6 +70,7 @@ typedef enum {
     can_messageid_read_presence_sensing_voltage_response = 0x601,
     can_messageid_attached_tools_request = 0x700,
     can_messageid_tools_detected_notification = 0x701,
+    can_messageid_tip_presence_notification = 0x702,
     can_messageid_fw_update_initiate = 0x60,
     can_messageid_fw_update_data = 0x61,
     can_messageid_fw_update_data_ack = 0x62,
