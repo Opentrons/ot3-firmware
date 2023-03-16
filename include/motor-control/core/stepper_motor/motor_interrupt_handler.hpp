@@ -153,6 +153,7 @@ class MotorInterruptHandler {
     void run_interrupt() {
         // handle error state
         if (in_estop) {
+            handle_update_position_queue();
             in_estop = estop_update();
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
