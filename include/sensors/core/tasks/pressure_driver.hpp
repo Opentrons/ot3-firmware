@@ -272,6 +272,15 @@ class MMR920C04 {
         set_stop_polling(binding);
     }
 
+    auto handle_baseline_poll(uint32_t message_index, float data) -> void {
+        running_total += data;
+        if (readings_taken == total_baseline_reads) {
+            offset_average = running_total / total_baseline_reads;
+            send_baseline_response(message_index);
+            set_number_of_reads(0);
+        }
+    }
+
     void set_number_of_reads(uint16_t number_of_reads) {
         this->total_baseline_reads = number_of_reads;
         this->readings_taken = 0;
@@ -307,12 +316,7 @@ class MMR920C04 {
                     send_pressure(tm.message_index);
                 }
                 if (limited_poll) {
-                    running_total += pressure_pascals;
-                    if (readings_taken == total_baseline_reads) {
-                        offset_average = running_total / total_baseline_reads;
-                        send_baseline_response(tm.message_index);
-                        set_number_of_reads(0);
-                    }
+                    handle_baseline_poll(tm.message_index, pressure_pascals);
                 }
                 break;
             case mmr920C04::Registers::LOW_PASS_PRESSURE_READ:
@@ -321,7 +325,14 @@ class MMR920C04 {
                 break;
             case mmr920C04::Registers::TEMPERATURE_READ:
                 read_temperature(data);
-                send_temperature(tm.message_index);
+                if (report) {
+                    send_temperature(tm.message_index);
+                }
+                if (limited_poll) {
+                    auto temperature_celsius =
+                        mmr920C04::Temperature::to_temperature(data);
+                    handle_baseline_poll(tm.message_index, temperature_celsius);
+                }
                 break;
             case mmr920C04::Registers::STATUS:
                 read_status(data);
