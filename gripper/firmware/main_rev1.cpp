@@ -62,12 +62,17 @@ static auto i2c_comms2 = i2c::hardware::I2C();
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};
 
+#if PCBA_PRIMARY_REVISION == 'c'
+static constexpr auto eeprom_chip = eeprom::hardware_iface::EEPromChipType::ST_M24128_DR;
+#else
+static constexpr auto eeprom_chip = eeprom::hardware_iface::EEPromChipType::ST_M24128_DF;
+#endif
+
 class EEPromHardwareInterface
     : public eeprom::hardware_iface::EEPromHardwareIface {
   public:
     EEPromHardwareInterface()
-        : eeprom::hardware_iface::EEPromHardwareIface(
-              eeprom::hardware_iface::EEPromChipType::ST_M24128_DF) {}
+        : eeprom::hardware_iface::EEPromHardwareIface(eeprom_chip) {}
     void set_write_protect(bool enable) final {
         if (enable) {
             disable_eeprom_write();
