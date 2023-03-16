@@ -31,6 +31,7 @@ set(REAR_PANEL_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/freertos_comms_task.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
+        ${COMMON_EXECUTABLE_DIR}/gpio.cpp
         )
 
 set(REAR_PANEL_FW_NON_LINTABLE_SRCS
@@ -47,6 +48,7 @@ set(REAR_PANEL_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
+        ${COMMON_EXECUTABLE_DIR}/gpio.c
         )
 
 

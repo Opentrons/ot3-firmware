@@ -127,7 +127,6 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     }
 
     static auto get_length() -> uint16_t {
-        //         version              flags          shortsha revision
         return sizeof(uint32_t) + sizeof(uint32_t) + VERSION_SHORTSHA_SIZE +
                sizeof(revision);
     }
@@ -169,15 +168,100 @@ struct EnterBootloaderResponse
     auto operator==(const EnterBootloaderResponse& other) const
         -> bool = default;
 };
+
+struct EngageEstopRequest
+    : BinaryFormatMessage<MessageType::ENGAGE_ESTOP_REQUEST> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, EngageEstopRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return EngageEstopRequest{.length = len};
+    }
+
+    auto operator==(const EngageEstopRequest& other) const -> bool = default;
+};
+
+struct ReleaseEstopRequest
+    : BinaryFormatMessage<MessageType::RELEASE_ESTOP_REQUEST> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, ReleaseEstopRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return ReleaseEstopRequest{.length = len};
+    }
+
+    auto operator==(const ReleaseEstopRequest& other) const -> bool = default;
+};
+
+struct EngageSyncRequest
+    : BinaryFormatMessage<MessageType::ENGAGE_SYNC_REQUEST> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, EngageSyncRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return EngageSyncRequest{.length = len};
+    }
+
+    auto operator==(const EngageSyncRequest& other) const -> bool = default;
+};
+
+struct ReleaseSyncRequest
+    : BinaryFormatMessage<MessageType::RELEASE_SYNC_REQUEST> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, ReleaseSyncRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return ReleaseSyncRequest{.length = len};
+    }
+
+    auto operator==(const ReleaseSyncRequest& other) const -> bool = default;
+};
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
-                 EnterBootloader, EnterBootloaderResponse>;
+                 EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
+                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
 
-using SystemTaskMessage = std::variant<std::monostate, EnterBootloader>;
+using SystemTaskMessage =
+    std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
+                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
 
 static auto rear_panel_parser =
-    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader>{};
+    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
+                         EngageEstopRequest, EngageSyncRequest,
+                         ReleaseEstopRequest, ReleaseSyncRequest>{};
 
 };  // namespace messages
 };  // namespace rearpanel
