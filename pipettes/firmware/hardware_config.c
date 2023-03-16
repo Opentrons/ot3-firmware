@@ -34,44 +34,31 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
 }
 
 
-static IRQn_Type get_interrupt_line_lt(PipetteGPIOInterrupt gpio_pin_type) {
+IRQn_Type get_interrupt_line(GPIOInterruptBlock gpio_pin_type) {
     switch (gpio_pin_type) {
-        case pipette_gpio_data_ready:
-            // Tip sense External interrupt line 3
-            return EXTI3_IRQn;
-        case pipette_gpio_tip_sense:
-        default:
-            // Tip sense External interrupt line 2
-            return EXTI2_IRQn;
-    }
-}
-
-static IRQn_Type get_interrupt_line_ht(PipetteGPIOInterrupt gpio_pin_type) {
-    switch (gpio_pin_type) {
-        case pipette_gpio_data_ready:
-            // External interrupt lines 15:10
+        case gpio_block_9_5:
+            // Data ready line for 96 channel (rear)
             // PC6 -> GPIO_EXTI6 (EXTI9_5_IRQn)
-            // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
-            return EXTI15_10_IRQn | EXTI9_5_IRQn;
-        case pipette_gpio_tip_sense:
-        default:
-            // tip sense
+
+            // Tip sense line for the 96 channel (rear)
             // PC7 -> GPIO_EXTI6 (EXTI9_5_IRQn)
+            return EXTI9_5_IRQn;
+        case gpio_block_15_10:
+            // Data ready line for 96 channel (front)
+            // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
+
+            // Tip sense line for the 96 channel (front)
             // PC12 -> GPIO_EXTI11 (EXTI15_10_IRQn)
-            return EXTI15_10_IRQn | EXTI9_5_IRQn;
-    }
-}
-
-
-IRQn_Type get_interrupt_line(const PipetteType pipette_type, PipetteGPIOInterrupt gpio_pin_type) {
-    switch (pipette_type) {
-        case NINETY_SIX_CHANNEL:
-        case THREE_EIGHTY_FOUR_CHANNEL:
-            return get_interrupt_line_ht(gpio_pin_type);
-        case SINGLE_CHANNEL:
-        case EIGHT_CHANNEL:
+            return EXTI15_10_IRQn;
+        case gpio_block_3:
+            // Single channel data ready line
+            // PC3 -> GPIO_EXTI3 (EXTI3_IRQn)
+            return EXTI3_IRQn;
+        case gpio_block_2:
+            // tip sense single and eight channel
+            // PC2 -> GPIO_EXTI2 (EXTI2_IRQn)
         default:
-            return get_interrupt_line_lt(gpio_pin_type);
+            return EXTI2_IRQn;
     }
 }
 
