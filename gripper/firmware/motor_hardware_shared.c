@@ -142,9 +142,6 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         GPIO_InitStruct.Alternate = GPIO_AF4_TIM8;
         HAL_GPIO_Init(Z_MOT_ENC_AB_PORT, &GPIO_InitStruct);
 
-        /* TIM8 interrupt Init */
-        HAL_NVIC_SetPriority(TIM8_UP_IRQn, 7, 0);
-        HAL_NVIC_EnableIRQ(TIM8_UP_IRQn);
     }
 }
 
@@ -160,7 +157,6 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef *htim) {
         HAL_GPIO_DeInit(G_MOT_ENC_PORT, G_MOT_ENC_A_PIN | G_MOT_ENC_B_PIN);
     } else if (htim == &htim8) {
         __HAL_RCC_TIM8_CLK_DISABLE();
-        HAL_NVIC_DisableIRQ(TIM8_UP_IRQn);
         HAL_GPIO_DeInit(Z_MOT_ENC_AB_PORT, Z_MOT_ENC_A_PIN|Z_MOT_ENC_B_PIN);
     }
 }
