@@ -2,7 +2,6 @@
 
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
-#include "common/core/logging.h"
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "i2c/core/poller.hpp"
