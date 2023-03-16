@@ -91,7 +91,7 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
         // Start a serial number read. Respond with CAN message when read
         // completes.
 
-        #if PCBA_PRIMARY_REVISION == 'b'
+#if PCBA_PRIMARY_REVISION == 'b'
         // this temporarliy needs to be hardcoded because the rev1 gripper
         // cannot read/write to the eeprom due to electrical issues with the
         // chip having the same address as a sensor on the i2c line for testing
@@ -102,12 +102,23 @@ class GripperInfoMessageHandler : eeprom::accessor::ReadListener {
             GripperInfoResponse{
                 .message_index = m.message_index,
                 .model = 0x0001,
-                .serial = eeprom::serial_number::SerialDataCodeType{
-                    '2', '0', '2', '2', '1', '1', '1', '5', 'A', '0', '1'}});
-        #else
+                .serial = eeprom::serial_number::SerialDataCodeType {
+                    '2',
+                    '0',
+                    '2',
+                    '2',
+                    '1',
+                    '1',
+                    '1',
+                    '5',
+                    'A',
+                    '0',
+                    '1'
+                }});
+#else
         serial_number_accessor.start_read(m.message_index);
-        #endif
-        }
+#endif
+    }
 
     /**
      * Handle request to set the serial number.
