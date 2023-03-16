@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "gripper/firmware/utility_gpio.h"
 #include "common/firmware/errors.h"
 #include "platform_specific_hal_conf.h"
 #include "stm32g4xx_it.h"
