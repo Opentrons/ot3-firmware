@@ -56,7 +56,7 @@ class PressureMessageHandler {
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             driver.set_sync_bind(can::ids::SensorOutputBinding::report);
             driver.set_limited_poll(true);
-            driver.set_baseline_values(1);
+            driver.set_number_of_reads(1);
             if (!driver.get_pressure()) {
                 LOG("Could not send read pressure command");
             }
@@ -106,10 +106,13 @@ class PressureMessageHandler {
         LOG("received baseline request");
         static_cast<void>(m);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
+            driver.set_sync_bind(can::ids::SensorOutputBinding::none);
             driver.set_limited_poll(true);
-            driver.set_baseline_values(m.number_of_reads);
+            driver.set_number_of_reads(m.number_of_reads);
             driver.get_pressure();
         }
+        driver.get_can_client().send_can_message(
+            can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
     void visit(const can::messages::PeripheralStatusRequest &m) {

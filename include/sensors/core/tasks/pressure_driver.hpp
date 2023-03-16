@@ -272,11 +272,12 @@ class MMR920C04 {
         set_stop_polling(binding);
     }
 
-    void set_baseline_values(uint16_t number_of_reads) {
+    void set_number_of_reads(uint16_t number_of_reads) {
         this->total_baseline_reads = number_of_reads;
         this->readings_taken = 0;
         this->running_total = 0;
         this->offset_average = 0;
+        this->stop_polling = false;
     }
 
     void set_limited_poll(bool _limited) { limited_poll = _limited; }
@@ -310,7 +311,7 @@ class MMR920C04 {
                     if (readings_taken == total_baseline_reads) {
                         offset_average = running_total / total_baseline_reads;
                         send_baseline_response(tm.message_index);
-                        set_baseline_values(0);
+                        set_number_of_reads(0);
                     }
                 }
                 break;

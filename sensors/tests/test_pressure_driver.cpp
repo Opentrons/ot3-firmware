@@ -2,6 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
+#include "common/core/logging.h"
 #include "common/tests/mock_message_queue.hpp"
 #include "common/tests/mock_queue_client.hpp"
 #include "i2c/core/poller.hpp"
@@ -12,6 +13,7 @@
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 #include "sensors/tests/mock_hardware.hpp"
+
 /*
  * NOTE: pressure_sensor_task.hpp is included here just because
  * the linter throws an unused-function error and NOLINT doesn't
@@ -62,6 +64,7 @@ SCENARIO("Read pressure sensor values") {
     GIVEN("A single read of the pressure sensor, with output set to report") {
         driver.set_sync_bind(can::ids::SensorOutputBinding::report);
         driver.set_limited_poll(true);
+        driver.set_number_of_reads(1);
         WHEN("the sensor_callback function is called") {
             driver.sensor_callback();
             THEN(
@@ -159,7 +162,7 @@ SCENARIO("Read pressure sensor values") {
         driver.set_sync_bind(can::ids::SensorOutputBinding::report);
         WHEN("a limited poll for 3 reads is set") {
             i2c_queue.reset();
-            driver.set_baseline_values(4);
+            driver.set_number_of_reads(4);
             driver.set_limited_poll(true);
             driver.get_pressure();
             THEN("the i2c queue receives a MEASURE_MODE_4 command") {
@@ -193,7 +196,7 @@ SCENARIO("Read pressure sensor values") {
         }
         WHEN("A single read command is sent") {
             driver.set_limited_poll(true);
-            driver.set_baseline_values(1);
+            driver.set_number_of_reads(1);
             driver.get_pressure();
             THEN("the i2c queue receives a MEASURE_MODE_4 command") {
                 REQUIRE(i2c_queue.get_size() == 1);
@@ -258,7 +261,7 @@ SCENARIO("Read pressure sensor values") {
             "executed") {
             driver.set_sync_bind(can::ids::SensorOutputBinding::report);
             driver.set_limited_poll(true);
-            driver.set_baseline_values(1);
+            driver.set_number_of_reads(1);
             driver.get_pressure();
             driver.sensor_callback();
             THEN(
@@ -318,7 +321,7 @@ SCENARIO("Read pressure sensor values") {
         int num_reads = 10;
         driver.set_sync_bind(can::ids::SensorOutputBinding::none);
         driver.set_limited_poll(true);
-        driver.set_baseline_values(num_reads);
+        driver.set_number_of_reads(num_reads);
         driver.get_pressure();
         WHEN("pressure driver receives the requested sensor readings") {
             auto id = i2c::messages::TransactionIdentifier{
@@ -330,31 +333,35 @@ SCENARIO("Read pressure sensor values") {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x40, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                    .read_buffer = {0x0, 0x54, 0x0, 0x00, 0x0, 0x0, 0x0, 0x0,
                                     0x0}};
+                driver.sensor_callback();
                 driver.handle_response(sensor_response);
             }
             for (int i = 0; i < 5; i++) {
                 auto sensor_response = i2c::messages::TransactionResponse{
                     .id = id,
                     .bytes_read = 3,
-                    .read_buffer = {0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                    .read_buffer = {0x00, 0x9B, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                                     0x0}};
+                driver.sensor_callback();
                 driver.handle_response(sensor_response);
             }
-        }
-        THEN(
-            "a BaselineSensorResponse is sent with the correct calculated "
-            "average") {
-            can::message_writer_task::TaskMessage can_msg{};
+            THEN(
+                "a BaselineSensorResponse is sent with the correct calculated "
+                "average") {
+                can::message_writer_task::TaskMessage can_msg{};
 
-            can_queue.try_read(&can_msg);
-            auto response_msg = std::get<can::messages::BaselineSensorResponse>(
-                can_msg.message);
-            float check_data =
-                fixed_point_to_float(response_msg.offset_average, 16);
-            float expected = 30.0;
-            REQUIRE(check_data == Approx(expected));
+                can_queue.try_read(&can_msg);
+                auto response_msg =
+                    std::get<can::messages::BaselineSensorResponse>(
+                        can_msg.message);
+
+                float check_data =
+                    fixed_point_to_float(response_msg.offset_average, 16);
+                float expected = 30.00048;
+                REQUIRE(check_data == Approx(expected));
+            }
         }
     }
 }
