@@ -22,6 +22,7 @@
 #include "common/firmware/utility_gpio.h"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/tasks.hpp"
+#include "gripper/firmware/utility_gpio.h"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "sensors/firmware/sensor_hardware.hpp"
 
@@ -33,8 +34,8 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 static auto canbus = can::hal::bus::HalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOC,
-                    .pin = GPIO_PIN_6,
+                    .port = LED_GPIO_PORT,
+                    .pin = LED_GPIO_PIN,
                     .active_setting = GPIO_PIN_RESET});
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
@@ -88,12 +89,12 @@ static auto eeprom_hw_iface = EEPromHardwareInterface();
 auto sensor_pins = sensors::hardware::SensorHardwareConfiguration{
     .sync_in =
         {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-         .port = GPIOB,
-         .pin = GPIO_PIN_7,
+         .port = NSYNC_IN_PORT,
+         .pin = NSYNC_IN_PIN,
          .active_setting = GPIO_PIN_RESET},
     .sync_out = {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_6,
+                 .port = NSYNC_OUT_PORT,
+                 .pin = NSYNC_OUT_PIN,
                  .active_setting = GPIO_PIN_RESET}};
 
 auto sensor_hardware = sensors::hardware::SensorHardware(sensor_pins);

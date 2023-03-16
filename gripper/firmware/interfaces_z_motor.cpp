@@ -2,6 +2,7 @@
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/utils.hpp"
+#include "gripper/firmware/utility_gpio.h"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
@@ -31,13 +32,15 @@ static spi::hardware::Spi spi_comms(SPI_intf);
 static void* enc_handle = nullptr;
 static constexpr float encoder_pulses = 0.0;
 static constexpr std::optional<gpio::PinConfig> ebrake = std::nullopt;
+static constexpr uint8_t use_stop_enable = 0x1;
 #else
+static constexpr uint8_t use_stop_enable = 0x0;
 static constexpr void* enc_handle = &htim8;
 static constexpr float encoder_pulses = 1024.0;
 static gpio::PinConfig ebrake = {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-    .port = GPIOB,
-    .pin = GPIO_PIN_5,
+    .port = EBRAKE_PORT,
+    .pin = EBRAKE_PIN,
     .active_setting = GPIO_PIN_RESET};
 #endif
 
@@ -48,39 +51,39 @@ struct motion_controller::HardwareConfig motor_pins {
     .direction =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_10,
+            .port = Z_MOT_STEPDIR_PORT,
+            .pin = Z_MOT_DIR_PIN,
             .active_setting = GPIO_PIN_SET},
     .step =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_1,
+            .port = Z_MOT_STEPDIR_PORT,
+            .pin = Z_MOT_STEP_PIN,
             .active_setting = GPIO_PIN_SET},
     .enable =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_9,
+            .port = Z_MOT_ENABLE_PORT,
+            .pin = Z_MOT_ENABLE_PIN,
             .active_setting = GPIO_PIN_SET},
     .limit_switch =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_7,
+            .port = Z_LIM_SW_PORT,
+            .pin = Z_LIM_SW_PIN,
             .active_setting = GPIO_PIN_SET},
     .led = {},
     .sync_in =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_7,
+            .port = NSYNC_IN_PORT,
+            .pin = NSYNC_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_10,
+            .port = ESTOP_IN_PORT,
+            .pin = ESTOP_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
     .ebrake = ebrake,
 };
@@ -96,7 +99,8 @@ static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
  * Motor driver configuration.
  */
 static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
-    .registers = {.gconfig = {.en_pwm_mode = 0x0, .stop_enable = 0x1},
+    .registers = {.gconfig = {.en_pwm_mode = 0x0,
+                              .stop_enable = use_stop_enable},
                   .ihold_irun = {.hold_current = 0x2,  // 0.177A
                                  .run_current = 0xA,   // 0.648A
                                  .hold_current_delay = 0x7},
@@ -119,9 +123,9 @@ static tmc2130::configs::TMC2130DriverConfig MotorDriverConfigurations{
             .v_sf = 0.32,
         },
     .chip_select = {
-        .cs_pin = GPIO_PIN_12,
+        .cs_pin = Z_MOT_DRIVE_CS,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .GPIO_handle = GPIOB,
+        .GPIO_handle = Z_MOT_DRIVE_PORT,
     }};
 
 /**

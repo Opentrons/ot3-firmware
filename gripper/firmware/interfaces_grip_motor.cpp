@@ -32,25 +32,25 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .channel = TIM_CHANNEL_1},
     .enable =
         {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_11,
+            .port = G_MOT_ENABLE_PORT,
+            .pin = G_MOT_ENABLE_PIN,
             .active_setting = GPIO_PIN_SET},
     .limit_switch =
         {  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOC,
-            .pin = GPIO_PIN_2,
+            .port = G_LIM_SW_PORT,
+            .pin = G_LIM_SW_PIN,
             .active_setting = GPIO_PIN_SET},
     .sync_in =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOB,
-            .pin = GPIO_PIN_7,
+            .port = NSYNC_IN_PORT,
+            .pin = NSYNC_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
     .estop_in =
         {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .port = GPIOA,
-            .pin = GPIO_PIN_10,
+            .port = ESTOP_IN_PORT,
+            .pin = ESTOP_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
     .encoder_interrupt_freq = double(GRIPPER_JAW_PWM_FREQ_HZ),
 

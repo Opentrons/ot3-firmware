@@ -51,23 +51,23 @@ static void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         /** TIM1 GPIO Configuration
             PC0     ------> TIM1_CH1
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_0;
+        GPIO_InitStruct.Pin = G_MOT_PWM_CH1_PIN;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF2_TIM1;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        HAL_GPIO_Init(G_MOT_PWM_CH1_PORT, &GPIO_InitStruct);
     } else if (htim->Instance == TIM3) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /** TIM3 GPIO Configuration
             PA6     ------> TIM3_CH1
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_6;
+        GPIO_InitStruct.Pin = G_MOT_PWM_CH2_PIN;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(G_MOT_PWM_CH2_PORT, &GPIO_InitStruct);
     }
 }
 
@@ -342,10 +342,10 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac) {
         /**DAC1 GPIO Configuration
         PA4     ------> DAC1_OUT1
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_4;
+        GPIO_InitStruct.Pin = G_MOT_VREF_PIN;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(G_MOT_VREF_PORT, &GPIO_InitStruct);
     }
 }
 
@@ -358,7 +358,7 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac) {
 void HAL_DAC_MspDeInit(DAC_HandleTypeDef* hdac) {
     if (hdac->Instance == DAC1) {
         __HAL_RCC_DAC1_CLK_DISABLE();
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
+        HAL_GPIO_DeInit(G_MOT_VREF_PORT, G_MOT_VREF_PIN);
     }
 }
 
