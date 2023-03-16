@@ -52,6 +52,60 @@ SCENARIO("estop pressed during motor interrupt handler") {
     }
 }
 
+SCENARIO("estop is steady-state pressed") {
+    MotorContainer test_objs{};
+    test_objs.hw.set_mock_estop_in(true);
+    test_objs.handler.run_interrupt();
+    test_objs.handler.run_interrupt();
+    // stop message, estop-active message
+    CHECK(test_objs.reporter.messages.size() == 2);
+    test_objs.reporter.messages.clear();
+    GIVEN("some moves in its queue") {
+        auto msg = Move{.message_index = 1,
+                        .duration = 500,
+                        .velocity = 10,
+                        .acceleration = 2,
+                        .group_id = 0,
+                        .seq_id = 0,
+                        .stop_condition = MoveStopCondition::limit_switch};
+        test_objs.queue.try_write_isr(msg);
+        msg.message_index = 2;
+        test_objs.queue.try_write_isr(msg);
+        WHEN("the interrupt runs") {
+            test_objs.handler.run_interrupt();
+            THEN("the first move gets an error") {
+                REQUIRE(test_objs.queue.get_size() == 1);
+                REQUIRE(test_objs.reporter.messages.size() == 1);
+                auto err = std::get<can::messages::ErrorMessage>(
+                    test_objs.reporter.messages.front());
+                REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
+                REQUIRE(err.message_index == 1);
+                AND_WHEN("the interrupt runs again") {
+                    test_objs.handler.run_interrupt();
+                    THEN("the second move is just ignored") {
+                        REQUIRE(test_objs.queue.get_size() == 0);
+                        REQUIRE(test_objs.reporter.messages.size() == 1);
+                    }
+                }
+            }
+        }
+    }
+    GIVEN("a position request in its position request queue") {
+        auto msg = can::messages::UpdateMotorPositionEstimationRequest{
+            .message_index = 123};
+        test_objs.update_position_queue.try_write(msg);
+        WHEN("the interrupt runs") {
+            test_objs.handler.run_interrupt();
+            THEN("the position request is handled and responded to") {
+                REQUIRE(test_objs.reporter.messages.size() > 0);
+                REQUIRE(std::holds_alternative<
+                        motor_messages::UpdatePositionResponse>(
+                    test_objs.reporter.messages.front()));
+            }
+        }
+    }
+}
+
 SCENARIO("negative position reset") {
     MotorContainer test_objs{};
 
