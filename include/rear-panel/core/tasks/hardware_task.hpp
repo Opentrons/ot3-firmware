@@ -6,6 +6,7 @@
 #include "FreeRTOS.h"
 #include "common/firmware/gpio.hpp"
 #include "rear-panel/core/messages.hpp"
+#include "common/core/debounce.hpp"
 #include "rear-panel/core/tasks.hpp"
 #include "rear-panel/firmware/gpio_drive_hardware.hpp"
 
@@ -35,9 +36,11 @@ class HardwareTask {
             estop_engaged = true;
         }
         // montitor the estop button(s)
-        if ((gpio::is_set(drive_pins->estop_aux1_det) ||
-             gpio::is_set(drive_pins->estop_aux2_det)) &&
-            gpio::is_set(drive_pins->estop_in)) {
+        estop_in_bouncer.debounce_update(gpio::is_set(drive_pins->estop_in));
+        estop_aux1_bouncer.debounce_update(gpio::is_set(drive_pins->estop_aux1_det));
+        estop_aux2_bouncer.debounce_update(gpio::is_set(drive_pins->estop_aux2_det));
+        if ((estop_aux1_bouncer.debounce_state() || estop_aux2_bouncer.debounce_state())
+            && estop_in_bouncer.debounce_state()) {
             if (!estop_engaged) {
                 gpio::set(drive_pins->estop_out);
                 estop_engaged = true;
@@ -68,6 +71,9 @@ class HardwareTask {
 
   private:
     QueueType& queue;
+    debouncer::Debouncer estop_in_bouncer = debouncer::Debouncer{};
+    debouncer::Debouncer estop_aux1_bouncer = debouncer::Debouncer{};
+    debouncer::Debouncer estop_aux2_bouncer = debouncer::Debouncer{};
     bool estop_engaged = false;
 };
 
