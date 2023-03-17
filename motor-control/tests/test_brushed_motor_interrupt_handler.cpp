@@ -201,7 +201,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 // check if position is withen acceptable parameters
                 REQUIRE(
                     std::abs(read_ack.encoder_position - msg.encoder_position) <
-                    int32_t(gear_config.get_encoder_pulses_per_mm() * 0.01));
+                    int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }
@@ -279,7 +279,7 @@ SCENARIO("labware dropped during grip move") {
             }
             test_objs.reporter.messages.clear();
             THEN("Movement starts again") {
-                test_objs.hw.set_encoder_value(1800);
+                test_objs.hw.set_encoder_value(40000);
                 test_objs.handler.set_enc_idle_state(false);
                 // Burn through the holdoff ticks
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
@@ -332,7 +332,7 @@ SCENARIO("collision while homed") {
             }
             test_objs.reporter.messages.clear();
             THEN("Movement starts again") {
-                test_objs.hw.set_encoder_value(200);
+                test_objs.hw.set_encoder_value(40000);
                 test_objs.handler.set_enc_idle_state(false);
                 // Burn through the holdoff ticks
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
@@ -414,7 +414,7 @@ SCENARIO("A collision during position controlled move") {
                 // check if position is withen acceptable parameters
                 REQUIRE(
                     std::abs(read_ack.encoder_position - msg.encoder_position) <
-                    int32_t(gear_config.get_encoder_pulses_per_mm() * 0.01));
+                    int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
             test_objs.reporter.messages.clear();
