@@ -55,17 +55,27 @@ void estop_output_gpio_init() {
 void estop_input_gpio_init() {
        /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOA_CLK_ENABLE();
-
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /*Configure GPIO pin EStopin : PA7 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = ESTOP_MCU_IN_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(ESTOP_MCU_IN_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = ESTOP_DETECT_AUX1_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(ESTOP_DETECT_AUX1_MCU_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin = ESTOP_DETECT_AUX2_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(ESTOP_DETECT_AUX2_MCU_PORT, &GPIO_InitStruct);
 }
 
 void utility_gpio_init(void) {
     sync_drive_gpio_init();
     estop_output_gpio_init();
-    //estop_input_gpio_init();
+    estop_input_gpio_init();
 }

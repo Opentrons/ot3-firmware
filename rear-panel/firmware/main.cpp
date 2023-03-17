@@ -14,12 +14,12 @@
 #include "common/firmware/clocking.h"
 //#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
-#include "common/firmware/utility_gpio.h"
 //#include "i2c/firmware/i2c_comms.hpp"
 #include "rear-panel/core/tasks.hpp"
 //#include "rear-panel/firmware/i2c_setup.h"
 #include "rear-panel/firmware/freertos_comms_task.hpp"
 #include "rear-panel/firmware/light_control_hardware.hpp"
+#include "rear-panel/firmware/utility_gpio.h"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**

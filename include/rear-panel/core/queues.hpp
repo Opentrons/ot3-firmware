@@ -34,6 +34,10 @@ struct QueueClient {
         const rearpanel::messages::HostCommTaskMessage& m);
     freertos_message_queue::FreeRTOSMessageQueue<
         rearpanel::messages::HostCommTaskMessage>* host_comms_queue{nullptr};
+
+    void send_hardware_queue(const rearpanel::messages::HardwareTaskMessage& m);
+    freertos_message_queue::FreeRTOSMessageQueue<
+        rearpanel::messages::HardwareTaskMessage>* hardware_queue{nullptr};
 };
 
 /**

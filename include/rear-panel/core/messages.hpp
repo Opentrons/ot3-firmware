@@ -265,6 +265,8 @@ using SystemTaskMessage =
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage>;
 
+using HardwareTaskMessage = std::variant<std::monostate>;
+
 static auto rear_panel_parser =
     binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
                          EngageEstopRequest, EngageSyncRequest,
