@@ -19,7 +19,7 @@
 #include "rear-panel/core/tasks.hpp"
 //#include "rear-panel/firmware/i2c_setup.h"
 #include "rear-panel/firmware/freertos_comms_task.hpp"
-#include "rear-panel/firmware/led_hardware.h"
+#include "rear-panel/firmware/light_control_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**
@@ -83,11 +83,13 @@ class LED_BLINK_TASK {
 };
 
 static auto lbt = LED_BLINK_TASK{"Blinkenlights"};
+static auto light_hardware = light_control_hardware::LightControlHardware();
 
 auto main() -> int {
     HardwareInit();
     // RCC_Peripheral_Clock_Select();
     utility_gpio_init();
+    light_hardware.initialize();
 
     // initialize_leds();
 
@@ -95,7 +97,7 @@ auto main() -> int {
     // i2c_comms3.set_handle(i2c_handlines.i2c3);
 
     // rear_tasks::start_tasks(i2c_comms3, eeprom_hw_iface);
-    rear_panel_tasks::start_tasks();
+    rear_panel_tasks::start_tasks(light_hardware);
     lbt.start_task();
     iWatchdog.start(6);
 

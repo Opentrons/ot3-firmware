@@ -41,12 +41,16 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
                                 .pin = SYNC_MCU_OUT_PIN,
                                 .active_setting = SYNC_MCU_OUT_AS}};
 
+static auto light_control_task_builder =
+    freertos_task::TaskStarter<512, light_control_task::LightControlTask>{};
+
 static auto system_task_builder =
     freertos_task::TaskStarter<512, system_task::SystemTask>{};
 /**
  * Start rear tasks.
  */
 void rear_panel_tasks::start_tasks(
+    light_control_task::LightControlInterface& light_hardware
     // i2c::hardware::I2CBase& i2c3,
     // eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
 ) {
@@ -66,6 +70,11 @@ void rear_panel_tasks::start_tasks(
     auto comms = host_comms_control_task::start();
     queues.host_comms_queue = &comms.task->get_queue();
     tasks.host_comms_task = comms.task;
+
+    auto& light_task =
+        light_control_task_builder.start(5, "lights", light_hardware);
+    queues.light_control_queue = &light_task.get_queue();
+    tasks.light_control_task = &light_task;
 
     // tasks.i2c3_task = &i2c3_task;
     // tasks.i2c3_poller_task = &i2c3_poller_task;

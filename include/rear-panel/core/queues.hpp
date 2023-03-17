@@ -24,6 +24,12 @@ struct QueueClient {
     freertos_message_queue::FreeRTOSMessageQueue<
         rearpanel::messages::SystemTaskMessage>* system_queue{nullptr};
 
+    void send_light_control_queue(
+        const rearpanel::messages::LightControlTaskMessage& m);
+    freertos_message_queue::FreeRTOSMessageQueue<
+        rearpanel::messages::LightControlTaskMessage>* light_control_queue{
+        nullptr};
+
     void send_host_comms_queue(
         const rearpanel::messages::HostCommTaskMessage& m);
     freertos_message_queue::FreeRTOSMessageQueue<

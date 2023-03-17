@@ -30,6 +30,7 @@ set(DEFAULT_REVISION rear-panel-rev1)
 set(REAR_PANEL_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/host_comms_task/freertos_comms_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/light_control_task/light_control_hardware.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${COMMON_EXECUTABLE_DIR}/gpio.cpp
         )

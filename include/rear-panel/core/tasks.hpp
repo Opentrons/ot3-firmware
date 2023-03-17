@@ -4,6 +4,7 @@
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/queues.hpp"
 #include "rear-panel/core/tasks/host_comms_task.hpp"
+#include "rear-panel/core/tasks/light_control_task.hpp"
 #include "rear-panel/core/tasks/system_task.hpp"
 
 // TODO(ryan): CORETASKS compile in and process the other basic tasks
@@ -27,10 +28,10 @@ struct Task {
 /**
  * Start rear-panel tasks.
  */
-void start_tasks(
-    // TODO(ryan): CORETASKS compile in and process the other basic tasks
-    // i2c::hardware::I2CBase& i2c3,
-    // eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface
+void start_tasks(light_control_task::LightControlInterface& light_hardware
+                 // TODO(ryan): CORETASKS compile in and process the other basic
+                 // tasks i2c::hardware::I2CBase& i2c3,
+                 // eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface
 );
 
 /**
@@ -50,6 +51,10 @@ struct AllTask {
     */
     host_comms_task::HostCommTask<freertos_message_queue::FreeRTOSMessageQueue>*
         host_comms_task{nullptr};
+
+    light_control_task::LightControlTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* light_control_task{
+        nullptr};
 
     system_task::SystemTask<freertos_message_queue::FreeRTOSMessageQueue>*
         system_task{nullptr};
