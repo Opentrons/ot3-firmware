@@ -4,9 +4,9 @@
 
 #include "common/core/message_queue.hpp"
 #include "rear-panel/core/binary_parse.hpp"
+#include "rear-panel/core/constants.h"
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/queues.hpp"
-#include "rear-panel/core/constants.h"
 
 namespace light_control_task {
 
@@ -20,7 +20,7 @@ class LightControlInterface {
  * The task entry point.
  */
 template <template <class> class QueueImpl, typename LightControlHardware>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage> && 
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage> &&
     std::is_base_of_v<LightControlInterface, LightControlHardware>
 class LightControlTask {
   private:
@@ -30,7 +30,8 @@ class LightControlTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    LightControlTask(QueueType& queue, LightControlHardware& hardware) : queue{queue}, hardware{hardware} {}
+    LightControlTask(QueueType& queue, LightControlHardware& hardware)
+        : queue{queue}, hardware{hardware} {}
     LightControlTask(const LightControlTask& c) = delete;
     LightControlTask(const LightControlTask&& c) = delete;
     auto operator=(const LightControlTask& c) = delete;
@@ -41,7 +42,6 @@ class LightControlTask {
      * Task entry point.
      */
     [[noreturn]] void operator()() {
-
         auto handler = LightControlMessageHandler{*drive_pins};
         TaskMessage message{};
         TickType_t last_wake = xTaskGetTickCount();
@@ -70,15 +70,14 @@ class LightControlTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
-
     auto handle_message(const TaskMessage& message) -> void {
-        std::visit([this](auto m) {this->handle(m);}, message);
+        std::visit([this](auto m) { this->handle(m); }, message);
     }
 
-    static auto handle(std::monostate&) -> void {};
+    static auto handle(std::monostate&) -> void{};
 
     QueueType& queue;
     LightControlHardware& hardware;
 };
 
-}
+}  // namespace light_control_task
