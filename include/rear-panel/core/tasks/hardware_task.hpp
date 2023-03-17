@@ -63,7 +63,7 @@ class HardwareTask {
         estop_engaged  = gpio::is_set(drive_pins->estop_out);
         for (;;) {
             check_estop_state(drive_pins);
-            vTaskDelay(100);
+            vTaskDelay(10);
         }
     }
 
