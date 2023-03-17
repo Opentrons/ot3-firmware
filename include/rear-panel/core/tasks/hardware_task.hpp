@@ -30,12 +30,20 @@ class HardwareTask {
     ~HardwareTask() = default;
 
     void check_estop_state(gpio_drive_hardware::GpioDrivePins* drive_pins) {
+        /*
+         * The E-Stop is considered pressed when both there is a button present
+         *  and the E-Stop line is set(active low)
+         * We detect if a button is present by monitoring the E-Stop Aux lines
+         * there is one for each of the two ports that a button could be attached to
+         *
+         */
+
         // Monitor estop forced the actual pin toggle is handled
         // by the system task
         if (drive_pins->estop_forced && !estop_engaged) {
             estop_engaged = true;
         }
-        // montitor the estop button(s)
+        // montitor the estop aux present and estop in pins with the debouncer
         estop_in_bouncer.debounce_update(gpio::is_set(drive_pins->estop_in));
         estop_aux1_bouncer.debounce_update(gpio::is_set(drive_pins->estop_aux1_det));
         estop_aux2_bouncer.debounce_update(gpio::is_set(drive_pins->estop_aux2_det));
@@ -60,9 +68,13 @@ class HardwareTask {
      */
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins* drive_pins) {
+        // This task monitors all of the various gpio inputs
         estop_engaged  = gpio::is_set(drive_pins->estop_out);
         for (;;) {
             check_estop_state(drive_pins);
+            // TODO:
+            // door switch
+            // Aux device present
             vTaskDelay(10);
         }
     }
