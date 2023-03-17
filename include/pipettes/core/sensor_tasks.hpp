@@ -11,6 +11,7 @@
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
+#include "sensors/core/tasks/tip_presence_notification_task.hpp"
 
 /**
  * Sensor Tasks
@@ -57,6 +58,9 @@ struct Tasks {
     sensors::tasks::PressureSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task{
         nullptr};
+    sensors::tasks::TipPresenceNotificationTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* tip_notification_task{
+        nullptr};
 };
 
 /**
@@ -86,6 +90,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         capacitive_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        sensors::tip_presence::TaskMessage>* tip_notification_queue{nullptr};
 };
 
 /**

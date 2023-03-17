@@ -1466,6 +1466,7 @@ using ResponseMessageType = std::variant<
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
-    UpdateMotorPositionEstimationResponse, BaselineSensorResponse>;
+    UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
+    PushTipPresenceNotification>;
 
 }  // namespace can::messages

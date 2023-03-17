@@ -123,13 +123,22 @@ void encoder_callback(int32_t direction) {
 static auto pins_for_sensor =
     motor_configs::sensor_configurations<PIPETTE_TYPE>();
 
-auto sensor_hardware =
+static auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
-auto data_ready_gpio = pins_for_sensor.primary.data_ready.value();
+static auto data_ready_gpio_primary =
+    pins_for_sensor.primary.data_ready.value();
+static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
+
+static auto& sensor_queue_client = sensor_tasks::get_queues();
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == data_ready_gpio.pin && PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
+    if (GPIO_Pin == data_ready_gpio_primary.pin &&
+        PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
         sensor_hardware.data_ready();
+    } else if (GPIO_Pin == tip_sense_gpio_primary.pin) {
+        static_cast<void>(
+            sensor_queue_client.tip_notification_queue->try_write_isr(
+                sensors::tip_presence::TipStatusChangeDetected{}));
     }
 }
 

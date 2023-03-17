@@ -20,8 +20,9 @@ static void enable_gpio_port(void* port) {
  */
 static void tip_sense_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
+    
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     enable_gpio_port(GPIOC);
     if (pipette_type == NINETY_SIX_CHANNEL) {
@@ -31,14 +32,46 @@ static void tip_sense_gpio_init() {
          * */
         GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_7;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
     } else {
         /*Configure GPIO pin : C2 */
         GPIO_InitStruct.Pin = GPIO_PIN_2;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
+
 }
 
+
+/**
+ * @brief NVIC EXTI interrupt priority Initialization
+ * @param None
+ * @retval None
+ */
+static void nvic_priority_enable_init() {
+    PipetteType pipette_type = get_pipette_type();
+
+    if (pipette_type == NINETY_SIX_CHANNEL) {
+        IRQn_Type block_9_5 = get_interrupt_line(gpio_block_9_5);
+        IRQn_Type block_15_10 = get_interrupt_line(gpio_block_15_10);
+        /* EXTI interrupt init data ready/tip sense rear*/
+        HAL_NVIC_SetPriority(block_9_5, 10, 0);
+        HAL_NVIC_EnableIRQ(block_9_5);
+
+        /* EXTI interrupt init data ready/tip sense front*/
+        HAL_NVIC_SetPriority(block_15_10, 10, 0);
+        HAL_NVIC_EnableIRQ(block_15_10);
+    } else {
+        IRQn_Type block_3 = get_interrupt_line(gpio_block_3);
+        IRQn_Type block_2 = get_interrupt_line(gpio_block_2);
+        /* EXTI interrupt init block tip sense*/
+        HAL_NVIC_SetPriority(block_2, 10, 0);
+        HAL_NVIC_EnableIRQ(block_2);
+
+        /* EXTI interrupt init data ready*/
+        HAL_NVIC_SetPriority(block_3, 10, 0);
+        HAL_NVIC_EnableIRQ(block_3);
+    }
+
+}
 
 /**
  * @brief Limit Switch GPIO Initialization Function
@@ -153,7 +186,6 @@ static void data_ready_gpio_init() {
             pipette_hardware_get_gpio(
                 pipette_type, pipette_hardware_device_data_ready_front);
     enable_gpio_port(hardware.port);
-    IRQn_Type exti_line = get_interrupt_line(pipette_type);
     if (pipette_type != SINGLE_CHANNEL && pipette_type != EIGHT_CHANNEL) {
         PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(
             pipette_type, pipette_hardware_device_data_ready_rear);
@@ -166,9 +198,6 @@ static void data_ready_gpio_init() {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 
-        /* EXTI interrupt init*/
-        HAL_NVIC_SetPriority(exti_line, 10, 0);
-        HAL_NVIC_EnableIRQ(exti_line);
     }
 
     /*Configure GPIO pin*/
@@ -179,9 +208,6 @@ static void data_ready_gpio_init() {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
 
-    /* EXTI interrupt init*/
-    HAL_NVIC_SetPriority(exti_line, 10, 0);
-    HAL_NVIC_EnableIRQ(exti_line);
 }
 
 
@@ -228,6 +254,7 @@ static void mount_id_init() {
 
 void utility_gpio_init() {
     mount_id_init();
+    nvic_priority_enable_init();
     limit_switch_gpio_init();
     tip_sense_gpio_init();
     LED_drive_gpio_init();
