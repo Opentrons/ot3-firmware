@@ -33,13 +33,28 @@ class HardwareTask {
      */
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins* drive_pins) {
+        estop_engaged  = gpio::is_set(drive_pins->estop_out);
         for (;;) {
+            // Monitor estop forced the actual pin toggle is handled
+            // by the system task
+            if (drive_pins->estop_forced && !estop_engaged) {
+                estop_engaged = true;
+            }
+            // montitor the estop button(s)
             if ((gpio::is_set(drive_pins->estop_aux1_det) ||
                  gpio::is_set(drive_pins->estop_aux2_det)) &&
                 gpio::is_set(drive_pins->estop_in)) {
-                gpio::set(drive_pins->estop_out);
+                if (!estop_engaged) {
+                    gpio::set(drive_pins->estop_out);
+                    estop_engaged = true;
+                }
             } else {
-                gpio::reset(drive_pins->estop_out);
+                // release the estop line if the estop button is released
+                // and we're not being forced
+                if (estop_engaged && !drive_pins->estop_forced) {
+                    gpio::reset(drive_pins->estop_out);
+                    estop_engaged = false;
+                }
             }
         }
     }
@@ -48,6 +63,7 @@ class HardwareTask {
 
   private:
     QueueType& queue;
+    bool estop_engaged = false;
 };
 
 }  // namespace hardware_task
