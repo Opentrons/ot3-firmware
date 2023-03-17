@@ -1,16 +1,16 @@
 namespace sensors {
 namespace tasks {
 
-using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
-
-template <can::message_writer_task::TaskClient CanClient, class OwnQueue>
+template <can::message_writer_task::TaskClient CanClient>
 class TipPresenceNotificationHandler {
   public:
     explicit TipPresenceNotificationHandler(
-        CanClient &can_client, OwnQueue &own_queue,
-        sensors::hardware::SensorHardwareBase &hardware) {}
-    TipPresenceNotificationHandler(const TipPresenceNotificationHandler &) = delete;
-    TipPresenceNotificationHandler(const TipPresenceNotificationHandler &&) = delete;
+        CanClient &can_client, sensors::hardware::SensorHardwareBase &hardware)
+        : can_client{can_client}, hardware{hardware} {}
+    TipPresenceNotificationHandler(const TipPresenceNotificationHandler &) =
+        delete;
+    TipPresenceNotificationHandler(const TipPresenceNotificationHandler &&) =
+        delete;
     auto operator=(const TipPresenceNotificationHandler &)
         -> TipPresenceNotificationHandler & = delete;
     auto operator=(const TipPresenceNotificationHandler &&)
@@ -23,26 +23,30 @@ class TipPresenceNotificationHandler {
 
     void visit(const std::monostate &) {}
 
-    void visit(const tip_presence::TipStatusChangeDetected &m) {
+    void visit(const tip_presence::TipStatusChangeDetected &) {
         can_client.send_can_message(
-            can::ids::NodeId::host, can::messages::ack_from_request(m));
+            can::ids::NodeId::host,
+            can::messages::PushTipPresenceNotification{
+                .message_index = 0,
+                .ejector_flag_status = hardware.check_tip_presence()});
     }
+
   private:
-    CanClient& can_client;
-    sensors::hardware::SensorHardwareBase hardware;
+    CanClient &can_client;
+    sensors::hardware::SensorHardwareBase &hardware;
 };
 
 /**
  * The task type.
  */
 template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<utils::TaskMessage>, utils::TaskMessage>
+requires MessageQueue<QueueImpl<tip_presence::TaskMessage>,
+                      tip_presence::TaskMessage>
 class TipPresenceNotificationTask {
   public:
-    using Messages = utils::TaskMessage;
-    using QueueType = QueueImpl<utils::TaskMessage>;
-    TipPresenceNotificationTask(can::ids::SensorId id)
-        : sensor_id{id} {}
+    using Messages = tip_presence::TaskMessage;
+    using QueueType = QueueImpl<Messages>;
+    TipPresenceNotificationTask(QueueType &queue) : queue{queue} {}
     TipPresenceNotificationTask(const TipPresenceNotificationTask &c) = delete;
     TipPresenceNotificationTask(const TipPresenceNotificationTask &&c) = delete;
     auto operator=(const TipPresenceNotificationTask &c) = delete;
@@ -53,11 +57,11 @@ class TipPresenceNotificationTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(CanClient *can_client,
+    [[noreturn]] void operator()(
+        CanClient *can_client,
         sensors::hardware::SensorHardwareBase *hardware) {
-        auto handler = TipPresenceNotificationHandler{
-            *can_client, get_queue(), *hardware};
-        utils::TaskMessage message{};
+        auto handler = TipPresenceNotificationHandler{*can_client, *hardware};
+        Messages message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
                 handler.handle_message(message);
@@ -65,14 +69,11 @@ class TipPresenceNotificationTask {
         }
     }
 
-    void set_queue(QueueType* q) { queue = q; }
-
     [[nodiscard]] auto get_queue() const -> QueueType & { return queue; }
 
   private:
-    can::ids::SensorId sensor_id;
-    QueueType* queue{nullptr};
+    QueueType &queue;
 };
 
-	} // namespace tasks
-} // namespace sensors
+}  // namespace tasks
+}  // namespace sensors

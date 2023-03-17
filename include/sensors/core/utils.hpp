@@ -9,11 +9,11 @@
 namespace sensors {
 
 namespace tip_presence {
-    struct TipStatusChangeDetected{};
+struct TipStatusChangeDetected {};
 
-    using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected>;
+using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected>;
 
-} // namespace tip_presence
+}  // namespace tip_presence
 
 namespace utils {
 

@@ -11,6 +11,7 @@
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
+#include "sensors/core/tasks/tip_presence_notification_task.hpp"
 
 /**
  * Sensor Tasks
@@ -30,8 +31,6 @@ using I2CClient =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>;
 using I2CPollerClient =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>;
-using TipNotificationQueueType =
-    freertos_message_queue::FreeRTOSMessageQueue<sensors::tip_presence::TipStatusChangeDetected>;
 
 void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  I2CPollerClient& i2c3_poller_client,
@@ -39,8 +38,7 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  I2CPollerClient& i2c1_poller_client,
                  sensors::hardware::SensorHardwareBase& sensor_hardware,
                  can::ids::NodeId id,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware,
-                 TipNotificationQueueType& tip_notification_queue);
+                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all sensor/eeprom tasks. This will be a singleton.
@@ -92,9 +90,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         capacitive_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue{nullptr};
-    // TODO need to change the message type here
-    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
-        tip_notification_task{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        sensors::tip_presence::TaskMessage>* tip_notification_queue{nullptr};
 };
 
 /**
