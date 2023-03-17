@@ -84,6 +84,9 @@ static auto linear_stall_check = stall_check::StallCheck(
         1000.0F,
     configs::STALL_THRESHOLD_UM);
 
+
+static auto tip_presence_notification_queue = sensor_tasks::TipNotificationQueueType{};
+
 // Gear motors have no encoders
 static auto gear_stall_check = interfaces::gear_motor::GearStallCheck{
     .left = stall_check::StallCheck(0, 0, 0),
@@ -123,13 +126,17 @@ void encoder_callback(int32_t direction) {
 static auto pins_for_sensor =
     motor_configs::sensor_configurations<PIPETTE_TYPE>();
 
-auto sensor_hardware =
+static auto sensor_hardware =
     sensors::hardware::SensorHardware(pins_for_sensor.primary);
-auto data_ready_gpio = pins_for_sensor.primary.data_ready.value();
+static auto data_ready_gpio_primary = pins_for_sensor.primary.data_ready.value();
+static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
+
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == data_ready_gpio.pin && PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
+    if (GPIO_Pin == data_ready_gpio_primary.pin && PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
         sensor_hardware.data_ready();
+    } else if (GPIO_Pin == tip_sense_gpio_primary.pin) {
+        tip_presence_notification_queue.try_write_isr(sensors::tip_presence::TipStatusChangeDetected{});
     }
 }
 
@@ -167,7 +174,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              sensor_hardware, id, eeprom_hardware_iface);
+                              sensor_hardware, id, eeprom_hardware_iface,
+                              tip_presence_notification_queue);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
@@ -178,6 +186,7 @@ auto initialize_motor_tasks(
     gear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, gear_motion,
         peripheral_tasks::get_spi_client(), conf, id, gmh_tsks);
+    
 }
 auto initialize_motor_tasks(
     can::ids::NodeId id,
@@ -190,7 +199,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              sensor_hardware, id, eeprom_hardware_iface);
+                              sensor_hardware, id, eeprom_hardware_iface,
+                              tip_presence_notification_queue);
 
     initialize_linear_timer(plunger_callback);
     initialize_enc_timer(encoder_callback);
