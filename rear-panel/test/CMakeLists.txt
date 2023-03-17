@@ -5,18 +5,18 @@ include(Catch)
 include(AddBuildAndTestTarget)
 
 add_executable(
-        rear_panel
+        rear-panel
         test_main.cpp
         test_messages.cpp
 )
 
-target_include_directories(rear_panel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-set_target_properties(rear_panel
+target_include_directories(rear-panel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
+set_target_properties(rear-panel
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(rear_panel
+target_compile_options(rear-panel
         PUBLIC
         -Wall
         -Werror
@@ -30,11 +30,11 @@ target_compile_options(rear_panel
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
 
-add_revision(TARGET rear_panel REVISION b1)
+add_revision(TARGET rear-panel REVISION b1)
 
-target_link_libraries(rear_panel PUBLIC Catch2::Catch2)
+target_link_libraries(rear-panel PUBLIC Catch2::Catch2)
 
-catch_discover_tests(rear_panel)
-add_build_and_test_target(rear_panel)
+catch_discover_tests(rear-panel)
+add_build_and_test_target(rear-panel)
 
-add_coverage(rear_panel)
+add_coverage(rear-panel)

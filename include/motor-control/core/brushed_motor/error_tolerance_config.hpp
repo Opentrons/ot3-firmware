@@ -5,8 +5,8 @@
 namespace error_tolerance_config {
 
 // upon advice from hardware, 0.01mm is a good limit for precision
-static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 0.01;
-static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 0.02;
+static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 2;
+static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 2;
 
 class BrushedMotorErrorTolerance {
   public:

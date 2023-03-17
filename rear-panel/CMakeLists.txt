@@ -20,7 +20,7 @@ file(GLOB_RECURSE REAR_PANEL_SOURCES_FOR_FORMAT ./*.cpp ./*.hpp ../include/rear-
 add_custom_target(
   rear-panel-format
   ALL
-  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${REAR_SOURCES_FOR_FORMAT}
+  COMMAND ${Clang_CLANGFORMAT_EXECUTABLE} -style=file -i ${REAR_PANEL_SOURCES_FOR_FORMAT}
   )
 
 # Target for use in ci - warnings are errors, doesn't edit files
