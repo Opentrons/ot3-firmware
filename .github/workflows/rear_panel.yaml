@@ -57,6 +57,8 @@ jobs:
         run: cmake --build ./build-cross --target rear-panel-format-ci
       - name: "Lint"
         run: cmake --build ./build-cross --target rear-panel-lint
+      - name: "Build"
+        run: cmake --build ./build-cross --target rear-panel-applications
   host-compile-test:
     name: "Host-Compile/Test"
     runs-on: "ubuntu-20.04"
