@@ -7,6 +7,14 @@
 #include "i2c/core/messages.hpp"
 
 namespace sensors {
+
+namespace tip_presence {
+struct TipStatusChangeDetected {};
+
+using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected>;
+
+}  // namespace tip_presence
+
 namespace utils {
 
 using CanMessageTuple = std::tuple<can::messages::ReadFromSensorRequest,

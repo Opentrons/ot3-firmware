@@ -21,6 +21,10 @@ static auto pressure_sensor_task_builder =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
+static auto tip_notification_task_builder_front =
+    freertos_task::TaskStarter<512,
+                               sensors::tasks::TipPresenceNotificationTask>{};
+
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
     sensor_tasks::I2CClient& i2c3_task_client,
@@ -55,11 +59,14 @@ void sensor_tasks::start_tasks(
         capacitive_sensor_task_builder_front.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
             sensor_hardware, queues);
+    auto& tip_notification_task = tip_notification_task_builder_front.start(
+        5, "tip notification", queues, sensor_hardware);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
     tasks.pressure_sensor_task = &pressure_sensor_task;
+    tasks.tip_notification_task = &tip_notification_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
@@ -67,6 +74,7 @@ void sensor_tasks::start_tasks(
     queues.capacitive_sensor_queue_front =
         &capacitive_sensor_task_front.get_queue();
     queues.pressure_sensor_queue = &pressure_sensor_task.get_queue();
+    queues.tip_notification_queue = &tip_notification_task.get_queue();
 }
 
 sensor_tasks::QueueClient::QueueClient()
