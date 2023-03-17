@@ -28,7 +28,8 @@ class TipPresenceNotificationHandler {
             can::ids::NodeId::host,
             can::messages::PushTipPresenceNotification{
                 .message_index = 0,
-                .ejector_flag_status = hardware.check_tip_presence()});
+                .ejector_flag_status =
+                    static_cast<uint8_t>(hardware.check_tip_presence())});
     }
 
   private:

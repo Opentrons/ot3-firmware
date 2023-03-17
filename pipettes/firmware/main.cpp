@@ -131,7 +131,6 @@ static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto& sensor_queue_client = sensor_tasks::get_queues();
 
-
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == data_ready_gpio_primary.pin &&
         PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
