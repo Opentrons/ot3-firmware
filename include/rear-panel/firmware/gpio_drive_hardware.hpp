@@ -10,6 +10,7 @@ struct GpioDrivePins {
     gpio::PinConfig estop_in;
     gpio::PinConfig estop_aux1_det;
     gpio::PinConfig estop_aux2_det;
+    gpio::PinConfig door_open;
 };
 
 }  // namespace gpio_drive_hardware
