@@ -9,10 +9,13 @@
 //PB14 GREEN Drive
 	AF1 = TIM15_CH1
 //PB15 RED Drive
-	AF2 = TIM15_CH2
+	AF1 = TIM15_CH2
 **/
 #include "rear-panel/firmware/led_hardware.h"
 #include "common/firmware/errors.h"
+
+#include "platform_specific_hal_conf.h"
+#include "system_stm32g4xx.h"
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -31,6 +34,26 @@ uint32_t calc_prescaler(uint32_t timer_clk_freq, uint32_t counter_clk_freq) {
     return timer_clk_freq >= counter_clk_freq
                ? round_closest(timer_clk_freq, counter_clk_freq) - 1U
                : 0U;
+}
+
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_pwm)
+{
+  if(htim_pwm->Instance==TIM2)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM2_CLK_ENABLE();
+  }
+  else if(htim_pwm->Instance==TIM3)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM3_CLK_ENABLE();
+  }
+  else if(htim_pwm->Instance==TIM15)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM15_CLK_ENABLE();
+  }
+
 }
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
@@ -82,7 +105,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF2_TIM15;
+        GPIO_InitStruct.Alternate = GPIO_AF1_TIM15;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
 }
@@ -98,6 +121,7 @@ static void MX_TIM2_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
+    htim2.State = HAL_TIM_STATE_RESET;
     htim2.Instance = TIM2;
     /*
      * Setting counter clock frequency to 2 kHz
@@ -108,7 +132,7 @@ static void MX_TIM2_Init(void) {
     htim2.Init.Period = LED_PWM_WIDTH - 1;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.RepetitionCounter = 0;
-    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
         Error_Handler();
     }
@@ -169,6 +193,7 @@ static void MX_TIM3_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
+    htim3.State = HAL_TIM_STATE_RESET;
     htim3.Instance = TIM3;
     /*
      * Setting counter clock frequency to 2 kHz
@@ -179,7 +204,7 @@ static void MX_TIM3_Init(void) {
     htim3.Init.Period = LED_PWM_WIDTH - 1;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim3.Init.RepetitionCounter = 0;
-    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
         Error_Handler();
     }
@@ -244,6 +269,7 @@ static void MX_TIM15_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
+    htim15.State = HAL_TIM_STATE_RESET;
     htim15.Instance = TIM15;
     /*
      * Setting counter clock frequency to 2 kHz
@@ -254,7 +280,7 @@ static void MX_TIM15_Init(void) {
     htim15.Init.Period = LED_PWM_WIDTH - 1;
     htim15.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim15.Init.RepetitionCounter = 0;
-    htim15.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    htim15.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim15) != HAL_OK) {
         Error_Handler();
     }
@@ -327,6 +353,8 @@ void led_hw_update_pwm(uint32_t duty_cycle, LED_DEVICE led) {
 		case RED_UI_LED:
 			htim15.Instance->CCR2=duty_cycle;
 			break;
+        default:
+            break;
 	}
 }
 
@@ -334,4 +362,18 @@ void led_hw_initialize_leds() {
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_TIM15_Init();
+
+    led_hw_update_pwm(0, DECK_LED);
+    led_hw_update_pwm(0, BLUE_UI_LED);
+    led_hw_update_pwm(0, WHITE_UI_LED);
+    led_hw_update_pwm(0, GREEN_UI_LED);
+    led_hw_update_pwm(0, RED_UI_LED);
+
+    // Activate the channels
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2);
+    
 }

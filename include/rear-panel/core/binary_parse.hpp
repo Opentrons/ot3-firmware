@@ -4,7 +4,6 @@
 
 #include "common/core/bit_utils.hpp"
 #include "rear-panel/core/bin_msg_ids.hpp"
-#include "rear-panel/core/messages.hpp"
 
 namespace binary_parse {
 
