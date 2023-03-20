@@ -64,22 +64,7 @@ void estop_input_gpio_init() {
     HAL_GPIO_Init(ESTOP_MCU_IN_PORT, &GPIO_InitStruct);
 }
 
-void deck_gpio_init() {
-       /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    /*Configure deck led pin  : Pb11 */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = GPIO_PIN_11;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
-}
-
 void utility_gpio_init(void) {
-    deck_gpio_init();
     sync_drive_gpio_init();
     estop_output_gpio_init();
     //estop_input_gpio_init();
