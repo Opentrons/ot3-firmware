@@ -289,16 +289,57 @@ struct EstopButtonDetectionChange
         -> bool = default;
 };
 
+struct DoorSwitchStateRequest
+    : BinaryFormatMessage<MessageType::DOOR_SWITCH_STATE_REQUEST> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, DoorSwitchStateRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return DoorSwitchStateRequest{.length = len};
+    }
+
+    auto operator==(const DoorSwitchStateRequest& other) const
+        -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct DoorSwitchStateResponse
+    : BinaryFormatMessage<MessageType::DOOR_SWITCH_STATE_RESPONSE> {
+    uint16_t length = sizeof(bool);
+    bool open;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(open, iter, limit);
+        return iter;
+    }
+    auto operator==(const DoorSwitchStateResponse& other) const
+        -> bool = default;
+};
+
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
                  EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
-                 EstopStateChange, EstopButtonDetectionChange>;
+                 EstopStateChange, EstopButtonDetectionChange,
+                 DoorSwitchStateRequest, DoorSwitchStateResponse>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
-                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
+                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
+                 DoorSwitchStateRequest>;
 
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage>;
@@ -308,7 +349,8 @@ using HardwareTaskMessage = std::variant<std::monostate>;
 static auto rear_panel_parser =
     binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
                          EngageEstopRequest, EngageSyncRequest,
-                         ReleaseEstopRequest, ReleaseSyncRequest>{};
+                         ReleaseEstopRequest, ReleaseSyncRequest,
+                         DoorSwitchStateRequest>{};
 
 };  // namespace messages
 };  // namespace rearpanel
