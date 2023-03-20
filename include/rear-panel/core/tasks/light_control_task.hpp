@@ -28,18 +28,41 @@ class LightControlInterface {
 /** Delay between each time update.*/
 static constexpr uint32_t DELAY_MS = 5;
 
-/**
- * The task entry point.
- */
-template <template <class> class QueueImpl>
-requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
-class LightControlTask {
+class LightControlMessageHandler {
   private:
     /** Integer for scaling light power.*/
     static constexpr uint32_t MAX_POWER = LED_PWM_WIDTH;
     /** Power level to set the deck LED to "on"*/
     static constexpr uint32_t DECK_LED_ON_POWER = 50;
 
+  public:
+    LightControlMessageHandler(LightControlInterface& hardware)
+        : _hardware(hardware) {}
+
+    auto handle_message(const TaskMessage& message) -> void {
+        std::visit([this](auto m) { this->handle(m); }, message);
+    }
+
+  private:
+    auto handle(std::monostate&) -> void {}
+
+    auto handle(rearpanel::messages::UpdateLightControlMessage&) -> void {
+        _hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
+        _hardware.set_led_power(RED_UI_LED, 0);
+        _hardware.set_led_power(GREEN_UI_LED, 0);
+        _hardware.set_led_power(BLUE_UI_LED, 0);
+        _hardware.set_led_power(WHITE_UI_LED, 100);
+    }
+
+    LightControlInterface& _hardware;
+};
+
+/**
+ * The task entry point.
+ */
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+class LightControlTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
@@ -54,12 +77,12 @@ class LightControlTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(LightControlInterface* hardware_handle) {
-        auto& hardware = *hardware_handle;
+        auto handler = LightControlMessageHandler(*hardware_handle);
         TaskMessage message{};
 
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
-                handle_message(message, hardware);
+                handler.handle_message(message);
             }
         }
     }
@@ -67,23 +90,6 @@ class LightControlTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
-    auto handle_message(const TaskMessage& message,
-                        LightControlInterface& hardware) -> void {
-        std::visit([this, &hardware](auto m) { this->handle(m, hardware); },
-                   message);
-    }
-
-    auto handle(std::monostate&, LightControlInterface&) -> void {}
-
-    auto handle(rearpanel::messages::UpdateLightControlMessage&,
-                LightControlInterface& hardware) -> void {
-        hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
-        hardware.set_led_power(RED_UI_LED, 0);
-        hardware.set_led_power(GREEN_UI_LED, 0);
-        hardware.set_led_power(BLUE_UI_LED, 0);
-        hardware.set_led_power(WHITE_UI_LED, 100);
-    }
-
     QueueType& queue;
 };
 
