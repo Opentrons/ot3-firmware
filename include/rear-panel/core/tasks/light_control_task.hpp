@@ -22,7 +22,7 @@ class LightControlInterface {
         -> LightControlInterface& = delete;
     virtual ~LightControlInterface() = default;
 
-    virtual auto set_led_power(uint8_t id, uint32_t duty_cycle) -> void;
+    virtual auto set_led_power(uint8_t id, uint32_t duty_cycle) -> void = 0;
 };
 
 /** Delay between each time update.*/
