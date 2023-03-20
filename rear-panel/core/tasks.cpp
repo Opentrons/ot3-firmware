@@ -38,7 +38,6 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .estop_out = gpio::PinConfig{.port = ESTOP_MCU_OUT_PORT,
                                  .pin = ESTOP_MCU_OUT_PIN,
                                  .active_setting = ESTOP_MCU_OUT_AS},
-    .estop_forced = false,
     .sync_out = gpio::PinConfig{.port = SYNC_MCU_OUT_PORT,
                                 .pin = SYNC_MCU_OUT_PIN,
                                 .active_setting = SYNC_MCU_OUT_AS},

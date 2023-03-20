@@ -6,7 +6,6 @@ namespace gpio_drive_hardware {
 
 struct GpioDrivePins {
     gpio::PinConfig estop_out;
-    bool estop_forced;
     gpio::PinConfig sync_out;
     gpio::PinConfig estop_in;
     gpio::PinConfig estop_aux1_det;

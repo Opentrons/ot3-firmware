@@ -16,6 +16,8 @@ enum class MessageType : uint16_t {
     RELEASE_ESTOP_REQUEST = 0x08,
     ENGAGE_SYNC_REQUEST = 0x09,
     RELEASE_SYNC_REQUEST = 0x0A,
+    ESTOP_STATE_CHANGE = 0x0B,
+    ESTOP_BUTTON_DETECTION_CHANGE = 0x0C,
 };
 
 };  // namespace messages

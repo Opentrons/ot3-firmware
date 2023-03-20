@@ -252,11 +252,47 @@ struct ReleaseSyncRequest
 
     auto operator==(const ReleaseSyncRequest& other) const -> bool = default;
 };
+
+struct EstopStateChange : BinaryFormatMessage<MessageType::ESTOP_STATE_CHANGE> {
+    uint16_t length = sizeof(bool);
+    bool engaged;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(engaged, iter, limit);
+        return iter;
+    }
+    auto operator==(const EstopStateChange& other) const -> bool = default;
+};
+
+struct EstopButtonDetectionChange
+    : BinaryFormatMessage<MessageType::ESTOP_BUTTON_DETECTION_CHANGE> {
+    uint16_t length = 2 * sizeof(bool);
+    bool aux1_present;
+    bool aux2_present;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(aux1_present, iter, limit);
+        iter = bit_utils::int_to_bytes(aux2_present, iter, limit);
+        return iter;
+    }
+    auto operator==(const EstopButtonDetectionChange& other) const
+        -> bool = default;
+};
+
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
                  EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
-                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
+                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
+                 EstopStateChange, EstopButtonDetectionChange>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,

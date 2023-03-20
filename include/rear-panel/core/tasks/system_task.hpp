@@ -45,13 +45,11 @@ class SystemMessageHandler {
     }
     void handle(const rearpanel::messages::EngageEstopRequest&) const {
         gpio::set(drive_pins.estop_out);
-        drive_pins.estop_forced = true;
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
     }
     void handle(const rearpanel::messages::ReleaseEstopRequest&) const {
         gpio::reset(drive_pins.estop_out);
-        drive_pins.estop_forced = false;
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(rearpanel::messages::Ack{});
     }
