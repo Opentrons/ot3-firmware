@@ -40,7 +40,16 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
                                  .active_setting = ESTOP_MCU_OUT_AS},
     .sync_out = gpio::PinConfig{.port = SYNC_MCU_OUT_PORT,
                                 .pin = SYNC_MCU_OUT_PIN,
-                                .active_setting = SYNC_MCU_OUT_AS}};
+                                .active_setting = SYNC_MCU_OUT_AS},
+    .estop_in = gpio::PinConfig{.port = ESTOP_MCU_IN_PORT,
+                                .pin = ESTOP_MCU_IN_PIN,
+                                .active_setting = ESTOP_MCU_IN_AS},
+    .estop_aux1_det = gpio::PinConfig{.port = ESTOP_DETECT_AUX1_MCU_PORT,
+                                      .pin = ESTOP_DETECT_AUX1_MCU_PIN,
+                                      .active_setting = ESTOP_DETECT_AUX_AS},
+    .estop_aux2_det = gpio::PinConfig{.port = ESTOP_DETECT_AUX2_MCU_PORT,
+                                      .pin = ESTOP_DETECT_AUX2_MCU_PIN,
+                                      .active_setting = ESTOP_DETECT_AUX_AS}};
 
 static auto light_control_task_builder =
     freertos_task::TaskStarter<512, light_control_task::LightControlTask>{};
@@ -50,6 +59,10 @@ static auto system_task_builder =
 
 static auto light_control_timer = light_control_task::timer::LightControlTimer(
     light_control_task_builder.queue, light_control_task::DELAY_MS);
+
+static auto hardware_task_builder =
+    freertos_task::TaskStarter<512, hardware_task::HardwareTask>{};
+
 /**
  * Start rear tasks.
  */
@@ -92,6 +105,11 @@ void rear_panel_tasks::start_tasks(
         system_task_builder.start(5, "system", gpio_drive_pins);
     tasks.system_task = &systemctl_task;
     queues.system_queue = &systemctl_task.get_queue();
+
+    auto& hardwarectl_task =
+        hardware_task_builder.start(5, "hardware", gpio_drive_pins);
+    tasks.hardware_task = &hardwarectl_task;
+    queues.hardware_queue = &hardwarectl_task.get_queue();
 }
 
 /**

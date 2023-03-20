@@ -3,6 +3,7 @@
 #include "common/core/message_queue.hpp"
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/queues.hpp"
+#include "rear-panel/core/tasks/hardware_task.hpp"
 #include "rear-panel/core/tasks/host_comms_task.hpp"
 #include "rear-panel/core/tasks/light_control_task.hpp"
 #include "rear-panel/core/tasks/system_task.hpp"
@@ -58,6 +59,9 @@ struct AllTask {
 
     system_task::SystemTask<freertos_message_queue::FreeRTOSMessageQueue>*
         system_task{nullptr};
+
+    hardware_task::HardwareTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        hardware_task{nullptr};
 };
 
 /**

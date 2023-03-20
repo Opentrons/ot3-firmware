@@ -177,6 +177,24 @@ class HostCommMessageHandler {
         return msg.serialize(tx_into, tx_limit);
     }
 
+    // transmit the estop state
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::EstopStateChange &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
+    }
+
+    // transmit the estop button state
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::EstopButtonDetectionChange &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
+    }
+
     bool may_connect_latch = true;
 };
 
