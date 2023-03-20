@@ -4,9 +4,9 @@
 #pragma once
 
 #include "FreeRTOS.h"
+#include "common/core/debounce.hpp"
 #include "common/firmware/gpio.hpp"
 #include "rear-panel/core/messages.hpp"
-#include "common/core/debounce.hpp"
 #include "rear-panel/core/queues.hpp"
 #include "rear-panel/core/tasks.hpp"
 #include "rear-panel/firmware/gpio_drive_hardware.hpp"

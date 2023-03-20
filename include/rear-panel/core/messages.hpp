@@ -253,6 +253,7 @@ struct ReleaseSyncRequest
     auto operator==(const ReleaseSyncRequest& other) const -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct EstopStateChange : BinaryFormatMessage<MessageType::ESTOP_STATE_CHANGE> {
     uint16_t length = sizeof(bool);
     bool engaged;
@@ -268,6 +269,7 @@ struct EstopStateChange : BinaryFormatMessage<MessageType::ESTOP_STATE_CHANGE> {
     auto operator==(const EstopStateChange& other) const -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct EstopButtonDetectionChange
     : BinaryFormatMessage<MessageType::ESTOP_BUTTON_DETECTION_CHANGE> {
     uint16_t length = 2 * sizeof(bool);
