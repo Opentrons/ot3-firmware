@@ -152,6 +152,7 @@ struct EnterBootloader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
     auto operator==(const EnterBootloader& other) const -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct EnterBootloaderResponse
     : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER_RESPONSE> {
     uint16_t length = sizeof(bool);

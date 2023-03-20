@@ -5,9 +5,9 @@
 
 using namespace light_control_hardware;
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto LightControlHardware::initialize() -> void { led_hw_initialize_leds(); }
 
-auto LightControlHardware::set_led_power(uint8_t id, uint32_t duty_cycle)
-    -> void {
+void LightControlHardware::set_led_power(uint8_t id, uint32_t duty_cycle) {
     led_hw_update_pwm(duty_cycle, static_cast<LED_DEVICE>(id));
 }
