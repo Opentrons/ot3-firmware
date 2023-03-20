@@ -32,8 +32,12 @@ template <template <class> class QueueImpl>
 requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
 class LightControlTask {
   private:
+    /** Integer for scaling light power.*/
     static constexpr uint32_t MAX_POWER = LED_PWM_WIDTH;
+    /** Delay between each time update.*/
     static constexpr uint32_t DELAY_MS = 5;
+    /** Power level to set the deck LED to "on"*/
+    static constexpr uint32_t DECK_LED_ON_POWER = 50;
 
   public:
     using Messages = TaskMessage;
@@ -53,7 +57,6 @@ class LightControlTask {
         TaskMessage message{};
         TickType_t last_wake = xTaskGetTickCount();
         const TickType_t delay_ticks = pdMS_TO_TICKS(DELAY_MS);
-        uint8_t power = 0;
 
         for (;;) {
             // With a timeout of 0, this will immediately return
@@ -62,11 +65,11 @@ class LightControlTask {
                 handle_message(message);
             }
 
-            hardware.set_led_power(DECK_LED, 50);
-            hardware.set_led_power(BLUE_UI_LED, power++);
-            hardware.set_led_power(WHITE_UI_LED, 0);
+            hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
             hardware.set_led_power(RED_UI_LED, 0);
             hardware.set_led_power(GREEN_UI_LED, 0);
+            hardware.set_led_power(BLUE_UI_LED, 0);
+            hardware.set_led_power(WHITE_UI_LED, 100);
 
             // Sleep to drive LED update frequency
             vTaskDelayUntil(&last_wake, delay_ticks);

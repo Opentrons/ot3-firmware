@@ -9,7 +9,7 @@
 //PB14 GREEN Drive
 	AF1 = TIM15_CH1
 //PB15 RED Drive
-	AF2 = TIM15_CH2
+	AF1 = TIM15_CH2
 **/
 #include "rear-panel/firmware/led_hardware.h"
 #include "common/firmware/errors.h"
@@ -105,7 +105,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF2_TIM15;
+        GPIO_InitStruct.Alternate = GPIO_AF1_TIM15;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
 }
@@ -269,7 +269,7 @@ static void MX_TIM15_Init(void) {
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
-    htim3.State = HAL_TIM_STATE_RESET;
+    htim15.State = HAL_TIM_STATE_RESET;
     htim15.Instance = TIM15;
     /*
      * Setting counter clock frequency to 2 kHz
@@ -353,6 +353,8 @@ void led_hw_update_pwm(uint32_t duty_cycle, LED_DEVICE led) {
 		case RED_UI_LED:
 			htim15.Instance->CCR2=duty_cycle;
 			break;
+        default:
+            break;
 	}
 }
 
