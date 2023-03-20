@@ -2,6 +2,7 @@
 
 #include "common/core/freertos_task.hpp"
 #include "common/core/freertos_timer.hpp"
+#include "rear-panel/core/tasks/light_control_update_timer.hpp"
 #include "rear-panel/firmware/freertos_comms_task.hpp"
 #include "rear-panel/firmware/gpio_drive_hardware.hpp"
 
@@ -46,6 +47,9 @@ static auto light_control_task_builder =
 
 static auto system_task_builder =
     freertos_task::TaskStarter<512, system_task::SystemTask>{};
+
+static auto light_control_timer = light_control_task::timer::LightControlTimer(
+    light_control_task_builder.queue, light_control_task::DELAY_MS);
 /**
  * Start rear tasks.
  */
@@ -75,6 +79,7 @@ void rear_panel_tasks::start_tasks(
         light_control_task_builder.start(5, "lights", light_hardware);
     queues.light_control_queue = &light_task.get_queue();
     tasks.light_control_task = &light_task;
+    light_control_timer.start();
 
     // tasks.i2c3_task = &i2c3_task;
     // tasks.i2c3_poller_task = &i2c3_poller_task;

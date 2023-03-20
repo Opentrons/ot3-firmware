@@ -25,6 +25,9 @@ class LightControlInterface {
     virtual auto set_led_power(uint8_t id, uint32_t duty_cycle) -> void;
 };
 
+/** Delay between each time update.*/
+static constexpr uint32_t DELAY_MS = 5;
+
 /**
  * The task entry point.
  */
@@ -34,8 +37,6 @@ class LightControlTask {
   private:
     /** Integer for scaling light power.*/
     static constexpr uint32_t MAX_POWER = LED_PWM_WIDTH;
-    /** Delay between each time update.*/
-    static constexpr uint32_t DELAY_MS = 5;
     /** Power level to set the deck LED to "on"*/
     static constexpr uint32_t DECK_LED_ON_POWER = 50;
 
@@ -55,35 +56,33 @@ class LightControlTask {
     [[noreturn]] void operator()(LightControlInterface* hardware_handle) {
         auto& hardware = *hardware_handle;
         TaskMessage message{};
-        TickType_t last_wake = xTaskGetTickCount();
-        const TickType_t delay_ticks = pdMS_TO_TICKS(DELAY_MS);
 
         for (;;) {
-            // With a timeout of 0, this will immediately return
-            // if there isn't a message.
-            if (queue.try_read(&message, 0)) {
-                handle_message(message);
+            if (queue.try_read(&message, queue.max_delay)) {
+                handle_message(message, hardware);
             }
-
-            hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
-            hardware.set_led_power(RED_UI_LED, 0);
-            hardware.set_led_power(GREEN_UI_LED, 0);
-            hardware.set_led_power(BLUE_UI_LED, 0);
-            hardware.set_led_power(WHITE_UI_LED, 100);
-
-            // Sleep to drive LED update frequency
-            vTaskDelayUntil(&last_wake, delay_ticks);
         }
     }
 
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
-    auto handle_message(const TaskMessage& message) -> void {
-        std::visit([this](auto m) { this->handle(m); }, message);
+    auto handle_message(const TaskMessage& message,
+                        LightControlInterface& hardware) -> void {
+        std::visit([this, &hardware](auto m) { this->handle(m, hardware); },
+                   message);
     }
 
-    static auto handle(std::monostate&) -> void {}
+    auto handle(std::monostate&, LightControlInterface&) -> void {}
+
+    auto handle(rearpanel::messages::UpdateLightControlMessage&,
+                LightControlInterface& hardware) -> void {
+        hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
+        hardware.set_led_power(RED_UI_LED, 0);
+        hardware.set_led_power(GREEN_UI_LED, 0);
+        hardware.set_led_power(BLUE_UI_LED, 0);
+        hardware.set_led_power(WHITE_UI_LED, 100);
+    }
 
     QueueType& queue;
 };

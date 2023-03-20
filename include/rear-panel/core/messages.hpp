@@ -92,6 +92,9 @@ struct DeviceInfoRequest : BinaryFormatMessage<MessageType::DEVICE_INFO_REQ> {
     auto operator==(const DeviceInfoRequest& other) const -> bool = default;
 };
 
+// Empty message sent periodically to drive timing of the light task
+struct UpdateLightControlMessage {};
+
 struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     uint16_t length;
     uint32_t version;
@@ -259,7 +262,8 @@ using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest>;
 
-using LightControlTaskMessage = std::variant<std::monostate>;
+using LightControlTaskMessage =
+    std::variant<std::monostate, UpdateLightControlMessage>;
 
 static auto rear_panel_parser =
     binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,

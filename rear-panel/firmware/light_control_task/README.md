@@ -1,7 +1,3 @@
 # Light Control Task
 
-The light control task runs every millisecond to update the LED's. The task also accepts messages that control the behavior of the LED's.
-
-- When the task runs, it checks if there is a new message.
-  - _If_ the incoming queue is not empty, the first message is consumed
-- The LED statuses are updated based on the current LED action.
+The light control task accepts messages that control the behavior of the LED's. A FreeRTOS timer is configured to run at a regular interval and send a message that instructs the light control task to update the LED's based on the current animation settings. This implicitly drives the update frequency of 200Hz, or 5ms per update.
