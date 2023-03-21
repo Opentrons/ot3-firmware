@@ -50,4 +50,6 @@ using BrushedMoveGroupTaskMessage = std::variant<
     can::messages::GripperGripRequest, can::messages::GripperHomeRequest,
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest>;
 
+using UsageStorageTaskMessage = std::variant<std::monostate>;
+
 }  // namespace motor_control_task_messages
