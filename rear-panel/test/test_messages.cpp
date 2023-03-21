@@ -113,7 +113,7 @@ SCENARIO("message parsing") {
         auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x00};
         WHEN("constructed") {
             auto message = rearpanel::messages::rear_panel_parser.parse(
-                rearpanel::messages::MessageType(0x0003), arr.begin(),
+                rearpanel::ids::BinaryMessageId(0x0003), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
             THEN("monostate is not returned") { REQUIRE(message.index() != 0); }
@@ -129,7 +129,7 @@ SCENARIO("message parsing") {
         auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x0A};
         WHEN("constructed") {
             auto message = rearpanel::messages::rear_panel_parser.parse(
-                rearpanel::messages::MessageType(0x0003), arr.begin(),
+                rearpanel::ids::BinaryMessageId(0x0003), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
             THEN("monostate is returned") {
@@ -143,7 +143,7 @@ SCENARIO("message parsing") {
         auto arr = std::array<uint8_t, 4>{0xAB, 0xCD, 0x00, 0x00};
         WHEN("constructed") {
             auto message = rearpanel::messages::rear_panel_parser.parse(
-                rearpanel::messages::MessageType(0xABCD), arr.begin(),
+                rearpanel::ids::BinaryMessageId(0xABCD), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
             THEN("monostate is returned") {

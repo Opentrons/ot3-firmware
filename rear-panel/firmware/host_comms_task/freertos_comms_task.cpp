@@ -154,9 +154,9 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     uint16_t type = 0;
     std::ignore = bit_utils::bytes_to_int(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        Buf, Buf + sizeof(rearpanel::messages::MessageType), type);
+        Buf, Buf + sizeof(rearpanel::ids::BinaryMessageId), type);
     auto message = rearpanel::messages::rear_panel_parser.parse(
-        rearpanel::messages::MessageType(type),
+        rearpanel::ids::BinaryMessageId(type),
         _local_task.rx_buf.committed()->data(),
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         Buf + *Len);

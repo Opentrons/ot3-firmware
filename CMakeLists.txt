@@ -196,8 +196,9 @@ endif ()
 add_custom_target(update-headers
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         VERBATIM
-        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++"
-        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c")
+        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/can/core/ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++ --subsystem=can"
+        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/bootloader/core/ids.h --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c --subsystem=can"
+        COMMAND ${SHELL_FOR_PYTHON} -c "python ./generate_header.py ${CMAKE_SOURCE_DIR}/include/rear-panel/core/bin_msg_ids.hpp --source-dir=${OPENTRONS_HARDWARE_PATH} --language=c++ --subsystem=rearpanel")
 
 set(_install_cmd "execute_process(\
         COMMAND ${SHELL_FOR_PYTHON} -c \"python3 ${CMAKE_SOURCE_DIR}/scripts/subsystem_versions.py\

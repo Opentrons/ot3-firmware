@@ -10,18 +10,19 @@ from types import ModuleType
 from header_generation_utils.header_generation_utils.utils import (
     Block,
     Languge,
+    Subsystem,
     generate_file_comment,
     write_enum_cpp,
     write_enum_c,
 )
 
 
-def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
+def generate_can_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     """Generate source code into output."""
     with Block(
             output=output,
             start="namespace can::ids {\n\n",
-            terminate="}  // namespace can::ids\n\n",
+            terminate="}  // namespace can::ids\n",
     ):
         write_enum_cpp(constants_mod.FunctionCode, output)
         write_enum_cpp(constants_mod.MessageId, output)
@@ -39,7 +40,7 @@ def generate_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.MoveStopCondition, output)
 
 
-def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: ModuleType) -> None:
+def generate_can_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: ModuleType) -> None:
     """Generate source code into output."""
     can = "CAN"
     write_enum_c(constants_mod.FunctionCode, output, can)
@@ -56,6 +57,15 @@ def generate_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: M
     write_enum_c(constants_mod.MotorPositionFlags, output, can)
     write_enum_c(constants_mod.MoveStopCondition, output, can)
     write_arbitration_id_c(output, can, arbitration_id)
+
+def generate_rearpanel_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
+    """Generate source code into output."""
+    with Block(
+            output=output,
+            start="#include <cstdint>\n\nnamespace rearpanel::ids {\n\n",
+            terminate="}  // namespace rearpanel::ids\n",
+    ):
+        write_enum_cpp(constants_mod.BinaryMessageId, output, 'uint16_t')
 
 
 def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: ModuleType) -> None:
@@ -101,17 +111,36 @@ def main() -> None:
         help=f"language to use. can be one of {','.join(l.value for l in Languge)}",
     )
 
+    parser.add_argument(
+        "--subsystem",
+        metavar="subsystem",
+        type=Subsystem,
+        default=Subsystem.CAN,
+        choices=Subsystem,
+        nargs="?",
+        help=f"subsystem to generate constants for. can be one of {','.join(s.value for s in Subsystem)}",
+    )
+
     args = parser.parse_args()
     if args.source_dir:
         sys.path.append(os.path.join(args.source_dir, os.path.pardir))
     constants = importlib.import_module('opentrons_hardware.firmware_bindings.constants')
     arbid = importlib.import_module('opentrons_hardware.firmware_bindings.arbitration_id')
+    rearpanel_constants = importlib.import_module('opentrons_hardware.firmware_bindings.binary_constants')
     output = args.target
     generate_file_comment(output)
-    if args.language in {Languge.CPP, Languge.CPP_alt}:
-        generate_cpp(output, constants)
-    if args.language in {Languge.C}:
-        generate_c(output, constants, arbid)
+
+    if args.subsystem in {Subsystem.CAN}:
+        if args.language in {Languge.CPP, Languge.CPP_alt}:
+            generate_can_cpp(output, constants)
+        if args.language in {Languge.C}:
+            generate_can_c(output, constants, arbid)
+    elif args.subsystem in {Subsystem.REARPANEL}:
+        if args.language in {Languge.CPP, Languge.CPP_alt}:
+            generate_rearpanel_cpp(output, rearpanel_constants)
+        if args.language in {Languge.C}:
+            raise RuntimeError(f"C header unsupported for subsystem={args.subsystem}")
+
 
 
 if __name__ == "__main__":
