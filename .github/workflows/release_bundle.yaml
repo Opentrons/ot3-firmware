@@ -77,12 +77,73 @@ jobs:
         uses: 'actions/download-artifact@v3'
         with:
           path: .
+      - name: 'Create zips for each sub-artifact'
+        run: |
+          for artifactname in $(ls *-images-*) ; do
+              pushd $artifactname
+              zip ../${artifactname}.zip ./*
+              popd
+          done
+
       - name: 'Create a release'
         uses: 'ncipollo/release-action@v1.12.0'
         with:
-          artifacts: ./firmware-images-${{github.ref_name}}/*, ./firmware-robot-images-${{github.ref_name}}/*, ./firmware-pipette-images-${{github.ref_name}}/*, ./firmware-gripper-images-${{github.ref_name}}/*
-          artifactContentType: application/zip
           draft: true
           generateReleaseNotes: true
           replacesArtifacts: true
           allowUpdates: true
+
+      - name: 'Add firmware images artifact'
+        uses: 'ncipollo/release-action@v1.12.0'
+        with:
+          artifacts: ./firmware-images-${{github.ref_name}}.zip
+          artifactContentType: application/zip
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+
+      - name: 'Add firmware robot images artifact'
+        uses: 'ncipollo/release-action@v1.12.0'
+        with:
+          artifacts: ./firmware-robot-images-${{github.ref_name}}.zip
+          artifactContentType: application/zip
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+
+      - name: 'Add firmware pipette images artifact'
+        uses: 'ncipollo/release-action@v1.12.0'
+        with:
+          artifacts: ./firmware-pipette-images-${{github.ref_name}}.zip
+          artifactContentType: application/zip
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+
+      - name: 'Add firmware gripper images artifact'
+        uses: 'ncipollo/release-action@v1.12.0'
+        with:
+          artifacts: ./firmware-gripper-images-${{github.ref_name}}.zip
+          artifactContentType: application/zip
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+
+      - name: 'Add firmware applications artifact'
+        uses: 'ncipollo/release-action@v1.12.0'
+        with:
+          artifacts: ./firmware-applications-${{github.ref_name}}.zip
+          artifactContentType: application/zip
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
