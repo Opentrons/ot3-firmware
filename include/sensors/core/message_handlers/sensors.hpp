@@ -76,7 +76,15 @@ class SensorHandler {
                 break;
             }
             case can::ids::SensorType::pressure: {
-                client.send_pressure_sensor_queue(m);
+                switch (id) {
+                    case can::ids::SensorId::S1: {
+                        client.send_pressure_sensor_queue_front(m);
+                        break;
+                    }
+                    default:
+                        client.send_pressure_sensor_queue_rear(m);
+                        break;
+                }
                 break;
             }
             default:

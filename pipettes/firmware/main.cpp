@@ -1,5 +1,7 @@
 // clang-format off
 #include "FreeRTOS.h"
+#include <typeinfo>
+
 #include "system_stm32g4xx.h"
 #include "task.h"
 
@@ -121,11 +123,13 @@ void encoder_callback(int32_t direction) {
 }
 
 static auto pins_for_sensor =
-    motor_configs::sensor_configurations<PIPETTE_TYPE>();
+    utility_configs::sensor_configurations<PIPETTE_TYPE>();
+static auto sensor_hardware_container =
+    utility_configs::get_sensor_hardware_container(pins_for_sensor);
 
-static auto sensor_hardware =
-    sensors::hardware::SensorHardware(pins_for_sensor.primary);
 static auto data_ready_gpio_primary =
+    pins_for_sensor.primary.data_ready.value();
+static auto data_ready_gpio_secondary =
     pins_for_sensor.primary.data_ready.value();
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
@@ -140,11 +144,15 @@ static constexpr bool pressure_sensor_available = true;
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == data_ready_gpio_primary.pin && pressure_sensor_available &&
         PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
-        sensor_hardware.data_ready();
+        sensor_hardware_container.primary.data_ready();
     } else if (GPIO_Pin == tip_sense_gpio_primary.pin) {
         static_cast<void>(
             sensor_queue_client.tip_notification_queue->try_write_isr(
                 sensors::tip_presence::TipStatusChangeDetected{}));
+    } else if ( GPIO_Pin == data_ready_gpio_secondary.pin && PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
+        if (sensor_hardware_container.secondary.has_value()) {
+            sensor_hardware_container.secondary.value().data_ready();
+        }
     }
 }
 
@@ -182,7 +190,9 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              sensor_hardware, id, eeprom_hardware_iface);
+                              sensor_hardware_container.primary,
+                              sensor_hardware_container.secondary.value(),
+                              id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
@@ -205,7 +215,7 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              sensor_hardware, id, eeprom_hardware_iface);
+                              sensor_hardware_container.primary, id, eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     initialize_enc_timer(encoder_callback);
