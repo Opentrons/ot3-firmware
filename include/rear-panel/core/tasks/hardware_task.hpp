@@ -58,7 +58,7 @@ class HardwareTask {
         }
         if (current.door_open != previous.door_open) {
             queue_client.send_host_comms_queue(
-                rearpanel::messages::DoorSwitchStateResponse{
+                rearpanel::messages::DoorSwitchStateInfo{
                     .open = current.door_open});
         }
     }

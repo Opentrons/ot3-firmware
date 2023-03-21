@@ -311,8 +311,8 @@ struct DoorSwitchStateRequest
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-struct DoorSwitchStateResponse
-    : BinaryFormatMessage<MessageType::DOOR_SWITCH_STATE_RESPONSE> {
+struct DoorSwitchStateInfo
+    : BinaryFormatMessage<MessageType::DOOR_SWITCH_STATE_INFO> {
     uint16_t length = sizeof(bool);
     bool open;
 
@@ -324,8 +324,7 @@ struct DoorSwitchStateResponse
         iter = bit_utils::int_to_bytes(open, iter, limit);
         return iter;
     }
-    auto operator==(const DoorSwitchStateResponse& other) const
-        -> bool = default;
+    auto operator==(const DoorSwitchStateInfo& other) const -> bool = default;
 };
 
 // HostCommTaskMessage list must be a superset of the messages in the parser
@@ -334,7 +333,7 @@ using HostCommTaskMessage =
                  EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
                  EstopStateChange, EstopButtonDetectionChange,
-                 DoorSwitchStateRequest, DoorSwitchStateResponse>;
+                 DoorSwitchStateRequest, DoorSwitchStateInfo>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,

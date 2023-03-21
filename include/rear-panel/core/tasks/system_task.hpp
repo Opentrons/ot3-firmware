@@ -66,7 +66,7 @@ class SystemMessageHandler {
     void handle(const rearpanel::messages::DoorSwitchStateRequest&) const {
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(
-            rearpanel::messages::DoorSwitchStateResponse{
+            rearpanel::messages::DoorSwitchStateInfo{
                 .open = gpio::is_set(drive_pins.door_open)});
     }
     gpio_drive_hardware::GpioDrivePins& drive_pins;

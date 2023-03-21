@@ -19,7 +19,7 @@ enum class MessageType : uint16_t {
     ESTOP_STATE_CHANGE = 0x0B,
     ESTOP_BUTTON_DETECTION_CHANGE = 0x0C,
     DOOR_SWITCH_STATE_REQUEST = 0x0D,
-    DOOR_SWITCH_STATE_RESPONSE = 0x0E,
+    DOOR_SWITCH_STATE_INFO = 0x0E,
 };
 
 };  // namespace messages
