@@ -1,6 +1,5 @@
 // clang-format off
 #include "FreeRTOS.h"
-#include <typeinfo>
 
 #include "system_stm32g4xx.h"
 #include "task.h"
