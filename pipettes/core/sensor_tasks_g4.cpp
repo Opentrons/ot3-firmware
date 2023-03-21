@@ -169,7 +169,14 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue_rear(
 
 void sensor_tasks::QueueClient::send_pressure_sensor_queue_front(
     const sensors::utils::TaskMessage& m) {
-    pressure_sensor_queue_front->try_write(m);
+    // The single channel only has 1 pressure sensor which
+    // is generally referred to as the "rear". In this instance,
+    // the front queue should not be dereferenced and
+    // we should double check this by making sure the
+    // front queue is not a nullptr.
+    if (pressure_sensor_queue_front != nullptr) {
+        pressure_sensor_queue_front->try_write(m);
+    }
 }
 
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
