@@ -35,7 +35,8 @@ void sensor_tasks::start_tasks(
     sensor_tasks::I2CPollerClient& i2c3_poller_client,
     sensor_tasks::I2CClient& i2c2_task_client,
     sensor_tasks::I2CPollerClient& i2c2_poller_client,
-    sensors::hardware::SensorHardwareBase& sensor_hardware_primary, can::ids::NodeId id,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    can::ids::NodeId id,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware) {
     queue_client.set_node_id(id);
     auto& queues = sensor_tasks::get_queues();
@@ -57,8 +58,8 @@ void sensor_tasks::start_tasks(
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
-        5, "pressure sensor s0", pressure_i2c_client, pressure_i2c_poller, queues,
-        sensor_hardware_primary);
+        5, "pressure sensor s0", pressure_i2c_client, pressure_i2c_poller,
+        queues, sensor_hardware_primary);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
@@ -96,11 +97,11 @@ void sensor_tasks::start_tasks(
     auto& tasks = sensor_tasks::get_tasks();
 
     auto& pressure_i2c_client_primary = get_pipette_type() == EIGHT_CHANNEL
-                                    ? i2c2_task_client
-                                    : i2c3_task_client;
+                                            ? i2c2_task_client
+                                            : i2c3_task_client;
     auto& pressure_i2c_poller_primary = get_pipette_type() == EIGHT_CHANNEL
-                                    ? i2c2_poller_client
-                                    : i2c3_poller_client;
+                                            ? i2c2_poller_client
+                                            : i2c3_poller_client;
 
     auto& eeprom_i2c_client = get_pipette_type() == NINETY_SIX_CHANNEL
                                   ? i2c3_task_client
@@ -111,8 +112,8 @@ void sensor_tasks::start_tasks(
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
-        5, "pressure sensor s0", pressure_i2c_client_primary, pressure_i2c_poller_primary, queues,
-        sensor_hardware_primary);
+        5, "pressure sensor s0", pressure_i2c_client_primary,
+        pressure_i2c_poller_primary, queues, sensor_hardware_primary);
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_rear.start(
         5, "pressure sensor s1", i2c3_task_client, i2c3_poller_client, queues,
         sensor_hardware_secondary);
@@ -136,7 +137,8 @@ void sensor_tasks::start_tasks(
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
     queues.pressure_sensor_queue_rear = &pressure_sensor_task_rear.get_queue();
-    queues.pressure_sensor_queue_front = &pressure_sensor_task_front.get_queue();
+    queues.pressure_sensor_queue_front =
+        &pressure_sensor_task_front.get_queue();
     queues.tip_notification_queue = &tip_notification_task.get_queue();
 }
 

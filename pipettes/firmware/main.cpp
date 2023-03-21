@@ -149,7 +149,8 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         static_cast<void>(
             sensor_queue_client.tip_notification_queue->try_write_isr(
                 sensors::tip_presence::TipStatusChangeDetected{}));
-    } else if ( GPIO_Pin == data_ready_gpio_secondary.pin && PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
+    } else if (GPIO_Pin == data_ready_gpio_secondary.pin &&
+               PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
         if (sensor_hardware_container.secondary.has_value()) {
             sensor_hardware_container.secondary.value().data_ready();
         }
@@ -191,8 +192,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
                               sensor_hardware_container.primary,
-                              sensor_hardware_container.secondary.value(),
-                              id, eeprom_hardware_iface);
+                              sensor_hardware_container.secondary.value(), id,
+                              eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     initialize_gear_timer(gear_callback_wrapper);
@@ -215,7 +216,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              sensor_hardware_container.primary, id, eeprom_hardware_iface);
+                              sensor_hardware_container.primary, id,
+                              eeprom_hardware_iface);
 
     initialize_linear_timer(plunger_callback);
     initialize_enc_timer(encoder_callback);

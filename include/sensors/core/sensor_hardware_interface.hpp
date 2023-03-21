@@ -32,9 +32,9 @@ class SensorHardwareBase {
         -> bool = 0;
 };
 
-struct SensorHardwareContainer{
-  SensorHardwareBase& primary;
-  SensorHardwareBase& secondary;
+struct SensorHardwareContainer {
+    SensorHardwareBase& primary;
+    SensorHardwareBase& secondary;
 };
 
 };  // namespace hardware
