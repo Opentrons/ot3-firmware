@@ -62,7 +62,7 @@ def generate_rearpanel_cpp(output: io.StringIO, constants_mod: ModuleType) -> No
     """Generate source code into output."""
     with Block(
             output=output,
-            start="namespace rearpanel::ids {\n\n",
+            start="#include <cstdint>\n\nnamespace rearpanel::ids {\n\n",
             terminate="}  // namespace rearpanel::ids\n",
     ):
         write_enum_cpp(constants_mod.BinaryMessageId, output, 'uint16_t')

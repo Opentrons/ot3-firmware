@@ -3,6 +3,8 @@
  ********************************************/
 #pragma once
 
+#include <cstdint>
+
 namespace rearpanel::ids {
 
 /** USB Binary message ID. */
