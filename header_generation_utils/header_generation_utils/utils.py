@@ -5,6 +5,7 @@ from io import StringIO
 from typing import (
     Any,
     Type,
+    Optional,
 )
 
 
@@ -41,11 +42,12 @@ def generate_file_comment(output: StringIO) -> None:
     output.write("#pragma once\n\n")
 
 
-def write_enum_cpp(e: Type[Enum], output: StringIO) -> None:
+def write_enum_cpp(e: Type[Enum], output: StringIO, type: Optional[str] = None) -> None:
     """Generate enum class from enumeration."""
     output.write(f"/** {e.__doc__} */\n")
+    typestr = f" : {type}" if type else ""
     with Block(
-            output=output, start=f"enum class {e.__name__} {{\n", terminate="};\n\n"
+            output=output, start=f"enum class {e.__name__}{typestr} {{\n", terminate="};\n\n"
     ):
         for i in e:
             output.write(f"    {i.name} = 0x{i.value:x},\n")

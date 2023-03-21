@@ -65,7 +65,7 @@ def generate_rearpanel_cpp(output: io.StringIO, constants_mod: ModuleType) -> No
             start="namespace rearpanel::ids {\n\n",
             terminate="}  // namespace rearpanel::ids\n",
     ):
-        write_enum_cpp(constants_mod.BinaryMessageId, output)
+        write_enum_cpp(constants_mod.BinaryMessageId, output, 'uint16_t')
 
 
 def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: ModuleType) -> None:
