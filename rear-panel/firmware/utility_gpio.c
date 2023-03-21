@@ -74,8 +74,20 @@ void estop_input_gpio_init() {
     HAL_GPIO_Init(ESTOP_DETECT_AUX2_MCU_PORT, &GPIO_InitStruct);
 }
 
+void door_open_input_gpio_init() {
+       /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /*Configure GPIO pin DOOR_OPEN : PB0 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = DOOR_OPEN_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(DOOR_OPEN_MCU_PORT, &GPIO_InitStruct);
+}
+
 void utility_gpio_init(void) {
     sync_drive_gpio_init();
     estop_output_gpio_init();
     estop_input_gpio_init();
+    door_open_input_gpio_init();
 }
