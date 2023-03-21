@@ -70,3 +70,10 @@ class Languge(str, Enum):
     C = "c"
     CPP = "c++"
     CPP_alt = "cpp"
+
+
+class Subsystem(str, Enum):
+    """Subsystem enum."""
+
+    CAN = "can"
+    REARPANEL = "rearpanel"
