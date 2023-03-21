@@ -21,13 +21,21 @@ struct HardwareConfig {
     std::optional<gpio::PinConfig> ebrake = std::nullopt;
 };
 
+struct StepperUsageEEpromConfig {
+    uint16_t step_usage_key;
+};
+
 class MotorHardware : public StepperMotorHardwareIface {
   public:
     ~MotorHardware() final = default;
     MotorHardware() = delete;
     MotorHardware(const HardwareConfig& config, void* timer_handle,
-                  void* encoder_handle)
-        : pins(config), tim_handle(timer_handle), enc_handle(encoder_handle) {}
+                  void* encoder_handle,
+                  const StepperUsageEEpromConfig& eeprom_config)
+        : pins(config),
+          tim_handle(timer_handle),
+          enc_handle(encoder_handle),
+          eeprom_config(eeprom_config) {}
     MotorHardware(const MotorHardware&) = delete;
     auto operator=(const MotorHardware&) -> MotorHardware& = delete;
     MotorHardware(MotorHardware&&) = delete;
@@ -49,6 +57,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void set_LED(bool status) final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
+    auto get_usage_eeprom_config() -> StepperUsageEEpromConfig&;
 
     // downward interface - call from timer overflow handler
     void encoder_overflow(int32_t direction);
@@ -60,6 +69,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
+    StepperUsageEEpromConfig eeprom_config;
     int32_t motor_encoder_overflow_count = 0;
 };
 

@@ -2,6 +2,7 @@
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
 #include "gripper/core/utils.hpp"
+#include "gripper/firmware/eeprom_keys.hpp"
 #include "gripper/firmware/utility_gpio.h"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -21,6 +22,10 @@
  */
 static spi::hardware::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
+};
+
+struct motor_hardware::StepperUsageEEpromConfig usage_config {
+    .step_usage_key = Z_MOTOR_STEP_KEY
 };
 
 /**
@@ -93,7 +98,8 @@ struct motion_controller::HardwareConfig motor_pins {
  */
 
 static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
-                                                          enc_handle);
+                                                          enc_handle,
+                                                          usage_config);
 
 /**
  * Motor driver configuration.

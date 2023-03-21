@@ -27,6 +27,7 @@
 #include "head/core/queues.hpp"
 #include "head/core/tasks_rev1.hpp"
 #include "head/core/utils.hpp"
+#include "head/firmware/eeprom_keys.hpp"
 #include "head/firmware/presence_sensing_hardware.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
@@ -81,6 +82,14 @@ static constexpr int direction_active_level = GPIO_PIN_RESET;
 #else
 static constexpr int direction_active_level = GPIO_PIN_SET;
 #endif
+
+struct motor_hardware::StepperUsageEEpromConfig left_usage_config {
+    .step_usage_key = L_MOTOR_STEP_KEY
+};
+
+struct motor_hardware::StepperUsageEEpromConfig right_usage_config {
+    .step_usage_key = R_MOTOR_STEP_KEY
+};
 
 struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
@@ -250,7 +259,7 @@ static stall_check::StallCheck stallcheck_right(
  */
 
 static motor_hardware::MotorHardware motor_hardware_right(
-    pin_configurations_right, &htim7, &htim2);
+    pin_configurations_right, &htim7, &htim2, right_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
     stallcheck_right, update_position_queue_right);
@@ -272,7 +281,7 @@ static stall_check::StallCheck stallcheck_left(
     linear_config.get_usteps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
 static motor_hardware::MotorHardware motor_hardware_left(
-    pin_configurations_left, &htim7, &htim3);
+    pin_configurations_left, &htim7, &htim3, left_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
     stallcheck_left, update_position_queue_left);
