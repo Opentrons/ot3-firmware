@@ -80,7 +80,7 @@ jobs:
       - name: 'Create a release'
         uses: 'ncipollo/release-action@v1.12.0'
         with:
-          artifacts: ./firmware-images-${{github.ref_name}}, ./firmware-robot-images-${{github.ref_name}}, ./firmware-pipette-images-${{github.ref_name}}, ./firmware-gripper-images-${{github.ref_name}}
+          artifacts: ./firmware-images-${{github.ref_name}}/*, ./firmware-robot-images-${{github.ref_name}}/*, ./firmware-pipette-images-${{github.ref_name}}/*, ./firmware-gripper-images-${{github.ref_name}}/*
           artifactContentType: application/zip
           draft: true
           generateReleaseNotes: true
