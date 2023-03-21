@@ -40,14 +40,14 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  can::ids::NodeId id,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
-void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
-                 I2CPollerClient& i2c3_poller_client,
-                 I2CClient& i2c1_task_client,
-                 I2CPollerClient& i2c1_poller_client,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
-                 can::ids::NodeId id,
-                 eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
+void start_tasks(
+    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
+    I2CPollerClient& i2c1_poller_client,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
+    can::ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all sensor/eeprom tasks. This will be a singleton.
@@ -65,11 +65,11 @@ struct Tasks {
         freertos_message_queue::FreeRTOSMessageQueue>*
         capacitive_sensor_task_rear{nullptr};
     sensors::tasks::PressureSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task_rear{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        pressure_sensor_task_rear{nullptr};
     sensors::tasks::PressureSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task_front{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        pressure_sensor_task_front{nullptr};
     sensors::tasks::TipPresenceNotificationTask<
         freertos_message_queue::FreeRTOSMessageQueue>* tip_notification_task{
         nullptr};
@@ -89,8 +89,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         const sensors::utils::TaskMessage& m);
 
     // TODO: implement s1 capacitive sensor for pipettes
-    void send_capacitive_sensor_queue_front(const sensors::utils::TaskMessage&) {
-    }
+    void send_capacitive_sensor_queue_front(
+        const sensors::utils::TaskMessage&) {}
 
     void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
 

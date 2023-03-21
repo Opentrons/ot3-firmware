@@ -3,7 +3,6 @@
 
 using namespace interfaces;
 
-
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
     -> LowThroughputInterruptQueues {

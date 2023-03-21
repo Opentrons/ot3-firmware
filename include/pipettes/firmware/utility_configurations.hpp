@@ -4,7 +4,6 @@
 
 #include "common/firmware/gpio.hpp"
 #include "pipettes/core/pipette_type.h"
-
 #include "sensors/firmware/sensor_hardware.hpp"
 
 namespace utility_configs {
@@ -25,9 +24,11 @@ struct SensorHardwareContainer {
 
 auto led_gpio(PipetteType pipette_type) -> gpio::PinConfig;
 
-auto get_sensor_hardware_container(LowThroughputSensorHardwareGPIO pins) -> SensorHardwareContainer;
+auto get_sensor_hardware_container(LowThroughputSensorHardwareGPIO pins)
+    -> SensorHardwareContainer;
 
-auto get_sensor_hardware_container(HighThroughputSensorHardwareGPIO pins) -> SensorHardwareContainer;
+auto get_sensor_hardware_container(HighThroughputSensorHardwareGPIO pins)
+    -> SensorHardwareContainer;
 
 template <PipetteType P>
 auto sensor_configurations()

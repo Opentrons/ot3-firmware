@@ -101,6 +101,4 @@ template <>
 auto motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputMotorConfigurations;
 
-
-
 }  // namespace motor_configs

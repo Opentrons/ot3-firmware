@@ -26,18 +26,19 @@ auto utility_configs::led_gpio(PipetteType pipette_type) -> gpio::PinConfig {
     }
 }
 
-
-auto utility_configs::get_sensor_hardware_container(utility_configs::LowThroughputSensorHardwareGPIO pins) -> utility_configs::SensorHardwareContainer {
+auto utility_configs::get_sensor_hardware_container(
+    utility_configs::LowThroughputSensorHardwareGPIO pins)
+    -> utility_configs::SensorHardwareContainer {
     return utility_configs::SensorHardwareContainer{
-        .primary=sensors::hardware::SensorHardware(pins.primary)
-    };
+        .primary = sensors::hardware::SensorHardware(pins.primary)};
 }
 
-auto utility_configs::get_sensor_hardware_container(utility_configs::HighThroughputSensorHardwareGPIO pins) -> utility_configs::SensorHardwareContainer {
+auto utility_configs::get_sensor_hardware_container(
+    utility_configs::HighThroughputSensorHardwareGPIO pins)
+    -> utility_configs::SensorHardwareContainer {
     return utility_configs::SensorHardwareContainer{
-        .primary=sensors::hardware::SensorHardware(pins.primary),
-        .secondary=sensors::hardware::SensorHardware(pins.secondary)
-    };
+        .primary = sensors::hardware::SensorHardware(pins.primary),
+        .secondary = sensors::hardware::SensorHardware(pins.secondary)};
 }
 
 template <>
@@ -64,42 +65,40 @@ auto utility_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
     return pins;
 }
 
-
 template <>
 auto utility_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
     -> utility_configs::HighThroughputSensorHardwareGPIO {
     auto pins = utility_configs::HighThroughputSensorHardwareGPIO{
-        .primary = sensors::hardware::SensorHardwareConfiguration{
-            .sync_out =
-                {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                 .port = GPIOB,
-                 .pin = GPIO_PIN_6,
-                 .active_setting = GPIO_PIN_RESET},
-            .data_ready =
-                gpio::PinConfig{
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOC,
-                    .pin = GPIO_PIN_3,
-                    .active_setting = GPIO_PIN_RESET},
-            .tip_sense = gpio::PinConfig{
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .port = GPIOC,
-                .pin = GPIO_PIN_2,
-                .active_setting = GPIO_PIN_RESET}
-        },
+        .primary =
+            sensors::hardware::SensorHardwareConfiguration{
+                .sync_out =
+                    {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                     .port = GPIOB,
+                     .pin = GPIO_PIN_6,
+                     .active_setting = GPIO_PIN_RESET},
+                .data_ready =
+                    gpio::PinConfig{
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                        .port = GPIOC,
+                        .pin = GPIO_PIN_3,
+                        .active_setting = GPIO_PIN_RESET},
+                .tip_sense =
+                    gpio::PinConfig{
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                        .port = GPIOC,
+                        .pin = GPIO_PIN_2,
+                        .active_setting = GPIO_PIN_RESET}},
         .secondary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                  .port = GPIOB,
                  .pin = GPIO_PIN_6,
                  .active_setting = GPIO_PIN_RESET},
-            .data_ready =
-                gpio::PinConfig{
-                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = GPIOB,
-                    .pin = GPIO_PIN_1,
-                    .active_setting = GPIO_PIN_RESET}
-        }};
+            .data_ready = gpio::PinConfig{
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                .port = GPIOB,
+                .pin = GPIO_PIN_1,
+                .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }
 
@@ -189,4 +188,3 @@ auto utility_configs::sensor_configurations<
                 .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }
-

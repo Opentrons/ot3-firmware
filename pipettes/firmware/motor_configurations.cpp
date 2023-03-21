@@ -1,6 +1,5 @@
 #include "pipettes/core/motor_configurations.hpp"
 
-
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wvolatile"
