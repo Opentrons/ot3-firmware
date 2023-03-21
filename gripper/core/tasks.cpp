@@ -142,7 +142,9 @@ void gripper_tasks::QueueClient::send_capacitive_sensor_queue_rear(
 // gripper does not have environment nor pressure sensor
 void gripper_tasks::QueueClient::send_environment_sensor_queue(
     const sensors::utils::TaskMessage&) {}
-void gripper_tasks::QueueClient::send_pressure_sensor_queue(
+void gripper_tasks::QueueClient::send_pressure_sensor_queue_front(
+    const sensors::utils::TaskMessage&) {}
+void gripper_tasks::QueueClient::send_pressure_sensor_queue_rear(
     const sensors::utils::TaskMessage&) {}
 
 /**
