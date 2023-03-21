@@ -13,13 +13,13 @@ constexpr size_t MAX_MESSAGE_SIZE = 512U * 2;
 namespace rearpanel {
 namespace messages {
 
-template <MessageType MType>
+template <rearpanel::ids::BinaryMessageId MType>
 struct BinaryFormatMessage {
     static const auto message_type = MType;
     auto operator==(const BinaryFormatMessage& other) const -> bool = default;
 };
 
-struct Echo : BinaryFormatMessage<MessageType::ECHO> {
+struct Echo : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::echo> {
     uint16_t length;
     std::array<uint8_t, MAX_MESSAGE_SIZE> data;
 
@@ -51,7 +51,7 @@ struct Echo : BinaryFormatMessage<MessageType::ECHO> {
     auto operator==(const Echo& other) const -> bool = default;
 };
 
-struct Ack : BinaryFormatMessage<MessageType::ACK> {
+struct Ack : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::ack> {
     uint16_t length;
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
@@ -62,7 +62,8 @@ struct Ack : BinaryFormatMessage<MessageType::ACK> {
     }
 };
 
-struct AckFailed : BinaryFormatMessage<MessageType::ACK_FAILED> {
+struct AckFailed
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::ack_failed> {
     uint16_t length;
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> Output {
@@ -73,7 +74,9 @@ struct AckFailed : BinaryFormatMessage<MessageType::ACK_FAILED> {
     }
 };
 
-struct DeviceInfoRequest : BinaryFormatMessage<MessageType::DEVICE_INFO_REQ> {
+struct DeviceInfoRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::device_info_request> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -95,7 +98,9 @@ struct DeviceInfoRequest : BinaryFormatMessage<MessageType::DEVICE_INFO_REQ> {
 // Empty message sent periodically to drive timing of the light task
 struct UpdateLightControlMessage {};
 
-struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
+struct DeviceInfoResponse
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::device_info_response> {
     uint16_t length;
     uint32_t version;
     uint32_t flags;
@@ -136,7 +141,9 @@ struct DeviceInfoResponse : BinaryFormatMessage<MessageType::DEVICE_INFO_RESP> {
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
 
-struct EnterBootloader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
+struct EnterBootloader
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::enter_bootloader_request> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -157,7 +164,8 @@ struct EnterBootloader : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER> {
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct EnterBootloaderResponse
-    : BinaryFormatMessage<MessageType::ENTER_BOOTLOADER_RESPONSE> {
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::enter_bootloader_response> {
     uint16_t length = sizeof(bool);
     bool success;
 
@@ -174,7 +182,7 @@ struct EnterBootloaderResponse
 };
 
 struct EngageEstopRequest
-    : BinaryFormatMessage<MessageType::ENGAGE_ESTOP_REQUEST> {
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::engage_estop> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -194,7 +202,7 @@ struct EngageEstopRequest
 };
 
 struct ReleaseEstopRequest
-    : BinaryFormatMessage<MessageType::RELEASE_ESTOP_REQUEST> {
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::release_estop> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -214,7 +222,7 @@ struct ReleaseEstopRequest
 };
 
 struct EngageSyncRequest
-    : BinaryFormatMessage<MessageType::ENGAGE_SYNC_REQUEST> {
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::engage_nsync_out> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -234,7 +242,7 @@ struct EngageSyncRequest
 };
 
 struct ReleaseSyncRequest
-    : BinaryFormatMessage<MessageType::RELEASE_SYNC_REQUEST> {
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::release_nsync_out> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -254,7 +262,8 @@ struct ReleaseSyncRequest
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-struct EstopStateChange : BinaryFormatMessage<MessageType::ESTOP_STATE_CHANGE> {
+struct EstopStateChange
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::estop_state_change> {
     uint16_t length = sizeof(bool);
     bool engaged;
 
@@ -271,7 +280,8 @@ struct EstopStateChange : BinaryFormatMessage<MessageType::ESTOP_STATE_CHANGE> {
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct EstopButtonDetectionChange
-    : BinaryFormatMessage<MessageType::ESTOP_BUTTON_DETECTION_CHANGE> {
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::estop_button_detection_change> {
     uint16_t length = 2 * sizeof(bool);
     bool aux1_present;
     bool aux2_present;
@@ -290,7 +300,8 @@ struct EstopButtonDetectionChange
 };
 
 struct DoorSwitchStateRequest
-    : BinaryFormatMessage<MessageType::DOOR_SWITCH_STATE_REQUEST> {
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::door_switch_state_request> {
     uint16_t length;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -312,7 +323,8 @@ struct DoorSwitchStateRequest
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct DoorSwitchStateInfo
-    : BinaryFormatMessage<MessageType::DOOR_SWITCH_STATE_INFO> {
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::door_switch_state_info> {
     uint16_t length = sizeof(bool);
     bool open;
 

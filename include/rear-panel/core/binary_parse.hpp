@@ -42,7 +42,7 @@ class Parser {
      * @return A Result variant
      */
     template <bit_utils::ByteIterator Iterator>
-    auto parse(rearpanel::messages::MessageType message_type,
+    auto parse(rearpanel::ids::BinaryMessageId message_type,
                const Iterator& payload, const Iterator& limit) -> Result {
         auto result = Result{std::monostate{}};
         // Fold expression over Parsable template type.
