@@ -184,11 +184,11 @@ static void data_ready_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     PipetteHardwarePin hardware =
             pipette_hardware_get_gpio(
-                pipette_type, pipette_hardware_device_data_ready_front);
+                pipette_type, pipette_hardware_device_data_ready_rear);
     enable_gpio_port(hardware.port);
-    if (pipette_type != SINGLE_CHANNEL && pipette_type != EIGHT_CHANNEL) {
+    if (pipette_type != SINGLE_CHANNEL) {
         PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(
-            pipette_type, pipette_hardware_device_data_ready_rear);
+            pipette_type, pipette_hardware_device_data_ready_front);
         enable_gpio_port(hardware_rear.port);
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
