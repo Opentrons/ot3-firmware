@@ -137,7 +137,7 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 #if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2'
 static bool pressure_sensor_available = false;
 #else
-static bool pressure_sensor_available = true;
+static constexpr bool pressure_sensor_available = true;
 #endif
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
