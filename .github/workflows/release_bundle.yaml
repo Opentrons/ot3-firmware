@@ -79,8 +79,7 @@ jobs:
           path: .
       - name: 'Create zips for each sub-artifact'
         run: |
-          for artifactname in *-images-* ; do
-              echo "running in $artifactname "
+          for artifactname in firmware-*-*${{github.ref_name}} ; do
               pushd ./$artifactname
               zip ../${artifactname}.zip ./*
               popd
