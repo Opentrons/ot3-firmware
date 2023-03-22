@@ -27,24 +27,23 @@ auto utility_configs::led_gpio(PipetteType pipette_type) -> gpio::PinConfig {
 }
 
 auto utility_configs::get_sensor_hardware_container(
-    utility_configs::LowThroughputSensorHardwareGPIO pins)
+    utility_configs::SensorHardwareGPIO pins)
     -> utility_configs::SensorHardwareContainer {
-    return utility_configs::SensorHardwareContainer{
-        .primary = sensors::hardware::SensorHardware(pins.primary)};
-}
-
-auto utility_configs::get_sensor_hardware_container(
-    utility_configs::HighThroughputSensorHardwareGPIO pins)
-    -> utility_configs::SensorHardwareContainer {
-    return utility_configs::SensorHardwareContainer{
-        .primary = sensors::hardware::SensorHardware(pins.primary),
-        .secondary = sensors::hardware::SensorHardware(pins.secondary)};
+    if (pins.secondary.has_value()) {
+        return utility_configs::SensorHardwareContainer{
+            .primary = sensors::hardware::SensorHardware(pins.primary),
+            .secondary =
+                sensors::hardware::SensorHardware(pins.secondary.value())};
+    } else {
+        return utility_configs::SensorHardwareContainer{
+            .primary = sensors::hardware::SensorHardware(pins.primary)};
+    }
 }
 
 template <>
 auto utility_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> utility_configs::LowThroughputSensorHardwareGPIO {
-    auto pins = utility_configs::LowThroughputSensorHardwareGPIO{
+    -> utility_configs::SensorHardwareGPIO {
+    auto pins = utility_configs::SensorHardwareGPIO{
         .primary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -67,8 +66,8 @@ auto utility_configs::sensor_configurations<PipetteType::SINGLE_CHANNEL>()
 
 template <>
 auto utility_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> utility_configs::HighThroughputSensorHardwareGPIO {
-    auto pins = utility_configs::HighThroughputSensorHardwareGPIO{
+    -> utility_configs::SensorHardwareGPIO {
+    auto pins = utility_configs::SensorHardwareGPIO{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
                 .sync_out =
@@ -104,8 +103,8 @@ auto utility_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
 
 template <>
 auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> utility_configs::HighThroughputSensorHardwareGPIO {
-    auto pins = utility_configs::HighThroughputSensorHardwareGPIO{
+    -> utility_configs::SensorHardwareGPIO {
+    auto pins = utility_configs::SensorHardwareGPIO{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
                 .sync_out =
@@ -148,8 +147,8 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
 template <>
 auto utility_configs::sensor_configurations<
     PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
-    -> utility_configs::HighThroughputSensorHardwareGPIO {
-    auto pins = utility_configs::HighThroughputSensorHardwareGPIO{
+    -> utility_configs::SensorHardwareGPIO {
+    auto pins = utility_configs::SensorHardwareGPIO{
         .primary =
             sensors::hardware::SensorHardwareConfiguration{
                 .sync_out =

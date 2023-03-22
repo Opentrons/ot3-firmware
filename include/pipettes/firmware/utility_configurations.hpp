@@ -8,13 +8,10 @@
 
 namespace utility_configs {
 
-struct HighThroughputSensorHardwareGPIO {
+struct SensorHardwareGPIO {
     sensors::hardware::SensorHardwareConfiguration primary;
-    sensors::hardware::SensorHardwareConfiguration secondary;
-};
-
-struct LowThroughputSensorHardwareGPIO {
-    sensors::hardware::SensorHardwareConfiguration primary;
+    std::optional<sensors::hardware::SensorHardwareConfiguration> secondary =
+        std::nullopt;
 };
 
 struct SensorHardwareContainer {
@@ -24,46 +21,39 @@ struct SensorHardwareContainer {
 
 auto led_gpio(PipetteType pipette_type) -> gpio::PinConfig;
 
-auto get_sensor_hardware_container(LowThroughputSensorHardwareGPIO pins)
-    -> SensorHardwareContainer;
-
-auto get_sensor_hardware_container(HighThroughputSensorHardwareGPIO pins)
+auto get_sensor_hardware_container(SensorHardwareGPIO pins)
     -> SensorHardwareContainer;
 
 template <PipetteType P>
 auto sensor_configurations()
-    -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
-                        LowThroughputSensorHardwareGPIO>;
+    -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL, SensorHardwareGPIO>;
 
 template <PipetteType P>
 auto sensor_configurations()
-    -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL,
-                        HighThroughputSensorHardwareGPIO>;
+    -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL, SensorHardwareGPIO>;
 
 template <PipetteType P>
 auto sensor_configurations()
     -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
-                        HighThroughputSensorHardwareGPIO>;
+                        SensorHardwareGPIO>;
 
 template <PipetteType P>
 auto sensor_configurations()
     -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
-                        HighThroughputSensorHardwareGPIO>;
+                        SensorHardwareGPIO>;
 
 template <>
-auto sensor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> LowThroughputSensorHardwareGPIO;
+auto sensor_configurations<PipetteType::SINGLE_CHANNEL>() -> SensorHardwareGPIO;
 
 template <>
-auto sensor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> HighThroughputSensorHardwareGPIO;
+auto sensor_configurations<PipetteType::EIGHT_CHANNEL>() -> SensorHardwareGPIO;
 
 template <>
 auto sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> HighThroughputSensorHardwareGPIO;
+    -> SensorHardwareGPIO;
 
 template <>
 auto sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
-    -> HighThroughputSensorHardwareGPIO;
+    -> SensorHardwareGPIO;
 
 }  // namespace utility_configs
