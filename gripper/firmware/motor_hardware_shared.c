@@ -142,6 +142,8 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         GPIO_InitStruct.Alternate = GPIO_AF4_TIM8;
         HAL_GPIO_Init(Z_MOT_ENC_AB_PORT, &GPIO_InitStruct);
 
+        HAL_NVIC_SetPriority(TIM8_UP_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(TIM8_UP_IRQn);
     }
 }
 
