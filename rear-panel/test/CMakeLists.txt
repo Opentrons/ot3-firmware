@@ -8,6 +8,14 @@ add_executable(
         rear-panel
         test_main.cpp
         test_messages.cpp
+        test_light_animation.cpp
+)
+
+# TODO(FS, 2023/03/22): We can't actually add in the entire rear-panel/core 
+# function since it uses FreeRTOS-specific headers... so instead I guess we 
+# can manually add source files? Fix this in the future.
+target_sources(rear-panel PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/../core/lights/animation_math.cpp
 )
 
 target_include_directories(rear-panel PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
