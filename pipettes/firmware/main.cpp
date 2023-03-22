@@ -135,7 +135,7 @@ static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 static auto& sensor_queue_client = sensor_tasks::get_queues();
 
 #if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2'
-static bool pressure_sensor_available = false;
+static constexpr bool pressure_sensor_available = false;
 #else
 static constexpr bool pressure_sensor_available = true;
 #endif
