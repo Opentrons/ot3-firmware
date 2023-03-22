@@ -7,6 +7,7 @@
 #include "can/core/messages.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/utils.hpp"
 
 namespace move_status_reporter_task {
@@ -17,18 +18,21 @@ using TaskMessage = motor_control_task_messages::MoveStatusReporterTaskMessage;
  * The handler of move status messages
  */
 template <can::message_writer_task::TaskClient CanClient,
-          lms::MotorMechanicalConfig LmsConfig>
+          lms::MotorMechanicalConfig LmsConfig,
+          usage_storage_task::TaskClient UsageClient>
 class MoveStatusMessageHandler {
   public:
     MoveStatusMessageHandler(
         CanClient& can_client,
-        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config)
+        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config,
+        UsageClient& usage_client)
         : can_client{can_client},
           lms_config(lms_config),
           um_per_step(
               convert_to_fixed_point_64_bit(lms_config.get_um_per_step(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
-              lms_config.get_encoder_um_per_pulse(), 31)) {}
+              lms_config.get_encoder_um_per_pulse(), 31)),
+          usage_client(usage_client) {}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
     MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
     auto operator=(const MoveStatusMessageHandler& c) = delete;
@@ -84,6 +88,7 @@ class MoveStatusMessageHandler {
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
     sq31_31 um_per_step;
     sq31_31 um_per_encoder_pulse;
+    UsageClient& usage_client;
 };
 
 /**
@@ -106,11 +111,14 @@ class MoveStatusReporterTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient,
-              lms::MotorMechanicalConfig LmsConfig>
+              lms::MotorMechanicalConfig LmsConfig,
+              usage_storage_task::TaskClient UsageClient>
     [[noreturn]] void operator()(
         CanClient* can_client,
-        const lms::LinearMotionSystemConfig<LmsConfig>* config) {
-        auto handler = MoveStatusMessageHandler{*can_client, *config};
+        const lms::LinearMotionSystemConfig<LmsConfig>* config,
+        UsageClient* usage_client) {
+        auto handler =
+            MoveStatusMessageHandler{*can_client, *config, *usage_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

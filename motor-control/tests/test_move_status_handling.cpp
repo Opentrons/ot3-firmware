@@ -23,6 +23,13 @@ struct MockCanClient {
         queue.push_back(std::make_pair(node_id, m));
     }
 };
+struct MockUsageClient {
+    std::deque<usage_storage_task::TaskMessage> queue{};
+    auto send_usage_storage_queue(const usage_storage_task::TaskMessage& m)
+        -> void {
+        queue.push_back(m);
+    }
+};
 
 SCENARIO("testing move status position translation") {
     GIVEN("a status handler with known LMS config") {
@@ -33,7 +40,8 @@ SCENARIO("testing move status position translation") {
             .encoder_pulses_per_rev = 1000,
         };
         auto mcc = MockCanClient();
-        auto handler = MoveStatusMessageHandler(mcc, linearConfig);
+        auto muc = MockUsageClient();
+        auto handler = MoveStatusMessageHandler(mcc, linearConfig, muc);
         WHEN("passing a position of 0 steps with 0 encoder pulses") {
             handler.handle_message(Ack{.group_id = 11,
                                        .seq_id = 8,

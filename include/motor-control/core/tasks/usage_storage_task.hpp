@@ -5,6 +5,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "common/core/logging.h"
+#include "eeprom/core/dev_data.hpp"
 #include "motor-control/core/tasks/messages.hpp"
 
 namespace usage_storage_task {
@@ -14,15 +15,15 @@ using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
 /**
  * The message queue message handler.
  */
-template <can::message_writer_task::TaskClient CanClient>
-class UsageStorageTaskHandler {
+template <can::message_writer_task::TaskClient CanClient,
+          eeprom::task::TaskClient EEPromClient>
+class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
   public:
-    UsageStorageTaskHandler(CanClient& can_client)
-        : can_client{can_client} {}
-    UsageStorageTaskHandler(const UsageStorageTaskHandler& c) =
-        delete;
-    UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) =
-        delete;
+    UsageStorageTaskHandler(CanClient& can_client, EEPromClient& eeprom_client)
+        : can_client{can_client},
+          usage_data_accessor{eeprom_client, *this, accessor_backing} {}
+    UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
+    UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;
     auto operator=(const UsageStorageTaskHandler&& c) = delete;
     ~UsageStorageTaskHandler() = default;
@@ -31,10 +32,14 @@ class UsageStorageTaskHandler {
         std::visit([this](auto m) { this->handle(m); }, message);
     }
 
+    void read_complete(uint32_t message_index) { std::ignore = message_index; }
+
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
-
     CanClient& can_client;
+    eeprom::dev_data::DataBufferType<64> accessor_backing =
+        eeprom::dev_data::DataBufferType<64>{};
+    eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor;
 };
 
 /**
@@ -56,9 +61,11 @@ class UsageStorageTask {
     /**
      * Task entry point.
      */
-    template <can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(CanClient* can_client) {
-        auto handler = UsageStorageTaskHandler{*can_client};
+    template <eeprom::task::TaskClient EEPromClient,
+              can::message_writer_task::TaskClient CanClient>
+    [[noreturn]] void operator()(CanClient* can_client,
+                                 EEPromClient* eeprom_client) {
+        auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
