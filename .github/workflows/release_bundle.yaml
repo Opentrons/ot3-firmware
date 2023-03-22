@@ -80,10 +80,11 @@ jobs:
       - name: 'Create zips for each sub-artifact'
         run: |
           ls -l .
+          ls -l ./*
           for artifactname in $(ls *-images-*) ; do
-              pushd $artifactname
+              cd ./$artifactname
               zip ../${artifactname}.zip ./*
-              popd
+              cd ..
           done
 
       - name: 'Create a release'
