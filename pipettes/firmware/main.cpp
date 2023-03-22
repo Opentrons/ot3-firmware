@@ -129,7 +129,7 @@ static auto sensor_hardware_container =
 static auto data_ready_gpio_primary =
     pins_for_sensor.primary.data_ready.value();
 static auto data_ready_gpio_secondary =
-    pins_for_sensor.primary.data_ready.value();
+    pins_for_sensor.secondary.data_ready.value();
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto& sensor_queue_client = sensor_tasks::get_queues();
