@@ -26,4 +26,17 @@ enum class BinaryMessageId : uint16_t {
     door_switch_state_info = 0xe,
 };
 
+/** The types of transitons that the lights can perform. */
+enum class LightTransitionType : uint8_t {
+    linear = 0x0,
+    sinusoid = 0x1,
+    instant = 0x2,
+};
+
+/** Whether an action is looping or runs one single time. */
+enum class LightAnimationType : uint8_t {
+    looping = 0x0,
+    single_shot = 0x1,
+};
+
 }  // namespace rearpanel::ids
