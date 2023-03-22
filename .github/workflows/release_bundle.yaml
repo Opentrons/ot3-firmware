@@ -79,6 +79,7 @@ jobs:
           path: .
       - name: 'Create zips for each sub-artifact'
         run: |
+          ls -l .
           for artifactname in $(ls *-images-*) ; do
               pushd $artifactname
               zip ../${artifactname}.zip ./*
