@@ -28,6 +28,10 @@ class LightControlInterface {
 
 /** Delay between each time update.*/
 static constexpr uint32_t DELAY_MS = 5;
+/** Number of light actions allowed in an animation.*/
+static constexpr size_t ANIMATION_BUFFER_SIZE = 64;
+
+using Animation = lights::AnimationHandler<ANIMATION_BUFFER_SIZE>;
 
 class LightControlMessageHandler {
   private:
@@ -35,13 +39,11 @@ class LightControlMessageHandler {
     static constexpr uint32_t MAX_POWER = LED_PWM_WIDTH;
     /** Power level to set the deck LED to "on"*/
     static constexpr uint32_t DECK_LED_ON_POWER = 50;
-    /** Number of light actions allowed in an animation.*/
-    static constexpr size_t ANIMATION_BUFFER_SIZE = 64;
 
   public:
-    LightControlMessageHandler(LightControlInterface& hardware)
-        : _hardware(hardware), _animation() {
-    }
+    LightControlMessageHandler(LightControlInterface& hardware,
+                               Animation& animation)
+        : _hardware(hardware), _animation(animation) {}
 
     auto handle_message(const TaskMessage& message) -> void {
         std::visit([this](auto m) { this->handle(m); }, message);
@@ -100,7 +102,7 @@ class LightControlMessageHandler {
     }
 
     LightControlInterface& _hardware;
-    lights::AnimationHandler<ANIMATION_BUFFER_SIZE> _animation;
+    Animation& _animation;
 };
 
 /**
@@ -122,8 +124,10 @@ class LightControlTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(LightControlInterface* hardware_handle) {
-        auto handler = LightControlMessageHandler(*hardware_handle);
+    [[noreturn]] void operator()(LightControlInterface* hardware_handle,
+                                 Animation* animation_handle) {
+        auto handler =
+            LightControlMessageHandler(*hardware_handle, *animation_handle);
         TaskMessage message{};
 
         for (;;) {
