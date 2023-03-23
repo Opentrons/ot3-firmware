@@ -17,6 +17,7 @@ class AnimationHandler {
   public:
     AnimationHandler()
         : _step_starting_color{.r = 0, .g = 0, .b = 0, .w = 0},
+          _most_recent_color{.r = 0, .g = 0, .b = 0, .w = 0},
           _current_step{std::nullopt},
           _timer_ms(0),
           _queue() {}
@@ -47,12 +48,17 @@ class AnimationHandler {
                 _current_step = _queue.get_next_active_step();
             }
         }
+        _most_recent_color = ret;
         return ret;
     }
 
     auto start_staged_animation(AnimationType animation) -> void {
         _timer_ms = 0;
         _current_step = std::nullopt;
+        // If we were in the middle of animating a step, we cache the most
+        // recent setting to be the "starting" value for the step that's about
+        // to start in order to eliminate any possible jitter.
+        _step_starting_color = _most_recent_color;
         _queue.start_staged_animation(animation);
     }
 
@@ -84,6 +90,7 @@ class AnimationHandler {
     }
 
     Color _step_starting_color;
+    Color _most_recent_color;
     std::optional<Action> _current_step;
     uint32_t _timer_ms;
     AnimationQueue<Size> _queue;

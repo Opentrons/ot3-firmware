@@ -277,5 +277,34 @@ TEST_CASE("animation handler functionality") {
                 }
             }
         }
+        WHEN("switching the animation to an empty one mid-step") {
+            auto res = subject.animate(100);
+            REQUIRE(res == Color{.b = 0.5});
+            subject.clear_staging();
+            subject.start_staged_animation(AnimationType::looping);
+            THEN("animating returns the same color forever") {
+                REQUIRE(res == subject.animate(100));
+                REQUIRE(res == subject.animate(100));
+                REQUIRE(res == subject.animate(100));
+            }
+        }
+        WHEN("switching the animation to a different one mid-step") {
+            auto res = subject.animate(100);
+            REQUIRE(res == Color{.b = 0.5});
+            subject.clear_staging();
+            auto action = Action{
+                .color{.w = 1.0},
+                .transition = Transition::instant,
+                .transition_time_ms = 1000,
+            };
+            REQUIRE(subject.add_to_staging(action));
+            subject.start_staged_animation(AnimationType::looping);
+            THEN("animating returns the same color forever") {
+                auto expected = action.color;
+                REQUIRE(expected == subject.animate(10));
+                REQUIRE(expected == subject.animate(10));
+                REQUIRE(expected == subject.animate(10));
+            }
+        }
     }
 }
