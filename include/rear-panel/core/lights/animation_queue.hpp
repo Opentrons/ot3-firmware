@@ -22,12 +22,12 @@ struct Action {
     uint32_t transition_time_ms;
 };
 
-inline bool operator==(const Color &lhs, const Color &rhs) {
+inline auto operator==(const Color &lhs, const Color &rhs) -> bool {
     return (lhs.r == rhs.r) && (lhs.g == rhs.g) && (lhs.b == rhs.b) &&
            (lhs.w == rhs.w);
 }
 
-inline bool operator==(const Action &lhs, const Action &rhs) {
+inline auto operator==(const Action &lhs, const Action &rhs) -> bool {
     return (lhs.color == rhs.color) && (lhs.transition == rhs.transition) &&
            (lhs.transition_time_ms == rhs.transition_time_ms);
 }
@@ -38,11 +38,7 @@ class AnimationQueue {
     static_assert(Size > 0, "AnimationQueue requires nonzero buffer size.");
 
   public:
-    AnimationQueue()
-        : _queue{},
-          _length(0),
-          _active_idx(0),
-          _animation(AnimationType::single_shot) {}
+    AnimationQueue() = default;
 
     auto start_animation(AnimationType type) -> void {
         _active_idx = 0;
@@ -63,7 +59,7 @@ class AnimationQueue {
         if (_length >= Size) {
             return false;
         }
-        _queue[_length++] = action;
+        _queue.at(_length++) = action;
         return true;
     }
 
@@ -73,10 +69,10 @@ class AnimationQueue {
     }
 
   private:
-    std::array<Action, Size> _queue;
-    size_t _length;
-    size_t _active_idx;
-    AnimationType _animation;
+    std::array<Action, Size> _queue{};
+    size_t _length{0};
+    size_t _active_idx{0};
+    AnimationType _animation{AnimationType::single_shot};
 };
 
 /**

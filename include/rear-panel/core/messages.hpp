@@ -339,6 +339,7 @@ struct DoorSwitchStateInfo
     auto operator==(const DoorSwitchStateInfo& other) const -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct AddLightActionRequest
     : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::add_light_action> {
     static constexpr size_t LENGTH =
@@ -356,7 +357,7 @@ struct AddLightActionRequest
     static auto parse(Input body, Limit limit)
         -> std::variant<std::monostate, AddLightActionRequest> {
         uint16_t type = 0;
-        uint8_t transition_buf;
+        uint8_t transition_buf = 0;
         auto ret = AddLightActionRequest{
             .length = 0,
             .transition_time_ms = 0,
@@ -415,7 +416,7 @@ struct ClearLightActionStagingQueueRequest
     static auto parse(Input body, Limit limit)
         -> std::variant<std::monostate, ClearLightActionStagingQueueRequest> {
         uint16_t type = 0;
-        uint16_t length;
+        uint16_t length = 0;
 
         body = bit_utils::bytes_to_int(body, limit, type);
         if (type != static_cast<uint16_t>(message_type)) {
@@ -432,6 +433,7 @@ struct ClearLightActionStagingQueueRequest
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct StartLightActionRequest
     : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::start_light_action> {
     static constexpr size_t LENGTH = sizeof(rearpanel::ids::LightAnimationType);
@@ -441,8 +443,8 @@ struct StartLightActionRequest
     static auto parse(Input body, Limit limit)
         -> std::variant<std::monostate, StartLightActionRequest> {
         uint16_t type = 0;
-        uint16_t length;
-        uint8_t animation;
+        uint16_t length = 0;
+        uint8_t animation = 0;
 
         body = bit_utils::bytes_to_int(body, limit, type);
         if (type != static_cast<uint16_t>(message_type)) {

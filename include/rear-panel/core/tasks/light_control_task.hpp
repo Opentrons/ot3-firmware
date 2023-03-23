@@ -91,12 +91,12 @@ class LightControlMessageHandler {
         ack();
     }
 
-    auto ack() -> void {
+    static auto ack() -> void {
         queue_client::get_main_queues().send_host_comms_queue(
             rearpanel::messages::Ack{});
     }
 
-    auto nack() -> void {
+    static auto nack() -> void {
         queue_client::get_main_queues().send_host_comms_queue(
             rearpanel::messages::AckFailed{});
     }
