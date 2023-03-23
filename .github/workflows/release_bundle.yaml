@@ -41,7 +41,7 @@ jobs:
         with:
           name: 'firmware-applications-${{github.ref_name}}'
           path: |
-            dist/applications/*.hex
+            dist/applications/*
       - name: 'Upload all-images artifact'
         uses: actions/upload-artifact@v3
         with:
