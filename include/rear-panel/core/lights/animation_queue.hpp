@@ -94,7 +94,8 @@ class AnimationQueue {
  */
 template <size_t Size>
 class AnimationBuffer {
-    public : AnimationBuffer() : _a(), _b(), _active(&_a), _staging(&_b) {}
+  public:
+    AnimationBuffer() : _a(), _b(), _active(&_a), _staging(&_b) {}
 
     auto get_next_active_step() -> std::optional<Action> {
         return _active->get_next();
