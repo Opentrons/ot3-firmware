@@ -468,7 +468,9 @@ using HostCommTaskMessage =
                  EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
                  EstopStateChange, EstopButtonDetectionChange,
-                 DoorSwitchStateRequest, DoorSwitchStateInfo>;
+                 DoorSwitchStateRequest, DoorSwitchStateInfo,
+                 AddLightActionRequest, ClearLightActionStagingQueueRequest,
+                 StartLightActionRequest>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
@@ -476,7 +478,9 @@ using SystemTaskMessage =
                  DoorSwitchStateRequest>;
 
 using LightControlTaskMessage =
-    std::variant<std::monostate, UpdateLightControlMessage>;
+    std::variant<std::monostate, UpdateLightControlMessage,
+                 AddLightActionRequest, ClearLightActionStagingQueueRequest,
+                 StartLightActionRequest>;
 
 using HardwareTaskMessage = std::variant<std::monostate>;
 
