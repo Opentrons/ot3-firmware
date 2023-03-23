@@ -105,8 +105,8 @@ void sensor_tasks::start_tasks(
     auto& environment_sensor_task = environment_sensor_task_builder.start(
         5, "enviro sensor", i2c3_task_client, i2c3_poller_client, queues);
     auto& pressure_sensor_task_rear = pressure_sensor_task_builder_rear.start(
-        5, "pressure sensor s0", i2c3_task_client,
-        i2c3_poller_client, queues, sensor_hardware_primary);
+        5, "pressure sensor s0", i2c3_task_client, i2c3_poller_client, queues,
+        sensor_hardware_primary);
     auto& pressure_sensor_task_front = pressure_sensor_task_builder_front.start(
         5, "pressure sensor s1", i2c2_task_client, i2c2_poller_client, queues,
         sensor_hardware_secondary);
