@@ -9,7 +9,12 @@
 namespace lights {
 
 /**
- * @brief Acts as an interface for an AnimationQueue
+ * @brief Acts as an interface for an AnimationQueue.
+ * 
+ * @note This class if NOT thread safe - it accesses the same queue in
+ * multiple functions and, if they are called from different threads,
+ * race conditions may arise. If this class is accessed from different
+ * threads, wrap access to all member functions with a mutex.
  *
  */
 template <size_t Size>
