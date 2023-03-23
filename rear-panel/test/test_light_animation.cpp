@@ -117,10 +117,10 @@ TEST_CASE("animation math: sinusoid transition") {
     }
 }
 
-TEST_CASE("AnimationQueue basics") {
+TEST_CASE("AnimationBuffer basics") {
     GIVEN("a new animation queue") {
         constexpr size_t LENGTH = 10;
-        auto subject = AnimationQueue<LENGTH>();
+        auto subject = AnimationBuffer<LENGTH>();
         WHEN("getting next step") {
             auto res = subject.get_next_active_step();
             THEN("it is nothing") { REQUIRE(!res.has_value()); }

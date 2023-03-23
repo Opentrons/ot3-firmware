@@ -5,7 +5,6 @@
 #include <optional>
 
 #include "rear-panel/core/bin_msg_ids.hpp"
-#include "rear-panel/core/double_buffer.hpp"
 
 namespace lights {
 
@@ -33,12 +32,59 @@ inline bool operator==(const Action &lhs, const Action &rhs) {
            (lhs.transition_time_ms == rhs.transition_time_ms);
 }
 
+template <size_t Size>
+class AnimationQueue {
+  private:
+    static_assert(Size > 0, "AnimationQueue requires nonzero buffer size.");
+
+  public:
+    AnimationQueue()
+        : _queue{},
+          _length(0),
+          _active_idx(0),
+          _animation(AnimationType::single_shot) {}
+
+    auto start_animation(AnimationType type) -> void {
+        _active_idx = 0;
+        _animation = type;
+    }
+
+    auto get_next() -> std::optional<Action> {
+        if (_active_idx >= _length && _animation == AnimationType::looping) {
+            _active_idx = 0;
+        }
+        if (_active_idx >= _length) {
+            return std::nullopt;
+        }
+        return _queue.at(_active_idx++);
+    }
+
+    auto add_step(const Action &action) -> bool {
+        if (_length >= Size) {
+            return false;
+        }
+        _queue[_length++] = action;
+        return true;
+    }
+
+    auto clear() -> void {
+        _length = 0;
+        _active_idx = 0;
+    }
+
+  private:
+    std::array<Action, Size> _queue;
+    size_t _length;
+    size_t _active_idx;
+    AnimationType _animation;
+};
+
 /**
- * @brief The AnimationQueue class is used to arrange light actions in an
+ * @brief The AnimationBuffer class is used to arrange light actions in an
  * ordered sequence to generate animations. Each Action is defined by an
  * RGBW color, a transition time, and a transition type.
  *
- * The AnimationQueue holds both an active queue and a staging queue. New
+ * The AnimationBuffer holds both an active queue and a staging queue. New
  * actions are added to the staging queue linearly, and then when a new
  * animation is started the staging queue is swapped with the active queue.
  * This allows a new animation to be constructed in the background while the
@@ -47,24 +93,11 @@ inline bool operator==(const Action &lhs, const Action &rhs) {
  * @tparam Size The maximum number of elements in the queue. Must be nonzero.
  */
 template <size_t Size>
-class AnimationQueue {
-  private:
-    static_assert(Size > 0, "AnimationQueue requires nonzero buffer size.");
-
-  public:
-    AnimationQueue()
-        : _actions{},
-          _active_idx(0),
-          _staging_idx(0),
-          _animation(AnimationType::single_shot) {}
+class AnimationBuffer {
+    public : AnimationBuffer() : _a(), _b(), _active(&_a), _staging(&_b) {}
 
     auto get_next_active_step() -> std::optional<Action> {
-        if ((!get_active_idx(_active_idx).has_value()) &&
-            _animation == AnimationType::looping) {
-            _active_idx = 0;
-        }
-
-        return get_active_idx(_active_idx++);
+        return _active->get_next();
     }
 
     /**
@@ -74,14 +107,12 @@ class AnimationQueue {
      * @param animation The type of animation.
      */
     auto start_staged_animation(AnimationType animation) -> void {
-        // Before swapping, cap off the staging queue with a nullopt to
-        // ensure it won't overrun.
-        if (_staging_idx < Size) {
-            _actions.committed()->at(0) = std::nullopt;
-        }
-        _actions.swap();
-        _active_idx = 0;
-        _animation = animation;
+        // FIRST swap staging & active handles
+        auto *tmp = _active;
+        _active = _staging;
+        _staging = tmp;
+        // Start the new active queue, and clear the new staging queue
+        _active->start_animation(animation);
         clear_staging();
     }
 
@@ -92,33 +123,18 @@ class AnimationQueue {
      * @return true if the action was added, false if the queue is full.
      */
     auto add_to_staging(Action action) -> bool {
-        if (_staging_idx >= Size) {
-            return false;
-        }
-        _actions.accessible()->at(_staging_idx++) = action;
-        return true;
+        return _staging->add_step(action);
     }
 
     /**
      * @brief Empty out the staging queue.
      *
      */
-    auto clear_staging() -> void {
-        _staging_idx = 0;
-        _actions.accessible()->at(0) = std::nullopt;
-    }
+    auto clear_staging() -> void { _staging->clear(); }
 
   private:
-    auto get_active_idx(size_t idx) -> std::optional<Action> {
-        if (idx >= Size) {
-            return std::nullopt;
-        }
-        return _actions.committed()->at(idx);
-    }
-
-    double_buffer::DoubleBuffer<std::optional<Action>, Size> _actions;
-    size_t _active_idx, _staging_idx;
-    AnimationType _animation;  // Current active animation type
+    AnimationQueue<Size> _a, _b;
+    AnimationQueue<Size> *_active, *_staging;
 };
 
 }  // namespace lights
