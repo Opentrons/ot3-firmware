@@ -41,7 +41,10 @@ class AnimationHandler {
         if (_current_step.has_value()) {
             // We are in a step, calculate the next increment
             _timer_ms += time_increment_ms;
-            ret = calculate_step_power();
+            ret = lights::math::color_interpolate(
+                _step_starting_color, _current_step.value().color,
+                _current_step.value().transition, _timer_ms,
+                _current_step.value().transition_time_ms);
             if (_timer_ms >= _current_step.value().transition_time_ms) {
                 _step_starting_color = _current_step.value().color;
                 // Signal that we need a new message next time through
@@ -69,26 +72,6 @@ class AnimationHandler {
     auto clear_staging() -> void { _queue.clear_staging(); }
 
   private:
-    auto calculate_step_power() -> Color {
-        auto &step = _current_step.value();
-        auto timer =
-            std::clamp(_timer_ms, uint32_t(0), step.transition_time_ms);
-        return Color{
-            .r = lights::math::calculate_power(
-                step.transition, _step_starting_color.r, step.color.r, timer,
-                step.transition_time_ms),
-            .g = lights::math::calculate_power(
-                step.transition, _step_starting_color.g, step.color.g, timer,
-                step.transition_time_ms),
-            .b = lights::math::calculate_power(
-                step.transition, _step_starting_color.b, step.color.b, timer,
-                step.transition_time_ms),
-            .w = lights::math::calculate_power(
-                step.transition, _step_starting_color.w, step.color.w, timer,
-                step.transition_time_ms),
-        };
-    }
-
     Color _step_starting_color;
     Color _most_recent_color;
     std::optional<Action> _current_step;

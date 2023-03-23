@@ -24,8 +24,8 @@ static auto calculate_sin_power(double start_power, double end_power,
     // Percent done (count / total)
     double pct = static_cast<double>(ms_count) / static_cast<double>(ms_total);
 
-    // We want to use the range of cosine that will generate a curve from 
-    // [-1,1]. Therefore, when scaling from time, 0% progress should be π 
+    // We want to use the range of cosine that will generate a curve from
+    // [-1,1]. Therefore, when scaling from time, 0% progress should be π
     // rads, and 100% progress should be 2π rads
     double rads = PI + (pct * PI);
     // We want to scale the cosine of the angle in the range [0,1], so we add
@@ -56,4 +56,19 @@ auto lights::math::calculate_power(lights::Transition transition,
         default:
             return end_power;
     }
+}
+
+auto lights::math::color_interpolate(const lights::Color& first,
+                                     const lights::Color& second,
+                                     lights::Transition transition,
+                                     uint32_t ms_count, uint32_t ms_total)
+    -> lights::Color {
+    using namespace lights::math;
+    ms_count = std::min(ms_total, ms_count);
+    return lights::Color{
+        .r = calculate_power(transition, first.r, second.r, ms_count, ms_total),
+        .g = calculate_power(transition, first.g, second.g, ms_count, ms_total),
+        .b = calculate_power(transition, first.b, second.b, ms_count, ms_total),
+        .w = calculate_power(transition, first.w, second.w, ms_count, ms_total),
+    };
 }
