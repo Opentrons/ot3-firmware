@@ -41,7 +41,6 @@ class LightControlMessageHandler {
   public:
     LightControlMessageHandler(LightControlInterface& hardware)
         : _hardware(hardware), _animation() {
-        _hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
     }
 
     auto handle_message(const TaskMessage& message) -> void {
@@ -53,6 +52,7 @@ class LightControlMessageHandler {
 
     auto handle(rearpanel::messages::UpdateLightControlMessage&) -> void {
         auto color = _animation.animate(DELAY_MS);
+        _hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
         _hardware.set_led_power(RED_UI_LED, static_cast<uint32_t>(color.r));
         _hardware.set_led_power(GREEN_UI_LED, static_cast<uint32_t>(color.g));
         _hardware.set_led_power(BLUE_UI_LED, static_cast<uint32_t>(color.b));
