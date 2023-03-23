@@ -66,6 +66,8 @@ def generate_rearpanel_cpp(output: io.StringIO, constants_mod: ModuleType) -> No
             terminate="}  // namespace rearpanel::ids\n",
     ):
         write_enum_cpp(constants_mod.BinaryMessageId, output, 'uint16_t')
+        write_enum_cpp(constants_mod.LightTransitionType, output, 'uint8_t')
+        write_enum_cpp(constants_mod.LightAnimationType, output, 'uint8_t')
 
 
 def write_arbitration_id_c(output: io.StringIO, prefix: str, arbitration_id: ModuleType) -> None:
