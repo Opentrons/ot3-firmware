@@ -34,10 +34,9 @@ auto utility_configs::get_sensor_hardware_container(
             .primary = sensors::hardware::SensorHardware(pins.primary),
             .secondary =
                 sensors::hardware::SensorHardware(pins.secondary.value())};
-    } else {
-        return utility_configs::SensorHardwareContainer{
-            .primary = sensors::hardware::SensorHardware(pins.primary)};
     }
+    return utility_configs::SensorHardwareContainer{
+        .primary = sensors::hardware::SensorHardware(pins.primary)};
 }
 
 template <>
