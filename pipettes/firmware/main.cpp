@@ -133,15 +133,15 @@ static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto& sensor_queue_client = sensor_tasks::get_queues();
 
-#if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2'
+#if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2' && \
+    PIPETTE_TYPE != NINETY_SIX_CHANNEL
 static constexpr bool pressure_sensor_available = false;
 #else
 static constexpr bool pressure_sensor_available = true;
 #endif
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == data_ready_gpio_primary.pin && pressure_sensor_available &&
-        PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
+    if (GPIO_Pin == data_ready_gpio_primary.pin && pressure_sensor_available) {
         sensor_hardware_container.primary.data_ready();
     } else if (GPIO_Pin == tip_sense_gpio_primary.pin) {
         static_cast<void>(
@@ -149,7 +149,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                 sensors::tip_presence::TipStatusChangeDetected{}));
     } else if (data_ready_gpio_secondary.data_ready.has_value() &&
                GPIO_Pin == data_ready_gpio_secondary.data_ready.value().pin &&
-               PIPETTE_TYPE != NINETY_SIX_CHANNEL) {
+               pressure_sensor_available) {
         if (sensor_hardware_container.secondary.has_value()) {
             sensor_hardware_container.secondary.value().data_ready();
         }
