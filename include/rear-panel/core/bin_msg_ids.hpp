@@ -24,6 +24,9 @@ enum class BinaryMessageId : uint16_t {
     estop_button_detection_change = 0xc,
     door_switch_state_request = 0xd,
     door_switch_state_info = 0xe,
+    add_light_action = 0x400,
+    clear_light_action_staging_queue = 0x401,
+    start_light_action = 0x402,
 };
 
 /** The types of transitons that the lights can perform. */
