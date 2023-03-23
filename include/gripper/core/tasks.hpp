@@ -20,6 +20,7 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
@@ -69,6 +70,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
     void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -88,6 +91,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         capacitive_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         capacitive_sensor_queue_rear{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**
@@ -138,6 +143,9 @@ struct AllTask {
     sensors::tasks::CapacitiveSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         capacitive_sensor_task_rear{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 /**
@@ -157,7 +165,7 @@ namespace z_tasks {
 void start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
                 spi::hardware::SpiDeviceBase& spi_device,
                 tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                AllTask& tasks);
+                AllTask& tasks, gripper_tasks::QueueClient& main_queues);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
@@ -192,7 +200,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 namespace g_tasks {
 
 void start_task(brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
-                AllTask& gripper_tasks);
+                AllTask& gripper_tasks,
+                gripper_tasks::QueueClient& main_queues);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
