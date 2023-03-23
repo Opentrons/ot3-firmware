@@ -17,10 +17,10 @@ StaticTask_t
 StaticTask_t
     idle_timer_tcb;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-std::array<StackType_t, configMINIMAL_STACK_SIZE>
+std::array<StackType_t, 512>
     idle_task_stack;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-std::array<StackType_t, configMINIMAL_STACK_SIZE>
+std::array<StackType_t, 512>
     idle_timer_stack;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // This is a callback defined in a C file so it has to be linked as such
@@ -39,4 +39,16 @@ extern "C" void vApplicationGetTimerTaskMemory(
     *ppxTimerTaskTCBBuffer = &idle_timer_tcb;
     *ppxTimerTaskStackBuffer = idle_timer_stack.data();
     *pulTimerTaskStackSize = idle_timer_stack.size();
+}
+
+// We are matching the definition of this function in FreeRTOS, and thus
+// keep the function signature the same
+extern "C" void vApplicationStackOverflowHook(
+    TaskHandle_t xTask,
+    // NOLINTNEXTLINE(readability-non-const-parameter)
+    signed char *pcTaskName) {
+    static_cast<void>(xTask);
+    static_cast<void>(pcTaskName);
+    // Lock the processor forever
+    configASSERT(0);
 }

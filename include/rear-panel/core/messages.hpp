@@ -339,13 +339,140 @@ struct DoorSwitchStateInfo
     auto operator==(const DoorSwitchStateInfo& other) const -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct AddLightActionRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::add_light_action> {
+    static constexpr size_t LENGTH =
+        sizeof(uint16_t) + sizeof(rearpanel::ids::LightTransitionType) +
+        (4 * sizeof(uint8_t));
+    uint16_t length;
+    uint16_t transition_time_ms;
+    rearpanel::ids::LightTransitionType transition;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t white;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, AddLightActionRequest> {
+        uint16_t type = 0;
+        uint8_t transition_buf = 0;
+        auto ret = AddLightActionRequest{
+            .length = 0,
+            .transition_time_ms = 0,
+            .transition = rearpanel::ids::LightTransitionType::linear,
+            .red = 0,
+            .green = 0,
+            .blue = 0,
+            .white = 0};
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if (type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, ret.length);
+        if (body == limit) {
+            return std::monostate();
+        }
+        if (ret.length != LENGTH) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, ret.transition_time_ms);
+        if (body == limit) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, transition_buf);
+        ret.transition =
+            static_cast<rearpanel::ids::LightTransitionType>(transition_buf);
+        if (body == limit) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, ret.red);
+        if (body == limit) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, ret.green);
+        if (body == limit) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, ret.blue);
+        if (body == limit) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, ret.white);
+        return ret;
+    }
+
+    auto operator==(const AddLightActionRequest& other) const -> bool = default;
+};
+
+struct ClearLightActionStagingQueueRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::clear_light_action_staging_queue> {
+    static constexpr size_t LENGTH = 0;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, ClearLightActionStagingQueueRequest> {
+        uint16_t type = 0;
+        uint16_t length = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if (type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, length);
+        if (length != LENGTH) {
+            return std::monostate();
+        }
+        return ClearLightActionStagingQueueRequest{};
+    }
+
+    auto operator==(const ClearLightActionStagingQueueRequest& other) const
+        -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct StartLightActionRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::start_light_action> {
+    static constexpr size_t LENGTH = sizeof(rearpanel::ids::LightAnimationType);
+    rearpanel::ids::LightAnimationType animation;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, StartLightActionRequest> {
+        uint16_t type = 0;
+        uint16_t length = 0;
+        uint8_t animation = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if (type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, length);
+        if (length != LENGTH) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, animation);
+        return StartLightActionRequest{
+            .animation =
+                static_cast<rearpanel::ids::LightAnimationType>(animation)};
+    }
+
+    auto operator==(const StartLightActionRequest& other) const
+        -> bool = default;
+};
+
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
                  EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
                  EstopStateChange, EstopButtonDetectionChange,
-                 DoorSwitchStateRequest, DoorSwitchStateInfo>;
+                 DoorSwitchStateRequest, DoorSwitchStateInfo,
+                 AddLightActionRequest, ClearLightActionStagingQueueRequest,
+                 StartLightActionRequest>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
@@ -353,15 +480,17 @@ using SystemTaskMessage =
                  DoorSwitchStateRequest>;
 
 using LightControlTaskMessage =
-    std::variant<std::monostate, UpdateLightControlMessage>;
+    std::variant<std::monostate, UpdateLightControlMessage,
+                 AddLightActionRequest, ClearLightActionStagingQueueRequest,
+                 StartLightActionRequest>;
 
 using HardwareTaskMessage = std::variant<std::monostate>;
 
-static auto rear_panel_parser =
-    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
-                         EngageEstopRequest, EngageSyncRequest,
-                         ReleaseEstopRequest, ReleaseSyncRequest,
-                         DoorSwitchStateRequest>{};
+static auto rear_panel_parser = binary_parse::Parser<
+    Echo, DeviceInfoRequest, EnterBootloader, EngageEstopRequest,
+    EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
+    DoorSwitchStateRequest, AddLightActionRequest,
+    ClearLightActionStagingQueueRequest, StartLightActionRequest>{};
 
 };  // namespace messages
 };  // namespace rearpanel

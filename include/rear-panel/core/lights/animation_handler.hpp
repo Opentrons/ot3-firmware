@@ -24,7 +24,6 @@ class AnimationHandler {
         : _step_starting_color{.r = 0, .g = 0, .b = 0, .w = 0},
           _most_recent_color{.r = 0, .g = 0, .b = 0, .w = 0},
           _current_step{std::nullopt},
-          _timer_ms(0),
           _queue() {}
 
     /**
@@ -84,7 +83,7 @@ class AnimationHandler {
     Color _step_starting_color;
     Color _most_recent_color;
     std::optional<Action> _current_step;
-    uint32_t _timer_ms;
+    uint32_t _timer_ms{0};
     AnimationBuffer<Size> _queue;
 };
 

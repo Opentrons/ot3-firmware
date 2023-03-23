@@ -5,6 +5,7 @@
 #include "common/core/message_queue.hpp"
 #include "rear-panel/core/binary_parse.hpp"
 #include "rear-panel/core/constants.h"
+#include "rear-panel/core/lights/animation_handler.hpp"
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/queues.hpp"
 
@@ -27,6 +28,10 @@ class LightControlInterface {
 
 /** Delay between each time update.*/
 static constexpr uint32_t DELAY_MS = 5;
+/** Number of light actions allowed in an animation.*/
+static constexpr size_t ANIMATION_BUFFER_SIZE = 64;
+
+using Animation = lights::AnimationHandler<ANIMATION_BUFFER_SIZE>;
 
 class LightControlMessageHandler {
   private:
@@ -36,8 +41,9 @@ class LightControlMessageHandler {
     static constexpr uint32_t DECK_LED_ON_POWER = 50;
 
   public:
-    LightControlMessageHandler(LightControlInterface& hardware)
-        : _hardware(hardware) {}
+    LightControlMessageHandler(LightControlInterface& hardware,
+                               Animation& animation)
+        : _hardware(hardware), _animation(animation) {}
 
     auto handle_message(const TaskMessage& message) -> void {
         std::visit([this](auto m) { this->handle(m); }, message);
@@ -47,14 +53,56 @@ class LightControlMessageHandler {
     auto handle(std::monostate&) -> void {}
 
     auto handle(rearpanel::messages::UpdateLightControlMessage&) -> void {
+        auto color = _animation.animate(DELAY_MS);
         _hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
-        _hardware.set_led_power(RED_UI_LED, 0);
-        _hardware.set_led_power(GREEN_UI_LED, 0);
-        _hardware.set_led_power(BLUE_UI_LED, 0);
-        _hardware.set_led_power(WHITE_UI_LED, 100);
+        _hardware.set_led_power(RED_UI_LED, static_cast<uint32_t>(color.r));
+        _hardware.set_led_power(GREEN_UI_LED, static_cast<uint32_t>(color.g));
+        _hardware.set_led_power(BLUE_UI_LED, static_cast<uint32_t>(color.b));
+        _hardware.set_led_power(WHITE_UI_LED, static_cast<uint32_t>(color.w));
+    }
+
+    auto handle(rearpanel::messages::AddLightActionRequest& msg) -> void {
+        auto action = lights::Action{
+            // The colors in the message are scaled [0,255], so we can just
+            // keep that scale since it matches the max power setting
+            .color{
+                .r = static_cast<double>(msg.red),
+                .g = static_cast<double>(msg.green),
+                .b = static_cast<double>(msg.blue),
+                .w = static_cast<double>(msg.white),
+            },
+            .transition = msg.transition,
+            .transition_time_ms = msg.transition_time_ms};
+        if (_animation.add_to_staging(action)) {
+            ack();
+        } else {
+            nack();
+        }
+    }
+
+    auto handle(rearpanel::messages::ClearLightActionStagingQueueRequest&)
+        -> void {
+        _animation.clear_staging();
+        ack();
+    }
+
+    auto handle(rearpanel::messages::StartLightActionRequest& msg) -> void {
+        _animation.start_staged_animation(msg.animation);
+        ack();
+    }
+
+    static auto ack() -> void {
+        queue_client::get_main_queues().send_host_comms_queue(
+            rearpanel::messages::Ack{});
+    }
+
+    static auto nack() -> void {
+        queue_client::get_main_queues().send_host_comms_queue(
+            rearpanel::messages::AckFailed{});
     }
 
     LightControlInterface& _hardware;
+    Animation& _animation;
 };
 
 /**
@@ -76,8 +124,10 @@ class LightControlTask {
     /**
      * Task entry point.
      */
-    [[noreturn]] void operator()(LightControlInterface* hardware_handle) {
-        auto handler = LightControlMessageHandler(*hardware_handle);
+    [[noreturn]] void operator()(LightControlInterface* hardware_handle,
+                                 Animation* animation_handle) {
+        auto handler =
+            LightControlMessageHandler(*hardware_handle, *animation_handle);
         TaskMessage message{};
 
         for (;;) {

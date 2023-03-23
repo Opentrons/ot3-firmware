@@ -154,3 +154,133 @@ SCENARIO("message parsing") {
         }
     }
 }
+
+TEST_CASE("AddLightActionRequest parsing") {
+    using namespace rearpanel;
+    GIVEN("valid input") {
+        auto input = std::array<uint8_t, 11>{// Header
+                                             0x04, 0x00, 0x00, 0x07,
+                                             // Transition time
+                                             0x00, 100,
+                                             // Transition type
+                                             0x01,
+                                             // Colors RGBW
+                                             0x10, 0x20, 0x30, 0x40};
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0400), input.begin(), input.end());
+            THEN("the message is correctly parsed") {
+                REQUIRE(std::holds_alternative<messages::AddLightActionRequest>(
+                    message));
+                auto request =
+                    std::get<messages::AddLightActionRequest>(message);
+                REQUIRE(request.length == 7);
+                REQUIRE(request.transition_time_ms == 100);
+                REQUIRE(request.transition ==
+                        ids::LightTransitionType::sinusoid);
+                REQUIRE(request.red == 0x10);
+                REQUIRE(request.green == 0x20);
+                REQUIRE(request.blue == 0x30);
+                REQUIRE(request.white == 0x40);
+            }
+        }
+    }
+    GIVEN("invalid input") {
+        auto input = std::array<uint8_t, 11>{// Header
+                                             0x04, 0x00, 0x00, 0x10,
+                                             // Transition time
+                                             0x00, 100,
+                                             // Transition type
+                                             0x01,
+                                             // Colors RGBW
+                                             0x10, 0x20, 0x30, 0x40};
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0400), input.begin(), input.end());
+            THEN("the message is not parsed") {
+                REQUIRE(std::holds_alternative<std::monostate>(message));
+            }
+        }
+    }
+}
+
+TEST_CASE("ClearLightActionStagingQueueRequest parsing") {
+    using namespace rearpanel;
+    GIVEN("valid input") {
+        auto input = std::array<uint8_t, 4>{
+            // Header
+            0x04,
+            0x01,
+            0x00,
+            0x00,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0401), input.begin(), input.end());
+            THEN("the message is correctly parsed") {
+                REQUIRE(std::holds_alternative<
+                        messages::ClearLightActionStagingQueueRequest>(
+                    message));
+            }
+        }
+    }
+    GIVEN("invalid input") {
+        auto input = std::array<uint8_t, 4>{
+            // Header w/ wrong length
+            0x04,
+            0x01,
+            0x00,
+            0x10,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0401), input.begin(), input.end());
+            THEN("the message is not parsed") {
+                REQUIRE(std::holds_alternative<std::monostate>(message));
+            }
+        }
+    }
+}
+
+TEST_CASE("StartLightActionRequest parsing") {
+    using namespace rearpanel;
+    GIVEN("valid input") {
+        auto input = std::array<uint8_t, 5>{
+            // Header
+            0x04,
+            0x02,
+            0x00,
+            0x01,
+            // Animation type looping
+            0x00,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0402), input.begin(), input.end());
+            THEN("the message is correctly parsed") {
+                REQUIRE(
+                    std::holds_alternative<messages::StartLightActionRequest>(
+                        message));
+                auto request =
+                    std::get<messages::StartLightActionRequest>(message);
+                REQUIRE(request.animation == ids::LightAnimationType::looping);
+            }
+        }
+    }
+    GIVEN("invalid input") {
+        auto input = std::array<uint8_t, 4>{
+            // Header w/ wrong length
+            0x04,
+            0x02,
+            0x00,
+            0x10,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0402), input.begin(), input.end());
+            THEN("the message is not parsed") {
+                REQUIRE(std::holds_alternative<std::monostate>(message));
+            }
+        }
+    }
+}

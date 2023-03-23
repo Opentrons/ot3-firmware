@@ -12,17 +12,30 @@ void queue_client::QueueClient::send_eeprom_queue(
 
 void queue_client::QueueClient::send_host_comms_queue(
     const rearpanel::messages::HostCommTaskMessage& m) {
-    host_comms_queue->try_write(m);
+    if (host_comms_queue) {
+        host_comms_queue->try_write(m);
+    }
 }
 
 void queue_client::QueueClient::send_system_queue(
     const rearpanel::messages::SystemTaskMessage& m) {
-    system_queue->try_write(m);
+    if (system_queue) {
+        system_queue->try_write(m);
+    }
+}
+
+void queue_client::QueueClient::send_light_control_queue(
+    const rearpanel::messages::LightControlTaskMessage& m) {
+    if (light_control_queue) {
+        light_control_queue->try_write(m);
+    }
 }
 
 void queue_client::QueueClient::send_hardware_queue(
     const rearpanel::messages::HardwareTaskMessage& m) {
-    hardware_queue->try_write(m);
+    if (hardware_queue) {
+        hardware_queue->try_write(m);
+    }
 }
 
 /**
