@@ -367,6 +367,9 @@ struct AddLightActionRequest
             .white = 0};
 
         body = bit_utils::bytes_to_int(body, limit, type);
+        if(type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
         body = bit_utils::bytes_to_int(body, limit, ret.length);
         if (body == limit) {
             return std::monostate();
@@ -403,6 +406,31 @@ struct AddLightActionRequest
     auto operator==(const AddLightActionRequest& other) const -> bool = default;
 };
 
+struct ClearLightActionStagingQueueRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::clear_light_action_staging_queue> {
+    static constexpr size_t LENGTH = 0;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, ClearLightActionStagingQueueRequest> {
+        uint16_t type = 0;
+        uint16_t length;
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if(type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, length);
+        if(length != LENGTH) {
+            return std::monostate();
+        }
+        return ClearLightActionStagingQueueRequest{};
+    }
+
+    auto operator==(const ClearLightActionStagingQueueRequest& other) const -> bool = default;
+};
+
+
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
@@ -425,7 +453,8 @@ static auto rear_panel_parser =
     binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
                          EngageEstopRequest, EngageSyncRequest,
                          ReleaseEstopRequest, ReleaseSyncRequest,
-                         DoorSwitchStateRequest, AddLightActionRequest>{};
+                         DoorSwitchStateRequest, AddLightActionRequest,
+                         ClearLightActionStagingQueueRequest>{};
 
 };  // namespace messages
 };  // namespace rearpanel
