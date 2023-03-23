@@ -432,6 +432,36 @@ struct ClearLightActionStagingQueueRequest
         -> bool = default;
 };
 
+struct StartLightActionRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::start_light_action> {
+    static constexpr size_t LENGTH = sizeof(rearpanel::ids::LightAnimationType);
+    rearpanel::ids::LightAnimationType animation;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, StartLightActionRequest> {
+        uint16_t type = 0;
+        uint16_t length;
+        uint8_t animation;
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if (type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, length);
+        if (length != LENGTH) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, animation);
+        return StartLightActionRequest{
+            .animation =
+                static_cast<rearpanel::ids::LightAnimationType>(animation)};
+    }
+
+    auto operator==(const StartLightActionRequest& other) const
+        -> bool = default;
+};
+
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
@@ -450,12 +480,11 @@ using LightControlTaskMessage =
 
 using HardwareTaskMessage = std::variant<std::monostate>;
 
-static auto rear_panel_parser =
-    binary_parse::Parser<Echo, DeviceInfoRequest, EnterBootloader,
-                         EngageEstopRequest, EngageSyncRequest,
-                         ReleaseEstopRequest, ReleaseSyncRequest,
-                         DoorSwitchStateRequest, AddLightActionRequest,
-                         ClearLightActionStagingQueueRequest>{};
+static auto rear_panel_parser = binary_parse::Parser<
+    Echo, DeviceInfoRequest, EnterBootloader, EngageEstopRequest,
+    EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
+    DoorSwitchStateRequest, AddLightActionRequest,
+    ClearLightActionStagingQueueRequest, StartLightActionRequest>{};
 
 };  // namespace messages
 };  // namespace rearpanel
