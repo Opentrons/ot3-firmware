@@ -20,6 +20,11 @@ void queue_client::QueueClient::send_system_queue(
     system_queue->try_write(m);
 }
 
+void queue_client::QueueClient::send_light_control_queue(
+    const rearpanel::messages::LightControlTaskMessage& m) {
+    light_control_queue->try_write(m);
+}
+
 void queue_client::QueueClient::send_hardware_queue(
     const rearpanel::messages::HardwareTaskMessage& m) {
     hardware_queue->try_write(m);
