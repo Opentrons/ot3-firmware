@@ -57,8 +57,12 @@ IRQn_Type get_interrupt_line(GPIOInterruptBlock gpio_pin_type) {
         case gpio_block_2:
             // tip sense single and eight channel
             // PC2 -> GPIO_EXTI2 (EXTI2_IRQn)
-        default:
             return EXTI2_IRQn;
+        case gpio_block_1:
+            // secondary data ready eight channel
+            // PB1 -> GPIO_EXTI1 (EXTI1_IRQn)
+        default:
+            return EXTI1_IRQn;
     }
 }
 

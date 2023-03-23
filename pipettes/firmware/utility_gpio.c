@@ -70,6 +70,13 @@ static void nvic_priority_enable_init() {
         HAL_NVIC_SetPriority(block_3, 10, 0);
         HAL_NVIC_EnableIRQ(block_3);
     }
+    if (pipette_type == EIGHT_CHANNEL) {
+        IRQn_Type block_1 = get_interrupt_line(gpio_block_1);
+        /* EXTI interrupt init block tip sense*/
+        HAL_NVIC_SetPriority(block_1, 10, 0);
+        HAL_NVIC_EnableIRQ(block_1);
+    }
+
 
 }
 
@@ -187,16 +194,16 @@ static void data_ready_gpio_init() {
                 pipette_type, pipette_hardware_device_data_ready_rear);
     enable_gpio_port(hardware.port);
     if (pipette_type != SINGLE_CHANNEL) {
-        PipetteHardwarePin hardware_rear = pipette_hardware_get_gpio(
+        PipetteHardwarePin hardware_front = pipette_hardware_get_gpio(
             pipette_type, pipette_hardware_device_data_ready_front);
-        enable_gpio_port(hardware_rear.port);
+        enable_gpio_port(hardware_front.port);
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
-        GPIO_InitStruct.Pin = hardware_rear.pin;
+        GPIO_InitStruct.Pin = hardware_front.pin;
         GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
+        HAL_GPIO_Init(hardware_front.port, &GPIO_InitStruct);
 
     }
 

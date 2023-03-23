@@ -19,7 +19,8 @@ typedef enum {
     gpio_block_9_5,
     gpio_block_15_10,
     gpio_block_2,
-    gpio_block_3
+    gpio_block_3,
+    gpio_block_1,
 }GPIOInterruptBlock;
 
 uint16_t pipette_hardware_spi_pins(const PipetteType pipette_type, GPIO_TypeDef* which_handle);
