@@ -222,7 +222,9 @@ TEST_CASE("animation handler functionality") {
                 uint32_t time = 0;
                 Color last = colors_off;
                 while (time <= 500) {
+                    // First step LOADS the message, second step starts it...
                     auto next = subject.animate(time_inc);
+                    next = subject.animate(time_inc);
                     time += time_inc;
                     DYNAMIC_SECTION("time = " << time) {
                         REQUIRE(next.r >= last.r);
@@ -258,10 +260,15 @@ TEST_CASE("animation handler functionality") {
         THEN("animating provides the correct colors") {
             // At 100ms updates
             auto expected = std::vector<Color>{
-                Color{.g = 0.0, .b = 0.5}, Color{.g = 0.0, .b = 1.0},
-                Color{.g = 0.5, .b = 0.5}, Color{.g = 1.0, .b = 0.0},
-                Color{.g = 0.5, .b = 0.5}, Color{.g = 0.0, .b = 1.0},
-                Color{.g = 0.5, .b = 0.5}, Color{.g = 1.0, .b = 0.0},
+                Color{},
+                Color{.g = 0.0, .b = 0.5},
+                Color{.g = 0.0, .b = 1.0},
+                Color{.g = 0.5, .b = 0.5},
+                Color{.g = 1.0, .b = 0.0},
+                Color{.g = 0.5, .b = 0.5},
+                Color{.g = 0.0, .b = 1.0},
+                Color{.g = 0.5, .b = 0.5},
+                Color{.g = 1.0, .b = 0.0},
             };
             auto res = std::vector<Color>();
             for (auto& e : expected) {
@@ -278,17 +285,20 @@ TEST_CASE("animation handler functionality") {
             }
         }
         WHEN("switching the animation to an empty one mid-step") {
+            std::ignore = subject.animate(100);
             auto res = subject.animate(100);
             REQUIRE(res == Color{.b = 0.5});
             subject.clear_staging();
             subject.start_staged_animation(AnimationType::looping);
             THEN("animating returns the same color forever") {
+                std::ignore = subject.animate(100);
                 REQUIRE(res == subject.animate(100));
                 REQUIRE(res == subject.animate(100));
                 REQUIRE(res == subject.animate(100));
             }
         }
         WHEN("switching the animation to a different one mid-step") {
+            std::ignore = subject.animate(100);
             auto res = subject.animate(100);
             REQUIRE(res == Color{.b = 0.5});
             subject.clear_staging();
@@ -300,6 +310,7 @@ TEST_CASE("animation handler functionality") {
             REQUIRE(subject.add_to_staging(action));
             subject.start_staged_animation(AnimationType::looping);
             THEN("animating returns the same color forever") {
+                std::ignore = subject.animate(100);
                 auto expected = action.color;
                 REQUIRE(expected == subject.animate(10));
                 REQUIRE(expected == subject.animate(10));

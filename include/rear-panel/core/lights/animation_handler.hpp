@@ -36,25 +36,29 @@ class AnimationHandler {
      */
     auto animate(uint32_t time_increment_ms) -> Color {
         Color ret = _step_starting_color;
-        if (!_current_step.has_value()) {
-            // We were not in an active animation last update, but
-            // one may have started since then. Try to get a new step.
-            _timer_ms = 0;
-            _current_step = _queue.get_next_active_step();
-        }
-
         if (_current_step.has_value()) {
-            // We are in a step, calculate the next increment
-            _timer_ms += time_increment_ms;
+            // Get the power level for the current timer
             ret = lights::math::color_interpolate(
                 _step_starting_color, _current_step.value().color,
                 _current_step.value().transition, _timer_ms,
                 _current_step.value().transition_time_ms);
+            // We are in a step, calculate the next increment
+            _timer_ms += time_increment_ms;
+            // Check if this step is over
             if (_timer_ms >= _current_step.value().transition_time_ms) {
                 _step_starting_color = _current_step.value().color;
                 // Signal that we need a new message next time through
                 _current_step = std::nullopt;
             }
+        } else {
+            // We were not in an active animation last update, but
+            // one may have started since then. Try to get a new step.
+            //
+            // Because the color is set to _step_starting_color, which
+            // is the *ending* color of the previous step, we are implicitly
+            // doing the time=0 step here.
+            _timer_ms = time_increment_ms;
+            _current_step = _queue.get_next_active_step();
         }
         _most_recent_color = ret;
         return ret;
