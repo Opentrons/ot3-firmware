@@ -53,6 +53,7 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim8;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -159,6 +160,10 @@ void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
 void TIM4_IRQHandler(void) { HAL_TIM_IRQHandler(&htim4); }
+
+void TIM8_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim8); }
+
+void TIM8_UP_IRQHandler(void) { HAL_TIM_IRQHandler(&htim8); }
 /**
  * @brief This function handles TIM7 global interrupt.
  */

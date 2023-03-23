@@ -46,6 +46,8 @@ void FDCAN1_IT0_IRQHandler(void);
 void TIM1_CC_IRQHandler(void);
 void TIM3_IRQHandler(void);
 void TIM7_IRQHandler(void);
+void TIM8_CC_IRQHandler(void);
+void TIM8_UP_IRQHandler(void);
 
 #ifdef __cplusplus
 }
