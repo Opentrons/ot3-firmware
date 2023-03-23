@@ -367,7 +367,7 @@ struct AddLightActionRequest
             .white = 0};
 
         body = bit_utils::bytes_to_int(body, limit, type);
-        if(type != static_cast<uint16_t>(message_type)) {
+        if (type != static_cast<uint16_t>(message_type)) {
             return std::monostate();
         }
         body = bit_utils::bytes_to_int(body, limit, ret.length);
@@ -407,7 +407,8 @@ struct AddLightActionRequest
 };
 
 struct ClearLightActionStagingQueueRequest
-    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::clear_light_action_staging_queue> {
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::clear_light_action_staging_queue> {
     static constexpr size_t LENGTH = 0;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -417,19 +418,19 @@ struct ClearLightActionStagingQueueRequest
         uint16_t length;
 
         body = bit_utils::bytes_to_int(body, limit, type);
-        if(type != static_cast<uint16_t>(message_type)) {
+        if (type != static_cast<uint16_t>(message_type)) {
             return std::monostate();
         }
         body = bit_utils::bytes_to_int(body, limit, length);
-        if(length != LENGTH) {
+        if (length != LENGTH) {
             return std::monostate();
         }
         return ClearLightActionStagingQueueRequest{};
     }
 
-    auto operator==(const ClearLightActionStagingQueueRequest& other) const -> bool = default;
+    auto operator==(const ClearLightActionStagingQueueRequest& other) const
+        -> bool = default;
 };
-
 
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
