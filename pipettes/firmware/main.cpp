@@ -210,13 +210,26 @@ auto initialize_motor_tasks(
     interfaces::gear_motor::UnavailableGearMotionControl&,
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     interfaces::gear_motor::UnavailableGearHardwareTasks&) {
-    sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                              peripheral_tasks::get_i2c3_client(),
-                              peripheral_tasks::get_i2c3_poller_client(),
-                              peripheral_tasks::get_i2c1_client(),
-                              peripheral_tasks::get_i2c1_poller_client(),
-                              sensor_hardware_container.primary, id,
-                              eeprom_hardware_iface);
+    if (PIPETTE_TYPE == EIGHT_CHANNEL) {
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                peripheral_tasks::get_i2c3_client(),
+                                peripheral_tasks::get_i2c3_poller_client(),
+                                peripheral_tasks::get_i2c1_client(),
+                                peripheral_tasks::get_i2c1_poller_client(),
+                                sensor_hardware_container.primary,
+                                sensor_hardware_container.secondary.value(),
+                                id,
+                                eeprom_hardware_iface);
+    } else {
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                        peripheral_tasks::get_i2c3_client(),
+                        peripheral_tasks::get_i2c3_poller_client(),
+                        peripheral_tasks::get_i2c1_client(),
+                        peripheral_tasks::get_i2c1_poller_client(),
+                        sensor_hardware_container.primary, id,
+                        eeprom_hardware_iface);
+    }
+
 
     initialize_linear_timer(plunger_callback);
     initialize_enc_timer(encoder_callback);
