@@ -44,8 +44,8 @@ class AnimationHandler {
             ret = calculate_step_power();
             if (_timer_ms >= _current_step.value().transition_time_ms) {
                 _step_starting_color = _current_step.value().color;
-                _timer_ms = 0;
-                _current_step = _queue.get_next_active_step();
+                // Signal that we need a new message next time through
+                _current_step = std::nullopt;
             }
         }
         _most_recent_color = ret;
