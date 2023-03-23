@@ -118,6 +118,11 @@ void DebugMon_Handler(void) {}
 /*  file (startup_stm32g4xxxx.s).                                             */
 /******************************************************************************/
 
+void EXTI1_IRQHandler(void) {
+    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_1);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+}
+
 void EXTI2_IRQHandler(void) {
     __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_2);
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);

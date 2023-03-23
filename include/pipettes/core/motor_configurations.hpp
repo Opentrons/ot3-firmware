@@ -33,15 +33,6 @@ struct HighThroughputPipetteDriverHardware {
     TMC2160DriverConfig linear_motor;
 };
 
-struct HighThroughputSensorHardware {
-    sensors::hardware::SensorHardwareConfiguration primary;
-    sensors::hardware::SensorHardwareConfiguration secondary;
-};
-
-struct LowThroughputSensorHardware {
-    sensors::hardware::SensorHardwareConfiguration primary;
-};
-
 struct LowThroughputPipetteMotorHardware {
     motor_hardware::HardwareConfig linear_motor;
 };
@@ -109,41 +100,5 @@ auto motor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
 template <>
 auto motor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
     -> HighThroughputMotorConfigurations;
-
-template <PipetteType P>
-auto sensor_configurations()
-    -> std::enable_if_t<P == PipetteType::SINGLE_CHANNEL,
-                        LowThroughputSensorHardware>;
-
-template <PipetteType P>
-auto sensor_configurations()
-    -> std::enable_if_t<P == PipetteType::EIGHT_CHANNEL,
-                        LowThroughputSensorHardware>;
-
-template <PipetteType P>
-auto sensor_configurations()
-    -> std::enable_if_t<P == PipetteType::NINETY_SIX_CHANNEL,
-                        HighThroughputSensorHardware>;
-
-template <PipetteType P>
-auto sensor_configurations()
-    -> std::enable_if_t<P == PipetteType::THREE_EIGHTY_FOUR_CHANNEL,
-                        HighThroughputSensorHardware>;
-
-template <>
-auto sensor_configurations<PipetteType::SINGLE_CHANNEL>()
-    -> LowThroughputSensorHardware;
-
-template <>
-auto sensor_configurations<PipetteType::EIGHT_CHANNEL>()
-    -> LowThroughputSensorHardware;
-
-template <>
-auto sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
-    -> HighThroughputSensorHardware;
-
-template <>
-auto sensor_configurations<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
-    -> HighThroughputSensorHardware;
 
 }  // namespace motor_configs

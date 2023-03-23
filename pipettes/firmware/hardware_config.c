@@ -18,11 +18,11 @@ static PipetteHardwarePin get_gpio_ht(PipetteHardwareDevice device) {
             pinout.port = GPIOA;
             pinout.pin = GPIO_PIN_9;
             return pinout;
-        case pipette_hardware_device_data_ready_front:
+        case pipette_hardware_device_data_ready_rear:
             pinout.port = GPIOC;
             pinout.pin = GPIO_PIN_11;
             return pinout;
-        case pipette_hardware_device_data_ready_rear:
+        case pipette_hardware_device_data_ready_front:
             pinout.port = GPIOC;
             pinout.pin = GPIO_PIN_6;
             return pinout;
@@ -57,8 +57,12 @@ IRQn_Type get_interrupt_line(GPIOInterruptBlock gpio_pin_type) {
         case gpio_block_2:
             // tip sense single and eight channel
             // PC2 -> GPIO_EXTI2 (EXTI2_IRQn)
-        default:
             return EXTI2_IRQn;
+        case gpio_block_1:
+            // secondary data ready eight channel
+            // PB1 -> GPIO_EXTI1 (EXTI1_IRQn)
+        default:
+            return EXTI1_IRQn;
     }
 }
 
@@ -101,9 +105,13 @@ static PipetteHardwarePin get_gpio_lt(PipetteHardwareDevice device) {
             pinout.port = GPIOB;
             pinout.pin = GPIO_PIN_6;
             return pinout;
-        case pipette_hardware_device_data_ready_front:
+        case pipette_hardware_device_data_ready_rear:
             pinout.port = GPIOC;
             pinout.pin = GPIO_PIN_3;
+            return pinout;
+        case pipette_hardware_device_data_ready_front:
+            pinout.port = GPIOB;
+            pinout.pin = GPIO_PIN_1;
             return pinout;
         default:
             pinout.port = 0;

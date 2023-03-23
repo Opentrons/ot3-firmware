@@ -36,9 +36,18 @@ void start_tasks(CanWriterTask& can_writer, I2CClient& i2c3_task_client,
                  I2CPollerClient& i2c3_poller_client,
                  I2CClient& i2c1_task_client,
                  I2CPollerClient& i2c1_poller_client,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware,
+                 sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
                  can::ids::NodeId id,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
+
+void start_tasks(
+    CanWriterTask& can_writer, I2CClient& i2c3_task_client,
+    I2CPollerClient& i2c3_poller_client, I2CClient& i2c1_task_client,
+    I2CPollerClient& i2c1_poller_client,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_primary,
+    sensors::hardware::SensorHardwareBase& sensor_hardware_secondary,
+    can::ids::NodeId id,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hardware);
 
 /**
  * Access to all sensor/eeprom tasks. This will be a singleton.
@@ -56,8 +65,11 @@ struct Tasks {
         freertos_message_queue::FreeRTOSMessageQueue>*
         capacitive_sensor_task_rear{nullptr};
     sensors::tasks::PressureSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* pressure_sensor_task{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        pressure_sensor_task_rear{nullptr};
+    sensors::tasks::PressureSensorTask<
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        pressure_sensor_task_front{nullptr};
     sensors::tasks::TipPresenceNotificationTask<
         freertos_message_queue::FreeRTOSMessageQueue>* tip_notification_task{
         nullptr};
@@ -73,23 +85,27 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
 
-    void send_capacitive_sensor_queue_front(
+    void send_capacitive_sensor_queue_rear(
         const sensors::utils::TaskMessage& m);
 
     // TODO: implement s1 capacitive sensor for pipettes
-    void send_capacitive_sensor_queue_rear(const sensors::utils::TaskMessage&) {
-    }
+    void send_capacitive_sensor_queue_front(
+        const sensors::utils::TaskMessage&) {}
 
-    void send_pressure_sensor_queue(const sensors::utils::TaskMessage& m);
+    void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
+
+    void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         environment_sensor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
-        capacitive_sensor_queue_front{nullptr};
+        capacitive_sensor_queue_rear{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
-        pressure_sensor_queue{nullptr};
+        pressure_sensor_queue_rear{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
+        pressure_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         sensors::tip_presence::TaskMessage>* tip_notification_queue{nullptr};
 };

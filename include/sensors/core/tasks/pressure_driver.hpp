@@ -183,6 +183,7 @@ class MMR920C04 {
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
             .sensor = get_sensor_type(),
+            .sensor_id = sensor_id,
             .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
     }
@@ -206,6 +207,7 @@ class MMR920C04 {
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
             .sensor = get_sensor_type(),
+            .sensor_id = sensor_id,
             .sensor_data = pressure_fixed_point};
         can_client.send_can_message(get_host_id(), message);
     }
@@ -216,6 +218,7 @@ class MMR920C04 {
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
             .sensor = get_sensor_type(),
+            .sensor_id = sensor_id,
             .sensor_data = temperature};
         can_client.send_can_message(get_host_id(), message);
     }

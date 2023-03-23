@@ -31,5 +31,11 @@ class SensorHardwareBase {
     virtual auto add_data_ready_callback(std::function<void()> callback)
         -> bool = 0;
 };
+
+struct SensorHardwareContainer {
+    SensorHardwareBase& primary;
+    SensorHardwareBase& secondary;
+};
+
 };  // namespace hardware
 };  // namespace sensors
