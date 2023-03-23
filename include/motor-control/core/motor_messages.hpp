@@ -35,6 +35,8 @@ struct Ack {
     int32_t encoder_position;
     uint8_t position_flags;
     AckMessageId ack_id;
+    int32_t start_encoder_position;
+    uint16_t usage_key;
 };
 
 struct GearMotorAck : public Ack {
@@ -50,9 +52,11 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t group_id;
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
+    int32_t start_encoder_position;
 
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
-                   AckMessageId _id, uint32_t message_index) -> Ack {
+                   AckMessageId _id, uint32_t message_index, uint16_t usage_key)
+        -> Ack {
         return Ack{
             .message_index = message_index,
             .group_id = group_id,
@@ -61,6 +65,8 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
             .encoder_position = pulses,
             .position_flags = flags,
             .ack_id = _id,
+            .start_encoder_position = start_encoder_position,
+            .usage_key = usage_key,
         };
     }
 };
@@ -70,10 +76,12 @@ struct GearMotorMove : public Move {
     can::ids::GearMotorId gear_motor_id;
 
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
-                   AckMessageId _id, uint32_t message_index) -> GearMotorAck {
-        return GearMotorAck{message_index, group_id, seq_id,
-                            position,      pulses,   flags,
-                            _id,           action,   gear_motor_id};
+                   AckMessageId _id, uint32_t message_index, uint16_t usage_key)
+        -> GearMotorAck {
+        return GearMotorAck{
+            message_index, group_id, seq_id,       position,
+            pulses,        flags,    _id,          start_encoder_position,
+            usage_key,     action,   gear_motor_id};
     }
 };
 
@@ -89,9 +97,11 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     int32_t encoder_position;
     MoveStopCondition stop_condition = MoveStopCondition::none;
+    int32_t start_encoder_position;
+    uint16_t usage_key;
 
     auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id,
-                   uint32_t message_index) -> Ack {
+                   uint32_t message_index, uint16_t usage_key) -> Ack {
         return Ack{
             .message_index = message_index,
             .group_id = group_id,
@@ -100,6 +110,8 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
             .encoder_position = pulses,
             .position_flags = flags,
             .ack_id = _id,
+            .start_encoder_position = start_encoder_position,
+            .usage_key = usage_key,
         };
     }
 };

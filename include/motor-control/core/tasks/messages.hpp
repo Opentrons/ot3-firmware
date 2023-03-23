@@ -2,6 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/usage_messages.hpp"
 
 namespace motor_control_task_messages {
 
@@ -50,6 +51,7 @@ using BrushedMoveGroupTaskMessage = std::variant<
     can::messages::GripperGripRequest, can::messages::GripperHomeRequest,
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest>;
 
-using UsageStorageTaskMessage = std::variant<std::monostate>;
+using UsageStorageTaskMessage =
+    std::variant<std::monostate, usage_messages::IncreaseStepperDistance>;
 
 }  // namespace motor_control_task_messages

@@ -369,7 +369,8 @@ class MotorInterruptHandler {
             auto ack = buffered_move.build_ack(
                 hardware.get_step_tracker(), hardware.get_encoder_pulses(),
                 hardware.position_flags.get_flags(), ack_msg_id,
-                buffered_move.message_index);
+                buffered_move.message_index,
+                hardware.get_usage_eeprom_config().step_usage_key);
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(ack));

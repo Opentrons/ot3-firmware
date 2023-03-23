@@ -46,7 +46,8 @@ class MotionController {
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
-                        .stop_condition = MoveStopCondition::none};
+                        .stop_condition = MoveStopCondition::none,
+                        .start_encoder_position = read_encoder_pulses()};
         enable_motor();
         queue.try_write(msg);
     }
@@ -57,7 +58,8 @@ class MotionController {
                         .duty_cycle = can_msg.duty_cycle,
                         .group_id = can_msg.group_id,
                         .seq_id = can_msg.seq_id,
-                        .stop_condition = MoveStopCondition::limit_switch};
+                        .stop_condition = MoveStopCondition::limit_switch,
+                        .start_encoder_position = read_encoder_pulses()};
         if (!enabled) {
             enable_motor();
         }
