@@ -70,10 +70,11 @@ class MoveStatusMessageHandler {
             .position_flags = message.position_flags,
             .ack_id = static_cast<uint8_t>(message.ack_id)};
         can_client.send_can_message(can::ids::NodeId::host, msg);
-        usage_client.send_usage_storage_queue(usage_messages::IncreaseStepperDistance{
-            .key = message.usage_key,
-            .distance_traveled_um = message.start_encoder_position - message.encoder_position
-        });
+        usage_client.send_usage_storage_queue(
+            usage_messages::IncreaseDistanceUsage{
+                .key = message.usage_key,
+                .distance_traveled_um =
+                    message.start_encoder_position - message.encoder_position});
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {

@@ -4,7 +4,7 @@
 
 namespace usage_messages {
 
-struct IncreaseStepperDistance{
+struct IncreaseDistanceUsage{
     uint16_t key;
     int32_t distance_traveled_um;
 };

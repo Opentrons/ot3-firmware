@@ -8,6 +8,10 @@
 
 namespace motor_hardware {
 
+struct UsageEEpromConfig {
+    uint16_t distance_usage_key;
+};
+
 class MotorHardwareIface {
   public:
     MotorHardwareIface() = default;
@@ -30,6 +34,7 @@ class MotorHardwareIface {
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
     virtual void stop_timer_interrupt() = 0;
+    virtual auto get_usage_eeprom_config() -> UsageEEpromConfig& = 0;
 
     // This variable can remain public because the only public methods
     // to it are thread-safe anyways.

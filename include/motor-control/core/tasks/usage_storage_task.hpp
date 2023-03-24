@@ -37,7 +37,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(usage_messages::IncreaseStepperDistance& m) {
+    void handle(usage_messages::IncreaseDistanceUsage& m) {
         std::ignore = std::abs(m.distance_traveled_um);
     }
 

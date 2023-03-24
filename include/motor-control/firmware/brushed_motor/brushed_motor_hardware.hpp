@@ -37,12 +37,13 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     ~BrushedMotorHardware() final = default;
     BrushedMotorHardware() = delete;
     BrushedMotorHardware(const BrushedHardwareConfig& config,
-                         void* encoder_handle)
+                         void* encoder_handle, UsageEEpromConfig eeprom_config)
         : pins(config),
           enc_handle(encoder_handle),
           controller_loop{config.pid_kp,  config.pid_ki,
                           config.pid_kd,  1.F / config.encoder_interrupt_freq,
-                          config.wl_high, config.wl_low} {}
+                          config.wl_high, config.wl_low},
+          eeprom_config{eeprom_config} {}
     BrushedMotorHardware(const BrushedMotorHardware&) = delete;
     auto operator=(const BrushedMotorHardware&)
         -> BrushedMotorHardware& = delete;
@@ -72,6 +73,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
+    auto get_usage_eeprom_config() -> UsageEEpromConfig& {
+        return eeprom_config;
+    }
 
   private:
     bool stay_enabled = false;
@@ -83,6 +87,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     ot_utils::pid::PID controller_loop;
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
+    UsageEEpromConfig eeprom_config;
 };
 
 };  // namespace motor_hardware

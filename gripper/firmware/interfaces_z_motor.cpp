@@ -24,8 +24,8 @@ static spi::hardware::SPI_interface SPI_intf = {
     .SPI_handle = &hspi2,
 };
 
-struct motor_hardware::StepperUsageEEpromConfig usage_config {
-    .step_usage_key = Z_MOTOR_STEP_KEY
+struct motor_hardware::UsageEEpromConfig z_usage_config {
+    .distance_usage_key = Z_MOTOR_DIST_KEY
 };
 
 /**
@@ -99,7 +99,7 @@ struct motion_controller::HardwareConfig motor_pins {
 
 static motor_hardware::MotorHardware motor_hardware_iface(motor_pins, &htim7,
                                                           enc_handle,
-                                                          usage_config);
+                                                          z_usage_config);
 
 /**
  * Motor driver configuration.
