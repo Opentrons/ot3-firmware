@@ -260,6 +260,7 @@ class DevDataAccessor
                 }
                 // call a read to the previous table entry so we know where
                 // to put the data
+                tail_updated = false;
                 this->eeprom_client.send_eeprom_queue(
                     message::ReadEepromMessage{
                         .memory_address = calculate_table_entry_start(key - 1),
@@ -300,6 +301,16 @@ class DevDataAccessor
         }
         tail_updated = true;
     }
+
+    auto data_part_exists(uint16_t key) -> bool {
+        if (tail_updated && config_updated) {
+            auto table_location = calculate_table_entry_start(key);
+            return table_location <= data_tail;
+        }
+        return false;
+    }
+
+    auto ready() -> bool { return tail_updated && config_updated; }
 
   private:
     DataTailType data_tail_buff = DataTailType{};
@@ -371,6 +382,7 @@ class DevDataAccessor
                                               data_addr - action_cmd_m.len,
                                               data_addr, m.message_index);
                     }
+                    tail_updated = true;
                 }
                 break;
             case TableAction::READ:
