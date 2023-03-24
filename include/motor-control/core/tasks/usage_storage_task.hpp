@@ -4,6 +4,7 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "eeprom/core/dev_data.hpp"
 #include "motor-control/core/tasks/messages.hpp"
@@ -11,6 +12,8 @@
 namespace usage_storage_task {
 
 using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
+
+static constexpr uint16_t distance_data_usage_len = 8;
 
 /**
  * The message queue message handler.
@@ -29,18 +32,56 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     ~UsageStorageTaskHandler() = default;
 
     void handle_message(const TaskMessage& message) {
-        std::visit([this](auto m) { this->handle(m); }, message);
+        std::visit([this](auto m) { this->start_handle(m); }, message);
     }
 
-    void read_complete(uint32_t message_index) { std::ignore = message_index; }
+    void read_complete(uint32_t message_index) {
+        std::ignore = message_index;
+        std::visit([this](auto m) { this->finish_handle(m); }, buffered_task);
+        ready_for_new_message = true;
+    }
+
+    auto ready() -> bool {
+        return ready_for_new_message && usage_data_accessor.ready();
+    }
 
   private:
-    void handle(std::monostate m) { static_cast<void>(m); }
+    void start_handle(std::monostate m) { static_cast<void>(m); }
 
-    void handle(usage_messages::IncreaseDistanceUsage& m) {
-        std::ignore = std::abs(m.distance_traveled_um);
+    void finish_handle(std::monostate m) { static_cast<void>(m); }
+
+    void start_handle(usage_messages::IncreaseDistanceUsage& m) {
+        ready_for_new_message = false;
+        buffered_task = m;
+        _ensure_part(m.key, distance_data_usage_len);
+        usage_data_accessor.get_data(m.key, 0);
     }
 
+    void finish_handle(usage_messages::IncreaseDistanceUsage& m) {
+        uint64_t old_value = 0;
+        std::ignore = bit_utils::bytes_to_int(
+            accessor_backing.begin(),
+            accessor_backing.begin() + distance_data_usage_len, old_value);
+        old_value += m.distance_traveled_um;
+        std::ignore = bit_utils::int_to_bytes(
+            old_value, accessor_backing.begin(), accessor_backing.end());
+        usage_data_accessor.write_data(m.key, distance_data_usage_len,
+                                       accessor_backing);
+    }
+
+    void _ensure_part(uint16_t key, uint16_t len) {
+        // If the partition has been created, make it and wait for
+        // the partition table to update
+        if (!usage_data_accessor.data_part_exists(key)) {
+            usage_data_accessor.create_data_part(key, len);
+            while (!usage_data_accessor.ready()) {
+                vTaskDelay(10);
+            }
+        }
+    }
+
+    TaskMessage buffered_task = {};
+    bool ready_for_new_message = true;
     CanClient& can_client;
     eeprom::dev_data::DataBufferType<64> accessor_backing =
         eeprom::dev_data::DataBufferType<64>{};
@@ -73,8 +114,14 @@ class UsageStorageTask {
         auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client};
         TaskMessage message{};
         for (;;) {
-            if (queue.try_read(&message, queue.max_delay)) {
-                handler.handle_message(message);
+            if (handler.ready()) {
+                if (queue.try_read(&message, queue.max_delay)) {
+                    handler.handle_message(message);
+                }
+            } else {
+                // wait for the handler to be ready before sending the next
+                // message
+                vTaskDelay(10);
             }
         }
     }
