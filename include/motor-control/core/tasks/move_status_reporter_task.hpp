@@ -78,7 +78,8 @@ class MoveStatusMessageHandler {
         usage_client.send_usage_storage_queue(
             usage_messages::IncreaseDistanceUsage{
                 .key = message.usage_key,
-                .distance_traveled_um = distance_traveled_um});
+                .distance_traveled_um =
+                    uint32_t(std::abs(distance_traveled_um))});
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {
