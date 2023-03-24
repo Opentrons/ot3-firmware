@@ -104,6 +104,7 @@ void gripper_tasks::start_tasks(
     tasks.eeprom_task = &eeprom_task;
     tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
+    tasks.usage_storage_task = &usage_storage_task;
 
     queues.i2c2_queue = &i2c2_task.get_queue();
     queues.i2c3_queue = &i2c3_task.get_queue();
