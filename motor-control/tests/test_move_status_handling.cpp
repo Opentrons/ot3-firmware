@@ -86,7 +86,7 @@ SCENARIO("testing move status position translation") {
             THEN("the position value should still be 0") {
                 REQUIRE(resp_msg.current_position_um == 0);
             }
-            THEN("the encoder value should still be 0") {
+            THEN("the encoder value should be -500") {
                 REQUIRE(resp_msg.encoder_position_um == -500);
             }
         }
