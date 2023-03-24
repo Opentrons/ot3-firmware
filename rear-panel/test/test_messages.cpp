@@ -284,3 +284,112 @@ TEST_CASE("StartLightActionRequest parsing") {
         }
     }
 }
+
+TEST_CASE("SetDeckLightRequest parsing") {
+    using namespace rearpanel;
+    GIVEN("valid input") {
+        auto input = std::array<uint8_t, 5>{
+            // Header
+            0x04,
+            0x10,
+            0x00,
+            0x01,
+            // On
+            0x01,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0410), input.begin(), input.end());
+            THEN("the message is correctly parsed") {
+                REQUIRE(std::holds_alternative<messages::SetDeckLightRequest>(
+                    message));
+                auto request = std::get<messages::SetDeckLightRequest>(message);
+                REQUIRE(request.setting == 1);
+            }
+        }
+    }
+    GIVEN("invalid input") {
+        auto input = std::array<uint8_t, 4>{
+            // Header w/ wrong length
+            0x04,
+            0x10,
+            0x00,
+            0x10,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0410), input.begin(), input.end());
+            THEN("the message is not parsed") {
+                REQUIRE(std::holds_alternative<std::monostate>(message));
+            }
+        }
+    }
+}
+
+TEST_CASE("GetDeckLightRequest parsing") {
+    using namespace rearpanel;
+    GIVEN("valid input") {
+        auto input = std::array<uint8_t, 5>{
+            // Header
+            0x04,
+            0x11,
+            0x00,
+            0x00,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0411), input.begin(), input.end());
+            THEN("the message is correctly parsed") {
+                REQUIRE(std::holds_alternative<messages::GetDeckLightRequest>(
+                    message));
+            }
+        }
+    }
+    GIVEN("invalid input") {
+        auto input = std::array<uint8_t, 4>{
+            // Header w/ wrong length
+            0x04,
+            0x11,
+            0x00,
+            0x10,
+        };
+        WHEN("parsed") {
+            auto message = rearpanel::messages::rear_panel_parser.parse(
+                ids::BinaryMessageId(0x0411), input.begin(), input.end());
+            THEN("the message is not parsed") {
+                REQUIRE(std::holds_alternative<std::monostate>(message));
+            }
+        }
+    }
+}
+
+TEST_CASE("GetDeckLightResponse serializing") {
+    using namespace rearpanel;
+    auto input = messages::GetDeckLightResponse{.setting = 1};
+    auto buffer = std::array<uint8_t, 10>();
+    for (auto& b : buffer) {
+        b = 0xFF;
+    }
+    GIVEN("large enough buffer") {
+        THEN("serializing passes") {
+            auto ret = input.serialize(buffer.begin(), buffer.end());
+            REQUIRE(ret != buffer.end());
+            REQUIRE(buffer[0] == 0x04);
+            REQUIRE(buffer[1] == 0x12);
+            REQUIRE(buffer[2] == 0x00);
+            REQUIRE(buffer[3] == 0x01);
+            REQUIRE(buffer[4] == 0x01);
+        }
+    }
+    GIVEN("buffer too small") {
+        THEN("serializing doesn't overrun the buffer") {
+            auto ret = input.serialize(buffer.begin(), buffer.begin() + 2);
+            REQUIRE(ret == buffer.begin() + 2);
+            REQUIRE(buffer[0] == 0x04);
+            REQUIRE(buffer[1] == 0x12);
+            REQUIRE(buffer[2] == 0xFF);
+            REQUIRE(buffer[3] == 0xFF);
+            REQUIRE(buffer[4] == 0xFF);
+        }
+    }
+}
