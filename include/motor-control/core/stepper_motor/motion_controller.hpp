@@ -220,6 +220,8 @@ class PipetteMotionController {
             can_msg.group_id,
             can_msg.seq_id,
             static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            0,
+            hardware.get_step_tracker(),
             can_msg.action,
             gear_motor_id};
         if (!enabled) {

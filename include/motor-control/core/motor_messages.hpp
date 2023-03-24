@@ -40,6 +40,7 @@ struct Ack {
 };
 
 struct GearMotorAck : public Ack {
+    uint32_t start_step_position;
     can::ids::PipetteTipActionType action;
     can::ids::GearMotorId gear_motor_id;
 };
@@ -72,6 +73,7 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 
 struct GearMotorMove : public Move {
+    uint32_t start_step_position;
     can::ids::PipetteTipActionType action;
     can::ids::GearMotorId gear_motor_id;
 
@@ -81,7 +83,7 @@ struct GearMotorMove : public Move {
         return GearMotorAck{
             message_index, group_id, seq_id,       position,
             pulses,        flags,    _id,          start_encoder_position,
-            usage_key,     action,   gear_motor_id};
+            usage_key,     start_step_position,    action,   gear_motor_id};
     }
 };
 
