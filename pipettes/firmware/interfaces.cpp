@@ -67,8 +67,8 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
         queues.plunger_update_queue);
 }
 
-struct motor_hardware::StepperUsageEEpromConfig single_multi_usage_config {
-    .step_usage_key = SINGLE_MULTI_MOTOR_STEP_KEY
+struct motor_hardware::UsageEEpromConfig single_multi_usage_config {
+    .distance_usage_key = PLUNGER_MOTOR_STEP_KEY
 };
 
 auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
@@ -129,12 +129,12 @@ auto gear_motor::get_motor_hardware(
     return gear_motor::UnavailableGearHardware{};
 }
 
-struct motor_hardware::StepperUsageEEpromConfig gear_left_usage_config {
-    .step_usage_key = GEAR_LEFT_MOTOR_KEY
+struct motor_hardware::UsageEEpromConfig gear_left_usage_config {
+    .distance_usage_key = GEAR_LEFT_MOTOR_KEY
 };
 
-struct motor_hardware::StepperUsageEEpromConfig gear_right_usage_config {
-    .step_usage_key = GEAR_RIGHT_MOTOR_KEY
+struct motor_hardware::UsageEEpromConfig gear_right_usage_config {
+    .distance_usage_key = GEAR_RIGHT_MOTOR_KEY
 };
 
 auto gear_motor::get_motor_hardware(
