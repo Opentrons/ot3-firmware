@@ -7,6 +7,7 @@
 #include "eeprom/core/task.hpp"
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
@@ -73,6 +74,9 @@ struct Tasks {
     sensors::tasks::TipPresenceNotificationTask<
         freertos_message_queue::FreeRTOSMessageQueue>* tip_notification_task{
         nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 /**
@@ -96,6 +100,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
@@ -108,6 +114,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         pressure_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
         sensors::tip_presence::TaskMessage>* tip_notification_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**

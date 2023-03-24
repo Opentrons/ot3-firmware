@@ -1,3 +1,7 @@
+#include "FreeRTOS.h"
+#include "system_stm32g4xx.h"
+#include "task.h"
+
 #include "pipettes/core/configs.hpp"
 #include "pipettes/firmware/eeprom_keys.hpp"
 #include "pipettes/firmware/interfaces_g4.hpp"

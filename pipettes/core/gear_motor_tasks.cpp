@@ -1,4 +1,5 @@
 #include "pipettes/core/gear_motor_tasks.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
 
@@ -57,7 +58,8 @@ void gear_motor_tasks::start_tasks(
         5, "move group", left_queues, left_queues);
     auto& move_status_reporter_left = move_status_task_builder_left.start(
         5, "move status", left_queues,
-        motion_controllers.left.get_mechanical_config());
+        motion_controllers.left.get_mechanical_config(),
+        sensor_tasks::get_queues());
 
     left_tasks.driver = &tmc2160_driver_left;
     left_tasks.motion_controller = &motion_left;
@@ -81,7 +83,8 @@ void gear_motor_tasks::start_tasks(
         5, "move group", right_queues, right_queues);
     auto& move_status_reporter_right = move_status_task_builder_right.start(
         5, "move status", right_queues,
-        motion_controllers.right.get_mechanical_config());
+        motion_controllers.right.get_mechanical_config(),
+        sensor_tasks::get_queues());
 
     right_tasks.driver = &tmc2160_driver_right;
     right_tasks.motion_controller = &motion_right;

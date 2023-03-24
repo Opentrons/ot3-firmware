@@ -29,6 +29,9 @@ static auto tip_notification_task_builder_front =
     freertos_task::TaskStarter<512,
                                sensors::tasks::TipPresenceNotificationTask>{};
 
+static auto usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
     sensor_tasks::I2CClient& i2c3_task_client,
@@ -68,11 +71,15 @@ void sensor_tasks::start_tasks(
     auto& tip_notification_task = tip_notification_task_builder_front.start(
         5, "tip notification", queues, sensor_hardware_primary);
 
+    auto& usage_storage_task =
+        usage_storage_task_builder.start(5, "usage storage", queues, queues);
+
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
     tasks.tip_notification_task = &tip_notification_task;
+    tasks.usage_storage_task = &usage_storage_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
@@ -149,6 +156,7 @@ void sensor_tasks::start_tasks(
     queues.pressure_sensor_queue_front =
         &pressure_sensor_task_front.get_queue();
     queues.tip_notification_queue = &tip_notification_task.get_queue();
+    queues.usage_storage_queue = &usage_storage_task.get_queue();
 }
 
 sensor_tasks::QueueClient::QueueClient()
@@ -186,6 +194,11 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue_front(
     if (pressure_sensor_queue_front != nullptr) {
         pressure_sensor_queue_front->try_write(m);
     }
+}
+
+void sensor_tasks::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
 }
 
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
