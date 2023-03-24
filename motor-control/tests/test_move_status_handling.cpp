@@ -70,7 +70,8 @@ SCENARIO("testing move status position translation") {
             }
 
             auto usage_resp = muc.queue.front();
-            auto usage_resp_msg = std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
+            auto usage_resp_msg =
+                std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
             THEN("The distance traveled usage will be 0") {
                 REQUIRE(usage_resp_msg.key == 1);
                 REQUIRE(usage_resp_msg.distance_traveled_um == 0);
@@ -103,7 +104,8 @@ SCENARIO("testing move status position translation") {
                 REQUIRE(resp_msg.encoder_position_um == -500);
             }
             auto usage_resp = muc.queue.front();
-            auto usage_resp_msg = std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
+            auto usage_resp_msg =
+                std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
             THEN("The distance traveled usage will be populated") {
                 REQUIRE(usage_resp_msg.key == 1);
                 REQUIRE(usage_resp_msg.distance_traveled_um == -500);

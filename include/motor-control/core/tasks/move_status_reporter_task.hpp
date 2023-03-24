@@ -59,8 +59,7 @@ class MoveStatusMessageHandler {
      */
     void handle_message(const motor_messages::Ack& message) {
         int32_t end_position = fixed_point_multiply(
-                um_per_encoder_pulse, message.encoder_position,
-                radix_offset_0{});
+            um_per_encoder_pulse, message.encoder_position, radix_offset_0{});
         can::messages::MoveCompleted msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,
@@ -72,9 +71,10 @@ class MoveStatusMessageHandler {
             .ack_id = static_cast<uint8_t>(message.ack_id)};
         can_client.send_can_message(can::ids::NodeId::host, msg);
 
-        int32_t distance_traveled_um = end_position - fixed_point_multiply(
-                um_per_encoder_pulse, message.start_encoder_position,
-                radix_offset_0{});
+        int32_t distance_traveled_um =
+            end_position - fixed_point_multiply(um_per_encoder_pulse,
+                                                message.start_encoder_position,
+                                                radix_offset_0{});
         usage_client.send_usage_storage_queue(
             usage_messages::IncreaseDistanceUsage{
                 .key = message.usage_key,

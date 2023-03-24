@@ -35,7 +35,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
-    auto get_usage_eeprom_config() -> motor_hardware::UsageEEpromConfig& { return eeprom_config; }
+    auto get_usage_eeprom_config() -> motor_hardware::UsageEEpromConfig& {
+        return eeprom_config;
+    }
 
   private:
     bool mock_lim_sw_value = false;
@@ -45,7 +47,8 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool mock_dir_value = false;
     uint8_t finished_move_id = 0x0;
     int32_t test_pulses = 0x0;
-    motor_hardware::UsageEEpromConfig eeprom_config = motor_hardware::UsageEEpromConfig {.distance_usage_key = 0};
+    motor_hardware::UsageEEpromConfig eeprom_config =
+        motor_hardware::UsageEEpromConfig{.distance_usage_key = 0};
 };
 
 };  // namespace test_mocks
