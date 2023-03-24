@@ -1,6 +1,7 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
-#include "pipettes/core/sensor_tasks.hpp"
+
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 
 static auto motion_tasks = linear_motor_tasks::Tasks{};
 static auto motion_queue_client = linear_motor_tasks::QueueClient{};
@@ -48,7 +49,8 @@ void linear_motor_tasks::start_tasks(
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", queues, motion_controller.get_mechanical_config(), sensor_tasks::get_queues());
+        5, "move status", queues, motion_controller.get_mechanical_config(),
+        sensor_tasks::get_queues());
 
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
@@ -87,7 +89,8 @@ void linear_motor_tasks::start_tasks(
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", queues, motion_controller.get_mechanical_config(), sensor_tasks::get_queues());
+        5, "move status", queues, motion_controller.get_mechanical_config(),
+        sensor_tasks::get_queues());
 
     tmc2160_tasks.driver = &tmc2160_driver;
     motion_tasks.motion_controller = &motion;

@@ -1,7 +1,7 @@
 #include "pipettes/core/gear_motor_tasks.hpp"
-#include "pipettes/core/sensor_tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 
 // using namespace pipettes::tasks;
 

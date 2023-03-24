@@ -6,8 +6,8 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/utils.hpp"
 #include "motor-control/core/tasks/usage_storage_task.hpp"
+#include "motor-control/core/utils.hpp"
 #include "pipettes/core/tasks/messages.hpp"
 
 namespace pipettes {
@@ -30,8 +30,8 @@ class MoveStatusMessageHandler {
         UsageClient& usage_client)
         : can_client{can_client},
           lms_config(lms_config),
-          um_per_step(convert_to_fixed_point_64_bit(
-              lms_config.get_um_per_step(), 31)),
+          um_per_step(
+              convert_to_fixed_point_64_bit(lms_config.get_um_per_step(), 31)),
           usage_client(usage_client) {}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
     MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
@@ -54,8 +54,8 @@ class MoveStatusMessageHandler {
      * Handle Ack message
      */
     void handle_message(const motor_messages::GearMotorAck& message) {
-        uint32_t end_position = fixed_point_multiply(
-            um_per_step, message.current_position_steps);
+        uint32_t end_position =
+            fixed_point_multiply(um_per_step, message.current_position_steps);
         can::messages::TipActionResponse msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,
@@ -71,12 +71,13 @@ class MoveStatusMessageHandler {
             .gear_motor_id = message.gear_motor_id};
         can_client.send_can_message(can::ids::NodeId::host, msg);
         int32_t distance_traveled_um =
-            end_position - fixed_point_multiply(um_per_step,
-                                                message.start_step_position);
+            end_position -
+            fixed_point_multiply(um_per_step, message.start_step_position);
         usage_client.send_usage_storage_queue(
             usage_messages::IncreaseDistanceUsage{
                 .key = message.usage_key,
-                .distance_traveled_um = uint32_t(std::abs(distance_traveled_um))});
+                .distance_traveled_um =
+                    uint32_t(std::abs(distance_traveled_um))});
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {
@@ -126,7 +127,8 @@ class MoveStatusReporterTask {
         CanClient* can_client,
         const lms::LinearMotionSystemConfig<LmsConfig>* config,
         UsageClient* usage_client) {
-        auto handler = MoveStatusMessageHandler{*can_client, *config, *usage_client};
+        auto handler =
+            MoveStatusMessageHandler{*can_client, *config, *usage_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

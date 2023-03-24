@@ -80,10 +80,12 @@ struct GearMotorMove : public Move {
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
                    AckMessageId _id, uint32_t message_index, uint16_t usage_key)
         -> GearMotorAck {
-        return GearMotorAck{
-            message_index, group_id, seq_id,       position,
-            pulses,        flags,    _id,          start_encoder_position,
-            usage_key,     start_step_position,    action,   gear_motor_id};
+        return GearMotorAck{message_index, group_id,
+                            seq_id,        position,
+                            pulses,        flags,
+                            _id,           start_encoder_position,
+                            usage_key,     start_step_position,
+                            action,        gear_motor_id};
     }
 };
 
