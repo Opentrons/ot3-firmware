@@ -28,6 +28,7 @@ struct HeadQueueClient : can::message_writer::MessageWriter {
     void send_presence_sensing_driver_queue(
         const presence_sensing_driver_task::TaskMessage& m);
 
+    void send_eeprom_queue(const eeprom::task::TaskMessage& m);
     freertos_message_queue::FreeRTOSMessageQueue<
         presence_sensing_driver_task::TaskMessage>*
         presence_sensing_driver_queue{nullptr};

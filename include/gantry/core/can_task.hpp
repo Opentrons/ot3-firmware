@@ -7,6 +7,7 @@
 #include "can/core/message_handlers/move_group.hpp"
 #include "can/core/message_handlers/system.hpp"
 #include "common/core/freertos_message_queue.hpp"
+#include "eeprom/core/message_handler.hpp"
 #include "gantry/core/queues.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 
@@ -41,10 +42,15 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::DeviceInfoRequest, can::messages::InitiateFirmwareUpdate,
     can::messages::FirmwareUpdateStatusRequest, can::messages::TaskInfoRequest>;
 
+using EEpromDispatchTarget = can::dispatch::DispatchParseTarget<
+    eeprom::message_handler::EEPromHandler<gantry::queues::QueueClient,
+                                           gantry::queues::QueueClient>,
+    can::messages::WriteToEEPromRequest, can::messages::ReadFromEEPromRequest>;
+
 using GantryDispatcherType =
     can::dispatch::Dispatcher<MotorDispatchTarget, MoveGroupDispatchTarget,
                               MotionControllerDispatchTarget,
-                              SystemDispatchTarget>;
+                              SystemDispatchTarget, EEpromDispatchTarget>;
 
 auto constexpr reader_message_buffer_size = 1024;
 using CanMessageReaderTask =

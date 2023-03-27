@@ -216,6 +216,11 @@ void head_tasks::MotorQueueClient::send_move_status_reporter_queue(
     static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
+void head_tasks::HeadQueueClient::send_eeprom_queue(
+    const eeprom::task::TaskMessage& m) {
+    eeprom_queue->try_write(m);
+}
+
 auto head_tasks::get_tasks() -> HeadTasks& { return head_tasks_col; }
 
 auto head_tasks::get_queue_client() -> HeadQueueClient& { return head_queues; }

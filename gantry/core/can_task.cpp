@@ -13,6 +13,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/core/version.h"
+#include "eeprom/core/message_handler.hpp"
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
 
@@ -24,6 +25,15 @@ static auto my_node_id = utils::get_node_id();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     can::message_writer_task::TaskMessage>{};
+
+/** Handler for eeprom messages.*/
+static auto eeprom_message_handler =
+    eeprom::message_handler::EEPromHandler{queue_client, queue_client};
+static auto eeprom_dispatch_target =
+    can::dispatch::DispatchParseTarget<decltype(eeprom_message_handler),
+                                       can::messages::WriteToEEPromRequest,
+                                       can::messages::ReadFromEEPromRequest>{
+        eeprom_message_handler};
 
 /** The parsed message handler */
 static auto can_motor_handler =
@@ -57,9 +67,13 @@ static auto motion_dispatch_target =
 
 can::dispatch::StandardArbIdTest core_arb_id{.node_id = my_node_id};
 /** Dispatcher to the various handlers */
-static auto dispatcher = can_task::GantryDispatcherType{
-    core_arb_id, motor_dispatch_target, motion_group_dispatch_target,
-    motion_dispatch_target, system_dispatch_target};
+static auto dispatcher =
+    can_task::GantryDispatcherType{core_arb_id,
+                                   motor_dispatch_target,
+                                   motion_group_dispatch_target,
+                                   motion_dispatch_target,
+                                   system_dispatch_target,
+                                   eeprom_dispatch_target};
 
 auto static reader_message_buffer =
     can::freertos_dispatch::FreeRTOSCanBufferControl<

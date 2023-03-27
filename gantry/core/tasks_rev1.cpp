@@ -124,6 +124,10 @@ void gantry::queues::QueueClient::send_move_status_reporter_queue(
     static_cast<void>(move_status_report_queue->try_write_isr(m));
 }
 
+void gantry::queues::QueueClient::send_eeprom_queue(
+    const eeprom::task::TaskMessage& m) {
+    eeprom_queue->try_write(m);
+}
 /**
  * Access to the tasks singleton
  * @return
