@@ -350,7 +350,6 @@ static auto rmh_tsk =
 static auto lmh_tsk =
     motor_hardware_task::MotorHardwareTask{&motor_hardware_left, "lmh task"};
 
-
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};
 

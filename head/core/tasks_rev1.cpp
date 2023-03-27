@@ -123,7 +123,6 @@ void head_tasks::start_tasks(
     head_queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     head_queues.eeprom_queue = &eeprom_task.get_queue();
 
-
     // Start the left motor tasks
     auto& left_motion = left_mc_task_builder.start(
         5, "left mc", left_motion_controller, left_queues);
