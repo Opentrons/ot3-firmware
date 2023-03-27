@@ -116,6 +116,8 @@ void interfaces::initialize_sim(int argc, char** argv) {
     cmdlinedesc.add_options()("help,h", "Show this help message.");
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
     auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
+    auto eeprom_arg_xform =
+        eeprom::simulator::EEProm::add_options(cmdlinedesc, envdesc);
 
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), options);
     if (options.count("help")) {
@@ -123,6 +125,7 @@ void interfaces::initialize_sim(int argc, char** argv) {
         std::exit(0);
     }
     po::store(po::parse_environment(envdesc, can_arg_xform), options);
+    po::store(po::parse_environment(envdesc, eeprom_arg_xform), options);
     po::store(po::parse_environment(envdesc, state_mgr_arg_xform), options);
     po::notify(options);
 
@@ -164,4 +167,18 @@ static auto mh_tsk = motor_hardware_task::MotorHardwareTask{
 auto interfaces::get_motor_hardware_task()
     -> motor_hardware_task::MotorHardwareTask& {
     return mh_tsk;
+}
+
+auto interfaces::get_sim_eeprom()
+    -> std::shared_ptr<eeprom::simulator::EEProm> {
+    const uint32_t TEMPORARY_SERIAL = 0x103321;
+    return std::make_shared<eeprom::simulator::EEProm>(options,
+                                                       TEMPORARY_SERIAL);
+}
+
+auto interfaces::get_sim_i2c2() -> std::shared_ptr<i2c::hardware::SimI2C> {
+    auto sim_eeprom = get_sim_eeprom();
+    auto i2c_device_map = i2c::hardware::SimI2C::DeviceMap{
+        {sim_eeprom->get_address(), *sim_eeprom}};
+    return std::make_shared<i2c::hardware::SimI2C>(i2c_device_map);
 }

@@ -27,7 +27,8 @@ int main(int argc, char** argv) {
     gantry::tasks::start_tasks(
         interfaces::get_can_bus(), interfaces::get_motor().motion_controller,
         interfaces::get_spi(), interfaces::get_driver_config(),
-        interfaces::get_motor_hardware_task());
+        interfaces::get_motor_hardware_task(), *interfaces::get_sim_i2c2(),
+        *interfaces::get_sim_eeprom());
 
     vTaskStartScheduler();
 }
