@@ -11,10 +11,12 @@
 #include "common/core/freertos_task.hpp"
 #include "common/core/logging.h"
 #include "common/simulation/state_manager.hpp"
+#include "eeprom/simulation/eeprom.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
 #include "head/core/utils.hpp"
 #include "head/simulator/presence_sensing.hpp"
+#include "i2c/simulation/i2c_sim.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
@@ -163,6 +165,8 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     cmdlinedesc.add_options()("help,h", "Show this help message.");
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
     auto state_mgr_arg_xform = state_manager::add_options(cmdlinedesc, envdesc);
+    auto eeprom_arg_xform =
+        eeprom::simulator::EEProm::add_options(cmdlinedesc, envdesc);
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, cmdlinedesc), vm);
@@ -172,6 +176,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     }
     po::store(po::parse_environment(envdesc, can_arg_xform), vm);
     po::store(po::parse_environment(envdesc, state_mgr_arg_xform), vm);
+    po::store(po::parse_environment(envdesc, eeprom_arg_xform), vm);
     po::notify(vm);
     return vm;
 }
@@ -199,10 +204,18 @@ int main(int argc, char** argv) {
     auto canbus = std::make_shared<can::sim::bus::SimCANBus>(
         can::sim::transport::create(options));
 
+    const uint32_t TEMPORARY_SERIAL = 0x103321;
+    auto sim_eeprom =
+        std::make_shared<eeprom::simulator::EEProm>(options, TEMPORARY_SERIAL);
+    auto i2c_device_map = i2c::hardware::SimI2C::DeviceMap{
+        {sim_eeprom->get_address(), *sim_eeprom}};
+    auto i2c3 = std::make_shared<i2c::hardware::SimI2C>(i2c_device_map);
+
     head_tasks::start_tasks(
         *canbus, motor_left.motion_controller, motor_right.motion_controller,
         presence_sense_driver, spi_comms_right, spi_comms_left,
-        MotorDriverConfigurations, MotorDriverConfigurations, rmh_tsk, lmh_tsk);
+        MotorDriverConfigurations, MotorDriverConfigurations, rmh_tsk, lmh_tsk,
+        *i2c3, *sim_eeprom);
 
     vTaskStartScheduler();
     return 0;

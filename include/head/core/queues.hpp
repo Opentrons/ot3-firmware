@@ -2,7 +2,13 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "eeprom/core/hardware_iface.hpp"
+#include "eeprom/core/task.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
+#include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/tasks/i2c_poller_task.hpp"
+#include "i2c/core/tasks/i2c_task.hpp"
+#include "i2c/core/writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -22,9 +28,16 @@ struct HeadQueueClient : can::message_writer::MessageWriter {
     void send_presence_sensing_driver_queue(
         const presence_sensing_driver_task::TaskMessage& m);
 
+    void send_eeprom_queue(const eeprom::task::TaskMessage& m);
     freertos_message_queue::FreeRTOSMessageQueue<
         presence_sensing_driver_task::TaskMessage>*
         presence_sensing_driver_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c::writer::TaskMessage>*
+        i2c3_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c::poller::TaskMessage>*
+        i2c3_poller_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
+        eeprom_queue{nullptr};
 };
 
 /**

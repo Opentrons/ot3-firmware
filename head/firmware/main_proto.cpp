@@ -9,6 +9,7 @@
 #include "common/firmware/errors.h"
 #include "common/core/app_update.h"
 #include "common/firmware/iwdg.hpp"
+#include "head/firmware/i2c_setup.h"
 // clang-format on
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
@@ -27,6 +28,7 @@
 #include "head/core/tasks_proto.hpp"
 #include "head/core/utils.hpp"
 #include "head/firmware/presence_sensing_hardware.hpp"
+#include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
@@ -324,6 +326,27 @@ static auto rmh_tsk = motor_hardware_task::MotorHardwareTask{
 static auto lmh_tsk = motor_hardware_task::MotorHardwareTask{
     &motor_hardware_left, "left motor hardware task"};
 
+static auto i2c_comms3 = i2c::hardware::I2C();
+static auto i2c_handles = I2CHandlerStruct{};
+
+static constexpr auto eeprom_chip =
+    eeprom::hardware_iface::EEPromChipType::ST_M24128_BF;
+
+class EEPromHardwareInterface
+    : public eeprom::hardware_iface::EEPromHardwareIface {
+  public:
+    EEPromHardwareInterface()
+        : eeprom::hardware_iface::EEPromHardwareIface(eeprom_chip) {}
+    void set_write_protect(bool enable) final {
+        if (enable) {
+            disable_eeprom_write();
+        } else {
+            enable_eeprom_write();
+        }
+    }
+};
+static auto eeprom_hw_iface = EEPromHardwareInterface();
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -341,10 +364,15 @@ auto main() -> int {
 
     utility_gpio_init();
     can_bus_1.start(can_bit_timings);
+
+    i2c_setup(&i2c_handles);
+    i2c_comms3.set_handle(i2c_handles.i2c3);
+
     head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_right.motion_controller, psd, spi_comms2,
                             spi_comms3, motor_driver_configs_left,
-                            motor_driver_configs_right, rmh_tsk, lmh_tsk);
+                            motor_driver_configs_right, rmh_tsk, lmh_tsk,
+                            i2c_comms3, eeprom_hw_iface);
 
     timer_for_notifier.start();
 

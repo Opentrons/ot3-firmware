@@ -2,6 +2,13 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "common/core/freertos_timer.hpp"
+#include "eeprom/core/hardware_iface.hpp"
+#include "eeprom/core/task.hpp"
+#include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/tasks/i2c_poller_task.hpp"
+#include "i2c/core/tasks/i2c_task.hpp"
+#include "i2c/core/writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -24,7 +31,9 @@ void start_tasks(
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2160::configs::TMC2160DriverConfig& driver_configs,
-    motor_hardware_task::MotorHardwareTask& mh_tsk);
+    motor_hardware_task::MotorHardwareTask& mh_tsk,
+    i2c::hardware::I2CBase& i2c2,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
 
 /**
  * Access to all tasks in the system.
@@ -44,6 +53,13 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
         nullptr};
+    i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        i2c2_task{nullptr};
+    i2c::tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
+                              freertos_timer::FreeRTOSTimer>* i2c2_poller_task{
+        nullptr};
+    eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        eeprom_task{nullptr};
 };
 
 /**

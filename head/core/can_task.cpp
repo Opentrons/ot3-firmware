@@ -14,6 +14,7 @@
 #include "common/core/freertos_message_queue.hpp"
 #include "common/core/freertos_task.hpp"
 #include "common/core/version.h"
+#include "eeprom/core/message_handler.hpp"
 #include "head/core/queues.hpp"
 
 static auto& right_queues = head_tasks::get_right_queues();
@@ -81,6 +82,15 @@ static auto system_message_handler =
 static auto system_dispatch_target =
     SystemDispatchTarget{system_message_handler};
 
+/** Handler for eeprom messages.*/
+static auto eeprom_message_handler =
+    eeprom::message_handler::EEPromHandler{common_queues, common_queues};
+static auto eeprom_dispatch_target =
+    can::dispatch::DispatchParseTarget<decltype(eeprom_message_handler),
+                                       can::messages::WriteToEEPromRequest,
+                                       can::messages::ReadFromEEPromRequest>{
+        eeprom_message_handler};
+
 static auto presence_sensing_dispatch_target =
     PresenceSensingDispatchTarget{presence_sensing_handler};
 
@@ -138,7 +148,8 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
                 (node_id == can::ids::NodeId::head_r));
     },
     dispatcher_right_motor, dispatcher_left_motor,
-    presence_sensing_dispatch_target, system_dispatch_target);
+    presence_sensing_dispatch_target, system_dispatch_target,
+    eeprom_dispatch_target);
 
 /**
  * The type of the message buffer populated by HAL ISR.
