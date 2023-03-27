@@ -34,8 +34,8 @@ static spi::hardware::SPI_interface SPI_intf = {
  */
 static spi::hardware::Spi spi_comms(SPI_intf);
 
-struct motor_hardware::StepperUsageEEpromConfig usage_config {
-    .step_usage_key = AXIS_STEP_KEY
+struct motor_hardware::UsageEEpromConfig usage_config {
+    .distance_usage_key = AXIS_DISTANCE_KEY
 };
 
 /**
