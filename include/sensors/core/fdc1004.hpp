@@ -27,9 +27,36 @@
 namespace sensors {
 namespace fdc1004 {
 
-/ Capacitance Sensor Address and Registers
 constexpr uint16_t ADDRESS = 0x50 << 1;
 
+enum class CHA : uint8_t {
+    CIN1 = 0x0,
+    CIN2 = 0x1,
+    CIN3 = 0x2,
+    CIN4 = 0x3,
+};
+
+enum class CHB : uint8_t {
+    CIN1 = 0x0,
+    CIN2 = 0x1,
+    CIN3 = 0x2,
+    CIN4 = 0x3,
+    CAPDAC = 0x4,
+    DISABLED = 0x8
+};
+
+enum class MeasurementRate : uint8_t {
+    RESERVED = 0x0,
+    ONE_HUNDRED_SAMPLES_PER_SECOND = 0x1,
+    TWO_HUNDRED_SAMPLES_PER_SECOND = 0x2,
+    FOUR_HUNDRED_SAMPLES_PER_SECOND = 0x3,
+};
+
+enum class MeasureConfigMode: uint8_t {
+    ONE, TWO, THREE, FOUR
+};
+
+// Capacitance Sensor Address and Registers
 enum class Registers : uint8_t {
     MEAS1_MSB = 0x0,
     MEAS1_LSB = 0x01,
@@ -56,33 +83,63 @@ enum class Registers : uint8_t {
     DEVICE_ID = 0xFF
 };
 
+
+static inline auto is_valid_address(const uint8_t add) -> bool {  // NOLINT
+    switch (static_cast<Registers>(add)) {
+        case Registers::MANUFACTURER_ID:
+        case Registers::DEVICE_ID:
+        case Registers::MEAS1_MSB:
+        case Registers::MEAS1_LSB:
+        case Registers::MEAS2_MSB:
+        case Registers::MEAS2_LSB:
+        case Registers::MEAS3_MSB:
+        case Registers::MEAS3_LSB:
+        case Registers::MEAS4_MSB:
+        case Registers::MEAS4_LSB:
+        case Registers::CONF_MEAS1:
+        case Registers::CONF_MEAS2:
+        case Registers::CONF_MEAS3:
+        case Registers::CONF_MEAS4:
+        case Registers::FDC_CONF:
+        case Registers::OFFSET_CAL_CIN1:
+        case Registers::OFFSET_CAL_CIN2:
+        case Registers::OFFSET_CAL_CIN3:
+        case Registers::OFFSET_CAL_CIN4:
+        case Registers::GAIN_CAL_CIN1:
+        case Registers::GAIN_CAL_CIN2:
+        case Registers::GAIN_CAL_CIN3:
+        case Registers::GAIN_CAL_CIN4:
+            return true;
+    }
+    return false;
+}
+
+
 /** Template concept to constrain what structures encapsulate registers.*/
 template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the value before writing it to the sensor.
-concept FDC1004CommandRegister =
+concept FDC1004Register =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
                  std::remove_cvref_t<Registers&>> &&
     std::integral<decltype(Reg::value_mask)> &&
     std::is_array_v<decltype(Reg::mode_map)>;
 
-}  // namespace fdc1004
-
 struct __attribute__((packed, __may_alias__)) ManufactureId {
     static constexpr Registers address = Registers::MANUFACTURER_ID;
-    static constexpr bool readable = false;
-    static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint16_t manufacture_id : 16 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) DeviceId {
-    static constexpr Registers address = Registers::MANUFACTURER_ID;
-    static constexpr bool readable = false;
-    static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr Registers address = Registers::DEVICE_ID;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint16_t device_id : 16 = 0;
 };
@@ -91,7 +148,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode1_MSB {
     static constexpr Registers address = Registers::MEAS1_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -100,7 +157,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode1_LSB {
     static constexpr Registers address = Registers::MEAS1_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
@@ -110,7 +167,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode2_MSB {
     static constexpr Registers address = Registers::MEAS2_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -119,7 +176,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode2_LSB {
     static constexpr Registers address = Registers::MEAS2_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
@@ -129,7 +186,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode3_MSB {
     static constexpr Registers address = Registers::MEAS3_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -138,7 +195,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode3_LSB {
     static constexpr Registers address = Registers::MEAS3_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
@@ -148,7 +205,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode4_MSB {
     static constexpr Registers address = Registers::MEAS4_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -157,7 +214,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode4_LSB {
     static constexpr Registers address = Registers::MEAS4_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
@@ -165,17 +222,23 @@ struct __attribute__((packed, __may_alias__)) MeasureMode4_LSB {
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure1 {
     static constexpr Registers address = Registers::CONF_MEAS1;
-    static constexpr bool readable = false;
+    static constexpr bool readable = true;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
     // Notes:
+
+    // You can store up to 4 measurement configurations on the cap sensor
+    // using the 4 different conf measurement registers.
 
     // (1) It is not permitted to configure a measurement where the CHA field
     // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
     // also be set to b010). (2) It is not permitted to configure a differential
     // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
     // b010, CHB cannot be b001 or b000).
+
+    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
+    // The max offset is 96.875 pF
 
     // positive input channel
     uint8_t CHA : 3 = 0;
@@ -187,17 +250,23 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure1 {
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
     static constexpr Registers address = Registers::CONF_MEAS2;
-    static constexpr bool readable = false;
+    static constexpr bool readable = true;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
     // Notes:
+
+    // You can store up to 4 measurement configurations on the cap sensor
+    // using the 4 different conf measurement registers.
 
     // (1) It is not permitted to configure a measurement where the CHA field
     // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
     // also be set to b010). (2) It is not permitted to configure a differential
     // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
     // b010, CHB cannot be b001 or b000).
+
+    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
+    // The max offset is 96.875 pF
 
     // positive input channel
     uint8_t CHA : 3 = 0;
@@ -209,17 +278,23 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
     static constexpr Registers address = Registers::CONF_MEAS3;
-    static constexpr bool readable = false;
+    static constexpr bool readable = true;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
     // Notes:
+
+    // You can store up to 4 measurement configurations on the cap sensor
+    // using the 4 different conf measurement registers.
 
     // (1) It is not permitted to configure a measurement where the CHA field
     // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
     // also be set to b010). (2) It is not permitted to configure a differential
     // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
     // b010, CHB cannot be b001 or b000).
+
+    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
+    // The max offset is 96.875 pF
 
     // positive input channel
     uint8_t CHA : 3 = 0;
@@ -231,17 +306,23 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
     static constexpr Registers address = Registers::CONF_MEAS4;
-    static constexpr bool readable = false;
+    static constexpr bool readable = true;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
     // Notes:
+
+    // You can store up to 4 measurement configurations on the cap sensor
+    // using the 4 different conf measurement registers.
 
     // (1) It is not permitted to configure a measurement where the CHA field
     // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
     // also be set to b010). (2) It is not permitted to configure a differential
     // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
     // b010, CHB cannot be b001 or b000).
+
+    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
+    // The max offset is 96.875 pF
 
     // positive input channel
     uint8_t CHA : 3 = 0;
@@ -253,7 +334,7 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
 
 struct __attribute__((packed, __may_alias__)) FDCConf {
     static constexpr Registers address = Registers::FDC_CONF;
-    static constexpr bool readable = false;
+    static constexpr bool readable = true;
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
@@ -271,6 +352,8 @@ struct __attribute__((packed, __may_alias__)) FDCConf {
 	uint8_t measure_mode_2: 1 = 0;
 	uint8_t measure_mode_3: 1 = 0;
 	uint8_t measure_mode_4: 1 = 0;
+
+    // The measurement mode you wish to run in
 	uint8_t measure_mode_1_status: 1 = 0;
 	uint8_t measure_mode_2_status: 1 = 0;
 	uint8_t measure_mode_3_status: 1 = 0;
@@ -283,6 +366,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN1 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
+    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
+    // external circuitry
 	uint8_t offset_integer: 5 = 0;
 	uint16_t offset_decimal: 11 = 0;
 };
@@ -293,6 +378,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN2 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
+    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
+    // external circuitry
 	uint8_t offset_integer: 5 = 0;
 	uint16_t offset_decimal: 11 = 0;
 };
@@ -303,6 +390,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN3 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
+    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
+    // external circuitry
 	uint8_t offset_integer: 5 = 0;
 	uint16_t offset_decimal: 11 = 0;
 };
@@ -313,6 +402,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN4 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
+    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
+    // external circuitry
 	uint8_t offset_integer: 5 = 0;
 	uint16_t offset_decimal: 11 = 0;
 };
@@ -384,133 +475,97 @@ struct FDC1004RegisterMap {
     Reset reset = {};
 };
 
-// Capacitance Sensor Address and Registers
-constexpr uint16_t ADDRESS = 0x50 << 1;
-constexpr uint8_t MSB_MEASUREMENT_1 = 0x00;
-constexpr uint8_t LSB_MEASUREMENT_1 = 0x01;
-constexpr uint8_t CONFIGURATION_MEASUREMENT = 0x08;
-constexpr uint8_t FDC_CONFIGURATION = 0x0C;
-constexpr uint8_t DEVICE_ID_REGISTER = 0xFF;
 
-// CHA
-constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
-// CHB
-constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
-// configurations: our reads will be differential reads of
-// the U.FL connector on one channel and the internal
-// common-mode compensator, CAPDAC, on the other.
-constexpr uint16_t DEVICE_CONFIGURATION =
-    0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
-    0x4 << 10;   // CHB = CAPDAC
-constexpr uint8_t DEVICE_CONFIGURATION_MSB =
-    static_cast<uint8_t>(DEVICE_CONFIGURATION >> 8);
-constexpr uint8_t DEVICE_CONFIGURATION_LSB =
-    static_cast<uint8_t>(DEVICE_CONFIGURATION & 0xff);
-constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
-                                 1 << 8 |   // Repeat enabled
-                                 1 << 7;    // Measurement 1 enabled
-
-constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
-constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
-constexpr uint16_t DEVICE_ID = 0x1004;
-
-constexpr uint8_t CAPDAC_MSB_MASK = 0x3;
-
-constexpr uint8_t CAPDAC_LSB_MASK = 0xE0;
-
-// Constants. The capdac is a synthetic comparison source intended to
-// eliminate common-mode values in the differential capacitance measurements.
-// The sensor has a narrow +-15pF measurement range, but that's on top
-// of the capdac - the capdac is "subtracted", more or less, before the
-// capacitance is read.
-constexpr float CAPDAC_PF_PER_LSB = 3.125;
-constexpr std::size_t CAPDAC_BITS = 5;
-constexpr uint8_t MAX_CAPDAC_RAW_VALUE = (1 << CAPDAC_BITS) - 1;
-constexpr float MAX_CAPDAC_PF =
-    static_cast<float>(MAX_CAPDAC_RAW_VALUE) * CAPDAC_PF_PER_LSB;
-
-// Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
-constexpr std::size_t CONVERSION_BITS = 24;
-constexpr float MAX_MEASUREMENT_PF = 15;
-constexpr float MAX_RAW_MEASUREMENT =
-    float(std::numeric_limits<int32_t>::max() >>
-          ((sizeof(int32_t) * 8) - CONVERSION_BITS));
-
-// Because we're doing big gantry moves, we'll probably have to handle
-// the parasitic capacitance of the system shifting around a lot. We'll
-// need to automatically reset our capdac to account for changing
-// gross-scale capacitance conditions, and we'll do it by bumping up
-// the capdac every time we get half way to either edge of our range.
-constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
-
-// Convert an accumulated raw reading, the number of reads that were
-// accumulated, and the current offset and turn it into a value in pF.
-inline auto convert_capacitance(int32_t capacitance_accumulated_raw,
-                                uint16_t read_count, float current_offset_pf)
-    -> float {
-    auto average = static_cast<float>(capacitance_accumulated_raw) /
-                   static_cast<float>(read_count);
-    float converted_capacitance =
-        (average / MAX_RAW_MEASUREMENT) * MAX_MEASUREMENT_PF;
-    LOG("Conversion: max raw %f mmt %f direct conversion %f offset %f",
-        MAX_RAW_MEASUREMENT, average, converted_capacitance, current_offset_pf);
-    return converted_capacitance + current_offset_pf;
-}
-
-// Take the two buffers and turn them into a 24 bit raw measurement.
-inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
-    // measurements are presented in a 16 bit most significant register
-    // and a 16 bit least significant register. Data is left-aligned;
-    // the most significant register has 16 valid bits, and the least
-    // significant register has 8 valid bits in the MSB.
-    // The data is also signed. That means that we first want to
-    // formulate it as a 32 bit unsigned int to use logical shifts;
-    // then take those 32 bits and interpret them as a signed 32 bit
-    // integer, and arithmetic right-shift back to 24 bits.
-
-    return (static_cast<int32_t>((static_cast<uint32_t>(msb) << 16) |
-                                 static_cast<uint32_t>(lsb)) >>
-            8);
-}
-
-// Turn a capacitance value into the value to send to the capdac
-// control register to use that offset.
-inline auto get_capdac_raw(float offset_pf) -> uint8_t {
-    // Floor of 0
-    offset_pf = std::max(offset_pf, 0.0F);
-    auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
-    return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
-}
-
-// Check the current absolute reading (i.e. after the offset is applied)
-// and the offset that was applied and, if necessary, generate a new
-// appropriately-capped offset value that is ready for sending to the
-// sensor.
-inline auto update_offset(float capacitance_pf, float current_offset_pf)
-    -> float {
-    if (std::abs(capacitance_pf - current_offset_pf) <
-        CAPDAC_REZERO_THRESHOLD_PF) {
-        // we haven't gotten close enough to the edge of our range to
-        // rezero
-        return current_offset_pf;
-    }
-    LOG("Capacitance %f needs rezeroing (%f-%f=%f)", capacitance_pf,
-        capacitance_pf, current_offset_pf, capacitance_pf - current_offset_pf);
-
-    // we're halfway to the edge of our range; let's try and rezero so
-    // that the current reading is in the center
-    uint8_t capdac = get_capdac_raw(capacitance_pf);
-
-    return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
-}
-
-inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & CAPDAC_MSB_MASK));
-}
-
-inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & CAPDAC_LSB_MASK));
-}
 
 };  // namespace fdc1004
+
+namespace fdc1004_utils {
+    constexpr uint16_t DEVICE_ID = 0x1004;
+
+    // Constants. The capdac is a synthetic comparison source intended to
+    // eliminate common-mode values in the differential capacitance measurements.
+    // The sensor has a narrow +-15pF measurement range, but that's on top
+    // of the capdac - the capdac is "subtracted", more or less, before the
+    // capacitance is read.
+    constexpr float CAPDAC_PF_PER_LSB = 3.125;
+    constexpr std::size_t CAPDAC_BITS = 5;
+    constexpr uint8_t MAX_CAPDAC_RAW_VALUE = (1 << CAPDAC_BITS) - 1;
+    constexpr float MAX_CAPDAC_PF =
+        static_cast<float>(MAX_CAPDAC_RAW_VALUE) * CAPDAC_PF_PER_LSB;
+
+    // Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
+    constexpr std::size_t CONVERSION_BITS = 24;
+    constexpr float MAX_MEASUREMENT_PF = 15;
+    constexpr float MAX_RAW_MEASUREMENT =
+        float(std::numeric_limits<int32_t>::max() >>
+            ((sizeof(int32_t) * 8) - CONVERSION_BITS));
+
+    // Because we're doing big gantry moves, we'll probably have to handle
+    // the parasitic capacitance of the system shifting around a lot. We'll
+    // need to automatically reset our capdac to account for changing
+    // gross-scale capacitance conditions, and we'll do it by bumping up
+    // the capdac every time we get half way to either edge of our range.
+    constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
+
+    // Convert an accumulated raw reading, the number of reads that were
+    // accumulated, and the current offset and turn it into a value in pF.
+    inline auto convert_capacitance(int32_t capacitance_accumulated_raw,
+                                    uint16_t read_count, float current_offset_pf)
+        -> float {
+        auto average = static_cast<float>(capacitance_accumulated_raw) /
+                    static_cast<float>(read_count);
+        float converted_capacitance =
+            (average / MAX_RAW_MEASUREMENT) * MAX_MEASUREMENT_PF;
+        LOG("Conversion: max raw %f mmt %f direct conversion %f offset %f",
+            MAX_RAW_MEASUREMENT, average, converted_capacitance, current_offset_pf);
+        return converted_capacitance + current_offset_pf;
+    }
+
+    // Take the two buffers and turn them into a 24 bit raw measurement.
+    inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
+        // measurements are presented in a 16 bit most significant register
+        // and a 16 bit least significant register. Data is left-aligned;
+        // the most significant register has 16 valid bits, and the least
+        // significant register has 8 valid bits in the MSB.
+        // The data is also signed. That means that we first want to
+        // formulate it as a 32 bit unsigned int to use logical shifts;
+        // then take those 32 bits and interpret them as a signed 32 bit
+        // integer, and arithmetic right-shift back to 24 bits.
+
+        return (static_cast<int32_t>((static_cast<uint32_t>(msb) << 16) |
+                                    static_cast<uint32_t>(lsb)) >>
+                8);
+    }
+
+    // Turn a capacitance value into the value to send to the capdac
+    // control register to use that offset.
+    inline auto get_capdac_raw(float offset_pf) -> uint8_t {
+        // Floor of 0
+        offset_pf = std::max(offset_pf, 0.0F);
+        auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
+        return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
+    }
+
+    // Check the current absolute reading (i.e. after the offset is applied)
+    // and the offset that was applied and, if necessary, generate a new
+    // appropriately-capped offset value that is ready for sending to the
+    // sensor.
+    inline auto update_offset(float capacitance_pf, float current_offset_pf)
+        -> float {
+        if (std::abs(capacitance_pf - current_offset_pf) <
+            CAPDAC_REZERO_THRESHOLD_PF) {
+            // we haven't gotten close enough to the edge of our range to
+            // rezero
+            return current_offset_pf;
+        }
+        LOG("Capacitance %f needs rezeroing (%f-%f=%f)", capacitance_pf,
+            capacitance_pf, current_offset_pf, capacitance_pf - current_offset_pf);
+
+        // we're halfway to the edge of our range; let's try and rezero so
+        // that the current reading is in the center
+        uint8_t capdac = get_capdac_raw(capacitance_pf);
+
+        return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
+    }
+    } // namespace fdc1004_utils
 };  // namespace sensors
