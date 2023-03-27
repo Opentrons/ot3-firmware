@@ -23,6 +23,7 @@ set(GANTRY_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
@@ -94,6 +95,7 @@ macro(gantry_loop_internal)
 
     target_gantry_core(${REVISION_TARGET} ${_gli_AXIS} ${REV})
     target_ot_motor_control(${REVISION_TARGET})
+    target_i2c_firmware(${REVISION_TARGET})
 
     target_link_libraries(${REVISION_TARGET}
             PUBLIC STM32G491RETx

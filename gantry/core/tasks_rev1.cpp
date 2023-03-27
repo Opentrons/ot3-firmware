@@ -30,6 +30,20 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
 static auto spi_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
+template <template <typename> typename QueueImpl>
+using PollerWithTimer =
+    i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
+static auto i2c2_task_client =
+    i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
+static auto i2c2_task_builder =
+    freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
+static auto i2c2_poll_task_builder =
+    freertos_task::TaskStarter<1024, PollerWithTimer>{};
+static auto i2c2_poll_client =
+    i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
+static auto eeprom_task_builder =
+    freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
+
 /**
  * Start gantry ::tasks.
  */
@@ -38,7 +52,9 @@ void gantry::tasks::start_tasks(
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2160::configs::TMC2160DriverConfig& driver_configs,
-    motor_hardware_task::MotorHardwareTask& mh_tsk) {
+    motor_hardware_task::MotorHardwareTask& mh_tsk,
+    i2c::hardware::I2CBase& i2c2,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, "motion controller",
@@ -53,12 +69,24 @@ void gantry::tasks::start_tasks(
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
 
+    auto& i2c2_task = i2c2_task_builder.start(5, "i2c2", i2c2);
+    i2c2_task_client.set_queue(&i2c2_task.get_queue());
+    auto& i2c2_poller_task =
+        i2c2_poll_task_builder.start(5, "i2c2 poller", i2c2_task_client);
+    i2c2_poll_client.set_queue(&i2c2_poller_task.get_queue());
+
+    auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
+                                                  eeprom_hw_iface);
+
     ::tasks.can_writer = &can_writer;
     ::tasks.motion_controller = &motion;
     ::tasks.tmc2160_driver = &tmc2160_driver;
     ::tasks.move_group = &move_group;
     ::tasks.move_status_reporter = &move_status_reporter;
     ::tasks.spi_task = &spi_task;
+    ::tasks.i2c2_task = &i2c2_task;
+    ::tasks.i2c2_poller_task = &i2c2_poller_task;
+    ::tasks.eeprom_task = &eeprom_task;
 
     ::queues.motion_queue = &motion.get_queue();
     ::queues.motor_driver_queue = &tmc2160_driver.get_queue();
@@ -66,6 +94,9 @@ void gantry::tasks::start_tasks(
     ::queues.set_queue(&can_writer.get_queue());
     ::queues.move_status_report_queue = &move_status_reporter.get_queue();
     ::queues.spi_queue = &spi_task.get_queue();
+    ::queues.i2c2_queue = &i2c2_task.get_queue();
+    ::queues.i2c2_poller_queue = &i2c2_poller_task.get_queue();
+    ::queues.eeprom_queue = &eeprom_task.get_queue();
 
     mh_tsk.start_task();
 }

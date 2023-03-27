@@ -3,6 +3,12 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "eeprom/core/hardware_iface.hpp"
+#include "eeprom/core/task.hpp"
+#include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/tasks/i2c_poller_task.hpp"
+#include "i2c/core/tasks/i2c_task.hpp"
+#include "i2c/core/writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -41,6 +47,12 @@ struct QueueClient : can::message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
         spi_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c::writer::TaskMessage>*
+        i2c2_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<i2c::poller::TaskMessage>*
+        i2c2_poller_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
+        eeprom_queue{nullptr};
 };
 
 /**
