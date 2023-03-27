@@ -57,6 +57,19 @@ static auto spi2_task_builder =
 static auto spi3_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
 
+template <template <typename> typename QueueImpl>
+using PollerWithTimer =
+    i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
+static auto i2c3_task_client =
+    i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
+static auto i2c3_task_builder =
+    freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
+static auto i2c3_poll_task_builder =
+    freertos_task::TaskStarter<1024, PollerWithTimer>{};
+static auto i2c3_poll_client =
+    i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
+static auto eeprom_task_builder =
+    freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 /**
  * Start head tasks.
  */
@@ -72,7 +85,9 @@ void head_tasks::start_tasks(
     tmc2160::configs::TMC2160DriverConfig& left_driver_configs,
     tmc2160::configs::TMC2160DriverConfig& right_driver_configs,
     motor_hardware_task::MotorHardwareTask& rmh_tsk,
-    motor_hardware_task::MotorHardwareTask& lmh_tsk) {
+    motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    i2c::hardware::I2CBase& i2c3,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     // Start the head tasks
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
@@ -85,13 +100,29 @@ void head_tasks::start_tasks(
     auto& presence_sensing = presence_sensing_driver_task_builder.start(
         5, "presence", presence_sensing_driver, head_queues);
 
+    auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3);
+    i2c3_task_client.set_queue(&i2c3_task.get_queue());
+    auto& i2c3_poller_task =
+        i2c3_poll_task_builder.start(5, "i2c3 poller", i2c3_task_client);
+    i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
+
+    auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
+                                                  eeprom_hw_iface);
+
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
     head_tasks_col.presence_sensing_driver_task = &presence_sensing;
+    head_tasks_col.i2c3_task = &i2c3_task;
+    head_tasks_col.i2c3_poller_task = &i2c3_poller_task;
+    head_tasks_col.eeprom_task = &eeprom_task;
 
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());
     head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
+    head_queues.i2c3_queue = &i2c3_task.get_queue();
+    head_queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
+    head_queues.eeprom_queue = &eeprom_task.get_queue();
+
 
     // Start the left motor tasks
     auto& left_motion = left_mc_task_builder.start(

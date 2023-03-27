@@ -35,6 +35,7 @@ set(HEAD_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/motor_hardware_common.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_hardware.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
         ${COMMON_EXECUTABLE_DIR}/system/app_update.c
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
@@ -80,6 +81,8 @@ macro(_loop_body)
     target_head_core_rev1(${REVISION_TARGET})
   endif()
   target_ot_motor_control(${REVISION_TARGET})
+  target_i2c_firmware(${REVISION_TARGET})
+
   target_link_libraries(${REVISION_TARGET}
           PUBLIC STM32G491RETx
           STM32G4xx_Drivers_${_libname_suffix} STM32G4xx_FreeRTOS_${_libname_suffix}
