@@ -17,6 +17,7 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "spi/core/spi.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 
@@ -58,6 +59,9 @@ struct HeadTasks {
         nullptr};
     eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 /**

@@ -83,12 +83,12 @@ static constexpr int direction_active_level = GPIO_PIN_RESET;
 static constexpr int direction_active_level = GPIO_PIN_SET;
 #endif
 
-struct motor_hardware::StepperUsageEEpromConfig left_usage_config {
-    .step_usage_key = L_MOTOR_STEP_KEY
+struct motor_hardware::UsageEEpromConfig left_usage_config {
+    .distance_usage_key = L_MOTOR_DISTANCE_KEY
 };
 
-struct motor_hardware::StepperUsageEEpromConfig right_usage_config {
-    .step_usage_key = R_MOTOR_STEP_KEY
+struct motor_hardware::UsageEEpromConfig right_usage_config {
+    .distance_usage_key = R_MOTOR_DISTANCE_KEY
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_left {

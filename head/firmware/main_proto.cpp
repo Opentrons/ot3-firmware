@@ -77,12 +77,12 @@ spi::hardware::SPI_interface SPI_intf3 = {
 };
 static spi::hardware::Spi spi_comms3(SPI_intf3);
 
-struct motor_hardware::StepperUsageEEpromConfig left_usage_config {
-    .step_usage_key = L_MOTOR_STEP_KEY
+struct motor_hardware::UsageEEpromConfig left_usage_config {
+    .distance_usage_key = L_MOTOR_DISTANCE_KEY
 };
 
-struct motor_hardware::StepperUsageEEpromConfig right_usage_config {
-    .step_usage_key = R_MOTOR_STEP_KEY
+struct motor_hardware::UsageEEpromConfig right_usage_config {
+    .distance_usage_key = R_MOTOR_DISTANCE_KEY
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_left {
