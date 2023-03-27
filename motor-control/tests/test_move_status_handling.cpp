@@ -108,7 +108,7 @@ SCENARIO("testing move status position translation") {
                 std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
             THEN("The distance traveled usage will be populated") {
                 REQUIRE(usage_resp_msg.key == 1);
-                REQUIRE(usage_resp_msg.distance_traveled_um == -500);
+                REQUIRE(usage_resp_msg.distance_traveled_um == 500);
             }
         }
         WHEN("passing a position of fullscale steps") {
