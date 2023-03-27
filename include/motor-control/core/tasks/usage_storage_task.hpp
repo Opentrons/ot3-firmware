@@ -11,6 +11,17 @@
 
 namespace usage_storage_task {
 
+// Not my favorite way to check this, but if we don't have access
+// to vTaskDelay during host compilation so just dummy the function
+
+static void _hardware_delay(uint ticks) {
+    #ifndef INC_TASK_H
+    std::ignore = ticks;
+    #else
+    vTaskDelay(ticks);
+    #endif
+}
+
 using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
 
 static constexpr uint16_t distance_data_usage_len = 8;
@@ -75,7 +86,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         if (!usage_data_accessor.data_part_exists(key)) {
             usage_data_accessor.create_data_part(key, len);
             while (!usage_data_accessor.ready()) {
-                vTaskDelay(10);
+                _hardware_delay(10);
             }
         }
     }
@@ -121,7 +132,7 @@ class UsageStorageTask {
             } else {
                 // wait for the handler to be ready before sending the next
                 // message
-                vTaskDelay(10);
+                _hardware_delay(10);
             }
         }
     }
