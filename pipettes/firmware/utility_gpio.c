@@ -189,13 +189,18 @@ static void sync_drive_gpio_init() {
 
 static void data_ready_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
+    // Note, only in this file are we using "front" to refer to
+    // the single channel's data ready line. Unfortunately, the data ready
+    // line on the single matches the front channel on the eight channel
+    // but we normally will refer to the rear sensor as the primary sensor
+    // in the rest of the codebase.
     PipetteHardwarePin hardware =
             pipette_hardware_get_gpio(
-                pipette_type, pipette_hardware_device_data_ready_rear);
+                pipette_type, pipette_hardware_device_data_ready_front);
     enable_gpio_port(hardware.port);
     if (pipette_type != SINGLE_CHANNEL) {
         PipetteHardwarePin hardware_front = pipette_hardware_get_gpio(
-            pipette_type, pipette_hardware_device_data_ready_front);
+            pipette_type, pipette_hardware_device_data_ready_rear);
         enable_gpio_port(hardware_front.port);
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};

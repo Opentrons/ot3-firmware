@@ -77,8 +77,8 @@ auto utility_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
                 .data_ready =
                     gpio::PinConfig{
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                        .port = GPIOC,
-                        .pin = GPIO_PIN_3,
+                        .port = GPIOB,
+                        .pin = GPIO_PIN_1,
                         .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     gpio::PinConfig{
@@ -94,8 +94,8 @@ auto utility_configs::sensor_configurations<PipetteType::EIGHT_CHANNEL>()
                  .active_setting = GPIO_PIN_RESET},
             .data_ready = gpio::PinConfig{
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .port = GPIOB,
-                .pin = GPIO_PIN_1,
+                .port = GPIOC,
+                .pin = GPIO_PIN_3,
                 .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }
@@ -115,7 +115,7 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                     gpio::PinConfig{
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                         .port = GPIOC,
-                        .pin = GPIO_PIN_11,
+                        .pin = GPIO_PIN_6,
                         .active_setting = GPIO_PIN_RESET},
                 .tip_sense =
                     gpio::PinConfig{
@@ -133,7 +133,7 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                 gpio::PinConfig{
                     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                     .port = GPIOC,
-                    .pin = GPIO_PIN_6,
+                    .pin = GPIO_PIN_11,
                     .active_setting = GPIO_PIN_RESET},
             .tip_sense = gpio::PinConfig{
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
