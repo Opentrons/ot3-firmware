@@ -115,7 +115,7 @@ class LightControlMessageHandler {
 
     LightControlInterface& _hardware;
     Animation& _animation;
-    bool _deck_light_status = true;
+    bool _deck_light_status = false;
 };
 
 /**
