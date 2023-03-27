@@ -97,7 +97,7 @@ class LightControlMessageHandler {
         ack();
     }
 
-    auto handle(rearpanel::messages::GetDeckLightRequest&) -> void {
+    auto handle(rearpanel::messages::GetDeckLightRequest&) const -> void {
         queue_client::get_main_queues().send_host_comms_queue(
             rearpanel::messages::GetDeckLightResponse{
                 .setting = static_cast<uint8_t>(_deck_light_status)});
