@@ -135,7 +135,7 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 
 #if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2' && \
     PIPETTE_TYPE != NINETY_SIX_CHANNEL
-static constexpr bool pressure_sensor_available = false;
+static constexpr bool pressure_sensor_available = true;
 #else
 static constexpr bool pressure_sensor_available = true;
 #endif
