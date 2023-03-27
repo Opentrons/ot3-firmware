@@ -109,10 +109,11 @@ SCENARIO("message serializing works") {
 }
 
 SCENARIO("message parsing") {
+    auto rear_panel_parser = rearpanel::messages::Parser{};
     GIVEN("a valid message id body") {
         auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x00};
         WHEN("constructed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
+            auto message = rear_panel_parser.parse(
                 rearpanel::ids::BinaryMessageId(0x0003), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
@@ -128,7 +129,7 @@ SCENARIO("message parsing") {
     GIVEN("a invalid message length") {
         auto arr = std::array<uint8_t, 4>{0x00, 0x03, 0x00, 0x0A};
         WHEN("constructed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
+            auto message = rear_panel_parser.parse(
                 rearpanel::ids::BinaryMessageId(0x0003), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
@@ -142,7 +143,7 @@ SCENARIO("message parsing") {
     GIVEN("a invalid message id body") {
         auto arr = std::array<uint8_t, 4>{0xAB, 0xCD, 0x00, 0x00};
         WHEN("constructed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
+            auto message = rear_panel_parser.parse(
                 rearpanel::ids::BinaryMessageId(0xABCD), arr.begin(),
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 arr.end());
@@ -156,6 +157,7 @@ SCENARIO("message parsing") {
 }
 
 TEST_CASE("AddLightActionRequest parsing") {
+    auto rear_panel_parser = rearpanel::messages::Parser{};
     using namespace rearpanel;
     GIVEN("valid input") {
         auto input = std::array<uint8_t, 11>{// Header
@@ -167,8 +169,8 @@ TEST_CASE("AddLightActionRequest parsing") {
                                              // Colors RGBW
                                              0x10, 0x20, 0x30, 0x40};
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0400), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0400),
+                                                   input.begin(), input.end());
             THEN("the message is correctly parsed") {
                 REQUIRE(std::holds_alternative<messages::AddLightActionRequest>(
                     message));
@@ -195,8 +197,8 @@ TEST_CASE("AddLightActionRequest parsing") {
                                              // Colors RGBW
                                              0x10, 0x20, 0x30, 0x40};
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0400), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0400),
+                                                   input.begin(), input.end());
             THEN("the message is not parsed") {
                 REQUIRE(std::holds_alternative<std::monostate>(message));
             }
@@ -205,6 +207,7 @@ TEST_CASE("AddLightActionRequest parsing") {
 }
 
 TEST_CASE("ClearLightActionStagingQueueRequest parsing") {
+    auto rear_panel_parser = rearpanel::messages::Parser{};
     using namespace rearpanel;
     GIVEN("valid input") {
         auto input = std::array<uint8_t, 4>{
@@ -215,8 +218,8 @@ TEST_CASE("ClearLightActionStagingQueueRequest parsing") {
             0x00,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0401), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0401),
+                                                   input.begin(), input.end());
             THEN("the message is correctly parsed") {
                 REQUIRE(std::holds_alternative<
                         messages::ClearLightActionStagingQueueRequest>(
@@ -233,8 +236,8 @@ TEST_CASE("ClearLightActionStagingQueueRequest parsing") {
             0x10,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0401), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0401),
+                                                   input.begin(), input.end());
             THEN("the message is not parsed") {
                 REQUIRE(std::holds_alternative<std::monostate>(message));
             }
@@ -243,6 +246,7 @@ TEST_CASE("ClearLightActionStagingQueueRequest parsing") {
 }
 
 TEST_CASE("StartLightActionRequest parsing") {
+    auto rear_panel_parser = rearpanel::messages::Parser{};
     using namespace rearpanel;
     GIVEN("valid input") {
         auto input = std::array<uint8_t, 5>{
@@ -255,8 +259,8 @@ TEST_CASE("StartLightActionRequest parsing") {
             0x00,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0402), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0402),
+                                                   input.begin(), input.end());
             THEN("the message is correctly parsed") {
                 REQUIRE(
                     std::holds_alternative<messages::StartLightActionRequest>(
@@ -276,8 +280,8 @@ TEST_CASE("StartLightActionRequest parsing") {
             0x10,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0402), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0402),
+                                                   input.begin(), input.end());
             THEN("the message is not parsed") {
                 REQUIRE(std::holds_alternative<std::monostate>(message));
             }
@@ -286,6 +290,7 @@ TEST_CASE("StartLightActionRequest parsing") {
 }
 
 TEST_CASE("SetDeckLightRequest parsing") {
+    auto rear_panel_parser = rearpanel::messages::Parser{};
     using namespace rearpanel;
     GIVEN("valid input") {
         auto input = std::array<uint8_t, 5>{
@@ -298,8 +303,8 @@ TEST_CASE("SetDeckLightRequest parsing") {
             0x01,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0410), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0410),
+                                                   input.begin(), input.end());
             THEN("the message is correctly parsed") {
                 REQUIRE(std::holds_alternative<messages::SetDeckLightRequest>(
                     message));
@@ -317,8 +322,8 @@ TEST_CASE("SetDeckLightRequest parsing") {
             0x10,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0410), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0410),
+                                                   input.begin(), input.end());
             THEN("the message is not parsed") {
                 REQUIRE(std::holds_alternative<std::monostate>(message));
             }
@@ -327,6 +332,7 @@ TEST_CASE("SetDeckLightRequest parsing") {
 }
 
 TEST_CASE("GetDeckLightRequest parsing") {
+    auto rear_panel_parser = rearpanel::messages::Parser{};
     using namespace rearpanel;
     GIVEN("valid input") {
         auto input = std::array<uint8_t, 5>{
@@ -337,8 +343,8 @@ TEST_CASE("GetDeckLightRequest parsing") {
             0x00,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0411), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0411),
+                                                   input.begin(), input.end());
             THEN("the message is correctly parsed") {
                 REQUIRE(std::holds_alternative<messages::GetDeckLightRequest>(
                     message));
@@ -354,8 +360,8 @@ TEST_CASE("GetDeckLightRequest parsing") {
             0x10,
         };
         WHEN("parsed") {
-            auto message = rearpanel::messages::rear_panel_parser.parse(
-                ids::BinaryMessageId(0x0411), input.begin(), input.end());
+            auto message = rear_panel_parser.parse(ids::BinaryMessageId(0x0411),
+                                                   input.begin(), input.end());
             THEN("the message is not parsed") {
                 REQUIRE(std::holds_alternative<std::monostate>(message));
             }
