@@ -2,7 +2,14 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "common/core/freertos_timer.hpp"
+#include "eeprom/core/hardware_iface.hpp"
+#include "eeprom/core/task.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
+#include "i2c/core/hardware_iface.hpp"
+#include "i2c/core/tasks/i2c_poller_task.hpp"
+#include "i2c/core/tasks/i2c_task.hpp"
+#include "i2c/core/writer.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -31,7 +38,9 @@ void start_tasks(
     tmc2130::configs::TMC2130DriverConfig& left_driver_configs,
     tmc2130::configs::TMC2130DriverConfig& right_driver_configs,
     motor_hardware_task::MotorHardwareTask& right_motor_hardware,
-    motor_hardware_task::MotorHardwareTask& left_motor_hardware);
+    motor_hardware_task::MotorHardwareTask& left_motor_hardware,
+    i2c::hardware::I2CBase& i2c3,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
 
 /**
  * Access to all tasks not associated with a motor. This will be a singleton.
@@ -42,6 +51,13 @@ struct HeadTasks {
     presence_sensing_driver_task::PresenceSensingDriverTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         presence_sensing_driver_task{nullptr};
+    i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        i2c3_task{nullptr};
+    i2c::tasks::I2CPollerTask<freertos_message_queue::FreeRTOSMessageQueue,
+                              freertos_timer::FreeRTOSTimer>* i2c3_poller_task{
+        nullptr};
+    eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        eeprom_task{nullptr};
 };
 
 /**
