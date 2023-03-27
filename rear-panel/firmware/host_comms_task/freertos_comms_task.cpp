@@ -31,6 +31,8 @@ static auto cdc_deinit_handler() -> void;
 // NOLINTNEXTLINE(readability-named-parameter)
 static auto cdc_rx_handler(uint8_t *, uint32_t *) -> uint8_t *;
 
+static auto rear_panel_parser = rearpanel::messages::Parser{};
+
 namespace host_comms_control_task {
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -155,7 +157,7 @@ static auto cdc_rx_handler(uint8_t *Buf, uint32_t *Len) -> uint8_t * {
     std::ignore = bit_utils::bytes_to_int(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         Buf, Buf + sizeof(rearpanel::ids::BinaryMessageId), type);
-    auto message = rearpanel::messages::rear_panel_parser.parse(
+    auto message = rear_panel_parser.parse(
         rearpanel::ids::BinaryMessageId(type),
         _local_task.rx_buf.committed()->data(),
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)

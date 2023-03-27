@@ -544,7 +544,8 @@ using HostCommTaskMessage =
                  EstopStateChange, EstopButtonDetectionChange,
                  DoorSwitchStateRequest, DoorSwitchStateInfo,
                  AddLightActionRequest, ClearLightActionStagingQueueRequest,
-                 StartLightActionRequest>;
+                 StartLightActionRequest, SetDeckLightRequest,
+                 GetDeckLightRequest, GetDeckLightResponse>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
@@ -554,16 +555,17 @@ using SystemTaskMessage =
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
                  AddLightActionRequest, ClearLightActionStagingQueueRequest,
-                 StartLightActionRequest>;
+                 StartLightActionRequest, SetDeckLightRequest,
+                 GetDeckLightRequest>;
 
 using HardwareTaskMessage = std::variant<std::monostate>;
 
-static auto rear_panel_parser = binary_parse::Parser<
+using Parser = binary_parse::Parser<
     Echo, DeviceInfoRequest, EnterBootloader, EngageEstopRequest,
     EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
     DoorSwitchStateRequest, AddLightActionRequest,
     ClearLightActionStagingQueueRequest, StartLightActionRequest,
-    SetDeckLightRequest, GetDeckLightRequest>{};
+    SetDeckLightRequest, GetDeckLightRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel

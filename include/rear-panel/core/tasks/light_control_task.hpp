@@ -54,7 +54,8 @@ class LightControlMessageHandler {
 
     auto handle(rearpanel::messages::UpdateLightControlMessage&) -> void {
         auto color = _animation.animate(DELAY_MS);
-        _hardware.set_led_power(DECK_LED, DECK_LED_ON_POWER);
+        _hardware.set_led_power(DECK_LED,
+                                _deck_light_status ? DECK_LED_ON_POWER : 0);
         _hardware.set_led_power(RED_UI_LED, static_cast<uint32_t>(color.r));
         _hardware.set_led_power(GREEN_UI_LED, static_cast<uint32_t>(color.g));
         _hardware.set_led_power(BLUE_UI_LED, static_cast<uint32_t>(color.b));
@@ -91,6 +92,17 @@ class LightControlMessageHandler {
         ack();
     }
 
+    auto handle(rearpanel::messages::SetDeckLightRequest& msg) -> void {
+        _deck_light_status = static_cast<bool>(msg.setting);
+        ack();
+    }
+
+    auto handle(rearpanel::messages::GetDeckLightRequest&) -> void {
+        queue_client::get_main_queues().send_host_comms_queue(
+            rearpanel::messages::GetDeckLightResponse{
+                .setting = static_cast<uint8_t>(_deck_light_status)});
+    }
+
     static auto ack() -> void {
         queue_client::get_main_queues().send_host_comms_queue(
             rearpanel::messages::Ack{});
@@ -103,6 +115,7 @@ class LightControlMessageHandler {
 
     LightControlInterface& _hardware;
     Animation& _animation;
+    bool _deck_light_status = true;
 };
 
 /**
