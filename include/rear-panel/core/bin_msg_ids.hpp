@@ -27,6 +27,9 @@ enum class BinaryMessageId : uint16_t {
     add_light_action = 0x400,
     clear_light_action_staging_queue = 0x401,
     start_light_action = 0x402,
+    set_deck_light_request = 0x410,
+    get_deck_light_request = 0x411,
+    get_deck_light_response = 0x412,
 };
 
 /** The types of transitons that the lights can perform. */

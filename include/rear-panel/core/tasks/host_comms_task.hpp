@@ -252,6 +252,34 @@ class HostCommMessageHandler {
         return tx_into;
     }
 
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::SetDeckLightRequest &msg,
+                       InputIt tx_into, InputLimit) -> InputIt {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_light_control_queue(msg);
+        return tx_into;
+    }
+
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::GetDeckLightRequest &msg,
+                       InputIt tx_into, InputLimit) -> InputIt {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_light_control_queue(msg);
+        return tx_into;
+    }
+
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::GetDeckLightResponse &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        return msg.serialize(tx_into, tx_limit);
+    }
+
     bool may_connect_latch = true;
 };
 

@@ -464,6 +464,78 @@ struct StartLightActionRequest
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct SetDeckLightRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::set_deck_light_request> {
+    static constexpr size_t LENGTH = sizeof(uint8_t);
+    uint8_t setting;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, SetDeckLightRequest> {
+        uint16_t type = 0;
+        uint16_t length = 0;
+        uint8_t setting = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if (type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, length);
+        if (length != LENGTH) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, setting);
+        return SetDeckLightRequest{.setting = setting};
+    }
+
+    auto operator==(const SetDeckLightRequest& other) const -> bool = default;
+};
+
+struct GetDeckLightRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::get_deck_light_request> {
+    static constexpr size_t LENGTH = 0;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, GetDeckLightRequest> {
+        uint16_t type = 0;
+        uint16_t length = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, type);
+        if (type != static_cast<uint16_t>(message_type)) {
+            return std::monostate();
+        }
+        body = bit_utils::bytes_to_int(body, limit, length);
+        if (length != LENGTH) {
+            return std::monostate();
+        }
+        return GetDeckLightRequest{};
+    }
+
+    auto operator==(const GetDeckLightRequest& other) const -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct GetDeckLightResponse
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::get_deck_light_response> {
+    static constexpr uint16_t LENGTH = sizeof(uint8_t);
+    uint8_t setting;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(LENGTH, iter, limit);
+        iter = bit_utils::int_to_bytes(setting, iter, limit);
+        return iter;
+    }
+    auto operator==(const GetDeckLightResponse& other) const -> bool = default;
+};
+
 // HostCommTaskMessage list must be a superset of the messages in the parser
 using HostCommTaskMessage =
     std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
@@ -472,7 +544,8 @@ using HostCommTaskMessage =
                  EstopStateChange, EstopButtonDetectionChange,
                  DoorSwitchStateRequest, DoorSwitchStateInfo,
                  AddLightActionRequest, ClearLightActionStagingQueueRequest,
-                 StartLightActionRequest>;
+                 StartLightActionRequest, SetDeckLightRequest,
+                 GetDeckLightRequest, GetDeckLightResponse>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
@@ -482,15 +555,17 @@ using SystemTaskMessage =
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
                  AddLightActionRequest, ClearLightActionStagingQueueRequest,
-                 StartLightActionRequest>;
+                 StartLightActionRequest, SetDeckLightRequest,
+                 GetDeckLightRequest>;
 
 using HardwareTaskMessage = std::variant<std::monostate>;
 
-static auto rear_panel_parser = binary_parse::Parser<
+using Parser = binary_parse::Parser<
     Echo, DeviceInfoRequest, EnterBootloader, EngageEstopRequest,
     EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
     DoorSwitchStateRequest, AddLightActionRequest,
-    ClearLightActionStagingQueueRequest, StartLightActionRequest>{};
+    ClearLightActionStagingQueueRequest, StartLightActionRequest,
+    SetDeckLightRequest, GetDeckLightRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel
