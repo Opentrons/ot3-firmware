@@ -48,12 +48,12 @@ class DevDataTailAccessor
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())) {}
 
     auto increase_data_tail(const DataTailType& data_added) -> void {
-        types::data_length amount_to_read;
         auto read_addr = addresses::lookup_table_tail_begin;
         auto bytes_remain = addresses::lookup_table_tail_length;
+        types::data_length amount_to_read =
+            std::min(bytes_remain, types::max_data_length);
         std::copy_n(data_added.begin(), addresses::lookup_table_tail_length,
                     data_to_add.begin());
-        amount_to_read = std::min(bytes_remain, types::max_data_length);
         this->eeprom_client.send_eeprom_queue(
             eeprom::message::ReadEepromMessage{
                 .message_index = 0,
@@ -64,7 +64,7 @@ class DevDataTailAccessor
     }
 
     auto increase_data_tail(const types::data_length data_added) -> void {
-        DataTailType typed_length = DataTailType{};
+        auto typed_length = DataTailType{};
         std::ignore = bit_utils::int_to_bytes(
             data_added, typed_length.begin(),
             typed_length.begin() + addresses::lookup_table_tail_length);
@@ -77,7 +77,8 @@ class DevDataTailAccessor
      * @param msg The message
      */
     void increase_tail_callback(const eeprom::message::EepromMessage& msg) {
-        uint16_t data_to_add_int, current_data_length;
+        uint16_t data_to_add_int = 0;
+        uint16_t current_data_length = 0;
         auto new_data_length = DataTailType{};
         std::ignore = bit_utils::bytes_to_int(data_to_add, data_to_add_int);
         std::ignore = bit_utils::bytes_to_int(msg.data, current_data_length);
@@ -225,15 +226,17 @@ class DevDataAccessor
                     new_ptr = new_ptr << 8;
                     len = len << 8;
                 }
-                auto data_iter = write.data.begin();
+                auto* data_iter = write.data.begin();
                 data_iter = bit_utils::int_to_bytes(
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     new_ptr, data_iter, data_iter + conf.addr_bytes);
                 data_iter = bit_utils::int_to_bytes(
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                     len, data_iter, data_iter + conf.addr_bytes);
                 this->eeprom_client.send_eeprom_queue(write);
                 tail_accessor.increase_data_tail(2 * conf.addr_bytes);
                 data_tail += 2 * conf.addr_bytes;
-                if (data.size() > 0) {
+                if (!data.empty()) {
                     if (data.size() > len) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
@@ -249,7 +252,7 @@ class DevDataAccessor
                                        .offset = 0,
                                        .len = len,
                                        .action = TableAction::CREATE};
-                if (data.size() > 0) {
+                if (!data.empty()) {
                     if (data.size() > len) {
                         LOG("Warning, sent too much data to initalize, "
                             "truncating to %d",
@@ -280,14 +283,14 @@ class DevDataAccessor
         create_data_part(key, len, dummy);
     }
 
-    void read_complete(uint32_t message_index) {
+    void read_complete(uint32_t message_index) final {
         // we don't need message_index since this is an internal call
         // and not initatied from a can message
         std::ignore = message_index;
         // test for non 0x00 elements
         if (data_tail_buff.end() ==
             std::find(data_tail_buff.begin(), data_tail_buff.end(), true)) {
-            DataTailType init_tail = DataTailType{};
+            auto init_tail = DataTailType{};
             std::ignore = bit_utils::int_to_bytes(
                 addresses::data_address_begin, init_tail.begin(),
                 init_tail.begin() + addresses::lookup_table_tail_length);
@@ -337,12 +340,14 @@ class DevDataAccessor
 
     // this method gets called when the dev_data accessor reads the lookup table
     void table_action_callback(const message::EepromMessage& m) {
-        auto data_iter = m.data.begin();
-        types::address data_addr;
-        types::data_length data_len;
+        const auto* data_iter = m.data.begin();
+        types::address data_addr = 0;
+        types::data_length data_len = 0;
         data_iter = bit_utils::bytes_to_int(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             data_iter, data_iter + conf.addr_bytes, data_addr);
         data_iter = bit_utils::bytes_to_int(
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             data_iter, data_iter + conf.addr_bytes, data_len);
         if (conf.chip == hardware_iface::EEPromChipType::MICROCHIP_24AA02T) {
             data_addr = data_addr >> hardware_iface::ADDR_BITS_DIFFERENCE;
@@ -366,13 +371,15 @@ class DevDataAccessor
                     message::WriteEepromMessage write;
                     write.memory_address = data_tail;
                     write.length = 2 * conf.addr_bytes;
-                    auto write_iter = write.data.begin();
+                    auto* write_iter = write.data.begin();
                     write_iter = bit_utils::int_to_bytes(
                         (data_addr - action_cmd_m.len), write_iter,
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                         (write_iter + conf.addr_bytes));
-                    write_iter =
-                        bit_utils::int_to_bytes(action_cmd_m.len, write_iter,
-                                                write_iter + conf.addr_bytes);
+                    write_iter = bit_utils::int_to_bytes(
+                        action_cmd_m.len, write_iter,
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                        write_iter + conf.addr_bytes);
                     this->eeprom_client.send_eeprom_queue(write);
                     tail_accessor.increase_data_tail(2 * conf.addr_bytes);
                     data_tail += 2 * conf.addr_bytes;
@@ -404,14 +411,15 @@ class DevDataAccessor
         }
     }
 
-    static void table_action_callback(const message::EepromMessage& m,
-                                      void* param) {
+    static auto table_action_callback(const message::EepromMessage& m,
+                                      void* param) -> void {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         auto* self = reinterpret_cast<DevDataAccessor*>(param);
         self->table_action_callback(m);
     }
 
     // helper function
-    types::address calculate_table_entry_start(uint16_t key) {
+    auto calculate_table_entry_start(uint16_t key) -> types::address {
         types::address addr = 0;
         if (config_updated) {
             addr = addresses::data_address_begin + (key * 2 * conf.addr_bytes);
