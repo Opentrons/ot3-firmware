@@ -140,12 +140,16 @@ void sensor_tasks::start_tasks(
     auto& tip_notification_task = tip_notification_task_builder_front.start(
         5, "tip notification", queues, sensor_hardware_primary);
 
+    auto& usage_storage_task =
+        usage_storage_task_builder.start(5, "usage storage", queues, queues);
+
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
     tasks.pressure_sensor_task_front = &pressure_sensor_task_front;
     tasks.tip_notification_task = &tip_notification_task;
+    tasks.usage_storage_task = &usage_storage_task;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
