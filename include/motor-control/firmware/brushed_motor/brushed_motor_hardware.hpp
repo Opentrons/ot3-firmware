@@ -73,7 +73,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
-    auto get_usage_eeprom_config() -> UsageEEpromConfig& {
+    auto get_usage_eeprom_config() -> UsageEEpromConfig& final {
         return eeprom_config;
     }
 

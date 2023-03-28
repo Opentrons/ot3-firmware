@@ -40,13 +40,13 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;
     auto operator=(const UsageStorageTaskHandler&& c) = delete;
-    ~UsageStorageTaskHandler() = default;
+    ~UsageStorageTaskHandler() final = default;
 
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->start_handle(m); }, message);
     }
 
-    void read_complete(uint32_t message_index) {
+    void read_complete(uint32_t message_index) final {
         std::ignore = message_index;
         std::visit([this](auto m) { this->finish_handle(m); }, buffered_task);
         ready_for_new_message = true;
