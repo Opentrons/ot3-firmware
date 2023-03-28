@@ -8,7 +8,6 @@ add_library(bootloader-core
         util.c
         message_handler.c
         update_state.c
-        pipette_node_id.c
         )
 add_dependencies(bootloader-core generate_version)
 target_include_directories(bootloader-core

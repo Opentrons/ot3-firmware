@@ -1,6 +1,7 @@
 #ifndef COMMON_CORE_VERSION_H_
 #define COMMON_CORE_VERSION_H_
 #include <stdint.h> // uint32_t
+#include <stdlib.h> // size_t
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -33,11 +34,17 @@ struct version {
 
 const struct version* version_get();
 
-struct revision {
+// Do not base the size of messages that include this data on the size of
+// this struct, since it is not packed. Instead, use revision_size(), and if
+// you update this struct make sure to update that value.
+struct  revision {
     char primary;
     char secondary;
     char tertiary[2];
 };
+
+// What the size of the revision struct would be if it was packed.
+size_t revision_size();
 
 const struct revision* revision_get();
 

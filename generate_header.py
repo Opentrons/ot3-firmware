@@ -38,6 +38,7 @@ def generate_can_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
         write_enum_cpp(constants_mod.GearMotorId, output)
         write_enum_cpp(constants_mod.MotorPositionFlags, output)
         write_enum_cpp(constants_mod.MoveStopCondition, output)
+        write_enum_cpp(constants_mod.PipetteType, output)
 
 
 def generate_can_c(output: io.StringIO, constants_mod: ModuleType, arbitration_id: ModuleType) -> None:
@@ -57,6 +58,7 @@ def generate_can_c(output: io.StringIO, constants_mod: ModuleType, arbitration_i
     write_enum_c(constants_mod.MotorPositionFlags, output, can)
     write_enum_c(constants_mod.MoveStopCondition, output, can)
     write_arbitration_id_c(output, can, arbitration_id)
+    write_enum_c(constants_mod.PipetteType, output, can)
 
 def generate_rearpanel_cpp(output: io.StringIO, constants_mod: ModuleType) -> None:
     """Generate source code into output."""

@@ -8,6 +8,11 @@
 
 static CANNodeId dynamic_id_backing = can_nodeid_broadcast;
 
+static CANNodeId determine_pipette_node_id(
+    bool mount_id) {
+    return mount_id ? can_nodeid_pipette_left_bootloader : can_nodeid_pipette_right_bootloader;
+}
+
 
 static CANNodeId update_dynamic_nodeid() {
     PipetteType pipette_type = get_pipette_type();
