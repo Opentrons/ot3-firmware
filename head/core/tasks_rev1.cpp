@@ -111,8 +111,8 @@ void head_tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
-    auto& usage_storage_task =
-        usage_storage_task_builder.start(5, "usage storage", head_queues, head_queues);
+    auto& usage_storage_task = usage_storage_task_builder.start(
+        5, "usage storage", head_queues, head_queues);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
@@ -202,7 +202,6 @@ void head_tasks::HeadQueueClient::send_usage_storage_queue(
     const usage_storage_task::TaskMessage& m) {
     usage_storage_queue->try_write(m);
 }
-
 
 // Implementation of MotorQueueClient
 

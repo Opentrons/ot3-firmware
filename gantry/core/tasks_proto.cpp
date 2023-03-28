@@ -67,7 +67,8 @@ void gantry::tasks::start_tasks(
     auto& move_group =
         move_group_task_builder.start(5, "move group", ::queues, ::queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", ::queues, motion_controller.get_mechanical_config(),::queues);
+        5, "move status", ::queues, motion_controller.get_mechanical_config(),
+        ::queues);
 
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
@@ -80,8 +81,8 @@ void gantry::tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
                                                   eeprom_hw_iface);
-    auto& usage_storage_task =
-        usage_storage_task_builder.start(5, "usage storage", ::queues, ::queues);
+    auto& usage_storage_task = usage_storage_task_builder.start(
+        5, "usage storage", ::queues, ::queues);
 
     ::tasks.can_writer = &can_writer;
     ::tasks.motion_controller = &motion;

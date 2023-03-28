@@ -15,11 +15,11 @@ namespace usage_storage_task {
 // to vTaskDelay during host compilation so just dummy the function
 
 static void _hardware_delay(uint ticks) {
-    #ifndef INC_TASK_H
+#ifndef INC_TASK_H
     std::ignore = ticks;
-    #else
+#else
     vTaskDelay(ticks);
-    #endif
+#endif
 }
 
 using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
