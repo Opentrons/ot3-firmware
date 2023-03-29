@@ -44,7 +44,7 @@ HandleMessageReturn handle_message(const Message * request, Message * response);
 
 /**
  * The message handler for the system. Useful to call in a system-specific
- * handler if you need to override part of what it rreturns.
+ * handler if you need to override part of what it returns.
  * @param request The request; check that it is non-null.
  * @param response The response to be filled out; check that it is non-null.
  * */
