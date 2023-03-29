@@ -31,7 +31,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
-    can::messages::UpdateMotorPositionEstimationRequest>;
+    can::messages::UpdateMotorPositionEstimationRequest,
+    can::messages::GetMotorUsageRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         gripper_tasks::QueueClient>,
@@ -46,7 +47,8 @@ using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motion::BrushedMotionHandler<g_tasks::QueueClient>,
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest,
-    can::messages::SetGripperErrorToleranceRequest>;
+    can::messages::SetGripperErrorToleranceRequest,
+    can::messages::GetMotorUsageRequest>;
 using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::BrushedMoveGroupHandler<
         g_tasks::QueueClient>,

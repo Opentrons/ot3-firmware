@@ -35,8 +35,8 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
                          tmc2130::configs::TMC2130DriverConfig& driver_configs,
                          AllTask& gripper_tasks,
                          gripper_tasks::QueueClient& main_queues) {
-    auto& motion =
-        mc_task_builder.start(5, "z mc", z_motor.motion_controller, z_queues);
+    auto& motion = mc_task_builder.start(5, "z mc", z_motor.motion_controller,
+                                         z_queues, main_queues);
     auto& move_group =
         move_group_task_builder.start(5, "move group", z_queues, z_queues);
     auto& tmc2130_driver = motor_driver_task_builder.start(

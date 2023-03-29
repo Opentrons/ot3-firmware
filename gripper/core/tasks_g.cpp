@@ -29,7 +29,8 @@ void g_tasks::start_task(
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
-        5, "bdc controller", grip_motor.motion_controller, g_queues);
+        5, "bdc controller", grip_motor.motion_controller, g_queues,
+        main_queues);
     auto& brushed_move_group = brushed_move_group_task_builder.start(
         5, "bdc move group", g_queues, g_queues);
     auto& brushed_move_status_reporter = brushed_move_status_task_builder.start(

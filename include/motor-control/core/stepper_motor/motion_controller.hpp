@@ -8,6 +8,7 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/types.hpp"
 #include "motor-control/core/utils.hpp"
 
@@ -151,6 +152,15 @@ class MotionController {
         return hardware.position_flags.get_flags();
     }
 
+    template <usage_storage_task::TaskClient UsageClient>
+    void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
+        usage_messages::GetUsageRequest req = {
+            .message_index = message_index,
+            .distance_usage_key =
+                hardware.get_usage_eeprom_config().distance_usage_key};
+        usage_client.send_usage_storage_queue(req);
+    }
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     StepperMotorHardwareIface& hardware;
@@ -277,6 +287,15 @@ class PipetteMotionController {
 
     [[nodiscard]] auto get_position_flags() const -> uint8_t {
         return hardware.position_flags.get_flags();
+    }
+
+    template <usage_storage_task::TaskClient UsageClient>
+    void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
+        usage_messages::GetUsageRequest req = {
+            .message_index = message_index,
+            .distance_usage_key =
+                hardware.get_usage_eeprom_config().distance_usage_key};
+        usage_client.send_usage_storage_queue(req);
     }
 
   private:

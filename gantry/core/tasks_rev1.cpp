@@ -61,7 +61,7 @@ void gantry::tasks::start_tasks(
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, ::queues);
+                                         motion_controller, ::queues, ::queues);
     auto& tmc2160_driver = motor_driver_task_builder.start(
         5, "tmc2160 driver", driver_configs, ::queues, spi_task_client);
     auto& move_group =

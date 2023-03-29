@@ -50,7 +50,8 @@ void gear_motor_tasks::start_tasks(
 
     // Left Gear Motor Tasks
     auto& motion_left = mc_task_builder_left.start(
-        5, "motion controller", motion_controllers.left, left_queues);
+        5, "motion controller", motion_controllers.left, left_queues,
+        sensor_tasks::get_queues());
     auto& tmc2160_driver_left = tmc2160_driver_task_builder_left.start(
         5, "tmc2160 driver", gear_driver_configs.left_gear_motor, left_queues,
         spi_writer);
@@ -75,7 +76,8 @@ void gear_motor_tasks::start_tasks(
 
     // Right Gear Motor Tasks
     auto& motion_right = mc_task_builder_right.start(
-        5, "motion controller", motion_controllers.right, right_queues);
+        5, "motion controller", motion_controllers.right, right_queues,
+        sensor_tasks::get_queues());
     auto& tmc2160_driver_right = tmc2160_driver_task_builder_right.start(
         5, "tmc2160 driver", gear_driver_configs.right_gear_motor, right_queues,
         spi_writer);
