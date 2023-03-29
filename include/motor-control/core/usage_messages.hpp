@@ -9,4 +9,9 @@ struct IncreaseDistanceUsage {
     uint32_t distance_traveled_um;
 };
 
+struct GetUsageRequest {
+    uint32_t message_index;
+    uint16_t distance_usage_key;
+};
+
 }  // namespace usage_messages

@@ -61,6 +61,24 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
 
     void finish_handle(std::monostate m) { static_cast<void>(m); }
 
+    void start_handle(usage_messages::GetUsageRequest& m) {
+        ready_for_new_message = false;
+        buffered_task = m;
+        _ensure_part(m.distance_usage_key, distance_data_usage_len);
+        usage_data_accessor.get_data(m.distance_usage_key, 0);
+    }
+
+    void finish_handle(usage_messages::GetUsageRequest& m) {
+        uint64_t distance_usage = 0;
+        std::ignore = bit_utils::bytes_to_int(
+            accessor_backing.begin(),
+            accessor_backing.begin() + distance_data_usage_len, distance_usage);
+        can::messages::GetMotorUsageResponse resp = {
+            .message_index = m.message_index,
+            .distance_usage_um = distance_usage};
+        can_client.send_can_message(can::ids::NodeId::host, resp);
+    }
+
     void start_handle(usage_messages::IncreaseDistanceUsage& m) {
         ready_for_new_message = false;
         buffered_task = m;

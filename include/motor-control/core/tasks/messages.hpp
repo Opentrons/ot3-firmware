@@ -52,6 +52,7 @@ using BrushedMoveGroupTaskMessage = std::variant<
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest>;
 
 using UsageStorageTaskMessage =
-    std::variant<std::monostate, usage_messages::IncreaseDistanceUsage>;
+    std::variant<std::monostate, usage_messages::IncreaseDistanceUsage,
+                 usage_messages::GetUsageRequest>;
 
 }  // namespace motor_control_task_messages
