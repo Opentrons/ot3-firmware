@@ -137,7 +137,7 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
     GIVEN("data accessor correctly initializes") {
         auto data = types::EepromData{};
-        data.fill(0x00);
+        data.fill(0xFF);
         auto read_message =
             std::get<message::ReadEepromMessage>(queue_client.messages[0]);
         read_message.callback(
@@ -151,6 +151,7 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
         eeprom.handle_message(config_msg);
         queue_client.messages.clear();
         THEN("accessor attemps to create data table entry") {
+            REQUIRE(subject.data_part_exists(0) == false);
             subject.create_data_part(0x00, 0x04);
             // for the first one we just expect a write to the first segment of
             // the table and we expect a read to the table_tail value so it can
@@ -169,6 +170,7 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
             REQUIRE(read_message.memory_address ==
                     addresses::lookup_table_tail_begin);
             REQUIRE(read_message.length == addresses::lookup_table_tail_length);
+            REQUIRE(subject.data_part_exists(0) == true);
         }
     }
 }

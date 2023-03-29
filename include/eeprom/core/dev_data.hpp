@@ -308,7 +308,7 @@ class DevDataAccessor
     auto data_part_exists(uint16_t key) -> bool {
         if (tail_updated && config_updated) {
             auto table_location = calculate_table_entry_start(key);
-            return table_location <= data_tail;
+            return table_location < data_tail;
         }
         return false;
     }
