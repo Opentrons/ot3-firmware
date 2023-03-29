@@ -1454,6 +1454,22 @@ struct SetGripperErrorToleranceRequest
         -> bool = default;
 };
 
+using GetMotorUsageRequest = Empty<MessageId::get_motor_usage_request>;
+
+struct GetMotorUsageResponse
+    : BaseMessage<MessageId::get_motor_usage_response> {
+    uint32_t message_index;
+    uint64_t distance_usage_um;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(distance_usage_um, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const GetMotorUsageResponse& other) const -> bool = default;
+};
 /**
  * A variant of all message types we might send..
  */
@@ -1469,6 +1485,6 @@ using ResponseMessageType = std::variant<
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
-    PushTipPresenceNotification>;
+    PushTipPresenceNotification, GetMotorUsageResponse>;
 
 }  // namespace can::messages
