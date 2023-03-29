@@ -104,6 +104,7 @@ void gantry::tasks::start_tasks(
     ::queues.i2c2_queue = &i2c2_task.get_queue();
     ::queues.i2c2_poller_queue = &i2c2_poller_task.get_queue();
     ::queues.eeprom_queue = &eeprom_task.get_queue();
+    ::queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     mh_tsk.start_task();
 }
