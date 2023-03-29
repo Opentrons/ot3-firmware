@@ -50,7 +50,7 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[0] == 0x00);
                 REQUIRE(body.data()[1] == 0x04);
                 REQUIRE(body.data()[2] == 0x00);
-                REQUIRE(body.data()[3] == 0x14);
+                REQUIRE(body.data()[3] == 0x15);
                 REQUIRE(body.data()[4] == 0x00);
                 REQUIRE(body.data()[5] == 0x22);
                 REQUIRE(body.data()[6] == 0x00);
@@ -77,7 +77,7 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[0] == 0x00);
                 REQUIRE(body.data()[1] == 0x04);
                 REQUIRE(body.data()[2] == 0x00);
-                REQUIRE(body.data()[3] == 0x14);
+                REQUIRE(body.data()[3] == 0x15);
                 REQUIRE(body.data()[4] == 0x00);
                 REQUIRE(body.data()[5] == 0x22);
                 REQUIRE(body.data()[6] == 0x00);

@@ -133,7 +133,8 @@ struct DeviceInfoResponse
             std::min(limit - iter, ptrdiff_t(sizeof(tertiary_revision))), iter);
         // This is only used for the rear panel and there is not currently a
         // subid required there
-        *iter++ = 0;
+        const uint8_t subid = 0;
+        iter = bit_utils::int_to_bytes(subid, iter, limit);
         return iter;
     }
 
