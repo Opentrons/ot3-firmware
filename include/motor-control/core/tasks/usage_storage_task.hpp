@@ -118,8 +118,8 @@ class UsageStorageTask {
     /**
      * Task entry point.
      */
-    template <eeprom::task::TaskClient EEPromClient,
-              can::message_writer_task::TaskClient CanClient>
+    template <can::message_writer_task::TaskClient CanClient,
+              eeprom::task::TaskClient EEPromClient>
     [[noreturn]] void operator()(CanClient* can_client,
                                  EEPromClient* eeprom_client) {
         auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client};
