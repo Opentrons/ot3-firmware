@@ -127,6 +127,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
     char primary_revision;
     char secondary_revision;
     std::array<char, 2> tertiary_revision;
+    uint8_t device_subidentifier;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
@@ -148,6 +149,7 @@ struct DeviceInfoResponse : BaseMessage<MessageId::device_info_response> {
         iter = std::copy_n(
             &tertiary_revision[0],
             std::min(limit - iter, ptrdiff_t(sizeof(tertiary_revision))), iter);
+        iter = bit_utils::int_to_bytes(device_subidentifier, iter, limit);
         return iter - body;
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;

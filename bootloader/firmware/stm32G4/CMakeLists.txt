@@ -127,11 +127,13 @@ macro(pipettes_ninety_six_bootloader_loop)
     bootloader-core)
 endmacro()
 
+set(_pipette_sources ${_g4_sources} ./pipette_handle_messages.c)
+
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-single
     CALL_FOREACH_REV pipettes_single_bootloader_loop
     REVISIONS b1 c2
-    SOURCES _g4_sources _g4_sources
+    SOURCES _pipette_sources _pipette_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
@@ -139,7 +141,7 @@ foreach_revision(
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-multi
     CALL_FOREACH_REV pipettes_multi_bootloader_loop
-    SOURCES _g4_sources _g4_sources
+    SOURCES _pipette_sources _pipette_sources
     REVISIONS b1 c2
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
@@ -149,7 +151,7 @@ foreach_revision(
     PROJECT_NAME bootloader-pipettes-96
     CALL_FOREACH_REV pipettes_ninety_six_bootloader_loop
     REVISIONS b1 c1
-    SOURCES _g4_sources _g4_sources
+    SOURCES _pipette_sources _pipette_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )

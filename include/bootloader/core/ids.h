@@ -222,3 +222,10 @@ typedef struct {
     unsigned int padding: 3;
 } CANArbitrationIdParts;
 
+/** High-level type of pipette. */
+typedef enum {
+    can_pipettetype_pipette_single = 0x1,
+    can_pipettetype_pipette_multi = 0x2,
+    can_pipettetype_pipette_96 = 0x3,
+} CANPipetteType;
+

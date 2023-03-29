@@ -6,6 +6,7 @@
 #include "common/core/version.h"
 #include "pipettes/core/can_task.hpp"
 #include "pipettes/core/dispatch_builder.hpp"
+#include "pipettes/core/pipette_type.h"
 
 static auto& peripheral_queue_client = peripheral_tasks::get_queues();
 static auto& sensor_queue_client = sensor_tasks::get_queues();
@@ -29,13 +30,14 @@ static auto eeprom_handler = eeprom::message_handler::EEPromHandler{
 
 static auto system_message_handler =
     can::message_handlers::system::SystemMessageHandler{
-        central_queue_client,
-        version_get()->version,
-        version_get()->flags,
+        central_queue_client, version_get()->version, version_get()->flags,
         std::span(std::cbegin(version_get()->sha),
                   std::cend(version_get()->sha)),
-        revision_get()->primary,
-        revision_get()->secondary};
+        revision_get()->primary, revision_get()->secondary,
+        // in low throughput, we can be either single or multi (8-chan)
+        static_cast<uint8_t>(get_pipette_type() == PipetteType::SINGLE_CHANNEL
+                                 ? can::ids::PipetteType::pipette_single
+                                 : can::ids::PipetteType::pipette_multi)};
 
 static auto sensor_handler =
     sensors::handlers::SensorHandler{sensor_queue_client};

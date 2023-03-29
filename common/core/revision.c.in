@@ -1,5 +1,6 @@
 #include "common/core/version.h"
 
+// Do not change this without changing revision_size
 static const struct revision _revision = {
     .primary = '${PRIMARY_REVISION}',
     .secondary = '${SECONDARY_REVISION}',
@@ -8,4 +9,9 @@ static const struct revision _revision = {
 
 const struct revision* revision_get() {
     return &_revision;
+}
+
+// change this when changing revision
+size_t revision_size() {
+    return sizeof(_revision.primary) + sizeof(_revision.secondary) + sizeof(_revision.tertiary);
 }

@@ -222,4 +222,11 @@ enum class MoveStopCondition {
     stall = 0x10,
 };
 
+/** High-level type of pipette. */
+enum class PipetteType {
+    pipette_single = 0x1,
+    pipette_multi = 0x2,
+    pipette_96 = 0x3,
+};
+
 }  // namespace can::ids
