@@ -97,12 +97,13 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[20] == 'A');
                 REQUIRE(body.data()[21] == 'B');
                 REQUIRE(body.data()[22] == 'C');
-            }
-            THEN("it does not write past the end of the buffer") {
                 REQUIRE(body.data()[23] == 0);
             }
+            THEN("it does not write past the end of the buffer") {
+                REQUIRE(body.data()[24] == 0);
+            }
             THEN("size must be returned") {
-                REQUIRE(next_free == arr.begin() + 24);
+                REQUIRE(next_free == arr.begin() + 25);
             }
         }
     }

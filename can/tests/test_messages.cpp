@@ -226,7 +226,8 @@ SCENARIO("message serializing works") {
                                .flags = 0x11445566,
                                .shortsha{"abcdef0"},
                                .primary_revision = revision_get()->primary,
-                               .secondary_revision = revision_get()->secondary};
+                               .secondary_revision = revision_get()->secondary,
+                               .device_subidentifier = 0x9};
         message.tertiary_revision[0] = '.';
         message.tertiary_revision[1] = '2';
         auto arr = std::array<uint8_t, 30>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -287,11 +288,13 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[21] == revision_get()->secondary);
                 REQUIRE(body.data()[22] == '.');
                 REQUIRE(body.data()[23] == '2');
+
+                REQUIRE(body.data()[24] == 0x9);
             }
             THEN("it does not write past the end of the buffer") {
-                REQUIRE(body.data()[24] == 0);
+                REQUIRE(body.data()[25] == 0);
             }
-            THEN("size must be returned") { REQUIRE(size == 24); }
+            THEN("size must be returned") { REQUIRE(size == 25); }
         }
     }
 

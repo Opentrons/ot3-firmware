@@ -131,12 +131,15 @@ struct DeviceInfoResponse
         iter = std::copy_n(
             &tertiary_revision[0],
             std::min(limit - iter, ptrdiff_t(sizeof(tertiary_revision))), iter);
+        // This is only used for the rear panel and there is not currently a
+        // subid required there
+        *iter++ = 0;
         return iter;
     }
 
     static auto get_length() -> uint16_t {
         return sizeof(uint32_t) + sizeof(uint32_t) + VERSION_SHORTSHA_SIZE +
-               sizeof(revision);
+               revision_size() + sizeof(uint8_t);
     }
     auto operator==(const DeviceInfoResponse& other) const -> bool = default;
 };
