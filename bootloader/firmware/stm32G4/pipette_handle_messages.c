@@ -8,21 +8,14 @@
 #include "bootloader/core/messages.h"
 #include "bootloader/core/util.h"
 
-#include "stm32g4xx_hal.h"
-
 static HandleMessageReturn handle_device_info_request(
     const Message* request, Message* response);
-
-static void prep_start_application();
 
 HandleMessageReturn system_specific_handle_message(
     const Message* request, Message* response) {
     switch (request->arbitration_id.parts.message_id) {
         case can_messageid_device_info_request:
             return handle_device_info_request(request, response);
-        case can_messageid_fw_update_start_app:
-            prep_start_application();
-            return handle_message_not_handled;
         default:
             return handle_message_not_handled;
     }
@@ -44,33 +37,6 @@ HandleMessageReturn handle_device_info_request(
     *pipette_id_loc = can_pipette_type_for_internal(PIPETTE_TYPE_DEFINE);
     return handle_message_has_response;
 }
-
-void prep_start_application() {
-    PipetteType pipette_type = get_pipette_type();
-
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-
-    void* port;
-    if (pipette_type == NINETY_SIX_CHANNEL) {
-        // C3: mount id
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-        GPIO_InitStruct.Pin = GPIO_PIN_3;
-        port = GPIOC;
-    } else {
-        // B0: mount id
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-        GPIO_InitStruct.Pin = GPIO_PIN_0;
-        port = GPIOB;
-    }
-
-    HAL_GPIO_Init(port, &GPIO_InitStruct);
-
-    HAL_Delay(100);
-}
-
 
 CANPipetteType can_pipette_type_for_internal(PipetteType type) {
     switch (type) {
