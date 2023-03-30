@@ -2,6 +2,7 @@
 #include "stm32g4xx_hal_conf.h"
 #include "hardware_config.h"
 #include "pipettes/core/pipette_type.h"
+#include "stm32g4xx_hal_gpio.h"
 
 static void enable_gpio_port(void* port) {
     if (port == GPIOA) {
