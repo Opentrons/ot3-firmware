@@ -251,13 +251,14 @@ auto main() -> int {
     ** - When transitioning from the bootloader, which has already done the
     **   mount ID process and driven the line, we need to release the line and
     **   give it time to reestablish its intended voltage
-    ** - When the robot is turning on while we're plugged in, we need to give the
+    ** - When the robot is turning on while we're plugged in, we need to give
+    *the
     **   head board time to start up and establish the voltage before we try and
     **   read it
     **
     ** Don't change this value without testing these scenarios in addition to
     ** hotplugging the pipette into a running robot.
-     */
+    */
     delay_start(100);
     auto id =
         pipette_mounts::decide_id(utility_gpio_get_mount_id(PIPETTE_TYPE) == 1);
