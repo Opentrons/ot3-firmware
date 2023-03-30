@@ -228,6 +228,11 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             position_tracker = 0;
+            // since the buffered move start position isn't reliable here,
+            // and then end position will always be 0, we set the buffered move start position to the
+            // difference between the encoder pulse count at the beginning and end
+            // this way the usage tracker will know how far the motor moved.
+            buffered_move.start_encoder_position = buffered_move.start_encoder_position - hardware.get_encoder_pulses();
             hardware.reset_step_tracker();
             hardware.reset_encoder_pulses();
             stall_checker.reset_itr_counts(0);
