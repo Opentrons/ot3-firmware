@@ -318,8 +318,7 @@ class BrushedMotorInterruptHandler {
             auto ack =
                 buffered_move.build_ack(hardware.get_encoder_pulses(), 0,
                                         ack_msg_id, buffered_move.message_index,
-                                        // TODO use brushed keys
-                                        uint16_t(0));
+                                        buffered_move.usage_key);
 
             static_cast<void>(
                 status_queue_client.send_brushed_move_status_reporter_queue(
