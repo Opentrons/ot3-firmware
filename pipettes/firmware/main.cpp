@@ -244,7 +244,7 @@ auto main() -> int {
     RCC_Peripheral_Clock_Select();
     utility_gpio_init();
 
-    delay_start(2);
+    delay_start(100);
     auto id =
         pipette_mounts::decide_id(utility_gpio_get_mount_id(PIPETTE_TYPE) == 1);
 

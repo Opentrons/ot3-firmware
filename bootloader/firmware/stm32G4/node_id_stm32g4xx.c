@@ -35,7 +35,7 @@ static CANNodeId update_dynamic_nodeid() {
     }
 
     HAL_GPIO_Init(port, &GPIO_InitStruct);
-    HAL_Delay(2);
+    HAL_Delay(100);
     int level = HAL_GPIO_ReadPin(port, GPIO_InitStruct.Pin);
     CANNodeId id = determine_pipette_node_id(level == GPIO_PIN_RESET);
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
