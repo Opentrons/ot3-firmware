@@ -135,9 +135,10 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
 
     auto eeprom =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
-    auto table_entry_length = static_cast<uint16_t>(
-                        hardware_iface::EEPromAddressType::EEPROM_ADDR_16_BIT) *
-                        2;
+    auto table_entry_length =
+        static_cast<uint16_t>(
+            hardware_iface::EEPromAddressType::EEPROM_ADDR_16_BIT) *
+        2;
     GIVEN("data accessor correctly initializes") {
         auto data = types::EepromData{};
         data.fill(0xFF);
@@ -168,11 +169,13 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
             REQUIRE(write_message.memory_address ==
                     addresses::data_address_begin);
             REQUIRE(write_message.length == table_entry_length);
-            // the address it writes should be 16k - 4 - 32 (0x4000-0x4 = 0x3FDC)
-            // the 32 is because this address is an offset from the data_address_begin
+            // the address it writes should be 16k - 4 - 32 (0x4000-0x4 =
+            // 0x3FDC) the 32 is because this address is an offset from the
+            // data_address_begin
             REQUIRE(write_message.data[0] == 0x3F);
             REQUIRE(write_message.data[1] == 0xDC);
-            // the update tail length should then be called which will call a read on the old tail
+            // the update tail length should then be called which will call a
+            // read on the old tail
             auto read_message =
                 std::get<message::ReadEepromMessage>(queue_client.messages[1]);
             REQUIRE(read_message.memory_address ==
@@ -185,8 +188,8 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
                 subject.create_data_part(0x01, 0x04);
                 // First we read the previous data tail address
                 REQUIRE(queue_client.messages.size() == 1);
-                read_message =
-                    std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+                read_message = std::get<message::ReadEepromMessage>(
+                    queue_client.messages[0]);
                 REQUIRE(read_message.memory_address ==
                         addresses::data_address_begin);
                 REQUIRE(read_message.length == table_entry_length);
@@ -199,20 +202,23 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
                     read_message.callback_param);
                 REQUIRE(queue_client.messages.size() == 2);
                 // First data write is adding the new table entry
-                auto write_message =
-                    std::get<message::WriteEepromMessage>(queue_client.messages[0]);
+                auto write_message = std::get<message::WriteEepromMessage>(
+                    queue_client.messages[0]);
                 REQUIRE(write_message.memory_address ==
                         addresses::data_address_begin + table_entry_length);
                 REQUIRE(write_message.length == table_entry_length);
-                // the address it writes should be the previous entry - 4 (0x3FDC-0x4 = 0x3FD8)
+                // the address it writes should be the previous entry - 4
+                // (0x3FDC-0x4 = 0x3FD8)
                 REQUIRE(write_message.data[0] == 0x3F);
                 REQUIRE(write_message.data[1] == 0xD8);
-                // the update tail length should then be called which will call a read on the old tail
-                read_message =
-                    std::get<message::ReadEepromMessage>(queue_client.messages[1]);
+                // the update tail length should then be called which will call
+                // a read on the old tail
+                read_message = std::get<message::ReadEepromMessage>(
+                    queue_client.messages[1]);
                 REQUIRE(read_message.memory_address ==
-                    addresses::lookup_table_tail_begin);
-                REQUIRE(read_message.length == addresses::lookup_table_tail_length);
+                        addresses::lookup_table_tail_begin);
+                REQUIRE(read_message.length ==
+                        addresses::lookup_table_tail_length);
                 REQUIRE(subject.data_part_exists(1) == true);
             }
         }

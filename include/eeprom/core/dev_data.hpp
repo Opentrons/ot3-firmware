@@ -219,8 +219,9 @@ class DevDataAccessor
                 message::WriteEepromMessage write;
                 write.memory_address = addresses::data_address_begin;
                 write.length = 2 * conf.addr_bytes;
-                // data pointers are offsets from the start of the data section of the eeprom,
-                // so we subtract data_address_begin here to store the right value
+                // data pointers are offsets from the start of the data section
+                // of the eeprom, so we subtract data_address_begin here to
+                // store the right value
                 types::address new_ptr =
                     conf.mem_size - len - addresses::data_address_begin;
                 if (conf.chip ==
@@ -386,11 +387,13 @@ class DevDataAccessor
                         write_iter + conf.addr_bytes);
                     this->eeprom_client.send_eeprom_queue(write);
 
-                    //After writing the table entry use the tail accessor to update the tail
+                    // After writing the table entry use the tail accessor to
+                    // update the tail
                     tail_accessor.increase_data_tail(2 * conf.addr_bytes);
                     data_tail += 2 * conf.addr_bytes;
 
-                    // If we passed data into the create write that data into the memory
+                    // If we passed data into the create write that data into
+                    // the memory
                     if (do_initalize) {
                         this->write_at_offset(this->type_data,
                                               data_addr - action_cmd_m.len,
