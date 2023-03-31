@@ -378,7 +378,6 @@ class DevDataAccessor
                     write.memory_address = data_tail;
                     write.length = 2 * conf.addr_bytes;
                     auto* write_iter = write.data.begin();
-                    printf("\n\n here: ");
                     write_iter = bit_utils::int_to_bytes(
                         uint16_t(data_addr - action_cmd_m.len), write_iter,
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
