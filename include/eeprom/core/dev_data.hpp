@@ -134,9 +134,9 @@ class DevDataAccessor
                   accessor::AccessorBuffer(buffer.begin(), buffer.end())),
           tail_accessor{DevDataTailAccessor<EEPromTaskClient>(
               eeprom_client, *this, data_tail_buff)} {
-        tail_accessor.start_read(0);
         eeprom_client.send_eeprom_queue(
             message::ConfigRequestMessage{config_req_callback, this});
+        tail_accessor.start_read(0);
     }
 
     template <std::size_t SIZE>
@@ -290,9 +290,9 @@ class DevDataAccessor
         // we don't need message_index since this is an internal call
         // and not initatied from a can message
         std::ignore = message_index;
-        // test for non 0x00 elements
-        if (data_tail_buff.end() ==
-            std::find(data_tail_buff.begin(), data_tail_buff.end(), true)) {
+        // test if data is set to default
+        auto delivery_state = std::vector<uint8_t>(addresses::lookup_table_tail_length, conf.default_byte_value);
+        if (std::equal(delivery_state.begin(), delivery_state.end(), data_tail_buff.begin())) {
             auto init_tail = DataTailType{};
             std::ignore = bit_utils::int_to_bytes(
                 addresses::data_address_begin, init_tail.begin(),
