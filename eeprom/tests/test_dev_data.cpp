@@ -24,8 +24,8 @@ SCENARIO("initalizing a data accessor") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = MockListener{};
     auto dev_data_buffer = dev_data::DataBufferType<64>{};
-    auto subject = dev_data::DevDataAccessor{queue_client, read_listener,
-                                                 dev_data_buffer};
+    auto subject =
+        dev_data::DevDataAccessor{queue_client, read_listener, dev_data_buffer};
     test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
     test_mocks::MockI2CResponseQueue response_queue{};
     auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
@@ -36,7 +36,7 @@ SCENARIO("initalizing a data accessor") {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
     GIVEN("A creating a data accessor entry for 256 byte chip") {
         auto data = types::EepromData{};
-        //256 byte chips have a zeroed out memory
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
         THEN("accessor recieves config from task") {
             // make sure the second message is a config request
@@ -95,7 +95,7 @@ SCENARIO("creating a data table entry") {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
     GIVEN("data accessor correctly initializes") {
         auto data = types::EepromData{};
-        //256 byte chips have a zeroed out memory
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
         auto config_msg = task::TaskMessage(
             std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
@@ -259,7 +259,7 @@ SCENARIO("writing to data partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
-        //256 byte chips have a zeroed out memory
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
         auto config_msg = task::TaskMessage(
             std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
@@ -370,7 +370,7 @@ SCENARIO("writing large data to partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
-        //16K byte chips have a 0xFF filled memory
+        // 16K byte chips have a 0xFF filled memory
         data.fill(0xFF);
         auto config_msg = task::TaskMessage(
             std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
@@ -459,7 +459,7 @@ SCENARIO("reading from data partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
-        //256 byte chips have a zeroed out memory
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
         auto config_msg = task::TaskMessage(
             std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
@@ -568,7 +568,7 @@ SCENARIO("reading large data from partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
-        //16K byte chips have a 0xFF filled memory
+        // 16K byte chips have a 0xFF filled memory
         data.fill(0xFF);
         auto config_msg = task::TaskMessage(
             std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
@@ -580,7 +580,8 @@ SCENARIO("reading large data from partition") {
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
-            read_message.callback_param);// after the read_message callback is called the driver should write the
+            read_message.callback_param);  // after the read_message callback is
+                                           // called the driver should write the
         // new tail to memory
         auto write_message =
             std::get<message::WriteEepromMessage>(queue_client.messages[2]);

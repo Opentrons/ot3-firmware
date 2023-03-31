@@ -291,8 +291,10 @@ class DevDataAccessor
         // and not initatied from a can message
         std::ignore = message_index;
         // test if data is set to default
-        auto delivery_state = std::vector<uint8_t>(addresses::lookup_table_tail_length, conf.default_byte_value);
-        if (std::equal(delivery_state.begin(), delivery_state.end(), data_tail_buff.begin())) {
+        auto delivery_state = std::vector<uint8_t>(
+            addresses::lookup_table_tail_length, conf.default_byte_value);
+        if (std::equal(delivery_state.begin(), delivery_state.end(),
+                       data_tail_buff.begin())) {
             auto init_tail = DataTailType{};
             std::ignore = bit_utils::int_to_bytes(
                 addresses::data_address_begin, init_tail.begin(),
