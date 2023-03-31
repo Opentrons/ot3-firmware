@@ -88,6 +88,7 @@ void sensor_tasks::start_tasks(
         &capacitive_sensor_task_rear.get_queue();
     queues.pressure_sensor_queue_rear = &pressure_sensor_task_rear.get_queue();
     queues.tip_notification_queue = &tip_notification_task.get_queue();
+    queues.usage_storage_queue = &usage_storage_task.get_queue();
 }
 
 void sensor_tasks::start_tasks(
