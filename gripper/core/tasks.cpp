@@ -85,11 +85,11 @@ void gripper_tasks::start_tasks(
 
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(
-            5, "capacitive sensor S1", i2c2_task_client, i2c2_poll_client,
+            5, "cap sensor S1", i2c2_task_client, i2c2_poll_client,
             sensor_hardware, queues);
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
-            5, "capacitive sensor S0", i2c3_task_client, i2c3_poll_client,
+            5, "cap sensor S0", i2c3_task_client, i2c3_poll_client,
             sensor_hardware, queues);
 
     tasks.i2c2_task = &i2c2_task;
