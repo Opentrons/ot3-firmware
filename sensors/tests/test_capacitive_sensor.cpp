@@ -66,11 +66,13 @@ SCENARIO("read capacitance sensor values") {
                     REQUIRE(read_message.first.address ==
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB));
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB));
                     REQUIRE(read_message.second.address ==
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_LSB));
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_LSB));
                 }
                 AND_WHEN("we send just one response") {
                     sensors::utils::TaskMessage first =
@@ -123,12 +125,14 @@ SCENARIO("read capacitance sensor values") {
                     REQUIRE(read_message.first.address ==
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB));
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB));
                     REQUIRE(read_message.first.bytes_to_write == 1);
                     REQUIRE(read_message.second.address ==
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_LSB));
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_LSB));
                     REQUIRE(read_message.second.bytes_to_write == 1);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);
@@ -279,7 +283,8 @@ SCENARIO("capacitance driver tests") {
 
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
-    sensors::tasks::FDC1004 callback_host(writer, poller, queue_client, response_queue, mock_hw, false);
+    sensors::tasks::FDC1004 callback_host(writer, poller, queue_client,
+                                          response_queue, mock_hw, false);
 
     can::message_writer_task::TaskMessage empty_msg{};
 
@@ -300,7 +305,8 @@ SCENARIO("capacitance driver tests") {
                     i2c::messages::TransactionIdentifier{
                         .token = sensors::utils::build_id(
                             sensors::fdc1004::ADDRESS,
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB),
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB),
                             sensors::utils::byte_from_tags(tags)),
                         .is_completed_poll = 0,
                         .transaction_index = 0},
@@ -331,7 +337,8 @@ SCENARIO("capacitance driver tests") {
                     i2c::messages::TransactionIdentifier{
                         .token = sensors::utils::build_id(
                             sensors::fdc1004::ADDRESS,
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB),
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB),
                             sensors::utils::byte_from_tags(tags)),
                         .is_completed_poll = true,
                         .transaction_index = 0},
@@ -379,7 +386,8 @@ SCENARIO("capacitance driver tests") {
                     i2c::messages::TransactionIdentifier{
                         .token = sensors::utils::build_id(
                             sensors::fdc1004::ADDRESS,
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB),
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB),
                             sensors::utils::byte_from_tags(tags)),
                         .is_completed_poll = 0,
                         .transaction_index = 0},
@@ -413,7 +421,8 @@ SCENARIO("capacitance driver tests") {
                     i2c::messages::TransactionIdentifier{
                         .token = sensors::utils::build_id(
                             sensors::fdc1004::ADDRESS,
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB),
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB),
                             sensors::utils::byte_from_tags(tags)),
                         .is_completed_poll = 0,
                         .transaction_index = 0},
@@ -488,12 +497,14 @@ SCENARIO("threshold configuration") {
                     REQUIRE(read_message.first.address ==
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_MSB));
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_MSB));
                     REQUIRE(read_message.first.bytes_to_write == 1);
                     REQUIRE(read_message.second.address ==
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(sensors::fdc1004::Registers::MEAS1_LSB));
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS1_LSB));
                     REQUIRE(read_message.second.bytes_to_write == 1);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);

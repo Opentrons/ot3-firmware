@@ -48,7 +48,7 @@ class CapacitiveMessageHandler {
             (reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB))) {
             return;
         }
-        
+
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
             driver.handle_ongoing_response(m);
@@ -168,8 +168,8 @@ class CapacitiveMessageHandler {
     // FIXME now that we have a separate driver class, we should be
     // able to separately test message handling and driver functionality
     // rather than relying on this variable being public
-    public:
-        FDC1004<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+  public:
+    FDC1004<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**
