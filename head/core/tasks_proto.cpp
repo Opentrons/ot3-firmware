@@ -69,7 +69,9 @@ static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
-static auto usage_storage_task_builder =
+static auto left_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+static auto right_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 /**
  * Start head tasks.
@@ -109,8 +111,10 @@ void head_tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
-    auto& usage_storage_task = usage_storage_task_builder.start(
-        5, "usage storage", head_queues, head_queues);
+    auto& left_usage_storage_task = left_usage_storage_task_builder.start(
+        5, "left usage storage", left_queues, head_queues);
+    auto& right_usage_storage_task = right_usage_storage_task_builder.start(
+        5, "right usage storage", right_queues, head_queues);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
@@ -118,7 +122,6 @@ void head_tasks::start_tasks(
     head_tasks_col.i2c3_task = &i2c3_task;
     head_tasks_col.i2c3_poller_task = &i2c3_poller_task;
     head_tasks_col.eeprom_task = &eeprom_task;
-    head_tasks_col.usage_storage_task = &usage_storage_task;
 
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());
@@ -126,11 +129,10 @@ void head_tasks::start_tasks(
     head_queues.i2c3_queue = &i2c3_task.get_queue();
     head_queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     head_queues.eeprom_queue = &eeprom_task.get_queue();
-    head_queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     // Start the left motor tasks
     auto& left_motion = left_mc_task_builder.start(
-        5, "left mc", left_motion_controller, left_queues, head_queues);
+        5, "left mc", left_motion_controller, left_queues, left_queues);
     auto& left_tmc2130_driver = left_motor_driver_task_builder.start(
         5, "left motor driver", left_driver_configs, left_queues,
         spi3_task_client);
@@ -138,7 +140,7 @@ void head_tasks::start_tasks(
         5, "left move group", left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(
         5, "left move status", left_queues,
-        left_motion_controller.get_mechanical_config(), head_queues);
+        left_motion_controller.get_mechanical_config(), left_queues);
 
     // Assign left motor task collection task pointers
     left_tasks.motion_controller = &left_motion;
@@ -146,6 +148,8 @@ void head_tasks::start_tasks(
     left_tasks.move_group = &left_move_group;
     left_tasks.move_status_reporter = &left_move_status_reporter;
     left_tasks.spi_task = &spi3_task;
+    left_tasks.usage_storage_task = &left_usage_storage_task;
+
 
     // Assign left motor queue client message queue pointers
     left_queues.motion_queue = &left_motion.get_queue();
@@ -154,10 +158,11 @@ void head_tasks::start_tasks(
     left_queues.set_queue(&can_writer.get_queue());
     left_queues.move_status_report_queue =
         &left_move_status_reporter.get_queue();
+    left_queues.usage_storage_queue = &left_usage_storage_task.get_queue();
 
     // Start the right motor tasks
     auto& right_motion = right_mc_task_builder.start(
-        5, "right mc", right_motion_controller, right_queues, head_queues);
+        5, "right mc", right_motion_controller, right_queues, right_queues);
     auto& right_tmc2130_driver = right_motor_driver_task_builder.start(
         5, "right motor driver", right_driver_configs, right_queues,
         spi2_task_client);
@@ -165,7 +170,7 @@ void head_tasks::start_tasks(
         5, "right move group", right_queues, right_queues);
     auto& right_move_status_reporter = right_move_status_task_builder.start(
         5, "right move status", right_queues,
-        right_motion_controller.get_mechanical_config(), head_queues);
+        right_motion_controller.get_mechanical_config(), right_queues);
 
     rmh_tsk.start_task();
     lmh_tsk.start_task();
@@ -176,6 +181,7 @@ void head_tasks::start_tasks(
     right_tasks.move_group = &right_move_group;
     right_tasks.move_status_reporter = &right_move_status_reporter;
     right_tasks.spi_task = &spi2_task;
+    right_tasks.usage_storage_task = &right_usage_storage_task;
 
     // Assign right motor queue client message queue pointers
     right_queues.motion_queue = &right_motion.get_queue();
@@ -184,6 +190,7 @@ void head_tasks::start_tasks(
     right_queues.set_queue(&can_writer.get_queue());
     right_queues.move_status_report_queue =
         &right_move_status_reporter.get_queue();
+    right_queues.usage_storage_queue = &right_usage_storage_task.get_queue();
 }
 
 // Implementation of HeadQueueClient
@@ -196,15 +203,15 @@ void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
     presence_sensing_driver_queue->try_write(m);
 }
 
-void head_tasks::HeadQueueClient::send_usage_storage_queue(
-    const usage_storage_task::TaskMessage& m) {
-    usage_storage_queue->try_write(m);
-}
-
 // Implementation of MotorQueueClient
 
 head_tasks::MotorQueueClient::MotorQueueClient(can::ids::NodeId this_fw)
     : can::message_writer::MessageWriter{this_fw} {}
+
+void head_tasks::MotorQueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
+}
 
 void head_tasks::MotorQueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {

@@ -59,9 +59,6 @@ struct HeadTasks {
         nullptr};
     eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
-    usage_storage_task::UsageStorageTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
-        nullptr};
 };
 
 /**
@@ -80,6 +77,9 @@ struct MotorTasks {
     move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
+        nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
         nullptr};
 };
 
