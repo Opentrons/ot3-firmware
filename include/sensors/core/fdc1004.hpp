@@ -52,9 +52,7 @@ enum class MeasurementRate : uint8_t {
     FOUR_HUNDRED_SAMPLES_PER_SECOND = 0x3,
 };
 
-enum class MeasureConfigMode: uint8_t {
-    ONE, TWO, THREE, FOUR
-};
+enum class MeasureConfigMode : uint8_t { ONE, TWO, THREE, FOUR };
 
 // Capacitance Sensor Address and Registers
 enum class Registers : uint8_t {
@@ -82,7 +80,6 @@ enum class Registers : uint8_t {
     MANUFACTURER_ID = 0xFE,
     DEVICE_ID = 0xFF
 };
-
 
 static inline auto is_valid_address(const uint8_t add) -> bool {  // NOLINT
     switch (static_cast<Registers>(add)) {
@@ -114,7 +111,6 @@ static inline auto is_valid_address(const uint8_t add) -> bool {  // NOLINT
     return false;
 }
 
-
 /** Template concept to constrain what structures encapsulate registers.*/
 template <typename Reg>
 // Struct has a valid register address
@@ -123,8 +119,17 @@ template <typename Reg>
 concept FDC1004Register =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
                  std::remove_cvref_t<Registers&>> &&
-    std::integral<decltype(Reg::value_mask)> &&
-    std::is_array_v<decltype(Reg::mode_map)>;
+    std::integral<decltype(Reg::value_mask)>;
+
+template <typename Reg>
+concept WritableRegister = requires() {
+    {Reg::writable};
+};
+
+template <typename Reg>
+concept ReadableRegister = requires() {
+    {Reg::readable};
+};
 
 struct __attribute__((packed, __may_alias__)) ManufactureId {
     static constexpr Registers address = Registers::MANUFACTURER_ID;
@@ -241,11 +246,11 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure1 {
     // The max offset is 96.875 pF
 
     // positive input channel
-    uint8_t CHA : 3 = 0;
+    uint16_t CHA : 3 = 0;
     // negative input channel
-    uint8_t CHB : 3 = 0;
-    uint8_t CAPDAC : 5 = 0;
-    uint8_t padding_0 : 4 = 0;
+    uint16_t CHB : 3 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    uint16_t padding_0 : 4 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
@@ -269,11 +274,11 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
     // The max offset is 96.875 pF
 
     // positive input channel
-    uint8_t CHA : 3 = 0;
+    uint16_t CHA : 3 = 0;
     // negative input channel
-    uint8_t CHB : 3 = 0;
-    uint8_t CAPDAC : 5 = 0;
-    uint8_t padding_0 : 4 = 0;
+    uint16_t CHB : 3 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    uint16_t padding_0 : 4 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
@@ -297,11 +302,11 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
     // The max offset is 96.875 pF
 
     // positive input channel
-    uint8_t CHA : 3 = 0;
+    uint16_t CHA : 3 = 0;
     // negative input channel
-    uint8_t CHB : 3 = 0;
-    uint8_t CAPDAC : 5 = 0;
-    uint8_t padding_0 : 4 = 0;
+    uint16_t CHB : 3 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    uint16_t padding_0 : 4 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
@@ -325,11 +330,11 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
     // The max offset is 96.875 pF
 
     // positive input channel
-    uint8_t CHA : 3 = 0;
+    uint16_t CHA : 3 = 0;
     // negative input channel
-    uint8_t CHB : 3 = 0;
-    uint8_t CAPDAC : 5 = 0;
-    uint8_t padding_0 : 4 = 0;
+    uint16_t CHB : 3 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    uint16_t padding_0 : 4 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) FDCConf {
@@ -339,25 +344,25 @@ struct __attribute__((packed, __may_alias__)) FDCConf {
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
     uint8_t reset : 1 = 0;
-	uint8_t padding_0 : 2 = 0;
-	// Measurement rate Options:
-	// b00 Reserved
+    uint8_t padding_0 : 2 = 0;
+    // Measurement rate Options:
+    // b00 Reserved
     // b01 100S/s
     // b10 200S/s
     // b11 400S/s
-	uint8_t measurement_rate : 2 = 0x1;
-	uint8_t padding_1 : 1 = 0;
-	uint8_t repeating_measurements: 1 = 0;
-	uint8_t measure_mode_1: 1 = 0;
-	uint8_t measure_mode_2: 1 = 0;
-	uint8_t measure_mode_3: 1 = 0;
-	uint8_t measure_mode_4: 1 = 0;
+    uint8_t measurement_rate : 2 = 0x1;
+    uint8_t padding_1 : 1 = 0;
+    uint8_t repeating_measurements : 1 = 0;
+    uint8_t measure_mode_1 : 1 = 0;
+    uint8_t measure_mode_2 : 1 = 0;
+    uint8_t measure_mode_3 : 1 = 0;
+    uint8_t measure_mode_4 : 1 = 0;
 
     // The measurement mode you wish to run in
-	uint8_t measure_mode_1_status: 1 = 0;
-	uint8_t measure_mode_2_status: 1 = 0;
-	uint8_t measure_mode_3_status: 1 = 0;
-	uint8_t measure_mode_4_status: 1 = 0;
+    uint8_t measure_mode_1_status : 1 = 0;
+    uint8_t measure_mode_2_status : 1 = 0;
+    uint8_t measure_mode_3_status : 1 = 0;
+    uint8_t measure_mode_4_status : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN1 {
@@ -368,8 +373,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN1 {
 
     // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
     // external circuitry
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN2 {
@@ -380,8 +385,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN2 {
 
     // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
     // external circuitry
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN3 {
@@ -392,8 +397,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN3 {
 
     // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
     // external circuitry
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN4 {
@@ -404,8 +409,8 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN4 {
 
     // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
     // external circuitry
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN1 {
@@ -414,8 +419,8 @@ struct __attribute__((packed, __may_alias__)) GainCalCIN1 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN2 {
@@ -424,8 +429,8 @@ struct __attribute__((packed, __may_alias__)) GainCalCIN2 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN3 {
@@ -434,8 +439,8 @@ struct __attribute__((packed, __may_alias__)) GainCalCIN3 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN4 {
@@ -444,13 +449,13 @@ struct __attribute__((packed, __may_alias__)) GainCalCIN4 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-	uint8_t offset_integer: 5 = 0;
-	uint16_t offset_decimal: 11 = 0;
+    uint8_t offset_integer : 5 = 0;
+    uint16_t offset_decimal : 11 = 0;
 };
 
 struct FDC1004RegisterMap {
     ManufactureId manufacture_id = {};
-	DeviceId device_id = {};
+    DeviceId device_id = {};
     MeasureMode1_MSB measure_mode_1_msb = {};
     MeasureMode1_LSB measure_mode_1_lsb = {};
     MeasureMode2_MSB measure_mode_2_msb = {};
@@ -468,104 +473,106 @@ struct FDC1004RegisterMap {
     OffsetCalCIN2 offset_cal_cin2 = {};
     OffsetCalCIN3 offset_cal_cin3 = {};
     OffsetCalCIN4 offset_cal_cin4 = {};
-	GainCalCIN1 gain_cal_cin1 = {};
+    GainCalCIN1 gain_cal_cin1 = {};
     GainCalCIN2 gain_cal_cin2 = {};
     GainCalCIN3 gain_cal_cin3 = {};
     GainCalCIN4 gain_cal_cin4 = {};
-    Reset reset = {};
 };
 
-
+// Registers are all 16 bits
+using RegisterSerializedType = uint16_t;
+// Type definition to allow type aliasing for pointer dereferencing
+using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint16_t;
 
 };  // namespace fdc1004
 
 namespace fdc1004_utils {
-    constexpr uint16_t DEVICE_ID = 0x1004;
+constexpr uint16_t DEVICE_ID = 0x1004;
 
-    // Constants. The capdac is a synthetic comparison source intended to
-    // eliminate common-mode values in the differential capacitance measurements.
-    // The sensor has a narrow +-15pF measurement range, but that's on top
-    // of the capdac - the capdac is "subtracted", more or less, before the
-    // capacitance is read.
-    constexpr float CAPDAC_PF_PER_LSB = 3.125;
-    constexpr std::size_t CAPDAC_BITS = 5;
-    constexpr uint8_t MAX_CAPDAC_RAW_VALUE = (1 << CAPDAC_BITS) - 1;
-    constexpr float MAX_CAPDAC_PF =
-        static_cast<float>(MAX_CAPDAC_RAW_VALUE) * CAPDAC_PF_PER_LSB;
+// Constants. The capdac is a synthetic comparison source intended to
+// eliminate common-mode values in the differential capacitance measurements.
+// The sensor has a narrow +-15pF measurement range, but that's on top
+// of the capdac - the capdac is "subtracted", more or less, before the
+// capacitance is read.
+constexpr float CAPDAC_PF_PER_LSB = 3.125;
+constexpr std::size_t CAPDAC_BITS = 5;
+constexpr uint8_t MAX_CAPDAC_RAW_VALUE = (1 << CAPDAC_BITS) - 1;
+constexpr float MAX_CAPDAC_PF =
+    static_cast<float>(MAX_CAPDAC_RAW_VALUE) * CAPDAC_PF_PER_LSB;
 
-    // Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
-    constexpr std::size_t CONVERSION_BITS = 24;
-    constexpr float MAX_MEASUREMENT_PF = 15;
-    constexpr float MAX_RAW_MEASUREMENT =
-        float(std::numeric_limits<int32_t>::max() >>
-            ((sizeof(int32_t) * 8) - CONVERSION_BITS));
+// Our +-15pF comes in 24 bits, left shifted across two 16 bit registers.
+constexpr std::size_t CONVERSION_BITS = 24;
+constexpr float MAX_MEASUREMENT_PF = 15;
+constexpr float MAX_RAW_MEASUREMENT =
+    float(std::numeric_limits<int32_t>::max() >>
+          ((sizeof(int32_t) * 8) - CONVERSION_BITS));
 
-    // Because we're doing big gantry moves, we'll probably have to handle
-    // the parasitic capacitance of the system shifting around a lot. We'll
-    // need to automatically reset our capdac to account for changing
-    // gross-scale capacitance conditions, and we'll do it by bumping up
-    // the capdac every time we get half way to either edge of our range.
-    constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
+// Because we're doing big gantry moves, we'll probably have to handle
+// the parasitic capacitance of the system shifting around a lot. We'll
+// need to automatically reset our capdac to account for changing
+// gross-scale capacitance conditions, and we'll do it by bumping up
+// the capdac every time we get half way to either edge of our range.
+constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
 
-    // Convert an accumulated raw reading, the number of reads that were
-    // accumulated, and the current offset and turn it into a value in pF.
-    inline auto convert_capacitance(int32_t capacitance_accumulated_raw,
-                                    uint16_t read_count, float current_offset_pf)
-        -> float {
-        auto average = static_cast<float>(capacitance_accumulated_raw) /
-                    static_cast<float>(read_count);
-        float converted_capacitance =
-            (average / MAX_RAW_MEASUREMENT) * MAX_MEASUREMENT_PF;
-        LOG("Conversion: max raw %f mmt %f direct conversion %f offset %f",
-            MAX_RAW_MEASUREMENT, average, converted_capacitance, current_offset_pf);
-        return converted_capacitance + current_offset_pf;
+// Convert an accumulated raw reading, the number of reads that were
+// accumulated, and the current offset and turn it into a value in pF.
+inline auto convert_capacitance(int32_t capacitance_accumulated_raw,
+                                uint16_t read_count, float current_offset_pf)
+    -> float {
+    auto average = static_cast<float>(capacitance_accumulated_raw) /
+                   static_cast<float>(read_count);
+    float converted_capacitance =
+        (average / MAX_RAW_MEASUREMENT) * MAX_MEASUREMENT_PF;
+    LOG("Conversion: max raw %f mmt %f direct conversion %f offset %f",
+        MAX_RAW_MEASUREMENT, average, converted_capacitance, current_offset_pf);
+    return converted_capacitance + current_offset_pf;
+}
+
+// Take the two buffers and turn them into a 24 bit raw measurement.
+inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
+    // measurements are presented in a 16 bit most significant register
+    // and a 16 bit least significant register. Data is left-aligned;
+    // the most significant register has 16 valid bits, and the least
+    // significant register has 8 valid bits in the MSB.
+    // The data is also signed. That means that we first want to
+    // formulate it as a 32 bit unsigned int to use logical shifts;
+    // then take those 32 bits and interpret them as a signed 32 bit
+    // integer, and arithmetic right-shift back to 24 bits.
+
+    return (static_cast<int32_t>((static_cast<uint32_t>(msb) << 16) |
+                                 static_cast<uint32_t>(lsb)) >>
+            8);
+}
+
+// Turn a capacitance value into the value to send to the capdac
+// control register to use that offset.
+inline auto get_capdac_raw(float offset_pf) -> uint8_t {
+    // Floor of 0
+    offset_pf = std::max(offset_pf, 0.0F);
+    auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
+    return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
+}
+
+// Check the current absolute reading (i.e. after the offset is applied)
+// and the offset that was applied and, if necessary, generate a new
+// appropriately-capped offset value that is ready for sending to the
+// sensor.
+inline auto update_offset(float capacitance_pf, float current_offset_pf)
+    -> float {
+    if (std::abs(capacitance_pf - current_offset_pf) <
+        CAPDAC_REZERO_THRESHOLD_PF) {
+        // we haven't gotten close enough to the edge of our range to
+        // rezero
+        return current_offset_pf;
     }
+    LOG("Capacitance %f needs rezeroing (%f-%f=%f)", capacitance_pf,
+        capacitance_pf, current_offset_pf, capacitance_pf - current_offset_pf);
 
-    // Take the two buffers and turn them into a 24 bit raw measurement.
-    inline auto convert_reads(uint16_t msb, uint16_t lsb) -> int32_t {
-        // measurements are presented in a 16 bit most significant register
-        // and a 16 bit least significant register. Data is left-aligned;
-        // the most significant register has 16 valid bits, and the least
-        // significant register has 8 valid bits in the MSB.
-        // The data is also signed. That means that we first want to
-        // formulate it as a 32 bit unsigned int to use logical shifts;
-        // then take those 32 bits and interpret them as a signed 32 bit
-        // integer, and arithmetic right-shift back to 24 bits.
+    // we're halfway to the edge of our range; let's try and rezero so
+    // that the current reading is in the center
+    uint8_t capdac = get_capdac_raw(capacitance_pf);
 
-        return (static_cast<int32_t>((static_cast<uint32_t>(msb) << 16) |
-                                    static_cast<uint32_t>(lsb)) >>
-                8);
-    }
-
-    // Turn a capacitance value into the value to send to the capdac
-    // control register to use that offset.
-    inline auto get_capdac_raw(float offset_pf) -> uint8_t {
-        // Floor of 0
-        offset_pf = std::max(offset_pf, 0.0F);
-        auto capdac = static_cast<uint8_t>(offset_pf / CAPDAC_PF_PER_LSB);
-        return ((capdac > MAX_CAPDAC_RAW_VALUE) ? MAX_CAPDAC_RAW_VALUE : capdac);
-    }
-
-    // Check the current absolute reading (i.e. after the offset is applied)
-    // and the offset that was applied and, if necessary, generate a new
-    // appropriately-capped offset value that is ready for sending to the
-    // sensor.
-    inline auto update_offset(float capacitance_pf, float current_offset_pf)
-        -> float {
-        if (std::abs(capacitance_pf - current_offset_pf) <
-            CAPDAC_REZERO_THRESHOLD_PF) {
-            // we haven't gotten close enough to the edge of our range to
-            // rezero
-            return current_offset_pf;
-        }
-        LOG("Capacitance %f needs rezeroing (%f-%f=%f)", capacitance_pf,
-            capacitance_pf, current_offset_pf, capacitance_pf - current_offset_pf);
-
-        // we're halfway to the edge of our range; let's try and rezero so
-        // that the current reading is in the center
-        uint8_t capdac = get_capdac_raw(capacitance_pf);
-
-        return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
-    }
-    } // namespace fdc1004_utils
+    return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
+}
+}  // namespace fdc1004_utils
 };  // namespace sensors

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
@@ -23,19 +25,18 @@ class FDC1004 {
   public:
     FDC1004(I2CQueueWriter &writer, I2CQueuePoller &poller,
             CanClient &can_client, OwnQueue &own_queue,
-            sensors::hardware::SensorHardwareBase &hardware,
-            bool shared_sensor)
+            sensors::hardware::SensorHardwareBase &hardware, bool shared_sensor)
         : writer(writer),
           poller(poller),
           can_client(can_client),
           own_queue(own_queue),
           hardware(hardware),
-		  shared_sensor(shared_sensor) {}
+          shared_sensor(shared_sensor) {}
 
-	[[nodiscard]] auto initialized() const -> bool { return _initialized; }
+    [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
     auto initialize(can::ids::SensorId _id) -> void {
-		// FIXME we should grab device id and compare it to the static
+        // FIXME we should grab device id and compare it to the static
         // device id in code.
 
         // We should send a message that the sensor is in a ready state,
@@ -46,11 +47,11 @@ class FDC1004 {
             update_capacitance_configuration();
         }
         set_sensor_id(_id);
-		update_capacitance_configuration();
-        is_initialized = true;
+        update_capacitance_configuration();
+        _initialized = true;
     }
 
-	auto register_map() -> fdc1004::FDC1004RegisterMap & { return _registers; }
+    auto register_map() -> fdc1004::FDC1004RegisterMap & { return _registers; }
 
     auto get_host_id() -> NodeId { return NodeId::host; }
 
@@ -58,17 +59,18 @@ class FDC1004 {
 
     auto get_sensor_id() -> can::ids::SensorId { return sensor_id; }
 
-	auto set_sensor_id(can::ids::SensorId _id) -> void { 
-		if (shared_sensor && sensor_id != _id) {
-			_initialized = false;
-            if _id == can::ids::SensorId::S1:
-                measure_mode = MeasureConfigMode::TWO;
-            else:
-                measure_mode = MeasureConfigMode::ONE;
-			update_capacitance_configuration();
-		}
-		sensor_id = _id; 
-	}
+    auto set_sensor_id(can::ids::SensorId _id) -> void {
+        if (shared_sensor && sensor_id != _id) {
+            _initialized = false;
+            if (_id == can::ids::SensorId::S1) {
+                measure_mode = fdc1004::MeasureConfigMode::TWO;
+            } else {
+                measure_mode = fdc1004::MeasureConfigMode::ONE;
+            }
+            update_capacitance_configuration();
+        }
+        sensor_id = _id;
+    }
 
     [[nodiscard]] auto get_offset() const -> float { return current_offset_pf; }
 
@@ -81,16 +83,18 @@ class FDC1004 {
 
     auto set_bind_flags(uint8_t binding) -> void { sensor_binding = binding; }
 
-    auto set_measurement_rate(MeasurementRate rate) -> void { measurement_rate = rate; }
+    auto set_measurement_rate(fdc1004::MeasurementRate rate) -> void {
+        measurement_rate = rate;
+    }
 
-	auto update_capacitance_configuration() {
+    auto update_capacitance_configuration() {
         // You should call sensor_id before calling this
         // function to ensure you're reading from the correct
         // mode.
-		current_offset_pf = -1;
+        current_offset_pf = -1;
         set_offset(0);
         set_sample_rate();
-	}
+    }
 
     void reset_limited() {
         number_of_reads = 1;
@@ -102,14 +106,15 @@ class FDC1004 {
     }
 
     void set_sample_rate() {
-        _registers.fdc_conf.measurement_rate = measurement_rate;
+        _registers.fdc_conf.measurement_rate =
+            static_cast<uint8_t>(measurement_rate);
         _registers.fdc_conf.repeating_measurements = 0x1;
-        if (measure_mode == MeasureConfigMode::TWO) {
-            _registers.measure_mode_1 = 0x0;
-            _registers.measure_mode_2 = 0x1;
+        if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
+            _registers.fdc_conf.measure_mode_1 = 0x0;
+            _registers.fdc_conf.measure_mode_2 = 0x1;
         } else {
-            _registers.measure_mode_1 = 0x1;
-            _registers.measure_mode_2 = 0x0;
+            _registers.fdc_conf.measure_mode_1 = 0x1;
+            _registers.fdc_conf.measure_mode_2 = 0x0;
         }
         set_register(_registers.fdc_conf);
     }
@@ -118,62 +123,83 @@ class FDC1004 {
         new_offset = std::max(new_offset, 0.0F);
         if (new_offset != current_offset_pf) {
             auto capdac_raw = fdc1004_utils::get_capdac_raw(new_offset);
-            if (measure_mode == MeasureConfigMode::TWO) {
+            if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
                 auto mode_2_register = build_mode_2_configuration_register();
                 mode_2_register.CAPDAC = capdac_raw;
-                set_register(_registers.mode_2_register)
+                set_register(mode_2_register);
             } else {
                 auto mode_1_register = build_mode_1_configuration_register();
                 mode_1_register.CAPDAC = capdac_raw;
-                set_register(_registers.mode_1_register)
+                set_register(mode_1_register);
             }
             current_offset_pf = new_offset;
         }
-
     }
 
-    auto write(fdc1004::Registers reg, uint32_t command_data) -> void {
-        writer.write(fdc1004::ADDRESS, static_cast<uint8_t>(reg),
-                     command_data);
+    auto write(fdc1004::Registers reg, uint32_t command_data) -> bool {
+        return writer.write(fdc1004::ADDRESS, static_cast<uint8_t>(reg),
+                            command_data);
     }
 
-    auto write(fdc1004::Registers reg) -> void {
-        writer.write(fdc1004::ADDRESS, static_cast<uint8_t>(reg));
+    auto write(fdc1004::Registers reg) -> bool {
+        return writer.write(fdc1004::ADDRESS, static_cast<uint8_t>(reg));
     }
 
-    auto transact(fdc1004::Registers reg) -> void {
+    auto transact(fdc1004::Registers reg) -> bool {
         std::array reg_buf{static_cast<uint8_t>(reg)};
-        writer.transact(
+        return writer.transact(
             fdc1004::ADDRESS, reg_buf, 4, own_queue,
             utils::build_id(fdc1004::ADDRESS, static_cast<uint8_t>(reg)));
     }
 
-    auto poll_limited_capacitance(uint16_t number_reads, can::ids::SensorId _id, std::array tags) -> void {
+    auto poll_limited_capacitance(uint16_t number_reads, can::ids::SensorId _id,
+                                  uint8_t tags) -> void {
         // TODO add tags here
         set_sensor_id(_id);
+        auto converted_msb_addr =
+            static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
+        auto converted_lsb_addr =
+            static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
         if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
+            converted_msb_addr =
+                static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
+            converted_lsb_addr =
+                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
             poller.multi_register_poll(
-                fdc1004::ADDRESS, fdc1004::Registers::MEAS2_MSB, 2, fdc1004::Registers::MEAS2_LSB, 2, 1, DELAY,
-                own_queue, utils::build_id(fdc1004::ADDRESS, fdc1004::Registers::MEAS2_MSB, 1));
+                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
+                number_reads, DELAY, own_queue,
+                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
         } else {
             poller.multi_register_poll(
-                fdc1004::ADDRESS, fdc1004::Registers::MEAS1_MSB, 2, fdc1004::Registers::MEAS1_LSB, 2, 1, DELAY,
-                own_queue, utils::build_id(fdc1004::ADDRESS, fdc1004::Registers::MEAS1_MSB, 1));
+                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
+                number_reads, DELAY, own_queue,
+                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
         }
-
     }
 
-    auto poll_continuous_capacitance(can::ids::SensorId _id, std::array tags) -> void {
+    auto poll_continuous_capacitance(can::ids::SensorId _id, uint8_t tags,
+                                     uint8_t binding) -> void {
         // TODO add tags here
         set_sensor_id(_id);
+        auto delay = delay_or_disable(binding);
+        auto converted_msb_addr =
+            static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
+        auto converted_lsb_addr =
+            static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
         if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
+            converted_msb_addr =
+                static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
+            converted_lsb_addr =
+                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
             poller.continuous_multi_register_poll(
-                fdc1004::ADDRESS, fdc1004::Registers::MEAS2_MSB, 2, fdc1004::Registers::MEAS2_LSB, 2, 1, DELAY,
-                own_queue, utils::build_id(fdc1004::ADDRESS, fdc1004::Registers::MEAS2_MSB, utils::byte_from_tags(tags)));
+                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
+                delay, own_queue,
+                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
         } else {
             poller.continuous_multi_register_poll(
-                fdc1004::ADDRESS, fdc1004::Registers::MEAS1_MSB, 2, fdc1004::Registers::MEAS1_LSB, 2, 1, DELAY,
-                own_queue, utils::build_id(fdc1004::ADDRESS, fdc1004::Registers::MEAS1_MSB, utils::byte_from_tags(tags)));
+                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
+                delay, own_queue,
+                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
         }
     }
 
@@ -187,11 +213,13 @@ class FDC1004 {
             return;
         }
         auto capacitance = fdc1004_utils::convert_capacitance(
-            fdc1004_utils::convert_reads(polling_results[0], polling_results[1]), 1,
-            current_offset_pf);
+            fdc1004_utils::convert_reads(polling_results[0],
+                                         polling_results[1]),
+            1, current_offset_pf);
         // TODO (lc 1-2-2022) we should figure out a better strategy for
         // adjusting the capdac.
-        auto new_offset = fdc1004_utils::update_offset(capacitance, current_offset_pf);
+        auto new_offset =
+            fdc1004_utils::update_offset(capacitance, current_offset_pf);
         set_offset(new_offset);
         if (bind_sync) {
             if (capacitance > zero_threshold_pf) {
@@ -220,12 +248,13 @@ class FDC1004 {
         if (m.id.transaction_index == 0) {
             return;
         }
-        measurement += fdc1004_utils::convert_reads(baseline_results[0], baseline_results[1]);
+        measurement += fdc1004_utils::convert_reads(baseline_results[0],
+                                                    baseline_results[1]);
         if (!m.id.is_completed_poll) {
             return;
         }
-        auto capacitance = fdc1004_utils::convert_capacitance(measurement, number_of_reads,
-                                               current_offset_pf);
+        auto capacitance = fdc1004_utils::convert_capacitance(
+            measurement, number_of_reads, current_offset_pf);
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::IS_THRESHOLD_SENSE)) {
             set_threshold(capacitance + next_autothreshold_pf,
@@ -242,7 +271,8 @@ class FDC1004 {
         }
         // TODO (lc 1-2-2022) we should figure out a better strategy for
         // adjusting the capdac.
-        auto new_offset = fdc1004_utils::update_offset(capacitance, current_offset_pf);
+        auto new_offset =
+            fdc1004_utils::update_offset(capacitance, current_offset_pf);
         set_offset(new_offset);
     }
 
@@ -275,46 +305,75 @@ class FDC1004 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
 
-	uint8_t sensor_binding{2};
-	fdc1004::FDC1004RegisterMap _registers{};
+    uint8_t sensor_binding{2};
+    fdc1004::FDC1004RegisterMap _registers{};
     bool _initialized = false;
 
     static constexpr uint16_t DELAY = 20;
     can::ids::SensorId sensor_id = can::ids::SensorId::S0;
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
-    fdc1004::MeasurementRate measurement_rate = fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND;
-	bool shared_sensor = false;
+    fdc1004::MeasurementRate measurement_rate =
+        fdc1004::MeasurementRate::ONE_HUNDRED_SAMPLES_PER_SECOND;
+    bool shared_sensor = false;
 
-    auto build_mode_1_configuration_register() -> ConfMeasure1 {
-        _registers.config_measure_1.CHA = CHA::CIN1;
-        _registers.config_measure_1.CHB = CHB::CAPDAC;
-        return _registers.config_measure_1
-    }
-    auto build_mode_2_configuration_register() -> ConfMeasure2 {
-        _registers.config_measure_2.CHA = CHA::CIN2;
-        _registers.config_measure_2.CHB = CHB::CAPDAC;
-        return _registers.config_measure_2
-    }
-    auto build_mode_3_configuration_register() -> ConfMeasure3 {
-        _registers.config_measure_3.CHA = CHA::CIN3;
-        _registers.config_measure_3.CHB = CHB::CAPDAC;
-        return _registers.config_measure_3
+    float current_offset_pf = 0;
+    float zero_threshold_pf = 30;
+    float next_autothreshold_pf = 0;
+    int32_t measurement = 0;
+    uint16_t number_of_reads = 1;
+    bool echoing = false;
+    bool bind_sync = false;
+    std::array<uint16_t, 2> baseline_results{};
+    std::array<uint16_t, 2> polling_results{};
 
-    }
-    auto build_mode_4_configuration_register() -> ConfMeasure4 {
-        _registers.config_measure_4.CHA = CHA::CIN4;
-        _registers.config_measure_4.CHB = CHB::CAPDAC;
-        return _registers.config_measure_4
+    auto build_mode_1_configuration_register() -> fdc1004::ConfMeasure1 {
+        _registers.config_measure_1.CHA =
+            static_cast<uint8_t>(fdc1004::CHA::CIN1);
+        _registers.config_measure_1.CHB =
+            static_cast<uint8_t>(fdc1004::CHB::CAPDAC);
+        return _registers.config_measure_1;
     }
 
+    auto build_mode_2_configuration_register() -> fdc1004::ConfMeasure2 {
+        _registers.config_measure_2.CHA =
+            static_cast<uint8_t>(fdc1004::CHA::CIN2);
+        _registers.config_measure_2.CHB =
+            static_cast<uint8_t>(fdc1004::CHB::CAPDAC);
+        return _registers.config_measure_2;
+    }
 
-    template <FDC1004Register Reg>
-    requires WritableRegister<Reg>
-    auto set_register(Reg& reg) -> bool {
+    auto build_mode_3_configuration_register() -> fdc1004::ConfMeasure3 {
+        _registers.config_measure_3.CHA =
+            static_cast<uint8_t>(fdc1004::CHA::CIN3);
+        _registers.config_measure_3.CHB =
+            static_cast<uint8_t>(fdc1004::CHB::CAPDAC);
+        return _registers.config_measure_3;
+    }
+
+    auto build_mode_4_configuration_register() -> fdc1004::ConfMeasure4 {
+        _registers.config_measure_4.CHA =
+            static_cast<uint8_t>(fdc1004::CHA::CIN4);
+        _registers.config_measure_4.CHB =
+            static_cast<uint8_t>(fdc1004::CHB::CAPDAC);
+        return _registers.config_measure_4;
+    }
+
+    auto delay_or_disable(uint8_t binding) -> uint8_t {
+        if (binding ==
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
+            return 0;
+        }
+        return DELAY;
+    }
+
+    template <fdc1004::FDC1004Register Reg>
+    requires fdc1004::WritableRegister<Reg>
+    auto set_register(Reg &reg) -> bool {
         // Ignore the typical linter warning because we're only using
         // this on __packed structures that mimic hardware registers
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        auto value = *reinterpret_cast<RegisterSerializedTypeA*>(&reg);
+        auto value =
+            *reinterpret_cast<fdc1004::RegisterSerializedTypeA *>(&reg);
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }
@@ -327,10 +386,10 @@ class FDC1004 {
      * @return The contents of the register, or nothing if the register
      * can't be read.
      */
-    template <FDC1004Register Reg>
-    requires ReadableRegister<Reg>
+    template <fdc1004::FDC1004Register Reg>
+    requires fdc1004::ReadableRegister<Reg>
     auto read_register(uint32_t data) -> std::optional<Reg> {
-        using RT = std::optional<RegisterSerializedType>;
+        using RT = std::optional<fdc1004::RegisterSerializedType>;
         using RG = std::optional<Reg>;
 
         auto ret = RT(data);
@@ -340,9 +399,10 @@ class FDC1004 {
         // Ignore the typical linter warning because we're only using
         // this on __packed structures that mimic hardware registers
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return RG(*reinterpret_cast<Reg*>(&ret.value()));
+        return RG(*reinterpret_cast<Reg *>(&ret.value()));
     }
 
+};  // end of FDC1004 class
 
 }  // namespace tasks
 }  // namespace sensors

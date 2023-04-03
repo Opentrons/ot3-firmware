@@ -103,6 +103,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         capacitive_sensor_queue_rear{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
+        capacitive_sensor_queue_front{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue_rear{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue_front{nullptr};

@@ -14,10 +14,12 @@ static auto environment_sensor_task_builder =
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>();
+    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask>();
+    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto pressure_sensor_task_builder_rear =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
@@ -66,7 +68,7 @@ void sensor_tasks::start_tasks(
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
-            sensor_hardware_primary, queues, can::ids::SensorId::S0);
+            sensor_hardware_primary, queues);
     auto& tip_notification_task = tip_notification_task_builder_front.start(
         5, "tip notification", queues, sensor_hardware_primary);
 
@@ -102,19 +104,15 @@ void sensor_tasks::start_tasks(
 
     auto PIPETTE_TYPE = get_pipette_type();
 
-    auto& primary_pressure_i2c_client = PIPETTE_TYPE == EIGHT_CHANNEL
-                                            ? i2c2_task_client
-                                            : i2c3_task_client;
-    auto& primary_pressure_i2c_poller = PIPETTE_TYPE == EIGHT_CHANNEL
-                                            ? i2c2_poller_client
-                                            : i2c3_poller_client;
+    auto& primary_pressure_i2c_client =
+        PIPETTE_TYPE == EIGHT_CHANNEL ? i2c2_task_client : i2c3_task_client;
+    auto& primary_pressure_i2c_poller =
+        PIPETTE_TYPE == EIGHT_CHANNEL ? i2c2_poller_client : i2c3_poller_client;
 
-    auto& secondary_pressure_i2c_client = PIPETTE_TYPE == EIGHT_CHANNEL
-                                              ? i2c3_task_client
-                                              : i2c2_task_client;
-    auto& secondary_pressure_i2c_poller = PIPETTE_TYPE == EIGHT_CHANNEL
-                                              ? i2c3_poller_client
-                                              : i2c2_poller_client;
+    auto& secondary_pressure_i2c_client =
+        PIPETTE_TYPE == EIGHT_CHANNEL ? i2c3_task_client : i2c2_task_client;
+    auto& secondary_pressure_i2c_poller =
+        PIPETTE_TYPE == EIGHT_CHANNEL ? i2c3_poller_client : i2c2_poller_client;
 
     auto& eeprom_i2c_client = PIPETTE_TYPE == NINETY_SIX_CHANNEL
                                   ? i2c3_task_client
@@ -134,7 +132,7 @@ void sensor_tasks::start_tasks(
     auto& capacitive_sensor_task_rear =
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
-            sensor_hardware_primary, queues, can::ids::SensorId::S0, shared_cap_task);
+            sensor_hardware_primary, queues, shared_cap_task);
     auto& tip_notification_task = tip_notification_task_builder_front.start(
         5, "tip notification", queues, sensor_hardware_primary);
 
@@ -148,25 +146,28 @@ void sensor_tasks::start_tasks(
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
     queues.environment_sensor_queue = &environment_sensor_task.get_queue();
-    queues.capacitive_sensor_queue_rear = &capacitive_sensor_task_rear.get_queue();
+    queues.capacitive_sensor_queue_rear =
+        &capacitive_sensor_task_rear.get_queue();
     queues.pressure_sensor_queue_rear = &pressure_sensor_task_rear.get_queue();
     queues.pressure_sensor_queue_front =
         &pressure_sensor_task_front.get_queue();
     queues.tip_notification_queue = &tip_notification_task.get_queue();
 
-    if (PIPETTE_TYPE == EIGHT_CHANNEL) {
-        // There is only one cap sensor on the eight channel and so the "front" and "rear"
-        // nozzles are actually supported by 1 single task so the 'front'/'rear' should be
-        // set to the same queue/task.
+    if (shared_cap_task) {
+        // There is only one cap sensor on the eight channel and so the "front"
+        // and "rear" nozzles are actually supported by 1 single task so the
+        // 'front'/'rear' should be set to the same queue/task.
         tasks.capacitive_sensor_task_front = &capacitive_sensor_task_rear;
-        queues.capacitive_sensor_queue_front = &capacitive_sensor_task_rear.get_queue();
+        queues.capacitive_sensor_queue_front =
+            &capacitive_sensor_task_rear.get_queue();
     } else {
         auto& capacitive_sensor_task_front =
             capacitive_sensor_task_builder_front.start(
                 5, "capacitive sensor s1", i2c3_task_client, i2c3_poller_client,
-                sensor_hardware_primary, queues, can::ids::SensorId::S1, shared_cap_task);
+                sensor_hardware_primary, queues);
         tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
-        queues.capacitive_sensor_queue_front = &capacitive_sensor_task_front.get_queue();
+        queues.capacitive_sensor_queue_front =
+            &capacitive_sensor_task_front.get_queue();
     }
 }
 

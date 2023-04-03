@@ -9,26 +9,22 @@
 #include "common/core/message_queue.hpp"
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
-#include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_driver.hpp"
 #include "sensors/core/utils.hpp"
 
 namespace sensors {
 namespace tasks {
 
-using namespace hardware;
-
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
 class CapacitiveMessageHandler {
   public:
-    explicit CapacitiveMessageHandler(I2CQueueWriter &i2c_writer,
-                                      I2CQueuePoller &i2c_poller,
-                                      SensorHardwareBase &hardware,
-                                      CanClient &can_client,
-                                      OwnQueue &own_queue,
-                                      bool shared_task)
-        : driver{i2c_writer, i2c_poller, can_client, own_queue, hardware, shared_task} {}
+    explicit CapacitiveMessageHandler(
+        I2CQueueWriter &i2c_writer, I2CQueuePoller &i2c_poller,
+        sensors::hardware::SensorHardwareBase &hardware, CanClient &can_client,
+        OwnQueue &own_queue, bool shared_task)
+        : driver{i2c_writer, i2c_poller, can_client,
+                 own_queue,  hardware,   shared_task} {}
     CapacitiveMessageHandler(const CapacitiveMessageHandler &) = delete;
     CapacitiveMessageHandler(const CapacitiveMessageHandler &&) = delete;
     auto operator=(const CapacitiveMessageHandler &)
@@ -41,18 +37,18 @@ class CapacitiveMessageHandler {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
-    void initialize(can::ids::SensorId _id) {
-        driver.initialize(_id);
-    }
+    void initialize(can::ids::SensorId _id) { driver.initialize(_id); }
 
   private:
     void visit(std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
         auto reg_id = utils::reg_from_id<uint8_t>(m.id.token);
-        if (reg_id != fdc1004::Registers::MEAS1_MSB | reg_id != fdc1004::Registers::MEAS2_MSB) {
+        if ((reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB)) &&
+            (reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB))) {
             return;
         }
+        
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
             driver.handle_ongoing_response(m);
@@ -75,21 +71,24 @@ class CapacitiveMessageHandler {
         if (bool(m.offset_reading)) {
             auto message = can::messages::ReadFromSensorResponse{
                 .message_index = m.message_index,
-                .sensor = SensorType::capacitive,
-                .sensor_id = m.sensor_id,
-                .sensor_data = convert_to_fixed_point(
-                    driver.get_offset(), S15Q16_RADIX)};
-            driver.get_can_client().send_can_message(can::ids::NodeId::host, message);
+                .sensor = can::ids::SensorType::capacitive,
+                .sensor_id = static_cast<can::ids::SensorId>(m.sensor_id),
+                .sensor_data =
+                    convert_to_fixed_point(driver.get_offset(), S15Q16_RADIX)};
+            driver.get_can_client().send_can_message(can::ids::NodeId::host,
+                                                     message);
         } else {
             driver.reset_limited();
             driver.set_number_of_reads(1);
-            std::array tags{};
-            driver.poll_limited_capacitance(1, m.sensor_id, tags);
+            auto tags_as_int = 1;
+            driver.poll_limited_capacitance(
+                1, static_cast<can::ids::SensorId>(m.sensor_id), tags_as_int);
         }
     }
 
     void visit(can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor", m.data, m.sensor);
+        // FIXME we should send a response message after a write request
         if (fdc1004::is_valid_address(m.reg_address)) {
             driver.write(fdc1004::Registers(m.reg_address), m.data);
         }
@@ -104,15 +103,17 @@ class CapacitiveMessageHandler {
         // We should also enable this for the other drivers as
         // well. Where possible we want to keep driver behavior
         // consistent.
-        driver.set_sync_bind(can::ids::SensorOutputBinding::none);
         driver.reset_limited();
         driver.set_number_of_reads(m.number_of_reads);
 
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::IS_BASELINE};
-        driver.poll_limited_capacitance(m.number_of_reads, m.sensor_id, tags);
-        driver.get_can_client().send_can_message(can::ids::NodeId::host,
-                                    can::messages::ack_from_request(m));
+        auto tags_as_int = utils::byte_from_tags(tags);
+        driver.poll_limited_capacitance(
+            m.number_of_reads, static_cast<can::ids::SensorId>(m.sensor_id),
+            tags_as_int);
+        driver.get_can_client().send_can_message(
+            can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::SetSensorThresholdRequest &m) {
@@ -128,18 +129,12 @@ class CapacitiveMessageHandler {
             std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                             utils::ResponseTag::IS_BASELINE,
                             utils::ResponseTag::IS_THRESHOLD_SENSE};
+            auto tags_as_int = utils::byte_from_tags(tags);
             driver.prime_autothreshold(
                 fixed_point_to_float(m.threshold, S15Q16_RADIX));
-            driver.poll_limited_capacitance(10, m.sensor_id, tags);
+            driver.poll_limited_capacitance(
+                10, static_cast<can::ids::SensorId>(m.sensor_id), tags_as_int);
         }
-    }
-
-    inline auto delay_or_disable(uint8_t binding) -> uint8_t {
-        if (binding ==
-            static_cast<uint8_t>(can::ids::SensorOutputBinding::none)) {
-            return 0;
-        }
-        return DELAY;
     }
 
     void visit(can::messages::BindSensorOutputRequest &m) {
@@ -151,10 +146,12 @@ class CapacitiveMessageHandler {
             static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
-        const auto delay = delay_or_disable(m.binding);
-        driver.poll_continuous_capacitance(m.sensor_id, tags);
-        driver.get_can_client().send_can_message(can::ids::NodeId::host,
-                                    can::messages::ack_from_request(m));
+        auto tags_as_int = utils::byte_from_tags(tags);
+        driver.poll_continuous_capacitance(
+            static_cast<can::ids::SensorId>(m.sensor_id), tags_as_int,
+            m.binding);
+        driver.get_can_client().send_can_message(
+            can::ids::NodeId::host, can::messages::ack_from_request(m));
     }
 
     void visit(can::messages::PeripheralStatusRequest &m) {
@@ -168,7 +165,11 @@ class CapacitiveMessageHandler {
                 .status = static_cast<uint8_t>(driver.initialized())});
     }
 
-    FDC1004<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    // FIXME now that we have a separate driver class, we should be
+    // able to separately test message handling and driver functionality
+    // rather than relying on this variable being public
+    public:
+        FDC1004<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**
@@ -180,7 +181,8 @@ class CapacitiveSensorTask {
   public:
     using Messages = utils::TaskMessage;
     using QueueType = QueueImpl<utils::TaskMessage>;
-    CapacitiveSensorTask(QueueType &queue) : queue{queue} {}
+    CapacitiveSensorTask(QueueType &queue, can::ids::SensorId id)
+        : queue{queue}, sensor_id{id} {}
     CapacitiveSensorTask(const CapacitiveSensorTask &c) = delete;
     CapacitiveSensorTask(const CapacitiveSensorTask &&c) = delete;
     auto operator=(const CapacitiveSensorTask &c) = delete;
@@ -191,19 +193,17 @@ class CapacitiveSensorTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient>
-    [[noreturn]] void operator()(i2c::writer::Writer<QueueImpl> *writer,
-                                 i2c::poller::Poller<QueueImpl> *poller,
-                                 SensorHardwareBase *hardware,
-                                 CanClient *can_client,
-                                 can::ids::SensorId _id = can::ids::SensorId::S0,
-                                 bool shared_task = false
-                                 ) {
+    [[noreturn]] void operator()(
+        i2c::writer::Writer<QueueImpl> *writer,
+        i2c::poller::Poller<QueueImpl> *poller,
+        sensors::hardware::SensorHardwareBase *hardware, CanClient *can_client,
+        bool shared_task = false) {
         // On the 8 channel, there is a singular cap sensor but we're using
         // multiple channels. We will thus rely on the sensor id in this case
         // to determine which CIN configuration the sensor should be in.
         auto handler = CapacitiveMessageHandler{
             *writer, *poller, *hardware, *can_client, get_queue(), shared_task};
-        handler.initialize(_id);
+        handler.initialize(sensor_id);
         utils::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -216,6 +216,7 @@ class CapacitiveSensorTask {
 
   private:
     QueueType &queue;
+    can::ids::SensorId sensor_id;
 };
 }  // namespace tasks
 }  // namespace sensors
