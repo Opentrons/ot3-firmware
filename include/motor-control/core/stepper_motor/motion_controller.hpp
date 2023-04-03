@@ -69,8 +69,7 @@ class MotionController {
                  .group_id = can_msg.group_id,
                  .seq_id = can_msg.seq_id,
                  .stop_condition = static_cast<MoveStopCondition>(
-                     can_msg.request_stop_condition),
-                 .start_encoder_position = hardware.get_encoder_pulses()};
+                     can_msg.request_stop_condition)};
         if (!enabled) {
             enable_motor();
         }
@@ -86,8 +85,7 @@ class MotionController {
                  .acceleration = 0,
                  .group_id = can_msg.group_id,
                  .seq_id = can_msg.seq_id,
-                 .stop_condition = MoveStopCondition::limit_switch,
-                 .start_encoder_position = hardware.get_encoder_pulses()};
+                 .stop_condition = MoveStopCondition::limit_switch};
         if (!enabled) {
             enable_motor();
         }

@@ -303,6 +303,9 @@ class MotorInterruptHandler {
             clear_queue_until_empty = pop_and_discard_move();
         } else {
             has_active_move = move_queue.try_read_isr(&buffered_move);
+            if (has_active_move) {
+                buffered_move.start_encoder_position = hardware.get_encoder_pulses();
+            }
             if (set_direction_pin()) {
                 hardware.positive_direction();
             } else {

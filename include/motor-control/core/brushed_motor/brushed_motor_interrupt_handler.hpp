@@ -214,6 +214,7 @@ class BrushedMotorInterruptHandler {
     void update_and_start_move() {
         if (queue.try_read_isr(&buffered_move)) {
             motor_state = ControlState::ACTIVE;
+            buffered_move.start_encoder_position = hardware.get_encoder_pulses();
         }
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
