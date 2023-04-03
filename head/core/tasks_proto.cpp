@@ -150,7 +150,6 @@ void head_tasks::start_tasks(
     left_tasks.spi_task = &spi3_task;
     left_tasks.usage_storage_task = &left_usage_storage_task;
 
-
     // Assign left motor queue client message queue pointers
     left_queues.motion_queue = &left_motion.get_queue();
     left_queues.motor_queue = &left_tmc2130_driver.get_queue();
