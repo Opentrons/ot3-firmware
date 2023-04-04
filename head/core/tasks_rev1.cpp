@@ -113,10 +113,6 @@ void head_tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
-    auto& left_usage_storage_task = left_usage_storage_task_builder.start(
-        5, "usage storage", left_queues, head_queues);
-    auto& right_usage_storage_task = right_usage_storage_task_builder.start(
-        5, "usage storage", right_queues, head_queues);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
@@ -143,6 +139,8 @@ void head_tasks::start_tasks(
     auto& left_move_status_reporter = left_move_status_task_builder.start(
         5, "left move status", left_queues,
         left_motion_controller.get_mechanical_config(), left_queues);
+    auto& left_usage_storage_task = left_usage_storage_task_builder.start(
+        5, "left usage storage", left_queues, head_queues);
 
     // Assign left motor task collection task pointers
     left_tasks.motion_controller = &left_motion;
@@ -172,6 +170,8 @@ void head_tasks::start_tasks(
     auto& right_move_status_reporter = right_move_status_task_builder.start(
         5, "right move status", right_queues,
         right_motion_controller.get_mechanical_config(), right_queues);
+    auto& right_usage_storage_task = right_usage_storage_task_builder.start(
+        5, "right usage storage", right_queues, head_queues);
 
     rmh_tsk.start_task();
     lmh_tsk.start_task();
