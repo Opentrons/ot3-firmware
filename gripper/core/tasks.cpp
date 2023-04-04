@@ -48,10 +48,6 @@ static auto capacitive_sensor_task_builder_front =
 static auto capacitive_sensor_task_builder_rear =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
-
-static auto usage_storage_task_builder =
-    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
-
 /**
  * Start gripper tasks.
  */
@@ -94,8 +90,6 @@ void gripper_tasks::start_tasks(
         capacitive_sensor_task_builder_rear.start(
             5, "cap sensor S0", i2c3_task_client, i2c3_poll_client,
             sensor_hardware, queues);
-    auto& usage_storage_task =
-        usage_storage_task_builder.start(5, "usage storage", queues, queues);
 
     tasks.i2c2_task = &i2c2_task;
     tasks.i2c3_task = &i2c3_task;
@@ -104,7 +98,6 @@ void gripper_tasks::start_tasks(
     tasks.eeprom_task = &eeprom_task;
     tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
-    tasks.usage_storage_task = &usage_storage_task;
 
     queues.i2c2_queue = &i2c2_task.get_queue();
     queues.i2c3_queue = &i2c3_task.get_queue();
@@ -115,7 +108,6 @@ void gripper_tasks::start_tasks(
         &capacitive_sensor_task_front.get_queue();
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
-    queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues);
 
@@ -144,11 +136,6 @@ void gripper_tasks::QueueClient::send_capacitive_sensor_queue_front(
 void gripper_tasks::QueueClient::send_capacitive_sensor_queue_rear(
     const sensors::utils::TaskMessage& m) {
     capacitive_sensor_queue_rear->try_write(m);
-}
-
-void gripper_tasks::QueueClient::send_usage_storage_queue(
-    const usage_storage_task::TaskMessage& m) {
-    usage_storage_queue->try_write(m);
 }
 
 // gripper does not have environment nor pressure sensor

@@ -23,30 +23,36 @@ static auto brushed_move_group_task_builder =
 static auto brushed_move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
+static auto jaw_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+
 void g_tasks::start_task(
     brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
     AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues) {
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
-        5, "bdc controller", grip_motor.motion_controller, g_queues,
-        main_queues);
+        5, "bdc controller", grip_motor.motion_controller, g_queues, g_queues);
     auto& brushed_move_group = brushed_move_group_task_builder.start(
         5, "bdc move group", g_queues, g_queues);
     auto& brushed_move_status_reporter = brushed_move_status_task_builder.start(
         5, "bdc move status", g_queues,
-        grip_motor.motion_controller.get_mechanical_config(), main_queues);
+        grip_motor.motion_controller.get_mechanical_config(), g_queues);
+    auto& usage_storage_task = jaw_usage_storage_task_builder.start(
+        5, "jaw usage storage", g_queues, main_queues);
 
     gripper_tasks.brushed_motor_driver = &brushed_motor;
     gripper_tasks.brushed_motion_controller = &brushed_motion;
     gripper_tasks.brushed_move_group = &brushed_move_group;
     gripper_tasks.brushed_move_status_reporter = &brushed_move_status_reporter;
+    gripper_tasks.jaw_usage_storage_task = &usage_storage_task;
 
     g_queues.brushed_motor_queue = &brushed_motor.get_queue();
     g_queues.brushed_motion_queue = &brushed_motion.get_queue();
     g_queues.brushed_move_group_queue = &brushed_move_group.get_queue();
     g_queues.brushed_move_status_report_queue =
         &brushed_move_status_reporter.get_queue();
+    g_queues.usage_storage_queue = &usage_storage_task.get_queue();
 }
 
 g_tasks::QueueClient::QueueClient()
@@ -72,4 +78,8 @@ void g_tasks::QueueClient::send_brushed_move_status_reporter_queue(
     static_cast<void>(brushed_move_status_report_queue->try_write_isr(m));
 }
 
+void g_tasks::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
+}
 auto g_tasks::get_queues() -> g_tasks::QueueClient& { return g_queues; }

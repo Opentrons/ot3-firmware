@@ -70,8 +70,6 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
     void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
 
-    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
-
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -91,8 +89,6 @@ struct QueueClient : can::message_writer::MessageWriter {
         capacitive_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         capacitive_sensor_queue_rear{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**
@@ -144,7 +140,10 @@ struct AllTask {
         freertos_message_queue::FreeRTOSMessageQueue>*
         capacitive_sensor_task_rear{nullptr};
     usage_storage_task::UsageStorageTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        freertos_message_queue::FreeRTOSMessageQueue>* jaw_usage_storage_task{
+        nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* z_usage_storage_task{
         nullptr};
 };
 
@@ -180,6 +179,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
@@ -191,6 +192,11 @@ struct QueueClient : can::message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
         spi_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
@@ -218,6 +224,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_brushed_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -229,6 +237,11 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>*
         brushed_move_status_report_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
