@@ -53,6 +53,9 @@ struct Tasks {
         nullptr};
     pipettes::tasks::move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 /**
@@ -72,6 +75,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const pipettes::tasks::gear_move_status::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         pipettes::tasks::motion_controller_task::TaskMessage>* motion_queue{
         nullptr};
@@ -85,6 +90,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         tmc2160::tasks::gear::TaskMessage>* driver_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**
