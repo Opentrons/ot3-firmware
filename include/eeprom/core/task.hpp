@@ -211,7 +211,8 @@ class EEPromMessageHandler {
         auto conf = message::ConfigResponseMessage{
             .chip = hw_iface.get_eeprom_chip_type(),
             .addr_bytes = hw_iface.get_eeprom_addr_bytes(),
-            .mem_size = hw_iface.get_eeprom_mem_size()};
+            .mem_size = hw_iface.get_eeprom_mem_size(),
+            .default_byte_value = hw_iface.get_eeprom_default_byte_value()};
         m.callback(conf, m.callback_param);
     }
 

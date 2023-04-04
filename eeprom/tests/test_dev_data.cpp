@@ -23,25 +23,41 @@ class MockHardwareIface : public hardware_iface::EEPromHardwareIface {
 SCENARIO("initalizing a data accessor") {
     auto queue_client = MockEEPromTaskClient{};
     auto read_listener = MockListener{};
+    auto dev_data_buffer = dev_data::DataBufferType<64>{};
+    auto subject =
+        dev_data::DevDataAccessor{queue_client, read_listener, dev_data_buffer};
+    test_mocks::MockMessageQueue<i2c::writer::TaskMessage> i2c_queue{};
+    test_mocks::MockI2CResponseQueue response_queue{};
+    auto writer = i2c::writer::Writer<test_mocks::MockMessageQueue>{};
+    writer.set_queue(&i2c_queue);
+    auto hardware_iface = MockHardwareIface{};
 
-    GIVEN("A creating a data accessor entry") {
-        auto dev_data_buffer = dev_data::DataBufferType<64>{};
-        auto subject = dev_data::DevDataAccessor{queue_client, read_listener,
-                                                 dev_data_buffer};
+    auto eeprom =
+        task::EEPromMessageHandler{writer, response_queue, hardware_iface};
+    GIVEN("A creating a data accessor entry for 256 byte chip") {
         auto data = types::EepromData{};
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
+        THEN("accessor recieves config from task") {
+            // make sure the second message is a config request
+            REQUIRE(std::get_if<message::ConfigRequestMessage>(
+                        &queue_client.messages[0]) != nullptr);
+        }
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         THEN("accessor attemps to read data tail") {
             REQUIRE(queue_client.messages.size() == 2);
             auto read_message =
-                std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+                std::get<message::ReadEepromMessage>(queue_client.messages[1]);
             REQUIRE(read_message.memory_address ==
                     addresses::lookup_table_tail_begin);
             REQUIRE(read_message.length == addresses::lookup_table_tail_length);
         }
         THEN("accessor correctly sets up lookup table tail in eeprom") {
             auto read_message =
-                std::get<message::ReadEepromMessage>(queue_client.messages[0]);
-            // respond back with 0x00'd out data to simulate new chip
+                std::get<message::ReadEepromMessage>(queue_client.messages[1]);
+            // respond back with 0xFF'd out data to simulate new chip
             read_message.callback(
                 message::EepromMessage{
                     .memory_address = read_message.memory_address,
@@ -59,11 +75,6 @@ SCENARIO("initalizing a data accessor") {
                 std::equal(write_message.data.begin(),
                            write_message.data.begin() + write_message.length,
                            data.begin()));
-        }
-        THEN("accessor recieves config from task") {
-            // make sure the second message is a config request
-            REQUIRE(std::get_if<message::ConfigRequestMessage>(
-                        &queue_client.messages[1]) != nullptr);
         }
     }
 }
@@ -84,18 +95,19 @@ SCENARIO("creating a data table entry") {
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
     GIVEN("data accessor correctly initializes") {
         auto data = types::EepromData{};
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         auto read_message =
-            std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::get<message::ReadEepromMessage>(queue_client.messages[1]);
         read_message.callback(
             message::EepromMessage{
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
             read_message.callback_param);
-        auto config_msg = task::TaskMessage(
-            std::get<message::ConfigRequestMessage>(queue_client.messages[1]));
-        eeprom.handle_message(config_msg);
         queue_client.messages.clear();
         THEN("accessor attemps to create data table entry") {
             subject.create_data_part(0x00, 0x04);
@@ -135,22 +147,28 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
 
     auto eeprom =
         task::EEPromMessageHandler{writer, response_queue, hardware_iface};
+    auto table_entry_length =
+        static_cast<uint16_t>(
+            hardware_iface::EEPromAddressType::EEPROM_ADDR_16_BIT) *
+        2;
     GIVEN("data accessor correctly initializes") {
         auto data = types::EepromData{};
-        data.fill(0x00);
+        data.fill(0xFF);
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         auto read_message =
-            std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::get<message::ReadEepromMessage>(queue_client.messages[1]);
         read_message.callback(
             message::EepromMessage{
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
             read_message.callback_param);
-        auto config_msg = task::TaskMessage(
-            std::get<message::ConfigRequestMessage>(queue_client.messages[1]));
-        eeprom.handle_message(config_msg);
         queue_client.messages.clear();
+        auto data_table_mock = types::EepromData{};
         THEN("accessor attemps to create data table entry") {
+            REQUIRE(subject.data_part_exists(0) == false);
             subject.create_data_part(0x00, 0x04);
             // for the first one we just expect a write to the first segment of
             // the table and we expect a read to the table_tail value so it can
@@ -158,17 +176,63 @@ SCENARIO("creating a data table on 16 bit addresss entry") {
             REQUIRE(queue_client.messages.size() == 2);
             auto write_message =
                 std::get<message::WriteEepromMessage>(queue_client.messages[0]);
+            std::copy_n(write_message.data.begin(), write_message.length,
+                        data_table_mock.begin());
             REQUIRE(write_message.memory_address ==
                     addresses::data_address_begin);
-            REQUIRE(write_message.length ==
-                    static_cast<uint16_t>(
-                        hardware_iface::EEPromAddressType::EEPROM_ADDR_16_BIT) *
-                        2);
+            REQUIRE(write_message.length == table_entry_length);
+            // the address it writes should be 16k - 4 - 32 (0x4000-0x4 =
+            // 0x3FDC) the 32 is because this address is an offset from the
+            // data_address_begin
+            REQUIRE(write_message.data[0] == 0x3F);
+            REQUIRE(write_message.data[1] == 0xDC);
+            // the update tail length should then be called which will call a
+            // read on the old tail
             auto read_message =
                 std::get<message::ReadEepromMessage>(queue_client.messages[1]);
             REQUIRE(read_message.memory_address ==
                     addresses::lookup_table_tail_begin);
             REQUIRE(read_message.length == addresses::lookup_table_tail_length);
+            REQUIRE(subject.data_part_exists(0) == true);
+            THEN("accessor attemps to create a second data table entry") {
+                queue_client.messages.clear();
+                REQUIRE(subject.data_part_exists(1) == false);
+                subject.create_data_part(0x01, 0x04);
+                // First we read the previous data tail address
+                REQUIRE(queue_client.messages.size() == 1);
+                read_message = std::get<message::ReadEepromMessage>(
+                    queue_client.messages[0]);
+                REQUIRE(read_message.memory_address ==
+                        addresses::data_address_begin);
+                REQUIRE(read_message.length == table_entry_length);
+                queue_client.messages.clear();
+                read_message.callback(
+                    message::EepromMessage{
+                        .memory_address = read_message.memory_address,
+                        .length = read_message.length,
+                        .data = data_table_mock},
+                    read_message.callback_param);
+                REQUIRE(queue_client.messages.size() == 2);
+                // First data write is adding the new table entry
+                auto write_message = std::get<message::WriteEepromMessage>(
+                    queue_client.messages[0]);
+                REQUIRE(write_message.memory_address ==
+                        addresses::data_address_begin + table_entry_length);
+                REQUIRE(write_message.length == table_entry_length);
+                // the address it writes should be the previous entry - 4
+                // (0x3FDC-0x4 = 0x3FD8)
+                REQUIRE(write_message.data[0] == 0x3F);
+                REQUIRE(write_message.data[1] == 0xD8);
+                // the update tail length should then be called which will call
+                // a read on the old tail
+                read_message = std::get<message::ReadEepromMessage>(
+                    queue_client.messages[1]);
+                REQUIRE(read_message.memory_address ==
+                        addresses::lookup_table_tail_begin);
+                REQUIRE(read_message.length ==
+                        addresses::lookup_table_tail_length);
+                REQUIRE(subject.data_part_exists(1) == true);
+            }
         }
     }
 }
@@ -195,19 +259,19 @@ SCENARIO("writing to data partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         auto read_message =
-            std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::get<message::ReadEepromMessage>(queue_client.messages[1]);
         read_message.callback(
             message::EepromMessage{
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
             read_message.callback_param);
-        auto config_msg = task::TaskMessage(
-            std::get<message::ConfigRequestMessage>(queue_client.messages[1]));
-        eeprom.handle_message(config_msg);
-
         // after the read_message callback is called the driver should write the
         // new tail to memory
         auto write_message =
@@ -306,19 +370,19 @@ SCENARIO("writing large data to partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
-        data.fill(0x00);
+        // 16K byte chips have a 0xFF filled memory
+        data.fill(0xFF);
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         auto read_message =
-            std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::get<message::ReadEepromMessage>(queue_client.messages[1]);
         read_message.callback(
             message::EepromMessage{
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
             read_message.callback_param);
-        auto config_msg = task::TaskMessage(
-            std::get<message::ConfigRequestMessage>(queue_client.messages[1]));
-        eeprom.handle_message(config_msg);
-
         // after the read_message callback is called the driver should write the
         // new tail to memory
         auto write_message =
@@ -395,18 +459,19 @@ SCENARIO("reading from data partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
+        // 256 byte chips have a zeroed out memory
         data.fill(0x00);
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         auto read_message =
-            std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::get<message::ReadEepromMessage>(queue_client.messages[1]);
         read_message.callback(
             message::EepromMessage{
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
             read_message.callback_param);
-        auto config_msg = task::TaskMessage(
-            std::get<message::ConfigRequestMessage>(queue_client.messages[1]));
-        eeprom.handle_message(config_msg);
 
         // after the read_message callback is called the driver should write the
         // new tail to memory
@@ -503,20 +568,20 @@ SCENARIO("reading large data from partition") {
         // initalize the accessor driver by reading the data table length and
         // config
         auto data = types::EepromData{};
-        data.fill(0x00);
+        // 16K byte chips have a 0xFF filled memory
+        data.fill(0xFF);
+        auto config_msg = task::TaskMessage(
+            std::get<message::ConfigRequestMessage>(queue_client.messages[0]));
+        eeprom.handle_message(config_msg);
         auto read_message =
-            std::get<message::ReadEepromMessage>(queue_client.messages[0]);
+            std::get<message::ReadEepromMessage>(queue_client.messages[1]);
         read_message.callback(
             message::EepromMessage{
                 .memory_address = read_message.memory_address,
                 .length = read_message.length,
                 .data = data},
-            read_message.callback_param);
-        auto config_msg = task::TaskMessage(
-            std::get<message::ConfigRequestMessage>(queue_client.messages[1]));
-        eeprom.handle_message(config_msg);
-
-        // after the read_message callback is called the driver should write the
+            read_message.callback_param);  // after the read_message callback is
+                                           // called the driver should write the
         // new tail to memory
         auto write_message =
             std::get<message::WriteEepromMessage>(queue_client.messages[2]);

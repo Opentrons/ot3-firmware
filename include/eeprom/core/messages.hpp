@@ -40,6 +40,7 @@ struct ConfigResponseMessage {
     eeprom::hardware_iface::EEPromChipType chip;
     types::address addr_bytes;
     types::data_length mem_size;
+    uint8_t default_byte_value;
 };
 
 using ConfigRequestCallback = void (*)(const ConfigResponseMessage&, void*);
