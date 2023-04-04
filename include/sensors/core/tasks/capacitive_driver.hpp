@@ -369,10 +369,10 @@ class FDC1004 {
     template <fdc1004::FDC1004Register Reg>
     requires fdc1004::WritableRegister<Reg>
     auto set_register(Reg &reg) -> bool {
-        // Ignore the typical linter warning because we're only using
-        // this on __packed structures that mimic hardware registers
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         auto value =
+            // Ignore the typical linter warning because we're only using
+            // this on __packed structures that mimic hardware registers
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             *reinterpret_cast<fdc1004::RegisterSerializedTypeA *>(&reg);
         value &= Reg::value_mask;
         return write(Reg::address, value);
