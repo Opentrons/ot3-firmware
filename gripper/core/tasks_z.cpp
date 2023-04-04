@@ -50,7 +50,7 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
         z_motor.motion_controller.get_mechanical_config(), z_queues);
     auto& spi_task = spi_task_builder.start(5, "spi", spi_device);
 #if PCBA_PRIMARY_REVISION != 'b'
-    auto& usage_storage_task = z_usage_storage_task_builder.start(
+    auto& z_usage_storage_task = z_usage_storage_task_builder.start(
         5, "z usage storage", z_queues, main_queues);
 #else
     std::ignore = main_queues;
@@ -62,7 +62,7 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     gripper_tasks.move_status_reporter = &move_status_reporter;
     gripper_tasks.spi_task = &spi_task;
 #if PCBA_PRIMARY_REVISION != 'b'
-    gripper_tasks.z_usage_storage_task = &usage_storage_task;
+    gripper_tasks.z_usage_storage_task = &z_usage_storage_task;
 #endif
 
     z_queues.motion_queue = &motion.get_queue();
@@ -71,7 +71,7 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     z_queues.move_status_report_queue = &move_status_reporter.get_queue();
     z_queues.spi_queue = &spi_task.get_queue();
 #if PCBA_PRIMARY_REVISION != 'b'
-    z_queues.usage_storage_queue = &usage_storage_task.get_queue();
+    z_queues.z_usage_storage_queue = &z_usage_storage_task.get_queue();
 #endif
     spi_task_client.set_queue(&spi_task.get_queue());
 }
@@ -102,12 +102,12 @@ void z_tasks::QueueClient::send_move_status_reporter_queue(
 void z_tasks::QueueClient::send_usage_storage_queue(
     const usage_storage_task::TaskMessage& m) {
 #if PCBA_PRIMARY_REVISION != 'b'
+    z_usage_storage_queue->try_write(m);
+#else
     // this task depends on the eeprom which does not work on the EVT gripper
     // Since we don't create the task make sure we don't try to write to a
     // non-existent queue
     std::ignore = m;
-#else
-    usage_storage_queue->try_write(m);
 #endif
 }
 auto z_tasks::get_queues() -> z_tasks::QueueClient& { return z_queues; }

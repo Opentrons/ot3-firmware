@@ -60,7 +60,7 @@ void g_tasks::start_task(
     g_queues.brushed_move_status_report_queue =
         &brushed_move_status_reporter.get_queue();
 #if PCBA_PRIMARY_REVISION != 'b'
-    g_queues.usage_storage_queue = &usage_storage_task.get_queue();
+    g_queues.g_usage_storage_queue = &usage_storage_task.get_queue();
 #endif
 }
 
@@ -89,13 +89,14 @@ void g_tasks::QueueClient::send_brushed_move_status_reporter_queue(
 
 void g_tasks::QueueClient::send_usage_storage_queue(
     const usage_storage_task::TaskMessage& m) {
-#if PCBA_PRIMARY_REVISION == 'b'
+#if PCBA_PRIMARY_REVISION != 'b'
+    g_usage_storage_queue->try_write(m);
+#else
     // this task depends on the eeprom which does not work on the EVT gripper
     // Since we don't create the task make sure we don't try to write to a
     // non-existent queue
     std::ignore = m;
-#else
-    usage_storage_queue->try_write(m);
 #endif
 }
+
 auto g_tasks::get_queues() -> g_tasks::QueueClient& { return g_queues; }

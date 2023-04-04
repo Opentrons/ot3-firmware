@@ -193,10 +193,7 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
         spi_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
-        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
-    usage_storage_task::UsageStorageTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
-        nullptr};
+        usage_storage_task::TaskMessage>* z_usage_storage_queue{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
@@ -238,10 +235,7 @@ struct QueueClient : can::message_writer::MessageWriter {
         move_status_reporter_task::TaskMessage>*
         brushed_move_status_report_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
-        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
-    usage_storage_task::UsageStorageTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
-        nullptr};
+        usage_storage_task::TaskMessage>* g_usage_storage_queue{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
