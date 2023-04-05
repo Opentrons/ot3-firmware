@@ -37,7 +37,7 @@ class CapacitiveMessageHandler {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
-    void initialize(can::ids::SensorId _id) { driver.initialize(_id); }
+    void initialize() { driver.initialize(); }
 
   private:
     void visit(std::monostate &) {}
@@ -203,7 +203,7 @@ class CapacitiveSensorTask {
         // to determine which CIN configuration the sensor should be in.
         auto handler = CapacitiveMessageHandler{
             *writer, *poller, *hardware, *can_client, get_queue(), shared_task};
-        handler.initialize(sensor_id);
+        handler.initialize();
         utils::TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

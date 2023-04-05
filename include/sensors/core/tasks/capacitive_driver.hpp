@@ -35,19 +35,18 @@ class FDC1004 {
 
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
-    auto initialize(can::ids::SensorId _id) -> void {
+    auto initialize() -> void {
         // FIXME we should grab device id and compare it to the static
         // device id in code.
 
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
+        update_capacitance_configuration();
         if (shared_sensor) {
-            set_sensor_id(can::ids::SensorId::S1);
+            measure_mode = fdc1004::MeasureConfigMode::TWO;
             update_capacitance_configuration();
         }
-        set_sensor_id(_id);
-        update_capacitance_configuration();
         _initialized = true;
     }
 
@@ -61,15 +60,14 @@ class FDC1004 {
 
     auto set_sensor_id(can::ids::SensorId _id) -> void {
         if (shared_sensor && sensor_id != _id) {
-            _initialized = false;
             if (_id == can::ids::SensorId::S1) {
                 measure_mode = fdc1004::MeasureConfigMode::TWO;
             } else {
                 measure_mode = fdc1004::MeasureConfigMode::ONE;
             }
-            update_capacitance_configuration();
+            sensor_id = _id;
+            set_sample_rate();
         }
-        sensor_id = _id;
     }
 
     [[nodiscard]] auto get_offset() const -> float { return current_offset_pf; }
@@ -108,14 +106,16 @@ class FDC1004 {
     void set_sample_rate() {
         _registers.fdc_conf.measurement_rate =
             static_cast<uint8_t>(measurement_rate);
-        _registers.fdc_conf.repeating_measurements = 0x1;
+        _registers.fdc_conf.repeating_measurements = 1;
         if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
-            _registers.fdc_conf.measure_mode_1 = 0x0;
-            _registers.fdc_conf.measure_mode_2 = 0x1;
+            _registers.fdc_conf.measure_mode_1 = 0;
+            _registers.fdc_conf.measure_mode_2 = 1;
         } else {
-            _registers.fdc_conf.measure_mode_1 = 0x1;
-            _registers.fdc_conf.measure_mode_2 = 0x0;
+            _registers.fdc_conf.measure_mode_1 = 1;
+            _registers.fdc_conf.measure_mode_2 = 0;
         }
+        _registers.fdc_conf.padding_0 = 0;
+        _registers.fdc_conf.padding_1 = 0;
         set_register(_registers.fdc_conf);
     }
 
@@ -154,7 +154,6 @@ class FDC1004 {
 
     auto poll_limited_capacitance(uint16_t number_reads, can::ids::SensorId _id,
                                   uint8_t tags) -> void {
-        // TODO add tags here
         set_sensor_id(_id);
         auto converted_msb_addr =
             static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
@@ -179,7 +178,6 @@ class FDC1004 {
 
     auto poll_continuous_capacitance(can::ids::SensorId _id, uint8_t tags,
                                      uint8_t binding) -> void {
-        // TODO add tags here
         set_sensor_id(_id);
         auto delay = delay_or_disable(binding);
         auto converted_msb_addr =

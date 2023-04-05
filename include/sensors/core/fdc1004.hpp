@@ -138,7 +138,7 @@ struct __attribute__((packed, __may_alias__)) ManufactureId {
     static constexpr Registers address = Registers::MANUFACTURER_ID;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     uint16_t manufacture_id : 16 = 0;
 };
@@ -147,7 +147,7 @@ struct __attribute__((packed, __may_alias__)) DeviceId {
     static constexpr Registers address = Registers::DEVICE_ID;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     uint16_t device_id : 16 = 0;
 };
@@ -156,7 +156,7 @@ struct __attribute__((packed, __may_alias__)) MeasureMode1_MSB {
     static constexpr Registers address = Registers::MEAS1_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -165,17 +165,17 @@ struct __attribute__((packed, __may_alias__)) MeasureMode1_LSB {
     static constexpr Registers address = Registers::MEAS1_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
-    uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode2_MSB {
     static constexpr Registers address = Registers::MEAS2_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -184,17 +184,17 @@ struct __attribute__((packed, __may_alias__)) MeasureMode2_LSB {
     static constexpr Registers address = Registers::MEAS2_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
-    uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode3_MSB {
     static constexpr Registers address = Registers::MEAS3_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -203,17 +203,17 @@ struct __attribute__((packed, __may_alias__)) MeasureMode3_LSB {
     static constexpr Registers address = Registers::MEAS3_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
-    uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode4_MSB {
     static constexpr Registers address = Registers::MEAS4_MSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     uint16_t measurement : 16 = 0;
 };
@@ -222,17 +222,17 @@ struct __attribute__((packed, __may_alias__)) MeasureMode4_LSB {
     static constexpr Registers address = Registers::MEAS4_LSB;
     static constexpr bool readable = true;
     static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
-    uint8_t measurement : 8 = 0;
     uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure1 {
     static constexpr Registers address = Registers::CONF_MEAS1;
     static constexpr bool readable = true;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint16_t value_mask = (1 << 16) - 1;
 
     // Notes:
 
@@ -248,191 +248,188 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure1 {
     // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
     // The max offset is 96.875 pF
 
-    // positive input channel
-    uint16_t CHA : 3 = 0;
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
     // negative input channel
     uint16_t CHB : 3 = 0;
-    uint16_t CAPDAC : 5 = 0;
-    uint16_t padding_0 : 4 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
     static constexpr Registers address = Registers::CONF_MEAS2;
     static constexpr bool readable = true;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint16_t value_mask = (1 << 16) - 1;
 
     // See ConfMeasure1
 
-    // positive input channel
-    uint16_t CHA : 3 = 0;
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
     // negative input channel
     uint16_t CHB : 3 = 0;
-    uint16_t CAPDAC : 5 = 0;
-    uint16_t padding_0 : 4 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
     static constexpr Registers address = Registers::CONF_MEAS3;
     static constexpr bool readable = true;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint16_t value_mask = (1 << 16) - 1;
 
     // See ConfMeasure1
 
-    // positive input channel
-    uint16_t CHA : 3 = 0;
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
     // negative input channel
     uint16_t CHB : 3 = 0;
-    uint16_t CAPDAC : 5 = 0;
-    uint16_t padding_0 : 4 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
     static constexpr Registers address = Registers::CONF_MEAS4;
     static constexpr bool readable = true;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See ConfMeasure1
 
-    // positive input channel
-    uint16_t CHA : 3 = 0;
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
     // negative input channel
     uint16_t CHB : 3 = 0;
-    uint16_t CAPDAC : 5 = 0;
-    uint16_t padding_0 : 4 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) FDCConf {
     static constexpr Registers address = Registers::FDC_CONF;
     static constexpr bool readable = true;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
-    uint8_t reset : 1 = 0;
-    uint8_t padding_0 : 2 = 0;
+    uint16_t measure_mode_4_status : 1 = 0;
+    uint16_t measure_mode_3_status : 1 = 0;
+    uint16_t measure_mode_2_status : 1 = 0;
+    uint16_t measure_mode_1_status : 1 = 0;
+
+    // The measurement mode you wish to run in
+    uint16_t measure_mode_4 : 1 = 0;
+    uint16_t measure_mode_3 : 1 = 0;
+    uint16_t measure_mode_2 : 1 = 0;
+    uint16_t measure_mode_1 : 1 = 0;
+
+    uint16_t repeating_measurements : 1 = 0;
+    uint16_t padding_1 : 1 = 0;
+
     // Measurement rate Options:
 
     // b00 Reserved
     // b01 100S/s
     // b10 200S/s
     // b11 400S/s
-    uint8_t measurement_rate : 2 = 0x1;
-    uint8_t padding_1 : 1 = 0;
-    uint8_t repeating_measurements : 1 = 0;
-    uint8_t measure_mode_1 : 1 = 0;
-    uint8_t measure_mode_2 : 1 = 0;
-    uint8_t measure_mode_3 : 1 = 0;
-    uint8_t measure_mode_4 : 1 = 0;
+    uint16_t measurement_rate : 2 = 0;
 
-    // The measurement mode you wish to run in
-    uint8_t measure_mode_1_status : 1 = 0;
-    uint8_t measure_mode_2_status : 1 = 0;
-    uint8_t measure_mode_3_status : 1 = 0;
-    uint8_t measure_mode_4_status : 1 = 0;
+    uint16_t padding_0 : 3 = 0;
+    uint16_t reset : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN1 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN1;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
     // external circuitry
 
     // The value in the register is stored as a fixed point integer
     // in 5Q11 format.
-    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN2 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN2;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See OffsetCalCIN1
-
-    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN3 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN3;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See OffsetCalCIN1
-
-    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) OffsetCalCIN4 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN4;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See OffsetCalCIN1
-
-    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN1 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN1;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // Gain factor correction ranging from 0 to 4 that can be applied
     // to individual channels to remove gain mismatch.
 
     // The register is stored as a fixed point value in 2Q14 format.
     // The gain is calculated by Gain = GAIN[15:0]/2^14
-    uint16_t offset_integer : 2 = 0;
     uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN2 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN2;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See GainCalCIN1
-
-    uint16_t offset_integer : 2 = 0;
     uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN3 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN3;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See GainCalCIN1
-
-    uint16_t offset_integer : 2 = 0;
     uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN4 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN4;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 16) - 1;
+    static constexpr uint32_t value_mask = (1 << 17) - 1;
 
     // See GainCalCIN1
-
-    uint16_t offset_integer : 2 = 0;
     uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
 };
 
 struct FDC1004RegisterMap {
