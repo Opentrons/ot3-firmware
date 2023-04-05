@@ -3,6 +3,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_timer.hpp"
+#include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/task.hpp"
 #include "i2c/core/hardware_iface.hpp"
@@ -161,10 +162,13 @@ struct AllTask {
 
 namespace z_tasks {
 
-void start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-                spi::hardware::SpiDeviceBase& spi_device,
-                tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                AllTask& tasks, gripper_tasks::QueueClient& main_queues);
+void start_task(
+    motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+    spi::hardware::SpiDeviceBase& spi_device,
+    tmc2130::configs::TMC2130DriverConfig& driver_configs, AllTask& tasks,
+    gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
@@ -202,9 +206,11 @@ struct QueueClient : can::message_writer::MessageWriter {
 
 namespace g_tasks {
 
-void start_task(brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
-                AllTask& gripper_tasks,
-                gripper_tasks::QueueClient& main_queues);
+void start_task(
+    brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
+    AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();

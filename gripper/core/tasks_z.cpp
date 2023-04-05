@@ -34,11 +34,13 @@ static auto z_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 #endif
 
-void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-                         spi::hardware::SpiDeviceBase& spi_device,
-                         tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                         AllTask& gripper_tasks,
-                         gripper_tasks::QueueClient& main_queues) {
+void z_tasks::start_task(
+    motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+    spi::hardware::SpiDeviceBase& spi_device,
+    tmc2130::configs::TMC2130DriverConfig& driver_configs,
+    AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor) {
     auto& motion = mc_task_builder.start(5, "z mc", z_motor.motion_controller,
                                          z_queues, z_queues);
     auto& move_group =
@@ -51,9 +53,10 @@ void z_tasks::start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     auto& spi_task = spi_task_builder.start(5, "spi", spi_device);
 #if PCBA_PRIMARY_REVISION != 'b'
     auto& z_usage_storage_task = z_usage_storage_task_builder.start(
-        5, "z usage storage", z_queues, main_queues);
+        5, "z usage storage", z_queues, main_queues, tail_accessor);
 #else
     std::ignore = main_queues;
+    std::ignore = tail_accessor;
 #endif
 
     gripper_tasks.motion_controller = &motion;

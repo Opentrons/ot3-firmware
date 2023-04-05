@@ -1,6 +1,7 @@
 #include "head/core/tasks_rev1.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "eeprom/core/dev_data.hpp"
 #include "head/core/can_task.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
@@ -71,6 +72,8 @@ static auto i2c3_poll_client =
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
+static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
+
 static auto left_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 static auto right_usage_storage_task_builder =
@@ -140,7 +143,7 @@ void head_tasks::start_tasks(
         5, "left move status", left_queues,
         left_motion_controller.get_mechanical_config(), left_queues);
     auto& left_usage_storage_task = left_usage_storage_task_builder.start(
-        5, "left usage storage", left_queues, head_queues);
+        5, "left usage storage", left_queues, head_queues, tail_accessor);
 
     // Assign left motor task collection task pointers
     left_tasks.motion_controller = &left_motion;
@@ -171,7 +174,7 @@ void head_tasks::start_tasks(
         5, "right move status", right_queues,
         right_motion_controller.get_mechanical_config(), right_queues);
     auto& right_usage_storage_task = right_usage_storage_task_builder.start(
-        5, "right usage storage", right_queues, head_queues);
+        5, "right usage storage", right_queues, head_queues, tail_accessor);
 
     rmh_tsk.start_task();
     lmh_tsk.start_task();

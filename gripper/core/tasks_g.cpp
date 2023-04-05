@@ -30,7 +30,9 @@ static auto jaw_usage_storage_task_builder =
 
 void g_tasks::start_task(
     brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
-    AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues) {
+    AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor) {
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
@@ -42,9 +44,10 @@ void g_tasks::start_task(
         grip_motor.motion_controller.get_mechanical_config(), g_queues);
 #if PCBA_PRIMARY_REVISION != 'b'
     auto& usage_storage_task = jaw_usage_storage_task_builder.start(
-        5, "jaw usage storage", g_queues, main_queues);
+        5, "jaw usage storage", g_queues, main_queues, tail_accessor);
 #else
     std::ignore = main_queues;
+    std::ignore = tail_accessor;
 #endif
 
     gripper_tasks.brushed_motor_driver = &brushed_motor;

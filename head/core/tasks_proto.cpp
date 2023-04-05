@@ -73,6 +73,8 @@ static auto left_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 static auto right_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+
+static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
 /**
  * Start head tasks.
  */
@@ -112,9 +114,9 @@ void head_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
     auto& left_usage_storage_task = left_usage_storage_task_builder.start(
-        5, "left usage storage", left_queues, head_queues);
+        5, "left usage storage", left_queues, head_queues, tail_accessor);
     auto& right_usage_storage_task = right_usage_storage_task_builder.start(
-        5, "right usage storage", right_queues, head_queues);
+        5, "right usage storage", right_queues, head_queues, tail_accessor);
 
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;

@@ -34,7 +34,9 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk) {
+    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -54,7 +56,7 @@ void linear_motor_tasks::start_tasks(
         5, "move status", queues, motion_controller.get_mechanical_config(),
         queues);
     auto& usage_storage_task = linear_usage_storage_task_builder.start(
-        5, "usage storage", queues, sensor_tasks::get_queues());
+        5, "usage storage", queues, sensor_tasks::get_queues(), tail_accessor);
 
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
@@ -78,7 +80,9 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk) {
+    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -98,7 +102,8 @@ void linear_motor_tasks::start_tasks(
         5, "move status", queues, motion_controller.get_mechanical_config(),
         queues);
     auto& usage_storage_task = linear_usage_storage_task_builder.start(
-        5, "linear usage storage", queues, sensor_tasks::get_queues());
+        5, "linear usage storage", queues, sensor_tasks::get_queues(),
+        tail_accessor);
 
     tmc2160_tasks.driver = &tmc2160_driver;
     motion_tasks.motion_controller = &motion;

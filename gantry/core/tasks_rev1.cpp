@@ -47,6 +47,7 @@ static auto eeprom_task_builder =
 static auto usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 
+static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 /**
  * Start gantry ::tasks.
  */
@@ -82,7 +83,7 @@ void gantry::tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
                                                   eeprom_hw_iface);
     auto& usage_storage_task = usage_storage_task_builder.start(
-        5, "usage storage", ::queues, ::queues);
+        5, "usage storage", ::queues, ::queues, tail_accessor);
 
     ::tasks.can_writer = &can_writer;
     ::tasks.motion_controller = &motion;

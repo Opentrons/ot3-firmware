@@ -135,6 +135,9 @@ static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto& sensor_queue_client = sensor_tasks::get_queues();
 
+static auto tail_accessor =
+    eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
+
 #if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2' && \
     PIPETTE_TYPE != NINETY_SIX_CHANNEL
 static constexpr bool pressure_sensor_available = false;
@@ -202,10 +205,11 @@ auto initialize_motor_tasks(
     initialize_enc_timer(encoder_callback);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
+        tail_accessor);
     gear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, gear_motion,
-        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks);
+        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks, tail_accessor);
 }
 auto initialize_motor_tasks(
     can::ids::NodeId id,
@@ -236,7 +240,8 @@ auto initialize_motor_tasks(
     initialize_enc_timer(encoder_callback);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
+        tail_accessor);
 }
 
 auto main() -> int {

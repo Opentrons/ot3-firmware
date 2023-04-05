@@ -43,7 +43,9 @@ void gear_motor_tasks::start_tasks(
     gear_motor_tasks::SPIWriterClient& spi_writer,
     motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
     can::ids::NodeId id,
-    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     left_queue_client.set_node_id(id);
     right_queue_client.set_node_id(id);
 
@@ -65,7 +67,8 @@ void gear_motor_tasks::start_tasks(
         5, "move status", left_queues,
         motion_controllers.left.get_mechanical_config(), left_queues);
     auto& left_usage_storage_task = left_usage_storage_task_builder.start(
-        5, "usage storage", left_queues, sensor_tasks::get_queues());
+        5, "usage storage", left_queues, sensor_tasks::get_queues(),
+        tail_accessor);
 
     left_tasks.driver = &tmc2160_driver_left;
     left_tasks.motion_controller = &motion_left;
@@ -94,7 +97,8 @@ void gear_motor_tasks::start_tasks(
         5, "move status", right_queues,
         motion_controllers.right.get_mechanical_config(), right_queues);
     auto& right_usage_storage_task = right_usage_storage_task_builder.start(
-        5, "usage storage", right_queues, sensor_tasks::get_queues());
+        5, "usage storage", right_queues, sensor_tasks::get_queues(),
+        tail_accessor);
 
     right_tasks.driver = &tmc2160_driver_right;
     right_tasks.motion_controller = &motion_right;

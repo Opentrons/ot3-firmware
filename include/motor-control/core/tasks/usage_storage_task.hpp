@@ -33,9 +33,9 @@ template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
 class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
   public:
-    UsageStorageTaskHandler(CanClient& can_client, EEPromClient& eeprom_client)
+    UsageStorageTaskHandler(CanClient& can_client, EEPromClient& eeprom_client, eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : can_client{can_client},
-          usage_data_accessor{eeprom_client, *this, accessor_backing} {}
+          usage_data_accessor{eeprom_client, *this, accessor_backing, tail_accessor} {}
     UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
     UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;
@@ -57,18 +57,18 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     }
 
   private:
-    void start_handle(std::monostate m) { static_cast<void>(m); }
+    void start_handle(const std::monostate& m) { static_cast<void>(m); }
 
-    void finish_handle(std::monostate m) { static_cast<void>(m); }
+    void finish_handle(const std::monostate& m) { static_cast<void>(m); }
 
-    void start_handle(usage_messages::GetUsageRequest& m) {
+    void start_handle(const usage_messages::GetUsageRequest& m) {
         ready_for_new_message = false;
         buffered_task = m;
         _ensure_part(m.distance_usage_key, distance_data_usage_len);
         usage_data_accessor.get_data(m.distance_usage_key, 0);
     }
 
-    void finish_handle(usage_messages::GetUsageRequest& m) {
+    void finish_handle(const usage_messages::GetUsageRequest& m) {
         uint64_t distance_usage = 0;
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
@@ -79,14 +79,14 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         can_client.send_can_message(can::ids::NodeId::host, resp);
     }
 
-    void start_handle(usage_messages::IncreaseDistanceUsage& m) {
+    void start_handle(const usage_messages::IncreaseDistanceUsage& m) {
         ready_for_new_message = false;
         buffered_task = m;
         _ensure_part(m.key, distance_data_usage_len);
         usage_data_accessor.get_data(m.key, 0);
     }
 
-    void finish_handle(usage_messages::IncreaseDistanceUsage& m) {
+    void finish_handle(const usage_messages::IncreaseDistanceUsage& m) {
         uint64_t old_value = 0;
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
@@ -139,8 +139,9 @@ class UsageStorageTask {
     template <can::message_writer_task::TaskClient CanClient,
               eeprom::task::TaskClient EEPromClient>
     [[noreturn]] void operator()(CanClient* can_client,
-                                 EEPromClient* eeprom_client) {
-        auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client};
+                                 EEPromClient* eeprom_client,
+                                 eeprom::dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor) {
+        auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client, *tail_accessor};
         TaskMessage message{};
         for (;;) {
             if (handler.ready()) {

@@ -2,6 +2,7 @@
 
 #include "common/core/freertos_task.hpp"
 #include "common/core/freertos_timer.hpp"
+#include "eeprom/core/dev_data.hpp"
 #include "gripper/core/can_task.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
@@ -48,6 +49,9 @@ static auto capacitive_sensor_task_builder_front =
 static auto capacitive_sensor_task_builder_rear =
     freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
+
+static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
+
 /**
  * Start gripper tasks.
  */
@@ -109,9 +113,10 @@ void gripper_tasks::start_tasks(
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
 
-    z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues);
+    z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues,
+                        tail_accessor);
 
-    g_tasks::start_task(grip_motor, tasks, queues);
+    g_tasks::start_task(grip_motor, tasks, queues, tail_accessor);
 
     z_tasks::get_queues().set_queue(&can_writer.get_queue());
     g_tasks::get_queues().set_queue(&can_writer.get_queue());
