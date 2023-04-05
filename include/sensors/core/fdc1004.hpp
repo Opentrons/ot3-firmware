@@ -52,6 +52,9 @@ enum class MeasurementRate : uint8_t {
     FOUR_HUNDRED_SAMPLES_PER_SECOND = 0x3,
 };
 
+// This is used to determine which configuration register
+// you're currently using and thus what measurement mode
+// you're in.
 enum class MeasureConfigMode : uint8_t { ONE, TWO, THREE, FOUR };
 
 // Capacitance Sensor Address and Registers
@@ -259,19 +262,7 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    // Notes:
-
-    // You can store up to 4 measurement configurations on the cap sensor
-    // using the 4 different conf measurement registers.
-
-    // (1) It is not permitted to configure a measurement where the CHA field
-    // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
-    // also be set to b010). (2) It is not permitted to configure a differential
-    // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
-    // b010, CHB cannot be b001 or b000).
-
-    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
-    // The max offset is 96.875 pF
+    // See ConfMeasure1
 
     // positive input channel
     uint16_t CHA : 3 = 0;
@@ -287,19 +278,7 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    // Notes:
-
-    // You can store up to 4 measurement configurations on the cap sensor
-    // using the 4 different conf measurement registers.
-
-    // (1) It is not permitted to configure a measurement where the CHA field
-    // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
-    // also be set to b010). (2) It is not permitted to configure a differential
-    // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
-    // b010, CHB cannot be b001 or b000).
-
-    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
-    // The max offset is 96.875 pF
+    // See ConfMeasure1
 
     // positive input channel
     uint16_t CHA : 3 = 0;
@@ -315,19 +294,7 @@ struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
     static constexpr bool writable = true;
     static constexpr uint32_t value_mask = (1 << 8) - 1;
 
-    // Notes:
-
-    // You can store up to 4 measurement configurations on the cap sensor
-    // using the 4 different conf measurement registers.
-
-    // (1) It is not permitted to configure a measurement where the CHA field
-    // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
-    // also be set to b010). (2) It is not permitted to configure a differential
-    // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
-    // b010, CHB cannot be b001 or b000).
-
-    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
-    // The max offset is 96.875 pF
+    // See ConfMeasure1
 
     // positive input channel
     uint16_t CHA : 3 = 0;
@@ -346,6 +313,7 @@ struct __attribute__((packed, __may_alias__)) FDCConf {
     uint8_t reset : 1 = 0;
     uint8_t padding_0 : 2 = 0;
     // Measurement rate Options:
+
     // b00 Reserved
     // b01 100S/s
     // b10 200S/s
@@ -369,11 +337,14 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN1 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN1;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
     // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
     // external circuitry
-    uint8_t offset_integer : 5 = 0;
+
+    // The value in the register is stored as a fixed point integer
+    // in 5Q11 format.
+    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
 };
 
@@ -381,11 +352,11 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN2 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN2;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
-    // external circuitry
-    uint8_t offset_integer : 5 = 0;
+    // See OffsetCalCIN1
+
+    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
 };
 
@@ -393,11 +364,11 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN3 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN3;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
-    // external circuitry
-    uint8_t offset_integer : 5 = 0;
+    // See OffsetCalCIN1
+
+    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
 };
 
@@ -405,11 +376,11 @@ struct __attribute__((packed, __may_alias__)) OffsetCalCIN4 {
     static constexpr Registers address = Registers::OFFSET_CAL_CIN4;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
-    // external circuitry
-    uint8_t offset_integer : 5 = 0;
+    // See OffsetCalCIN1
+
+    uint16_t offset_integer : 5 = 0;
     uint16_t offset_decimal : 11 = 0;
 };
 
@@ -417,40 +388,51 @@ struct __attribute__((packed, __may_alias__)) GainCalCIN1 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN1;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    uint8_t offset_integer : 5 = 0;
-    uint16_t offset_decimal : 11 = 0;
+    // Gain factor correction ranging from 0 to 4 that can be applied
+    // to individual channels to remove gain mismatch.
+
+    // The register is stored as a fixed point value in 2Q14 format.
+    // The gain is calculated by Gain = GAIN[15:0]/2^14
+    uint16_t offset_integer : 2 = 0;
+    uint16_t offset_decimal : 14 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN2 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN2;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    uint8_t offset_integer : 5 = 0;
-    uint16_t offset_decimal : 11 = 0;
+    // See GainCalCIN1
+
+    uint16_t offset_integer : 2 = 0;
+    uint16_t offset_decimal : 14 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN3 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN3;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    uint8_t offset_integer : 5 = 0;
-    uint16_t offset_decimal : 11 = 0;
+    // See GainCalCIN1
+
+    uint16_t offset_integer : 2 = 0;
+    uint16_t offset_decimal : 14 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) GainCalCIN4 {
     static constexpr Registers address = Registers::GAIN_CAL_CIN4;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint32_t value_mask = (1 << 16) - 1;
 
-    uint8_t offset_integer : 5 = 0;
-    uint16_t offset_decimal : 11 = 0;
+    // See GainCalCIN1
+
+    uint16_t offset_integer : 2 = 0;
+    uint16_t offset_decimal : 14 = 0;
 };
 
 struct FDC1004RegisterMap {
