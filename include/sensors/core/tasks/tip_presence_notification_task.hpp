@@ -32,6 +32,15 @@ class TipPresenceNotificationHandler {
                     static_cast<uint8_t>(hardware.check_tip_presence())});
     }
 
+    void visit(const can::messages::TipStatusQueryRequest &) {
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::PushTipPresenceNotification{
+                .message_index = 0,
+                .ejector_flag_status =
+                    static_cast<uint8_t>(hardware.check_tip_presence())});
+    }
+
   private:
     CanClient &can_client;
     sensors::hardware::SensorHardwareBase &hardware;
