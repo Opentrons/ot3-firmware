@@ -6,6 +6,7 @@
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/task.hpp"
+#include "eeprom/core/update_data_rev_task.hpp"
 #include "i2c/core/hardware_iface.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
@@ -90,6 +91,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         capacitive_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         capacitive_sensor_queue_rear{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<eeprom::data_rev_task::TaskMessage>*
+        update_data_rev_queue{nullptr};
 };
 
 /**
@@ -140,6 +143,8 @@ struct AllTask {
     sensors::tasks::CapacitiveSensorTask<
         freertos_message_queue::FreeRTOSMessageQueue>*
         capacitive_sensor_task_rear{nullptr};
+    eeprom::data_rev_task::UpdateDataRevTask<freertos_message_queue::FreeRTOSMessageQueue>* update_data_rev_task{
+        nullptr};
     usage_storage_task::UsageStorageTask<
         freertos_message_queue::FreeRTOSMessageQueue>* jaw_usage_storage_task{
         nullptr};

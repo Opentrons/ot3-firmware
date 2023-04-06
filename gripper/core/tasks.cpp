@@ -4,6 +4,7 @@
 #include "common/core/freertos_timer.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "gripper/core/can_task.hpp"
+#include "gripper/firmware/eeprom_keys.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -51,6 +52,8 @@ static auto capacitive_sensor_task_builder_rear =
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
+static auto eeprom_data_rev_update_builder =
+    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 /**
  * Start gripper tasks.
@@ -86,6 +89,8 @@ void gripper_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
 
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(5, "data_rev_update", queues, tail_accessor, table_updater);
+
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(
             5, "cap sensor S1", i2c2_task_client, i2c2_poll_client,
@@ -102,6 +107,7 @@ void gripper_tasks::start_tasks(
     tasks.eeprom_task = &eeprom_task;
     tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
+    tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.i2c2_queue = &i2c2_task.get_queue();
     queues.i2c3_queue = &i2c3_task.get_queue();
@@ -112,6 +118,8 @@ void gripper_tasks::start_tasks(
         &capacitive_sensor_task_front.get_queue();
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
+
+    queues.update_data_rev_queue = &eeprom_data_rev_update_task.get_queue();
 
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues,
                         tail_accessor);
