@@ -46,6 +46,10 @@ enum class CHB : uint8_t {
 };
 
 enum class MeasurementRate : uint8_t {
+    // b00 Reserved
+    // b01 100S/s
+    // b10 200S/s
+    // b11 400S/s
     RESERVED = 0x0,
     ONE_HUNDRED_SAMPLES_PER_SECOND = 0x1,
     TWO_HUNDRED_SAMPLES_PER_SECOND = 0x2,
@@ -326,10 +330,8 @@ struct __attribute__((packed, __may_alias__)) FDCConf {
 
     // Measurement rate Options:
 
-    // b00 Reserved
-    // b01 100S/s
-    // b10 200S/s
-    // b11 400S/s
+    // See values in `MeasurementRate`
+
     uint16_t measurement_rate : 2 = 0;
 
     uint16_t padding_0 : 3 = 0;
