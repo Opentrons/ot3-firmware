@@ -11,7 +11,8 @@ namespace sensors {
 namespace tip_presence {
 struct TipStatusChangeDetected {};
 
-using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected, can::messages::TipStatusQueryRequest>;
+using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected,
+                                 can::messages::TipStatusQueryRequest>;
 
 }  // namespace tip_presence
 
