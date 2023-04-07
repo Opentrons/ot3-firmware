@@ -17,7 +17,8 @@ using MotionControlTaskMessage =
                  can::messages::SetMotionConstraints,
                  can::messages::StopRequest,
                  can::messages::ReadLimitSwitchRequest,
-                 can::messages::UpdateMotorPositionEstimationRequest>;
+                 can::messages::UpdateMotorPositionEstimationRequest,
+                 can::messages::GetMotorUsageRequest>;
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,

@@ -48,6 +48,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
         mock_timer_interrupt_running = is_running;
     }
     auto steps_taken() -> uint64_t { return steps; }
+    auto get_usage_eeprom_config() -> motor_hardware::UsageEEpromConfig& {
+        return eeprom_config;
+    }
 
   private:
     uint64_t steps = 0;
@@ -60,6 +63,8 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     int32_t test_pulses = 0x0;
     bool cancel_request = false;
     bool mock_timer_interrupt_running = true;
+    motor_hardware::UsageEEpromConfig eeprom_config =
+        motor_hardware::UsageEEpromConfig{.distance_usage_key = 0};
 };
 
 };  // namespace test_mocks

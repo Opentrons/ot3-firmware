@@ -8,6 +8,10 @@
 
 namespace motor_hardware {
 
+struct UsageEEpromConfig {
+    uint16_t distance_usage_key;
+};
+
 class MotorHardwareIface {
   public:
     MotorHardwareIface() = default;
@@ -34,6 +38,7 @@ class MotorHardwareIface {
 
     virtual auto has_cancel_request() -> bool = 0;
     virtual void request_cancel() = 0;
+    virtual auto get_usage_eeprom_config() -> UsageEEpromConfig& = 0;
 
     // This variable can remain public because the only public methods
     // to it are thread-safe anyways.

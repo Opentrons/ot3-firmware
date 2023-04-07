@@ -9,6 +9,7 @@
 #include "motor-control/core/brushed_motor/brushed_motion_controller.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/utils.hpp"
 
 namespace brushed_motion_controller_task {
@@ -20,14 +21,18 @@ using TaskMessage =
  * The handler of brushed motion controller messages
  */
 template <lms::MotorMechanicalConfig MEConfig,
-          can::message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient,
+          usage_storage_task::TaskClient UsageClient>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType =
         brushed_motion_controller::MotionController<MEConfig>;
     MotionControllerMessageHandler(MotorControllerType& controller,
-                                   CanClient& can_client)
-        : controller{controller}, can_client{can_client} {}
+                                   CanClient& can_client,
+                                   UsageClient& usage_client)
+        : controller{controller},
+          can_client{can_client},
+          usage_client{usage_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -107,8 +112,13 @@ class MotionControllerMessageHandler {
                                     can::messages::ack_from_request(m));
     }
 
+    void handle(const can::messages::GetMotorUsageRequest& m) {
+        controller.send_usage_data(m.message_index, usage_client);
+    }
+
     brushed_motion_controller::MotionController<MEConfig>& controller;
     CanClient& can_client;
+    UsageClient& usage_client;
 };
 
 /**
@@ -131,11 +141,13 @@ class MotionControllerTask {
      * Task entry point.
      */
     template <lms::MotorMechanicalConfig MEConfig,
-              can::message_writer_task::TaskClient CanClient>
+              can::message_writer_task::TaskClient CanClient,
+              usage_storage_task::TaskClient UsageClient>
     [[noreturn]] void operator()(
         brushed_motion_controller::MotionController<MEConfig>* controller,
-        CanClient* can_client) {
-        auto handler = MotionControllerMessageHandler{*controller, *can_client};
+        CanClient* can_client, UsageClient* usage_client) {
+        auto handler = MotionControllerMessageHandler{*controller, *can_client,
+                                                      *usage_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

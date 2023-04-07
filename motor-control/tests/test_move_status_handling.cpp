@@ -23,6 +23,13 @@ struct MockCanClient {
         queue.push_back(std::make_pair(node_id, m));
     }
 };
+struct MockUsageClient {
+    std::deque<usage_storage_task::TaskMessage> queue{};
+    auto send_usage_storage_queue(const usage_storage_task::TaskMessage& m)
+        -> void {
+        queue.push_back(m);
+    }
+};
 
 SCENARIO("testing move status position translation") {
     GIVEN("a status handler with known LMS config") {
@@ -33,15 +40,19 @@ SCENARIO("testing move status position translation") {
             .encoder_pulses_per_rev = 1000,
         };
         auto mcc = MockCanClient();
-        auto handler = MoveStatusMessageHandler(mcc, linearConfig);
+        auto muc = MockUsageClient();
+        auto handler = MoveStatusMessageHandler(mcc, linearConfig, muc);
         WHEN("passing a position of 0 steps with 0 encoder pulses") {
             handler.handle_message(Ack{.group_id = 11,
                                        .seq_id = 8,
                                        .current_position_steps = 0,
                                        .encoder_position = 0,
                                        .position_flags = 0x3,
-                                       .ack_id = AckMessageId::timeout});
+                                       .ack_id = AckMessageId::timeout,
+                                       .start_encoder_position = 0,
+                                       .usage_key = 1});
             CHECK(mcc.queue.size() == 1);
+            CHECK(muc.queue.size() == 1);
 
             auto resp = mcc.queue.front();
             auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
@@ -57,6 +68,14 @@ SCENARIO("testing move status position translation") {
             THEN("the encoder value should still be 0") {
                 REQUIRE(resp_msg.encoder_position_um == 0);
             }
+
+            auto usage_resp = muc.queue.front();
+            auto usage_resp_msg =
+                std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
+            THEN("The distance traveled usage will be 0") {
+                REQUIRE(usage_resp_msg.key == 1);
+                REQUIRE(usage_resp_msg.distance_traveled_um == 0);
+            }
         }
         WHEN("passing a position of 0 steps with -100 encoder pulses") {
             handler.handle_message(Ack{.group_id = 11,
@@ -64,8 +83,11 @@ SCENARIO("testing move status position translation") {
                                        .current_position_steps = 0,
                                        .encoder_position = -1000,
                                        .position_flags = 0x1,
-                                       .ack_id = AckMessageId::timeout});
+                                       .ack_id = AckMessageId::timeout,
+                                       .start_encoder_position = 0,
+                                       .usage_key = 1});
             CHECK(mcc.queue.size() == 1);
+            CHECK(muc.queue.size() == 1);
 
             auto resp = mcc.queue.front();
             auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
@@ -78,8 +100,15 @@ SCENARIO("testing move status position translation") {
             THEN("the position value should still be 0") {
                 REQUIRE(resp_msg.current_position_um == 0);
             }
-            THEN("the encoder value should still be 0") {
+            THEN("the encoder value should be -500") {
                 REQUIRE(resp_msg.encoder_position_um == -500);
+            }
+            auto usage_resp = muc.queue.front();
+            auto usage_resp_msg =
+                std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
+            THEN("The distance traveled usage will be populated") {
+                REQUIRE(usage_resp_msg.key == 1);
+                REQUIRE(usage_resp_msg.distance_traveled_um == 500);
             }
         }
         WHEN("passing a position of fullscale steps") {
@@ -87,8 +116,11 @@ SCENARIO("testing move status position translation") {
                 Ack{.group_id = 0,
                     .seq_id = 0,
                     .current_position_steps = UINT_MAX,
-                    .ack_id = AckMessageId::complete_without_condition});
+                    .ack_id = AckMessageId::complete_without_condition,
+                    .start_encoder_position = 0,
+                    .usage_key = 1});
             CHECK(mcc.queue.size() == 1);
+            CHECK(muc.queue.size() == 1);
             auto resp = mcc.queue.front();
             auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
             THEN("the position value should not be clipped") {
@@ -105,6 +137,7 @@ SCENARIO("testing move status position translation") {
                                        .current_position_steps = 10000,
                                        .ack_id = AckMessageId::position_error});
             CHECK(mcc.queue.size() == 1);
+            CHECK(muc.queue.size() == 1);
             auto resp = mcc.queue.front();
             auto resp_msg = std::get<can::messages::MoveCompleted>(resp.second);
             THEN("the position in micrometers should be accurate") {

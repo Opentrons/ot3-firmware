@@ -23,11 +23,19 @@ struct MockCanClient {
         queue.push_back(std::make_pair(node_id, m));
     }
 };
+struct MockUsageClient {
+    std::deque<usage_storage_task::TaskMessage> queue{};
+    auto send_usage_storage_queue(const usage_storage_task::TaskMessage& m)
+        -> void {
+        queue.push_back(m);
+    }
+};
 
 SCENARIO("testing gear move status response handling") {
     GIVEN("a left and right status handler with known LMS config") {
         struct LinearMotionSystemConfig<LeadScrewConfig> linearConfig {
-            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2},
+            .mech_config = LeadScrewConfig{.lead_screw_pitch = 2,
+                                           .gear_reduction_ratio = 1.0},
             .steps_per_rev = 200, .microstep = 32,
             .encoder_pulses_per_rev = 1000,
         };
@@ -38,14 +46,19 @@ SCENARIO("testing gear move status response handling") {
                                      100,
                                      0x1,
                                      AckMessageId::complete_without_condition,
+                                     0,
+                                     1,
+                                     0,
                                      can::ids::PipetteTipActionType::clamp,
                                      can::ids::GearMotorId::left};
 
         auto mcc = MockCanClient();
-        auto handler = MoveStatusMessageHandler(mcc, linearConfig);
+        auto muc = MockUsageClient();
+        auto handler = MoveStatusMessageHandler(mcc, linearConfig, muc);
         WHEN("Each handler is given the correct gear id") {
             handler.handle_message(left_ack);
             CHECK(mcc.queue.size() == 1);
+            CHECK(muc.queue.size() == 1);
 
             auto resp = mcc.queue.front();
             auto resp_msg =
@@ -56,6 +69,15 @@ SCENARIO("testing gear move status response handling") {
                 REQUIRE(resp_msg.group_id == 11);
                 REQUIRE(resp_msg.seq_id == 8);
                 REQUIRE(resp_msg.gear_motor_id == can::ids::GearMotorId::left);
+                REQUIRE(resp_msg.current_position_um == 31);
+            }
+
+            auto usage_resp = muc.queue.front();
+            auto usage_resp_msg =
+                std::get<usage_messages::IncreaseDistanceUsage>(usage_resp);
+            THEN("The distance traveled usage will be 31") {
+                REQUIRE(usage_resp_msg.key == 1);
+                REQUIRE(usage_resp_msg.distance_traveled_um == 31);
             }
         }
     }

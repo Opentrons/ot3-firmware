@@ -91,6 +91,10 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         return cancel_request.exchange(false);
     }
     void request_cancel() final { cancel_request.store(true); }
+    auto get_usage_eeprom_config()
+        -> motor_hardware::UsageEEpromConfig & final {
+        return eeprom_config;
+    }
 
   private:
     bool limit_switch_status = false;
@@ -101,6 +105,8 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
+    motor_hardware::UsageEEpromConfig eeprom_config =
+        motor_hardware::UsageEEpromConfig(0);
 };
 
 class SimBrushedMotorHardwareIface
@@ -153,6 +159,10 @@ class SimBrushedMotorHardwareIface
 
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
+    auto get_usage_eeprom_config()
+        -> motor_hardware::UsageEEpromConfig & final {
+        return eeprom_config;
+    }
 
     auto has_cancel_request() -> bool final {
         return cancel_request.exchange(false);
@@ -172,6 +182,8 @@ class SimBrushedMotorHardwareIface
     MoveMessageHardware _id;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
+    motor_hardware::UsageEEpromConfig eeprom_config =
+        motor_hardware::UsageEEpromConfig(0);
 };
 
 class SimGearMotorHardwareIface
@@ -235,6 +247,11 @@ class SimGearMotorHardwareIface
     }
     void request_cancel() final { cancel_request.store(true); }
 
+    auto get_usage_eeprom_config()
+        -> motor_hardware::UsageEEpromConfig & final {
+        return eeprom_config;
+    }
+
   private:
     bool limit_switch_status = false;
     bool tip_sense_status = false;
@@ -244,6 +261,8 @@ class SimGearMotorHardwareIface
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
+    motor_hardware::UsageEEpromConfig eeprom_config =
+        motor_hardware::UsageEEpromConfig(0);
 };
 
 }  // namespace sim_motor_hardware_iface
