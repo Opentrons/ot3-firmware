@@ -1,4 +1,11 @@
+// clang-format off
+#include "FreeRTOS.h"
+#include "system_stm32g4xx.h"
+#include "task.h"
+
+// clang-format on
 #include "pipettes/core/configs.hpp"
+#include "pipettes/firmware/eeprom_keys.hpp"
 #include "pipettes/firmware/interfaces_g4.hpp"
 
 using namespace interfaces;
@@ -66,9 +73,14 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
         queues.plunger_update_queue);
 }
 
+struct motor_hardware::UsageEEpromConfig single_multi_usage_config {
+    .distance_usage_key = PLUNGER_MOTOR_STEP_KEY
+};
+
 auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware {
-    return motor_hardware::MotorHardware(pins, &htim7, &htim2);
+    return motor_hardware::MotorHardware(pins, &htim7, &htim2,
+                                         single_multi_usage_config);
 }
 
 auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
@@ -123,13 +135,22 @@ auto gear_motor::get_motor_hardware(
     return gear_motor::UnavailableGearHardware{};
 }
 
+struct motor_hardware::UsageEEpromConfig gear_left_usage_config {
+    .distance_usage_key = GEAR_LEFT_MOTOR_KEY
+};
+
+struct motor_hardware::UsageEEpromConfig gear_right_usage_config {
+    .distance_usage_key = GEAR_RIGHT_MOTOR_KEY
+};
+
 auto gear_motor::get_motor_hardware(
     motor_configs::HighThroughputPipetteMotorHardware pins)
     -> gear_motor::GearHardware {
-    return gear_motor::GearHardware{.left = motor_hardware::MotorHardware(
-                                        pins.left_gear_motor, &htim6, &htim2),
-                                    .right = motor_hardware::MotorHardware(
-                                        pins.right_gear_motor, &htim6, &htim2)};
+    return gear_motor::GearHardware{
+        .left = motor_hardware::MotorHardware(pins.left_gear_motor, &htim6,
+                                              &htim2, gear_left_usage_config),
+        .right = motor_hardware::MotorHardware(
+            pins.right_gear_motor, &htim6, &htim2, gear_right_usage_config)};
 }
 
 auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)

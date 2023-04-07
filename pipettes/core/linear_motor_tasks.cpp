@@ -1,6 +1,7 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/firmware/eeprom_keys.hpp"
 
 static auto motion_tasks = linear_motor_tasks::Tasks{};
@@ -25,6 +26,8 @@ static auto move_group_task_builder =
     freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
+static auto linear_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
@@ -47,13 +50,17 @@ void linear_motor_tasks::start_tasks(
 
     // Linear Motor Tasks
     auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues);
+                                         motion_controller, queues, queues);
     auto& tmc2130_driver = tmc2130_driver_task_builder.start(
         5, "tmc2130 driver", linear_driver_configs, queues, spi_writer);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", queues, motion_controller.get_mechanical_config());
+        5, "move status", queues, motion_controller.get_mechanical_config(),
+        queues);
+    auto& usage_storage_task = linear_usage_storage_task_builder.start(
+        5, "usage storage", queues, sensor_tasks::get_queues(), tail_accessor);
+
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
         table_updater);
@@ -61,6 +68,7 @@ void linear_motor_tasks::start_tasks(
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
     motion_tasks.move_status_reporter = &move_status_reporter;
+    motion_tasks.usage_storage_task = &usage_storage_task;
     motion_tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.set_queue(&can_writer.get_queue());
@@ -70,6 +78,7 @@ void linear_motor_tasks::start_tasks(
     queues.motion_queue = &motion.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.move_status_report_queue = &move_status_reporter.get_queue();
+    queues.usage_storage_queue = &usage_storage_task.get_queue();
     lmh_tsk.start_task();
 }
 
@@ -92,13 +101,17 @@ void linear_motor_tasks::start_tasks(
 
     // Linear Motor Tasks
     auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues);
+                                         motion_controller, queues, queues);
     auto& tmc2160_driver = tmc2160_driver_task_builder.start(
         5, "tmc2160 driver", linear_driver_configs, queues, spi_writer);
     auto& move_group =
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", queues, motion_controller.get_mechanical_config());
+        5, "move status", queues, motion_controller.get_mechanical_config(),
+        queues);
+    auto& usage_storage_task = linear_usage_storage_task_builder.start(
+        5, "linear usage storage", queues, sensor_tasks::get_queues(),
+        tail_accessor);
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
         table_updater);
@@ -107,6 +120,7 @@ void linear_motor_tasks::start_tasks(
     motion_tasks.motion_controller = &motion;
     motion_tasks.move_group = &move_group;
     motion_tasks.move_status_reporter = &move_status_reporter;
+    motion_tasks.usage_storage_task = &usage_storage_task;
     motion_tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.set_queue(&can_writer.get_queue());
@@ -116,6 +130,7 @@ void linear_motor_tasks::start_tasks(
     queues.motion_queue = &motion.get_queue();
     queues.move_group_queue = &move_group.get_queue();
     queues.move_status_report_queue = &move_status_reporter.get_queue();
+    queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     lmh_tsk.start_task();
 }
@@ -138,6 +153,11 @@ void linear_motor_tasks::QueueClient::send_move_group_queue(
 void linear_motor_tasks::QueueClient::send_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
     static_cast<void>(move_status_report_queue->try_write_isr(m));
+}
+
+void linear_motor_tasks::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
 }
 
 /**

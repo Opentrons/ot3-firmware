@@ -66,6 +66,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
 
@@ -74,6 +76,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>* move_status_report_queue{
         nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**
@@ -89,6 +93,9 @@ struct Tasks {
         nullptr};
     move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
     eeprom::data_rev_task::UpdateDataRevTask<
         freertos_message_queue::FreeRTOSMessageQueue>* update_data_rev_task{
         nullptr};
