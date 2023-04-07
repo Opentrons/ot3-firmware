@@ -328,9 +328,8 @@ class DevDataAccessor
 
     auto data_part_exists(uint16_t key) -> bool {
         if (config_updated && tail_accessor.get_tail_updated()) {
-            auto table_location = calculate_table_entry_start(key);
-            table_location += 0;
-            return table_location < tail_accessor.get_data_tail();
+            return calculate_table_entry_start(key) <
+                   tail_accessor.get_data_tail();
         }
         return false;
     }

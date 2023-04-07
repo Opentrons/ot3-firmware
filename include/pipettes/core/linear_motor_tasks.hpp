@@ -4,6 +4,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "eeprom/core/dev_data.hpp"
+#include "eeprom/core/update_data_rev_task.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
@@ -94,6 +95,9 @@ struct Tasks {
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
     usage_storage_task::UsageStorageTask<
         freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
+    eeprom::data_rev_task::UpdateDataRevTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* update_data_rev_task{
         nullptr};
 };
 

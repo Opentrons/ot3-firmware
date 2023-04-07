@@ -88,9 +88,10 @@ void gripper_tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
-
-    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(5, "data_rev_update", queues, tail_accessor, table_updater);
-
+#if PCBA_PRIMARY_REVISION != 'b'
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", queues, tail_accessor, table_updater);
+#endif
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(
             5, "cap sensor S1", i2c2_task_client, i2c2_poll_client,
@@ -107,7 +108,9 @@ void gripper_tasks::start_tasks(
     tasks.eeprom_task = &eeprom_task;
     tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
+#if PCBA_PRIMARY_REVISION != 'b'
     tasks.update_data_rev_task = &eeprom_data_rev_update_task;
+#endif
 
     queues.i2c2_queue = &i2c2_task.get_queue();
     queues.i2c3_queue = &i2c3_task.get_queue();
@@ -118,8 +121,6 @@ void gripper_tasks::start_tasks(
         &capacitive_sensor_task_front.get_queue();
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
-
-    queues.update_data_rev_queue = &eeprom_data_rev_update_task.get_queue();
 
     z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues,
                         tail_accessor);

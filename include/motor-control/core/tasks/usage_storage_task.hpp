@@ -33,9 +33,12 @@ template <can::message_writer_task::TaskClient CanClient,
           eeprom::task::TaskClient EEPromClient>
 class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
   public:
-    UsageStorageTaskHandler(CanClient& can_client, EEPromClient& eeprom_client, eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
+    UsageStorageTaskHandler(
+        CanClient& can_client, EEPromClient& eeprom_client,
+        eeprom::dev_data::DevDataTailAccessor<EEPromClient>& tail_accessor)
         : can_client{can_client},
-          usage_data_accessor{eeprom_client, *this, accessor_backing, tail_accessor} {}
+          usage_data_accessor{eeprom_client, *this, accessor_backing,
+                              tail_accessor} {}
     UsageStorageTaskHandler(const UsageStorageTaskHandler& c) = delete;
     UsageStorageTaskHandler(const UsageStorageTaskHandler&& c) = delete;
     auto operator=(const UsageStorageTaskHandler& c) = delete;
@@ -138,10 +141,11 @@ class UsageStorageTask {
      */
     template <can::message_writer_task::TaskClient CanClient,
               eeprom::task::TaskClient EEPromClient>
-    [[noreturn]] void operator()(CanClient* can_client,
-                                 EEPromClient* eeprom_client,
-                                 eeprom::dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor) {
-        auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client, *tail_accessor};
+    [[noreturn]] void operator()(
+        CanClient* can_client, EEPromClient* eeprom_client,
+        eeprom::dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor) {
+        auto handler = UsageStorageTaskHandler{*can_client, *eeprom_client,
+                                               *tail_accessor};
         TaskMessage message{};
         for (;;) {
             if (handler.ready()) {

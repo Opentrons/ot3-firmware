@@ -2,6 +2,7 @@
 
 #include "common/core/freertos_task.hpp"
 #include "pipettes/core/sensor_tasks.hpp"
+#include "pipettes/firmware/eeprom_keys.hpp"
 
 static auto motion_tasks = linear_motor_tasks::Tasks{};
 static auto motion_queue_client = linear_motor_tasks::QueueClient{};
@@ -27,6 +28,8 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 static auto linear_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+static auto eeprom_data_rev_update_builder =
+    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 void linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,
@@ -58,10 +61,15 @@ void linear_motor_tasks::start_tasks(
     auto& usage_storage_task = linear_usage_storage_task_builder.start(
         5, "usage storage", queues, sensor_tasks::get_queues(), tail_accessor);
 
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
+        table_updater);
+
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
     motion_tasks.move_status_reporter = &move_status_reporter;
     motion_tasks.usage_storage_task = &usage_storage_task;
+    motion_tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.set_queue(&can_writer.get_queue());
     tmc2130_queues.set_queue(&can_writer.get_queue());
@@ -104,12 +112,16 @@ void linear_motor_tasks::start_tasks(
     auto& usage_storage_task = linear_usage_storage_task_builder.start(
         5, "linear usage storage", queues, sensor_tasks::get_queues(),
         tail_accessor);
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
+        table_updater);
 
     tmc2160_tasks.driver = &tmc2160_driver;
     motion_tasks.motion_controller = &motion;
     motion_tasks.move_group = &move_group;
     motion_tasks.move_status_reporter = &move_status_reporter;
     motion_tasks.usage_storage_task = &usage_storage_task;
+    motion_tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.set_queue(&can_writer.get_queue());
     tmc2160_queues.set_queue(&can_writer.get_queue());
