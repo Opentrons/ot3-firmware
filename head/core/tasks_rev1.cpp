@@ -1,9 +1,11 @@
 #include "head/core/tasks_rev1.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "eeprom/core/dev_data.hpp"
 #include "head/core/can_task.hpp"
 #include "head/core/queues.hpp"
 #include "head/core/tasks/presence_sensing_driver_task.hpp"
+#include "head/firmware/eeprom_keys.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -70,6 +72,12 @@ static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
+
+static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
+
+static auto eeprom_data_rev_update_builder =
+    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
+
 /**
  * Start head tasks.
  */
@@ -109,12 +117,16 @@ void head_tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
 
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", head_queues, tail_accessor, table_updater);
+
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
     head_tasks_col.presence_sensing_driver_task = &presence_sensing;
     head_tasks_col.i2c3_task = &i2c3_task;
     head_tasks_col.i2c3_poller_task = &i2c3_poller_task;
     head_tasks_col.eeprom_task = &eeprom_task;
+    head_tasks_col.update_data_rev_task = &eeprom_data_rev_update_task;
 
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());

@@ -32,7 +32,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
     }
 
     auto ready() -> bool {
-        return ready_for_new_message && table_creator.ready();
+        return ready_for_new_message && table_creator.table_ready();
     }
 
   private:
@@ -45,7 +45,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
                 // add the new data table entry
                 table_creator.create_data_part(i.first, i.second);
                 // wait for the table update to finish
-                while (!table_creator.ready()) {
+                while (!table_creator.table_ready()) {
                     vTaskDelay(10);
                 }
             }

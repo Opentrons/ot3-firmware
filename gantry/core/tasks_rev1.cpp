@@ -3,6 +3,7 @@
 #include "gantry/core/can_task.hpp"
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
+#include "gantry/firmware/eeprom_keys.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "motor-control/core/tasks/move_group_task.hpp"
@@ -44,6 +45,10 @@ static auto i2c2_poll_client =
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
+static auto eeprom_data_rev_update_builder =
+    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
+
+static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 /**
  * Start gantry ::tasks.
  */
@@ -78,6 +83,9 @@ void gantry::tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
                                                   eeprom_hw_iface);
 
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", ::queues, tail_accessor, table_updater);
+
     ::tasks.can_writer = &can_writer;
     ::tasks.motion_controller = &motion;
     ::tasks.tmc2160_driver = &tmc2160_driver;
@@ -87,6 +95,7 @@ void gantry::tasks::start_tasks(
     ::tasks.i2c2_task = &i2c2_task;
     ::tasks.i2c2_poller_task = &i2c2_poller_task;
     ::tasks.eeprom_task = &eeprom_task;
+    ::tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     ::queues.motion_queue = &motion.get_queue();
     ::queues.motor_driver_queue = &tmc2160_driver.get_queue();
