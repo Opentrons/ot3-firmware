@@ -1,7 +1,8 @@
+#include "pipettes/core/sensor_tasks.hpp"
+
 #include "can/core/ids.hpp"
 #include "common/core/freertos_task.hpp"
 #include "pipettes/core/pipette_type.h"
-#include "pipettes/core/sensor_tasks.hpp"
 
 static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
