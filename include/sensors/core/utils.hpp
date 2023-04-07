@@ -11,7 +11,8 @@ namespace sensors {
 namespace tip_presence {
 struct TipStatusChangeDetected {};
 
-using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected>;
+using TaskMessage = std::variant<std::monostate, TipStatusChangeDetected,
+                                 can::messages::TipStatusQueryRequest>;
 
 }  // namespace tip_presence
 
@@ -24,9 +25,9 @@ using CanMessageTuple = std::tuple<can::messages::ReadFromSensorRequest,
                                    can::messages::BindSensorOutputRequest,
                                    can::messages::PeripheralStatusRequest>;
 using OtherTaskMessagesTuple = std::tuple<i2c::messages::TransactionResponse>;
-using CanMessage =
-    typename ::utils::TuplesToVariants<std::tuple<std::monostate>,
-                                       CanMessageTuple>::type;
+using CanMessageHandler = typename ::utils::TuplesToVariants<
+    std::tuple<std::monostate, can::messages::TipStatusQueryRequest>,
+    CanMessageTuple>::type;
 using TaskMessage = typename ::utils::VariantCat<
     std::variant<std::monostate>,
     typename ::utils::TuplesToVariants<CanMessageTuple,

@@ -69,6 +69,9 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
     void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
 
+    void send_tip_notification_queue(
+        const sensors::tip_presence::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<

@@ -147,6 +147,9 @@ void gripper_tasks::QueueClient::send_pressure_sensor_queue_front(
 void gripper_tasks::QueueClient::send_pressure_sensor_queue_rear(
     const sensors::utils::TaskMessage&) {}
 
+void gripper_tasks::QueueClient::send_tip_notification_queue(
+    const sensors::tip_presence::TaskMessage&) {}
+
 /**
  * Access to the tasks singleton
  * @return

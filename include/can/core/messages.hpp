@@ -1224,6 +1224,8 @@ struct BindSensorOutputResponse
         -> bool = default;
 };
 
+using TipStatusQueryRequest = Empty<MessageId::get_tip_status_request>;
+
 struct PushTipPresenceNotification
     : BaseMessage<MessageId::tip_presence_notification> {
     uint32_t message_index;

@@ -73,6 +73,7 @@ enum class MessageId {
     attached_tools_request = 0x700,
     tools_detected_notification = 0x701,
     tip_presence_notification = 0x702,
+    get_tip_status_request = 0x703,
     fw_update_initiate = 0x60,
     fw_update_data = 0x61,
     fw_update_data_ack = 0x62,

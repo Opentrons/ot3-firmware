@@ -95,6 +95,9 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
 
+    void send_tip_notification_queue(
+        const sensors::tip_presence::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
