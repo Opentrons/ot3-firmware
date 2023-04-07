@@ -55,6 +55,10 @@ class DevDataTailAccessor
         config_updated = true;
     }
 
+    auto data_rev_complete() -> bool { return data_rev_finished; }
+
+    auto finish_data_rev() -> void { data_rev_finished = true; }
+
     void read_complete(uint32_t message_index) final {
         // we don't need message_index since this is an internal call
         // and not initiated from a can message
@@ -185,7 +189,7 @@ class DevDataAccessor
     template <std::size_t SIZE>
     void write_data(uint16_t key, uint16_t len, uint16_t offset,
                     std::array<uint8_t, SIZE>& data) {
-        if (tail_updated && config_updated) {
+        if (read_write_ready()) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
                 LOG("Error, attemping to read uninitalized value");
@@ -225,7 +229,7 @@ class DevDataAccessor
 
     void get_data(uint16_t key, uint16_t len, uint16_t offset,
                   uint32_t message_index) {
-        if (tail_updated && config_updated) {
+        if (read_write_ready()) {
             auto table_location = calculate_table_entry_start(key);
             if (table_location > tail_accessor.get_data_tail()) {
                 LOG("Error, attemping to read uninitalized value");
@@ -256,7 +260,7 @@ class DevDataAccessor
     template <std::size_t SIZE>
     void create_data_part(uint16_t key, uint16_t len,
                           std::array<uint8_t, SIZE>& data) {
-        if (tail_updated && config_updated) {
+        if (table_ready()) {
             //  if the key is zero we don't need to read the former address
             if (key == 0) {
                 message::WriteEepromMessage write;
@@ -337,6 +341,10 @@ class DevDataAccessor
 
     auto table_ready() -> bool {
         return config_updated && tail_accessor.get_tail_updated();
+    }
+
+    auto read_write_ready() -> bool {
+        return table_ready() && tail_accessor.data_rev_complete();
     }
 
   private:
