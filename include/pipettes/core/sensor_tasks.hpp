@@ -88,9 +88,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_capacitive_sensor_queue_rear(
         const sensors::utils::TaskMessage& m);
 
-    // TODO: implement s1 capacitive sensor for pipettes
     void send_capacitive_sensor_queue_front(
-        const sensors::utils::TaskMessage&) {}
+        const sensors::utils::TaskMessage& m);
 
     void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
 
@@ -102,6 +101,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         environment_sensor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         capacitive_sensor_queue_rear{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
+        capacitive_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue_rear{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*

@@ -27,39 +27,448 @@
 namespace sensors {
 namespace fdc1004 {
 
-// Capacitance Sensor Address and Registers
 constexpr uint16_t ADDRESS = 0x50 << 1;
-constexpr uint8_t MSB_MEASUREMENT_1 = 0x00;
-constexpr uint8_t LSB_MEASUREMENT_1 = 0x01;
-constexpr uint8_t CONFIGURATION_MEASUREMENT = 0x08;
-constexpr uint8_t FDC_CONFIGURATION = 0x0C;
-constexpr uint8_t DEVICE_ID_REGISTER = 0xFF;
 
-// CHA
-constexpr uint16_t POSITIVE_INPUT_CHANNEL = 0x0;
-// CHB
-constexpr uint16_t NEGATIVE_INPUT_CHANNEL = 0x4 << 10;
-// configurations: our reads will be differential reads of
-// the U.FL connector on one channel and the internal
-// common-mode compensator, CAPDAC, on the other.
-constexpr uint16_t DEVICE_CONFIGURATION =
-    0x0 << 13 |  // CHA = CIN1 (U.FL Connector)
-    0x4 << 10;   // CHB = CAPDAC
-constexpr uint8_t DEVICE_CONFIGURATION_MSB =
-    static_cast<uint8_t>(DEVICE_CONFIGURATION >> 8);
-constexpr uint8_t DEVICE_CONFIGURATION_LSB =
-    static_cast<uint8_t>(DEVICE_CONFIGURATION & 0xff);
-constexpr uint16_t SAMPLE_RATE = 1 << 10 |  // 100S/s
-                                 1 << 8 |   // Repeat enabled
-                                 1 << 7;    // Measurement 1 enabled
+enum class CHA : uint8_t {
+    CIN1 = 0x0,
+    CIN2 = 0x1,
+    CIN3 = 0x2,
+    CIN4 = 0x3,
+};
 
-constexpr uint8_t SAMPLE_RATE_MSB = static_cast<uint8_t>(SAMPLE_RATE >> 8);
-constexpr uint8_t SAMPLE_RATE_LSB = static_cast<uint8_t>(SAMPLE_RATE & 0xff);
+enum class CHB : uint8_t {
+    CIN1 = 0x0,
+    CIN2 = 0x1,
+    CIN3 = 0x2,
+    CIN4 = 0x3,
+    CAPDAC = 0x4,
+    DISABLED = 0x8
+};
+
+enum class MeasurementRate : uint8_t {
+    // b00 Reserved
+    // b01 100S/s
+    // b10 200S/s
+    // b11 400S/s
+    RESERVED = 0x0,
+    ONE_HUNDRED_SAMPLES_PER_SECOND = 0x1,
+    TWO_HUNDRED_SAMPLES_PER_SECOND = 0x2,
+    FOUR_HUNDRED_SAMPLES_PER_SECOND = 0x3,
+};
+
+// This is used to determine which configuration register
+// you're currently using and thus what measurement mode
+// you're in.
+enum class MeasureConfigMode : uint8_t { ONE, TWO, THREE, FOUR };
+
+// Capacitance Sensor Address and Registers
+enum class Registers : uint8_t {
+    MEAS1_MSB = 0x0,
+    MEAS1_LSB = 0x01,
+    MEAS2_MSB = 0x02,
+    MEAS2_LSB = 0x03,
+    MEAS3_MSB = 0x04,
+    MEAS3_LSB = 0x05,
+    MEAS4_MSB = 0x06,
+    MEAS4_LSB = 0x07,
+    CONF_MEAS1 = 0x08,
+    CONF_MEAS2 = 0x09,
+    CONF_MEAS3 = 0x0A,
+    CONF_MEAS4 = 0x0B,
+    FDC_CONF = 0x0C,
+    OFFSET_CAL_CIN1 = 0x0D,
+    OFFSET_CAL_CIN2 = 0x0E,
+    OFFSET_CAL_CIN3 = 0x0F,
+    OFFSET_CAL_CIN4 = 0x10,
+    GAIN_CAL_CIN1 = 0x11,
+    GAIN_CAL_CIN2 = 0x12,
+    GAIN_CAL_CIN3 = 0x13,
+    GAIN_CAL_CIN4 = 0x14,
+    MANUFACTURER_ID = 0xFE,
+    DEVICE_ID = 0xFF
+};
+
+static inline auto is_valid_address(const uint8_t add) -> bool {  // NOLINT
+    switch (static_cast<Registers>(add)) {
+        case Registers::MANUFACTURER_ID:
+        case Registers::DEVICE_ID:
+        case Registers::MEAS1_MSB:
+        case Registers::MEAS1_LSB:
+        case Registers::MEAS2_MSB:
+        case Registers::MEAS2_LSB:
+        case Registers::MEAS3_MSB:
+        case Registers::MEAS3_LSB:
+        case Registers::MEAS4_MSB:
+        case Registers::MEAS4_LSB:
+        case Registers::CONF_MEAS1:
+        case Registers::CONF_MEAS2:
+        case Registers::CONF_MEAS3:
+        case Registers::CONF_MEAS4:
+        case Registers::FDC_CONF:
+        case Registers::OFFSET_CAL_CIN1:
+        case Registers::OFFSET_CAL_CIN2:
+        case Registers::OFFSET_CAL_CIN3:
+        case Registers::OFFSET_CAL_CIN4:
+        case Registers::GAIN_CAL_CIN1:
+        case Registers::GAIN_CAL_CIN2:
+        case Registers::GAIN_CAL_CIN3:
+        case Registers::GAIN_CAL_CIN4:
+            return true;
+    }
+    return false;
+}
+
+/** Template concept to constrain what structures encapsulate registers.*/
+template <typename Reg>
+// Struct has a valid register address
+// Struct has an integer with the total number of bits in a register.
+// This is used to mask the value before writing it to the sensor.
+concept FDC1004Register =
+    std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
+                 std::remove_cvref_t<Registers&>> &&
+    std::integral<decltype(Reg::value_mask)>;
+
+template <typename Reg>
+concept WritableRegister = requires() {
+    {Reg::writable};
+};
+
+template <typename Reg>
+concept ReadableRegister = requires() {
+    {Reg::readable};
+};
+
+struct __attribute__((packed, __may_alias__)) ManufactureId {
+    static constexpr Registers address = Registers::MANUFACTURER_ID;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t manufacture_id : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) DeviceId {
+    static constexpr Registers address = Registers::DEVICE_ID;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t device_id : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode1_MSB {
+    static constexpr Registers address = Registers::MEAS1_MSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t measurement : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode1_LSB {
+    static constexpr Registers address = Registers::MEAS1_LSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode2_MSB {
+    static constexpr Registers address = Registers::MEAS2_MSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t measurement : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode2_LSB {
+    static constexpr Registers address = Registers::MEAS2_LSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode3_MSB {
+    static constexpr Registers address = Registers::MEAS3_MSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t measurement : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode3_LSB {
+    static constexpr Registers address = Registers::MEAS3_LSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode4_MSB {
+    static constexpr Registers address = Registers::MEAS4_MSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t measurement : 16 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) MeasureMode4_LSB {
+    static constexpr Registers address = Registers::MEAS4_LSB;
+    static constexpr bool readable = true;
+    static constexpr bool writable = false;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint8_t padding : 8 = 0;
+    uint8_t measurement : 8 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) ConfMeasure1 {
+    static constexpr Registers address = Registers::CONF_MEAS1;
+    static constexpr bool readable = true;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // Notes:
+
+    // You can store up to 4 measurement configurations on the cap sensor
+    // using the 4 different conf measurement registers.
+
+    // (1) It is not permitted to configure a measurement where the CHA field
+    // and CHB field hold the same value (for example, if CHA=b010, CHB cannot
+    // also be set to b010). (2) It is not permitted to configure a differential
+    // measurement between CHA and CHB where CHA > CHB (for example, if CHA=
+    // b010, CHB cannot be b001 or b000).
+
+    // Single ended measurement capacitive offset is CAPDAC x 3.125 pF
+    // The max offset is 96.875 pF
+
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    // negative input channel
+    uint16_t CHB : 3 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) ConfMeasure2 {
+    static constexpr Registers address = Registers::CONF_MEAS2;
+    static constexpr bool readable = true;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See ConfMeasure1
+
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    // negative input channel
+    uint16_t CHB : 3 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) ConfMeasure3 {
+    static constexpr Registers address = Registers::CONF_MEAS3;
+    static constexpr bool readable = true;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See ConfMeasure1
+
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    // negative input channel
+    uint16_t CHB : 3 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) ConfMeasure4 {
+    static constexpr Registers address = Registers::CONF_MEAS4;
+    static constexpr bool readable = true;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See ConfMeasure1
+
+    uint16_t padding_0 : 5 = 0;
+    uint16_t CAPDAC : 5 = 0;
+    // negative input channel
+    uint16_t CHB : 3 = 0;
+    // positive input channel
+    uint16_t CHA : 3 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) FDCConf {
+    static constexpr Registers address = Registers::FDC_CONF;
+    static constexpr bool readable = true;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    uint16_t measure_mode_4_status : 1 = 0;
+    uint16_t measure_mode_3_status : 1 = 0;
+    uint16_t measure_mode_2_status : 1 = 0;
+    uint16_t measure_mode_1_status : 1 = 0;
+
+    // The measurement mode you wish to run in
+    uint16_t measure_mode_4 : 1 = 0;
+    uint16_t measure_mode_3 : 1 = 0;
+    uint16_t measure_mode_2 : 1 = 0;
+    uint16_t measure_mode_1 : 1 = 0;
+
+    uint16_t repeating_measurements : 1 = 0;
+    uint16_t padding_1 : 1 = 0;
+
+    // Measurement rate Options:
+
+    // See values in `MeasurementRate`
+
+    uint16_t measurement_rate : 2 = 0;
+
+    uint16_t padding_0 : 3 = 0;
+    uint16_t reset : 1 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) OffsetCalCIN1 {
+    static constexpr Registers address = Registers::OFFSET_CAL_CIN1;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // -16pF -> 16pF range. Used to reduce parasitic capacitance due to
+    // external circuitry
+
+    // The value in the register is stored as a fixed point integer
+    // in 5Q11 format.
+    uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) OffsetCalCIN2 {
+    static constexpr Registers address = Registers::OFFSET_CAL_CIN2;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See OffsetCalCIN1
+    uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) OffsetCalCIN3 {
+    static constexpr Registers address = Registers::OFFSET_CAL_CIN3;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See OffsetCalCIN1
+    uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) OffsetCalCIN4 {
+    static constexpr Registers address = Registers::OFFSET_CAL_CIN4;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See OffsetCalCIN1
+    uint16_t offset_decimal : 11 = 0;
+    uint16_t offset_integer : 5 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) GainCalCIN1 {
+    static constexpr Registers address = Registers::GAIN_CAL_CIN1;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // Gain factor correction ranging from 0 to 4 that can be applied
+    // to individual channels to remove gain mismatch.
+
+    // The register is stored as a fixed point value in 2Q14 format.
+    // The gain is calculated by Gain = GAIN[15:0]/2^14
+    uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) GainCalCIN2 {
+    static constexpr Registers address = Registers::GAIN_CAL_CIN2;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See GainCalCIN1
+    uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) GainCalCIN3 {
+    static constexpr Registers address = Registers::GAIN_CAL_CIN3;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See GainCalCIN1
+    uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) GainCalCIN4 {
+    static constexpr Registers address = Registers::GAIN_CAL_CIN4;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint16_t value_mask = 0xFFFF;
+
+    // See GainCalCIN1
+    uint16_t offset_decimal : 14 = 0;
+    uint16_t offset_integer : 2 = 0;
+};
+
+struct FDC1004RegisterMap {
+    ManufactureId manufacture_id = {};
+    DeviceId device_id = {};
+    MeasureMode1_MSB measure_mode_1_msb = {};
+    MeasureMode1_LSB measure_mode_1_lsb = {};
+    MeasureMode2_MSB measure_mode_2_msb = {};
+    MeasureMode2_LSB measure_mode_2_lsb = {};
+    MeasureMode3_MSB measure_mode_3_msb = {};
+    MeasureMode3_LSB measure_mode_3_lsb = {};
+    MeasureMode4_MSB measure_mode_4_msb = {};
+    MeasureMode4_LSB measure_mode_4_lsb = {};
+    ConfMeasure1 config_measure_1 = {};
+    ConfMeasure2 config_measure_2 = {};
+    ConfMeasure3 config_measure_3 = {};
+    ConfMeasure4 config_measure_4 = {};
+    FDCConf fdc_conf = {};
+    OffsetCalCIN1 offset_cal_cin1 = {};
+    OffsetCalCIN2 offset_cal_cin2 = {};
+    OffsetCalCIN3 offset_cal_cin3 = {};
+    OffsetCalCIN4 offset_cal_cin4 = {};
+    GainCalCIN1 gain_cal_cin1 = {};
+    GainCalCIN2 gain_cal_cin2 = {};
+    GainCalCIN3 gain_cal_cin3 = {};
+    GainCalCIN4 gain_cal_cin4 = {};
+};
+
+// Registers are all 16 bits
+using RegisterSerializedType = uint16_t;
+// Type definition to allow type aliasing for pointer dereferencing
+using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint16_t;
+
+};  // namespace fdc1004
+
+namespace fdc1004_utils {
 constexpr uint16_t DEVICE_ID = 0x1004;
-
-constexpr uint8_t CAPDAC_MSB_MASK = 0x3;
-
-constexpr uint8_t CAPDAC_LSB_MASK = 0xE0;
 
 // Constants. The capdac is a synthetic comparison source intended to
 // eliminate common-mode values in the differential capacitance measurements.
@@ -146,14 +555,5 @@ inline auto update_offset(float capacitance_pf, float current_offset_pf)
 
     return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
 }
-
-inline constexpr auto device_configuration_msb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_MSB | ((capdac_raw >> 3) & CAPDAC_MSB_MASK));
-}
-
-inline constexpr auto device_configuration_lsb(uint8_t capdac_raw) -> uint8_t {
-    return (DEVICE_CONFIGURATION_LSB | ((capdac_raw << 5) & CAPDAC_LSB_MASK));
-}
-
-};  // namespace fdc1004
+}  // namespace fdc1004_utils
 };  // namespace sensors
