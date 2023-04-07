@@ -188,6 +188,11 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue_front(
     }
 }
 
+void sensor_tasks::QueueClient::send_tip_notification_queue(
+    const sensors::tip_presence::TaskMessage& m) {
+    tip_notification_queue->try_write(m);
+}
+
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
 
 auto sensor_tasks::get_queues() -> QueueClient& { return queue_client; }

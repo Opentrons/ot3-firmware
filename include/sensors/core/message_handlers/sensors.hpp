@@ -17,7 +17,7 @@ class SensorHandler {
     auto operator=(const SensorHandler &&) -> SensorHandler && = delete;
     ~SensorHandler() = default;
 
-    void handle(const utils::CanMessage &m) {
+    void handle(const utils::CanMessageHandler &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
     }
 
@@ -54,6 +54,10 @@ class SensorHandler {
     void visit(const can::messages::PeripheralStatusRequest &m) {
         send_to_queue(can::ids::SensorType(m.sensor),
                       can::ids::SensorId(m.sensor_id), m);
+    }
+
+    void visit(const can::messages::TipStatusQueryRequest &m) {
+        client.send_tip_notification_queue(m);
     }
 
     void send_to_queue(can::ids::SensorType type, can::ids::SensorId id,

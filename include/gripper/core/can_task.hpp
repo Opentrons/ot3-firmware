@@ -60,8 +60,8 @@ using GripperInfoDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::InstrumentInfoRequest, can::messages::SetSerialNumber>;
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<gripper_tasks::QueueClient>,
-    can::messages::ReadFromSensorRequest, can::messages::WriteToSensorRequest,
-    can::messages::BaselineSensorRequest,
+    can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
+    can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,
     can::messages::PeripheralStatusRequest>;

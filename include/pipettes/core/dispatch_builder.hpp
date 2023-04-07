@@ -79,8 +79,8 @@ using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
 
 using SensorDispatchTarget = can::dispatch::DispatchParseTarget<
     sensors::handlers::SensorHandler<sensor_tasks::QueueClient>,
-    can::messages::ReadFromSensorRequest, can::messages::WriteToSensorRequest,
-    can::messages::BaselineSensorRequest,
+    can::messages::TipStatusQueryRequest, can::messages::ReadFromSensorRequest,
+    can::messages::WriteToSensorRequest, can::messages::BaselineSensorRequest,
     can::messages::SetSensorThresholdRequest,
     can::messages::BindSensorOutputRequest,
     can::messages::PeripheralStatusRequest>;
