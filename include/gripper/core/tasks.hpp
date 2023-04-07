@@ -22,6 +22,7 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"
@@ -146,6 +147,12 @@ struct AllTask {
     eeprom::data_rev_task::UpdateDataRevTask<
         freertos_message_queue::FreeRTOSMessageQueue>* update_data_rev_task{
         nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* jaw_usage_storage_task{
+        nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* z_usage_storage_task{
+        nullptr};
 };
 
 /**
@@ -162,10 +169,13 @@ struct AllTask {
 
 namespace z_tasks {
 
-void start_task(motor_class::Motor<lms::LeadScrewConfig>& z_motor,
-                spi::hardware::SpiDeviceBase& spi_device,
-                tmc2130::configs::TMC2130DriverConfig& driver_configs,
-                AllTask& tasks);
+void start_task(
+    motor_class::Motor<lms::LeadScrewConfig>& z_motor,
+    spi::hardware::SpiDeviceBase& spi_device,
+    tmc2130::configs::TMC2130DriverConfig& driver_configs, AllTask& tasks,
+    gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
@@ -180,6 +190,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
@@ -191,6 +203,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
         spi_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* z_usage_storage_queue{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
@@ -199,8 +213,11 @@ struct QueueClient : can::message_writer::MessageWriter {
 
 namespace g_tasks {
 
-void start_task(brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
-                AllTask& gripper_tasks);
+void start_task(
+    brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
+    AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor);
 
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient();
@@ -217,6 +234,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_brushed_move_status_reporter_queue(
         const move_status_reporter_task::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
@@ -228,6 +247,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<
         move_status_reporter_task::TaskMessage>*
         brushed_move_status_report_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* g_usage_storage_queue{nullptr};
 };
 
 [[nodiscard]] auto get_queues() -> QueueClient&;
