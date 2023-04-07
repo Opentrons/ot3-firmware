@@ -70,7 +70,7 @@ SCENARIO("read capacitance sensor values without shared CINs") {
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
                 uint16_t expected_fdc_CIN1 = 0x580;
-                uint32_t actual_fdc_CIN1 = 0;
+                uint16_t actual_fdc_CIN1 = 0;
 
                 const auto* iter_1 =
                     message_2.transaction.write_buffer.cbegin() + 1;
@@ -354,18 +354,18 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
 
                 uint16_t expected_fdc_CIN1 = 0x580;
                 uint16_t expected_fdc_CIN2 = 0x540;
-                uint32_t actual_fdc_CIN1 = 0;
-                uint32_t actual_fdc_CIN2 = 0;
+                uint16_t actual_fdc_CIN1 = 0;
+                uint16_t actual_fdc_CIN2 = 0;
 
                 const auto* iter_1 =
-                    message_2.transaction.write_buffer.cbegin() + 1;
-                const auto* iter_2 =
                     message_4.transaction.write_buffer.cbegin() + 1;
+                const auto* iter_2 =
+                    message_2.transaction.write_buffer.cbegin() + 1;
                 static_cast<void>(bit_utils::bytes_to_int(
-                    iter_1, message_2.transaction.write_buffer.cend(),
+                    iter_1, message_4.transaction.write_buffer.cend(),
                     actual_fdc_CIN1));
                 static_cast<void>(bit_utils::bytes_to_int(
-                    iter_2, message_4.transaction.write_buffer.cend(),
+                    iter_2, message_2.transaction.write_buffer.cend(),
                     actual_fdc_CIN2));
                 THEN("We have FDC configurations for two CINs") {
                     REQUIRE(actual_fdc_CIN1 == expected_fdc_CIN1);
@@ -374,10 +374,10 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                 THEN("We set the configuration registers for both CINs") {
                     REQUIRE(message_1.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::CONF_MEAS1));
+                                sensors::fdc1004::Registers::CONF_MEAS2));
                     REQUIRE(message_3.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::CONF_MEAS2));
+                                sensors::fdc1004::Registers::CONF_MEAS1));
                 }
             }
         }
@@ -477,6 +477,42 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                         REQUIRE(i2c_queue.get_size() == 0);
                     }
                 }
+            }
+        }
+    }
+
+    GIVEN("some transaction response messages") {
+        sensor_shared.driver.set_sensor_id(can::ids::SensorId::S1);
+        sensor_shared.driver.set_echoing(true);
+        sensor_shared.driver.set_bind_sync(false);
+
+        WHEN("A response for S1 is received") {
+            auto buffer_a = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
+            auto buffer_b = i2c::messages::MaxMessageBuffer{0, 0, 0, 0, 0};
+            std::array tags{sensors::utils::ResponseTag::IS_PART_OF_POLL,
+                            sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
+            i2c::messages::TransactionResponse first{
+                .id =
+                    i2c::messages::TransactionIdentifier{
+                        .token = sensors::utils::build_id(
+                            sensors::fdc1004::ADDRESS,
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::MEAS2_MSB),
+                            sensors::utils::byte_from_tags(tags)),
+                        .is_completed_poll = 0,
+                        .transaction_index = 0},
+                .bytes_read = 2,
+                .read_buffer = buffer_a};
+            auto second = first;
+            second.id.transaction_index = 1;
+            second.read_buffer = buffer_b;
+            auto first_task_msg = sensors::utils::TaskMessage(first);
+            auto second_task_msg = sensors::utils::TaskMessage(second);
+            sensor_shared.handle_message(first_task_msg);
+            sensor_shared.handle_message(second_task_msg);
+
+            THEN("it should forward the converted data via can") {
+                REQUIRE(can_queue.has_message());
             }
         }
     }

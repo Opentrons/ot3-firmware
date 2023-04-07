@@ -191,6 +191,13 @@ void sensor_tasks::QueueClient::send_capacitive_sensor_queue_rear(
     capacitive_sensor_queue_rear->try_write(m);
 }
 
+void sensor_tasks::QueueClient::send_capacitive_sensor_queue_front(
+    const sensors::utils::TaskMessage& m) {
+    if (capacitive_sensor_queue_front != nullptr) {
+        capacitive_sensor_queue_front->try_write(m);
+    }
+}
+
 void sensor_tasks::QueueClient::send_pressure_sensor_queue_rear(
     const sensors::utils::TaskMessage& m) {
     pressure_sensor_queue_rear->try_write(m);

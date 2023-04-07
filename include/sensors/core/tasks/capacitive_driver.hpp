@@ -42,11 +42,12 @@ class FDC1004 {
         // We should send a message that the sensor is in a ready state,
         // not sure if we should have a separate can message to do that
         // holding off for this PR.
-        update_capacitance_configuration();
         if (shared_sensor) {
             measure_mode = fdc1004::MeasureConfigMode::TWO;
             update_capacitance_configuration();
         }
+        measure_mode = fdc1004::MeasureConfigMode::ONE;
+        update_capacitance_configuration();
         _initialized = true;
     }
 
@@ -136,7 +137,7 @@ class FDC1004 {
         }
     }
 
-    auto write(fdc1004::Registers reg, uint32_t command_data) -> bool {
+    auto write(fdc1004::Registers reg, uint16_t command_data) -> bool {
         return writer.write(fdc1004::ADDRESS, static_cast<uint8_t>(reg),
                             command_data);
     }
@@ -386,7 +387,7 @@ class FDC1004 {
      */
     template <fdc1004::FDC1004Register Reg>
     requires fdc1004::ReadableRegister<Reg>
-    auto read_register(uint32_t data) -> std::optional<Reg> {
+    auto read_register(uint16_t data) -> std::optional<Reg> {
         using RT = std::optional<fdc1004::RegisterSerializedType>;
         using RG = std::optional<Reg>;
 
