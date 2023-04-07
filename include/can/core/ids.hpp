@@ -29,6 +29,8 @@ enum class MessageId {
     pipette_info_response = 0x307,
     gripper_info_response = 0x308,
     set_serial_number = 0x30a,
+    get_motor_usage_request = 0x30b,
+    get_motor_usage_response = 0x30c,
     stop_request = 0x0,
     error_message = 0x2,
     get_status_request = 0x1,
