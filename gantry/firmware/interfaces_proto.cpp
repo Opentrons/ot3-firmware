@@ -9,6 +9,7 @@
 #include "gantry/core/axis_type.h"
 #include "gantry/core/queues.hpp"
 #include "gantry/core/utils.hpp"
+#include "gantry/firmware/eeprom_keys.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
@@ -32,6 +33,10 @@ static spi::hardware::SPI_interface SPI_intf = {
  * The SPI interface.
  */
 static spi::hardware::Spi spi_comms(SPI_intf);
+
+struct motor_hardware::UsageEEpromConfig usage_config {
+    .distance_usage_key = AXIS_DISTANCE_KEY
+};
 
 /**
  * Motor pin configuration.
@@ -165,7 +170,7 @@ static tmc2130::configs::TMC2130DriverConfig gantry_y_driver_configs{
  */
 static motor_hardware::MotorHardware motor_hardware_iface(
     (get_axis_type() == gantry_x) ? motor_pins_x : motor_pins_y, &htim7,
-    nullptr);
+    nullptr, usage_config);
 
 /**
  * The motor driver config.

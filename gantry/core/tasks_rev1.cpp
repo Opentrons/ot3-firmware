@@ -45,6 +45,8 @@ static auto i2c2_poll_client =
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
+static auto usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
@@ -63,13 +65,14 @@ void gantry::tasks::start_tasks(
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, ::queues);
+                                         motion_controller, ::queues, ::queues);
     auto& tmc2160_driver = motor_driver_task_builder.start(
         5, "tmc2160 driver", driver_configs, ::queues, spi_task_client);
     auto& move_group =
         move_group_task_builder.start(5, "move group", ::queues, ::queues);
     auto& move_status_reporter = move_status_task_builder.start(
-        5, "move status", ::queues, motion_controller.get_mechanical_config());
+        5, "move status", ::queues, motion_controller.get_mechanical_config(),
+        ::queues);
 
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
     spi_task_client.set_queue(&spi_task.get_queue());
@@ -82,6 +85,8 @@ void gantry::tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
                                                   eeprom_hw_iface);
+    auto& usage_storage_task = usage_storage_task_builder.start(
+        5, "usage storage", ::queues, ::queues, tail_accessor);
 
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", ::queues, tail_accessor, table_updater);
@@ -95,6 +100,7 @@ void gantry::tasks::start_tasks(
     ::tasks.i2c2_task = &i2c2_task;
     ::tasks.i2c2_poller_task = &i2c2_poller_task;
     ::tasks.eeprom_task = &eeprom_task;
+    ::tasks.usage_storage_task = &usage_storage_task;
     ::tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     ::queues.motion_queue = &motion.get_queue();
@@ -106,6 +112,7 @@ void gantry::tasks::start_tasks(
     ::queues.i2c2_queue = &i2c2_task.get_queue();
     ::queues.i2c2_poller_queue = &i2c2_poller_task.get_queue();
     ::queues.eeprom_queue = &eeprom_task.get_queue();
+    ::queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     mh_tsk.start_task();
 }
@@ -136,6 +143,11 @@ void gantry::queues::QueueClient::send_move_status_reporter_queue(
 void gantry::queues::QueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {
     eeprom_queue->try_write(m);
+}
+
+void gantry::queues::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
 }
 /**
  * Access to the tasks singleton

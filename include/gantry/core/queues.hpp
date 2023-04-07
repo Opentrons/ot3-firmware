@@ -14,6 +14,7 @@
 #include "motor-control/core/tasks/move_group_task.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
 #include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "spi/core/spi.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 
@@ -38,6 +39,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_eeprom_queue(const eeprom::task::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         motion_controller_task::TaskMessage>* motion_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<tmc::tasks::TaskMessage>*
@@ -55,6 +58,8 @@ struct QueueClient : can::message_writer::MessageWriter {
         i2c2_poller_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**
