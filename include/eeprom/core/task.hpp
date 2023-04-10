@@ -43,6 +43,25 @@ class EEPromMessageHandler {
     }
 
   private:
+    void split_write(message::WriteEepromMessage &m, uint16_t page_boundary) {
+        // if we overrun the page we need to split it into two messages
+        uint16_t first_len = (m.memory_address + m.length) % page_boundary;
+        uint16_t sec_len = m.length - first_len;
+        auto first =
+            message::WriteEepromMessage{.message_index = m.message_index,
+                                        .memory_address = m.memory_address,
+                                        .length = first_len};
+        std::copy_n(m.data.begin(), first_len, first.data.begin());
+
+        auto second = message::WriteEepromMessage{
+            .message_index = m.message_index,
+            .memory_address = types::address(m.memory_address + first_len),
+            .length = sec_len};
+        std::copy_n(m.data.begin() + first_len, sec_len, second.data.begin());
+        this->visit(first);
+        this->visit(second);
+    }
+
     void visit(std::monostate &) {}
 
     /**
@@ -91,14 +110,13 @@ class EEPromMessageHandler {
             return;
         }
 
-        // On the Microchip variant of the eeprom if you attempt to write
-        // that crosses the page boundry (8 Bytes) it will wrap and overwrite
-        // the begining of the current page instead of moving to the next page
-
-        if (hw_iface.get_eeprom_chip_type() ==
-                hardware_iface::EEPromChipType::MICROCHIP_24AA02T &&
-            ((m.memory_address % 8) + m.length) > 8) {
-            LOG("Warning: write request will overrun page");
+        // If you attempt to write with a length that crosses the page boundary
+        // (8 Bytes for MICROCHIP and 64 for ST) it will wrap and overwrite
+        // the beginning of the current page instead of moving to the next page
+        // we should handle this my visiting two separate write messages
+        if (((m.memory_address % hw_iface.get_eeprom_page_boundary()) +
+             m.length) > hw_iface.get_eeprom_page_boundary()) {
+            return this->split_write(m, hw_iface.get_eeprom_page_boundary());
         }
 
         // The ST eeprom has a page write function but that requires driving
