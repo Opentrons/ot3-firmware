@@ -4,6 +4,15 @@
 #include "pipettes/core/pipette_type.h"
 #include "stm32g4xx_hal_gpio.h"
 
+// temporary workaround until we permanently disable
+// the data ready line interrupts and rely on a software
+// timer instead.
+#if PCBA_PRIMARY_REVISION == 'b'
+    static const int enable_96_chan_interrupts = 0;
+#else
+    static const int enable_96_chan_interrupts = 1;
+#endif
+
 static void enable_gpio_port(void* port) {
     if (port == GPIOA) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -50,7 +59,7 @@ static void tip_sense_gpio_init() {
 static void nvic_priority_enable_init() {
     PipetteType pipette_type = get_pipette_type();
 
-    if (pipette_type == NINETY_SIX_CHANNEL) {
+    if (pipette_type == NINETY_SIX_CHANNEL && enable_96_chan_interrupts) {
         IRQn_Type block_9_5 = get_interrupt_line(gpio_block_9_5);
         IRQn_Type block_15_10 = get_interrupt_line(gpio_block_15_10);
         /* EXTI interrupt init data ready/tip sense rear*/
