@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "accessor.hpp"
 #include "addresses.hpp"
 #include "can/core/message_core.hpp"
