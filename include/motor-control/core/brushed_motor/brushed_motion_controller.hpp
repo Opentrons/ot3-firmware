@@ -42,23 +42,27 @@ class MotionController {
     }
 
     void move(const can::messages::GripperGripRequest& can_msg) {
-        BrushedMove msg{.message_index = can_msg.message_index,
-                        .duration = can_msg.duration,
-                        .duty_cycle = can_msg.duty_cycle,
-                        .group_id = can_msg.group_id,
-                        .seq_id = can_msg.seq_id,
-                        .stop_condition = MoveStopCondition::none};
+        BrushedMove msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .duty_cycle = can_msg.duty_cycle,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = MoveStopCondition::none,
+            .usage_key = hardware.get_usage_eeprom_config().distance_usage_key};
         enable_motor();
         queue.try_write(msg);
     }
 
     void move(const can::messages::GripperHomeRequest& can_msg) {
-        BrushedMove msg{.message_index = can_msg.message_index,
-                        .duration = can_msg.duration,
-                        .duty_cycle = can_msg.duty_cycle,
-                        .group_id = can_msg.group_id,
-                        .seq_id = can_msg.seq_id,
-                        .stop_condition = MoveStopCondition::limit_switch};
+        BrushedMove msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .duty_cycle = can_msg.duty_cycle,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = MoveStopCondition::limit_switch,
+            .usage_key = hardware.get_usage_eeprom_config().distance_usage_key};
         if (!enabled) {
             enable_motor();
         }
@@ -66,15 +70,17 @@ class MotionController {
     }
 
     void move(const can::messages::AddBrushedLinearMoveRequest& can_msg) {
-        BrushedMove msg{.message_index = can_msg.message_index,
-                        .duration = can_msg.duration,
-                        .duty_cycle = 0UL,
-                        .group_id = can_msg.group_id,
-                        .seq_id = can_msg.seq_id,
-                        .encoder_position = int32_t(
-                            can_msg.encoder_position_um /
-                            get_mechanical_config().get_encoder_um_per_pulse()),
-                        .stop_condition = MoveStopCondition::encoder_position};
+        BrushedMove msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .duty_cycle = 0UL,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .encoder_position =
+                int32_t(can_msg.encoder_position_um /
+                        get_mechanical_config().get_encoder_um_per_pulse()),
+            .stop_condition = MoveStopCondition::encoder_position,
+            .usage_key = hardware.get_usage_eeprom_config().distance_usage_key};
         if (!enabled) {
             enable_motor();
         }
