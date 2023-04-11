@@ -139,7 +139,7 @@ auto initialize_motor_tasks(
     // TODO Convert gear motor tasks
     gear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, gear_motion,
-        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks);
+        peripheral_tasks::get_spi_client(), conf, id, gmh_tsks, tail_accessor);
 }
 
 auto initialize_motor_tasks(
