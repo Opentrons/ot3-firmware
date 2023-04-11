@@ -56,11 +56,7 @@ class UpdateDataRevHandler : accessor::ReadListener {
         }
     }
 
-    void read_complete(uint32_t message_index) final {
-        // we don't send requests for reads to the DevDataAccessor so this will
-        // only be called by the data tail
-        std::ignore = message_index;
-
+    void read_complete(uint32_t) final {
         // test if data is set to 0xFFFF, some chips default to 0x0000 but this
         // is fine since if it's set to that then it's already where we want it
         // to be as a default

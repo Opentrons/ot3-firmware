@@ -61,10 +61,7 @@ class DevDataTailAccessor
 
     auto finish_data_rev() -> void { data_rev_finished = true; }
 
-    void read_complete(uint32_t message_index) final {
-        // we don't need message_index since this is an internal call
-        // and not initiated from a can message
-        std::ignore = message_index;
+    void read_complete(uint32_t) final {
         // test if data is set to default values at delivery
         auto delivery_state = std::vector<uint8_t>(
             addresses::lookup_table_tail_length, conf.default_byte_value);
