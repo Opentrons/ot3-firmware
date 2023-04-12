@@ -319,7 +319,7 @@ TEST_CASE("Finishing a move") {
     GIVEN("a homing move") {
         auto move = Move{.group_id = 1,
                          .seq_id = 2,
-                         .stop_condition = MoveStopCondition::limit_switch};
+                         .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch)};
         test_objs.handler.set_buffered_move(move);
         uint64_t set_position = static_cast<uint64_t>(100) << 31;
         uint32_t set_encoder_position = static_cast<uint32_t>(200);

@@ -52,7 +52,7 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     steps_per_tick_sq acceleration;
     uint8_t group_id;
     uint8_t seq_id;
-    MoveStopCondition stop_condition = MoveStopCondition::none;
+    uint8_t stop_condition = static_cast<uint8_t>(MoveStopCondition::none);
     int32_t start_encoder_position;
     uint16_t usage_key;
 
@@ -69,6 +69,10 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
             .start_encoder_position = start_encoder_position,
             .usage_key = usage_key,
         };
+    }
+
+    auto check_stop_condition(MoveStopCondition cond) const -> bool {
+        return ((stop_condition & static_cast<uint8_t>(cond)) == static_cast<uint8_t>(cond));
     }
 };
 

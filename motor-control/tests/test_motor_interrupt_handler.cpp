@@ -31,7 +31,7 @@ SCENARIO("a move is cancelled due to a stop request") {
                         .acceleration = 2,
                         .group_id = 0,
                         .seq_id = 0,
-                        .stop_condition = MoveStopCondition::limit_switch};
+                        .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch)};
         test_objs.queue.try_write_isr(msg);
         test_objs.queue.try_write_isr(msg);
         test_objs.queue.try_write_isr(msg);
@@ -127,7 +127,7 @@ SCENARIO("estop is steady-state pressed") {
                         .acceleration = 2,
                         .group_id = 0,
                         .seq_id = 0,
-                        .stop_condition = MoveStopCondition::limit_switch};
+                        .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch)};
         test_objs.queue.try_write_isr(msg);
         msg.message_index = 2;
         test_objs.queue.try_write_isr(msg);
@@ -187,6 +187,37 @@ SCENARIO("negative position reset") {
             THEN("the encoder count is not changed") {
                 REQUIRE(ret == val);
                 REQUIRE(test_objs.hw.get_encoder_pulses() == val);
+            }
+        }
+    }
+}
+
+SCENARIO("stall detected during movement") {
+    MotorContainer test_objs{};
+
+    GIVEN("A message to home") {
+        auto msg = Move{.duration = 500,
+                        .velocity = 10,
+                        .acceleration = 2,
+                        .group_id = 0,
+                        .seq_id = 0,
+                        .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch)};
+        test_objs.queue.try_write_isr(msg);
+        WHEN("A stall happens") {
+            test_objs.st.reset_itr_counts(300);
+            test_objs.hw.sim_set_encoder_pulses(0);
+            test_objs.handler.run_interrupt();
+            THEN("Errors are sent") {
+                REQUIRE(test_objs.reporter.messages.size() == 2);
+                can::messages::ErrorMessage err =
+                    std::get<can::messages::ErrorMessage>(
+                        test_objs.reporter.messages.front());
+                REQUIRE(err.error_code == can::ids::ErrorCode::collision_detected);
+
+                can::messages::StopRequest stop =
+                    std::get<can::messages::StopRequest>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(stop.message_index == 0);
             }
         }
     }
