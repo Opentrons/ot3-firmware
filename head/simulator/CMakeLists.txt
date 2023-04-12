@@ -30,6 +30,7 @@ add_executable(
         head-simulator
         main.cpp
         freertos_idle_timer_task.cpp
+        eeprom_keys.cpp
         ${HEAD-CORE-SRC}
 )
 

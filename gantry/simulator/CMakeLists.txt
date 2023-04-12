@@ -32,6 +32,7 @@ set(GANTRY_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/eeprom_keys.cpp
         )
 foreach(AXIS IN LISTS AXES)
   add_executable(

@@ -17,6 +17,7 @@ set(PIPETTE_FW_LINTABLE_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/motor_configurations.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/utility_configurations.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/eeprom_keys.cpp
     ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
     ${COMMON_EXECUTABLE_DIR}/gpio.cpp
     ${CAN_FW_DIR}/hal_can.c
