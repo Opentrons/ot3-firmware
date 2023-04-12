@@ -72,7 +72,8 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     }
 };
 
-struct GearMotorMove : public Move {
+struct GearMotorMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
+    : public Move {
     uint32_t start_step_position;
     can::ids::PipetteTipActionType action;
     can::ids::GearMotorId gear_motor_id;
