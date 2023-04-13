@@ -376,8 +376,11 @@ TEST_CASE("motor handler stall detection") {
     test_objs.hw.position_flags.set_flag(
         MotorPositionStatus::Flags::stepper_position_ok);
     GIVEN("a duration of 1000 ticks and velocity at half a step per tick") {
-        Move msg1 = Move{.duration = 1000, .velocity = convert_velocity(0.5)};
+        Move msg1 = Move{.duration = 10, .velocity = convert_velocity(0.5), .stop_condition=static_cast<uint8_t>(static_cast<uint8_t>(MoveStopCondition::none))};
+        constexpr Move msg2 = Move{.duration = 400, .velocity = 50};
         test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 2);
         test_objs.handler.update_move();
         WHEN("encoder doesn't update with the motor") {
             for (int i = 0; i < (int)msg1.duration; ++i) {
@@ -386,17 +389,100 @@ TEST_CASE("motor handler stall detection") {
             THEN("the stall is detected") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-            }
-        }
-        WHEN("encoder updates with the motor") {
-            for (int i = 0; i < (int)msg1.duration; ++i) {
-                test_objs.hw.sim_set_encoder_pulses(i / 2);
-                test_objs.handler.run_interrupt();
-            }
-            THEN("no stall is detected") {
-                REQUIRE(test_objs.hw.position_flags.check_flag(
-                    Flags::stepper_position_ok));
+                THEN("a unrecoverable collision error is raised") {
+                    REQUIRE(test_objs.reporter.messages.size() == 2);
+                    can::messages::ErrorMessage err =
+                        std::get<can::messages::ErrorMessage>(
+                            test_objs.reporter.messages.front());
+                    REQUIRE(err.error_code ==
+                            can::ids::ErrorCode::collision_detected);
+                    REQUIRE(err.severity ==
+                            can::ids::ErrorSeverity::unrecoverable);
+                }
+                THEN("a stop request is sent") {
+                    can::messages::StopRequest stop =
+                        std::get<can::messages::StopRequest>(
+                            test_objs.reporter.messages.back());
+                    REQUIRE(stop.message_index == 0);
+                }
+                THEN("the other message in the queue is simply cleared and not executed") {
+                    test_objs.reporter.messages.clear();
+                    REQUIRE(test_objs.handler.has_move_messages());
+                    test_objs.handler.run_interrupt();
+                    REQUIRE(!test_objs.handler.has_move_messages());
+                    REQUIRE(test_objs.reporter.messages.size() == 0);
+                }
             }
         }
     }
+
+    GIVEN("a move with ignore_stalls stop condition") {
+        Move msg1 =
+            Move{.message_index = 13,
+                 .duration = 1000,
+                 .velocity = convert_velocity(0.5),
+                 .stop_condition =
+                     static_cast<uint8_t>(MoveStopCondition::ignore_stalls) ^
+                     static_cast<uint8_t>(MoveStopCondition::none)};
+        test_objs.queue.try_write(msg1);
+        constexpr Move msg2 = Move{.duration = 400, .velocity = 50};
+        test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 2);
+        test_objs.handler.update_move();
+        WHEN("encoder doesn't update with the motor") {
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("the stall is detected but it is ignored") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                REQUIRE(test_objs.reporter.messages.size() == 0);
+                AND_WHEN("the interrupt runs again") {
+                    test_objs.handler.run_interrupt();
+                    THEN("the second move is just ignored") {
+                        REQUIRE(test_objs.reporter.messages.size() == 1);
+                        Ack ack_msg =
+                            std::get<Ack>(test_objs.reporter.messages.front());
+                        REQUIRE(ack_msg.ack_id ==
+                                AckMessageId::complete_without_condition);
+                        REQUIRE(ack_msg.message_index == 13);
+                    }
+                }
+            }
+        }
+    }
+
+    GIVEN("a move with stall expected stop condition") {
+        Move msg1 =
+            Move{.duration = 1000,
+                 .velocity = convert_velocity(0.5),
+                 .stop_condition =
+                     static_cast<uint8_t>(MoveStopCondition::stall)};
+        constexpr Move msg2 = Move{.duration = 400, .velocity = 50};
+        test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 2);
+        test_objs.handler.update_move();
+        WHEN("encoder doesn't update with the motor") {
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("the stall is detected but it is expected") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                THEN("a recoverable collision error is raised") {
+                    REQUIRE(test_objs.reporter.messages.size() == 1);
+                    can::messages::ErrorMessage err =
+                        std::get<can::messages::ErrorMessage>(
+                            test_objs.reporter.messages.front());
+                    REQUIRE(err.error_code ==
+                            can::ids::ErrorCode::collision_detected);
+                    REQUIRE(err.severity ==
+                            can::ids::ErrorSeverity::recoverable);
+                }
+            }
+        }
+    }
+
 }
