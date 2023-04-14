@@ -303,6 +303,27 @@ struct EstopButtonDetectionChange
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct AuxPortDetectionChange
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::aux_present_detection_change> {
+    uint16_t length = 2 * sizeof(bool);
+    bool aux1_present;
+    bool aux2_present;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(aux1_present, iter, limit);
+        iter = bit_utils::int_to_bytes(aux2_present, iter, limit);
+        return iter;
+    }
+    auto operator==(const AuxPortDetectionChange& other) const
+        -> bool = default;
+};
+
 struct DoorSwitchStateRequest
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::door_switch_state_request> {
@@ -541,15 +562,14 @@ struct GetDeckLightResponse
 };
 
 // HostCommTaskMessage list must be a superset of the messages in the parser
-using HostCommTaskMessage =
-    std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
-                 EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
-                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
-                 EstopStateChange, EstopButtonDetectionChange,
-                 DoorSwitchStateRequest, DoorSwitchStateInfo,
-                 AddLightActionRequest, ClearLightActionStagingQueueRequest,
-                 StartLightActionRequest, SetDeckLightRequest,
-                 GetDeckLightRequest, GetDeckLightResponse>;
+using HostCommTaskMessage = std::variant<
+    std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed, EnterBootloader,
+    EnterBootloaderResponse, EngageEstopRequest, EngageSyncRequest,
+    ReleaseEstopRequest, ReleaseSyncRequest, EstopStateChange,
+    EstopButtonDetectionChange, DoorSwitchStateRequest, DoorSwitchStateInfo,
+    AddLightActionRequest, ClearLightActionStagingQueueRequest,
+    StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
+    GetDeckLightResponse, AuxPortDetectionChange>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
