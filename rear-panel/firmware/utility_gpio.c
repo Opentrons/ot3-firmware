@@ -5,15 +5,42 @@
     IO2_MCU_OUT PA5
     IO1_MCU_IN PC4
     IO2_MCU_IN PC5
-    DOOR_OPEN_MCU PB0
-    AUX1_ID_MCU PB1
-    AUX2_ID_MCU PB2
-    AUX1_PRESENT_MCU PB4
-    AUX2_PRESENT_MCU PB6
-    ESTOP_DETECT_AUX2_MCU PB12
-    ESTOP_DETECT_AUX1_MCU PB13
 */
 
+/**
+ * @brief AUX Present and ID line setup
+ * @param none
+ * @retval none
+ */
+void aux_input_gpio_init() {
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    /*Aux1 ID pin*/
+    GPIO_InitStruct.Pin = AUX1_ID_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    HAL_GPIO_Init(AUX1_ID_MCU_PORT, &GPIO_InitStruct);
+
+    /*Aux2 ID pin*/
+    GPIO_InitStruct.Pin = AUX2_ID_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(AUX2_ID_MCU_PORT, &GPIO_InitStruct);
+
+    /*Aux1 present pin*/
+    GPIO_InitStruct.Pin = AUX1_PRESENT_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(AUX1_PRESENT_MCU_PORT, &GPIO_InitStruct);
+
+    /*Aux2 present pin*/
+    GPIO_InitStruct.Pin = AUX2_PRESENT_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(AUX2_PRESENT_MCU_PORT, &GPIO_InitStruct);
+}
 /**
  * @brief Sync In GPIO Initialization Function
  * @param None
@@ -90,4 +117,5 @@ void utility_gpio_init(void) {
     estop_output_gpio_init();
     estop_input_gpio_init();
     door_open_input_gpio_init();
+    aux_input_gpio_init();
 }

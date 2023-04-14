@@ -53,7 +53,13 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
                                       .active_setting = ESTOP_DETECT_AUX_AS},
     .door_open = gpio::PinConfig{.port = DOOR_OPEN_MCU_PORT,
                                  .pin = DOOR_OPEN_MCU_PIN,
-                                 .active_setting = DOOR_OPEN_MCU_AS}};
+                                 .active_setting = DOOR_OPEN_MCU_AS},
+    .aux1_present = gpio::PinConfig{.port = AUX1_PRESENT_MCU_PORT,
+                                    .pin = AUX1_PRESENT_MCU_PIN,
+                                    .active_setting = AUX1_PRESENT_MCU_AS},
+    .aux2_present = gpio::PinConfig{.port = AUX2_PRESENT_MCU_PORT,
+                                    .pin = AUX2_PRESENT_MCU_PIN,
+                                    .active_setting = AUX2_PRESENT_MCU_AS}};
 
 static auto light_control_task_builder =
     freertos_task::TaskStarter<512, light_control_task::LightControlTask>{};
