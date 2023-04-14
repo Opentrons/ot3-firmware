@@ -1,6 +1,7 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "pipettes/firmware/eeprom_keys.hpp"
 
 static auto motion_tasks = linear_motor_tasks::Tasks{};
 static auto motion_queue_client = linear_motor_tasks::QueueClient{};
@@ -24,6 +25,8 @@ static auto move_group_task_builder =
     freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
+static auto eeprom_data_rev_update_builder =
+    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 void linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,
@@ -31,7 +34,9 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2130::configs::TMC2130DriverConfig& linear_driver_configs,
-    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk) {
+    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     tmc2130_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -49,10 +54,14 @@ void linear_motor_tasks::start_tasks(
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
+        table_updater);
 
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
     motion_tasks.move_status_reporter = &move_status_reporter;
+    motion_tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.set_queue(&can_writer.get_queue());
     tmc2130_queues.set_queue(&can_writer.get_queue());
@@ -70,7 +79,9 @@ void linear_motor_tasks::start_tasks(
         motion_controller,
     linear_motor_tasks::SPIWriterClient& spi_writer,
     tmc2160::configs::TMC2160DriverConfig& linear_driver_configs,
-    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk) {
+    can::ids::NodeId id, motor_hardware_task::MotorHardwareTask& lmh_tsk,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     tmc2160_queue_client.set_node_id(id);
     motion_queue_client.set_node_id(id);
 
@@ -88,11 +99,15 @@ void linear_motor_tasks::start_tasks(
         move_group_task_builder.start(5, "move group", queues, queues);
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
+    auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
+        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
+        table_updater);
 
     tmc2160_tasks.driver = &tmc2160_driver;
     motion_tasks.motion_controller = &motion;
     motion_tasks.move_group = &move_group;
     motion_tasks.move_status_reporter = &move_status_reporter;
+    motion_tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 
     queues.set_queue(&can_writer.get_queue());
     tmc2160_queues.set_queue(&can_writer.get_queue());

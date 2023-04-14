@@ -47,6 +47,7 @@ class EEPromHardwareIface {
                 eeprom_mem_size =
                     static_cast<size_t>(EEpromMemorySize::MICROCHIP_256_BYTE);
                 default_byte_value = 0x00;
+                page_boundary = 8;
                 break;
             case EEPromChipType::ST_M24128_BF:
             case EEPromChipType::ST_M24128_DF:
@@ -56,6 +57,7 @@ class EEPromHardwareIface {
                 eeprom_mem_size =
                     static_cast<size_t>(EEpromMemorySize::ST_16_KBYTE);
                 default_byte_value = 0xFF;
+                page_boundary = 64;
                 break;
         }
         eeprom_chip_type = chip;
@@ -106,6 +108,9 @@ class EEPromHardwareIface {
     [[nodiscard]] auto get_eeprom_default_byte_value() const -> uint8_t {
         return default_byte_value;
     }
+    [[nodiscard]] auto get_eeprom_page_boundary() const -> types::address {
+        return page_boundary;
+    }
 
   private:
     // The number of times that disable has been called.
@@ -118,6 +123,7 @@ class EEPromHardwareIface {
         static_cast<size_t>(EEpromMemorySize::MICROCHIP_256_BYTE);
     EEPromChipType eeprom_chip_type = EEPromChipType::MICROCHIP_24AA02T;
     uint8_t default_byte_value = 0x00;
+    types::address page_boundary = 8;
 };
 
 }  // namespace hardware_iface

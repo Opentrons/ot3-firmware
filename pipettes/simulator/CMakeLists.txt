@@ -34,6 +34,7 @@ function(add_simulator_executable TARGET)
             ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/motor_configurations.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/interfaces.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/eeprom_keys.cpp
             )
     add_revision(TARGET ${TARGET} REVISION b1)
     target_include_directories(${TARGET} PUBLIC ${PIPETTE_SIM_INCLUDE})

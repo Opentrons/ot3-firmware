@@ -5,6 +5,7 @@
 #include "common/core/freertos_timer.hpp"
 #include "eeprom/core/hardware_iface.hpp"
 #include "eeprom/core/task.hpp"
+#include "eeprom/core/update_data_rev_task.hpp"
 #include "i2c/core/hardware_iface.hpp"
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
@@ -60,6 +61,9 @@ struct AllTask {
         nullptr};
     eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
+    eeprom::data_rev_task::UpdateDataRevTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* update_data_rev_task{
+        nullptr};
 };
 
 /**

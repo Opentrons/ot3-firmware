@@ -74,6 +74,55 @@ SCENARIO("Sending messages to Eeprom task") {
             }
         }
     }
+
+    GIVEN("A write message across the page boundry") {
+        auto data = types::EepromData{1, 2, 3, 4};
+        types::address address = 14;
+        types::data_length data_length = 4;
+        auto write_msg = task::TaskMessage(message::WriteEepromMessage{
+            .memory_address = address, .length = data_length, .data = data});
+        WHEN("the message is sent") {
+            eeprom.handle_message(write_msg);
+            THEN("the i2c queue is populated with two transact commands") {
+                REQUIRE(i2c_queue.get_size() == 2);
+                // first message
+                auto i2c_message = i2c::writer::TaskMessage{};
+                i2c_queue.try_read(&i2c_message);
+                auto transact_message =
+                    std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address == 0xA0);
+                REQUIRE(transact_message.transaction.bytes_to_read == 0);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        static_cast<std::size_t>(
+                            2 + hardware_iface.get_eeprom_addr_bytes()));
+                REQUIRE(transact_message.transaction.write_buffer[0] ==
+                        address);
+                REQUIRE(transact_message.transaction.write_buffer[1] ==
+                        data[0]);
+                REQUIRE(transact_message.transaction.write_buffer[2] ==
+                        data[1]);
+                REQUIRE(transact_message.id.token == eeprom.WRITE_TOKEN);
+                // second message
+                i2c_message = i2c::writer::TaskMessage{};
+                i2c_queue.try_read(&i2c_message);
+                transact_message =
+                    std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address == 0xA0);
+                REQUIRE(transact_message.transaction.bytes_to_read == 0);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        static_cast<std::size_t>(
+                            data_length - 2 +
+                            hardware_iface.get_eeprom_addr_bytes()));
+                REQUIRE(transact_message.transaction.write_buffer[0] ==
+                        address + 2);
+                REQUIRE(transact_message.transaction.write_buffer[1] ==
+                        data[2]);
+                REQUIRE(transact_message.transaction.write_buffer[2] ==
+                        data[3]);
+                REQUIRE(transact_message.id.token == eeprom.WRITE_TOKEN);
+            }
+        }
+    }
     GIVEN("A read message") {
         types::address address = 14;
         types::data_length data_length = 5;
@@ -162,6 +211,59 @@ SCENARIO("Sending messages to 16 bit address Eeprom task") {
             }
         }
     }
+    GIVEN("A 16 bit write message across a page boundary") {
+        auto data = types::EepromData{1, 2, 3, 4};
+        types::address address = 62;
+        types::data_length data_length = 4;
+        auto write_msg = task::TaskMessage(message::WriteEepromMessage{
+            .memory_address = address, .length = data_length, .data = data});
+        WHEN("the message is sent") {
+            eeprom_16.handle_message(write_msg);
+            THEN("the i2c queue is populated with two transact commands") {
+                REQUIRE(i2c_queue.get_size() == 2);
+
+                // first message
+                auto i2c_message = i2c::writer::TaskMessage{};
+                i2c_queue.try_read(&i2c_message);
+                auto transact_message =
+                    std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address == 0xA0);
+                REQUIRE(transact_message.transaction.bytes_to_read == 0);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        static_cast<std::size_t>(
+                            2 + hardware_iface_16.get_eeprom_addr_bytes()));
+                REQUIRE(transact_message.transaction.write_buffer[0] ==
+                        ((address >> 8) & 0xff));
+                REQUIRE(transact_message.transaction.write_buffer[1] ==
+                        (address & 0xff));
+                REQUIRE(transact_message.transaction.write_buffer[2] ==
+                        data[0]);
+                REQUIRE(transact_message.transaction.write_buffer[3] ==
+                        data[1]);
+                REQUIRE(transact_message.id.token == eeprom_16.WRITE_TOKEN);
+                // second message
+                i2c_message = i2c::writer::TaskMessage{};
+                i2c_queue.try_read(&i2c_message);
+                transact_message =
+                    std::get<i2c::messages::Transact>(i2c_message);
+                REQUIRE(transact_message.transaction.address == 0xA0);
+                REQUIRE(transact_message.transaction.bytes_to_read == 0);
+                REQUIRE(transact_message.transaction.bytes_to_write ==
+                        static_cast<std::size_t>(
+                            data_length - 2 +
+                            hardware_iface_16.get_eeprom_addr_bytes()));
+                REQUIRE(transact_message.transaction.write_buffer[0] ==
+                        (((address + 2) >> 8) & 0xff));
+                REQUIRE(transact_message.transaction.write_buffer[1] ==
+                        ((address + 2) & 0xff));
+                REQUIRE(transact_message.transaction.write_buffer[2] ==
+                        data[2]);
+                REQUIRE(transact_message.transaction.write_buffer[3] ==
+                        data[3]);
+                REQUIRE(transact_message.id.token == eeprom_16.WRITE_TOKEN);
+            }
+        }
+    }
     GIVEN("A 16 bit read message") {
         types::address address = 0x0101;
         types::data_length data_length = 5;
@@ -242,7 +344,7 @@ SCENARIO("Transaction response handling.") {
 
     GIVEN("A write request") {
         auto data = types::EepromData{1, 2, 3};
-        types::address address = 14;
+        types::address address = 8;
         types::data_length data_length = 3;
         auto write_msg = task::TaskMessage(message::WriteEepromMessage{
             .memory_address = address, .length = data_length, .data = data});

@@ -111,6 +111,11 @@ static const char* PipetteTypeString[] = {
     "SINGLE CHANNEL PIPETTE", "EIGHT CHANNEL PIPETTE",
     "NINETY SIX CHANNEL PIPETTE", "THREE EIGHTY FOUR CHANNEL PIPETTE"};
 
+static auto& sensor_queue_client = sensor_tasks::get_queues();
+
+static auto tail_accessor =
+    eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
+
 auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
@@ -128,7 +133,8 @@ auto initialize_motor_tasks(
 
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
+        tail_accessor);
 
     // TODO Convert gear motor tasks
     gear_motor_tasks::start_tasks(
@@ -152,7 +158,8 @@ auto initialize_motor_tasks(
                               fake_sensor_hw, id, sim_eeprom);
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
-        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk);
+        peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
+        tail_accessor);
 }
 
 auto handle_options(int argc, char** argv) -> po::variables_map {
