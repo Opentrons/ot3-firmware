@@ -69,8 +69,7 @@ class MotionController {
             .acceleration = acceleration_steps,
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
-            .stop_condition =
-                static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
@@ -88,7 +87,7 @@ class MotionController {
             .acceleration = 0,
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
-            .stop_condition = MoveStopCondition::limit_switch,
+            .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
@@ -233,7 +232,7 @@ class PipetteMotionController {
             0,
             can_msg.group_id,
             can_msg.seq_id,
-            static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            can_msg.request_stop_condition,
             0,
             hardware.get_usage_eeprom_config().get_gear_distance_key(),
             hardware.get_step_tracker(),
