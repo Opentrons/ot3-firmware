@@ -324,6 +324,66 @@ struct AuxPortDetectionChange
         -> bool = default;
 };
 
+struct AuxPresentRequeset
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::aux_present_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, AuxPresentRequeset> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return AuxPresentRequeset{.length = len};
+    }
+
+    auto operator==(const AuxPresentRequeset& other) const -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct AuxIDResponse
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::aux_id_response> {
+    uint16_t length = 2 * sizeof(bool);
+    bool aux1_id_state;
+    bool aux2_id_state;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(aux1_id_state, iter, limit);
+        iter = bit_utils::int_to_bytes(aux2_id_state, iter, limit);
+        return iter;
+    }
+    auto operator==(const AuxIDResponse& other) const -> bool = default;
+};
+
+struct AuxIDRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::aux_id_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, AuxIDRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return AuxIDRequest{.length = len};
+    }
+
+    auto operator==(const AuxIDRequest& other) const -> bool = default;
+};
+
 struct DoorSwitchStateRequest
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::door_switch_state_request> {
@@ -569,12 +629,13 @@ using HostCommTaskMessage = std::variant<
     EstopButtonDetectionChange, DoorSwitchStateRequest, DoorSwitchStateInfo,
     AddLightActionRequest, ClearLightActionStagingQueueRequest,
     StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
-    GetDeckLightResponse, AuxPortDetectionChange>;
+    GetDeckLightResponse, AuxPortDetectionChange, AuxPresentRequeset,
+    AuxIDResponse, AuxIDRequest>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
-                 DoorSwitchStateRequest>;
+                 DoorSwitchStateRequest, AuxPresentRequeset, AuxIDRequest>;
 
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
@@ -589,7 +650,7 @@ using Parser = binary_parse::Parser<
     EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
     DoorSwitchStateRequest, AddLightActionRequest,
     ClearLightActionStagingQueueRequest, StartLightActionRequest,
-    SetDeckLightRequest, GetDeckLightRequest>;
+    SetDeckLightRequest, GetDeckLightRequest, AuxPresentRequeset, AuxIDRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel

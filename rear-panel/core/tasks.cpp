@@ -59,7 +59,13 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
                                     .active_setting = AUX1_PRESENT_MCU_AS},
     .aux2_present = gpio::PinConfig{.port = AUX2_PRESENT_MCU_PORT,
                                     .pin = AUX2_PRESENT_MCU_PIN,
-                                    .active_setting = AUX2_PRESENT_MCU_AS}};
+                                    .active_setting = AUX2_PRESENT_MCU_AS},
+    .aux1_id = gpio::PinConfig{.port = AUX1_ID_MCU_PORT,
+                               .pin = AUX1_ID_MCU_PIN,
+                               .active_setting = AUX1_ID_MCU_AS},
+    .aux2_id = gpio::PinConfig{.port = AUX2_ID_MCU_PORT,
+                               .pin = AUX2_ID_MCU_PIN,
+                               .active_setting = AUX2_ID_MCU_AS}};
 
 static auto light_control_task_builder =
     freertos_task::TaskStarter<512, light_control_task::LightControlTask>{};
