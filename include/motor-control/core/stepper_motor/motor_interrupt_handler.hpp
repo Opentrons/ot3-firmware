@@ -418,6 +418,7 @@ class MotorInterruptHandler {
     void set_buffered_move(MotorMoveMessage new_move) {
         buffered_move = new_move;
     }
+    bool clear_queue_until_empty = false;
 
     /**
      * @brief While a move is NOT active, this function should be called
@@ -515,6 +516,5 @@ class MotorInterruptHandler {
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
-    bool clear_queue_until_empty = false;
 };
 }  // namespace motor_handler
