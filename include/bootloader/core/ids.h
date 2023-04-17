@@ -233,3 +233,10 @@ typedef enum {
     can_pipettetype_pipette_96 = 0x3,
 } CANPipetteType;
 
+/** Type of motor Usage value types. */
+typedef enum {
+    can_motorusagevaluetype_linear_motor_distance = 0x0,
+    can_motorusagevaluetype_left_gear_motor_distance = 0x1,
+    can_motorusagevaluetype_right_gear_motor_distance = 0x2,
+} CANMotorUsageValueType;
+

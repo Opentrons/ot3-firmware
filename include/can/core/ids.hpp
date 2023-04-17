@@ -233,4 +233,11 @@ enum class PipetteType {
     pipette_96 = 0x3,
 };
 
+/** Type of motor Usage value types. */
+enum class MotorUsageValueType {
+    linear_motor_distance = 0x0,
+    left_gear_motor_distance = 0x1,
+    right_gear_motor_distance = 0x2,
+};
+
 }  // namespace can::ids
