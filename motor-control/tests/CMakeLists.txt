@@ -21,6 +21,7 @@ add_executable(motor-control
         test_motor_position_tracker.cpp
         test_stall_check.cpp
         test_brushed_motor_error_tolerance_handling.cpp
+        test_motor_stall_handling.cpp
         )
 
 target_ot_motor_control(motor-control)

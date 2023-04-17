@@ -81,12 +81,14 @@ class MotorInterruptHandler {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
                     if (stalled_during_movement()) {
-                        if (buffered_move.check_stop_condition(MoveStopCondition::stall)) {
+                        if (buffered_move.check_stop_condition(
+                                MoveStopCondition::stall)) {
                             cancel_and_clear_moves(
                                 can::ids::ErrorCode::collision_detected,
                                 can::ids::ErrorSeverity::recoverable, false);
                         } else {
-                            cancel_and_clear_moves(can::ids::ErrorCode::collision_detected, can::ids::ErrorSeverity::recoverable);
+                            cancel_and_clear_moves(
+                                can::ids::ErrorCode::collision_detected, can::ids::ErrorSeverity::recoverable);
                         }
                     }
                 }
@@ -199,11 +201,13 @@ class MotorInterruptHandler {
         }
         if (has_active_move) {
             handle_update_position_queue_error();
-            if (buffered_move.check_stop_condition(MoveStopCondition::limit_switch) &&
+            if (buffered_move.check_stop_condition(
+                    MoveStopCondition::limit_switch) &&
                 homing_stopped()) {
                 return false;
             }
-            if (buffered_move.check_stop_condition(MoveStopCondition::sync_line) &&
+            if (buffered_move.check_stop_condition(
+                    MoveStopCondition::sync_line) &&
                 sync_triggered()) {
                 return false;
             }
@@ -308,7 +312,8 @@ class MotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        if (has_active_move && buffered_move.check_stop_condition(MoveStopCondition::limit_switch)) {
+        if (has_active_move && buffered_move.check_stop_condition(
+                                   MoveStopCondition::limit_switch)) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
         }
@@ -477,7 +482,9 @@ class MotorInterruptHandler {
     }
 
     [[nodiscard]] auto stalled_during_movement() const -> bool {
-        return has_active_move && !buffered_move.check_stop_condition(MoveStopCondition::ignore_stalls) &&
+        return has_active_move &&
+               !buffered_move.check_stop_condition(
+                   MoveStopCondition::ignore_stalls) &&
                !hardware.position_flags.check_flag(
                    MotorPositionStatus::Flags::stepper_position_ok);
     }
