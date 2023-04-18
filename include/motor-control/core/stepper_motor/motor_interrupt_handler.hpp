@@ -484,8 +484,9 @@ class MotorInterruptHandler {
 
     [[nodiscard]] auto stalled_during_movement() const -> bool {
         return has_active_move &&
-               !buffered_move.check_stop_condition(
-                   MoveStopCondition::ignore_stalls) &&
+               (buffered_move.check_stop_condition(MoveStopCondition::stall) or
+                !buffered_move.check_stop_condition(
+                    MoveStopCondition::ignore_stalls)) &&
                !hardware.position_flags.check_flag(
                    MotorPositionStatus::Flags::stepper_position_ok);
     }

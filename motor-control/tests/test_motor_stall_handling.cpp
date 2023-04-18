@@ -166,4 +166,43 @@ SCENARIO("motor handler stall detection") {
             }
         }
     }
+
+    GIVEN("a move with stall expected stop condition with ignore stalls flag") {
+        Move msg1 = Move{.duration = 23,
+                         .velocity = default_velocity,
+                         .stop_condition = static_cast<uint8_t>(
+                             static_cast<uint8_t>(Stops::stall) ^
+                             static_cast<uint8_t>(Stops::ignore_stalls))};
+        constexpr Move msg2 =
+            Move{.duration = 20, .velocity = default_velocity};
+        test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 3);
+        test_objs.handler.update_move();
+        WHEN("encoder doesn't update with the motor") {
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("the stall is detected but it is expected") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                THEN(
+                    "a recoverable collision error is raised, the next move is "
+                    "discarded") {
+                    REQUIRE(test_objs.reporter.messages.size() == 1);
+                    can::messages::ErrorMessage err =
+                        std::get<can::messages::ErrorMessage>(
+                            test_objs.reporter.messages.front());
+                    REQUIRE(err.error_code ==
+                            can::ids::ErrorCode::collision_detected);
+                    REQUIRE(err.severity ==
+                            can::ids::ErrorSeverity::recoverable);
+                    THEN("the rest of the move queue will be cleared") {
+                        REQUIRE(test_objs.handler.clear_queue_until_empty);
+                    }
+                }
+            }
+        }
+    }
 }
