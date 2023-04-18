@@ -71,7 +71,7 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
         };
     }
 
-    auto check_stop_condition(MoveStopCondition cond) const -> bool {
+    [[nodiscard]] auto check_stop_condition(MoveStopCondition cond) const -> bool {
         return ((stop_condition & static_cast<uint8_t>(cond)) ==
                 static_cast<uint8_t>(cond));
     }
