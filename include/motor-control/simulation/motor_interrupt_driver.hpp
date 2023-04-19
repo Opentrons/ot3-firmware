@@ -43,8 +43,8 @@ class MotorInterruptDriver {
                     do {
                         if (queue.peek(&move, 0)) {
                             if (move.stop_condition ==
-                                motor_messages::MoveStopCondition::
-                                    limit_switch) {
+                                static_cast<uint8_t>(motor_messages::MoveStopCondition::
+                                    limit_switch)) {
                                 iface.trigger_limit_switch();
                                 LOG("Received Home Request, triggering limit "
                                     "switch\n");
