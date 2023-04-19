@@ -67,6 +67,12 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     PWM_DIRECTION get_direction() { return move_dir; }
     void set_stay_enabled(bool state) { stay_enabled = state; }
     auto get_stay_enabled() -> bool { return stay_enabled; }
+    auto has_cancel_request() -> bool final {
+        bool old_request = cancel_request;
+        cancel_request = false;
+        return old_request;
+    }
+    void request_cancel() final { cancel_request = true; }
 
   private:
     bool stay_enabled = false;
@@ -84,6 +90,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     // when the "motor" instantly goes to top speed then instantly stops
     ot_utils::pid::PID controller_loop{0.008,         0.0045, 0.000015,
                                        1.F / 32000.0, 7,      -7};
+    bool cancel_request = false;
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {

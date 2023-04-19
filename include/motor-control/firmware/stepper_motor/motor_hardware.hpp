@@ -49,6 +49,10 @@ class MotorHardware : public StepperMotorHardwareIface {
     void set_LED(bool status) final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
+    }
+    void request_cancel() final { cancel_request.store(true); }
 
     // downward interface - call from timer overflow handler
     void encoder_overflow(int32_t direction);
@@ -61,6 +65,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void* tim_handle;
     void* enc_handle;
     int32_t motor_encoder_overflow_count = 0;
+    std::atomic<bool> cancel_request = false;
 };
 
 };  // namespace motor_hardware

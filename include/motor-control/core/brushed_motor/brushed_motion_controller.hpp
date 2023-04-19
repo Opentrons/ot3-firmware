@@ -97,6 +97,7 @@ class MotionController {
         if (!hardware.get_stay_enabled()) {
             disable_motor();
         }
+        hardware.request_cancel();
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
