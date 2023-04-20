@@ -1,4 +1,5 @@
 #pragma once
+#include <limits>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
@@ -117,7 +118,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
             accessor_backing.begin() + distance_data_usage_len, old_value);
-        if (old_value == 0xFFFFFFFFFFFFFFFF) {
+        if (old_value == std::numeric_limits<uint64_t>::max()) {
             // old_value must be an uninitialized data field so set it to 0
             old_value = 0;
         }
