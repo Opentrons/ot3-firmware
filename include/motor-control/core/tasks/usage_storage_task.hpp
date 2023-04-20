@@ -52,7 +52,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     void read_complete(uint32_t message_index) final {
         std::ignore = message_index;
         std::visit([this](auto m) { this->finish_handle(m); }, buffered_task);
-        ready_for_new_message = true;
     }
 
     auto ready() -> bool {
@@ -62,28 +61,54 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
   private:
     void start_handle(const std::monostate& m) { static_cast<void>(m); }
 
-    void finish_handle(const std::monostate& m) { static_cast<void>(m); }
+    void finish_handle(const std::monostate& m) {
+        static_cast<void>(m);
+        ready_for_new_message = true;
+    }
+
+    void start_next_read(const usage_messages::GetUsageRequest& m) {
+        if (m.usage_conf.num_keys != response.num_keys) {
+            std::fill(accessor_backing.begin(), accessor_backing.end(), 0x00);
+            usage_data_accessor.get_data(
+                m.usage_conf.usage_requests[response.num_keys].eeprom_key,
+                m.message_index);
+        } else {
+            can_client.send_can_message(can::ids::NodeId::host, response);
+            ready_for_new_message = true;
+            buffered_task = TaskMessage{};
+        }
+    }
 
     void start_handle(const usage_messages::GetUsageRequest& m) {
         ready_for_new_message = false;
-        buffered_task = m;
-        usage_data_accessor.get_data(m.distance_usage_key, 0);
+        buffered_task = TaskMessage{m};
+        response.message_index = m.message_index;
+        response.num_keys = 0;
+        start_next_read(m);
     }
 
     void finish_handle(const usage_messages::GetUsageRequest& m) {
-        uint64_t distance_usage = 0;
+        // parse the next usage value and construct response field
+        uint64_t read_value = 0;
         std::ignore = bit_utils::bytes_to_int(
-            accessor_backing.begin(),
-            accessor_backing.begin() + distance_data_usage_len, distance_usage);
-        can::messages::GetMotorUsageResponse resp = {
-            .message_index = m.message_index,
-            .distance_usage_um = distance_usage};
-        can_client.send_can_message(can::ids::NodeId::host, resp);
+            accessor_backing.begin(), accessor_backing.end(), read_value);
+        auto next_klv = can::messages::GetMotorUsageResponse::UsageValueField{
+            .key = m.usage_conf.usage_requests[response.num_keys].type_key,
+            .len = m.usage_conf.usage_requests[response.num_keys].length,
+            .value = read_value};
+        // add the next value to the response, and increment num_keys
+        response.values[response.num_keys] = next_klv;
+        response.num_keys += 1;
+        // remove this request from the struct, save it to buffered task and
+        // continue
+        start_next_read(m);
+        // the start_next_read task will handle sending the response if there is
+        // no more requests
     }
 
     void start_handle(const usage_messages::IncreaseDistanceUsage& m) {
         ready_for_new_message = false;
-        buffered_task = m;
+        buffered_task = TaskMessage{m};
         usage_data_accessor.get_data(m.key, 0);
     }
 
@@ -101,10 +126,12 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
             old_value, accessor_backing.begin(), accessor_backing.end());
         usage_data_accessor.write_data(m.key, distance_data_usage_len,
                                        accessor_backing);
+        ready_for_new_message = true;
+        buffered_task = TaskMessage{};
     }
 
-
     TaskMessage buffered_task = {};
+    can::messages::GetMotorUsageResponse response = {};
     bool ready_for_new_message = true;
     CanClient& can_client;
     eeprom::dev_data::DataBufferType<8> accessor_backing =
