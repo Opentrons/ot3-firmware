@@ -107,8 +107,8 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     TaskMessage buffered_task = {};
     bool ready_for_new_message = true;
     CanClient& can_client;
-    eeprom::dev_data::DataBufferType<64> accessor_backing =
-        eeprom::dev_data::DataBufferType<64>{};
+    eeprom::dev_data::DataBufferType<8> accessor_backing =
+        eeprom::dev_data::DataBufferType<8>{};
     eeprom::dev_data::DevDataAccessor<EEPromClient> usage_data_accessor;
 };
 
