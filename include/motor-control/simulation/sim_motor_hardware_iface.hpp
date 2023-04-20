@@ -106,7 +106,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
     motor_hardware::UsageEEpromConfig eeprom_config = {
-        .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+        std::vector<UsageRequestSet>{UsageRequestSet{
             .eeprom_key = 0,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
@@ -186,8 +186,8 @@ class SimBrushedMotorHardwareIface
     MoveMessageHardware _id;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
-    motor_hardware::UsageEEpromConfig eeprom_config = {
-        .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+    motor_hardware::UsageEEpromConfig eeprom_config{
+        std::vector<UsageRequestSet>{UsageRequestSet{
             .eeprom_key = 0,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
@@ -270,7 +270,7 @@ class SimGearMotorHardwareIface
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
     motor_hardware::UsageEEpromConfig eeprom_config = {
-        .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+        std::vector<UsageRequestSet>{UsageRequestSet{
             .eeprom_key = 0,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
