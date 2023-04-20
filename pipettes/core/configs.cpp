@@ -10,7 +10,7 @@ auto configs::linear_motion_sys_config_by_axis(PipetteType which)
                     lms::LeadScrewConfig{.lead_screw_pitch = 2,
                                          .gear_reduction_ratio = 1.0},
                 .steps_per_rev = 200,
-                .microstep = 64,
+                .microstep = 16,
                 .encoder_pulses_per_rev = 1000};
         case PipetteType::EIGHT_CHANNEL:
         case PipetteType::SINGLE_CHANNEL:
