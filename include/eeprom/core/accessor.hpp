@@ -150,6 +150,7 @@ class EEPromAccessor {
         types::address read_addr = begin + offset;
         types::data_length bytes_remain = (limit_offset + begin) - read_addr;
 
+        begin_read_addr = read_addr;
         while (bytes_remain > 0) {
             amount_to_read = std::min(bytes_remain, types::max_data_length);
             eeprom_client.send_eeprom_queue(eeprom::message::ReadEepromMessage{
@@ -171,7 +172,8 @@ class EEPromAccessor {
     void callback(const eeprom::message::EepromMessage& msg) {
         // TODO (ryan 07-18-22) handle errors in response
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-        auto* buffer_ptr = (type_data.begin() + (msg.memory_address - begin));
+        auto* buffer_ptr =
+            (type_data.begin() + (msg.memory_address - begin_read_addr));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;
         if (bytes_recieved == bytes_to_read) {
@@ -192,6 +194,7 @@ class EEPromAccessor {
                 param);
         self->callback(msg);
     }
+    types::address begin_read_addr = 0;
     size_t bytes_recieved = 0;
     size_t bytes_to_read = 0;
 };
