@@ -10,12 +10,13 @@
 
 namespace motor_hardware {
 
+static constexpr auto max_requests_per_can_message = 5;
 class UsageEEpromConfig {
   public:
     UsageEEpromConfig(const std::vector<UsageRequestSet>& requests) {
         auto i = 0;
         for (auto r : requests) {
-            if (i == 5) {
+            if (i == max_requests_per_can_message) {
                 break;
             }
             usage_requests[i] = r;
@@ -46,7 +47,7 @@ class UsageEEpromConfig {
         }
         return 0xFFFF;
     }
-    UsageRequestSet usage_requests[5];
+    UsageRequestSet usage_requests[max_requests_per_can_message];
     size_t num_keys = 0;
 };
 

@@ -1477,7 +1477,8 @@ struct GetMotorUsageResponse
 
         for (size_t i = 0; i < num_keys; i++) {
             iter = bit_utils::int_to_bytes(values[i].key, iter, limit);
-            iter = bit_utils::int_to_bytes(values[i].len, iter, limit);
+            iter = bit_utils::int_to_bytes(uint8_t(values[i].len & 0xFF), iter,
+                                           limit);
             iter = bit_utils::int_to_bytes(values[i].value, iter, limit);
         }
         return iter - body;
