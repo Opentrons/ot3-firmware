@@ -103,7 +103,9 @@ class MotionController {
     void stop() {
         queue.reset();
         disable_motor();
-        hardware.request_cancel();
+        if (hardware.is_timer_interrupt_running()) {
+            hardware.request_cancel();
+        }
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }

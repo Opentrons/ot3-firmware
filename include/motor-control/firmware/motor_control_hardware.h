@@ -10,6 +10,7 @@ extern "C" {
 #include <stdbool.h>
 void motor_hardware_start_timer(void* tim_handle);
 void motor_hardware_stop_timer(void* tim_handle);
+bool motor_hardware_timer_running(void* tim_handle);
 bool motor_hardware_start_dac(void* dac_handle, uint32_t channel);
 bool motor_hardware_stop_dac(void* dac_handle, uint32_t channel);
 bool motor_hardware_set_dac_value(void* dac_handle, uint32_t channel,

@@ -30,6 +30,7 @@ class MotorHardwareIface {
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
     virtual void stop_timer_interrupt() = 0;
+    virtual auto is_timer_interrupt_running() -> bool = 0;
 
     virtual auto has_cancel_request() -> bool = 0;
     virtual void request_cancel() = 0;

@@ -49,6 +49,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_encoder_pulses() final { enc_val = 0; }
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_Interrupt_running() final { return timer_interrupt_running; }
     void encoder_overflow(int32_t direction) {
         motor_encoder_overflow_count += direction;
     }
@@ -73,6 +74,9 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
         return old_request;
     }
     void request_cancel() final { cancel_request = true; }
+    void set_timer_interrupt_running(bool is_running) {
+        timer_interrupt_running = is_running;
+    }
 
   private:
     bool stay_enabled = false;
@@ -91,6 +95,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     ot_utils::pid::PID controller_loop{0.008,         0.0045, 0.000015,
                                        1.F / 32000.0, 7,      -7};
     bool cancel_request = false;
+    bool timer_interrupt_running = true;
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {

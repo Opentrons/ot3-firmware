@@ -40,6 +40,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void deactivate_motor() final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
+    auto is_timer_interrupt_running() -> bool final;
     auto check_limit_switch() -> bool final { return limit.debounce_state(); }
     auto check_estop_in() -> bool final { return estop.debounce_state(); }
     auto check_sync_in() -> bool final { return sync.debounce_state(); }

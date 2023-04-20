@@ -31,6 +31,11 @@ void MotorHardware::start_timer_interrupt() {
 void MotorHardware::stop_timer_interrupt() {
     motor_hardware_stop_timer(tim_handle);
 }
+
+bool MotorHardware::is_timer_interrupt_running() {
+    return motor_hardware_timer_running(tim_handle);
+}
+
 void MotorHardware::read_limit_switch() {
     limit.debounce_update(gpio::is_set(pins.limit_switch));
 }

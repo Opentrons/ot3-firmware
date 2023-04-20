@@ -20,6 +20,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return timer_interrupt_running; }
     bool check_limit_switch() final { return mock_lim_sw_value; }
     bool check_estop_in() final { return mock_estop_in_value; }
     bool check_sync_in() final { return mock_sync_value; }
@@ -41,6 +42,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
         return old_request;
     }
     void request_cancel() final { cancel_request = true; }
+    void sim_set_timer_interrupt_running(bool is_running) {
+        mock_timer_interrupt_running = is_running;
+    }
 
   private:
     bool mock_lim_sw_value = false;
@@ -51,6 +55,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     uint8_t finished_move_id = 0x0;
     int32_t test_pulses = 0x0;
     bool cancel_request = false;
+    bool mock_timer_interrupt_running = true;
 };
 
 };  // namespace test_mocks

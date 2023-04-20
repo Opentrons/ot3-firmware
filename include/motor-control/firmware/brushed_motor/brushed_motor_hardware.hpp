@@ -65,6 +65,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_encoder_pulses() final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
+    auto is_timer_interrupt_running() -> bool final;
 
     void encoder_overflow(int32_t direction);
 

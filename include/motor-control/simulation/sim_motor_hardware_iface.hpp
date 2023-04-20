@@ -40,6 +40,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return true; }
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;
@@ -113,6 +114,7 @@ class SimBrushedMotorHardwareIface
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return true; }
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;
@@ -185,6 +187,7 @@ class SimGearMotorHardwareIface
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return true; }
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;

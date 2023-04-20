@@ -125,9 +125,9 @@ class MotorInterruptHandler {
                 std::ignore = move_queue.try_read_isr(&scratch);
                 status_queue_client.send_move_status_reporter_queue(
                     can::messages::ErrorMessage{
-                    .message_index = scratch.message_index,
-                    .severity = can::ids::ErrorSeverity::unrecoverable,
-                    .error_code = can::ids::ErrorCode::estop_detected});
+                        .message_index = scratch.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::estop_detected});
                 clear_queue_until_empty = move_queue.has_message_isr();
             }
         }
@@ -297,8 +297,8 @@ class MotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        if (has_active_move && buffered_move.stop_condition ==
-            MoveStopCondition::limit_switch) {
+        if (has_active_move &&
+            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
         }
