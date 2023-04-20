@@ -171,8 +171,8 @@ class EEPromAccessor {
      */
     void callback(const eeprom::message::EepromMessage& msg) {
         // TODO (ryan 07-18-22) handle errors in response
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         auto* buffer_ptr =
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
             (type_data.begin() + (msg.memory_address - begin_read_addr));
         std::copy_n(msg.data.cbegin(), msg.length, buffer_ptr);
         bytes_recieved += msg.length;

@@ -1468,18 +1468,18 @@ struct GetMotorUsageResponse
         uint16_t len;
         uint64_t value;
     };
-    UsageValueField values[5];
+    std::array<UsageValueField, 5> values{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
         iter = bit_utils::int_to_bytes(num_keys, iter, limit);
 
-        for (size_t i = 0; i < num_keys; i++) {
-            iter = bit_utils::int_to_bytes(values[i].key, iter, limit);
-            iter = bit_utils::int_to_bytes(uint8_t(values[i].len & 0xFF), iter,
-                                           limit);
-            iter = bit_utils::int_to_bytes(values[i].value, iter, limit);
+        for (auto v : values) {
+            iter = bit_utils::int_to_bytes(v.key, iter, limit);
+            // dropping len to 1 byte since the max length is 8
+            iter = bit_utils::int_to_bytes(uint8_t(v.len & 0xFF), iter, limit);
+            iter = bit_utils::int_to_bytes(v.value, iter, limit);
         }
         return iter - body;
     }

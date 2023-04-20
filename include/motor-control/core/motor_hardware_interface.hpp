@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -19,13 +20,13 @@ class UsageEEpromConfig {
             if (i == max_requests_per_can_message) {
                 break;
             }
-            usage_requests[i] = r;
+            usage_requests.at(i) = r;
             i++;
         }
         num_keys = i;
     }
 
-    auto get_distance_key() const -> uint16_t {
+    [[nodiscard]] auto get_distance_key() const -> uint16_t {
         for (auto i : usage_requests) {
             if (i.type_key ==
                 uint16_t(
@@ -36,7 +37,7 @@ class UsageEEpromConfig {
         return 0xFFFF;
     }
 
-    auto get_gear_distance_key() const -> uint16_t {
+    [[nodiscard]] auto get_gear_distance_key() const -> uint16_t {
         for (auto i : usage_requests) {
             if (i.type_key == uint16_t(can::ids::MotorUsageValueType::
                                            left_gear_motor_distance) ||
@@ -47,7 +48,7 @@ class UsageEEpromConfig {
         }
         return 0xFFFF;
     }
-    UsageRequestSet usage_requests[max_requests_per_can_message];
+    std::array<UsageRequestSet, max_requests_per_can_message> usage_requests{};
     size_t num_keys = 0;
 };
 
