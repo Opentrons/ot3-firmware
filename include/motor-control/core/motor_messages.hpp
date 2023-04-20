@@ -54,10 +54,10 @@ struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t seq_id;
     MoveStopCondition stop_condition = MoveStopCondition::none;
     int32_t start_encoder_position;
+    uint16_t usage_key;
 
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
-                   AckMessageId _id, uint32_t message_index, uint16_t usage_key)
-        -> Ack {
+                   AckMessageId _id) -> Ack {
         return Ack{
             .message_index = message_index,
             .group_id = group_id,
@@ -79,8 +79,7 @@ struct GearMotorMove  // NOLINT(cppcoreguidelines-pro-type-member-init)
     can::ids::GearMotorId gear_motor_id;
 
     auto build_ack(uint32_t position, int32_t pulses, uint8_t flags,
-                   AckMessageId _id, uint32_t message_index, uint16_t usage_key)
-        -> GearMotorAck {
+                   AckMessageId _id) -> GearMotorAck {
         return GearMotorAck{message_index, group_id,
                             seq_id,        position,
                             pulses,        flags,
@@ -105,8 +104,7 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     int32_t start_encoder_position;
     uint16_t usage_key;
 
-    auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id,
-                   uint32_t message_index, uint16_t usage_key) -> Ack {
+    auto build_ack(int32_t pulses, uint8_t flags, AckMessageId _id) -> Ack {
         return Ack{
             .message_index = message_index,
             .group_id = group_id,

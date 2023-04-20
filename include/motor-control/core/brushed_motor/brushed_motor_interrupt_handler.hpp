@@ -320,9 +320,8 @@ class BrushedMotorInterruptHandler {
         }
 
         if (buffered_move.group_id != NO_GROUP) {
-            auto ack = buffered_move.build_ack(
-                hardware.get_encoder_pulses(), 0, ack_msg_id,
-                buffered_move.message_index, buffered_move.usage_key);
+            auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(), 0,
+                                               ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_brushed_move_status_reporter_queue(
