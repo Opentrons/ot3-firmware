@@ -67,7 +67,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     void start_handle(const usage_messages::GetUsageRequest& m) {
         ready_for_new_message = false;
         buffered_task = m;
-        _ensure_part(m.distance_usage_key, distance_data_usage_len);
         usage_data_accessor.get_data(m.distance_usage_key, 0);
     }
 
@@ -85,7 +84,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
     void start_handle(const usage_messages::IncreaseDistanceUsage& m) {
         ready_for_new_message = false;
         buffered_task = m;
-        _ensure_part(m.key, distance_data_usage_len);
         usage_data_accessor.get_data(m.key, 0);
     }
 
@@ -105,16 +103,6 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
                                        accessor_backing);
     }
 
-    void _ensure_part(uint16_t key, uint16_t len) {
-        // If the partition has been created, make it and wait for
-        // the partition table to update
-        if (!usage_data_accessor.data_part_exists(key)) {
-            usage_data_accessor.create_data_part(key, len);
-            while (!usage_data_accessor.table_ready()) {
-                _hardware_delay(10);
-            }
-        }
-    }
 
     TaskMessage buffered_task = {};
     bool ready_for_new_message = true;
