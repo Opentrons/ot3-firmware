@@ -25,7 +25,14 @@ static spi::hardware::SPI_interface SPI_intf = {
 };
 
 struct motor_hardware::UsageEEpromConfig z_usage_config {
-    .distance_usage_key = Z_MOTOR_DIST_KEY
+    std::vector<UsageRequestSet> {
+        UsageRequestSet {
+            .eeprom_key = Z_MOTOR_DIST_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
 };
 
 /**

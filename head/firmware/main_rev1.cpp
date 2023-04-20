@@ -84,11 +84,25 @@ static constexpr int direction_active_level = GPIO_PIN_SET;
 #endif
 
 struct motor_hardware::UsageEEpromConfig left_usage_config {
-    .distance_usage_key = L_MOTOR_DISTANCE_KEY
+    std::vector<UsageRequestSet> {
+        UsageRequestSet {
+            .eeprom_key = L_MOTOR_DISTANCE_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
 };
 
 struct motor_hardware::UsageEEpromConfig right_usage_config {
-    .distance_usage_key = R_MOTOR_DISTANCE_KEY
+    std::vector<UsageRequestSet> {
+        UsageRequestSet {
+            .eeprom_key = R_MOTOR_DISTANCE_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_left {

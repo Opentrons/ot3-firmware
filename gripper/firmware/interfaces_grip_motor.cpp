@@ -18,7 +18,14 @@ constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
 
 struct motor_hardware::UsageEEpromConfig brushed_usage_config {
-    .distance_usage_key = G_MOTOR_DIST_KEY
+    std::vector<UsageRequestSet> {
+        UsageRequestSet {
+            .eeprom_key = G_MOTOR_DIST_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
 };
 
 /**
