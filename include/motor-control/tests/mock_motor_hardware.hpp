@@ -66,7 +66,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool mock_timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
         motor_hardware::UsageEEpromConfig{
-            .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+            std::vector<UsageRequestSet>{UsageRequestSet{
                 .eeprom_key = 0,
                 .type_key = uint16_t(
                     can::ids::MotorUsageValueType::linear_motor_distance),
