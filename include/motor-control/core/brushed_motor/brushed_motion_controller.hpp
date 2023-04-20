@@ -49,7 +49,7 @@ class MotionController {
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
             .stop_condition = MoveStopCondition::none,
-            .usage_key = hardware.get_usage_eeprom_config().distance_usage_key};
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         enable_motor();
         queue.try_write(msg);
     }
@@ -62,7 +62,7 @@ class MotionController {
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
             .stop_condition = MoveStopCondition::limit_switch,
-            .usage_key = hardware.get_usage_eeprom_config().distance_usage_key};
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
         }
@@ -80,7 +80,7 @@ class MotionController {
                 int32_t(can_msg.encoder_position_um /
                         get_mechanical_config().get_encoder_um_per_pulse()),
             .stop_condition = MoveStopCondition::encoder_position,
-            .usage_key = hardware.get_usage_eeprom_config().distance_usage_key};
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
         }
@@ -133,8 +133,7 @@ class MotionController {
     void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
         usage_messages::GetUsageRequest req = {
             .message_index = message_index,
-            .distance_usage_key =
-                hardware.get_usage_eeprom_config().distance_usage_key};
+            .usage_conf = hardware.get_usage_eeprom_config()};
         usage_client.send_usage_storage_queue(req);
     }
 

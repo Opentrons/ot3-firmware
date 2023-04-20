@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <span>
+#include <vector>
 
 #include "can/core/ids.hpp"
 #include "can/core/message_core.hpp"
@@ -1461,12 +1462,24 @@ using GetMotorUsageRequest = Empty<MessageId::get_motor_usage_request>;
 struct GetMotorUsageResponse
     : BaseMessage<MessageId::get_motor_usage_response> {
     uint32_t message_index;
-    uint64_t distance_usage_um;
+    uint8_t num_keys;
+    struct __attribute__((__packed__)) UsageValueField {
+        uint16_t key;
+        uint16_t len;
+        uint64_t value;
+    };
+    UsageValueField values[5];
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
-        iter = bit_utils::int_to_bytes(distance_usage_um, iter, limit);
+        iter = bit_utils::int_to_bytes(num_keys, iter, limit);
+
+        for (size_t i = 0; i < num_keys; i++) {
+            iter = bit_utils::int_to_bytes(values[i].key, iter, limit);
+            iter = bit_utils::int_to_bytes(values[i].len, iter, limit);
+            iter = bit_utils::int_to_bytes(values[i].value, iter, limit);
+        }
         return iter - body;
     }
 

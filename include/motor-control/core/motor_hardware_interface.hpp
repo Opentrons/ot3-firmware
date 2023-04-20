@@ -3,13 +3,50 @@
 #include <atomic>
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 #include "motor-control/core/types.hpp"
 
 namespace motor_hardware {
 
-struct UsageEEpromConfig {
-    uint16_t distance_usage_key;
+class UsageEEpromConfig {
+  public:
+    UsageEEpromConfig(const std::vector<UsageRequestSet>& requests) {
+        auto i = 0;
+        for (auto r : requests) {
+            if (i == 5) {
+                break;
+            }
+            usage_requests[i] = r;
+            i++;
+        }
+        num_keys = i;
+    }
+
+    auto get_distance_key() const -> uint16_t {
+        for (auto i : usage_requests) {
+            if (i.type_key ==
+                uint16_t(
+                    can::ids::MotorUsageValueType::linear_motor_distance)) {
+                return i.eeprom_key;
+            }
+        }
+        return 0xFFFF;
+    }
+
+    auto get_gear_distance_key() const -> uint16_t {
+        for (auto i : usage_requests) {
+            if (i.type_key == uint16_t(can::ids::MotorUsageValueType::
+                                           left_gear_motor_distance) ||
+                i.type_key == uint16_t(can::ids::MotorUsageValueType::
+                                           right_gear_motor_distance)) {
+                return i.eeprom_key;
+            }
+        }
+        return 0xFFFF;
+    }
+    UsageRequestSet usage_requests[5];
+    size_t num_keys = 0;
 };
 
 class MotorHardwareIface {
@@ -38,7 +75,7 @@ class MotorHardwareIface {
 
     virtual auto has_cancel_request() -> bool = 0;
     virtual void request_cancel() = 0;
-    virtual auto get_usage_eeprom_config() -> UsageEEpromConfig& = 0;
+    virtual auto get_usage_eeprom_config() -> const UsageEEpromConfig& = 0;
 
     // This variable can remain public because the only public methods
     // to it are thread-safe anyways.

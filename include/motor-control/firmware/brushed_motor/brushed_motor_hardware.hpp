@@ -37,7 +37,8 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     ~BrushedMotorHardware() final = default;
     BrushedMotorHardware() = delete;
     BrushedMotorHardware(const BrushedHardwareConfig& config,
-                         void* encoder_handle, UsageEEpromConfig eeprom_config)
+                         void* encoder_handle,
+                         const UsageEEpromConfig& eeprom_config)
         : pins(config),
           enc_handle(encoder_handle),
           controller_loop{config.pid_kp,  config.pid_ki,
@@ -78,7 +79,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
         return cancel_request.exchange(false);
     }
     void request_cancel() final { cancel_request.store(true); }
-    auto get_usage_eeprom_config() -> UsageEEpromConfig& final {
+    auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
     }
 
@@ -93,7 +94,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     ot_utils::pid::PID controller_loop;
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
     std::atomic<bool> cancel_request = false;
-    UsageEEpromConfig eeprom_config;
+    const UsageEEpromConfig& eeprom_config;
 };
 
 };  // namespace motor_hardware

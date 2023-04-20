@@ -105,8 +105,12 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
-    motor_hardware::UsageEEpromConfig eeprom_config =
-        motor_hardware::UsageEEpromConfig(0);
+    motor_hardware::UsageEEpromConfig eeprom_config = {
+        .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+            .eeprom_key = 0,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len}}};
 };
 
 class SimBrushedMotorHardwareIface
@@ -182,8 +186,12 @@ class SimBrushedMotorHardwareIface
     MoveMessageHardware _id;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
-    motor_hardware::UsageEEpromConfig eeprom_config =
-        motor_hardware::UsageEEpromConfig(0);
+    motor_hardware::UsageEEpromConfig eeprom_config = {
+        .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+            .eeprom_key = 0,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len}}};
 };
 
 class SimGearMotorHardwareIface
@@ -261,8 +269,12 @@ class SimGearMotorHardwareIface
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
     std::atomic<bool> cancel_request = false;
-    motor_hardware::UsageEEpromConfig eeprom_config =
-        motor_hardware::UsageEEpromConfig(0);
+    motor_hardware::UsageEEpromConfig eeprom_config = {
+        .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+            .eeprom_key = 0,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len}}};
 };
 
 }  // namespace sim_motor_hardware_iface

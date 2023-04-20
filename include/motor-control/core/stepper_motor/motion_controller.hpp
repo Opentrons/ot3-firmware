@@ -157,8 +157,7 @@ class MotionController {
     void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
         usage_messages::GetUsageRequest req = {
             .message_index = message_index,
-            .distance_usage_key =
-                hardware.get_usage_eeprom_config().distance_usage_key};
+            .usage_conf = hardware.get_usage_eeprom_config()};
         usage_client.send_usage_storage_queue(req);
     }
 
@@ -300,8 +299,7 @@ class PipetteMotionController {
     void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
         usage_messages::GetUsageRequest req = {
             .message_index = message_index,
-            .distance_usage_key =
-                hardware.get_usage_eeprom_config().distance_usage_key};
+            .usage_conf = hardware.get_usage_eeprom_config()};
         usage_client.send_usage_storage_queue(req);
     }
 

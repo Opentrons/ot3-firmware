@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+#include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/types.hpp"
+
 namespace usage_messages {
 
 struct IncreaseDistanceUsage {
@@ -11,7 +14,7 @@ struct IncreaseDistanceUsage {
 
 struct GetUsageRequest {
     uint32_t message_index;
-    uint16_t distance_usage_key;
+    motor_hardware::UsageEEpromConfig usage_conf;
 };
 
 }  // namespace usage_messages

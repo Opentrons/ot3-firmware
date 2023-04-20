@@ -1,6 +1,7 @@
 #pragma once
 
 #include "motor-control/core/motor_hardware_interface.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 
 namespace test_mocks {
 
@@ -64,7 +65,12 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool cancel_request = false;
     bool mock_timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
-        motor_hardware::UsageEEpromConfig{.distance_usage_key = 0};
+        motor_hardware::UsageEEpromConfig{
+            .usage_requests = std::vector<UsageRequestSet>{UsageRequestSet{
+                .eeprom_key = 0,
+                .type_key = uint16_t(
+                    can::ids::MotorUsageValueType::linear_motor_distance),
+                .length = usage_storage_task::distance_data_usage_len}}};
 };
 
 };  // namespace test_mocks
