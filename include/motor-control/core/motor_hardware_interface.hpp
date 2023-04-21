@@ -133,5 +133,6 @@ class BrushedMotorHardwareIface : virtual public MotorHardwareIface {
     virtual void reset_control() = 0;
     virtual void set_stay_enabled(bool state) = 0;
     virtual auto get_stay_enabled() -> bool = 0;
+    virtual auto get_stopwatch_pulses(bool clear) -> uint16_t = 0;
 };
 };  // namespace motor_hardware

@@ -18,7 +18,7 @@ constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
 
 struct motor_hardware::UsageEEpromConfig brushed_usage_config {
-    std::array<UsageRequestSet, 1> {
+    std::array<UsageRequestSet, 2> {
         UsageRequestSet {
             .eeprom_key = G_MOTOR_DIST_KEY,
             .type_key =
@@ -113,7 +113,7 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_conf, &htim2, brushed_usage_config);
+    brushed_motor_conf, &htim2, brushed_usage_config, &htim15);
 
 /**
  * The brushed motor driver hardware interface.

@@ -225,13 +225,25 @@ class BrushedMotorInterruptHandler {
             motor_state == ControlState::FORCE_CONTROLLING_HOME) {
             status_queue_client.send_brushed_move_status_reporter_queue(
                 usage_messages::IncreaseForceTimeUsage{
-                    .key = motor_hardware::UsageEEpromConfig::get_force_application_time_key(hardware.get_usage_eeprom_config()),
+                    .key = hardware.get_usage_eeprom_config()
+                               .get_force_application_time_key(),
                     .seconds = seconds});
         }
     }
 
     void update_and_start_move() {
         if (queue.try_read_isr(&buffered_move)) {
+            if (motor_state == ControlState::FORCE_CONTROLLING ||
+                motor_state == ControlState::FORCE_CONTROLLING_HOME) {
+                // if we've been applying force before the new move is called
+                // add that force application time to the usage storage
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                    usage_messages::IncreaseForceTimeUsage{
+                        .key = hardware.get_usage_eeprom_config()
+                                   .get_force_application_time_key(),
+                        .seconds = uint16_t(
+                            hardware.get_stopwatch_pulses(true) / 2600)});
+            }
             motor_state = ControlState::ACTIVE;
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();

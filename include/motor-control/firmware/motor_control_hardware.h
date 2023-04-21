@@ -19,7 +19,7 @@ bool motor_hardware_start_pwm(void* tim_handle, uint32_t channel);
 bool motor_hardware_stop_pwm(void* tim_handle, uint32_t channel);
 int32_t motor_hardware_encoder_pulse_count(void* encoder_handle);
 void motor_hardware_reset_encoder_count(void* encoder_handle);
-
+uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t clear);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

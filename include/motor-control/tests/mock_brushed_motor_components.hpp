@@ -46,6 +46,9 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     auto get_encoder_pulses() -> int32_t final {
         return (motor_encoder_overflow_count << 16) + enc_val;
     }
+    auto get_stopwatch_pulses(bool) -> uint16_t final {
+        return stopwatch_pulses;
+    }
     void reset_encoder_pulses() final { enc_val = 0; }
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
@@ -92,6 +95,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     bool motor_enabled = false;
     double pid_controller_output = 0.0;
     int32_t enc_val = 0;
+    uint16_t stopwatch_pulses = 0;
     // these controller loop values were selected just because testing
     // does not emulate change in speed and these give us pretty good values
     // when the "motor" instantly goes to top speed then instantly stops

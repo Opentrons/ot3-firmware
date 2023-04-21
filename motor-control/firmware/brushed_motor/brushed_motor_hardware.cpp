@@ -66,6 +66,13 @@ int32_t BrushedMotorHardware::get_encoder_pulses() {
            motor_hardware_encoder_pulse_count(enc_handle);
 }
 
+uint16_t BrushedMotorHardware::get_stopwatch_pulses(bool clear) {
+    if (!stopwatch_handle) {
+        return 0;
+    }
+    return motor_hardware_get_stopwatch_pulses(stopwatch_handle, clear);
+}
+
 void BrushedMotorHardware::reset_encoder_pulses() {
     if (!enc_handle) {
         return;
