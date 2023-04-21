@@ -65,6 +65,13 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim) {
         HAL_NVIC_SetPriority(TIM4_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(TIM4_IRQn);
 
+    } else if (htim == &htim15) {
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM15_CLK_ENABLE();
+        /* TIM15 interrupt Init */
+        HAL_NVIC_SetPriority(TIM1_BRK_TIM15_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(TIM1_BRK_TIM15_IRQn);
+
     }
 }
 
@@ -95,6 +102,10 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base) {
         /* Peripheral clock disable */
         __HAL_RCC_TIM4_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(TIM4_IRQn);
+    } else if (htim_base->Instance == TIM15) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM15_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(TIM1_BRK_TIM15_IRQn);
     }
 }
 
@@ -184,12 +195,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
         uint32_t direction = __HAL_TIM_IS_TIM_COUNTING_DOWN(htim);
         z_enc_overflow_callback(direction ? -1 : 1);
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
+    } else if (htim == &htim15 && gripper_force_stopwatch_overflow_callback) {
+        gripper_force_stopwatch_overflow_callback(
+            GRIPPER_ENCODER_FORCE_STOPWATCH_PERIOD/GRIPPER_ENCODER_FORCE_STOPWATCH_FREQ);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_UPDATE);
     }
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
     if (htim == &htim4 && gripper_enc_idle_state_overflow_callback) {
         gripper_enc_idle_state_overflow_callback(false);
+        __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_CC1);
+    } else if (htim == &htim15) {
         __HAL_TIM_CLEAR_FLAG(htim, TIM_FLAG_CC1);
     }
 }
