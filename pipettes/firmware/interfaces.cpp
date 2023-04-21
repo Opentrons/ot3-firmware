@@ -156,7 +156,7 @@ struct motor_hardware::UsageEEpromConfig gear_left_usage_config {
 struct motor_hardware::UsageEEpromConfig gear_right_usage_config {
     std::vector<UsageRequestSet> {
         UsageRequestSet {
-            .eeprom_key = GEAR_LEFT_MOTOR_KEY,
+            .eeprom_key = GEAR_RIGHT_MOTOR_KEY,
             .type_key = uint16_t(
                 can::ids::MotorUsageValueType::left_gear_motor_distance),
             .length = usage_storage_task::distance_data_usage_len
