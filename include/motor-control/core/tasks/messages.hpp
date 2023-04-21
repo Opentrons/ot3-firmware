@@ -31,7 +31,8 @@ using MoveGroupTaskMessage =
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::Ack,
                  motor_messages::UpdatePositionResponse,
-                 can::messages::ErrorMessage, can::messages::StopRequest>;
+                 can::messages::ErrorMessage, can::messages::StopRequest,
+                 usage_messages::IncreaseForceTimeUsage>;
 
 using BrushedMotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::SetBrushedMotorVrefRequest,
@@ -55,6 +56,7 @@ using BrushedMoveGroupTaskMessage = std::variant<
 
 using UsageStorageTaskMessage =
     std::variant<std::monostate, usage_messages::IncreaseDistanceUsage,
-                 usage_messages::GetUsageRequest>;
+                 usage_messages::GetUsageRequest,
+                 usage_messages::IncreaseForceTimeUsage>;
 
 }  // namespace motor_control_task_messages
