@@ -159,11 +159,19 @@ extern "C" void gripper_enc_idle_state_callback_glue(bool val) {
     brushed_motor_interrupt.set_enc_idle_state(val);
 }
 
+extern "C" void gripper_force_stopwatch_overflow_callback_glue(
+    uint16_t seconds) {
+    if (seconds > 0) {
+        brushed_motor_interrupt.stopwatch_overflow(seconds);
+    }
+}
+
 void grip_motor_iface::initialize() {
     initialize_hardware_g();
-    set_brushed_motor_timer_callback(call_brushed_motor_handler,
-                                     gripper_enc_overflow_callback_glue,
-                                     gripper_enc_idle_state_callback_glue);
+    set_brushed_motor_timer_callback(
+        call_brushed_motor_handler, gripper_enc_overflow_callback_glue,
+        gripper_enc_idle_state_callback_glue,
+        gripper_force_stopwatch_overflow_callback_glue);
 }
 
 auto grip_motor_iface::get_grip_motor()

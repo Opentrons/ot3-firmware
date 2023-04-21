@@ -53,6 +53,7 @@ extern TIM_HandleTypeDef htim15;
 typedef void (*brushed_motor_interrupt_callback)();
 typedef void (*encoder_overflow_callback)(int32_t);
 typedef void (*encoder_idle_state_callback)(bool);
+typedef void (*stopwatch_overflow_callback)(uint16_t seconds);
 
 void initialize_hardware_g();
 
@@ -61,7 +62,8 @@ void update_pwm(uint32_t duty_cycle);
 void set_brushed_motor_timer_callback(
     brushed_motor_interrupt_callback callback,
     encoder_overflow_callback g_enc_f_callback,
-    encoder_idle_state_callback g_enc_idle_callback);
+    encoder_idle_state_callback g_enc_idle_callback,
+    stopwatch_overflow_callback g_stopwatch_overflow_callback);
 
 #ifdef __cplusplus
 }  // extern "C"

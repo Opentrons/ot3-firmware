@@ -8,6 +8,7 @@ static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
 static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
     NULL;
+static stopwatch_overflow_callback gripper_force_stopwatch_overflow_callback = NULL;
 
 
 void set_z_motor_timer_callback(
@@ -20,10 +21,12 @@ void set_z_motor_timer_callback(
 void set_brushed_motor_timer_callback(
         brushed_motor_interrupt_callback callback,
         encoder_overflow_callback g_enc_f_callback,
-        encoder_idle_state_callback g_enc_idle_callback) {
+        encoder_idle_state_callback g_enc_idle_callback,
+        stopwatch_overflow_callback g_stopwatch_overflow_callback) {
     brushed_timer_callback = callback;
     gripper_enc_overflow_callback = g_enc_f_callback;
     gripper_enc_idle_state_overflow_callback = g_enc_idle_callback;
+    gripper_force_stopwatch_overflow_callback = g_stopwatch_overflow_callback;
 }
 
 
