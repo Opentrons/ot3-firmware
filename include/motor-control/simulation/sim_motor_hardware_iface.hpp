@@ -167,6 +167,13 @@ class SimBrushedMotorHardwareIface
         -> motor_hardware::UsageEEpromConfig & final {
         return eeprom_config;
     }
+    auto get_stopwatch_pulses(bool clear) -> uint16_t {
+        auto ret = stopwatch_pulses;
+        if (clear) {
+            stopwatch_pulses = 0;
+        }
+        return ret;
+    }
 
     auto has_cancel_request() -> bool final {
         return cancel_request.exchange(false);
@@ -177,6 +184,7 @@ class SimBrushedMotorHardwareIface
     bool stay_enabled = false;
     bool limit_switch_status = false;
     int32_t test_pulses = 0;
+    int16_t stopwatch_pulses = 0;
     // these controller loop values were selected just because testing
     // does not emulate change in speed and these give us pretty good values
     // when the "motor" instantly goes to top speed then instantly stops
