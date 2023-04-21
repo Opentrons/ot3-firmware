@@ -12,7 +12,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     auto operator=(const MockMotorHardware&) -> MockMotorHardware& = default;
     MockMotorHardware(MockMotorHardware&&) = default;
     auto operator=(MockMotorHardware&&) -> MockMotorHardware& = default;
-    void step() final {}
+    void step() final { steps++; }
     void unstep() final {}
     void positive_direction() final {}
     void negative_direction() final {}
@@ -20,7 +20,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
-    bool is_timer_interrupt_running() final { return timer_interrupt_running; }
+    bool is_timer_interrupt_running() final {
+        return mock_timer_interrupt_running;
+    }
     bool check_limit_switch() final { return mock_lim_sw_value; }
     bool check_estop_in() final { return mock_estop_in_value; }
     bool check_sync_in() final { return mock_sync_value; }
@@ -45,8 +47,10 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void sim_set_timer_interrupt_running(bool is_running) {
         mock_timer_interrupt_running = is_running;
     }
+    auto steps_taken() -> uint64_t { return steps; }
 
   private:
+    uint64_t steps = 0;
     bool mock_lim_sw_value = false;
     bool mock_estop_in_value = false;
     bool mock_sync_value = false;

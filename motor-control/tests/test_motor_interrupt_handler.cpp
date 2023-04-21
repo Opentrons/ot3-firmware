@@ -22,31 +22,91 @@ struct MotorContainer {
         handler{queue, reporter, hw, st, update_position_queue};
 };
 
-SCENARIO("estop pressed during motor interrupt handler") {
+SCENARIO("a move is cancelled due to a stop request") {
     MotorContainer test_objs{};
 
-    GIVEN("A message to home") {
+    GIVEN("A few message to home") {
         auto msg = Move{.duration = 500,
-                        .velocity = 10,
+                        .velocity = 0x7fffffff,
                         .acceleration = 2,
                         .group_id = 0,
                         .seq_id = 0,
                         .stop_condition = MoveStopCondition::limit_switch};
         test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(msg);
+        WHEN("A cancel request occurs") {
+            test_objs.handler.run_interrupt();
+            test_objs.handler.run_interrupt();
+            test_objs.handler.run_interrupt();
+            CHECK(test_objs.hw.steps_taken() == 1);
+            test_objs.hw.request_cancel();
+            test_objs.handler.run_interrupt();
+            THEN("An error is sent") {
+                REQUIRE(test_objs.reporter.messages.size() == 1);
+                can::messages::ErrorMessage err =
+                    std::get<can::messages::ErrorMessage>(
+                        test_objs.reporter.messages.front());
+                REQUIRE(err.error_code == can::ids::ErrorCode::stop_requested);
+            }
+            THEN("the move is no longer active") {
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                REQUIRE(test_objs.hw.steps_taken() == 1);
+            }
+            THEN("the queue is emptied") {
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                REQUIRE(test_objs.queue.get_size() == 0);
+            }
+        }
+    }
+}
+
+SCENARIO("estop pressed during motor interrupt handler") {
+    MotorContainer test_objs{};
+
+    GIVEN("A message to home") {
+        auto msg = Move{.duration = 500,
+                        .velocity = 0x7fffffff,
+                        .acceleration = 2,
+                        .group_id = 0,
+                        .seq_id = 0,
+                        .stop_condition = MoveStopCondition::limit_switch};
+        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(msg);
         WHEN("Estop is pressed") {
+            test_objs.handler.run_interrupt();
+            test_objs.handler.run_interrupt();
+            test_objs.handler.run_interrupt();
+            CHECK(test_objs.hw.steps_taken() == 1);
             test_objs.hw.set_mock_estop_in(true);
             test_objs.handler.run_interrupt();
-            THEN("Errors are sent") {
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+            THEN("An error is sent") {
+                REQUIRE(test_objs.reporter.messages.size() == 1);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
-
-                can::messages::StopRequest stop =
-                    std::get<can::messages::StopRequest>(
-                        test_objs.reporter.messages.back());
-                REQUIRE(stop.message_index == 0);
+            }
+            THEN("the move is no longer active") {
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                REQUIRE(test_objs.hw.steps_taken() == 1);
+            }
+            THEN("the queue is emptied") {
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                test_objs.handler.run_interrupt();
+                REQUIRE(test_objs.queue.get_size() == 0);
             }
         }
     }
@@ -57,8 +117,8 @@ SCENARIO("estop is steady-state pressed") {
     test_objs.hw.set_mock_estop_in(true);
     test_objs.handler.run_interrupt();
     test_objs.handler.run_interrupt();
-    // stop message, estop-active message
-    CHECK(test_objs.reporter.messages.size() == 2);
+    // estop-active message
+    CHECK(test_objs.reporter.messages.size() == 1);
     test_objs.reporter.messages.clear();
     GIVEN("some moves in its queue") {
         auto msg = Move{.message_index = 1,
