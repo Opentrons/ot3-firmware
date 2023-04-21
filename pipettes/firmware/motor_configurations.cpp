@@ -22,7 +22,7 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
                                    .tbl = 0x2,
                                    .mres = 0x2},
                       .coolconf = {.sgt = 0x6},
-                      .glob_scale = {.global_scaler = 0xA7}},
+                      .glob_scale = {.global_scaler = 0xff}},
         .current_config =
             {
                 .r_sense = 0.1,
