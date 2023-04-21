@@ -49,7 +49,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_encoder_pulses() final { enc_val = 0; }
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
-    bool is_timer_Interrupt_running() final { return timer_interrupt_running; }
+    bool is_timer_interrupt_running() final { return timer_interrupt_running; }
     void encoder_overflow(int32_t direction) {
         motor_encoder_overflow_count += direction;
     }
