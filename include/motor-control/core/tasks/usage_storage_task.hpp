@@ -122,7 +122,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
             accessor_backing.begin() + force_time_data_usage_len, old_value);
-        if (old_value == 0xFFFFFFFF) {
+        if (old_value == std::numeric_limits<uint32_t>::max()) {
             // old_value must be an uninitialized data field so set it to 0
             old_value = 0;
         }
