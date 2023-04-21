@@ -98,7 +98,6 @@ class MoveStatusMessageHandler {
         usage_client.send_usage_storage_queue(message);
     }
 
-
   private:
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
