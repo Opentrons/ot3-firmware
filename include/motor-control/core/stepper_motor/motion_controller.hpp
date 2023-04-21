@@ -103,6 +103,9 @@ class MotionController {
     void stop() {
         queue.reset();
         disable_motor();
+        if (hardware.is_timer_interrupt_running()) {
+            hardware.request_cancel();
+        }
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
@@ -235,6 +238,12 @@ class PipetteMotionController {
     void stop() {
         queue.reset();
         disable_motor();
+        // if the timer interrupt is running, cancel it. if it isn't running,
+        // don't submit a cancel because then the cancel won't be read until
+        // the timer starts the next time.
+        if (hardware.is_timer_interrupt_running()) {
+            hardware.request_cancel();
+        }
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }

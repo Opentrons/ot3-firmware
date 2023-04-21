@@ -6,6 +6,7 @@
 
 #include "FreeRTOS.h"
 #include "platform_specific_hal_conf.h"
+#include "stm32g4xx_hal_tim.h"
 #include "task.h"
 
 HAL_StatusTypeDef custom_stop_pwm_it(TIM_HandleTypeDef* htim,
@@ -44,9 +45,16 @@ HAL_StatusTypeDef custom_stop_pwm_it(TIM_HandleTypeDef* htim,
     return HAL_OK;
 }
 
-void motor_hardware_start_timer(void* htim) { HAL_TIM_Base_Start_IT(htim); }
+void motor_hardware_start_timer(void* tim_handle) { HAL_TIM_Base_Start_IT(tim_handle); }
 
-void motor_hardware_stop_timer(void* htim) { HAL_TIM_Base_Stop_IT(htim); }
+void motor_hardware_stop_timer(void* tim_handle) { HAL_TIM_Base_Stop_IT(tim_handle); }
+
+bool motor_hardware_timer_running(void* tim_handle) {
+    if (!tim_handle) {
+        return false;
+    }
+    return (HAL_TIM_Base_GetState(tim_handle) == HAL_TIM_STATE_BUSY);
+}
 
 bool motor_hardware_start_dac(void* hdac, uint32_t channel) {
     return HAL_DAC_Start(hdac, channel) == HAL_OK;

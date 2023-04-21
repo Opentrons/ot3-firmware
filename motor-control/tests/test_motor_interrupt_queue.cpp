@@ -49,7 +49,7 @@ TEST_CASE("motor interrupt handler queue functionality") {
                     handler.run_interrupt();
                     handler.cancel_and_clear_moves(
                         can::ids::ErrorCode::hardware,
-                        can::ids::ErrorSeverity::warning, false);
+                        can::ids::ErrorSeverity::warning);
                     THEN("the other pending movements are cancelled") {
                         REQUIRE(handler.has_move_messages());
                         // There are 3 more messages to clear

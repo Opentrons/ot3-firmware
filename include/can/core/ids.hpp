@@ -144,6 +144,7 @@ enum class ErrorCode {
     labware_dropped = 0x9,
     estop_released = 0xa,
     motor_busy = 0xb,
+    stop_requested = 0xc,
 };
 
 /** Error Severity levels. */

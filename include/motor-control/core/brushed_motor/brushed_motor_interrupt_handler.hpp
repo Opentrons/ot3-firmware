@@ -152,6 +152,7 @@ class BrushedMotorInterruptHandler {
             // occur from motion and vibration
             if (move_delta > error_conf.unwanted_movement_threshold) {
                 cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+                motor_state = ControlState::ERROR;
             }
         } else if (motor_state == ControlState::FORCE_CONTROLLING ||
                    motor_state == ControlState::FORCE_CONTROLLING_HOME) {
@@ -163,12 +164,19 @@ class BrushedMotorInterruptHandler {
                                ? can::ids::ErrorCode::labware_dropped
                                : can::ids::ErrorCode::collision_detected;
                 cancel_and_clear_moves(err);
+                motor_state = ControlState::ERROR;
             }
         }
     }
 
     void run_interrupt() {
-        if (motor_state == ControlState::ESTOP) {
+        if (clear_queue_until_empty) {
+            clear_queue_until_empty = pop_and_discard_move();
+        } else if (hardware.has_cancel_request()) {
+            cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
+                                   can::ids::ErrorSeverity::warning);
+            motor_state = ControlState::IDLE;
+        } else if (motor_state == ControlState::ESTOP) {
             // return out of error state once the estop is disabled
             if (!estop_triggered()) {
                 motor_state = ControlState::IDLE;
@@ -178,20 +186,15 @@ class BrushedMotorInterruptHandler {
                         .severity = can::ids::ErrorSeverity::warning,
                         .error_code = can::ids::ErrorCode::estop_released});
             }
+        } else if (estop_triggered()) {
+            cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
+            motor_state = ControlState::ESTOP;
+        } else if (tick < HOLDOFF_TICKS) {
+            tick++;
+        } else if (motor_state == ControlState::ACTIVE) {
+            execute_active_move();
         } else {
-            if (estop_triggered()) {
-                cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
-                return;
-            }
-            if (tick < HOLDOFF_TICKS) {
-                tick++;
-                return;
-            }
-            if (motor_state == ControlState::ACTIVE) {
-                execute_active_move();
-            } else {
-                execute_idle_move();
-            }
+            execute_idle_move();
         }
     }
 
@@ -262,7 +265,9 @@ class BrushedMotorInterruptHandler {
     auto estop_triggered() -> bool { return hardware.check_estop_in(); }
 
     void cancel_and_clear_moves(
-        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware) {
+        can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware,
+        can::ids::ErrorSeverity severity =
+            can::ids::ErrorSeverity::unrecoverable) {
         // If there is a currently running move send a error corresponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
@@ -279,20 +284,10 @@ class BrushedMotorInterruptHandler {
         }
 
         status_queue_client.send_brushed_move_status_reporter_queue(
-            can::messages::ErrorMessage{
-                .message_index = message_index,
-                .severity = can::ids::ErrorSeverity::unrecoverable,
-                .error_code = err_code});
-        // Broadcast a stop message
-        status_queue_client.send_brushed_move_status_reporter_queue(
-            can::messages::StopRequest{.message_index = 0});
-        if (err_code == can::ids::ErrorCode::estop_detected) {
-            motor_state = ControlState::ESTOP;
-        } else {
-            motor_state = ControlState::ERROR;
-        }
-        // the queue will get reset during the stop message processing
-        // we can't clear here from an interrupt context
+            can::messages::ErrorMessage{.message_index = message_index,
+                                        .severity = severity,
+                                        .error_code = err_code});
+        clear_queue_until_empty = true;
     }
 
     void finish_current_move(
@@ -332,6 +327,18 @@ class BrushedMotorInterruptHandler {
         return buffered_move;
     }
 
+    /**
+     * @brief Pop the next message out of the motion queue and discard it.
+     *
+     * @return true if the queue still has another message, false if this
+     * was the last message in the queue.
+     */
+    auto pop_and_discard_move() -> bool {
+        auto scratch = BrushedMove{};
+        std::ignore = queue.try_read_isr(&scratch);
+        return has_messages();
+    }
+
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
     uint32_t timeout_ticks = 0;
@@ -346,5 +353,6 @@ class BrushedMotorInterruptHandler {
     BrushedMove buffered_move = BrushedMove{};
     int32_t hold_encoder_position = 0;
     uint32_t current_control_pwm = 0;
+    bool clear_queue_until_empty = false;
 };
 }  // namespace brushed_motor_handler

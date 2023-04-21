@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <concepts>
 #include <memory>
 
@@ -39,6 +40,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return true; }
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;
@@ -85,6 +87,10 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     bool check_estop_in() final { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
+    }
+    void request_cancel() final { cancel_request.store(true); }
 
   private:
     bool limit_switch_status = false;
@@ -94,6 +100,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
+    std::atomic<bool> cancel_request = false;
 };
 
 class SimBrushedMotorHardwareIface
@@ -107,6 +114,7 @@ class SimBrushedMotorHardwareIface
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return true; }
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;
@@ -146,6 +154,11 @@ class SimBrushedMotorHardwareIface
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
 
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
+    }
+    void request_cancel() final { cancel_request.store(true); }
+
   private:
     bool stay_enabled = false;
     bool limit_switch_status = false;
@@ -158,6 +171,7 @@ class SimBrushedMotorHardwareIface
     StateManagerHandle _state_manager = nullptr;
     MoveMessageHardware _id;
     bool estop_detected = false;
+    std::atomic<bool> cancel_request = false;
 };
 
 class SimGearMotorHardwareIface
@@ -173,6 +187,7 @@ class SimGearMotorHardwareIface
     void deactivate_motor() final {}
     void start_timer_interrupt() final {}
     void stop_timer_interrupt() final {}
+    bool is_timer_interrupt_running() final { return true; }
     bool check_limit_switch() final {
         if (limit_switch_status) {
             limit_switch_status = false;
@@ -215,6 +230,10 @@ class SimGearMotorHardwareIface
     bool check_estop_in() final { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
+    }
+    void request_cancel() final { cancel_request.store(true); }
 
   private:
     bool limit_switch_status = false;
@@ -224,6 +243,7 @@ class SimGearMotorHardwareIface
     Direction _direction = Direction::POSITIVE;
     float _encoder_ticks_per_pulse = 0;
     bool estop_detected = false;
+    std::atomic<bool> cancel_request = false;
 };
 
 }  // namespace sim_motor_hardware_iface

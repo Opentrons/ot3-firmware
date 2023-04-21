@@ -65,6 +65,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_encoder_pulses() final;
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
+    auto is_timer_interrupt_running() -> bool final;
 
     void encoder_overflow(int32_t direction);
 
@@ -72,6 +73,10 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
+    auto has_cancel_request() -> bool final {
+        return cancel_request.exchange(false);
+    }
+    void request_cancel() final { cancel_request.store(true); }
 
   private:
     bool stay_enabled = false;
@@ -83,6 +88,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     ot_utils::pid::PID controller_loop;
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
+    std::atomic<bool> cancel_request = false;
 };
 
 };  // namespace motor_hardware

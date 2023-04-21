@@ -28,6 +28,10 @@ void BrushedMotorHardware::stop_timer_interrupt() {
     motor_hardware_stop_timer(pins.pwm_2.tim);  // stop base timer
 }
 
+bool BrushedMotorHardware::is_timer_interrupt_running() {
+    return motor_hardware_timer_running(pins.pwm_2.tim);
+}
+
 void BrushedMotorHardware::activate_motor() { gpio::set(pins.enable); }
 
 void BrushedMotorHardware::deactivate_motor() { gpio::reset(pins.enable); }

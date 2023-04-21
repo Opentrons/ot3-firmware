@@ -236,16 +236,11 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
             test_objs.hw.set_estop_in(true);
             test_objs.handler.run_interrupt();
             THEN("Errors are sent") {
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 1);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
-
-                can::messages::StopRequest stop =
-                    std::get<can::messages::StopRequest>(
-                        test_objs.reporter.messages.back());
-                REQUIRE(stop.message_index == 0);
             }
         }
     }
@@ -285,16 +280,12 @@ SCENARIO("labware dropped during grip move") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 1);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::labware_dropped);
 
-                can::messages::StopRequest stop =
-                    std::get<can::messages::StopRequest>(
-                        test_objs.reporter.messages.back());
-                REQUIRE(stop.message_index == 0);
                 REQUIRE(test_objs.hw.get_stay_enabled() == true);
             }
         }
@@ -338,17 +329,13 @@ SCENARIO("collision while homed") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 1);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
 
-                can::messages::StopRequest stop =
-                    std::get<can::messages::StopRequest>(
-                        test_objs.reporter.messages.back());
-                REQUIRE(stop.message_index == 0);
                 REQUIRE(test_objs.hw.get_stay_enabled() == false);
             }
         }
@@ -425,17 +412,13 @@ SCENARIO("A collision during position controlled move") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 1);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
 
-                can::messages::StopRequest stop =
-                    std::get<can::messages::StopRequest>(
-                        test_objs.reporter.messages.back());
-                REQUIRE(stop.message_index == 0);
                 REQUIRE(test_objs.hw.get_stay_enabled() == false);
             }
         }

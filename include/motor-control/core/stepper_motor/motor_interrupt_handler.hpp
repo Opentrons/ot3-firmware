@@ -1,5 +1,6 @@
 #pragma once
 
+#include "can/core/ids.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
@@ -82,7 +83,7 @@ class MotorInterruptHandler {
                     if (stalled_during_movement()) {
                         cancel_and_clear_moves(
                             can::ids::ErrorCode::collision_detected,
-                            can::ids::ErrorSeverity::recoverable, false);
+                            can::ids::ErrorSeverity::recoverable);
                     }
                 }
             }
@@ -108,55 +109,54 @@ class MotorInterruptHandler {
         } else {
             if (has_move_messages()) {
                 // If we're currently in the estop and we have messages, then
-                // either we're still clearing out the queued messages that we
-                // hadn't yet executed when the estop happened; or somebody sent
-                // us new moves while we were in the estop. In either case, we
-                // want the same top-level behavior: one such move gets an error
-                // response, and the others get deleted.
-                if (!clear_queue_until_empty) {
-                    // Nothing has set clear_queue_until_empty. That flag is set
-                    // from false to true by the code below; by
-                    // cancel_and_clear_moves; and nowhere else. That means that
-                    // no move from the group that is in the queue was currently
-                    // being executed when estop asserted (or it would have been
-                    // cancelled by cancel_and_clear_moves) and no move from the
-                    // group that is in the queue has been responded to with an
-                    // error (or the code below would have run and set the
-                    // flag). Therefore, we need to send an error, and set the
-                    // flag to consume the rest of the group.
-                    auto scratch = MotorMoveMessage{};
-                    std::ignore = move_queue.try_read_isr(&scratch);
-                    status_queue_client.send_move_status_reporter_queue(
-                        can::messages::ErrorMessage{
-                            .message_index = scratch.message_index,
-                            .severity = can::ids::ErrorSeverity::unrecoverable,
-                            .error_code = can::ids::ErrorCode::estop_detected});
-                    clear_queue_until_empty = move_queue.has_message_isr();
-                } else {
-                    // If we were executing a move when estop asserted, and
-                    // what's in the queue is the remaining enqueued moves from
-                    // that group, then we will have called
-                    // cancel_and_clear_moves and clear_queue_until_empty will
-                    // be true. That means we should pop out the queue.
-                    // clear_queue_until_empty will also be true if we were in
-                    // the steady-state estop asserted; got new messages; and
-                    // the other branch of this if asserted. In either case, an
-                    // error message has been sent, so we need to just keep
-                    // clearing the queue.
-                    clear_queue_until_empty = pop_and_discard_move();
-                }
+                // somebody sent us new moves while we were in the estop.
+
+                // Nothing has set clear_queue_until_empty. That flag is set
+                // from false to true by the code below; by
+                // cancel_and_clear_moves; and nowhere else. That means that
+                // no move from the group that is in the queue was currently
+                // being executed when estop asserted (or it would have been
+                // cancelled by cancel_and_clear_moves) and no move from the
+                // group that is in the queue has been responded to with an
+                // error (or the code below would have run and set the
+                // flag). Therefore, we need to send an error, and set the
+                // flag to consume the rest of the group.
+                auto scratch = MotorMoveMessage{};
+                std::ignore = move_queue.try_read_isr(&scratch);
+                status_queue_client.send_move_status_reporter_queue(
+                    can::messages::ErrorMessage{
+                        .message_index = scratch.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::estop_detected});
+                clear_queue_until_empty = move_queue.has_message_isr();
             }
         }
         return estop_status;
     }
 
     void run_interrupt() {
-        // handle error state
-        if (in_estop) {
+        // handle various error states
+        if (clear_queue_until_empty) {
+            // If we were executing a move when estop asserted, and
+            // what's in the queue is the remaining enqueued moves from
+            // that group, then we will have called
+            // cancel_and_clear_moves and clear_queue_until_empty will
+            // be true. That means we should pop out the queue.
+            // clear_queue_until_empty will also be true if we were in
+            // the steady-state estop asserted; got new messages; and
+            // the other branch of this if asserted. In either case, an
+            // error message has been sent, so we need to just keep
+            // clearing the queue.
+            clear_queue_until_empty = pop_and_discard_move();
+        } else if (in_estop) {
             handle_update_position_queue();
             in_estop = estop_update();
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
+            in_estop = true;
+        } else if (hardware.has_cancel_request()) {
+            cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
+                                   can::ids::ErrorSeverity::warning);
         } else {
             // Normal Move logic
             run_normal_interrupt();
@@ -291,20 +291,16 @@ class MotorInterruptHandler {
     }
 
     void update_move() {
-        if (clear_queue_until_empty) {
-            clear_queue_until_empty = pop_and_discard_move();
+        has_active_move = move_queue.try_read_isr(&buffered_move);
+        if (set_direction_pin()) {
+            hardware.positive_direction();
         } else {
-            has_active_move = move_queue.try_read_isr(&buffered_move);
-            if (set_direction_pin()) {
-                hardware.positive_direction();
-            } else {
-                hardware.negative_direction();
-            }
-            if (has_active_move && buffered_move.stop_condition ==
-                                       MoveStopCondition::limit_switch) {
-                position_tracker = 0x7FFFFFFFFFFFFFFF;
-                update_hardware_step_tracker();
-            }
+            hardware.negative_direction();
+        }
+        if (has_active_move &&
+            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+            position_tracker = 0x7FFFFFFFFFFFFFFF;
+            update_hardware_step_tracker();
         }
     }
 
@@ -326,8 +322,7 @@ class MotorInterruptHandler {
     void cancel_and_clear_moves(
         can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware,
         can::ids::ErrorSeverity severity =
-            can::ids::ErrorSeverity::unrecoverable,
-        bool send_stop_msg = true) {
+            can::ids::ErrorSeverity::unrecoverable) {
         // If there is a currently running move send a error corresponding
         // to it so the hardware controller can know what move was running
         // when the cancel happened
@@ -340,25 +335,14 @@ class MotorInterruptHandler {
                                         .severity = severity,
                                         .error_code = err_code});
 
-        // Broadcast a stop message
-        if (send_stop_msg) {
-            status_queue_client.send_move_status_reporter_queue(
-                can::messages::StopRequest{.message_index = 0});
-        } else {
-            // Even if we don't emit a stop message, we have to make sure that
-            // other steps in the queue DO NOT execute. A stop message will
-            // clear the whole queue from an interrupt, but with this flag we
-            // will clear out the interrupt's queue without having to send
-            // more messages around the system.
-            clear_queue_until_empty = true;
-        }
+        // We have to make sure that
+        // other steps in the queue DO NOT execute. With this flag we
+        // will clear out the interrupt's queue.
+        clear_queue_until_empty = true;
 
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
         has_active_move = false;
-        if (err_code == can::ids::ErrorCode::estop_detected) {
-            in_estop = true;
-        }
     }
 
     void finish_current_move(
