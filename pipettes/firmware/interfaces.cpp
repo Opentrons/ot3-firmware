@@ -74,7 +74,7 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
 }
 
 struct motor_hardware::UsageEEpromConfig single_multi_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = PLUNGER_MOTOR_STEP_KEY,
             .type_key =
@@ -143,7 +143,7 @@ auto gear_motor::get_motor_hardware(
 }
 
 struct motor_hardware::UsageEEpromConfig gear_left_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = GEAR_LEFT_MOTOR_KEY,
             .type_key = uint16_t(
@@ -154,7 +154,7 @@ struct motor_hardware::UsageEEpromConfig gear_left_usage_config {
 };
 
 struct motor_hardware::UsageEEpromConfig gear_right_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = GEAR_RIGHT_MOTOR_KEY,
             .type_key = uint16_t(

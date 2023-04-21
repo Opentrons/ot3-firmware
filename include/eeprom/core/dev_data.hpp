@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <array>
 
 #include "accessor.hpp"
 #include "addresses.hpp"
@@ -63,8 +63,9 @@ class DevDataTailAccessor
 
     void read_complete(uint32_t) final {
         // test if data is set to default values at delivery
-        auto delivery_state = std::vector<uint8_t>(
-            addresses::lookup_table_tail_length, conf.default_byte_value);
+        auto delivery_state =
+            std::array<uint8_t, addresses::lookup_table_tail_length>{};
+        delivery_state.fill(conf.default_byte_value);
         if (std::equal(delivery_state.begin(), delivery_state.end(),
                        data_tail_buff.begin())) {
             // Value is set to default so update it to data section start

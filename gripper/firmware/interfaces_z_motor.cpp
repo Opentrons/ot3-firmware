@@ -25,7 +25,7 @@ static spi::hardware::SPI_interface SPI_intf = {
 };
 
 struct motor_hardware::UsageEEpromConfig z_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = Z_MOTOR_DIST_KEY,
             .type_key =

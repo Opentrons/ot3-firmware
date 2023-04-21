@@ -35,7 +35,7 @@ static spi::hardware::SPI_interface SPI_intf = {
 static spi::hardware::Spi spi_comms(SPI_intf);
 
 struct motor_hardware::UsageEEpromConfig usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = AXIS_DISTANCE_KEY,
             .type_key =

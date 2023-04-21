@@ -78,7 +78,7 @@ spi::hardware::SPI_interface SPI_intf3 = {
 static spi::hardware::Spi spi_comms3(SPI_intf3);
 
 struct motor_hardware::UsageEEpromConfig left_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = L_MOTOR_DISTANCE_KEY,
             .type_key =
@@ -89,7 +89,7 @@ struct motor_hardware::UsageEEpromConfig left_usage_config {
 };
 
 struct motor_hardware::UsageEEpromConfig right_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = R_MOTOR_DISTANCE_KEY,
             .type_key =

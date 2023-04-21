@@ -101,7 +101,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     bool timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
         motor_hardware::UsageEEpromConfig{
-            std::vector<UsageRequestSet>{UsageRequestSet{
+            std::array<UsageRequestSet, 1>{UsageRequestSet{
                 .eeprom_key = 0,
                 .type_key = uint16_t(
                     can::ids::MotorUsageValueType::linear_motor_distance),

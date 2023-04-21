@@ -18,7 +18,7 @@ constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
 
 struct motor_hardware::UsageEEpromConfig brushed_usage_config {
-    std::vector<UsageRequestSet> {
+    std::array<UsageRequestSet, 1> {
         UsageRequestSet {
             .eeprom_key = G_MOTOR_DIST_KEY,
             .type_key =

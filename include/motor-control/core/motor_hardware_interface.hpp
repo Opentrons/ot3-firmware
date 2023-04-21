@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-#include <vector>
 
 #include "motor-control/core/types.hpp"
 
@@ -14,7 +13,8 @@ namespace motor_hardware {
 static constexpr auto max_requests_per_can_message = 5;
 class UsageEEpromConfig {
   public:
-    UsageEEpromConfig(const std::vector<UsageRequestSet>& requests) {
+    template <size_t N>
+    UsageEEpromConfig(const std::array<UsageRequestSet, N>& requests) {
         auto i = 0;
         for (auto r : requests) {
             if (i == max_requests_per_can_message) {
