@@ -17,6 +17,10 @@ struct IncreaseForceTimeUsage {
     uint16_t seconds;
 };
 
+struct IncreaseErrorCount {
+    uint16_t key;
+};
+
 struct GetUsageRequest {
     uint32_t message_index;
     motor_hardware::UsageEEpromConfig usage_conf;

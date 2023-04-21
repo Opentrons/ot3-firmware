@@ -59,6 +59,15 @@ class UsageEEpromConfig {
         }
         return 0xFFFF;
     }
+    [[nodiscard]] auto get_error_count_key() const -> uint16_t {
+        for (auto i : usage_requests) {
+            if (i.type_key ==
+                uint16_t(can::ids::MotorUsageValueType::total_error_count)) {
+                return i.eeprom_key;
+            }
+        }
+        return 0xFFFF;
+    }
     std::array<UsageRequestSet, max_requests_per_can_message> usage_requests{};
     size_t num_keys = 0;
 };

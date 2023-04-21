@@ -94,6 +94,11 @@ class MoveStatusMessageHandler {
         can_client.send_can_message(can::ids::NodeId::broadcast, msg);
     }
 
+    void handle_message(const usage_messages::IncreaseErrorCount& message) {
+        usage_client.send_usage_storage_queue(message);
+    }
+
+
   private:
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
