@@ -77,7 +77,7 @@ SCENARIO("estop pressed during motor interrupt handler") {
                         .acceleration = 2,
                         .group_id = 0,
                         .seq_id = 0,
-                        .stop_condition = MoveStopCondition::limit_switch};
+                        .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch)};
         test_objs.queue.try_write_isr(msg);
         test_objs.queue.try_write_isr(msg);
         test_objs.queue.try_write_isr(msg);
