@@ -8,51 +8,86 @@
 
 auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
     -> tmc2160::configs::TMC2160DriverConfig {
-    tmc2160::configs::TMC2160DriverConfig tmc2160_conf{
-        .registers = {.gconfig = {.en_pwm_mode = 1},
-                      .ihold_irun = {.hold_current = 16,
-                                     .run_current = 31,
-                                     .hold_current_delay = 0x7},
-                      .tpowerdown = {},
-                      .tcoolthrs = {.threshold = 0},
-                      .thigh = {.threshold = 0xFFFFF},
-                      .chopconf = {.toff = 0x5,
-                                   .hstrt = 0x5,
-                                   .hend = 0x3,
-                                   .tbl = 0x2,
-                                   .mres = 0x4},
-                      .coolconf = {.sgt = 0x6},
-                      .glob_scale = {.global_scaler = 0xA7}},
-        .current_config =
-            {
-                .r_sense = 0.1,
-                .v_sf = 0.325,
-            },
-        .chip_select = {
-            .cs_pin = GPIO_PIN_5,
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-            .GPIO_handle = GPIOC,
-        }};
     switch (which) {
         case TMC2160PipetteAxis::left_gear_motor:
-            tmc2160_conf.chip_select = {
-                .cs_pin = GPIO_PIN_11,
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .GPIO_handle = GPIOB,
-            };
-            tmc2160_conf.registers.chopconf.mres = 0x4;
-            return tmc2160_conf;
+            return tmc2160::configs::TMC2160DriverConfig{
+                .registers = {.gconfig = {.en_pwm_mode = 1},
+                              .ihold_irun = {.hold_current = 16,
+                                             .run_current = 31,
+                                             .hold_current_delay = 0x7},
+                              .tpowerdown = {},
+                              .tcoolthrs = {.threshold = 0},
+                              .thigh = {.threshold = 0xFFFFF},
+                              .chopconf = {.toff = 0x5,
+                                           .hstrt = 0x5,
+                                           .hend = 0x3,
+                                           .tbl = 0x2,
+                                           .mres = 0x4},
+                              .coolconf = {.sgt = 0x6},
+                              .glob_scale = {.global_scaler = 0xa7}},
+                .current_config =
+                    {
+                        .r_sense = 0.15,
+                        .v_sf = 0.325,
+                    },
+                .chip_select = {
+                    .cs_pin = GPIO_PIN_11,
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .GPIO_handle = GPIOB,
+                }};
         case TMC2160PipetteAxis::right_gear_motor:
-            tmc2160_conf.chip_select = {
-                .cs_pin = GPIO_PIN_15,
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                .GPIO_handle = GPIOC,
-            };
-            tmc2160_conf.registers.chopconf.mres = 0x4;
-            return tmc2160_conf;
+            return tmc2160::configs::TMC2160DriverConfig{
+                .registers = {.gconfig = {.en_pwm_mode = 1},
+                              .ihold_irun = {.hold_current = 16,
+                                             .run_current = 31,
+                                             .hold_current_delay = 0x7},
+                              .tpowerdown = {},
+                              .tcoolthrs = {.threshold = 0},
+                              .thigh = {.threshold = 0xFFFFF},
+                              .chopconf = {.toff = 0x5,
+                                           .hstrt = 0x5,
+                                           .hend = 0x3,
+                                           .tbl = 0x2,
+                                           .mres = 0x4},
+                              .coolconf = {.sgt = 0x6},
+                              .glob_scale = {.global_scaler = 0xa7}},
+                .current_config =
+                    {
+                        .r_sense = 0.15,
+                        .v_sf = 0.325,
+                    },
+                .chip_select = {
+                    .cs_pin = GPIO_PIN_15,
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .GPIO_handle = GPIOC,
+                }};
         case TMC2160PipetteAxis::linear_motor:
         default:
-            return tmc2160_conf;
+            return tmc2160::configs::TMC2160DriverConfig{
+                .registers = {.gconfig = {.en_pwm_mode = 1},
+                              .ihold_irun = {.hold_current = 16,
+                                             .run_current = 31,
+                                             .hold_current_delay = 0x7},
+                              .tpowerdown = {},
+                              .tcoolthrs = {.threshold = 0},
+                              .thigh = {.threshold = 0xFFFFF},
+                              .chopconf = {.toff = 0x5,
+                                           .hstrt = 0x5,
+                                           .hend = 0x3,
+                                           .tbl = 0x2,
+                                           .mres = 0x4},
+                              .coolconf = {.sgt = 0x6},
+                              .glob_scale = {.global_scaler = 0xff}},
+                .current_config =
+                    {
+                        .r_sense = 0.1,
+                        .v_sf = 0.325,
+                    },
+                .chip_select = {
+                    .cs_pin = GPIO_PIN_5,
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+                    .GPIO_handle = GPIOC,
+                }};
     }
 }
 
