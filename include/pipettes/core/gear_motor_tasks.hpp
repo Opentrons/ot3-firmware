@@ -3,12 +3,14 @@
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
+#include "eeprom/core/dev_data.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/core/tasks/gear_tmc2160_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
 #include "pipettes/core/interfaces.hpp"
 #include "pipettes/core/motor_configurations.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 #include "pipettes/core/tasks/gear_move_status_reporter_task.hpp"
 #include "pipettes/core/tasks/motion_controller_task.hpp"
 #include "pipettes/core/tasks/move_group_task.hpp"
@@ -35,7 +37,9 @@ void start_tasks(
     SPIWriterClient& spi_writer,
     motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
     can::ids::NodeId id,
-    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks);
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor);
 
 /**
  * Access to all the gear motion tasks.
@@ -53,6 +57,9 @@ struct Tasks {
         nullptr};
     pipettes::tasks::move_group_task::MoveGroupTask<
         freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
+    usage_storage_task::UsageStorageTask<
+        freertos_message_queue::FreeRTOSMessageQueue>* usage_storage_task{
+        nullptr};
 };
 
 /**
@@ -72,6 +79,8 @@ struct QueueClient : can::message_writer::MessageWriter {
     void send_move_status_reporter_queue(
         const pipettes::tasks::gear_move_status::TaskMessage& m);
 
+    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
+
     freertos_message_queue::FreeRTOSMessageQueue<
         pipettes::tasks::motion_controller_task::TaskMessage>* motion_queue{
         nullptr};
@@ -85,6 +94,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     freertos_message_queue::FreeRTOSMessageQueue<
         tmc2160::tasks::gear::TaskMessage>* driver_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        usage_storage_task::TaskMessage>* usage_storage_queue{nullptr};
 };
 
 /**

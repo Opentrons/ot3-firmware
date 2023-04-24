@@ -1,12 +1,56 @@
 #pragma once
 
+#include <array>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 
 #include "motor-control/core/types.hpp"
 
 namespace motor_hardware {
+
+static constexpr auto max_requests_per_can_message = 5;
+class UsageEEpromConfig {
+  public:
+    template <size_t N>
+    UsageEEpromConfig(const std::array<UsageRequestSet, N>& requests) {
+        auto i = 0;
+        for (auto r : requests) {
+            if (i == max_requests_per_can_message) {
+                break;
+            }
+            usage_requests.at(i) = r;
+            i++;
+        }
+        num_keys = i;
+    }
+
+    [[nodiscard]] auto get_distance_key() const -> uint16_t {
+        for (auto i : usage_requests) {
+            if (i.type_key ==
+                uint16_t(
+                    can::ids::MotorUsageValueType::linear_motor_distance)) {
+                return i.eeprom_key;
+            }
+        }
+        return 0xFFFF;
+    }
+
+    [[nodiscard]] auto get_gear_distance_key() const -> uint16_t {
+        for (auto i : usage_requests) {
+            if (i.type_key == uint16_t(can::ids::MotorUsageValueType::
+                                           left_gear_motor_distance) ||
+                i.type_key == uint16_t(can::ids::MotorUsageValueType::
+                                           right_gear_motor_distance)) {
+                return i.eeprom_key;
+            }
+        }
+        return 0xFFFF;
+    }
+    std::array<UsageRequestSet, max_requests_per_can_message> usage_requests{};
+    size_t num_keys = 0;
+};
 
 class MotorHardwareIface {
   public:
@@ -34,6 +78,7 @@ class MotorHardwareIface {
 
     virtual auto has_cancel_request() -> bool = 0;
     virtual void request_cancel() = 0;
+    virtual auto get_usage_eeprom_config() -> const UsageEEpromConfig& = 0;
 
     // This variable can remain public because the only public methods
     // to it are thread-safe anyways.

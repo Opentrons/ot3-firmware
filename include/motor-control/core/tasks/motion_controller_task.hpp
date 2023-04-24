@@ -17,13 +17,17 @@ using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
  * The message queue message handler.
  */
 template <lms::MotorMechanicalConfig MEConfig,
-          can::message_writer_task::TaskClient CanClient>
+          can::message_writer_task::TaskClient CanClient,
+          usage_storage_task::TaskClient UsageClient>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
     MotionControllerMessageHandler(MotorControllerType& controller,
-                                   CanClient& can_client)
-        : controller{controller}, can_client{can_client} {}
+                                   CanClient& can_client,
+                                   UsageClient& usage_client)
+        : controller{controller},
+          can_client{can_client},
+          usage_client{usage_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -132,9 +136,13 @@ class MotionControllerMessageHandler {
             can_client.send_can_message(can::ids::NodeId::host, response);
         }
     }
+    void handle(const can::messages::GetMotorUsageRequest& m) {
+        controller.send_usage_data(m.message_index, usage_client);
+    }
 
     MotorControllerType& controller;
     CanClient& can_client;
+    UsageClient& usage_client;
 };
 
 /**
@@ -157,11 +165,13 @@ class MotionControllerTask {
      * Task entry point.
      */
     template <lms::MotorMechanicalConfig MEConfig,
-              can::message_writer_task::TaskClient CanClient>
+              can::message_writer_task::TaskClient CanClient,
+              usage_storage_task::TaskClient UsageClient>
     [[noreturn]] void operator()(
         motion_controller::MotionController<MEConfig>* controller,
-        CanClient* can_client) {
-        auto handler = MotionControllerMessageHandler{*controller, *can_client};
+        CanClient* can_client, UsageClient* usage_client) {
+        auto handler = MotionControllerMessageHandler{*controller, *can_client,
+                                                      *usage_client};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {

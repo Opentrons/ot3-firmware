@@ -1,6 +1,7 @@
 #include "pipettes/core/gear_motor_tasks.hpp"
 
 #include "common/core/freertos_task.hpp"
+#include "pipettes/core/sensor_tasks.hpp"
 
 // using namespace pipettes::tasks;
 
@@ -20,6 +21,8 @@ static auto move_group_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_left = freertos_task::TaskStarter<
     512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+static auto right_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 
 // right gear motor tasks
 static auto mc_task_builder_right = freertos_task::TaskStarter<
@@ -31,6 +34,8 @@ static auto move_group_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_right = freertos_task::TaskStarter<
     512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+static auto left_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 
 void gear_motor_tasks::start_tasks(
     gear_motor_tasks::CanWriterTask& can_writer,
@@ -38,7 +43,9 @@ void gear_motor_tasks::start_tasks(
     gear_motor_tasks::SPIWriterClient& spi_writer,
     motor_configs::HighThroughputPipetteDriverHardware& gear_driver_configs,
     can::ids::NodeId id,
-    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
+    interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks,
+    eeprom::dev_data::DevDataTailAccessor<sensor_tasks::QueueClient>&
+        tail_accessor) {
     left_queue_client.set_node_id(id);
     right_queue_client.set_node_id(id);
 
@@ -48,8 +55,9 @@ void gear_motor_tasks::start_tasks(
     auto& right_tasks = gear_motor_tasks::get_right_gear_tasks();
 
     // Left Gear Motor Tasks
-    auto& motion_left = mc_task_builder_left.start(
-        5, "motion controller", motion_controllers.left, left_queues);
+    auto& motion_left = mc_task_builder_left.start(5, "motion controller",
+                                                   motion_controllers.left,
+                                                   left_queues, left_queues);
     auto& tmc2160_driver_left = tmc2160_driver_task_builder_left.start(
         5, "tmc2160 driver", gear_driver_configs.left_gear_motor, left_queues,
         spi_writer);
@@ -57,12 +65,16 @@ void gear_motor_tasks::start_tasks(
         5, "move group", left_queues, left_queues);
     auto& move_status_reporter_left = move_status_task_builder_left.start(
         5, "move status", left_queues,
-        motion_controllers.left.get_mechanical_config());
+        motion_controllers.left.get_mechanical_config(), left_queues);
+    auto& left_usage_storage_task = left_usage_storage_task_builder.start(
+        5, "usage storage", left_queues, sensor_tasks::get_queues(),
+        tail_accessor);
 
     left_tasks.driver = &tmc2160_driver_left;
     left_tasks.motion_controller = &motion_left;
     left_tasks.move_group = &move_group_left;
     left_tasks.move_status_reporter = &move_status_reporter_left;
+    left_tasks.usage_storage_task = &left_usage_storage_task;
 
     left_queues.set_queue(&can_writer.get_queue());
     left_queues.driver_queue = &tmc2160_driver_left.get_queue();
@@ -70,10 +82,12 @@ void gear_motor_tasks::start_tasks(
     left_queues.move_group_queue = &move_group_left.get_queue();
     left_queues.move_status_report_queue =
         &move_status_reporter_left.get_queue();
+    left_queues.usage_storage_queue = &left_usage_storage_task.get_queue();
 
     // Right Gear Motor Tasks
     auto& motion_right = mc_task_builder_right.start(
-        5, "motion controller", motion_controllers.right, right_queues);
+        5, "motion controller", motion_controllers.right, right_queues,
+        right_queues);
     auto& tmc2160_driver_right = tmc2160_driver_task_builder_right.start(
         5, "tmc2160 driver", gear_driver_configs.right_gear_motor, right_queues,
         spi_writer);
@@ -81,12 +95,16 @@ void gear_motor_tasks::start_tasks(
         5, "move group", right_queues, right_queues);
     auto& move_status_reporter_right = move_status_task_builder_right.start(
         5, "move status", right_queues,
-        motion_controllers.right.get_mechanical_config());
+        motion_controllers.right.get_mechanical_config(), right_queues);
+    auto& right_usage_storage_task = right_usage_storage_task_builder.start(
+        5, "usage storage", right_queues, sensor_tasks::get_queues(),
+        tail_accessor);
 
     right_tasks.driver = &tmc2160_driver_right;
     right_tasks.motion_controller = &motion_right;
     right_tasks.move_group = &move_group_right;
     right_tasks.move_status_reporter = &move_status_reporter_right;
+    right_tasks.usage_storage_task = &right_usage_storage_task;
 
     right_queues.set_queue(&can_writer.get_queue());
     right_queues.driver_queue = &tmc2160_driver_right.get_queue();
@@ -94,6 +112,7 @@ void gear_motor_tasks::start_tasks(
     right_queues.move_group_queue = &move_group_right.get_queue();
     right_queues.move_status_report_queue =
         &move_status_reporter_right.get_queue();
+    right_queues.usage_storage_queue = &right_usage_storage_task.get_queue();
 
     gmh_tsks.left.start_task();
     gmh_tsks.right.start_task();
@@ -122,6 +141,11 @@ void gear_motor_tasks::QueueClient::send_move_group_queue(
 void gear_motor_tasks::QueueClient::send_move_status_reporter_queue(
     const pipettes::tasks::gear_move_status::TaskMessage& m) {
     static_cast<void>(move_status_report_queue->try_write_isr(m));
+}
+
+void gear_motor_tasks::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    usage_storage_queue->try_write(m);
 }
 
 auto gear_motor_tasks::get_right_gear_tasks() -> Tasks& {

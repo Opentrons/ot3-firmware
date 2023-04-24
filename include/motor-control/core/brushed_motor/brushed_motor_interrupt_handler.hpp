@@ -217,6 +217,8 @@ class BrushedMotorInterruptHandler {
     void update_and_start_move() {
         if (queue.try_read_isr(&buffered_move)) {
             motor_state = ControlState::ACTIVE;
+            buffered_move.start_encoder_position =
+                hardware.get_encoder_pulses();
         }
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
@@ -254,6 +256,14 @@ class BrushedMotorInterruptHandler {
     }
 
     void homing_stopped() {
+        // since the buffered move start position isn't reliable here,
+        // and then end position will always be 0, we set the buffered move
+        // start position to the difference between the encoder pulse count at
+        // the beginning and end this way the usage tracker will know how far
+        // the motor moved.
+        buffered_move.start_encoder_position =
+            buffered_move.start_encoder_position -
+            hardware.get_encoder_pulses();
         hardware.reset_encoder_pulses();
         finish_current_move(AckMessageId::stopped_by_condition);
     }
@@ -311,8 +321,7 @@ class BrushedMotorInterruptHandler {
 
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(), 0,
-                                               ack_msg_id,
-                                               buffered_move.message_index);
+                                               ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_brushed_move_status_reporter_queue(

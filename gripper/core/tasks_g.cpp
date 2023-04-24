@@ -23,29 +23,48 @@ static auto brushed_move_group_task_builder =
 static auto brushed_move_status_task_builder = freertos_task::TaskStarter<
     512, move_status_reporter_task::MoveStatusReporterTask>{};
 
+#if PCBA_PRIMARY_REVISION != 'b'
+static auto jaw_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+#endif
+
 void g_tasks::start_task(
     brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
-    AllTask& gripper_tasks) {
+    AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
+    eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
+        tail_accessor) {
     auto& brushed_motor = brushed_motor_driver_task_builder.start(
         5, "bdc driver", grip_motor.driver, g_queues);
     auto& brushed_motion = brushed_motion_controller_task_builder.start(
-        5, "bdc controller", grip_motor.motion_controller, g_queues);
+        5, "bdc controller", grip_motor.motion_controller, g_queues, g_queues);
     auto& brushed_move_group = brushed_move_group_task_builder.start(
         5, "bdc move group", g_queues, g_queues);
     auto& brushed_move_status_reporter = brushed_move_status_task_builder.start(
         5, "bdc move status", g_queues,
-        grip_motor.motion_controller.get_mechanical_config());
+        grip_motor.motion_controller.get_mechanical_config(), g_queues);
+#if PCBA_PRIMARY_REVISION != 'b'
+    auto& usage_storage_task = jaw_usage_storage_task_builder.start(
+        5, "jaw usage storage", g_queues, main_queues, tail_accessor);
+#else
+    std::ignore = main_queues;
+    std::ignore = tail_accessor;
+#endif
 
     gripper_tasks.brushed_motor_driver = &brushed_motor;
     gripper_tasks.brushed_motion_controller = &brushed_motion;
     gripper_tasks.brushed_move_group = &brushed_move_group;
     gripper_tasks.brushed_move_status_reporter = &brushed_move_status_reporter;
-
+#if PCBA_PRIMARY_REVISION != 'b'
+    gripper_tasks.jaw_usage_storage_task = &usage_storage_task;
+#endif
     g_queues.brushed_motor_queue = &brushed_motor.get_queue();
     g_queues.brushed_motion_queue = &brushed_motion.get_queue();
     g_queues.brushed_move_group_queue = &brushed_move_group.get_queue();
     g_queues.brushed_move_status_report_queue =
         &brushed_move_status_reporter.get_queue();
+#if PCBA_PRIMARY_REVISION != 'b'
+    g_queues.g_usage_storage_queue = &usage_storage_task.get_queue();
+#endif
 }
 
 g_tasks::QueueClient::QueueClient()
@@ -69,6 +88,15 @@ void g_tasks::QueueClient::send_brushed_move_group_queue(
 void g_tasks::QueueClient::send_brushed_move_status_reporter_queue(
     const move_status_reporter_task::TaskMessage& m) {
     static_cast<void>(brushed_move_status_report_queue->try_write_isr(m));
+}
+
+void g_tasks::QueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+    // rev b boards don't have a working eeprom so we need to ignore
+    // messages in that case
+    if (g_usage_storage_queue != nullptr) {
+        g_usage_storage_queue->try_write(m);
+    }
 }
 
 auto g_tasks::get_queues() -> g_tasks::QueueClient& { return g_queues; }

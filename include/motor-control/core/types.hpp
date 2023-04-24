@@ -33,3 +33,9 @@ class MotorPositionStatus {
   private:
     std::atomic_uint8_t backing{0};
 };
+
+struct __attribute__((__packed__)) UsageRequestSet {
+    uint16_t eeprom_key;
+    uint16_t type_key;
+    uint16_t length;
+};

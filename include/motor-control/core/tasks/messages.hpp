@@ -2,6 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/usage_messages.hpp"
 
 namespace motor_control_task_messages {
 
@@ -12,7 +13,8 @@ using MotionControlTaskMessage = std::variant<
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
     can::messages::HomeRequest,
-    can::messages::UpdateMotorPositionEstimationRequest>;
+    can::messages::UpdateMotorPositionEstimationRequest,
+    can::messages::GetMotorUsageRequest>;
 
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
@@ -42,12 +44,17 @@ using BrushedMotionControllerTaskMessage = std::variant<
     can::messages::GripperHomeRequest,
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest,
-    can::messages::SetGripperErrorToleranceRequest>;
+    can::messages::SetGripperErrorToleranceRequest,
+    can::messages::GetMotorUsageRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,
     can::messages::ExecuteMoveGroupRequest, can::messages::GetMoveGroupRequest,
     can::messages::GripperGripRequest, can::messages::GripperHomeRequest,
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest>;
+
+using UsageStorageTaskMessage =
+    std::variant<std::monostate, usage_messages::IncreaseDistanceUsage,
+                 usage_messages::GetUsageRequest>;
 
 }  // namespace motor_control_task_messages

@@ -27,6 +27,7 @@
 #include "head/core/queues.hpp"
 #include "head/core/tasks_proto.hpp"
 #include "head/core/utils.hpp"
+#include "head/firmware/eeprom_keys.hpp"
 #include "head/firmware/presence_sensing_hardware.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
@@ -75,6 +76,28 @@ spi::hardware::SPI_interface SPI_intf3 = {
     .SPI_handle = &hspi3,
 };
 static spi::hardware::Spi spi_comms3(SPI_intf3);
+
+struct motor_hardware::UsageEEpromConfig left_usage_config {
+    std::array<UsageRequestSet, 1> {
+        UsageRequestSet {
+            .eeprom_key = L_MOTOR_DISTANCE_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
+};
+
+struct motor_hardware::UsageEEpromConfig right_usage_config {
+    std::array<UsageRequestSet, 1> {
+        UsageRequestSet {
+            .eeprom_key = R_MOTOR_DISTANCE_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
+};
 
 struct motor_hardware::HardwareConfig pin_configurations_left {
     .direction =
@@ -232,7 +255,7 @@ static stall_check::StallCheck stallcheck_right(
  */
 
 static motor_hardware::MotorHardware motor_hardware_right(
-    pin_configurations_right, &htim7, &htim2);
+    pin_configurations_right, &htim7, &htim2, right_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
     stallcheck_right, update_position_queue_right);
@@ -250,7 +273,7 @@ static stall_check::StallCheck stallcheck_left(
     linear_config.get_usteps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
 static motor_hardware::MotorHardware motor_hardware_left(
-    pin_configurations_left, &htim7, &htim3);
+    pin_configurations_left, &htim7, &htim3, left_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
     stallcheck_left, update_position_queue_left);

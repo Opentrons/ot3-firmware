@@ -8,6 +8,7 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/types.hpp"
 #include "motor-control/core/utils.hpp"
 
@@ -61,14 +62,16 @@ class MotionController {
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         steps_per_tick_sq acceleration_steps =
             fixed_point_multiply(steps_per_mm, can_msg.acceleration);
-        Move msg{.message_index = can_msg.message_index,
-                 .duration = can_msg.duration,
-                 .velocity = velocity_steps,
-                 .acceleration = acceleration_steps,
-                 .group_id = can_msg.group_id,
-                 .seq_id = can_msg.seq_id,
-                 .stop_condition = static_cast<MoveStopCondition>(
-                     can_msg.request_stop_condition)};
+        Move msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .velocity = velocity_steps,
+            .acceleration = acceleration_steps,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition =
+                static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
         }
@@ -78,13 +81,15 @@ class MotionController {
     void move(const can::messages::HomeRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
-        Move msg{.message_index = can_msg.message_index,
-                 .duration = can_msg.duration,
-                 .velocity = velocity_steps,
-                 .acceleration = 0,
-                 .group_id = can_msg.group_id,
-                 .seq_id = can_msg.seq_id,
-                 .stop_condition = MoveStopCondition::limit_switch};
+        Move msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .velocity = velocity_steps,
+            .acceleration = 0,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = MoveStopCondition::limit_switch,
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
         }
@@ -150,6 +155,14 @@ class MotionController {
 
     [[nodiscard]] auto get_position_flags() const -> uint8_t {
         return hardware.position_flags.get_flags();
+    }
+
+    template <usage_storage_task::TaskClient UsageClient>
+    void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
+        usage_messages::GetUsageRequest req = {
+            .message_index = message_index,
+            .usage_conf = hardware.get_usage_eeprom_config()};
+        usage_client.send_usage_storage_queue(req);
     }
 
   private:
@@ -221,6 +234,9 @@ class PipetteMotionController {
             can_msg.group_id,
             can_msg.seq_id,
             static_cast<MoveStopCondition>(can_msg.request_stop_condition),
+            0,
+            hardware.get_usage_eeprom_config().get_gear_distance_key(),
+            hardware.get_step_tracker(),
             can_msg.action,
             gear_motor_id};
         if (!enabled) {
@@ -282,6 +298,14 @@ class PipetteMotionController {
 
     [[nodiscard]] auto get_position_flags() const -> uint8_t {
         return hardware.position_flags.get_flags();
+    }
+
+    template <usage_storage_task::TaskClient UsageClient>
+    void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
+        usage_messages::GetUsageRequest req = {
+            .message_index = message_index,
+            .usage_conf = hardware.get_usage_eeprom_config()};
+        usage_client.send_usage_storage_queue(req);
     }
 
   private:

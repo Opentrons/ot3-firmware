@@ -122,9 +122,10 @@ void gripper_tasks::start_tasks(
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
 
-    z_tasks::start_task(z_motor, spi_device, driver_configs, tasks);
+    z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues,
+                        tail_accessor);
 
-    g_tasks::start_task(grip_motor, tasks);
+    g_tasks::start_task(grip_motor, tasks, queues, tail_accessor);
 
     z_tasks::get_queues().set_queue(&can_writer.get_queue());
     g_tasks::get_queues().set_queue(&can_writer.get_queue());

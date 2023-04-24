@@ -77,6 +77,9 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void set_timer_interrupt_running(bool is_running) {
         timer_interrupt_running = is_running;
     }
+    auto get_usage_eeprom_config() -> motor_hardware::UsageEEpromConfig& {
+        return eeprom_config;
+    }
 
   private:
     bool stay_enabled = false;
@@ -96,6 +99,13 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
                                        1.F / 32000.0, 7,      -7};
     bool cancel_request = false;
     bool timer_interrupt_running = true;
+    motor_hardware::UsageEEpromConfig eeprom_config =
+        motor_hardware::UsageEEpromConfig{
+            std::array<UsageRequestSet, 1>{UsageRequestSet{
+                .eeprom_key = 0,
+                .type_key = uint16_t(
+                    can::ids::MotorUsageValueType::linear_motor_distance),
+                .length = usage_storage_task::distance_data_usage_len}}};
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {

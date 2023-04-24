@@ -7,6 +7,7 @@
 #include "eeprom/core/task.hpp"
 #include "i2c/core/poller.hpp"
 #include "i2c/core/writer.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/tasks/capacitive_sensor_task.hpp"
 #include "sensors/core/tasks/environmental_sensor_task.hpp"

@@ -18,7 +18,8 @@ class GearMotorMotionHandler {
         std::variant<std::monostate, GearDisableMotorRequest,
                      GearEnableMotorRequest, GetMotionConstraintsRequest,
                      SetMotionConstraints, ReadLimitSwitchRequest,
-                     UpdateMotorPositionEstimationRequest>;
+                     UpdateMotorPositionEstimationRequest,
+                     GetMotorUsageRequest>;
 
     GearMotorMotionHandler(GearMotionTaskClient &motion_client)
         : motion_client{motion_client} {}

@@ -1,5 +1,6 @@
 #include "gripper/core/can_task.hpp"
 #include "gripper/core/interfaces.hpp"
+#include "gripper/firmware/eeprom_keys.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor.hpp"
 #include "motor-control/core/brushed_motor/brushed_motor_interrupt_handler.hpp"
 #include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
@@ -15,6 +16,17 @@
 
 constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
+
+struct motor_hardware::UsageEEpromConfig brushed_usage_config {
+    std::array<UsageRequestSet, 1> {
+        UsageRequestSet {
+            .eeprom_key = G_MOTOR_DIST_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
+            .length = usage_storage_task::distance_data_usage_len
+        }
+    }
+};
 
 /**
  * Brushed motor pin configuration.
@@ -96,7 +108,7 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_conf, &htim2);
+    brushed_motor_conf, &htim2, brushed_usage_config);
 
 /**
  * The brushed motor driver hardware interface.

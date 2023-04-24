@@ -16,7 +16,6 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
 
     // PIN PC4 is SCL
     // PIN PA8 is SDA
-    __HAL_RCC_GPIOA_CLK_ENABLE();
     GPIO_InitStruct.Pin = GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;

@@ -27,6 +27,8 @@ typedef enum {
     can_messageid_pipette_info_response = 0x307,
     can_messageid_gripper_info_response = 0x308,
     can_messageid_set_serial_number = 0x30a,
+    can_messageid_get_motor_usage_request = 0x30b,
+    can_messageid_get_motor_usage_response = 0x30c,
     can_messageid_stop_request = 0x0,
     can_messageid_error_message = 0x2,
     can_messageid_get_status_request = 0x1,
@@ -230,4 +232,11 @@ typedef enum {
     can_pipettetype_pipette_multi = 0x2,
     can_pipettetype_pipette_96 = 0x3,
 } CANPipetteType;
+
+/** Type of motor Usage value types. */
+typedef enum {
+    can_motorusagevaluetype_linear_motor_distance = 0x0,
+    can_motorusagevaluetype_left_gear_motor_distance = 0x1,
+    can_motorusagevaluetype_right_gear_motor_distance = 0x2,
+} CANMotorUsageValueType;
 

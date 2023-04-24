@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <span>
+#include <vector>
 
 #include "can/core/ids.hpp"
 #include "can/core/message_core.hpp"
@@ -1456,6 +1457,35 @@ struct SetGripperErrorToleranceRequest
         -> bool = default;
 };
 
+using GetMotorUsageRequest = Empty<MessageId::get_motor_usage_request>;
+
+struct GetMotorUsageResponse
+    : BaseMessage<MessageId::get_motor_usage_response> {
+    uint32_t message_index;
+    uint8_t num_keys;
+    struct __attribute__((__packed__)) UsageValueField {
+        uint16_t key;
+        uint16_t len;
+        uint64_t value;
+    };
+    std::array<UsageValueField, 5> values{};
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(num_keys, iter, limit);
+
+        for (auto v : values) {
+            iter = bit_utils::int_to_bytes(v.key, iter, limit);
+            // dropping len to 1 byte since the max length is 8
+            iter = bit_utils::int_to_bytes(uint8_t(v.len & 0xFF), iter, limit);
+            iter = bit_utils::int_to_bytes(v.value, iter, limit);
+        }
+        return iter - body;
+    }
+
+    auto operator==(const GetMotorUsageResponse& other) const -> bool = default;
+};
 /**
  * A variant of all message types we might send..
  */
@@ -1471,6 +1501,6 @@ using ResponseMessageType = std::variant<
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
-    PushTipPresenceNotification>;
+    PushTipPresenceNotification, GetMotorUsageResponse>;
 
 }  // namespace can::messages

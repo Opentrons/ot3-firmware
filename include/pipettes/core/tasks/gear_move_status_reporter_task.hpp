@@ -6,6 +6,7 @@
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/utils.hpp"
 #include "pipettes/core/tasks/messages.hpp"
 
@@ -19,16 +20,19 @@ using TaskMessage = pipettes::task_messages::motor_control_task_messages::
     MoveStatusReporterTaskMessage;
 
 template <can::message_writer_task::TaskClient CanClient,
-          lms::MotorMechanicalConfig LmsConfig>
+          lms::MotorMechanicalConfig LmsConfig,
+          usage_storage_task::TaskClient UsageClient>
 class MoveStatusMessageHandler {
   public:
     MoveStatusMessageHandler(
         CanClient& can_client,
-        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config)
+        const lms::LinearMotionSystemConfig<LmsConfig>& lms_config,
+        UsageClient& usage_client)
         : can_client{can_client},
           lms_config(lms_config),
-          um_per_step(convert_to_fixed_point_64_bit(
-              lms_config.get_um_per_step(), 31)) {}
+          um_per_step(
+              convert_to_fixed_point_64_bit(lms_config.get_um_per_step(), 31)),
+          usage_client(usage_client) {}
     MoveStatusMessageHandler(const MoveStatusMessageHandler& c) = delete;
     MoveStatusMessageHandler(const MoveStatusMessageHandler&& c) = delete;
     auto operator=(const MoveStatusMessageHandler& c) = delete;
@@ -50,12 +54,13 @@ class MoveStatusMessageHandler {
      * Handle Ack message
      */
     void handle_message(const motor_messages::GearMotorAck& message) {
+        uint32_t end_position =
+            fixed_point_multiply(um_per_step, message.current_position_steps);
         can::messages::TipActionResponse msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,
             .seq_id = message.seq_id,
-            .current_position_um = fixed_point_multiply(
-                um_per_step, message.current_position_steps),
+            .current_position_um = end_position,
             .encoder_position_um = 0,
             .ack_id = static_cast<uint8_t>(message.ack_id),
             // TODO: In a follow-up PR, tip sense reporting will
@@ -65,6 +70,14 @@ class MoveStatusMessageHandler {
             .position_flags = 0,
             .gear_motor_id = message.gear_motor_id};
         can_client.send_can_message(can::ids::NodeId::host, msg);
+        int32_t distance_traveled_um =
+            end_position -
+            fixed_point_multiply(um_per_step, message.start_step_position);
+        usage_client.send_usage_storage_queue(
+            usage_messages::IncreaseDistanceUsage{
+                .key = message.usage_key,
+                .distance_traveled_um =
+                    uint32_t(std::abs(distance_traveled_um))});
     }
 
     void handle_message(const motor_messages::UpdatePositionResponse& message) {
@@ -85,6 +98,7 @@ class MoveStatusMessageHandler {
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;
     sq31_31 um_per_step;
+    UsageClient& usage_client;
 };
 
 /**
@@ -107,11 +121,14 @@ class MoveStatusReporterTask {
      * Task entry point.
      */
     template <can::message_writer_task::TaskClient CanClient,
-              lms::MotorMechanicalConfig LmsConfig>
+              lms::MotorMechanicalConfig LmsConfig,
+              usage_storage_task::TaskClient UsageClient>
     [[noreturn]] void operator()(
         CanClient* can_client,
-        const lms::LinearMotionSystemConfig<LmsConfig>* config) {
-        auto handler = MoveStatusMessageHandler{*can_client, *config};
+        const lms::LinearMotionSystemConfig<LmsConfig>* config,
+        UsageClient* usage_client) {
+        auto handler =
+            MoveStatusMessageHandler{*can_client, *config, *usage_client};
         TaskMessage message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {

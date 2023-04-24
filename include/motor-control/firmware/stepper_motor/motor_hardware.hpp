@@ -26,8 +26,11 @@ class MotorHardware : public StepperMotorHardwareIface {
     ~MotorHardware() final = default;
     MotorHardware() = delete;
     MotorHardware(const HardwareConfig& config, void* timer_handle,
-                  void* encoder_handle)
-        : pins(config), tim_handle(timer_handle), enc_handle(encoder_handle) {}
+                  void* encoder_handle, const UsageEEpromConfig& eeprom_config)
+        : pins(config),
+          tim_handle(timer_handle),
+          enc_handle(encoder_handle),
+          eeprom_config(eeprom_config) {}
     MotorHardware(const MotorHardware&) = delete;
     auto operator=(const MotorHardware&) -> MotorHardware& = delete;
     MotorHardware(MotorHardware&&) = delete;
@@ -55,6 +58,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     }
     void request_cancel() final { cancel_request.store(true); }
 
+    auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
+        return eeprom_config;
+    }
     // downward interface - call from timer overflow handler
     void encoder_overflow(int32_t direction);
 
@@ -65,6 +71,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     HardwareConfig pins;
     void* tim_handle;
     void* enc_handle;
+    const UsageEEpromConfig& eeprom_config;
     int32_t motor_encoder_overflow_count = 0;
     std::atomic<bool> cancel_request = false;
 };

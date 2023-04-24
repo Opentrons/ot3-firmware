@@ -5,6 +5,7 @@
 #include "motor-control/core/brushed_motor/error_tolerance_config.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/tasks/usage_storage_task.hpp"
 #include "motor-control/core/utils.hpp"
 
 namespace brushed_motion_controller {
@@ -41,23 +42,27 @@ class MotionController {
     }
 
     void move(const can::messages::GripperGripRequest& can_msg) {
-        BrushedMove msg{.message_index = can_msg.message_index,
-                        .duration = can_msg.duration,
-                        .duty_cycle = can_msg.duty_cycle,
-                        .group_id = can_msg.group_id,
-                        .seq_id = can_msg.seq_id,
-                        .stop_condition = MoveStopCondition::none};
+        BrushedMove msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .duty_cycle = can_msg.duty_cycle,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = MoveStopCondition::none,
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         enable_motor();
         queue.try_write(msg);
     }
 
     void move(const can::messages::GripperHomeRequest& can_msg) {
-        BrushedMove msg{.message_index = can_msg.message_index,
-                        .duration = can_msg.duration,
-                        .duty_cycle = can_msg.duty_cycle,
-                        .group_id = can_msg.group_id,
-                        .seq_id = can_msg.seq_id,
-                        .stop_condition = MoveStopCondition::limit_switch};
+        BrushedMove msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .duty_cycle = can_msg.duty_cycle,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .stop_condition = MoveStopCondition::limit_switch,
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
         }
@@ -65,15 +70,17 @@ class MotionController {
     }
 
     void move(const can::messages::AddBrushedLinearMoveRequest& can_msg) {
-        BrushedMove msg{.message_index = can_msg.message_index,
-                        .duration = can_msg.duration,
-                        .duty_cycle = 0UL,
-                        .group_id = can_msg.group_id,
-                        .seq_id = can_msg.seq_id,
-                        .encoder_position = int32_t(
-                            can_msg.encoder_position_um /
-                            get_mechanical_config().get_encoder_um_per_pulse()),
-                        .stop_condition = MoveStopCondition::encoder_position};
+        BrushedMove msg{
+            .message_index = can_msg.message_index,
+            .duration = can_msg.duration,
+            .duty_cycle = 0UL,
+            .group_id = can_msg.group_id,
+            .seq_id = can_msg.seq_id,
+            .encoder_position =
+                int32_t(can_msg.encoder_position_um /
+                        get_mechanical_config().get_encoder_um_per_pulse()),
+            .stop_condition = MoveStopCondition::encoder_position,
+            .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();
         }
@@ -120,6 +127,14 @@ class MotionController {
             fixed_point_to_float(can_msg.max_pos_error_mm, S15Q16_RADIX),
             fixed_point_to_float(can_msg.max_unwanted_movement_mm,
                                  S15Q16_RADIX));
+    }
+
+    template <usage_storage_task::TaskClient UsageClient>
+    void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
+        usage_messages::GetUsageRequest req = {
+            .message_index = message_index,
+            .usage_conf = hardware.get_usage_eeprom_config()};
+        usage_client.send_usage_storage_queue(req);
     }
 
   private:

@@ -70,14 +70,19 @@ static auto i2c3_poll_task_builder =
     freertos_task::TaskStarter<1024, PollerWithTimer>{};
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
+#if PCBA_PRIMARY_REVISION != 'b'
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{head_queues};
 
+static auto left_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+static auto right_usage_storage_task_builder =
+    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
-
+#endif
 /**
  * Start head tasks.
  */
@@ -113,31 +118,35 @@ void head_tasks::start_tasks(
     auto& i2c3_poller_task =
         i2c3_poll_task_builder.start(5, "i2c3 poller", i2c3_task_client);
     i2c3_poll_client.set_queue(&i2c3_poller_task.get_queue());
-
+#if PCBA_PRIMARY_REVISION != 'b'
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
 
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", head_queues, tail_accessor, table_updater);
-
+#else
+    std::ignore = eeprom_hw_iface;
+#endif
     // Assign head task collection task pointers
     head_tasks_col.can_writer = &can_writer;
     head_tasks_col.presence_sensing_driver_task = &presence_sensing;
     head_tasks_col.i2c3_task = &i2c3_task;
     head_tasks_col.i2c3_poller_task = &i2c3_poller_task;
+#if PCBA_PRIMARY_REVISION != 'b'
     head_tasks_col.eeprom_task = &eeprom_task;
     head_tasks_col.update_data_rev_task = &eeprom_data_rev_update_task;
-
+#endif
     // Assign head queue client message queue pointers
     head_queues.set_queue(&can_writer.get_queue());
     head_queues.presence_sensing_driver_queue = &presence_sensing.get_queue();
     head_queues.i2c3_queue = &i2c3_task.get_queue();
     head_queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
+#if PCBA_PRIMARY_REVISION != 'b'
     head_queues.eeprom_queue = &eeprom_task.get_queue();
-
+#endif
     // Start the left motor tasks
     auto& left_motion = left_mc_task_builder.start(
-        5, "left mc", left_motion_controller, left_queues);
+        5, "left mc", left_motion_controller, left_queues, left_queues);
     auto& left_tmc2160_driver = left_motor_driver_task_builder.start(
         5, "left motor driver", left_driver_configs, left_queues,
         spi3_task_client);
@@ -145,7 +154,11 @@ void head_tasks::start_tasks(
         5, "left move group", left_queues, left_queues);
     auto& left_move_status_reporter = left_move_status_task_builder.start(
         5, "left move status", left_queues,
-        left_motion_controller.get_mechanical_config());
+        left_motion_controller.get_mechanical_config(), left_queues);
+#if PCBA_PRIMARY_REVISION != 'b'
+    auto& left_usage_storage_task = left_usage_storage_task_builder.start(
+        5, "left usage storage", left_queues, head_queues, tail_accessor);
+#endif
 
     // Assign left motor task collection task pointers
     left_tasks.motion_controller = &left_motion;
@@ -153,6 +166,9 @@ void head_tasks::start_tasks(
     left_tasks.move_group = &left_move_group;
     left_tasks.move_status_reporter = &left_move_status_reporter;
     left_tasks.spi_task = &spi3_task;
+#if PCBA_PRIMARY_REVISION != 'b'
+    left_tasks.usage_storage_task = &left_usage_storage_task;
+#endif
 
     // Assign left motor queue client message queue pointers
     left_queues.motion_queue = &left_motion.get_queue();
@@ -161,10 +177,13 @@ void head_tasks::start_tasks(
     left_queues.set_queue(&can_writer.get_queue());
     left_queues.move_status_report_queue =
         &left_move_status_reporter.get_queue();
+#if PCBA_PRIMARY_REVISION != 'b'
+    left_queues.usage_storage_queue = &left_usage_storage_task.get_queue();
+#endif
 
     // Start the right motor tasks
     auto& right_motion = right_mc_task_builder.start(
-        5, "right mc", right_motion_controller, right_queues);
+        5, "right mc", right_motion_controller, right_queues, right_queues);
     auto& right_tmc2160_driver = right_motor_driver_task_builder.start(
         5, "right motor driver", right_driver_configs, right_queues,
         spi2_task_client);
@@ -172,7 +191,11 @@ void head_tasks::start_tasks(
         5, "right move group", right_queues, right_queues);
     auto& right_move_status_reporter = right_move_status_task_builder.start(
         5, "right move status", right_queues,
-        right_motion_controller.get_mechanical_config());
+        right_motion_controller.get_mechanical_config(), right_queues);
+#if PCBA_PRIMARY_REVISION != 'b'
+    auto& right_usage_storage_task = right_usage_storage_task_builder.start(
+        5, "right usage storage", right_queues, head_queues, tail_accessor);
+#endif
 
     rmh_tsk.start_task();
     lmh_tsk.start_task();
@@ -183,6 +206,9 @@ void head_tasks::start_tasks(
     right_tasks.move_group = &right_move_group;
     right_tasks.move_status_reporter = &right_move_status_reporter;
     right_tasks.spi_task = &spi2_task;
+#if PCBA_PRIMARY_REVISION != 'b'
+    right_tasks.usage_storage_task = &right_usage_storage_task;
+#endif
 
     // Assign right motor queue client message queue pointers
     right_queues.motion_queue = &right_motion.get_queue();
@@ -191,6 +217,9 @@ void head_tasks::start_tasks(
     right_queues.set_queue(&can_writer.get_queue());
     right_queues.move_status_report_queue =
         &right_move_status_reporter.get_queue();
+#if PCBA_PRIMARY_REVISION != 'b'
+    right_queues.usage_storage_queue = &right_usage_storage_task.get_queue();
+#endif
 }
 
 // Implementation of HeadQueueClient
@@ -207,6 +236,15 @@ void head_tasks::HeadQueueClient::send_presence_sensing_driver_queue(
 
 head_tasks::MotorQueueClient::MotorQueueClient(can::ids::NodeId this_fw)
     : can::message_writer::MessageWriter{this_fw} {}
+
+void head_tasks::MotorQueueClient::send_usage_storage_queue(
+    const usage_storage_task::TaskMessage& m) {
+#if PCBA_PRIMARY_REVISION != 'b'
+    usage_storage_queue->try_write(m);
+#else
+    std::ignore = m;
+#endif
+}
 
 void head_tasks::MotorQueueClient::send_motion_controller_queue(
     const motion_controller_task::TaskMessage& m) {
@@ -230,7 +268,11 @@ void head_tasks::MotorQueueClient::send_move_status_reporter_queue(
 
 void head_tasks::HeadQueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {
+#if PCBA_PRIMARY_REVISION != 'b'
     eeprom_queue->try_write(m);
+#else
+    std::ignore = m;
+#endif
 }
 
 auto head_tasks::get_tasks() -> HeadTasks& { return head_tasks_col; }
