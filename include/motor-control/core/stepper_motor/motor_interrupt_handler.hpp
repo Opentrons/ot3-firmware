@@ -85,7 +85,7 @@ class MotorInterruptHandler {
                                 MoveStopCondition::stall)) {
                             cancel_and_clear_moves(
                                 can::ids::ErrorCode::collision_detected,
-                                can::ids::ErrorSeverity::recoverable, false);
+                                can::ids::ErrorSeverity::recoverable);
                         } else {
                             cancel_and_clear_moves(
                                 can::ids::ErrorCode::collision_detected, can::ids::ErrorSeverity::recoverable);
