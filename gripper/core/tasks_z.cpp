@@ -104,13 +104,10 @@ void z_tasks::QueueClient::send_move_status_reporter_queue(
 
 void z_tasks::QueueClient::send_usage_storage_queue(
     const usage_storage_task::TaskMessage& m) {
-#if PCBA_PRIMARY_REVISION != 'b'
-    z_usage_storage_queue->try_write(m);
-#else
-    // this task depends on the eeprom which does not work on the EVT gripper
-    // Since we don't create the task make sure we don't try to write to a
-    // non-existent queue
-    std::ignore = m;
-#endif
+    // rev b boards don't have a working eeprom so we need to ignore
+    // messages in that case
+    if (z_usage_storage_queue != nullptr) {
+        z_usage_storage_queue->try_write(m);
+    }
 }
 auto z_tasks::get_queues() -> z_tasks::QueueClient& { return z_queues; }
