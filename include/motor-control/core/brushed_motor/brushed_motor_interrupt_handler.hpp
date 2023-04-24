@@ -173,6 +173,9 @@ class BrushedMotorInterruptHandler {
         if (clear_queue_until_empty) {
             clear_queue_until_empty = pop_and_discard_move();
         } else if (motor_state == ControlState::ESTOP) {
+            // if we've received a stop request during this time we can clear
+            // that flag since there is isn't anything running
+            std::ignore = hardware.has_cancel_request();
             // return out of error state once the estop is disabled
             if (!estop_triggered()) {
                 motor_state = ControlState::IDLE;
