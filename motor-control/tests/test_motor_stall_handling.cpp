@@ -59,21 +59,16 @@ SCENARIO("motor handler stall detection") {
             THEN("the stall is detected") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-                THEN(
-                    "a unrecoverable collision error is raised and a stop "
-                    "request is sent") {
-                    REQUIRE(test_objs.reporter.messages.size() == 2);
+                THEN("a recoverable collision error is raised") {
+                    REQUIRE(test_objs.reporter.messages.size() == 1);
                     can::messages::ErrorMessage err =
                         std::get<can::messages::ErrorMessage>(
                             test_objs.reporter.messages.front());
+                    REQUIRE(err.message_index == 0);
                     REQUIRE(err.error_code ==
                             can::ids::ErrorCode::collision_detected);
                     REQUIRE(err.severity ==
-                            can::ids::ErrorSeverity::unrecoverable);
-                    can::messages::StopRequest stop =
-                        std::get<can::messages::StopRequest>(
-                            test_objs.reporter.messages.back());
-                    REQUIRE(stop.message_index == 0);
+                            can::ids::ErrorSeverity::recoverable);
                 }
             }
         }
@@ -98,32 +93,46 @@ SCENARIO("motor handler stall detection") {
         REQUIRE(test_objs.queue.get_size() == 2);
         test_objs.handler.update_move();
         WHEN("encoder doesn't update with the motor") {
-            REQUIRE(test_objs.queue.get_size() == 1);
-            REQUIRE(test_objs.reporter.messages.size() == 0);
-            for (int i = 0; i < (int)msg1.duration + 1; ++i) {
+            for (int i = 0; i < 23; ++i) {
                 test_objs.handler.run_interrupt();
             }
             THEN(
-                "the stall is detected but it is ignored, and the move is "
-                "completed") {
+                "the stall is detected but it is ignored, and a warning is "
+                "sent") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
                 REQUIRE(test_objs.reporter.messages.size() == 1);
-                Ack ack_msg =
-                    std::get<Ack>(test_objs.reporter.messages.front());
-                REQUIRE(ack_msg.ack_id ==
-                        AckMessageId::complete_without_condition);
-                REQUIRE(ack_msg.message_index == 13);
-                AND_WHEN("the interrupt runs again") {
-                    for (int i = 0; i < (int)msg2.duration; ++i) {
+                can::messages::ErrorMessage err =
+                    std::get<can::messages::ErrorMessage>(
+                        test_objs.reporter.messages.front());
+                REQUIRE(err.error_code ==
+                        can::ids::ErrorCode::collision_detected);
+                REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
+
+                THEN("the move finishes") {
+                    for (int i = 22; i < (int)msg1.duration; i++) {
                         test_objs.handler.run_interrupt();
                     }
-                    THEN("the second move will be executed as normal") {
-                        REQUIRE(test_objs.reporter.messages.size() == 2);
-                        Ack ack_msg =
-                            std::get<Ack>(test_objs.reporter.messages.back());
-                        REQUIRE(ack_msg.ack_id ==
-                                AckMessageId::complete_without_condition);
+                    REQUIRE(test_objs.reporter.messages.size() == 2);
+                    Ack ack_msg =
+                        std::get<Ack>(test_objs.reporter.messages.back());
+                    REQUIRE(ack_msg.ack_id ==
+                            AckMessageId::complete_without_condition);
+                    REQUIRE(ack_msg.message_index == 13);
+
+                    WHEN("the interrupt runs again") {
+                        for (int i = 0; i < (int)msg2.duration; ++i) {
+                            test_objs.handler.run_interrupt();
+                        }
+                        THEN("the second move will be executed as normal") {
+                            REQUIRE(!test_objs.hw.position_flags.check_flag(
+                                Flags::stepper_position_ok));
+                            REQUIRE(test_objs.reporter.messages.size() == 3);
+                            Ack ack_msg = std::get<Ack>(
+                                test_objs.reporter.messages.back());
+                            REQUIRE(ack_msg.ack_id ==
+                                    AckMessageId::complete_without_condition);
+                        }
                     }
                 }
             }
@@ -131,7 +140,8 @@ SCENARIO("motor handler stall detection") {
     }
 
     GIVEN("a move with stall expected stop condition") {
-        Move msg1 = Move{.duration = 23,
+        Move msg1 = Move{.message_index = 101,
+                         .duration = 23,
                          .velocity = default_velocity,
                          .stop_condition = static_cast<uint8_t>(Stops::stall)};
         constexpr Move msg2 =
@@ -142,25 +152,38 @@ SCENARIO("motor handler stall detection") {
         REQUIRE(test_objs.queue.get_size() == 3);
         test_objs.handler.update_move();
         WHEN("encoder doesn't update with the motor") {
-            for (int i = 0; i < (int)msg1.duration; ++i) {
+            while (test_objs.queue.has_message_isr()) {
                 test_objs.handler.run_interrupt();
             }
             THEN("the stall is detected but it is expected") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
                 THEN(
-                    "a recoverable collision error is raised, the next move is "
-                    "discarded") {
+                    "all the moves are cleared and only a stopped by condition "
+                    "ack message is sent") {
+                    REQUIRE(test_objs.queue.get_size() == 0);
                     REQUIRE(test_objs.reporter.messages.size() == 1);
-                    can::messages::ErrorMessage err =
-                        std::get<can::messages::ErrorMessage>(
-                            test_objs.reporter.messages.front());
-                    REQUIRE(err.error_code ==
-                            can::ids::ErrorCode::collision_detected);
-                    REQUIRE(err.severity ==
-                            can::ids::ErrorSeverity::recoverable);
-                    THEN("the rest of the move queue will be cleared") {
-                        REQUIRE(test_objs.handler.clear_queue_until_empty);
+                    Ack ack_msg =
+                        std::get<Ack>(test_objs.reporter.messages.front());
+                    REQUIRE(ack_msg.message_index == 101);
+                    REQUIRE(ack_msg.ack_id ==
+                            AckMessageId::stopped_by_condition);
+                }
+                REQUIRE(test_objs.handler.has_stalled);
+
+                THEN("an update motor position message") {
+                    auto update_msg =
+                        can::messages::UpdateMotorPositionEstimationRequest{
+                            .message_index = 123};
+                    test_objs.update_position_queue.try_write(update_msg);
+                    test_objs.handler.run_interrupt();
+                    THEN("a response is received") {
+                        REQUIRE(test_objs.reporter.messages.size() == 2);
+                        UpdatePositionResponse ack_msg =
+                            std::get<UpdatePositionResponse>(
+                                test_objs.reporter.messages.back());
+                        REQUIRE(ack_msg.message_index == 123);
+                        REQUIRE(!test_objs.handler.has_stalled);
                     }
                 }
             }
@@ -168,7 +191,8 @@ SCENARIO("motor handler stall detection") {
     }
 
     GIVEN("a move with stall expected stop condition with ignore stalls flag") {
-        Move msg1 = Move{.duration = 23,
+        Move msg1 = Move{.message_index = 102,
+                         .duration = 23,
                          .velocity = default_velocity,
                          .stop_condition = static_cast<uint8_t>(
                              static_cast<uint8_t>(Stops::stall) ^
@@ -181,70 +205,21 @@ SCENARIO("motor handler stall detection") {
         REQUIRE(test_objs.queue.get_size() == 3);
         test_objs.handler.update_move();
         WHEN("encoder doesn't update with the motor") {
-            for (int i = 0; i < (int)msg1.duration; ++i) {
+            while (test_objs.queue.has_message_isr()) {
                 test_objs.handler.run_interrupt();
             }
             THEN("the stall is detected but it is expected") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-                THEN(
-                    "a recoverable collision error is raised, the next move is "
-                    "discarded") {
-                    REQUIRE(test_objs.reporter.messages.size() == 1);
-                    can::messages::ErrorMessage err =
-                        std::get<can::messages::ErrorMessage>(
-                            test_objs.reporter.messages.front());
-                    REQUIRE(err.error_code ==
-                            can::ids::ErrorCode::collision_detected);
-                    REQUIRE(err.severity ==
-                            can::ids::ErrorSeverity::recoverable);
-                    THEN("the rest of the move queue will be cleared") {
-                        REQUIRE(test_objs.handler.clear_queue_until_empty);
-                    }
-                }
-            }
-        }
-    }
-
-    GIVEN("a home message") {
-        auto msg1 =
-            Move{.message_index = 13,
-                 .duration = 23,
-                 .velocity = sq0_31(-0.5 * static_cast<float>(1LL << TO_RADIX)),
-                 .stop_condition = static_cast<uint8_t>(Stops::limit_switch)};
-        auto msg2 = Move{.duration = 10,
-                         .velocity = default_velocity,
-                         .stop_condition = static_cast<uint8_t>(Stops::none)};
-        test_objs.queue.try_write(msg1);
-        test_objs.queue.try_write(msg2);
-        REQUIRE(test_objs.queue.get_size() == 2);
-        test_objs.handler.update_move();
-
-        WHEN("encoder doesn't update with the motor") {
-            REQUIRE(test_objs.queue.get_size() == 1);
-            REQUIRE(test_objs.reporter.messages.size() == 0);
-            for (int i = 0; i < (int)msg1.duration - 1; ++i) {
-                test_objs.handler.run_interrupt();
-            }
-            THEN("a stall is detected but ignored") {
-                REQUIRE(!test_objs.hw.position_flags.check_flag(
-                    Flags::stepper_position_ok));
-                REQUIRE(test_objs.reporter.messages.size() == 0);
-                THEN("move finishes as normal") {
-                    test_objs.hw.set_mock_lim_sw(true);
-                    test_objs.handler.run_interrupt();
-
+                THEN("the stall is handled instead of ignored") {
+                    REQUIRE(test_objs.queue.get_size() == 0);
                     REQUIRE(test_objs.reporter.messages.size() == 1);
                     Ack ack_msg =
                         std::get<Ack>(test_objs.reporter.messages.front());
+                    REQUIRE(ack_msg.message_index == 102);
                     REQUIRE(ack_msg.ack_id ==
                             AckMessageId::stopped_by_condition);
-                    REQUIRE(ack_msg.message_index == 13);
-                    REQUIRE(test_objs.hw.position_flags.check_flag(
-                        Flags::stepper_position_ok));
-                    REQUIRE(test_objs.hw.position_flags.check_flag(
-                        Flags::encoder_position_ok));
-                    REQUIRE(test_objs.handler.get_current_position() == 0);
+                    REQUIRE(test_objs.handler.has_stalled);
                 }
             }
         }

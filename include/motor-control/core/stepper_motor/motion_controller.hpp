@@ -87,7 +87,8 @@ class MotionController {
             .acceleration = 0,
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
-            .stop_condition = static_cast<uint8_t>(MoveStopCondition::limit_switch),
+            .stop_condition =
+                static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
             enable_motor();

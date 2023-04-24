@@ -76,25 +76,49 @@ class MotorInterruptHandler {
             hardware.step();
             update_hardware_step_tracker();
             if (stall_checker.step_itr(set_direction_pin())) {
-                if (!stall_checker.check_stall_itr(
-                        hardware.get_encoder_pulses())) {
+                if (stall_detected()) {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
-                    if (stalled_during_movement()) {
-                        if (buffered_move.check_stop_condition(
-                                MoveStopCondition::stall)) {
-                            cancel_and_clear_moves(
-                                can::ids::ErrorCode::collision_detected,
-                                can::ids::ErrorSeverity::recoverable);
-                        } else {
-                            cancel_and_clear_moves(
-                                can::ids::ErrorCode::collision_detected, can::ids::ErrorSeverity::recoverable);
-                        }
+                    // This is the first interrupt where a stall is detected
+                    // during a move
+                    if (!has_stalled) {
+                        handle_stall_during_movement();
+                        has_stalled = true;
                     }
                 }
             }
             hardware.unstep();
         }
+    }
+
+    auto handle_stall_during_movement() -> void {
+        if (!has_active_move or
+            hardware.position_flags.check_flag(
+                MotorPositionStatus::Flags::stepper_position_ok)) {
+            return;
+        }
+
+        if (buffered_move.check_stop_condition(MoveStopCondition::stall)) {
+            // if expected, finish move and clear queue to prepare for position
+            // update
+            finish_current_move(AckMessageId::stopped_by_condition);
+            clear_queue_until_empty = true;
+        } else if (buffered_move.check_stop_condition(
+                       MoveStopCondition::ignore_stalls)) {
+            // send a warning
+            status_queue_client.send_move_status_reporter_queue(
+                can::messages::ErrorMessage{
+                    .message_index = 0,
+                    .severity = can::ids::ErrorSeverity::warning,
+                    .error_code = can::ids::ErrorCode::collision_detected});
+        } else {
+            cancel_and_clear_moves(can::ids::ErrorCode::collision_detected,
+                                   can::ids::ErrorSeverity::recoverable);
+        }
+    }
+
+    auto stall_detected() -> bool {
+        return !stall_checker.check_stall_itr(hardware.get_encoder_pulses());
     }
 
     auto estop_update() -> bool {
@@ -388,6 +412,7 @@ class MotorInterruptHandler {
         has_active_move = false;
         hardware.reset_encoder_pulses();
         stall_checker.reset_itr_counts(0);
+        has_stalled = false;
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -412,6 +437,7 @@ class MotorInterruptHandler {
     }
     bool has_active_move = false;
     bool in_estop = false;
+    bool has_stalled = false;
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }
@@ -446,6 +472,7 @@ class MotorInterruptHandler {
                 stall_checker.reset_itr_counts(stepper_tick_estimate);
                 hardware.position_flags.set_flag(
                     MotorPositionStatus::Flags::stepper_position_ok);
+                has_stalled = false;
             }
             // We send an ack even if the position wasn't updated
             auto ack = motor_messages::UpdatePositionResponse{
@@ -480,17 +507,6 @@ class MotorInterruptHandler {
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(response));
         }
-    }
-
-    [[nodiscard]] auto stalled_during_movement() const -> bool {
-        return has_active_move &&
-               (buffered_move.check_stop_condition(MoveStopCondition::stall) or
-                !buffered_move.check_stop_condition(
-                    MoveStopCondition::ignore_stalls)) &&
-               !buffered_move.check_stop_condition(
-                   MoveStopCondition::limit_switch) &&
-               !hardware.position_flags.check_flag(
-                   MotorPositionStatus::Flags::stepper_position_ok);
     }
 
     auto address_negative_encoder() -> int32_t {
