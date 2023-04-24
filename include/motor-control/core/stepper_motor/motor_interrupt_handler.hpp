@@ -487,6 +487,8 @@ class MotorInterruptHandler {
                (buffered_move.check_stop_condition(MoveStopCondition::stall) or
                 !buffered_move.check_stop_condition(
                     MoveStopCondition::ignore_stalls)) &&
+               !buffered_move.check_stop_condition(
+                   MoveStopCondition::limit_switch) &&
                !hardware.position_flags.check_flag(
                    MotorPositionStatus::Flags::stepper_position_ok);
     }

@@ -205,4 +205,48 @@ SCENARIO("motor handler stall detection") {
             }
         }
     }
+
+    GIVEN("a home message") {
+        auto msg1 =
+            Move{.message_index = 13,
+                 .duration = 23,
+                 .velocity = sq0_31(-0.5 * static_cast<float>(1LL << TO_RADIX)),
+                 .stop_condition = static_cast<uint8_t>(Stops::limit_switch)};
+        auto msg2 = Move{.duration = 10,
+                         .velocity = default_velocity,
+                         .stop_condition = static_cast<uint8_t>(Stops::none)};
+        test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 2);
+        test_objs.handler.update_move();
+
+        WHEN("encoder doesn't update with the motor") {
+            REQUIRE(test_objs.queue.get_size() == 1);
+            REQUIRE(test_objs.reporter.messages.size() == 0);
+            for (int i = 0; i < (int)msg1.duration - 1; ++i) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("a stall is detected but ignored") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                REQUIRE(test_objs.reporter.messages.size() == 0);
+                THEN("move finishes as normal") {
+                    test_objs.hw.set_mock_lim_sw(true);
+                    test_objs.handler.run_interrupt();
+
+                    REQUIRE(test_objs.reporter.messages.size() == 1);
+                    Ack ack_msg =
+                        std::get<Ack>(test_objs.reporter.messages.front());
+                    REQUIRE(ack_msg.ack_id ==
+                            AckMessageId::stopped_by_condition);
+                    REQUIRE(ack_msg.message_index == 13);
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        Flags::stepper_position_ok));
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        Flags::encoder_position_ok));
+                    REQUIRE(test_objs.handler.get_current_position() == 0);
+                }
+            }
+        }
+    }
 }
