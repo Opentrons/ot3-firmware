@@ -14,8 +14,9 @@ namespace usage_storage_task {
 
 // Not my favorite way to check this, but if we don't have access
 // to vTaskDelay during host compilation so just dummy the function
-
-static void _hardware_delay(uint ticks) {
+template <typename T>
+requires std::is_integral_v<T>
+static void _hardware_delay(T ticks) {
 #ifndef INC_TASK_H
     std::ignore = ticks;
 #else
