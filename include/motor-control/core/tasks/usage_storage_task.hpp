@@ -182,7 +182,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         uint32_t old_value = 0;
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
-            accessor_backing.begin() + distance_data_usage_len, old_value);
+            accessor_backing.begin() + error_count_usage_len, old_value);
         if (old_value == std::numeric_limits<uint32_t>::max()) {
             // old_value must be an uninitialized data field so set it to 0
             old_value = 0;
@@ -190,7 +190,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         old_value += 1;
         std::ignore = bit_utils::int_to_bytes(
             old_value, accessor_backing.begin(), accessor_backing.end());
-        usage_data_accessor.write_data(m.key, distance_data_usage_len,
+        usage_data_accessor.write_data(m.key, error_count_usage_len,
                                        accessor_backing);
         ready_for_new_message = true;
         buffered_task = TaskMessage{};
