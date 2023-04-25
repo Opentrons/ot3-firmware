@@ -67,7 +67,7 @@ class FDC1004 {
                 measure_mode = fdc1004::MeasureConfigMode::ONE;
             }
             sensor_id = _id;
-            set_sample_rate();
+            update_capacitance_configuration();
         }
     }
 
@@ -230,6 +230,8 @@ class FDC1004 {
 
         if (!bind_sync && !echoing) {
             stop_continuous_polling(m.id.transaction_index);
+            current_offset_pf = -1;
+            set_offset(0);
             return;
         }
         auto capacitance = fdc1004_utils::convert_capacitance(
