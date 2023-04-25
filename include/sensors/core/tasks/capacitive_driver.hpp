@@ -67,7 +67,7 @@ class FDC1004 {
                 measure_mode = fdc1004::MeasureConfigMode::ONE;
             }
             sensor_id = _id;
-            set_sample_rate();
+            update_capacitance_configuration();
         }
     }
 
@@ -202,6 +202,22 @@ class FDC1004 {
         }
     }
 
+    auto stop_continuous_polling(uint8_t transaction_index) -> void {
+        auto converted_msb_addr =
+            static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
+        auto converted_lsb_addr =
+            static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
+        if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
+            converted_msb_addr =
+                static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
+            converted_lsb_addr =
+                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
+        }
+        poller.continuous_multi_register_poll(
+            fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
+            STOP_DELAY, own_queue, transaction_index);
+    }
+
     void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(),
@@ -209,6 +225,13 @@ class FDC1004 {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             polling_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
+            return;
+        }
+
+        if (!bind_sync && !echoing) {
+            stop_continuous_polling(m.id.transaction_index);
+            current_offset_pf = -1;
+            set_offset(0);
             return;
         }
         auto capacitance = fdc1004_utils::convert_capacitance(
@@ -309,6 +332,7 @@ class FDC1004 {
     bool _initialized = false;
 
     static constexpr uint16_t DELAY = 20;
+    static constexpr uint16_t STOP_DELAY = 0;
     can::ids::SensorId sensor_id = can::ids::SensorId::S0;
     fdc1004::MeasureConfigMode measure_mode = fdc1004::MeasureConfigMode::ONE;
     fdc1004::MeasurementRate measurement_rate =
