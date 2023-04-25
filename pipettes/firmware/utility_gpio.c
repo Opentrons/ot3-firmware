@@ -7,11 +7,8 @@
 // temporary workaround until we permanently disable
 // the data ready line interrupts and rely on a software
 // timer instead.
-#if PCBA_PRIMARY_REVISION == 'b'
-    static const int enable_96_chan_interrupts = 0;
-#else
-    static const int enable_96_chan_interrupts = 1;
-#endif
+
+static const int enable_96_chan_interrupts = 0;
 
 static void enable_gpio_port(void* port) {
     if (port == GPIOA) {
