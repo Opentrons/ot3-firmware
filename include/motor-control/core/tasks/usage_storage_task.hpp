@@ -1,5 +1,6 @@
 #pragma once
 #include <limits>
+#include <type_traits>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
@@ -31,6 +32,21 @@ using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
 static constexpr uint16_t distance_data_usage_len = 8;
 static constexpr uint16_t force_time_data_usage_len = 4;
 
+template <typename NUM_T>
+requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
+[[nodiscard]] auto check_for_default_val(NUM_T val, size_t len = 0) -> NUM_T {
+    // in most cases we want to use the compare to the actual max value,
+    // but during the processing of GetUsageRequest the NUM_T is always uint64_t
+    // so this lets us change shift over the MAX to the correct number of bytes
+    // to compare, the actual value is in the top bytes
+    NUM_T cmp = std::numeric_limits<NUM_T>::max()
+                << ((sizeof(NUM_T) - len) * 8);
+    if (val == cmp) {
+        // old_value must be an uninitialized data field so set it to 0
+        val = 0;
+    }
+    return val;
+}
 /**
  * The message queue message handler.
  */
@@ -100,7 +116,9 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         auto next_klv = can::messages::GetMotorUsageResponse::UsageValueField{
             .key = m.usage_conf.usage_requests[response.num_keys].type_key,
             .len = m.usage_conf.usage_requests[response.num_keys].length,
-            .value = read_value};
+            .value = check_for_default_val(
+                read_value,
+                m.usage_conf.usage_requests[response.num_keys].length)};
         // add the next value to the response, and increment num_keys
         response.values[response.num_keys] = next_klv;
         response.num_keys += 1;
@@ -122,10 +140,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
             accessor_backing.begin() + force_time_data_usage_len, old_value);
-        if (old_value == std::numeric_limits<uint32_t>::max()) {
-            // old_value must be an uninitialized data field so set it to 0
-            old_value = 0;
-        }
+        old_value = check_for_default_val(old_value);
         old_value += m.seconds;
         std::ignore = bit_utils::int_to_bytes(
             old_value, accessor_backing.begin(), accessor_backing.end());
@@ -146,10 +161,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
             accessor_backing.begin() + distance_data_usage_len, old_value);
-        if (old_value == std::numeric_limits<uint64_t>::max()) {
-            // old_value must be an uninitialized data field so set it to 0
-            old_value = 0;
-        }
+        old_value = check_for_default_val(old_value);
         old_value += m.distance_traveled_um;
         std::ignore = bit_utils::int_to_bytes(
             old_value, accessor_backing.begin(), accessor_backing.end());
