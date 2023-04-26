@@ -389,15 +389,19 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                 {}, 0xdeadbeef, capacitive_id, 0x1));
         sensor_shared.handle_message(single_read_s1);
         WHEN("the handler function receives the message") {
-            THEN("the i2c poller queue is populated with a poll request") {
+            THEN(
+                "the i2c poller queue is populated with a poll request and two "
+                "i2c writes") {
                 REQUIRE(poller_queue.get_size() == 1);
-                REQUIRE(i2c_queue.get_size() == 1);
+                REQUIRE(i2c_queue.get_size() == 2);
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
                     get_message<i2c::messages::MultiRegisterPollRead>(
                         poller_queue);
                 auto message_1 =
+                    get_message_i2c<i2c::messages::Transact>(i2c_queue);
+                auto message_2 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -412,6 +416,9 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::MEAS2_LSB));
                     REQUIRE(message_1.transaction.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::CONF_MEAS2));
+                    REQUIRE(message_2.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::FDC_CONF));
                 }
@@ -438,18 +445,22 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                 poller_queue));
             static_cast<void>(
                 get_message_i2c<i2c::messages::Transact>(i2c_queue));
+            static_cast<void>(
+                get_message_i2c<i2c::messages::Transact>(i2c_queue));
 
             THEN(
                 "the i2c poller queue is populated with a poll request and the "
                 "fdc register is updated") {
                 REQUIRE(poller_queue.get_size() == 1);
-                REQUIRE(i2c_queue.get_size() == 1);
+                REQUIRE(i2c_queue.get_size() == 2);
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
                     get_message<i2c::messages::MultiRegisterPollRead>(
                         poller_queue);
                 auto message_1 =
+                    get_message_i2c<i2c::messages::Transact>(i2c_queue);
+                auto message_2 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -464,6 +475,9 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::MEAS1_LSB));
                     REQUIRE(message_1.transaction.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                sensors::fdc1004::Registers::CONF_MEAS1));
+                    REQUIRE(message_2.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::FDC_CONF));
                 }
