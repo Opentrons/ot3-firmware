@@ -230,8 +230,6 @@ class FDC1004 {
 
         if (!bind_sync && !echoing) {
             stop_continuous_polling(m.id.transaction_index);
-            current_offset_pf = -1;
-            set_offset(0);
             return;
         }
         auto capacitance = fdc1004_utils::convert_capacitance(
