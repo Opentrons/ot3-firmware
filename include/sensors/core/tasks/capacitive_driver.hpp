@@ -122,7 +122,7 @@ class FDC1004 {
 
     void set_offset(float new_offset) {
         new_offset = std::max(new_offset, 0.0F);
-        if (current_offset_pf != -1) {
+        if (current_offset_pf == -1) {
             auto capdac_raw = fdc1004_utils::get_capdac_raw(new_offset);
             if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
                 auto mode_2_register = build_mode_2_configuration_register();
