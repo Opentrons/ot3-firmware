@@ -77,19 +77,18 @@ bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
     return custom_stop_pwm_it(htim, channel) == HAL_OK;
 }
 /*
- * On the current prototype there are no encoders on XY axes, to handle that
- * this NULL condition was made to return a zero value for pulse counts.
- *
- * Note: Eventually we can remove these if statements when we get encoders on XY
- * Axes
+ * read a hal timer count value
+ * if the timer is NULL return 0
  */
-int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
-    int32_t pulses;
-    if (enc_htim != NULL) {
-        pulses = __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)enc_htim);
-    } else {
-        pulses = 0;
+uint16_t _get_hal_timer_count(void* htim) {
+    if (htim != NULL) {
+        return __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)htim);
     }
+    return 0;
+}
+
+int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
+    int32_t pulses = _get_hal_timer_count(enc_htim);
     return pulses;
 }
 
@@ -97,3 +96,12 @@ void motor_hardware_reset_encoder_count(void* enc_htim) {
     __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
     __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
 }
+
+uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t clear) {
+    uint16_t count = _get_hal_timer_count(stopwatch_handle);
+    if(stopwatch_handle != NULL && clear) {
+        __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)stopwatch_handle, 0);
+    }
+    return count;
+}
+

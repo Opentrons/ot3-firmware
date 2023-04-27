@@ -1,5 +1,6 @@
 #pragma once
 #include <limits>
+#include <type_traits>
 #include <variant>
 
 #include "can/core/can_writer_task.hpp"
@@ -11,6 +12,8 @@
 #include "motor-control/core/tasks/messages.hpp"
 
 namespace usage_storage_task {
+
+using namespace usage_messages;
 
 // Not my favorite way to check this, but if we don't have access
 // to vTaskDelay during host compilation so just dummy the function
@@ -27,7 +30,23 @@ static void _hardware_delay(T ticks) {
 using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
 
 static constexpr uint16_t distance_data_usage_len = 8;
+static constexpr uint16_t force_time_data_usage_len = 4;
 
+template <typename NUM_T>
+requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
+[[nodiscard]] auto check_for_default_val(NUM_T val, size_t len = 0) -> NUM_T {
+    // in most cases we want to use the compare to the actual max value,
+    // but during the processing of GetUsageRequest the NUM_T is always uint64_t
+    // so this lets us change shift over the MAX to the correct number of bytes
+    // to compare, the actual value is in the top bytes
+    NUM_T cmp = std::numeric_limits<NUM_T>::max()
+                << ((sizeof(NUM_T) - len) * 8);
+    if (val == cmp) {
+        // old_value must be an uninitialized data field so set it to 0
+        val = 0;
+    }
+    return val;
+}
 /**
  * The message queue message handler.
  */
@@ -68,7 +87,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         ready_for_new_message = true;
     }
 
-    void start_next_read(const usage_messages::GetUsageRequest& m) {
+    void start_next_read(const GetUsageRequest& m) {
         if (m.usage_conf.num_keys != response.num_keys) {
             std::fill(accessor_backing.begin(), accessor_backing.end(), 0x00);
             usage_data_accessor.get_data(
@@ -81,7 +100,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         }
     }
 
-    void start_handle(const usage_messages::GetUsageRequest& m) {
+    void start_handle(const GetUsageRequest& m) {
         ready_for_new_message = false;
         buffered_task = TaskMessage{m};
         response.message_index = m.message_index;
@@ -89,7 +108,7 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         start_next_read(m);
     }
 
-    void finish_handle(const usage_messages::GetUsageRequest& m) {
+    void finish_handle(const GetUsageRequest& m) {
         // parse the next usage value and construct response field
         uint64_t read_value = 0;
         std::ignore = bit_utils::bytes_to_int(
@@ -97,7 +116,9 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         auto next_klv = can::messages::GetMotorUsageResponse::UsageValueField{
             .key = m.usage_conf.usage_requests[response.num_keys].type_key,
             .len = m.usage_conf.usage_requests[response.num_keys].length,
-            .value = read_value};
+            .value = check_for_default_val(
+                read_value,
+                m.usage_conf.usage_requests[response.num_keys].length)};
         // add the next value to the response, and increment num_keys
         response.values[response.num_keys] = next_klv;
         response.num_keys += 1;
@@ -108,21 +129,39 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         // no more requests
     }
 
-    void start_handle(const usage_messages::IncreaseDistanceUsage& m) {
+    void start_handle(const IncreaseForceTimeUsage& m) {
         ready_for_new_message = false;
         buffered_task = TaskMessage{m};
         usage_data_accessor.get_data(m.key, 0);
     }
 
-    void finish_handle(const usage_messages::IncreaseDistanceUsage& m) {
+    void finish_handle(const IncreaseForceTimeUsage& m) {
+        uint32_t old_value = 0;
+        std::ignore = bit_utils::bytes_to_int(
+            accessor_backing.begin(),
+            accessor_backing.begin() + force_time_data_usage_len, old_value);
+        old_value = check_for_default_val(old_value);
+        old_value += m.seconds;
+        std::ignore = bit_utils::int_to_bytes(
+            old_value, accessor_backing.begin(), accessor_backing.end());
+        usage_data_accessor.write_data(m.key, force_time_data_usage_len,
+                                       accessor_backing);
+        ready_for_new_message = true;
+        buffered_task = TaskMessage{};
+    }
+
+    void start_handle(const IncreaseDistanceUsage& m) {
+        ready_for_new_message = false;
+        buffered_task = TaskMessage{m};
+        usage_data_accessor.get_data(m.key, 0);
+    }
+
+    void finish_handle(const IncreaseDistanceUsage& m) {
         uint64_t old_value = 0;
         std::ignore = bit_utils::bytes_to_int(
             accessor_backing.begin(),
             accessor_backing.begin() + distance_data_usage_len, old_value);
-        if (old_value == std::numeric_limits<uint64_t>::max()) {
-            // old_value must be an uninitialized data field so set it to 0
-            old_value = 0;
-        }
+        old_value = check_for_default_val(old_value);
         old_value += m.distance_traveled_um;
         std::ignore = bit_utils::int_to_bytes(
             old_value, accessor_backing.begin(), accessor_backing.end());

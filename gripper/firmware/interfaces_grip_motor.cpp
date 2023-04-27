@@ -18,12 +18,17 @@ constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
 
 struct motor_hardware::UsageEEpromConfig brushed_usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = G_MOTOR_DIST_KEY,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = G_MOTOR_FORCE_TIME_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::force_application_time),
+            .length = usage_storage_task::force_time_data_usage_len
         }
     }
 };
@@ -108,7 +113,7 @@ struct brushed_motor_driver::DacConfig dac_config {
  * The brushed motor hardware interface.
  */
 static motor_hardware::BrushedMotorHardware brushed_motor_hardware_iface(
-    brushed_motor_conf, &htim2, brushed_usage_config);
+    brushed_motor_conf, &htim2, brushed_usage_config, &htim15);
 
 /**
  * The brushed motor driver hardware interface.
@@ -154,11 +159,19 @@ extern "C" void gripper_enc_idle_state_callback_glue(bool val) {
     brushed_motor_interrupt.set_enc_idle_state(val);
 }
 
+extern "C" void gripper_force_stopwatch_overflow_callback_glue(
+    uint16_t seconds) {
+    if (seconds > 0) {
+        brushed_motor_interrupt.stopwatch_overflow(seconds);
+    }
+}
+
 void grip_motor_iface::initialize() {
     initialize_hardware_g();
-    set_brushed_motor_timer_callback(call_brushed_motor_handler,
-                                     gripper_enc_overflow_callback_glue,
-                                     gripper_enc_idle_state_callback_glue);
+    set_brushed_motor_timer_callback(
+        call_brushed_motor_handler, gripper_enc_overflow_callback_glue,
+        gripper_enc_idle_state_callback_glue,
+        gripper_force_stopwatch_overflow_callback_glue);
 }
 
 auto grip_motor_iface::get_grip_motor()

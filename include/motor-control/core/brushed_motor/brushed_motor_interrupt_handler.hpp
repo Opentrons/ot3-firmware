@@ -217,8 +217,33 @@ class BrushedMotorInterruptHandler {
         is_idle = val;
     }
 
+    void stopwatch_overflow(uint16_t seconds) {
+        // this function is called when the timer overflows, which happens 25
+        // seconds after movement stops. if we're in force mode, increase the
+        // usage in eeprom otherwise do nothing.
+        if (motor_state == ControlState::FORCE_CONTROLLING ||
+            motor_state == ControlState::FORCE_CONTROLLING_HOME) {
+            status_queue_client.send_brushed_move_status_reporter_queue(
+                usage_messages::IncreaseForceTimeUsage{
+                    .key = hardware.get_usage_eeprom_config()
+                               .get_force_application_time_key(),
+                    .seconds = seconds});
+        }
+    }
+
     void update_and_start_move() {
         if (queue.try_read_isr(&buffered_move)) {
+            if (motor_state == ControlState::FORCE_CONTROLLING ||
+                motor_state == ControlState::FORCE_CONTROLLING_HOME) {
+                // if we've been applying force before the new move is called
+                // add that force application time to the usage storage
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                    usage_messages::IncreaseForceTimeUsage{
+                        .key = hardware.get_usage_eeprom_config()
+                                   .get_force_application_time_key(),
+                        .seconds = uint16_t(
+                            hardware.get_stopwatch_pulses(true) / 2600)});
+            }
             motor_state = ControlState::ACTIVE;
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();

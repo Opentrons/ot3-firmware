@@ -38,13 +38,15 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     BrushedMotorHardware() = delete;
     BrushedMotorHardware(const BrushedHardwareConfig& config,
                          void* encoder_handle,
-                         const UsageEEpromConfig& eeprom_config)
+                         const UsageEEpromConfig& eeprom_config,
+                         void* stopwatch_handle)
         : pins(config),
           enc_handle(encoder_handle),
           controller_loop{config.pid_kp,  config.pid_ki,
                           config.pid_kd,  1.F / config.encoder_interrupt_freq,
                           config.wl_high, config.wl_low},
-          eeprom_config{eeprom_config} {}
+          eeprom_config{eeprom_config},
+          stopwatch_handle{stopwatch_handle} {}
     BrushedMotorHardware(const BrushedMotorHardware&) = delete;
     auto operator=(const BrushedMotorHardware&)
         -> BrushedMotorHardware& = delete;
@@ -68,6 +70,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void start_timer_interrupt() final;
     void stop_timer_interrupt() final;
     auto is_timer_interrupt_running() -> bool final;
+    auto get_stopwatch_pulses(bool clear) -> uint16_t final;
 
     void encoder_overflow(int32_t direction);
 
@@ -95,6 +98,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
     std::atomic<bool> cancel_request = false;
     const UsageEEpromConfig& eeprom_config;
+    void* stopwatch_handle;
 };
 
 };  // namespace motor_hardware

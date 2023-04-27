@@ -17,6 +17,9 @@
 #define GRIPPER_JAW_TIMER_FREQ (GRIPPER_JAW_PWM_FREQ_HZ * GRIPPER_JAW_PWM_WIDTH)
 
 #define GRIPPER_ENCODER_SPEED_TIMER_FREQ (1000000UL)
+// these values create the longest possible clock with at 16bit counter
+#define GRIPPER_ENCODER_FORCE_STOPWATCH_FREQ (2600UL)
+#define GRIPPER_ENCODER_FORCE_STOPWATCH_PERIOD (65000UL)
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,10 +48,12 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim15;
 
 typedef void (*brushed_motor_interrupt_callback)();
 typedef void (*encoder_overflow_callback)(int32_t);
 typedef void (*encoder_idle_state_callback)(bool);
+typedef void (*stopwatch_overflow_callback)(uint16_t seconds);
 
 void initialize_hardware_g();
 
@@ -57,7 +62,8 @@ void update_pwm(uint32_t duty_cycle);
 void set_brushed_motor_timer_callback(
     brushed_motor_interrupt_callback callback,
     encoder_overflow_callback g_enc_f_callback,
-    encoder_idle_state_callback g_enc_idle_callback);
+    encoder_idle_state_callback g_enc_idle_callback,
+    stopwatch_overflow_callback g_stopwatch_overflow_callback);
 
 #ifdef __cplusplus
 }  // extern "C"

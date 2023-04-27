@@ -54,6 +54,7 @@ extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim8;
+extern TIM_HandleTypeDef htim15;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -160,6 +161,7 @@ void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
 void TIM4_IRQHandler(void) { HAL_TIM_IRQHandler(&htim4); }
+void TIM1_BRK_TIM15_IRQHandler(void) { HAL_TIM_IRQHandler(&htim15); }
 
 void TIM8_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim8); }
 

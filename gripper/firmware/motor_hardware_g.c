@@ -9,6 +9,7 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim15;
 
 TIM_OC_InitTypeDef htim1_sConfigOC = {0};
 TIM_OC_InitTypeDef htim3_sConfigOC = {0};
@@ -315,6 +316,74 @@ static void TIM4_EncoderGSpeed_Init(void) {
     HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
 }
 
+
+/**
+ * TIM15 is used to measure the time the gripper spends in force control mode
+ * when the motor is we enable this clock and when it overflows we increment the usage data in eeprom
+ *
+ * TIM15 receives the encoder clock output signal from TIM2 (tim_trgo). It counts
+ * at 2.6 kHz and captures whenever a two full encoder ticks
+ * (8 pulses)  is received, then resets its counter
+ *
+ * I chose two ticks just to reduce the noise of 1 random tick resetting the clock
+ * which can happen when the bot is moving around since a tick is only ~0.66 um of movement
+ *
+ * The timer overflows 25s after an tick is received.
+ **/
+static void TIM15_EncoderGStopwatch_Init(void) {
+    TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_IC_InitTypeDef sConfigIC = {0};
+    htim15.Instance = TIM15;
+    htim15.State = HAL_TIM_STATE_RESET;
+    htim15.Init.Prescaler =
+        calc_prescaler((SystemCoreClock), GRIPPER_ENCODER_FORCE_STOPWATCH_FREQ);
+    htim15.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim15.Init.Period = GRIPPER_ENCODER_FORCE_STOPWATCH_PERIOD;  // timer overflows after 25s
+    htim15.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim15.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim15) != HAL_OK) {
+        Error_Handler();
+    }
+    /* Initialize Input Capture mode */
+    if (HAL_TIM_IC_Init(&htim15) != HAL_OK) {
+        Error_Handler();
+    }
+    /* Configure TIM15 in Slave mode */
+    sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+    // https://www.st.com/resource/en/reference_manual/rm0440-stm32g4-series-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+    // page 385 for interconnect matrix
+    sSlaveConfig.InputTrigger =
+        TIM_TS_ITR1;  // input trigger uses encoder clock
+    if (HAL_TIM_SlaveConfigSynchro(&htim15, &sSlaveConfig) != HAL_OK) {
+        Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim15, &sMasterConfig) !=
+        HAL_OK) {
+        Error_Handler();
+    }
+    /* Initialize TIM15 input capture channel */
+    sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+    sConfigIC.ICSelection = TIM_ICSELECTION_TRC;
+    sConfigIC.ICPrescaler = TIM_ICPSC_DIV4;
+    sConfigIC.ICFilter = 0;
+    if (HAL_TIM_IC_ConfigChannel(&htim15, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
+        Error_Handler();
+    }
+    /*
+     * Only counter overflow/underflow generates an update interrupt.
+     * This makes sure the input capture (when the encoder is moving) does not
+     * trigger an update event!
+     */
+    __HAL_TIM_URS_ENABLE(&htim15);
+    /* The update event of the enable timer is interrupted */
+    __HAL_TIM_ENABLE_IT(&htim15, TIM_IT_UPDATE);
+    /* Start the input capture measurement */
+    HAL_TIM_IC_Start_IT(&htim15, TIM_CHANNEL_1);
+}
+
 /**
  * @brief DAC1 Initialization Function
  * @param None
@@ -367,6 +436,7 @@ void initialize_hardware_g() {
     TIM3_PWM_Init();
     TIM2_EncoderG_Init();
     TIM4_EncoderGSpeed_Init();
+    TIM15_EncoderGStopwatch_Init();
     DAC1_Init();
 }
 
