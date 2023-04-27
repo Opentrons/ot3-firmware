@@ -97,6 +97,10 @@ class MoveStatusMessageHandler {
         usage_client.send_usage_storage_queue(message);
     }
 
+    void handle_message(const usage_messages::IncreaseErrorCount& message) {
+        usage_client.send_usage_storage_queue(message);
+    }
+
   private:
     CanClient& can_client;
     const lms::LinearMotionSystemConfig<LmsConfig>& lms_config;

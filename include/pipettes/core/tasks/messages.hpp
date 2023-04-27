@@ -2,6 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/usage_messages.hpp"
 
 namespace pipettes {
 
@@ -23,7 +24,8 @@ using MotionControlTaskMessage =
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,
                  motor_messages::UpdatePositionResponse,
-                 can::messages::StopRequest, can::messages::ErrorMessage>;
+                 can::messages::StopRequest, can::messages::ErrorMessage,
+                 usage_messages::IncreaseErrorCount>;
 
 }  // namespace motor_control_task_messages
 

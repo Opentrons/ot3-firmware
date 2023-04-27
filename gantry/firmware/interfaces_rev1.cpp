@@ -35,12 +35,17 @@ static spi::hardware::SPI_interface SPI_intf = {
 static spi::hardware::Spi spi_comms(SPI_intf);
 
 struct motor_hardware::UsageEEpromConfig usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = AXIS_DISTANCE_KEY,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = ERROR_COUNT_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+            .length = usage_storage_task::error_count_usage_len
         }
     }
 };

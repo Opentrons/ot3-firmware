@@ -31,6 +31,7 @@ using TaskMessage = motor_control_task_messages::UsageStorageTaskMessage;
 
 static constexpr uint16_t distance_data_usage_len = 8;
 static constexpr uint16_t force_time_data_usage_len = 4;
+static constexpr uint16_t error_count_usage_len = 4;
 
 template <typename NUM_T>
 requires std::is_integral_v<NUM_T> && std::is_unsigned_v<NUM_T>
@@ -166,6 +167,27 @@ class UsageStorageTaskHandler : eeprom::accessor::ReadListener {
         std::ignore = bit_utils::int_to_bytes(
             old_value, accessor_backing.begin(), accessor_backing.end());
         usage_data_accessor.write_data(m.key, distance_data_usage_len,
+                                       accessor_backing);
+        ready_for_new_message = true;
+        buffered_task = TaskMessage{};
+    }
+
+    void start_handle(const IncreaseErrorCount& m) {
+        ready_for_new_message = false;
+        buffered_task = TaskMessage{m};
+        usage_data_accessor.get_data(m.key, 0);
+    }
+
+    void finish_handle(const IncreaseErrorCount& m) {
+        uint32_t old_value = 0;
+        std::ignore = bit_utils::bytes_to_int(
+            accessor_backing.begin(),
+            accessor_backing.begin() + error_count_usage_len, old_value);
+        old_value = check_for_default_val(old_value);
+        old_value += 1;
+        std::ignore = bit_utils::int_to_bytes(
+            old_value, accessor_backing.begin(), accessor_backing.end());
+        usage_data_accessor.write_data(m.key, error_count_usage_len,
                                        accessor_backing);
         ready_for_new_message = true;
         buffered_task = TaskMessage{};
