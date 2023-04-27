@@ -17,7 +17,6 @@ using MotionControlTaskMessage =
                  can::messages::SetMotionConstraints,
                  can::messages::StopRequest,
                  can::messages::ReadLimitSwitchRequest,
-                 can::messages::UpdateMotorPositionEstimationRequest,
                  can::messages::GetMotorUsageRequest>;
 
 using MoveStatusReporterTaskMessage =
