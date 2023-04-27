@@ -94,7 +94,9 @@ class MotorInterruptHandler {
     auto handle_stall_during_movement() -> void {
         if (!has_active_move or
             hardware.position_flags.check_flag(
-                MotorPositionStatus::Flags::stepper_position_ok)) {
+                MotorPositionStatus::Flags::stepper_position_ok) or
+            buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch)) {
             return;
         }
 
