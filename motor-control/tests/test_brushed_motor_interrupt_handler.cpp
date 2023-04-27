@@ -236,7 +236,8 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
             test_objs.hw.set_estop_in(true);
             test_objs.handler.run_interrupt();
             THEN("Errors are sent") {
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+                // An error and increase error count is sent
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -280,7 +281,8 @@ SCENARIO("labware dropped during grip move") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+                // An error and increase error count is sent
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -329,7 +331,8 @@ SCENARIO("collision while homed") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+                // An error and increase error count is sent
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -412,7 +415,8 @@ SCENARIO("A collision during position controlled move") {
                 for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                     test_objs.handler.run_interrupt();
                 }
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+                // An error and increase error count is sent
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
