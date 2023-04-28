@@ -113,19 +113,6 @@ class MotionControllerMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
-    void handle(const can::messages::UpdateMotorPositionEstimationRequest& m) {
-        if (!controller.update_position(m)) {
-            // If the motor controller can't ask the interrupt handler to
-            // handle the message, we respond with the current status as-is.
-            can::messages::UpdateMotorPositionEstimationResponse response{
-                .message_index = m.message_index,
-                .current_position = controller.read_motor_position(),
-                .encoder_position = 0,
-                .position_flags = controller.get_position_flags()};
-            can_client.send_can_message(can::ids::NodeId::host, response);
-        }
-    }
-
     void handle(const can::messages::GetMotorUsageRequest& m) {
         controller.send_usage_data(m.message_index, usage_client);
     }
