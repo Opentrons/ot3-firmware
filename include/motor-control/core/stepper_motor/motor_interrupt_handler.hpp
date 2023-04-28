@@ -80,7 +80,6 @@ class MotorInterruptHandler {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
                     handle_stall_during_movement();
-
                 }
             }
             hardware.unstep();
@@ -110,8 +109,6 @@ class MotorInterruptHandler {
                     .severity = can::ids::ErrorSeverity::warning,
                     .error_code = can::ids::ErrorCode::collision_detected});
         } else {
-            hardware.position_flags.clear_flag(
-                    MotorPositionStatus::Flags::encoder_position_ok);
             cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
         }
     }
