@@ -19,32 +19,9 @@ class SensorHardware : public SensorHardwareBase {
         }
         return false;
     }
-    // TODO: change data_ready's input parameter to an std::map object, so that
-    //  the function being called is definitely the callback corresponding to
-    //  the correct GPIO interrupt
-    auto data_ready() -> void {
-        for (auto &callback_function : data_ready_callbacks) {
-            if (callback_function) {
-                callback_function();
-            }
-        }
-    }
 
     sensors::hardware::SensorHardwareConfiguration hardware;
 
-    std::array<std::function<void()>, 5> data_ready_callbacks = {};
-
-    auto add_data_ready_callback(std::function<void()> callback)
-        -> bool override {
-        for (auto &callback_function : data_ready_callbacks) {
-            if (callback_function) {
-                continue;
-            }
-            callback_function = callback;
-            return true;
-        }
-        return false;
-    }
 };
 };  // namespace hardware
 };  // namespace sensors

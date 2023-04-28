@@ -4,11 +4,6 @@
 #include "pipettes/core/pipette_type.h"
 #include "stm32g4xx_hal_gpio.h"
 
-// temporary workaround until we permanently disable
-// the data ready line interrupts and rely on a software
-// timer instead.
-
-static const int enable_96_chan_interrupts = 0;
 
 static void enable_gpio_port(void* port) {
     if (port == GPIOA) {
@@ -56,34 +51,23 @@ static void tip_sense_gpio_init() {
 static void nvic_priority_enable_init() {
     PipetteType pipette_type = get_pipette_type();
 
-    if (pipette_type == NINETY_SIX_CHANNEL && enable_96_chan_interrupts) {
+    if (pipette_type == NINETY_SIX_CHANNEL) {
         IRQn_Type block_9_5 = get_interrupt_line(gpio_block_9_5);
         IRQn_Type block_15_10 = get_interrupt_line(gpio_block_15_10);
-        /* EXTI interrupt init data ready/tip sense rear*/
+        /* EXTI interrupt init tip sense rear*/
         HAL_NVIC_SetPriority(block_9_5, 10, 0);
         HAL_NVIC_EnableIRQ(block_9_5);
 
-        /* EXTI interrupt init data ready/tip sense front*/
+        /* EXTI interrupt init tip sense front*/
         HAL_NVIC_SetPriority(block_15_10, 10, 0);
         HAL_NVIC_EnableIRQ(block_15_10);
     } else {
-        IRQn_Type block_3 = get_interrupt_line(gpio_block_3);
         IRQn_Type block_2 = get_interrupt_line(gpio_block_2);
         /* EXTI interrupt init block tip sense*/
         HAL_NVIC_SetPriority(block_2, 10, 0);
         HAL_NVIC_EnableIRQ(block_2);
 
-        /* EXTI interrupt init data ready*/
-        HAL_NVIC_SetPriority(block_3, 10, 0);
-        HAL_NVIC_EnableIRQ(block_3);
     }
-    if (pipette_type == EIGHT_CHANNEL) {
-        IRQn_Type block_1 = get_interrupt_line(gpio_block_1);
-        /* EXTI interrupt init block tip sense*/
-        HAL_NVIC_SetPriority(block_1, 10, 0);
-        HAL_NVIC_EnableIRQ(block_1);
-    }
-
 
 }
 
@@ -212,7 +196,7 @@ static void data_ready_gpio_init() {
         /*Configure GPIO pin*/
         GPIO_InitTypeDef GPIO_InitStruct = {0};
         GPIO_InitStruct.Pin = hardware_front.pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
         GPIO_InitStruct.Pull = GPIO_PULLUP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         HAL_GPIO_Init(hardware_front.port, &GPIO_InitStruct);
@@ -222,7 +206,7 @@ static void data_ready_gpio_init() {
     /*Configure GPIO pin*/
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = hardware.pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(hardware.port, &GPIO_InitStruct);
