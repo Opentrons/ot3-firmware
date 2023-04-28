@@ -80,7 +80,7 @@ class MotorInterruptHandler {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
                     handle_stall_during_movement();
-                    }
+
                 }
             }
             hardware.unstep();
@@ -381,6 +381,7 @@ class MotorInterruptHandler {
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
         has_active_move = false;
+        tick_count = 0x0;
     }
 
     void finish_current_move(
