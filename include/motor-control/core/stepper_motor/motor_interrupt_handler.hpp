@@ -79,11 +79,7 @@ class MotorInterruptHandler {
                 if (stall_detected()) {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
-                    // This is the first interrupt where a stall is detected
-                    // during a move
-                    if (!has_stalled) {
-                        handle_stall_during_movement();
-                        has_stalled = true;
+                    handle_stall_during_movement();
                     }
                 }
             }
@@ -415,7 +411,6 @@ class MotorInterruptHandler {
         has_active_move = false;
         hardware.reset_encoder_pulses();
         stall_checker.reset_itr_counts(0);
-        has_stalled = false;
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -440,7 +435,6 @@ class MotorInterruptHandler {
     }
     bool has_active_move = false;
     bool in_estop = false;
-    bool has_stalled = false;
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }
@@ -475,7 +469,6 @@ class MotorInterruptHandler {
                 stall_checker.reset_itr_counts(stepper_tick_estimate);
                 hardware.position_flags.set_flag(
                     MotorPositionStatus::Flags::stepper_position_ok);
-                has_stalled = false;
             }
             // We send an ack even if the position wasn't updated
             auto ack = motor_messages::UpdatePositionResponse{
