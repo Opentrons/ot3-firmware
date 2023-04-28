@@ -551,7 +551,17 @@ inline auto update_offset(float capacitance_pf, float current_offset_pf)
 
     // we're halfway to the edge of our range; let's try and rezero so
     // that the current reading is in the center
-    uint8_t capdac = get_capdac_raw(capacitance_pf);
+    //uint8_t capdac = get_capdac_raw(capacitance_pf);
+
+    //get the current register value of the capdac
+    uint8_t capdac = get_capdac_raw(current_offset_pf);
+    //if current value is larger than the offset, increase CAPDAC
+    //if less, decrease CAPDAC
+    if(capacitance_pf > current_offset_pf) {
+      capdac = get_capdac_raw(capdac + 1);
+    } else {
+      capdac = get_capdac_raw(capdac - 1);
+    }
 
     return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
 }
