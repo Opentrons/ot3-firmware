@@ -113,7 +113,7 @@ add_custom_target(
 add_custom_target(
 	state-manager-build
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} --no-ansi build
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi build --format wheel
 	WORKING_DIRECTORY ../../state_manager
 	DEPENDS ${STATE_MANAGER_VIRTUALENV_ACTIVATE_FILE}
 )
