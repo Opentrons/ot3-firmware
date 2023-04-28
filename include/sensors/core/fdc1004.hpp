@@ -493,7 +493,7 @@ constexpr float MAX_RAW_MEASUREMENT =
 // need to automatically reset our capdac to account for changing
 // gross-scale capacitance conditions, and we'll do it by bumping up
 // the capdac every time we get half way to either edge of our range.
-constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF / 2;
+constexpr float CAPDAC_REZERO_THRESHOLD_PF = MAX_MEASUREMENT_PF * 0.9;
 
 // Convert an accumulated raw reading, the number of reads that were
 // accumulated, and the current offset and turn it into a value in pF.
