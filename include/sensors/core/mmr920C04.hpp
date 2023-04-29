@@ -104,14 +104,14 @@ struct __attribute__((packed, __may_alias__)) Reset {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 0;
-    const uint8_t C6 : 1 = 1;
-    const uint8_t C5 : 1 = 1;
-    const uint8_t C4 : 1 = 1;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 1;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 0;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 1;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) Idle {
@@ -120,14 +120,14 @@ struct __attribute__((packed, __may_alias__)) Idle {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 0;
-    const uint8_t C5 : 1 = 0;
-    const uint8_t C4 : 1 = 1;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 1;
-    const uint8_t C1 : 1 = 0;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 1;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 1;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode1 {
@@ -136,14 +136,14 @@ struct __attribute__((packed, __may_alias__)) MeasureMode1 {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 0;
-    const uint8_t C5 : 1 = 1;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 0;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode2 {
@@ -152,14 +152,14 @@ struct __attribute__((packed, __may_alias__)) MeasureMode2 {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 0;
-    const uint8_t C5 : 1 = 1;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 1;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode3 {
@@ -168,14 +168,14 @@ struct __attribute__((packed, __may_alias__)) MeasureMode3 {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 0;
-    const uint8_t C5 : 1 = 1;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 1;
-    const uint8_t C1 : 1 = 0;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 1;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode4 {
@@ -184,14 +184,14 @@ struct __attribute__((packed, __may_alias__)) MeasureMode4 {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 0;
-    const uint8_t C5 : 1 = 1;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 1;
-    const uint8_t C1 : 1 = 1;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 1;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 1;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) PressureCommand {
@@ -200,14 +200,14 @@ struct __attribute__((packed, __may_alias__)) PressureCommand {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 1;
-    const uint8_t C5 : 1 = 0;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 0;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) LowPassPressureCommand {
@@ -216,14 +216,14 @@ struct __attribute__((packed, __may_alias__)) LowPassPressureCommand {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 1;
-    const uint8_t C5 : 1 = 0;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 0;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) TemperatureCommand {
@@ -232,14 +232,14 @@ struct __attribute__((packed, __may_alias__)) TemperatureCommand {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 1;
-    const uint8_t C5 : 1 = 0;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 1;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
 
 };
 
@@ -248,14 +248,14 @@ struct __attribute__((packed, __may_alias__)) StatusCommand {
     static constexpr bool writable = true;
     static constexpr uint8_t value_mask = (1 << 8) - 1;
 
-    const uint8_t C7 : 1 = 1;
-    const uint8_t C6 : 1 = 0;
-    const uint8_t C5 : 1 = 0;
-    const uint8_t C4 : 1 = 0;
-    const uint8_t C3 : 1 = 0;
-    const uint8_t C2 : 1 = 0;
-    const uint8_t C1 : 1 = 0;
-    const uint8_t C0 : 1 = 0;
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct PressureResult {

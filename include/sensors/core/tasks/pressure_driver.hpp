@@ -99,9 +99,6 @@ class MMR920C04 {
         if (!reset(_registers.reset)) {
             return false;
         }
-        if (!set_measure_mode(mmr920C04::Registers::RESET)) {
-            return false;
-        }
         _initialized = true;
         return true;
     }
@@ -113,6 +110,8 @@ class MMR920C04 {
             command_data = build_register_command(_registers.pressure_command);
         }
         total_baseline_reads = number_reads;
+
+        set_measure_mode(measurement_mode_rate);
         poller.single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, number_reads, mode_delay_with_buffer, own_queue,
             utils::build_id(mmr920C04::ADDRESS, command_data, tags)
@@ -123,6 +122,8 @@ class MMR920C04 {
         auto mode_delay_with_buffer = MeasurementTimings[static_cast<int>(measurement_mode_rate)] + DEFAULT_DELAY_BUFFER;
         auto command_data = build_register_command(_registers.temperature_command);
         total_baseline_reads = number_reads;
+
+        set_measure_mode(measurement_mode_rate);
         poller.single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, number_reads, mode_delay_with_buffer, own_queue,
             utils::build_id(mmr920C04::ADDRESS, command_data, tags)
@@ -135,6 +136,8 @@ class MMR920C04 {
         if (filter_setting == mmr920C04::FilterSetting::NO_FILTER) {
             command_data = build_register_command(_registers.pressure_command);
         }
+
+        set_measure_mode(measurement_mode_rate);
         poller.continuous_single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, mode_delay_with_buffer, own_queue, utils::build_id(mmr920C04::ADDRESS, command_data, tags));
     }
@@ -142,11 +145,12 @@ class MMR920C04 {
     auto poll_continuous_temperature(uint8_t tags) -> void {
         auto mode_delay_with_buffer = MeasurementTimings[static_cast<int>(measurement_mode_rate)] + DEFAULT_DELAY_BUFFER;
         auto command_data = build_register_command(_registers.temperature_command);
+
+        set_measure_mode(measurement_mode_rate);
         poller.continuous_single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, mode_delay_with_buffer, own_queue, utils::build_id(mmr920C04::ADDRESS, command_data, tags));
     }
 
-    // call this in the task.
     auto set_measure_mode(mmr920C04::MeasurementRate rate) -> bool {
         measurement_mode_rate = rate;
         switch (rate) {
@@ -361,10 +365,8 @@ class MMR920C04 {
     mmr920C04::MeasurementRate measurement_mode_rate = mmr920C04::MeasurementRate::MEASURE_4;
 
     bool _initialized = false;
-    bool stop_polling = true;
     bool echoing = false;
     bool bind_sync = false;
-    bool limited_poll = true;
 
     float pressure_running_total = 0;
     float temperature_running_total = 0;

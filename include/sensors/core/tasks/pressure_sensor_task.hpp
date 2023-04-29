@@ -69,15 +69,11 @@ class PressureMessageHandler {
     void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
-            driver.reset_limited();
-            driver.set_number_of_reads(1);
             auto tags_as_int = 1;
             driver.poll_limited_pressure(1, tags_as_int);
         }
         if (can::ids::SensorType(m.sensor) ==
                 can::ids::SensorType::pressure_temperature) {
-            driver.reset_limited();
-            driver.set_number_of_reads(1);
             auto tags_as_int = 1;
             driver.poll_limited_temperature(1, tags_as_int);
         }
@@ -102,16 +98,11 @@ class PressureMessageHandler {
                 fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode,
                 m.message_index);
         } else {
-            driver.reset_limited();
-            driver.set_number_of_reads(10);
             std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                             utils::ResponseTag::IS_BASELINE,
                             utils::ResponseTag::IS_THRESHOLD_SENSE};
             auto tags_as_int = utils::byte_from_tags(tags);
-            driver.prime_autothreshold(
-                fixed_point_to_float(m.threshold, S15Q16_RADIX));
-            driver.poll_limited_pressure(
-                10, static_cast<can::ids::SensorId>(m.sensor_id), tags_as_int);
+            driver.poll_limited_pressure(10, tags_as_int);
         }
     }
 
@@ -137,15 +128,14 @@ class PressureMessageHandler {
     void visit(const can::messages::BaselineSensorRequest &m) {
         LOG("received baseline request");
         static_cast<void>(m);
-        driver.set_sync_bind(can::ids::SensorOutputBinding::none);
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                 utils::ResponseTag::IS_BASELINE,
                 utils::ResponseTag::IS_THRESHOLD_SENSE};
         auto tags_as_int = utils::byte_from_tags(tags);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure_temperature) {
-            driver.poll_limited_temperature(tags_as_int);
+            driver.poll_limited_temperature(m.number_of_reads, tags_as_int);
         } else {
-            driver.poll_limited_pressure(tags_as_int);
+            driver.poll_limited_pressure(m.number_of_reads, tags_as_int);
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host, can::messages::ack_from_request(m));
