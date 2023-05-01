@@ -5,6 +5,7 @@
 #include "accessor.hpp"
 #include "addresses.hpp"
 #include "can/core/message_core.hpp"
+#include "common/core/logging.h"
 #include "common/core/bit_utils.hpp"
 #include "task.hpp"
 
@@ -128,6 +129,7 @@ class DevDataTailAccessor
         this->write(new_data_length, 0);
         data_tail = current_data_length;
         tail_updated = true;
+        LOG("Data tail ready");
     }
 
     /**

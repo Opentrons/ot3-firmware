@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
+#include "common/core/logging.h"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/task.hpp"
@@ -112,6 +113,7 @@ class UpdateDataRevTask {
             while (!handler.ready()) {
                 vTaskDelay(10);
             }
+            LOG("Writing Data Table Entry");
             handler.handle_message(i);
         }
         tail_accessor->finish_data_rev();
