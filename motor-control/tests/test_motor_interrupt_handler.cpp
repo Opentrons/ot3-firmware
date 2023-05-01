@@ -43,8 +43,8 @@ SCENARIO("a move is cancelled due to a stop request") {
             CHECK(test_objs.hw.steps_taken() == 1);
             test_objs.hw.request_cancel();
             test_objs.handler.run_interrupt();
-            THEN("An error is sent") {
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+            THEN("An error and increase error count is sent") {
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -89,8 +89,8 @@ SCENARIO("estop pressed during motor interrupt handler") {
             CHECK(test_objs.hw.steps_taken() == 1);
             test_objs.hw.set_mock_estop_in(true);
             test_objs.handler.run_interrupt();
-            THEN("An error is sent") {
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+            THEN("An error and increase error count is sent") {
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -119,8 +119,8 @@ SCENARIO("estop is steady-state pressed") {
     test_objs.hw.set_mock_estop_in(true);
     test_objs.handler.run_interrupt();
     test_objs.handler.run_interrupt();
-    // estop-active message
-    CHECK(test_objs.reporter.messages.size() == 1);
+    // estop-active message and increase error count message
+    CHECK(test_objs.reporter.messages.size() == 2);
     test_objs.reporter.messages.clear();
     GIVEN("some moves in its queue") {
         auto msg = Move{.message_index = 1,
@@ -138,16 +138,19 @@ SCENARIO("estop is steady-state pressed") {
             test_objs.handler.run_interrupt();
             THEN("the first move gets an error") {
                 REQUIRE(test_objs.queue.get_size() == 1);
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 auto err = std::get<can::messages::ErrorMessage>(
                     test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
                 REQUIRE(err.message_index == 1);
+                auto inc_err_cnt = std::get<usage_messages::IncreaseErrorCount>(
+                    test_objs.reporter.messages[1]);
+                std::ignore = inc_err_cnt;
                 AND_WHEN("the interrupt runs again") {
                     test_objs.handler.run_interrupt();
                     THEN("the second move is just ignored") {
                         REQUIRE(test_objs.queue.get_size() == 0);
-                        REQUIRE(test_objs.reporter.messages.size() == 1);
+                        REQUIRE(test_objs.reporter.messages.size() == 2);
                     }
                 }
             }

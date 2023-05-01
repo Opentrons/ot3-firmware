@@ -80,18 +80,12 @@ class MoveStatusMessageHandler {
                     uint32_t(std::abs(distance_traveled_um))});
     }
 
-    void handle_message(const motor_messages::UpdatePositionResponse& message) {
-        can::messages::UpdateMotorPositionEstimationResponse msg = {
-            .message_index = message.message_index,
-            .current_position = fixed_point_multiply(
-                um_per_step, message.stepper_position_counts),
-            .encoder_position = 0,
-            .position_flags = message.position_flags};
-        can_client.send_can_message(can::ids::NodeId::host, msg);
-    }
-
     void handle_message(const can::messages::StopRequest& msg) {
         can_client.send_can_message(can::ids::NodeId::broadcast, msg);
+    }
+
+    void handle_message(const usage_messages::IncreaseErrorCount& message) {
+        usage_client.send_usage_storage_queue(message);
     }
 
   private:

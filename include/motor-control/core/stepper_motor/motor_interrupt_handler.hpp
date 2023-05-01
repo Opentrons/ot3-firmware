@@ -158,6 +158,10 @@ class MotorInterruptHandler {
                         .message_index = scratch.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
                         .error_code = can::ids::ErrorCode::estop_detected});
+                status_queue_client.send_move_status_reporter_queue(
+                    usage_messages::IncreaseErrorCount{
+                        .key = hardware.get_usage_eeprom_config()
+                                   .get_error_count_key()});
                 clear_queue_until_empty = move_queue.has_message_isr();
             }
         }
@@ -373,6 +377,10 @@ class MotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
+        status_queue_client.send_move_status_reporter_queue(
+            usage_messages::IncreaseErrorCount{
+                .key =
+                    hardware.get_usage_eeprom_config().get_error_count_key()});
 
         // We have to make sure that
         // other steps in the queue DO NOT execute. With this flag we
@@ -507,6 +515,10 @@ class MotorInterruptHandler {
 
             static_cast<void>(
                 status_queue_client.send_move_status_reporter_queue(response));
+            status_queue_client.send_move_status_reporter_queue(
+                usage_messages::IncreaseErrorCount{
+                    .key = hardware.get_usage_eeprom_config()
+                               .get_error_count_key()});
         }
     }
 

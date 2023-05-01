@@ -185,6 +185,10 @@ class BrushedMotorInterruptHandler {
                         .message_index = 0,
                         .severity = can::ids::ErrorSeverity::warning,
                         .error_code = can::ids::ErrorCode::estop_released});
+                status_queue_client.send_brushed_move_status_reporter_queue(
+                    usage_messages::IncreaseErrorCount{
+                        .key = hardware.get_usage_eeprom_config()
+                                   .get_error_count_key()});
             }
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
@@ -327,6 +331,10 @@ class BrushedMotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
+        status_queue_client.send_brushed_move_status_reporter_queue(
+            usage_messages::IncreaseErrorCount{
+                .key =
+                    hardware.get_usage_eeprom_config().get_error_count_key()});
         clear_queue_until_empty = true;
     }
 

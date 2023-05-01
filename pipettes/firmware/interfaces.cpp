@@ -73,13 +73,20 @@ auto linear_motor::get_interrupt(motor_hardware::MotorHardware& hw,
         queues.plunger_update_queue);
 }
 
-struct motor_hardware::UsageEEpromConfig single_multi_usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+struct motor_hardware::UsageEEpromConfig plunger_usage_config {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = PLUNGER_MOTOR_STEP_KEY,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = get_pipette_type() == NINETY_SIX_CHANNEL
+                              ? P_96_ERROR_COUNT_KEY
+                              : P_SM_ERROR_COUNT_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+            .length = usage_storage_task::error_count_usage_len
         }
     }
 };
@@ -87,7 +94,7 @@ struct motor_hardware::UsageEEpromConfig single_multi_usage_config {
 auto linear_motor::get_motor_hardware(motor_hardware::HardwareConfig pins)
     -> motor_hardware::MotorHardware {
     return motor_hardware::MotorHardware(pins, &htim7, &htim2,
-                                         single_multi_usage_config);
+                                         plunger_usage_config);
 }
 
 auto linear_motor::get_motion_control(motor_hardware::MotorHardware& hw,
@@ -143,23 +150,33 @@ auto gear_motor::get_motor_hardware(
 }
 
 struct motor_hardware::UsageEEpromConfig gear_left_usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = GEAR_LEFT_MOTOR_KEY,
             .type_key = uint16_t(
                 can::ids::MotorUsageValueType::left_gear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = L_ERROR_COUNT_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+            .length = usage_storage_task::error_count_usage_len
         }
     }
 };
 
 struct motor_hardware::UsageEEpromConfig gear_right_usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = GEAR_RIGHT_MOTOR_KEY,
             .type_key = uint16_t(
                 can::ids::MotorUsageValueType::left_gear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = R_ERROR_COUNT_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+            .length = usage_storage_task::error_count_usage_len
         }
     }
 };

@@ -2,6 +2,7 @@
 
 #include "can/core/messages.hpp"
 #include "motor-control/core/motor_messages.hpp"
+#include "motor-control/core/usage_messages.hpp"
 
 namespace pipettes {
 
@@ -9,21 +10,19 @@ namespace task_messages {
 
 namespace motor_control_task_messages {
 
-using MotionControlTaskMessage =
-    std::variant<std::monostate, can::messages::TipActionRequest,
-                 can::messages::GearDisableMotorRequest,
-                 can::messages::GearEnableMotorRequest,
-                 can::messages::GetMotionConstraintsRequest,
-                 can::messages::SetMotionConstraints,
-                 can::messages::StopRequest,
-                 can::messages::ReadLimitSwitchRequest,
-                 can::messages::UpdateMotorPositionEstimationRequest,
-                 can::messages::GetMotorUsageRequest>;
+using MotionControlTaskMessage = std::variant<
+    std::monostate, can::messages::TipActionRequest,
+    can::messages::GearDisableMotorRequest,
+    can::messages::GearEnableMotorRequest,
+    can::messages::GetMotionConstraintsRequest,
+    can::messages::SetMotionConstraints, can::messages::StopRequest,
+    can::messages::ReadLimitSwitchRequest, can::messages::GetMotorUsageRequest>;
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,
                  motor_messages::UpdatePositionResponse,
-                 can::messages::StopRequest, can::messages::ErrorMessage>;
+                 can::messages::StopRequest, can::messages::ErrorMessage,
+                 usage_messages::IncreaseErrorCount>;
 
 }  // namespace motor_control_task_messages
 

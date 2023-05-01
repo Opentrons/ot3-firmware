@@ -240,6 +240,7 @@ enum class MotorUsageValueType {
     left_gear_motor_distance = 0x1,
     right_gear_motor_distance = 0x2,
     force_application_time = 0x3,
+    total_error_count = 0x4,
 };
 
 }  // namespace can::ids

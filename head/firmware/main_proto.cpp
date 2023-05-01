@@ -78,23 +78,33 @@ spi::hardware::SPI_interface SPI_intf3 = {
 static spi::hardware::Spi spi_comms3(SPI_intf3);
 
 struct motor_hardware::UsageEEpromConfig left_usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = L_MOTOR_DISTANCE_KEY,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = L_ERROR_COUNT_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+            .length = usage_storage_task::error_count_usage_len
         }
     }
 };
 
 struct motor_hardware::UsageEEpromConfig right_usage_config {
-    std::array<UsageRequestSet, 1> {
-        UsageRequestSet {
+    std::array<UsageRequestSet, 2> {
+        UsageRequestSet{
             .eeprom_key = R_MOTOR_DISTANCE_KEY,
             .type_key =
                 uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
-            .length = usage_storage_task::distance_data_usage_len
+            .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet {
+            .eeprom_key = R_ERROR_COUNT_KEY,
+            .type_key =
+                uint16_t(can::ids::MotorUsageValueType::total_error_count),
+            .length = usage_storage_task::error_count_usage_len
         }
     }
 };
