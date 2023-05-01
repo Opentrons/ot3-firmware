@@ -1,7 +1,7 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
-#include "motor-control/core/usage_messages.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/core/usage_messages.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
 
@@ -72,7 +72,7 @@ SCENARIO("motor handler stall detection") {
                             can::ids::ErrorSeverity::unrecoverable);
                     usage_messages::IncreaseErrorCount inc_error_count =
                         std::get<usage_messages::IncreaseErrorCount>(
-                                test_objs.reporter.messages.back());
+                            test_objs.reporter.messages.back());
                     std::ignore = inc_error_count;
                 }
             }
@@ -114,8 +114,8 @@ SCENARIO("motor handler stall detection") {
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
                 usage_messages::IncreaseErrorCount inc_error_count =
-                        std::get<usage_messages::IncreaseErrorCount>(
-                                test_objs.reporter.messages.back());
+                    std::get<usage_messages::IncreaseErrorCount>(
+                        test_objs.reporter.messages.back());
                 std::ignore = inc_error_count;
 
                 THEN("the move finishes") {
@@ -179,8 +179,8 @@ SCENARIO("motor handler stall detection") {
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
                 auto inc_error_count =
-                        std::get<usage_messages::IncreaseErrorCount>(
-                                test_objs.reporter.messages[1]);
+                    std::get<usage_messages::IncreaseErrorCount>(
+                        test_objs.reporter.messages[1]);
                 std::ignore = inc_error_count;
                 Ack ack_msg = std::get<Ack>(test_objs.reporter.messages.back());
                 REQUIRE(ack_msg.ack_id ==
