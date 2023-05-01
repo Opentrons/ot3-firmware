@@ -90,7 +90,8 @@ void gripper_tasks::start_tasks(
                                                   eeprom_hw_iface);
 #if PCBA_PRIMARY_REVISION != 'b'
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", queues, tail_accessor, table_updater);
+        5, "data_rev_update", queues, tail_accessor);
+    eeprom_data_rev_update_task.get_queue().try_write(data_table_rev1);
 #endif
     auto& capacitive_sensor_task_front =
         capacitive_sensor_task_builder_front.start(

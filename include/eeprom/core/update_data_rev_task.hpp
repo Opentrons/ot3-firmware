@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/core/bit_utils.hpp"
+#include "common/core/logging.h"
 #include "eeprom/core/data_rev.hpp"
 #include "eeprom/core/dev_data.hpp"
 #include "eeprom/core/task.hpp"
@@ -10,8 +11,9 @@ namespace data_rev_task {
 
 struct DataTableUpdateMessage {
     uint16_t data_rev;
+    size_t num_entries;
     // list of new data table key/length pairs to add to the table
-    std::vector<std::pair<types::address, types::data_length>> data_table;
+    std::array<std::pair<types::address, types::data_length>,10> data_table;
 };
 
 using TaskMessage = std::variant<std::monostate, DataTableUpdateMessage>;
@@ -41,9 +43,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
     void visit(const DataTableUpdateMessage& m) {
         // we really want to do this sequentially or the table can be malformed
         if (m.data_rev == current_data_rev + 1) {
-            for (const auto& i : m.data_table) {
+            for (size_t i = 0; i < m.num_entries; i++) {
                 // add the new data table entry
-                table_creator.create_data_part(i.first, i.second);
+                table_creator.create_data_part(m.data_table[i].first, m.data_table[i].second);
                 // wait for the table update to finish
                 while (!table_creator.table_ready()) {
                     vTaskDelay(10);
@@ -104,15 +106,15 @@ class UpdateDataRevTask {
     template <task::TaskClient EEPromClient>
     void operator()(
         EEPromClient* eeprom_client,
-        dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor,
-        const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>*
-            table_updater) {
+        dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor) {
         auto handler = UpdateDataRevHandler(*eeprom_client, *tail_accessor);
-        for (const auto& i : *table_updater) {
-            while (!handler.ready()) {
-                vTaskDelay(10);
-            }
-            handler.handle_message(i);
+        while (!handler.ready()) {
+            vTaskDelay(10);
+        }
+        TaskMessage message{};
+        while (queue.has_message() && queue.try_read(&message, queue.max_delay)) {
+            LOG("Writing Data Table Entry");
+            handler.handle_message(message);
         }
         tail_accessor->finish_data_rev();
         vTaskDelete(nullptr);

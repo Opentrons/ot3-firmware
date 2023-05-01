@@ -7,5 +7,6 @@ static constexpr eeprom::types::address G_MOTOR_DIST_KEY = 0x0001;
 
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1;
 
-extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
-    table_updater;
+//extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
+//    table_updater;
+

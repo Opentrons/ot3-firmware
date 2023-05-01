@@ -1,5 +1,6 @@
 #include "pipettes/core/linear_motor_tasks.hpp"
 
+#include "pipettes/core/pipette_type.h"
 #include "common/core/freertos_task.hpp"
 #include "pipettes/firmware/eeprom_keys.hpp"
 
@@ -55,8 +56,9 @@ void linear_motor_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
-        table_updater);
+        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor);
+    eeprom_data_rev_update_task.get_queue().try_write(get_pipette_type() == NINETY_SIX_CHANNEL ? data_table_rev1_96ch
+                                                 : data_table_rev1_sing_mult);
 
     tmc2130_tasks.driver = &tmc2130_driver;
     motion_tasks.move_group = &move_group;
@@ -100,8 +102,9 @@ void linear_motor_tasks::start_tasks(
     auto& move_status_reporter = move_status_task_builder.start(
         5, "move status", queues, motion_controller.get_mechanical_config());
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor,
-        table_updater);
+        5, "data_rev_update", sensor_tasks::get_queues(), tail_accessor);
+    eeprom_data_rev_update_task.get_queue().try_write(get_pipette_type() == NINETY_SIX_CHANNEL ? data_table_rev1_96ch
+                                                 : data_table_rev1_sing_mult);
 
     tmc2160_tasks.driver = &tmc2160_driver;
     motion_tasks.motion_controller = &motion;

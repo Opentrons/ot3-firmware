@@ -8,6 +8,7 @@
 
 const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1{
     .data_rev = 1,
+    .num_entries = 1,
     .data_table = {std::make_pair(
         AXIS_DISTANCE_KEY, usage_storage_task::distance_data_usage_len)}};
 

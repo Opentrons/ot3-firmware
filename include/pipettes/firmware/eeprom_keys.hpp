@@ -10,5 +10,5 @@ extern const eeprom::data_rev_task::DataTableUpdateMessage
     data_table_rev1_sing_mult;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1_96ch;
 
-extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
-    table_updater;
+//extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
+//    table_updater;

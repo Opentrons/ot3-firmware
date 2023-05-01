@@ -83,7 +83,9 @@ void gantry::tasks::start_tasks(
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c2_task_client,
                                                   eeprom_hw_iface);
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
-        5, "data_rev_update", ::queues, tail_accessor, table_updater);
+        5, "data_rev_update", ::queues, tail_accessor);
+
+    eeprom_data_rev_update_task.get_queue().try_write(data_table_rev1);
 
     ::tasks.can_writer = &can_writer;
     ::tasks.motion_controller = &motion;
