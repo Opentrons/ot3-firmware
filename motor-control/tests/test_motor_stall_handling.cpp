@@ -1,5 +1,6 @@
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
+#include "motor-control/core/usage_messages.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
@@ -60,7 +61,7 @@ SCENARIO("motor handler stall detection") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
                 THEN("a unrecoverable collision error is raised") {
-                    REQUIRE(test_objs.reporter.messages.size() == 1);
+                    REQUIRE(test_objs.reporter.messages.size() == 2);
                     can::messages::ErrorMessage err =
                         std::get<can::messages::ErrorMessage>(
                             test_objs.reporter.messages.front());
@@ -69,6 +70,10 @@ SCENARIO("motor handler stall detection") {
                             can::ids::ErrorCode::collision_detected);
                     REQUIRE(err.severity ==
                             can::ids::ErrorSeverity::unrecoverable);
+                    usage_messages::IncreaseErrorCount inc_error_count =
+                        std::get<usage_messages::IncreaseErrorCount>(
+                                test_objs.reporter.messages.back());
+                    std::ignore = inc_error_count;
                 }
             }
         }
@@ -101,19 +106,23 @@ SCENARIO("motor handler stall detection") {
                 "sent") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-                REQUIRE(test_objs.reporter.messages.size() == 1);
+                REQUIRE(test_objs.reporter.messages.size() == 2);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
+                usage_messages::IncreaseErrorCount inc_error_count =
+                        std::get<usage_messages::IncreaseErrorCount>(
+                                test_objs.reporter.messages.back());
+                std::ignore = inc_error_count;
 
                 THEN("the move finishes") {
                     for (int i = 22; i < (int)msg1.duration; i++) {
                         test_objs.handler.run_interrupt();
                     }
-                    REQUIRE(test_objs.reporter.messages.size() == 2);
+                    REQUIRE(test_objs.reporter.messages.size() == 3);
                     Ack ack_msg =
                         std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(ack_msg.ack_id ==
@@ -162,14 +171,17 @@ SCENARIO("motor handler stall detection") {
                 REQUIRE(stall_counter > 1);
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
-
+                auto inc_error_count =
+                        std::get<usage_messages::IncreaseErrorCount>(
+                                test_objs.reporter.messages[1]);
+                std::ignore = inc_error_count;
                 Ack ack_msg = std::get<Ack>(test_objs.reporter.messages.back());
                 REQUIRE(ack_msg.ack_id ==
                         AckMessageId::complete_without_condition);

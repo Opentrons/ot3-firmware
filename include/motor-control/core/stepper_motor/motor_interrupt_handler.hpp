@@ -111,6 +111,10 @@ class MotorInterruptHandler {
                     .message_index = 0,
                     .severity = can::ids::ErrorSeverity::warning,
                     .error_code = can::ids::ErrorCode::collision_detected});
+            status_queue_client.send_move_status_reporter_queue(
+                    usage_messages::IncreaseErrorCount{
+                            .key = hardware.get_usage_eeprom_config()
+                                    .get_error_count_key()});
         } else {
             cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
         }
