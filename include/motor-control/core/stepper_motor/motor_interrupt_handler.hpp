@@ -102,6 +102,9 @@ class MotorInterruptHandler {
             clear_queue_until_empty = true;
         } else if (buffered_move.check_stop_condition(
                        MoveStopCondition::ignore_stalls)) {
+            if (stall_handled) {
+                return;
+            }
             // send a warning
             status_queue_client.send_move_status_reporter_queue(
                 can::messages::ErrorMessage{
@@ -111,6 +114,7 @@ class MotorInterruptHandler {
         } else {
             cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
         }
+        stall_handled = true;
     }
 
     auto stall_detected() -> bool {
@@ -385,6 +389,7 @@ class MotorInterruptHandler {
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
+        stall_handled = false;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 hardware.get_step_tracker(), hardware.get_encoder_pulses(),
@@ -409,6 +414,7 @@ class MotorInterruptHandler {
         has_active_move = false;
         hardware.reset_encoder_pulses();
         stall_checker.reset_itr_counts(0);
+        stall_handled = false;
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -440,6 +446,7 @@ class MotorInterruptHandler {
         buffered_move = new_move;
     }
     bool clear_queue_until_empty = false;
+    bool stall_handled = false;
 
     /**
      * @brief While a move is NOT active, this function should be called
