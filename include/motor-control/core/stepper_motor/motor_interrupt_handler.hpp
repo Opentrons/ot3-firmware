@@ -108,7 +108,7 @@ class MotorInterruptHandler {
             // send a warning
             status_queue_client.send_move_status_reporter_queue(
                 can::messages::ErrorMessage{
-                    .message_index = 0,
+                    .message_index = buffered_move.message_index,
                     .severity = can::ids::ErrorSeverity::warning,
                     .error_code = can::ids::ErrorCode::collision_detected});
             status_queue_client.send_move_status_reporter_queue(

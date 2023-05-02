@@ -110,6 +110,7 @@ SCENARIO("motor handler stall detection") {
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
+                REQUIRE(err.message_index == 13);
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
@@ -175,6 +176,7 @@ SCENARIO("motor handler stall detection") {
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
+                REQUIRE(err.message_index == 13);
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
