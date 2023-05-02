@@ -141,6 +141,7 @@ class EEProm : public I2CDeviceBase,
                 std::fseek(file, BACKING_SIZE, SEEK_SET);
                 std::fseek(file, start, SEEK_SET);
                 auto tmp_backing = std::array<char, BACKING_SIZE>{};
+                tmp_backing.fill(0xff);
                 if (backing_data != 0) {
                     uint32_t instrument_type =
                         (backing_data & 0xFFFF0000) >> 16;
@@ -150,8 +151,6 @@ class EEProm : public I2CDeviceBase,
                                                         tmp_backing.end());
                     static_cast<void>(bit_utils::int_to_bytes(
                         serial_number, iter, tmp_backing.end()));
-                } else {
-                    tmp_backing.fill(0xff);
                 }
                 std::fwrite(tmp_backing.data(), sizeof(tmp_backing[0]),
                             BACKING_SIZE - start, file);
