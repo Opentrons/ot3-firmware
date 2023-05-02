@@ -138,8 +138,8 @@ void interfaces::initialize_sim(int argc, char** argv) {
                                      &state_manager_connection);
     motor_interface.provide_state_manager(state_manager_connection);
     motor_interface.provide_mech_config(linear_motion_sys_config);
-    sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(options,
-                                                       TEMPORARY_SERIAL);
+    sim_eeprom =
+        std::make_shared<eeprom::simulator::EEProm>(options, TEMPORARY_SERIAL);
     auto i2c_device_map = i2c::hardware::SimI2C::DeviceMap{
         {sim_eeprom->get_address(), *sim_eeprom}};
     i2c2 = std::make_shared<i2c::hardware::SimI2C>(i2c_device_map);
@@ -179,7 +179,7 @@ auto interfaces::get_motor_hardware_task()
 
 auto interfaces::get_sim_eeprom()
     -> std::shared_ptr<eeprom::simulator::EEProm> {
-        return sim_eeprom;
+    return sim_eeprom;
 }
 
 auto interfaces::get_sim_i2c2() -> std::shared_ptr<i2c::hardware::SimI2C> {
