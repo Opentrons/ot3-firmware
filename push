@@ -94,7 +94,7 @@ def _find_utils():
     return ssh, scp, cmake
 
 def _restart_robot(host, ssh):
-    _ssh(ssh, host, 'systemctl restart opentrons-robot-server &')
+    _ssh(ssh, host, 'nohup systemctl restart opentrons-robot-server &')
 
 def _do_push(host, repo_path, build, restart):
     ssh, scp, cmake = _find_utils()
