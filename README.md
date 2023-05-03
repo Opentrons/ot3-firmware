@@ -1,5 +1,5 @@
 # ot3_firmware
-
+Using this branch as a pointer for the emulator
 This repository holds the firmware for the OT-3 and all of its peripheral systems. **Note** that the cmake directory is
 actually a subtree of cmake-utils. Do not make changes to the `cmake-utils` directory in the ot3_firmware repository.
 Instead, navigate to the [CMake Utils Repository](https://github.com/Opentrons/cmake-utils).
