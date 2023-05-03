@@ -1251,7 +1251,6 @@ struct TipActionRequest
     stepper_timer_ticks duration;
     um_per_tick velocity;
     um_per_tick_sq acceleration;
-
     can::ids::PipetteTipActionType action;
     uint8_t request_stop_condition;
 
