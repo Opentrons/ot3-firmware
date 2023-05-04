@@ -13,26 +13,6 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
         sync_reset_calls++;
     }
     auto check_tip_presence() -> bool override { return false; }
-    std::array<std::function<void()>, 5> data_ready_callbacks = {};
-    auto add_data_ready_callback(std::function<void()> callback)
-        -> bool override {
-        for (auto &callback_function : data_ready_callbacks) {
-            if (callback_function) {
-                continue;
-            }
-            callback_function = callback;
-            return true;
-        }
-        return false;
-    }
-
-    auto data_ready() -> void {
-        for (auto &callback_function : data_ready_callbacks) {
-            if (callback_function) {
-                callback_function();
-            }
-        }
-    }
 
     auto get_sync_state_mock() const -> bool { return sync_state; }
     auto get_sync_set_calls() const -> uint32_t { return sync_set_calls; }

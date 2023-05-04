@@ -126,7 +126,6 @@ static auto pins_for_sensor =
 static auto sensor_hardware_container =
     utility_configs::get_sensor_hardware_container(pins_for_sensor);
 
-
 static auto ok_for_secondary =
     pins_for_sensor.secondary.has_value() &&
     pins_for_sensor.secondary.value().tip_sense.has_value();
@@ -136,7 +135,6 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 
 static auto tail_accessor =
     eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
-
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == tip_sense_gpio_primary.pin) {
