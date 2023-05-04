@@ -120,7 +120,8 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::HighThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::GearMotionControl& gear_motion,
-    sim_mocks::MockSensorHardware& fake_sensor_hw,
+    sim_mocks::MockSensorHardware& fake_sensor_hw_primary,
+    sim_mocks::MockSensorHardware& fake_sensor_hw_secondary,
     eeprom::simulator::EEProm& sim_eeprom,
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     interfaces::gear_motor::GearMotorHardwareTasks& gmh_tsks) {
@@ -129,7 +130,8 @@ auto initialize_motor_tasks(
                               peripheral_tasks::get_i2c3_poller_client(),
                               peripheral_tasks::get_i2c1_client(),
                               peripheral_tasks::get_i2c1_poller_client(),
-                              fake_sensor_hw, id, sim_eeprom);
+                              fake_sensor_hw_primary, fake_sensor_hw_secondary,
+                              id, sim_eeprom);
 
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
@@ -146,16 +148,28 @@ auto initialize_motor_tasks(
     can::ids::NodeId id,
     motor_configs::LowThroughputPipetteDriverHardware& conf,
     interfaces::gear_motor::UnavailableGearMotionControl&,
-    sim_mocks::MockSensorHardware& fake_sensor_hw,
+    sim_mocks::MockSensorHardware& fake_sensor_hw_primary,
+    sim_mocks::MockSensorHardware& fake_sensor_hw_secondary,
     eeprom::simulator::EEProm& sim_eeprom,
     motor_hardware_task::MotorHardwareTask& lmh_tsk,
     interfaces::gear_motor::UnavailableGearHardwareTasks&) {
-    sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
-                              peripheral_tasks::get_i2c3_client(),
-                              peripheral_tasks::get_i2c3_poller_client(),
-                              peripheral_tasks::get_i2c1_client(),
-                              peripheral_tasks::get_i2c1_poller_client(),
-                              fake_sensor_hw, id, sim_eeprom);
+    if (get_pipette_type() == EIGHT_CHANNEL) {
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c3_poller_client(),
+                                  peripheral_tasks::get_i2c1_client(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  fake_sensor_hw_primary,
+                                  fake_sensor_hw_secondary, id, sim_eeprom);
+
+    } else /* single channel */ {
+        sensor_tasks::start_tasks(*central_tasks::get_tasks().can_writer,
+                                  peripheral_tasks::get_i2c3_client(),
+                                  peripheral_tasks::get_i2c3_poller_client(),
+                                  peripheral_tasks::get_i2c1_client(),
+                                  peripheral_tasks::get_i2c1_poller_client(),
+                                  fake_sensor_hw_primary, id, sim_eeprom);
+    }
     linear_motor_tasks::start_tasks(
         *central_tasks::get_tasks().can_writer, linear_motion_control,
         peripheral_tasks::get_spi_client(), conf.linear_motor, id, lmh_tsk,
@@ -277,21 +291,44 @@ int main(int argc, char** argv) {
         linear_motion_control.get_mechanical_config());
     provide_state(gear_hardware, state_manager_connection);
 
+    auto eeprom_model =
+        get_pipette_type() == NINETY_SIX_CHANNEL
+            ? eeprom::hardware_iface::EEPromChipType::ST_M24128_BF
+            : eeprom::hardware_iface::EEPromChipType::ST_M24128_DF;
+
     auto hdcsensor = std::make_shared<hdc3020_simulator::HDC3020>();
-    auto capsensor = std::make_shared<fdc1004_simulator::FDC1004>();
+    auto capsensor_front = std::make_shared<fdc1004_simulator::FDC1004>();
+    auto capsensor_rear = std::make_shared<fdc1004_simulator::FDC1004>();
     auto sim_eeprom = std::make_shared<eeprom::simulator::EEProm>(
-        options, TEMPORARY_PIPETTE_SERIAL);
-    auto fake_sensor_hw = std::make_shared<sim_mocks::MockSensorHardware>();
-    fake_sensor_hw->provide_state_manager(state_manager_connection);
-    auto pressuresensor =
-        std::make_shared<mmr920C04_simulator::MMR920C04>(*fake_sensor_hw);
+        eeprom_model, options, TEMPORARY_PIPETTE_SERIAL);
+    auto fake_sensor_hw_primary =
+        std::make_shared<sim_mocks::MockSensorHardware>();
+    fake_sensor_hw_primary->provide_state_manager(state_manager_connection);
+    auto fake_sensor_hw_secondary =
+        std::make_shared<sim_mocks::MockSensorHardware>();
+    fake_sensor_hw_secondary->provide_state_manager(state_manager_connection);
+    auto pressuresensor_i2c1 = std::make_shared<mmr920C04_simulator::MMR920C04>(
+        get_pipette_type() == EIGHT_CHANNEL ? *fake_sensor_hw_primary
+                                            : *fake_sensor_hw_secondary);
+    auto pressuresensor_i2c3 = std::make_shared<mmr920C04_simulator::MMR920C04>(
+        get_pipette_type() == EIGHT_CHANNEL ? *fake_sensor_hw_secondary
+                                            : *fake_sensor_hw_primary);
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
         {hdcsensor->get_address(), *hdcsensor},
-        {capsensor->get_address(), *capsensor},
-        {pressuresensor->get_address(), *pressuresensor}};
+        {pressuresensor_i2c1->get_address(), *pressuresensor_i2c1}};
 
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c3 = {
-        {sim_eeprom->get_address(), *sim_eeprom}};
+        {pressuresensor_i2c3->get_address(), *pressuresensor_i2c3},
+        {capsensor_rear->get_address(), *capsensor_rear}};
+
+    if (get_pipette_type() == NINETY_SIX_CHANNEL) {
+        // On 96 channel, there's an address conflict.
+        sensor_map_i2c3.insert({sim_eeprom->get_address(), *sim_eeprom});
+        sensor_map_i2c1.insert(
+            {capsensor_front->get_address(), *capsensor_front});
+    } else {
+        sensor_map_i2c1.insert({sim_eeprom->get_address(), *sim_eeprom});
+    }
     auto i2c3_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c3);
 
     auto i2c1_comms = std::make_shared<i2c::hardware::SimI2C>(sensor_map_i2c1);
@@ -300,8 +337,9 @@ int main(int argc, char** argv) {
     central_tasks::start_tasks(*can_bus_1, node);
     peripheral_tasks::start_tasks(*i2c3_comms, *i2c1_comms, spi_comms);
     initialize_motor_tasks(node, motor_config.driver_configs,
-                           gear_motion_control, *fake_sensor_hw, *sim_eeprom,
-                           lmh_tsk, gmh_tsks);
+                           gear_motion_control, *fake_sensor_hw_primary,
+                           *fake_sensor_hw_secondary, *sim_eeprom, lmh_tsk,
+                           gmh_tsks);
 
     vTaskStartScheduler();
 }
