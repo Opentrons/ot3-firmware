@@ -21,7 +21,6 @@ class SensorHardware : public SensorHardwareBase {
     }
 
     sensors::hardware::SensorHardwareConfiguration hardware;
-
 };
 };  // namespace hardware
 };  // namespace sensors

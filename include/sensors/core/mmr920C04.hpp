@@ -50,10 +50,10 @@ enum class FilterSetting : uint8_t {
 };
 
 enum class MeasurementRate : int {
-    MEASURE_1 = 0, // 3.1msec
-    MEASURE_2 = 1, // 6.1msec
-    MEASURE_3 = 2, // 12.2msec
-    MEASURE_4 = 3 // 24.3msec
+    MEASURE_1 = 0,  // 3.1msec
+    MEASURE_2 = 1,  // 6.1msec
+    MEASURE_3 = 2,  // 12.2msec
+    MEASURE_4 = 3   // 24.3msec
 };
 
 enum class Registers : uint8_t {
@@ -240,7 +240,6 @@ struct __attribute__((packed, __may_alias__)) TemperatureCommand {
     uint8_t C2 : 1 = 0;
     uint8_t C1 : 1 = 1;
     uint8_t C0 : 1 = 0;
-
 };
 
 struct __attribute__((packed, __may_alias__)) StatusCommand {
@@ -264,9 +263,10 @@ struct PressureResult {
     static constexpr float PA_PER_COUNT =
         1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
 
-    int32_t reading : 24 = 0;
+    int32_t reading : 32 = 0;
 
     [[nodiscard]] static auto to_pressure(int32_t reg) -> float {
+        // Pressure is converted to pascals
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
@@ -277,26 +277,20 @@ struct PressureResult {
             static_cast<float>(static_cast<int32_t>(reg)) * PA_PER_COUNT;
         return pressure;
     }
-
-    [[nodiscard]] static auto to_fixed_point(int32_t pressure) -> sq15_16 {
-        return convert_to_fixed_point(pressure, S15Q16_RADIX);
-    }
 };
 
 struct TemperatureResult {
     static constexpr uint32_t MAX_SIZE = (2 << 7);
     static constexpr float CONVERT_TO_CELSIUS = 0.0078125;
 
-    int32_t reading : 24 = 0;
+    int32_t reading : 32 = 0;
 
     [[nodiscard]] static auto to_temperature(int32_t reg) -> float {
         float temperature =
             CONVERT_TO_CELSIUS * (static_cast<float>(reg) / MAX_SIZE);
         return temperature;
     }
-
 };
-
 
 struct StatusResult {
     uint8_t reading : 8 = 0;
@@ -315,7 +309,8 @@ struct StatusResult {
     }
 };
 
-[[nodiscard]] inline static auto reading_to_fixed_point(int32_t reading) -> sq15_16 {
+[[nodiscard]] inline static auto reading_to_fixed_point(float reading)
+    -> sq15_16 {
     return convert_to_fixed_point(reading, S15Q16_RADIX);
 }
 
@@ -335,7 +330,7 @@ struct MMR920C04RegisterMap {
     StatusResult status_result = {};
 };
 
-// Result registers are a mixture of 
+// Result registers are a mixture of
 using RegisterSerializedType = uint8_t;
 
 // Command Registers are all 8 bits

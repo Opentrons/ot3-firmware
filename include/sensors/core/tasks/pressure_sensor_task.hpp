@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
@@ -50,17 +52,19 @@ class PressureMessageHandler {
     void visit(i2c::messages::TransactionResponse &m) {
         auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
         if ((reg_id != mmr920C04::Registers::LOW_PASS_PRESSURE_READ) &&
-            (reg_id != mmr920C04::Registers::PRESSURE_READ) && 
+            (reg_id != mmr920C04::Registers::PRESSURE_READ) &&
             (reg_id != mmr920C04::Registers::TEMPERATURE_READ) &&
             (reg_id != mmr920C04::Registers::STATUS)) {
             return;
         }
-
+        // may not be routed to baseline function like we suspect
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
+            std::cout << "handling ongoing response\n";
             driver.handle_ongoing_response(m);
             LOG("continuous transaction response");
         } else {
+            std::cout << "handling baseline response\n";
             driver.handle_baseline_response(m);
             LOG("limited transaction response");
         }
@@ -68,12 +72,13 @@ class PressureMessageHandler {
 
     void visit(const can::messages::ReadFromSensorRequest &m) {
         LOG("Received request to read from %d sensor\n", m.sensor);
+        driver.set_echoing(true);
         if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure) {
             auto tags_as_int = 1;
             driver.poll_limited_pressure(1, tags_as_int);
         }
         if (can::ids::SensorType(m.sensor) ==
-                can::ids::SensorType::pressure_temperature) {
+            can::ids::SensorType::pressure_temperature) {
             auto tags_as_int = 1;
             driver.poll_limited_temperature(1, tags_as_int);
         }
@@ -93,6 +98,7 @@ class PressureMessageHandler {
         LOG("Received request to set threshold to %d from %d sensor",
             m.threshold, m.sensor);
         // NOTE this function only supports pressure reads right now.
+        driver.set_echoing(true);
         if (m.mode == can::ids::SensorThresholdMode::absolute) {
             driver.set_threshold(
                 fixed_point_to_float(m.threshold, S15Q16_RADIX), m.mode,
@@ -116,7 +122,9 @@ class PressureMessageHandler {
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
         auto tags_as_int = utils::byte_from_tags(tags);
-        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure_temperature) {
+
+        if (can::ids::SensorType(m.sensor) ==
+            can::ids::SensorType::pressure_temperature) {
             driver.poll_continuous_temperature(tags_as_int);
         } else {
             driver.poll_continuous_pressure(tags_as_int);
@@ -129,10 +137,12 @@ class PressureMessageHandler {
         LOG("received baseline request");
         static_cast<void>(m);
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
-                utils::ResponseTag::IS_BASELINE,
-                utils::ResponseTag::IS_THRESHOLD_SENSE};
+                        utils::ResponseTag::IS_BASELINE,
+                        utils::ResponseTag::IS_THRESHOLD_SENSE};
         auto tags_as_int = utils::byte_from_tags(tags);
-        if (can::ids::SensorType(m.sensor) == can::ids::SensorType::pressure_temperature) {
+        driver.set_echoing(true);
+        if (can::ids::SensorType(m.sensor) ==
+            can::ids::SensorType::pressure_temperature) {
             driver.poll_limited_temperature(m.number_of_reads, tags_as_int);
         } else {
             driver.poll_limited_pressure(m.number_of_reads, tags_as_int);
