@@ -195,6 +195,18 @@ class HostCommMessageHandler {
         return msg.serialize(tx_into, tx_limit);
     }
 
+    template <typename InputIt, typename InputLimit>
+    requires std::forward_iterator<InputIt> &&
+        std::sized_sentinel_for<InputLimit, InputIt>
+    auto visit_message(rearpanel::messages::EstopButtonPresentRequest &msg,
+                       InputIt tx_into, InputLimit tx_limit) -> InputIt {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_system_queue(msg);
+        static_cast<void>(tx_into);
+        static_cast<void>(tx_limit);
+        return tx_into;
+    }
+
     // transmit the aux port present state
     template <typename InputIt, typename InputLimit>
     requires std::forward_iterator<InputIt> &&

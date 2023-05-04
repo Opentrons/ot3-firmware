@@ -82,6 +82,14 @@ class SystemMessageHandler {
             .aux1_id_state = gpio::is_set(drive_pins.aux1_id),
             .aux2_id_state = gpio::is_set(drive_pins.aux2_id)});
     }
+    void handle(const rearpanel::messages::EstopButtonPresentRequest&) const {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(
+            rearpanel::messages::EstopButtonDetectionChange{
+                .aux1_present = gpio::is_set(drive_pins.estop_aux1_det),
+                .aux2_present = gpio::is_set(drive_pins.estop_aux2_det)});
+    }
+
     gpio_drive_hardware::GpioDrivePins& drive_pins;
 };
 

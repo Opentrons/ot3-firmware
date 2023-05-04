@@ -304,6 +304,29 @@ struct EstopButtonDetectionChange
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct EstopButtonPresentRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::estop_button_present_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, EstopButtonPresentRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return EstopButtonPresentRequest{.length = len};
+    }
+
+    auto operator==(const EstopButtonPresentRequest& other) const
+        -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct AuxPortDetectionChange
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::aux_present_detection_change> {
@@ -630,12 +653,13 @@ using HostCommTaskMessage = std::variant<
     AddLightActionRequest, ClearLightActionStagingQueueRequest,
     StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
     GetDeckLightResponse, AuxPortDetectionChange, AuxPresentRequeset,
-    AuxIDResponse, AuxIDRequest>;
+    AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
-                 DoorSwitchStateRequest, AuxPresentRequeset, AuxIDRequest>;
+                 DoorSwitchStateRequest, AuxPresentRequeset, AuxIDRequest,
+                 EstopButtonPresentRequest>;
 
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
@@ -650,7 +674,8 @@ using Parser = binary_parse::Parser<
     EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
     DoorSwitchStateRequest, AddLightActionRequest,
     ClearLightActionStagingQueueRequest, StartLightActionRequest,
-    SetDeckLightRequest, GetDeckLightRequest, AuxPresentRequeset, AuxIDRequest>;
+    SetDeckLightRequest, GetDeckLightRequest, AuxPresentRequeset, AuxIDRequest,
+    EstopButtonPresentRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel
