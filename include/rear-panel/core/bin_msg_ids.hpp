@@ -28,6 +28,7 @@ enum class BinaryMessageId : uint16_t {
     aux_present_request = 0x10,
     aux_id_request = 0x11,
     aux_id_response = 0x12,
+    estop_button_present_request = 0x13,
     add_light_action = 0x400,
     clear_light_action_staging_queue = 0x401,
     start_light_action = 0x402,
