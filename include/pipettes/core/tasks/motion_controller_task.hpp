@@ -100,8 +100,8 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::TipActionRequest& m) {
         LOG("Motion Controller Received a tip action request: velocity=%d, "
-            "groupid=%d, seqid=%d\n",
-            m.velocity, m.group_id, m.seq_id);
+            "acceleration=%d, groupid=%d, seqid=%d\n",
+            m.velocity, m.acceleration, m.group_id, m.seq_id);
         controller.move(m);
     }
 

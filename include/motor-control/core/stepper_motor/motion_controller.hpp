@@ -229,11 +229,13 @@ class PipetteMotionController {
     void move(const can::messages::TipActionRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        steps_per_tick_sq acceleration_steps =
+            fixed_point_multiply(steps_per_mm, can_msg.acceleration);
         GearMotorMove msg{
             can_msg.message_index,
             can_msg.duration,
             velocity_steps,
-            0,
+            acceleration_steps,
             can_msg.group_id,
             can_msg.seq_id,
             can_msg.request_stop_condition,
