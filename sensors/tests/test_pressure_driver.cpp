@@ -1,5 +1,4 @@
 #include <concepts>
-#include <iostream>
 
 #include "can/core/messages.hpp"
 #include "catch2/catch.hpp"
@@ -127,7 +126,7 @@ SCENARIO("Testing the pressure sensor driver") {
                     std::get<can::messages::ReadFromSensorResponse>(
                         empty_can_msg.message);
                 float check_data_pascals =
-                    fixed_point_to_float(response_msg.sensor_data, 16);
+                    signed_fixed_point_to_float(response_msg.sensor_data, 16);
                 float expected_pascals = -490.3325;
                 REQUIRE(check_data_pascals == Approx(expected_pascals));
             }

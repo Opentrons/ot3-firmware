@@ -58,62 +58,62 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
     auto sensor = sensors::tasks::PressureMessageHandler{
         writer, poller, queue_client, response_queue, mock_hw, sensor_id};
 
-    // GIVEN("a request to take a single read of the pressure sensor") {
-    //     auto single_read =
-    //         sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
-    //             {}, 0xdeadbeef, pressure_id, sensor_id_int));
-    //     sensor.handle_message(single_read);
-    //     WHEN("the handler function receives the message") {
-    //         THEN("the i2c queue is populated with a MEASURE MODE 4 command")
-    //         {
-    //             REQUIRE(i2c_queue.get_size() == 1);
-    //         }
-    //         auto transact_message =
-    //             get_message<i2c::messages::Transact>(i2c_queue);
-    //         REQUIRE(transact_message.transaction.address ==
-    //                 sensors::mmr920C04::ADDRESS);
-    //     }
-    // }
-    // GIVEN("a request to take multiple reads of the pressure sensor") {
-    //     auto single_read =
-    //         sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
-    //             {}, 0xdeadbeef, pressure_id, sensor_id_int));
-    //     sensor.handle_message(single_read);
-    //     WHEN("the handler function receives the message") {
-    //         THEN("the i2c queue is populated with a MEASURE MODE 4 command")
-    //         {
-    //             REQUIRE(i2c_queue.get_size() == 1);
-    //         }
-    //         auto transact_message =
-    //             get_message<i2c::messages::Transact>(i2c_queue);
-    //         REQUIRE(transact_message.transaction.address ==
-    //                 sensors::mmr920C04::ADDRESS);
-    //     }
-    // }
+    GIVEN("a request to take a single read of the pressure sensor") {
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
+                {}, 0xdeadbeef, pressure_id, sensor_id_int));
+        sensor.handle_message(single_read);
+        WHEN("the handler function receives the message") {
+            THEN("the i2c queue is populated with a MEASURE MODE 4 command")
+            {
+                REQUIRE(i2c_queue.get_size() == 1);
+            }
+            auto transact_message =
+                get_message<i2c::messages::Transact>(i2c_queue);
+            REQUIRE(transact_message.transaction.address ==
+                    sensors::mmr920C04::ADDRESS);
+        }
+    }
+    GIVEN("a request to take multiple reads of the pressure sensor") {
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::BaselineSensorRequest(
+                {}, 0xdeadbeef, pressure_id, sensor_id_int));
+        sensor.handle_message(single_read);
+        WHEN("the handler function receives the message") {
+            THEN("the i2c queue is populated with a MEASURE MODE 4 command")
+            {
+                REQUIRE(i2c_queue.get_size() == 1);
+            }
+            auto transact_message =
+                get_message<i2c::messages::Transact>(i2c_queue);
+            REQUIRE(transact_message.transaction.address ==
+                    sensors::mmr920C04::ADDRESS);
+        }
+    }
 
-    // GIVEN("a request to take a single read of the temperature sensor") {
-    //     auto single_read =
-    //         sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
-    //             {}, 0xdeadbeef, pressure_temperature_id, sensor_id_int));
-    //     sensor.handle_message(single_read);
-    //     WHEN("the handler function receives the message") {
-    //         THEN("the i2c queue is populated with a transact command") {
-    //             REQUIRE(i2c_queue.get_size() == 1);
-    //         }
-    //         AND_WHEN("we read the message from the queue") {
-    //             auto transact_message =
-    //                 get_message<i2c::messages::Transact>(i2c_queue);
+    GIVEN("a request to take a single read of the temperature sensor") {
+        auto single_read =
+            sensors::utils::TaskMessage(can::messages::ReadFromSensorRequest(
+                {}, 0xdeadbeef, pressure_temperature_id, sensor_id_int));
+        sensor.handle_message(single_read);
+        WHEN("the handler function receives the message") {
+            THEN("the i2c queue is populated with a transact command") {
+                REQUIRE(i2c_queue.get_size() == 1);
+            }
+            AND_WHEN("we read the message from the queue") {
+                auto transact_message =
+                    get_message<i2c::messages::Transact>(i2c_queue);
 
-    //             THEN("The command addresses are correct") {
-    //                 REQUIRE(transact_message.transaction.address ==
-    //                         sensors::mmr920C04::ADDRESS);
-    //                 REQUIRE(transact_message.transaction.write_buffer[0] ==
-    //                         static_cast<uint8_t>(
-    //                             sensors::mmr920C04::Registers::MEASURE_MODE_4));
-    //             }
-    //         }
-    //     }
-    // }
+                THEN("The command addresses are correct") {
+                    REQUIRE(transact_message.transaction.address ==
+                            sensors::mmr920C04::ADDRESS);
+                    REQUIRE(transact_message.transaction.write_buffer[0] ==
+                            static_cast<uint8_t>(
+                                sensors::mmr920C04::Registers::MEASURE_MODE_4));
+                }
+            }
+        }
+    }
 
     GIVEN("A TransactionResponse message") {
         can_queue.reset();
@@ -139,6 +139,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                     can::ids::SensorId::S0, 2));
             sensor.handle_message(bind_pressure);
 
+            // discard the ack response
+            can_queue.reset();
             std::array tags_for_continuous{
                 sensors::utils::ResponseTag::IS_PART_OF_POLL,
                 sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
@@ -151,6 +153,7 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
             sensor.handle_message(response_read);
             THEN("there should be a ReadFromSensorResponse") {
                 REQUIRE(can_queue.has_message());
+                REQUIRE(can_queue.get_size() == 1);
                 can_queue.try_read(&empty_can_msg);
                 REQUIRE(std::holds_alternative<
                         can::messages::ReadFromSensorResponse>(
@@ -165,6 +168,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                     {}, 0xdeadbeef, pressure_id, sensor_id_int));
             sensor.handle_message(single_read);
 
+            // discard the ack response
+            can_queue.reset();
             std::array tags_for_baseline{
                 sensors::utils::ResponseTag::IS_PART_OF_POLL,
                 sensors::utils::ResponseTag::IS_THRESHOLD_SENSE};
@@ -177,6 +182,7 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
             sensor.handle_message(response_read);
             THEN("there should be a BaselineSensorResponse") {
                 REQUIRE(can_queue.has_message());
+                REQUIRE(can_queue.get_size() == 1);
                 can_queue.try_read(&empty_can_msg);
                 REQUIRE(std::holds_alternative<
                         can::messages::BaselineSensorResponse>(

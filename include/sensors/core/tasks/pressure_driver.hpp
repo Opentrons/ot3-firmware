@@ -267,8 +267,6 @@ class MMR920C04 {
     auto handle_ongoing_response(i2c::messages::TransactionResponse &m)
         -> void {
         auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
-        std::cout << "echoing" << echoing << "\n";
-        std::cout << "binding" << bind_sync << "\n";
         if (!bind_sync && !echoing) {
             stop_continuous_polling(m.id.transaction_index,
                                     static_cast<uint8_t>(reg_id));
@@ -297,10 +295,7 @@ class MMR920C04 {
         if (bind_sync && pressure_read) {
             auto pressure = mmr920C04::PressureResult::to_pressure(
                 _registers.pressure_result.reading);
-            auto signed_pressure =
-                mmr920C04::PressureResult::to_pressure(signed_data_store);
-            std::cout << "I'm in bind sync and pressure is" << pressure << "\n";
-            std::cout << "but signed data is" << signed_pressure << "\n";
+
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
@@ -351,14 +346,11 @@ class MMR920C04 {
             reg_id == mmr920C04::Registers::PRESSURE_READ;
         auto temperature_read =
             reg_id == mmr920C04::Registers::TEMPERATURE_READ;
-        std::cout << "pressure totale before add " << pressure_running_total
-                  << "\n";
+
         if (pressure_read) {
             auto pressure =
                 mmr920C04::PressureResult::to_pressure(signed_data_store);
             pressure_running_total += pressure;
-            std::cout << "pressure totale after add " << pressure_running_total
-                      << "\n";
         }
         if (temperature_read) {
             auto temperature =
@@ -370,14 +362,12 @@ class MMR920C04 {
         }
         reset_readings();
 
-        std::cout << "baseline reads " << total_baseline_reads << "\n";
         if (pressure_read) {
             auto current_pressure_baseline_pa =
                 pressure_running_total / total_baseline_reads;
             auto pressure_fixed_point =
                 mmr920C04::reading_to_fixed_point(current_pressure_baseline_pa);
-            std::cout << "averaged pressure " << current_pressure_baseline_pa
-                      << "\n";
+
             // FIXME This should be tied to the set threshold
             // command so we can completely remove the base line sensor
             // request from all sensors!
