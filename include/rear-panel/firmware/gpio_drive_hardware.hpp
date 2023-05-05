@@ -11,6 +11,10 @@ struct GpioDrivePins {
     gpio::PinConfig estop_aux1_det;
     gpio::PinConfig estop_aux2_det;
     gpio::PinConfig door_open;
+    gpio::PinConfig aux1_present;
+    gpio::PinConfig aux2_present;
+    gpio::PinConfig aux1_id;
+    gpio::PinConfig aux2_id;
 };
 
 }  // namespace gpio_drive_hardware

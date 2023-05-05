@@ -239,5 +239,6 @@ typedef enum {
     can_motorusagevaluetype_left_gear_motor_distance = 0x1,
     can_motorusagevaluetype_right_gear_motor_distance = 0x2,
     can_motorusagevaluetype_force_application_time = 0x3,
+    can_motorusagevaluetype_total_error_count = 0x4,
 } CANMotorUsageValueType;
 

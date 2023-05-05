@@ -303,6 +303,110 @@ struct EstopButtonDetectionChange
         -> bool = default;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct EstopButtonPresentRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::estop_button_present_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, EstopButtonPresentRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return EstopButtonPresentRequest{.length = len};
+    }
+
+    auto operator==(const EstopButtonPresentRequest& other) const
+        -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct AuxPortDetectionChange
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::aux_present_detection_change> {
+    uint16_t length = 2 * sizeof(bool);
+    bool aux1_present;
+    bool aux2_present;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(aux1_present, iter, limit);
+        iter = bit_utils::int_to_bytes(aux2_present, iter, limit);
+        return iter;
+    }
+    auto operator==(const AuxPortDetectionChange& other) const
+        -> bool = default;
+};
+
+struct AuxPresentRequeset
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::aux_present_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, AuxPresentRequeset> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return AuxPresentRequeset{.length = len};
+    }
+
+    auto operator==(const AuxPresentRequeset& other) const -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct AuxIDResponse
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::aux_id_response> {
+    uint16_t length = 2 * sizeof(bool);
+    bool aux1_id_state;
+    bool aux2_id_state;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(aux1_id_state, iter, limit);
+        iter = bit_utils::int_to_bytes(aux2_id_state, iter, limit);
+        return iter;
+    }
+    auto operator==(const AuxIDResponse& other) const -> bool = default;
+};
+
+struct AuxIDRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::aux_id_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, AuxIDRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return AuxIDRequest{.length = len};
+    }
+
+    auto operator==(const AuxIDRequest& other) const -> bool = default;
+};
+
 struct DoorSwitchStateRequest
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::door_switch_state_request> {
@@ -541,20 +645,21 @@ struct GetDeckLightResponse
 };
 
 // HostCommTaskMessage list must be a superset of the messages in the parser
-using HostCommTaskMessage =
-    std::variant<std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed,
-                 EnterBootloader, EnterBootloaderResponse, EngageEstopRequest,
-                 EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
-                 EstopStateChange, EstopButtonDetectionChange,
-                 DoorSwitchStateRequest, DoorSwitchStateInfo,
-                 AddLightActionRequest, ClearLightActionStagingQueueRequest,
-                 StartLightActionRequest, SetDeckLightRequest,
-                 GetDeckLightRequest, GetDeckLightResponse>;
+using HostCommTaskMessage = std::variant<
+    std::monostate, Echo, DeviceInfoRequest, Ack, AckFailed, EnterBootloader,
+    EnterBootloaderResponse, EngageEstopRequest, EngageSyncRequest,
+    ReleaseEstopRequest, ReleaseSyncRequest, EstopStateChange,
+    EstopButtonDetectionChange, DoorSwitchStateRequest, DoorSwitchStateInfo,
+    AddLightActionRequest, ClearLightActionStagingQueueRequest,
+    StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
+    GetDeckLightResponse, AuxPortDetectionChange, AuxPresentRequeset,
+    AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
-                 DoorSwitchStateRequest>;
+                 DoorSwitchStateRequest, AuxPresentRequeset, AuxIDRequest,
+                 EstopButtonPresentRequest>;
 
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
@@ -569,7 +674,8 @@ using Parser = binary_parse::Parser<
     EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
     DoorSwitchStateRequest, AddLightActionRequest,
     ClearLightActionStagingQueueRequest, StartLightActionRequest,
-    SetDeckLightRequest, GetDeckLightRequest>;
+    SetDeckLightRequest, GetDeckLightRequest, AuxPresentRequeset, AuxIDRequest,
+    EstopButtonPresentRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel

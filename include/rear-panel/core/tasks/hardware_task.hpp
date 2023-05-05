@@ -23,8 +23,10 @@ struct GpioInputState {
     bool estop_aux1_det = false;
     bool estop_aux2_det = false;
     bool door_open = false;
-    // TODO:
-    // Aux device present
+    bool aux1_present = false;
+    bool aux2_present = false;
+    bool aux1_id = false;
+    bool aux2_id = false;
     auto operator==(const GpioInputState& other) const -> bool = default;
 };
 
@@ -56,6 +58,13 @@ class HardwareTask {
                     .aux1_present = current.estop_aux1_det,
                     .aux2_present = current.estop_aux2_det});
         }
+        if (current.aux1_present != previous.aux1_present ||
+            current.aux2_present != previous.aux2_present) {
+            queue_client.send_host_comms_queue(
+                rearpanel::messages::AuxPortDetectionChange{
+                    .aux1_present = current.aux1_present,
+                    .aux2_present = current.aux2_present});
+        }
         if (current.door_open != previous.door_open) {
             queue_client.send_host_comms_queue(
                 rearpanel::messages::DoorSwitchStateInfo{
@@ -71,16 +80,22 @@ class HardwareTask {
         estop_aux2_bouncer.debounce_update(
             gpio::is_set(drive_pins->estop_aux2_det));
         door_open_bouncer.debounce_update(gpio::is_set(drive_pins->door_open));
-        // TODO:
-        // Aux device present
+        aux1_present_bouncer.debounce_update(
+            gpio::is_set(drive_pins->aux1_present));
+        aux2_present_bouncer.debounce_update(
+            gpio::is_set(drive_pins->aux2_present));
+        aux1_id_bouncer.debounce_update(gpio::is_set(drive_pins->aux1_id));
+        aux2_id_bouncer.debounce_update(gpio::is_set(drive_pins->aux2_id));
 
         return GpioInputState{
             .estop_in = estop_in_bouncer.debounce_state(),
             .estop_aux1_det = estop_aux1_bouncer.debounce_state(),
             .estop_aux2_det = estop_aux2_bouncer.debounce_state(),
-            .door_open = door_open_bouncer.debounce_state()
-            // TODO:
-            // Aux device present
+            .door_open = door_open_bouncer.debounce_state(),
+            .aux1_present = aux1_present_bouncer.debounce_state(),
+            .aux2_present = aux2_present_bouncer.debounce_state(),
+            .aux1_id = aux1_id_bouncer.debounce_state(),
+            .aux2_id = aux2_id_bouncer.debounce_state(),
         };
     }
     /**
@@ -94,9 +109,11 @@ class HardwareTask {
             .estop_in = gpio::is_set(drive_pins->estop_in),
             .estop_aux1_det = gpio::is_set(drive_pins->estop_aux1_det),
             .estop_aux2_det = gpio::is_set(drive_pins->estop_aux2_det),
-            .door_open = gpio::is_set(drive_pins->door_open)
-            // TODO:
-            // Aux device present
+            .door_open = gpio::is_set(drive_pins->door_open),
+            .aux1_present = gpio::is_set(drive_pins->aux1_present),
+            .aux2_present = gpio::is_set(drive_pins->aux2_present),
+            .aux1_id = gpio::is_set(drive_pins->aux1_id),
+            .aux2_id = gpio::is_set(drive_pins->aux2_id),
         };
         for (;;) {
             auto new_state = get_new_state(drive_pins);
@@ -117,6 +134,10 @@ class HardwareTask {
     debouncer::Debouncer estop_aux1_bouncer = debouncer::Debouncer{};
     debouncer::Debouncer estop_aux2_bouncer = debouncer::Debouncer{};
     debouncer::Debouncer door_open_bouncer = debouncer::Debouncer{};
+    debouncer::Debouncer aux1_present_bouncer = debouncer::Debouncer{};
+    debouncer::Debouncer aux2_present_bouncer = debouncer::Debouncer{};
+    debouncer::Debouncer aux1_id_bouncer = debouncer::Debouncer{};
+    debouncer::Debouncer aux2_id_bouncer = debouncer::Debouncer{};
 };
 
 }  // namespace hardware_task
