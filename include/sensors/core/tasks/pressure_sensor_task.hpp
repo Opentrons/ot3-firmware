@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "can/core/ids.hpp"
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
@@ -60,11 +58,9 @@ class PressureMessageHandler {
         // may not be routed to baseline function like we suspect
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
-            std::cout << "handling ongoing response\n";
             driver.handle_ongoing_response(m);
             LOG("continuous transaction response");
         } else {
-            std::cout << "handling baseline response\n";
             driver.handle_baseline_response(m);
             LOG("limited transaction response");
         }
