@@ -278,10 +278,9 @@ class MMR920C04 {
                                                   m.read_buffer.cend(),
                                                   temporary_data_store));
 
-        int32_t signed_data_store =
-            static_cast<int32_t>(temporary_data_store >> 8);
+        uint32_t shifted_data_store = temporary_data_store >> 8;
 
-        save_pressure(signed_data_store);
+        save_pressure(shifted_data_store);
         auto pressure = mmr920C04::PressureResult::to_pressure(
             _registers.pressure_result.reading);
         if (bind_sync) {
@@ -319,10 +318,9 @@ class MMR920C04 {
                                                   m.read_buffer.cend(),
                                                   temporary_data_store));
 
-        int32_t signed_data_store =
-            static_cast<int32_t>(temporary_data_store >> 8);
+        uint32_t shifted_data_store = temporary_data_store >> 8;
 
-        save_temperature(signed_data_store);
+        save_temperature(shifted_data_store);
 
         if (echoing) {
             auto temperature = mmr920C04::TemperatureResult::to_temperature(
@@ -344,11 +342,10 @@ class MMR920C04 {
                                                   m.read_buffer.cend(),
                                                   temporary_data_store));
 
-        int32_t signed_data_store =
-            static_cast<int32_t>(temporary_data_store >> 8);
+        uint32_t shifted_data_store = temporary_data_store >> 8;
 
         auto pressure =
-            mmr920C04::PressureResult::to_pressure(signed_data_store);
+            mmr920C04::PressureResult::to_pressure(shifted_data_store);
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
@@ -392,11 +389,10 @@ class MMR920C04 {
                                                   m.read_buffer.cend(),
                                                   temporary_data_store));
 
-        int32_t signed_data_store =
-            static_cast<int32_t>(temporary_data_store >> 8);
+        uint32_t shifted_data_store = temporary_data_store >> 8;
 
         auto temperature =
-            mmr920C04::TemperatureResult::to_temperature(signed_data_store);
+            mmr920C04::TemperatureResult::to_temperature(shifted_data_store);
         temperature_running_total += temperature;
 
         if (!m.id.is_completed_poll) {
@@ -432,8 +428,7 @@ class MMR920C04 {
     mmr920C04::FilterSetting filter_setting =
         mmr920C04::FilterSetting::LOW_PASS_FILTER;
 
-    static constexpr float MeasurementTimings[] = {3.1, 6.1, 12.2,
-                                                   24.3};  // in msec
+    static constexpr std::array<float, 4> MeasurementTimings{3.1, 6.1, 12.2, 24.3};  // in msec
     static constexpr float DEFAULT_DELAY_BUFFER =
         1.0;  // in msec (TODO might need to change to fit in uint16_t)
     static constexpr uint16_t STOP_DELAY = 0;

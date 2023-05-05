@@ -263,9 +263,9 @@ struct PressureResult {
     static constexpr float PA_PER_COUNT =
         1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
 
-    int32_t reading : 32 = 0;
+    uint32_t reading : 32 = 0;
 
-    [[nodiscard]] static auto to_pressure(int32_t reg) -> float {
+    [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
         // Pressure is converted to pascals
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
@@ -283,9 +283,16 @@ struct TemperatureResult {
     static constexpr uint32_t MAX_SIZE = (2 << 7);
     static constexpr float CONVERT_TO_CELSIUS = 0.0078125;
 
-    int32_t reading : 32 = 0;
+    uint32_t reading : 32 = 0;
 
-    [[nodiscard]] static auto to_temperature(int32_t reg) -> float {
+    [[nodiscard]] static auto to_temperature(uint32_t reg) -> float {
+        // Pressure is converted to pascals
+        // Sign extend pressure result
+        if ((reg & 0x00800000) != 0) {
+            reg |= 0xFF000000;
+        } else {
+            reg &= 0x007FFFFF;
+        }
         float temperature =
             CONVERT_TO_CELSIUS * (static_cast<float>(reg) / MAX_SIZE);
         return temperature;
