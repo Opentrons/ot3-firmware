@@ -64,8 +64,7 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 {}, 0xdeadbeef, pressure_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a MEASURE MODE 4 command")
-            {
+            THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
                 REQUIRE(i2c_queue.get_size() == 1);
             }
             auto transact_message =
@@ -80,8 +79,7 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 {}, 0xdeadbeef, pressure_id, sensor_id_int));
         sensor.handle_message(single_read);
         WHEN("the handler function receives the message") {
-            THEN("the i2c queue is populated with a MEASURE MODE 4 command")
-            {
+            THEN("the i2c queue is populated with a MEASURE MODE 4 command") {
                 REQUIRE(i2c_queue.get_size() == 1);
             }
             auto transact_message =
