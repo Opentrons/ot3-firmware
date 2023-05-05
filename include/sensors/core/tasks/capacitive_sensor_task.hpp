@@ -130,6 +130,8 @@ class CapacitiveMessageHandler {
                             utils::ResponseTag::IS_BASELINE,
                             utils::ResponseTag::IS_THRESHOLD_SENSE};
             auto tags_as_int = utils::byte_from_tags(tags);
+            driver.prime_autothreshold(
+                fixed_point_to_float(m.threshold, S15Q16_RADIX));
             driver.poll_limited_capacitance(
                 10, static_cast<can::ids::SensorId>(m.sensor_id), tags_as_int);
         }
