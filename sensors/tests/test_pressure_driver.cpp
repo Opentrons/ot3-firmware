@@ -98,7 +98,7 @@ SCENARIO("Testing the pressure sensor driver") {
             }
         }
         WHEN("A response is sent to the handle baseline function") {
-            driver.handle_baseline_response(message);
+            driver.handle_baseline_pressure_response(message);
             THEN(
                 "A ReadFromSensorResponse is sent to the CAN queue and it's "
                 "the expected value") {
@@ -119,7 +119,7 @@ SCENARIO("Testing the pressure sensor driver") {
         }
         WHEN("The response data is a negative value") {
             message.read_buffer = {0xF8, 0x5E, 0xE0};  // -5 cmH20
-            driver.handle_baseline_response(message);
+            driver.handle_baseline_pressure_response(message);
             THEN("We get the expected negative pressure read") {
                 can_queue.try_read(&empty_can_msg);
                 auto response_msg =
@@ -152,7 +152,7 @@ SCENARIO("Testing the pressure sensor driver") {
             .bytes_read = 3,
             .read_buffer = {0x3D, 0x09, 0x00}};  // 40 cmH20
         WHEN("a completed poll is sent to handle baseline response") {
-            driver.handle_baseline_response(message);
+            driver.handle_baseline_pressure_response(message);
             THEN("the i2c queue is populated with a RESET command") {
                 REQUIRE(i2c_queue.get_size() == 1);
                 auto reset_command =
@@ -212,7 +212,7 @@ SCENARIO("Testing the pressure sensor driver") {
                 .transaction_index = static_cast<uint8_t>(0)};
             auto sensor_response = i2c::messages::TransactionResponse{
                 .id = id, .bytes_read = 3, .read_buffer = {0x7F, 0xFF, 0xFF}};
-            driver.handle_ongoing_response(sensor_response);
+            driver.handle_ongoing_pressure_response(sensor_response);
             THEN(
                 "no data is sent via the CAN bus, and the sync pin is "
                 "set") {
@@ -264,7 +264,7 @@ SCENARIO("Testing the pressure sensor driver") {
                 .transaction_index = static_cast<uint8_t>(0)};
             auto sensor_response = i2c::messages::TransactionResponse{
                 .id = id, .bytes_read = 3, .read_buffer = {0xFF, 0xFF, 0xFF}};
-            driver.handle_baseline_response(sensor_response);
+            driver.handle_baseline_pressure_response(sensor_response);
             THEN("a RESET command is sent") {
                 auto reset_command =
                     get_message<i2c::messages::Transact>(i2c_queue);
@@ -299,7 +299,7 @@ SCENARIO("Testing the pressure sensor driver") {
                     .bytes_read = 3,
                     .read_buffer = {0x0, 0x54, 0x0, 0x00, 0x0, 0x0, 0x0, 0x0,
                                     0x0}};
-                driver.handle_baseline_response(sensor_response);
+                driver.handle_baseline_pressure_response(sensor_response);
             }
             for (int i = 0; i < 4; i++) {
                 auto sensor_response = i2c::messages::TransactionResponse{
@@ -307,7 +307,7 @@ SCENARIO("Testing the pressure sensor driver") {
                     .bytes_read = 3,
                     .read_buffer = {0x00, 0x9B, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                                     0x0}};
-                driver.handle_baseline_response(sensor_response);
+                driver.handle_baseline_pressure_response(sensor_response);
             }
             // complete the auto zero so the baseline message will be sent
             id.is_completed_poll = true;
@@ -315,7 +315,7 @@ SCENARIO("Testing the pressure sensor driver") {
                 .id = id,
                 .bytes_read = 3,
                 .read_buffer = {0x00, 0x9B, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}};
-            driver.handle_baseline_response(sensor_response);
+            driver.handle_baseline_pressure_response(sensor_response);
             THEN(
                 "a BaselineSensorResponse is sent with the correct calculated "
                 "average") {

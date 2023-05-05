@@ -264,10 +264,10 @@ class MMR920C04 {
                                                transaction_index);
     }
 
-    auto handle_ongoing_response(i2c::messages::TransactionResponse &m)
+    auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
         -> void {
-        auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
         if (!bind_sync && !echoing) {
+            auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
             stop_continuous_polling(m.id.transaction_index,
                                     static_cast<uint8_t>(reg_id));
             reset_readings();
@@ -281,21 +281,10 @@ class MMR920C04 {
         int32_t signed_data_store =
             static_cast<int32_t>(temporary_data_store >> 8);
 
-        auto pressure_read =
-            reg_id == mmr920C04::Registers::LOW_PASS_PRESSURE_READ ||
-            reg_id == mmr920C04::Registers::PRESSURE_READ;
-        auto temperature_read =
-            reg_id == mmr920C04::Registers::TEMPERATURE_READ;
-        if (pressure_read) {
-            save_pressure(signed_data_store);
-        }
-        if (temperature_read) {
-            save_temperature(signed_data_store);
-        }
-        if (bind_sync && pressure_read) {
-            auto pressure = mmr920C04::PressureResult::to_pressure(
-                _registers.pressure_result.reading);
-
+        save_pressure(signed_data_store);
+        auto pressure = mmr920C04::PressureResult::to_pressure(
+            _registers.pressure_result.reading);
+        if (bind_sync) {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 threshold_pascals) {
                 hardware.set_sync();
@@ -304,9 +293,7 @@ class MMR920C04 {
             }
         }
 
-        if (echoing && pressure_read) {
-            auto pressure = mmr920C04::PressureResult::to_pressure(
-                _registers.pressure_result.reading);
+        if (echoing) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -316,7 +303,28 @@ class MMR920C04 {
                     .sensor_data =
                         mmr920C04::reading_to_fixed_point(pressure)});
         }
-        if (echoing && temperature_read) {
+    }
+
+    auto handle_ongoing_temperature_response(
+        i2c::messages::TransactionResponse &m) -> void {
+        if (!bind_sync && !echoing) {
+            auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
+            stop_continuous_polling(m.id.transaction_index,
+                                    static_cast<uint8_t>(reg_id));
+            reset_readings();
+        }
+
+        // Pressure is always a three-byte value
+        static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
+                                                  m.read_buffer.cend(),
+                                                  temporary_data_store));
+
+        int32_t signed_data_store =
+            static_cast<int32_t>(temporary_data_store >> 8);
+
+        save_temperature(signed_data_store);
+
+        if (echoing) {
             auto temperature = mmr920C04::TemperatureResult::to_temperature(
                 _registers.temperature_result.reading);
             can_client.send_can_message(
@@ -330,83 +338,84 @@ class MMR920C04 {
         }
     }
 
-    auto handle_baseline_response(i2c::messages::TransactionResponse &m)
-        -> void {
+    auto handle_baseline_pressure_response(
+        i2c::messages::TransactionResponse &m) -> void {
         static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
                                                   m.read_buffer.cend(),
                                                   temporary_data_store));
 
-        auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
-
         int32_t signed_data_store =
             static_cast<int32_t>(temporary_data_store >> 8);
 
-        auto pressure_read =
-            reg_id == mmr920C04::Registers::LOW_PASS_PRESSURE_READ ||
-            reg_id == mmr920C04::Registers::PRESSURE_READ;
-        auto temperature_read =
-            reg_id == mmr920C04::Registers::TEMPERATURE_READ;
+        auto pressure =
+            mmr920C04::PressureResult::to_pressure(signed_data_store);
+        pressure_running_total += pressure;
 
-        if (pressure_read) {
-            auto pressure =
-                mmr920C04::PressureResult::to_pressure(signed_data_store);
-            pressure_running_total += pressure;
-        }
-        if (temperature_read) {
-            auto temperature =
-                mmr920C04::TemperatureResult::to_temperature(signed_data_store);
-            temperature_running_total += temperature;
-        }
         if (!m.id.is_completed_poll) {
             return;
         }
         reset_readings();
 
-        if (pressure_read) {
-            auto current_pressure_baseline_pa =
-                pressure_running_total / total_baseline_reads;
-            auto pressure_fixed_point =
-                mmr920C04::reading_to_fixed_point(current_pressure_baseline_pa);
+        auto current_pressure_baseline_pa =
+            pressure_running_total / total_baseline_reads;
+        auto pressure_fixed_point =
+            mmr920C04::reading_to_fixed_point(current_pressure_baseline_pa);
 
-            // FIXME This should be tied to the set threshold
-            // command so we can completely remove the base line sensor
-            // request from all sensors!
-            if (utils::tag_in_token(m.id.token,
-                                    utils::ResponseTag::IS_THRESHOLD_SENSE)) {
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::BaselineSensorResponse{
-                        .message_index = m.message_index,
-                        .sensor = can::ids::SensorType::pressure_temperature,
-                        .offset_average = pressure_fixed_point});
-                set_threshold(current_pressure_baseline_pa,
-                              can::ids::SensorThresholdMode::auto_baseline,
-                              m.message_index, false);
-            } else {
-                auto message = can::messages::ReadFromSensorResponse{
+        // FIXME This should be tied to the set threshold
+        // command so we can completely remove the base line sensor
+        // request from all sensors!
+        if (utils::tag_in_token(m.id.token,
+                                utils::ResponseTag::IS_THRESHOLD_SENSE)) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::BaselineSensorResponse{
                     .message_index = m.message_index,
-                    .sensor = SensorType::pressure,
-                    .sensor_id = sensor_id,
-                    .sensor_data = pressure_fixed_point};
-                can_client.send_can_message(can::ids::NodeId::host, message);
-            }
-            pressure_running_total = 0x0;
+                    .sensor = can::ids::SensorType::pressure_temperature,
+                    .offset_average = pressure_fixed_point});
+            set_threshold(current_pressure_baseline_pa,
+                          can::ids::SensorThresholdMode::auto_baseline,
+                          m.message_index, false);
+        } else {
+            auto message = can::messages::ReadFromSensorResponse{
+                .message_index = m.message_index,
+                .sensor = SensorType::pressure,
+                .sensor_id = sensor_id,
+                .sensor_data = pressure_fixed_point};
+            can_client.send_can_message(can::ids::NodeId::host, message);
         }
-        if (temperature_read) {
-            auto current_temperature_baseline =
-                temperature_running_total / total_baseline_reads;
-            auto offset_fixed_point =
-                mmr920C04::reading_to_fixed_point(current_temperature_baseline);
-            if (echoing) {
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::BaselineSensorResponse{
-                        .message_index = m.message_index,
-                        .sensor = can::ids::SensorType::pressure_temperature,
-                        .offset_average = offset_fixed_point});
-            }
-            temperature_running_total = 0x0;
+        pressure_running_total = 0x0;
+    }
+
+    auto handle_baseline_temperature_response(
+        i2c::messages::TransactionResponse &m) -> void {
+        static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
+                                                  m.read_buffer.cend(),
+                                                  temporary_data_store));
+
+        int32_t signed_data_store =
+            static_cast<int32_t>(temporary_data_store >> 8);
+
+        auto temperature =
+            mmr920C04::TemperatureResult::to_temperature(signed_data_store);
+        temperature_running_total += temperature;
+
+        if (!m.id.is_completed_poll) {
+            return;
         }
+        reset_readings();
+        auto current_temperature_baseline =
+            temperature_running_total / total_baseline_reads;
+        auto offset_fixed_point =
+            mmr920C04::reading_to_fixed_point(current_temperature_baseline);
+        if (echoing) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::BaselineSensorResponse{
+                    .message_index = m.message_index,
+                    .sensor = can::ids::SensorType::pressure_temperature,
+                    .offset_average = offset_fixed_point});
+        }
+        temperature_running_total = 0x0;
     }
 
     auto get_can_client() -> CanClient & { return can_client; }

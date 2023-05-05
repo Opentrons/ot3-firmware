@@ -58,10 +58,19 @@ class PressureMessageHandler {
         // may not be routed to baseline function like we suspect
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
-            driver.handle_ongoing_response(m);
+            if (reg_id == mmr920C04::Registers::TEMPERATURE_READ) {
+                driver.handle_ongoing_temperature_response(m);
+            } else {
+                driver.handle_ongoing_pressure_response(m);
+            }
             LOG("continuous transaction response");
         } else {
-            driver.handle_baseline_response(m);
+            if (reg_id == mmr920C04::Registers::TEMPERATURE_READ) {
+                driver.handle_baseline_temperature_response(m);
+            } else {
+                driver.handle_baseline_pressure_response(m);
+            }
+
             LOG("limited transaction response");
         }
     }
