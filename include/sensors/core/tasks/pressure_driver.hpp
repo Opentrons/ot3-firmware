@@ -258,18 +258,17 @@ class MMR920C04 {
                      static_cast<uint8_t>(mmr920C04::Registers::RESET));
     }
 
-    void stop_continuous_polling(uint8_t transaction_index, uint8_t reg_id) {
+    void stop_continuous_polling(uint32_t transaction_id, uint8_t reg_id) {
         poller.continuous_single_register_poll(mmr920C04::ADDRESS, reg_id, 3,
                                                STOP_DELAY, own_queue,
-                                               transaction_index);
+                                               transaction_id);
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
         -> void {
         if (!bind_sync && !echoing) {
             auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
-            stop_continuous_polling(m.id.transaction_index,
-                                    static_cast<uint8_t>(reg_id));
+            stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
             reset_readings();
         }
 
@@ -308,8 +307,7 @@ class MMR920C04 {
         i2c::messages::TransactionResponse &m) -> void {
         if (!bind_sync && !echoing) {
             auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
-            stop_continuous_polling(m.id.transaction_index,
-                                    static_cast<uint8_t>(reg_id));
+            stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
             reset_readings();
         }
 
