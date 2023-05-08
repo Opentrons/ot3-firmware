@@ -22,26 +22,6 @@ class MockSensorHardware : public sensors::hardware::SensorHardwareBase {
         }
     }
     auto check_tip_presence() -> bool override { return false; }
-    std::array<std::function<void()>, 5> data_ready_callbacks = {};
-    auto add_data_ready_callback(std::function<void()> callback)
-        -> bool override {
-        for (auto &callback_function : data_ready_callbacks) {
-            if (callback_function) {
-                continue;
-            }
-            callback_function = callback;
-            return true;
-        }
-        return false;
-    }
-
-    auto data_ready() -> void {
-        for (auto &callback_function : data_ready_callbacks) {
-            if (callback_function) {
-                callback_function();
-            }
-        }
-    }
 
     void provide_state_manager(StateManagerHandle handle) {
         _state_manager = handle;

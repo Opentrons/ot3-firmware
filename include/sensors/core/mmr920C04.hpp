@@ -36,6 +36,26 @@ enum class SensorStatus : uint8_t {
     UNKNOWN = 0xFF
 };
 
+enum class FilterSetting : uint8_t {
+    NO_FILTER,
+    /// @brief Cutoff Frequency
+    // The cutoff frequency filter coefficient varies
+    // depending on the measure mode you are using.
+    // mode, no filter, fc@10Hz, fc@100Hz
+    // MODE1, 0.019, 0.012, 0.0068
+    // MODE2, 0.008, 0.0064, 0.0034
+    // MODE3, 0.0044, 0.0036, 0.0022
+    // MODE4, 0.0025, 0.0023, 0.0013
+    LOW_PASS_FILTER
+};
+
+enum class MeasurementRate : int {
+    MEASURE_1 = 0,  // 3.1msec
+    MEASURE_2 = 1,  // 6.1msec
+    MEASURE_3 = 2,  // 12.2msec
+    MEASURE_4 = 3   // 24.3msec
+};
+
 enum class Registers : uint8_t {
     RESET = 0x72,
     IDLE = 0x94,
@@ -73,7 +93,7 @@ template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the value before writing it to the sensor.
-concept MMR920C04Register =
+concept MMR920C04CommandRegister =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
                  std::remove_cvref_t<Registers&>> &&
     std::integral<decltype(Reg::value_mask)>;
@@ -82,87 +102,87 @@ struct __attribute__((packed, __may_alias__)) Reset {
     static constexpr Registers address = Registers::RESET;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
     uint8_t C7 : 1 = 0;
     uint8_t C6 : 1 = 1;
     uint8_t C5 : 1 = 1;
     uint8_t C4 : 1 = 1;
     uint8_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 0;
-    uint32_t C1 : 1 = 1;
-    uint32_t C0 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) Idle {
     static constexpr Registers address = Registers::IDLE;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
     uint8_t C7 : 1 = 1;
     uint8_t C6 : 1 = 0;
     uint8_t C5 : 1 = 0;
     uint8_t C4 : 1 = 1;
     uint8_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 1;
-    uint32_t C1 : 1 = 0;
-    uint32_t C0 : 1 = 0;
+    uint8_t C2 : 1 = 1;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode1 {
     static constexpr Registers address = Registers::MEASURE_MODE_1;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
     uint8_t C7 : 1 = 1;
     uint8_t C6 : 1 = 0;
     uint8_t C5 : 1 = 1;
     uint8_t C4 : 1 = 0;
     uint8_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 0;
-    uint32_t C1 : 1 = 0;
-    uint32_t C0 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode2 {
     static constexpr Registers address = Registers::MEASURE_MODE_2;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
     uint8_t C7 : 1 = 1;
     uint8_t C6 : 1 = 0;
     uint8_t C5 : 1 = 1;
     uint8_t C4 : 1 = 0;
     uint8_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 0;
-    uint32_t C1 : 1 = 1;
-    uint32_t C0 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode3 {
     static constexpr Registers address = Registers::MEASURE_MODE_3;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
     uint8_t C7 : 1 = 1;
     uint8_t C6 : 1 = 0;
     uint8_t C5 : 1 = 1;
     uint8_t C4 : 1 = 0;
     uint8_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 1;
-    uint32_t C1 : 1 = 0;
-    uint32_t C0 : 1 = 0;
+    uint8_t C2 : 1 = 1;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
 };
 
 struct __attribute__((packed, __may_alias__)) MeasureMode4 {
     static constexpr Registers address = Registers::MEASURE_MODE_4;
     static constexpr bool readable = false;
     static constexpr bool writable = true;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
     uint8_t C7 : 1 = 1;
     uint8_t C6 : 1 = 0;
@@ -174,28 +194,79 @@ struct __attribute__((packed, __may_alias__)) MeasureMode4 {
     uint8_t C0 : 1 = 0;
 };
 
-struct __attribute__((packed, __may_alias__)) Pressure {
+struct __attribute__((packed, __may_alias__)) PressureCommand {
     static constexpr Registers address = Registers::PRESSURE_READ;
-    static constexpr bool readable = true;
-    static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
 
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) LowPassPressureCommand {
+    static constexpr Registers address = Registers::LOW_PASS_PRESSURE_READ;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
+
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) TemperatureCommand {
+    static constexpr Registers address = Registers::TEMPERATURE_READ;
+    static constexpr bool readable = false;
+    static constexpr bool writable = true;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
+
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 1;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 1;
+    uint8_t C0 : 1 = 0;
+};
+
+struct __attribute__((packed, __may_alias__)) StatusCommand {
+    static constexpr Registers address = Registers::STATUS;
+    static constexpr bool writable = true;
+    static constexpr uint8_t value_mask = (1 << 8) - 1;
+
+    uint8_t C7 : 1 = 1;
+    uint8_t C6 : 1 = 0;
+    uint8_t C5 : 1 = 0;
+    uint8_t C4 : 1 = 0;
+    uint8_t C3 : 1 = 0;
+    uint8_t C2 : 1 = 0;
+    uint8_t C1 : 1 = 0;
+    uint8_t C0 : 1 = 0;
+};
+
+struct PressureResult {
     // Pascals per 1 cmH20
     static constexpr float CMH20_TO_PASCALS = 98.0665;
     static constexpr float PA_PER_COUNT =
         1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
 
-    uint32_t C7 : 1 = 1;
-    uint32_t C6 : 1 = 1;
-    uint32_t C5 : 1 = 0;
-    uint32_t C4 : 1 = 0;
-    uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 0;
-    uint32_t C1 : 1 = 0;
-    uint32_t C0 : 1 = 0;
-    uint32_t reading : 24 = 0;
+    uint32_t reading : 32 = 0;
 
     [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
+        // Pressure is converted to pascals
         // Sign extend pressure result
         if ((reg & 0x00800000) != 0) {
             reg |= 0xFF000000;
@@ -208,74 +279,28 @@ struct __attribute__((packed, __may_alias__)) Pressure {
     }
 };
 
-struct __attribute__((packed, __may_alias__)) LowPassPressure {
-    static constexpr Registers address = Registers::LOW_PASS_PRESSURE_READ;
-    static constexpr bool readable = true;
-    static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 8) - 1;
-
-    // Pascals per 1 cmH20
-    static constexpr float CMH20_TO_PASCALS = 98.0665;
-    static constexpr float PA_PER_COUNT =
-        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
-
-    uint32_t C7 : 1 = 1;
-    uint32_t C6 : 1 = 1;
-    uint32_t C5 : 1 = 0;
-    uint32_t C4 : 1 = 0;
-    uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 1;
-    uint32_t C1 : 1 = 0;
-    uint32_t C0 : 1 = 0;
-    uint32_t reading : 24 = 0;
-
-    [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
-        return Pressure::to_pressure(reg);
-    }
-};
-
-struct __attribute__((packed, __may_alias__)) Temperature {
-    static constexpr Registers address = Registers::TEMPERATURE_READ;
-    static constexpr bool readable = true;
-    static constexpr bool writable = false;
-    static constexpr uint32_t value_mask = (1 << 24) - 1;
-
+struct TemperatureResult {
     static constexpr uint32_t MAX_SIZE = (2 << 7);
-
     static constexpr float CONVERT_TO_CELSIUS = 0.0078125;
 
-    uint32_t C7 : 1 = 1;
-    uint32_t C6 : 1 = 1;
-    uint32_t C5 : 1 = 0;
-    uint32_t C4 : 1 = 0;
-    uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 0;
-    uint32_t C1 : 1 = 1;
-    uint32_t C0 : 1 = 0;
-    uint32_t reading : 24 = 0;
+    uint32_t reading : 32 = 0;
 
-    [[nodiscard]] static auto to_temperature(uint32_t reg) -> sq15_16 {
+    [[nodiscard]] static auto to_temperature(uint32_t reg) -> float {
+        // Pressure is converted to pascals
+        // Sign extend pressure result
+        if ((reg & 0x00800000) != 0) {
+            reg |= 0xFF000000;
+        } else {
+            reg &= 0x007FFFFF;
+        }
         float temperature =
             CONVERT_TO_CELSIUS * (static_cast<float>(reg) / MAX_SIZE);
-        return convert_to_fixed_point(temperature, S15Q16_RADIX);
+        return temperature;
     }
 };
 
-struct __attribute__((packed, __may_alias__)) Status {
-    static constexpr Registers address = Registers::STATUS;
-    static constexpr bool readable = true;
-    static constexpr bool writable = false;
-    static constexpr uint8_t value_mask = (1 << 8) - 1;
-
-    uint32_t C7 : 1 = 1;
-    uint32_t C6 : 1 = 0;
-    uint32_t C5 : 1 = 0;
-    uint32_t C4 : 1 = 0;
-    uint32_t C3 : 1 = 0;
-    uint32_t C2 : 1 = 0;
-    uint32_t C1 : 1 = 0;
-    uint32_t C0 : 1 = 0;
-    uint32_t reading : 8 = 0;
+struct StatusResult {
+    uint8_t reading : 8 = 0;
 
     [[nodiscard]] static auto to_status(uint8_t reg) -> SensorStatus {
         switch (static_cast<SensorStatus>(reg)) {
@@ -291,6 +316,11 @@ struct __attribute__((packed, __may_alias__)) Status {
     }
 };
 
+[[nodiscard]] inline static auto reading_to_fixed_point(float reading)
+    -> sq15_16 {
+    return convert_to_fixed_point(reading, S15Q16_RADIX);
+}
+
 struct MMR920C04RegisterMap {
     Reset reset = {};
     Idle idle = {};
@@ -298,15 +328,20 @@ struct MMR920C04RegisterMap {
     MeasureMode2 measure_mode_2 = {};
     MeasureMode3 measure_mode_3 = {};
     MeasureMode4 measure_mode_4 = {};
-    Pressure pressure = {};
-    LowPassPressure low_pass_pressure = {};
-    Temperature temperature = {};
-    Status status = {};
+    PressureCommand pressure_command = {};
+    LowPassPressureCommand low_pass_pressure_command = {};
+    TemperatureCommand temperature_command = {};
+    StatusCommand status_command = {};
+    PressureResult pressure_result = {};
+    TemperatureResult temperature_result = {};
+    StatusResult status_result = {};
 };
 
-// Registers are all 32 bits
-using RegisterSerializedType = uint32_t;
+// Result registers are a mixture of
+using RegisterSerializedType = uint8_t;
+
+// Command Registers are all 8 bits
 // Type definition to allow type aliasing for pointer dereferencing
-using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint32_t;
+using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint8_t;
 };  // namespace mmr920C04
 };  // namespace sensors

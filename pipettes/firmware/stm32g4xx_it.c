@@ -118,27 +118,13 @@ void DebugMon_Handler(void) {}
 /*  file (startup_stm32g4xxxx.s).                                             */
 /******************************************************************************/
 
-void EXTI1_IRQHandler(void) {
-    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_1);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
-}
-
 void EXTI2_IRQHandler(void) {
     __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_2);
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
 }
 
-void EXTI3_IRQHandler(void) {
-    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_3);
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-}
-
 void EXTI9_5_IRQHandler(void) {
-    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_6)) {
-        // clear pending
-        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_6);
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
-    } else if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_7)) {
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_7)) {
         // clear pending
         __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_7);
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7); 
@@ -150,9 +136,6 @@ void EXTI15_10_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_12)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_12);
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
-    } else if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_11)) {
-        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_11);
-        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
     }
 }
 

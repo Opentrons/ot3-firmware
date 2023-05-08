@@ -126,11 +126,9 @@ static auto pins_for_sensor =
 static auto sensor_hardware_container =
     utility_configs::get_sensor_hardware_container(pins_for_sensor);
 
-static auto data_ready_gpio_primary =
-    pins_for_sensor.primary.data_ready.value();
 static auto ok_for_secondary =
     pins_for_sensor.secondary.has_value() &&
-    pins_for_sensor.secondary.value().data_ready.has_value();
+    pins_for_sensor.secondary.value().tip_sense.has_value();
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto& sensor_queue_client = sensor_tasks::get_queues();
@@ -138,27 +136,17 @@ static auto& sensor_queue_client = sensor_tasks::get_queues();
 static auto tail_accessor =
     eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
 
-#if PCBA_PRIMARY_REVISION == 'c' && PCBA_SECONDARY_REVISION == '2' && \
-    PIPETTE_TYPE != NINETY_SIX_CHANNEL
-static constexpr bool pressure_sensor_available = false;
-#else
-static constexpr bool pressure_sensor_available = true;
-#endif
-
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == data_ready_gpio_primary.pin && pressure_sensor_available) {
-        sensor_hardware_container.primary.data_ready();
-    } else if (GPIO_Pin == tip_sense_gpio_primary.pin) {
+    if (GPIO_Pin == tip_sense_gpio_primary.pin) {
         static_cast<void>(
             sensor_queue_client.tip_notification_queue->try_write_isr(
                 sensors::tip_presence::TipStatusChangeDetected{}));
     } else if (ok_for_secondary &&
                GPIO_Pin ==
-                   pins_for_sensor.secondary.value().data_ready.value().pin &&
-               pressure_sensor_available) {
-        if (sensor_hardware_container.secondary.has_value()) {
-            sensor_hardware_container.secondary.value().data_ready();
-        }
+                   pins_for_sensor.secondary.value().tip_sense.value().pin) {
+        static_cast<void>(
+            sensor_queue_client.tip_notification_queue->try_write_isr(
+                sensors::tip_presence::TipStatusChangeDetected{}));
     }
 }
 
