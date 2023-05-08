@@ -186,7 +186,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
                                .tbl = 0x1,
                                .vhighfs = 1,
                                .vhighchm = 1,
-                               .tpfd = 0x4,
+                               .tpfd = 0x0,
                                .mres = 0x3},
                   .coolconf = {.sgt = 0x6},
                   .pwmconf = {.pwm_ofs = 30,
