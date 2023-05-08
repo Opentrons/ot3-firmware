@@ -202,7 +202,7 @@ class FDC1004 {
         }
     }
 
-    auto stop_continuous_polling(uint8_t transaction_index) -> void {
+    auto stop_continuous_polling(uint32_t transaction_id) -> void {
         auto converted_msb_addr =
             static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
         auto converted_lsb_addr =
@@ -215,7 +215,7 @@ class FDC1004 {
         }
         poller.continuous_multi_register_poll(
             fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
-            STOP_DELAY, own_queue, transaction_index);
+            STOP_DELAY, own_queue, transaction_id);
     }
 
     void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
@@ -229,7 +229,7 @@ class FDC1004 {
         }
 
         if (!bind_sync && !echoing) {
-            stop_continuous_polling(m.id.transaction_index);
+            stop_continuous_polling(m.id.token);
             return;
         }
         auto capacitance = fdc1004_utils::convert_capacitance(
