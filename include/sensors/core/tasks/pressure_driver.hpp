@@ -426,8 +426,8 @@ class MMR920C04 {
     mmr920C04::FilterSetting filter_setting =
         mmr920C04::FilterSetting::LOW_PASS_FILTER;
 
-    static constexpr std::array<float, 4> MeasurementTimings{3.1, 6.1, 12.2,
-                                                             24.3};  // in msec
+    static constexpr std::array<float, 4> MeasurementTimings{0.405, 0.81, 1.62,
+                                                             3.24};  // in msec
     static constexpr float DEFAULT_DELAY_BUFFER =
         1.0;  // in msec (TODO might need to change to fit in uint16_t)
     static constexpr uint16_t STOP_DELAY = 0;
