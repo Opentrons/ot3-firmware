@@ -242,6 +242,7 @@ class MotorInterruptHandler {
                 hardware.get_encoder_pulses();
             hardware.reset_step_tracker();
             hardware.reset_encoder_pulses();
+            hardware.disable_encoder();
             stall_checker.reset_itr_counts(0);
             hardware.position_flags.set_flag(
                 can::ids::MotorPositionFlags::stepper_position_ok);
