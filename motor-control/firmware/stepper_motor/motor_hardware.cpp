@@ -75,7 +75,6 @@ void MotorHardware::reset_encoder_pulses() {
     motor_encoder_overflow_count = 0;
 }
 
-
 void MotorHardware::enable_encoder() {
     LOG("Starting encoder interrupt")
     if (!motor_hardware_encoder_running(enc_handle)) {
