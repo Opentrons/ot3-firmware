@@ -305,6 +305,7 @@ class MotorInterruptHandler {
 
     void update_move() {
         has_active_move = move_queue.try_read_isr(&buffered_move);
+        hardware.enable_encoder();
         if (set_direction_pin()) {
             hardware.positive_direction();
         } else {
