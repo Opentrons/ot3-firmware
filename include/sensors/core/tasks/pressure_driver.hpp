@@ -424,7 +424,7 @@ class MMR920C04 {
 
     mmr920C04::MMR920C04RegisterMap _registers{};
     mmr920C04::FilterSetting filter_setting =
-        mmr920C04::FilterSetting::NO_FILTER;
+        mmr920C04::FilterSetting::LOW_PASS_FILTER;
 
     static constexpr std::array<float, 4> MeasurementTimings{0.405, 0.81, 1.62,
                                                              3.24};  // in msec
