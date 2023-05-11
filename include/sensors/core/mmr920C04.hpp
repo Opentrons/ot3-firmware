@@ -50,10 +50,10 @@ enum class FilterSetting : uint8_t {
 };
 
 enum class MeasurementRate : int {
-    MEASURE_1 = 0,  // 3.1msec
-    MEASURE_2 = 1,  // 6.1msec
-    MEASURE_3 = 2,  // 12.2msec
-    MEASURE_4 = 3   // 24.3msec
+    MEASURE_1 = 0,  // 0.405msec
+    MEASURE_2 = 1,  // 0.810msec
+    MEASURE_3 = 2,  // 1.62msec
+    MEASURE_4 = 3   // 3.24msec
 };
 
 enum class Registers : uint8_t {
