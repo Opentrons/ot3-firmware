@@ -45,7 +45,7 @@ constexpr auto PIPETTE_TYPE = get_pipette_type();
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
 static auto can_bus_1 = can::hal::bus::HalCanBus(
-    can_get_device_handle(), utility_configs::led_gpio(PIPETTE_TYPE));
+    can_get_device_handle(), gpio::PinConfig{});
 
 spi::hardware::SPI_interface SPI_intf = {.SPI_handle = &hspi2};
 
@@ -110,7 +110,12 @@ static auto gear_interrupts = interfaces::gear_motor::get_interrupts(
 static auto gear_motion_control =
     interfaces::gear_motor::get_motion_control(gear_hardware, interrupt_queues);
 
-extern "C" void plunger_callback() { plunger_interrupt.run_interrupt(); }
+extern "C" void plunger_callback() { 
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+    plunger_interrupt.run_interrupt();
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+    
+}
 
 extern "C" void gear_callback_wrapper() {
     interfaces::gear_motor::gear_callback(gear_interrupts);
