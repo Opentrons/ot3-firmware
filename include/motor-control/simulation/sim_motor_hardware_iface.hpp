@@ -95,6 +95,8 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         -> motor_hardware::UsageEEpromConfig & final {
         return eeprom_config;
     }
+    void disable_encoder() final {}
+    void enable_encoder() final {}
 
   private:
     bool limit_switch_status = false;
@@ -179,6 +181,9 @@ class SimBrushedMotorHardwareIface
         return cancel_request.exchange(false);
     }
     void request_cancel() final { cancel_request.store(true); }
+
+    void disable_encoder() final {}
+    void enable_encoder() final {}
 
   private:
     bool stay_enabled = false;
@@ -267,6 +272,8 @@ class SimGearMotorHardwareIface
         -> motor_hardware::UsageEEpromConfig & final {
         return eeprom_config;
     }
+    void disable_encoder() final {}
+    void enable_encoder() final {}
 
   private:
     bool limit_switch_status = false;

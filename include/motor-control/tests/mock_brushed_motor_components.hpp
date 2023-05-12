@@ -84,6 +84,9 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
         return eeprom_config;
     }
 
+    void disable_encoder() final {}
+    void enable_encoder() final {}
+
   private:
     bool stay_enabled = false;
     PWM_DIRECTION move_dir = PWM_DIRECTION::unset;
