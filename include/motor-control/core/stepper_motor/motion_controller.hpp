@@ -239,6 +239,7 @@ class PipetteMotionController {
             hardware.get_step_tracker(),
             can_msg.action,
             gear_motor_id};
+
         if (!enabled) {
             enable_motor();
         }

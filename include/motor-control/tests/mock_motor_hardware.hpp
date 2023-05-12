@@ -53,6 +53,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
         return eeprom_config;
     }
 
+    void disable_encoder() final {}
+    void enable_encoder() final {}
+
   private:
     uint64_t steps = 0;
     bool mock_lim_sw_value = false;

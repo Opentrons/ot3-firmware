@@ -95,6 +95,8 @@ class MotorHardwareIface {
     virtual void start_timer_interrupt() = 0;
     virtual void stop_timer_interrupt() = 0;
     virtual auto is_timer_interrupt_running() -> bool = 0;
+    virtual void enable_encoder() = 0;
+    virtual void disable_encoder() = 0;
 
     virtual auto has_cancel_request() -> bool = 0;
     virtual void request_cancel() = 0;

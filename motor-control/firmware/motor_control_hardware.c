@@ -45,6 +45,20 @@ HAL_StatusTypeDef custom_stop_pwm_it(TIM_HandleTypeDef* htim,
     return HAL_OK;
 }
 
+
+void motor_hardware_start_encoder(void* tim_handle) {
+     HAL_TIM_Encoder_Start_IT(tim_handle, TIM_CHANNEL_ALL);
+}
+
+bool motor_hardware_encoder_running(void* tim_handle) {
+    if (!tim_handle) {
+        return false;
+    }
+    return TIM_CHANNEL_STATE_GET((TIM_HandleTypeDef*)tim_handle, TIM_CHANNEL_1) == HAL_TIM_CHANNEL_STATE_BUSY;
+}
+
+void motor_hardware_stop_encoder(void* tim_handle) { HAL_TIM_Encoder_Stop_IT(tim_handle, TIM_CHANNEL_ALL); }
+
 void motor_hardware_start_timer(void* tim_handle) { HAL_TIM_Base_Start_IT(tim_handle); }
 
 void motor_hardware_stop_timer(void* tim_handle) { HAL_TIM_Base_Stop_IT(tim_handle); }

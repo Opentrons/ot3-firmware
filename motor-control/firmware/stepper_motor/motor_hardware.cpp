@@ -75,6 +75,17 @@ void MotorHardware::reset_encoder_pulses() {
     motor_encoder_overflow_count = 0;
 }
 
+void MotorHardware::enable_encoder() {
+    LOG("Starting encoder interrupt")
+    if (!motor_hardware_encoder_running(enc_handle)) {
+        reset_encoder_pulses();
+        motor_hardware_start_encoder(enc_handle);
+    }
+}
+void MotorHardware::disable_encoder() {
+    motor_hardware_stop_encoder(enc_handle);
+}
+
 void MotorHardware::encoder_overflow(int32_t direction) {
     // The overflow counter is a signed value that counts the net number
     // of overflows, positive or negative - i.e., if we overflow positive

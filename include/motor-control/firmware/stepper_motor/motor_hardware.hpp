@@ -56,6 +56,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto has_cancel_request() -> bool final {
         return cancel_request.exchange(false);
     }
+    void disable_encoder() final;
+    void enable_encoder() final;
+
     void request_cancel() final { cancel_request.store(true); }
 
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
