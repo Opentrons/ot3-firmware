@@ -170,7 +170,7 @@ struct motor_hardware::UsageEEpromConfig gear_right_usage_config {
         UsageRequestSet{
             .eeprom_key = GEAR_RIGHT_MOTOR_KEY,
             .type_key = uint16_t(
-                can::ids::MotorUsageValueType::left_gear_motor_distance),
+                can::ids::MotorUsageValueType::right_gear_motor_distance),
             .length = usage_storage_task::distance_data_usage_len},
             UsageRequestSet {
             .eeprom_key = R_ERROR_COUNT_KEY,
