@@ -54,7 +54,7 @@ bool motor_hardware_encoder_running(void* tim_handle) {
     if (!tim_handle) {
         return false;
     }
-    return HAL_TIM_Encoder_GetState(tim_handle) == HAL_TIM_STATE_BUSY;
+    return TIM_CHANNEL_STATE_GET((TIM_HandleTypeDef*)tim_handle, TIM_CHANNEL_1) == HAL_TIM_CHANNEL_STATE_BUSY;
 }
 
 void motor_hardware_stop_encoder(void* tim_handle) { HAL_TIM_Encoder_Stop_IT(tim_handle, TIM_CHANNEL_ALL); }
