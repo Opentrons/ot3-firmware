@@ -124,18 +124,63 @@ void EXTI2_IRQHandler(void) {
 }
 
 void EXTI9_5_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_5)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_5);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_6)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_6);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+    }
     if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_7)) {
         // clear pending
         __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_7);
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7); 
     }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_8)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_8);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_9)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_9);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+    }
 }
 
 
 void EXTI15_10_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_10)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_10);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_11)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_11);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+    }
     if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_12)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_12);
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_13)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_13);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_14)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_14);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
+    }
+    if (__HAL_GPIO_EXTI_GET_IT(EXTI_LINE_15)) {
+        // clear pending
+        __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_15);
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
     }
 }
 
