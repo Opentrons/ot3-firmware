@@ -14,10 +14,10 @@
 #include "common/firmware/clocking.h"
 //#include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
-//#include "i2c/firmware/i2c_comms.hpp"
+#include "i2c/firmware/i2c_comms.hpp"
 #include "rear-panel/core/tasks.hpp"
-//#include "rear-panel/firmware/i2c_setup.h"
 #include "rear-panel/firmware/freertos_comms_task.hpp"
+#include "rear-panel/firmware/i2c_setup.h"
 #include "rear-panel/firmware/light_control_hardware.hpp"
 #include "rear-panel/firmware/utility_gpio.h"
 
@@ -25,7 +25,6 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 /**
  * I2C handles
  */
-/*
 
 static auto i2c_comms3 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};
@@ -45,7 +44,6 @@ class EEPromHardwareInterface
     }
 };
 static auto eeprom_hw_iface = EEPromHardwareInterface();
-*/
 
 static auto light_hardware = light_control_hardware::LightControlHardware();
 
@@ -55,11 +53,10 @@ auto main() -> int {
     utility_gpio_init();
     light_hardware.initialize();
 
-    // i2c_setup(&i2c_handles);
-    // i2c_comms3.set_handle(i2c_handlines.i2c3);
+    i2c_setup(&i2c_handles);
+    i2c_comms3.set_handle(i2c_handles.i2c3);
 
-    // rear_tasks::start_tasks(i2c_comms3, eeprom_hw_iface);
-    rear_panel_tasks::start_tasks(light_hardware);
+    rear_panel_tasks::start_tasks(light_hardware, i2c_comms3, eeprom_hw_iface);
     iWatchdog.start(6);
 
     vTaskStartScheduler();
