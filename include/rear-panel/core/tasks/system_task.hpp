@@ -91,7 +91,7 @@ class SystemMessageHandler {
                 .aux2_present = gpio::is_set(drive_pins.estop_aux2_det)});
     }
 
-    void handle(rearpanel::messages::ReadEEPromRequest &msg) {
+    void handle(rearpanel::messages::ReadEEPromRequest& msg) {
         auto read_req = eeprom::message::ReadEepromMessage{
             .message_index = 0,
             .memory_address = msg.data_address,
@@ -105,20 +105,19 @@ class SystemMessageHandler {
   private:
     void read_complete(const eeprom::message::EepromMessage& msg) {
         auto resp = rearpanel::messages::ReadEEPromResponse{
-                .length = 12,
-                .data_address = msg.memory_address,
-                .data_length = msg.length,
+            .length = 12,
+            .data_address = msg.memory_address,
+            .data_length = msg.length,
         };
         std::copy_n(msg.data.begin(), msg.length, resp.data.begin());
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(resp);
     }
     static void read_complete(const eeprom::message::EepromMessage& msg,
-                         void* param) {
+                              void* param) {
         auto* self =
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<SystemMessageHandler*>(
-                param);
+            reinterpret_cast<SystemMessageHandler*>(param);
         self->read_complete(msg);
     }
     gpio_drive_hardware::GpioDrivePins& drive_pins;

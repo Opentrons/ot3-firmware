@@ -447,7 +447,6 @@ struct DoorSwitchStateInfo
     auto operator==(const DoorSwitchStateInfo& other) const -> bool = default;
 };
 
-
 struct WriteEEPromRequest
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::write_eeprom_request> {
@@ -473,11 +472,13 @@ struct WriteEEPromRequest
         body = bit_utils::bytes_to_int(body, limit, data_len);
 
         std::copy_n(body, data_len, data.begin());
-        return WriteEEPromRequest{.length = len, .data_address = data_addr, .data_length = data_len, .data = data};
+        return WriteEEPromRequest{.length = len,
+                                  .data_address = data_addr,
+                                  .data_length = data_len,
+                                  .data = data};
     }
 
-    auto operator==(const WriteEEPromRequest& other) const
-        -> bool = default;
+    auto operator==(const WriteEEPromRequest& other) const -> bool = default;
 };
 
 struct ReadEEPromRequest
@@ -501,18 +502,17 @@ struct ReadEEPromRequest
         }
         body = bit_utils::bytes_to_int(body, limit, data_addr);
         body = bit_utils::bytes_to_int(body, limit, data_len);
-        return ReadEEPromRequest{.length = len, .data_address = data_addr, .data_length = data_len};
+        return ReadEEPromRequest{
+            .length = len, .data_address = data_addr, .data_length = data_len};
     }
 
-    auto operator==(const ReadEEPromRequest& other) const
-        -> bool = default;
+    auto operator==(const ReadEEPromRequest& other) const -> bool = default;
 };
-
 
 struct ReadEEPromResponse
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::read_eeprom_response> {
-    uint16_t length = 2* sizeof(uint16_t) + 8;
+    uint16_t length = 2 * sizeof(uint16_t) + 8;
     uint16_t data_address;
     uint16_t data_length;
     std::array<uint8_t, 8> data;
@@ -528,8 +528,7 @@ struct ReadEEPromResponse
         return iter;
     }
 
-    auto operator==(const ReadEEPromResponse& other) const
-        -> bool = default;
+    auto operator==(const ReadEEPromResponse& other) const -> bool = default;
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
@@ -738,8 +737,8 @@ using HostCommTaskMessage = std::variant<
     AddLightActionRequest, ClearLightActionStagingQueueRequest,
     StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
     GetDeckLightResponse, AuxPortDetectionChange, AuxPresentRequeset,
-    AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest,
-    WriteEEPromRequest, ReadEEPromRequest, ReadEEPromResponse>;
+    AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest, WriteEEPromRequest,
+    ReadEEPromRequest, ReadEEPromResponse>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
