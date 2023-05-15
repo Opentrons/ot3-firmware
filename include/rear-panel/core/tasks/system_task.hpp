@@ -102,8 +102,8 @@ class SystemMessageHandler {
         queue_client.send_eeprom_queue(read_req);
     }
 
-  private:
-    void read_complete(const eeprom::message::EepromMessage& msg) {
+    static void read_complete(const eeprom::message::EepromMessage& msg,
+                              void*) {
         auto resp = rearpanel::messages::ReadEEPromResponse{
             .length = 12,
             .data_address = msg.memory_address,
@@ -113,13 +113,7 @@ class SystemMessageHandler {
         auto queue_client = queue_client::get_main_queues();
         queue_client.send_host_comms_queue(resp);
     }
-    static void read_complete(const eeprom::message::EepromMessage& msg,
-                              void* param) {
-        auto* self =
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<SystemMessageHandler*>(param);
-        self->read_complete(msg);
-    }
+
     gpio_drive_hardware::GpioDrivePins& drive_pins;
 };
 

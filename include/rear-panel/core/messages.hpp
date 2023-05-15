@@ -460,9 +460,9 @@ struct WriteEEPromRequest
         -> std::variant<std::monostate, WriteEEPromRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
-        uint16_t data_addr;
-        uint16_t data_len;
-        std::array<uint8_t, 8> data;
+        uint16_t data_addr = 0;
+        uint16_t data_len = 0;
+        std::array<uint8_t, 8> data{};
         body = bit_utils::bytes_to_int(body, limit, type);
         body = bit_utils::bytes_to_int(body, limit, len);
         if (body + len > limit) {
@@ -493,8 +493,8 @@ struct ReadEEPromRequest
         -> std::variant<std::monostate, ReadEEPromRequest> {
         uint16_t type = 0;
         uint16_t len = 0;
-        uint16_t data_addr;
-        uint16_t data_len;
+        uint16_t data_addr = 0;
+        uint16_t data_len = 0;
         body = bit_utils::bytes_to_int(body, limit, type);
         body = bit_utils::bytes_to_int(body, limit, len);
         if (body + len > limit) {
