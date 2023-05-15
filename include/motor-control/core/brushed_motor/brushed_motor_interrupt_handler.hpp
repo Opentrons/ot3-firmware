@@ -321,7 +321,10 @@ class BrushedMotorInterruptHandler {
         // if we think we dropped a labware we don't want the controller
         // to stop the motor in case we only slipped or collided and still
         // have the labware in the jaws
-        if (err_code == can::ids::ErrorCode::labware_dropped) {
+        // likewise if the estop is hit and the motor is gripping something
+        if (err_code == can::ids::ErrorCode::labware_dropped ||
+            (motor_state == ControlState::FORCE_CONTROLLING &&
+             err_code == can::ids::ErrorCode::estop_detected)) {
             hardware.set_stay_enabled(true);
         }
 
@@ -353,6 +356,12 @@ class BrushedMotorInterruptHandler {
                 buffered_move.stop_condition == MoveStopCondition::limit_switch
                     ? ControlState::FORCE_CONTROLLING_HOME
                     : ControlState::FORCE_CONTROLLING;
+            // If we're in the gripping state, then we want to signal the
+            // hardware not to disable the motor on a
+            // brushed_motor_controller::stop which would drop the labware.
+            if (motor_state == ControlState::FORCE_CONTROLLING) {
+                hardware.set_stay_enabled(true);
+            }
         }
 
         if (buffered_move.group_id != NO_GROUP) {
