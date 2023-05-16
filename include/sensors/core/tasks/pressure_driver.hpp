@@ -104,6 +104,8 @@ class MMR920C04 {
         if (!reset(_registers.reset)) {
             return false;
         }
+        // default measurement mode is MODE 4. 1 sample every 3.21 msec.
+        set_measure_mode(measurement_mode_rate);
         _initialized = true;
         return true;
     }
@@ -118,7 +120,7 @@ class MMR920C04 {
             command_data = build_register_command(_registers.pressure_command);
         }
         total_baseline_reads = number_reads;
-        set_measure_mode(measurement_mode_rate);
+
         poller.single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, number_reads,
             mode_delay_with_buffer, own_queue,
@@ -133,7 +135,6 @@ class MMR920C04 {
             build_register_command(_registers.temperature_command);
         total_baseline_reads = number_reads;
 
-        set_measure_mode(measurement_mode_rate);
         poller.single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, number_reads,
             mode_delay_with_buffer, own_queue,
@@ -150,7 +151,6 @@ class MMR920C04 {
             command_data = build_register_command(_registers.pressure_command);
         }
 
-        set_measure_mode(measurement_mode_rate);
         poller.continuous_single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, mode_delay_with_buffer,
             own_queue, utils::build_id(mmr920C04::ADDRESS, command_data, tags));
@@ -163,7 +163,6 @@ class MMR920C04 {
         auto command_data =
             build_register_command(_registers.temperature_command);
 
-        set_measure_mode(measurement_mode_rate);
         poller.continuous_single_register_poll(
             mmr920C04::ADDRESS, command_data, 3, mode_delay_with_buffer,
             own_queue, utils::build_id(mmr920C04::ADDRESS, command_data, tags));
@@ -269,7 +268,6 @@ class MMR920C04 {
         if (!bind_sync && !echoing) {
             auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
-            reset_readings();
         }
 
         // Pressure is always a three-byte value
@@ -308,7 +306,6 @@ class MMR920C04 {
         if (!bind_sync && !echoing) {
             auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
-            reset_readings();
         }
 
         // Pressure is always a three-byte value
@@ -349,7 +346,6 @@ class MMR920C04 {
         if (!m.id.is_completed_poll) {
             return;
         }
-        reset_readings();
 
         auto current_pressure_baseline_pa =
             pressure_running_total / total_baseline_reads;
@@ -396,7 +392,7 @@ class MMR920C04 {
         if (!m.id.is_completed_poll) {
             return;
         }
-        reset_readings();
+
         auto current_temperature_baseline =
             temperature_running_total / total_baseline_reads;
         auto offset_fixed_point =

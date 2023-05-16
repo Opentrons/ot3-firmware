@@ -29,7 +29,7 @@ class PressureMessageHandler {
         -> PressureMessageHandler & = delete;
     auto operator=(const PressureMessageHandler &&)
         -> PressureMessageHandler && = delete;
-    ~PressureMessageHandler() = default;
+    ~PressureMessageHandler() { driver.reset_readings(); }
 
     void handle_message(const utils::TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
