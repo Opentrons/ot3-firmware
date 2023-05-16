@@ -1,9 +1,21 @@
 #pragma once
 #include "i2c/firmware/i2c.h"
 
+#include "platform_specific_hal_conf.h"
+
+#define I2C3_SCL_PIN  GPIO_PIN_8
+#define I2C3_SDA_PIN  GPIO_PIN_9
+#define I2C3_PORT  GPIOC
+
+#define EEPROM_WRITE_ENABLE_PIN GPIO_PIN_10
+#define EEPROM_WRITE_ENABLE_PORT GPIOB
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+
 
 typedef struct HandlerStruct {
     HAL_I2C_HANDLE i2c3;

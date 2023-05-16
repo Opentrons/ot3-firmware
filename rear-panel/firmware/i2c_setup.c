@@ -1,30 +1,24 @@
 #include "rear-panel/firmware/i2c_setup.h"
 
 #include "common/firmware/errors.h"
-#include "platform_specific_hal_conf.h"
-
-#define EEPROM_GPIO_BANK GPIOB
-#define EEPROM_GPIO_PIN GPIO_PIN_10
 
 static I2C_HandleTypeDef hi2c3;
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
+    (void)hi2c;
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     __HAL_RCC_GPIOC_CLK_ENABLE();
-
-    if (hi2c->Instance == I2C3) {
-        // PIN PC8 is SCL
-        // PIN PC9 is SDA
-        GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF8_I2C3;
-        HAL_GPIO_Init(
-            GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-            &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-        __HAL_RCC_I2C3_CLK_ENABLE();
-    }
+    // PIN PC8 is SCL
+    // PIN PC9 is SDA
+    GPIO_InitStruct.Pin = I2C3_SCL_PIN | I2C3_SDA_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF8_I2C3;
+    HAL_GPIO_Init(
+        I2C3_PORT,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+        &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+    __HAL_RCC_I2C3_CLK_ENABLE();
 }
 
 HAL_I2C_HANDLE MX_I2C3_Init() {
@@ -63,24 +57,24 @@ void eeprom_write_protect_init(void) {
 
     /*Configure GPIO pin : B10 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = EEPROM_GPIO_PIN;
+    GPIO_InitStruct.Pin = EEPROM_WRITE_ENABLE_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(EEPROM_GPIO_BANK, &GPIO_InitStruct);
+    HAL_GPIO_Init(EEPROM_WRITE_ENABLE_PORT, &GPIO_InitStruct);
 }
 
 /**
  * @brief enable writing to the eeprom.
  */
 void enable_eeprom_write() {
-    HAL_GPIO_WritePin(GPIOB, EEPROM_GPIO_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(EEPROM_WRITE_ENABLE_PORT, EEPROM_WRITE_ENABLE_PIN, GPIO_PIN_RESET);
 }
 
 /**
  * @brief disable writing to the eeprom.
  */
 void disable_eeprom_write() {
-    HAL_GPIO_WritePin(GPIOB, EEPROM_GPIO_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(EEPROM_WRITE_ENABLE_PORT, EEPROM_WRITE_ENABLE_PIN, GPIO_PIN_SET);
 }
 
 void i2c_setup(I2CHandlerStruct* i2c_handles) {

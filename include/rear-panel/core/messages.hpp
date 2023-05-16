@@ -447,6 +447,90 @@ struct DoorSwitchStateInfo
     auto operator==(const DoorSwitchStateInfo& other) const -> bool = default;
 };
 
+struct WriteEEPromRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::write_eeprom_request> {
+    uint16_t length;
+    uint16_t data_address;
+    uint16_t data_length;
+    std::array<uint8_t, 8> data;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, WriteEEPromRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        uint16_t data_addr = 0;
+        uint16_t data_len = 0;
+        std::array<uint8_t, 8> data{};
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (body + len > limit) {
+            return std::monostate{};
+        }
+        body = bit_utils::bytes_to_int(body, limit, data_addr);
+        body = bit_utils::bytes_to_int(body, limit, data_len);
+
+        std::copy_n(body, data_len, data.begin());
+        return WriteEEPromRequest{.length = len,
+                                  .data_address = data_addr,
+                                  .data_length = data_len,
+                                  .data = data};
+    }
+
+    auto operator==(const WriteEEPromRequest& other) const -> bool = default;
+};
+
+struct ReadEEPromRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::read_eeprom_request> {
+    uint16_t length;
+    uint16_t data_address;
+    uint16_t data_length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, ReadEEPromRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        uint16_t data_addr = 0;
+        uint16_t data_len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (body + len > limit) {
+            return std::monostate{};
+        }
+        body = bit_utils::bytes_to_int(body, limit, data_addr);
+        body = bit_utils::bytes_to_int(body, limit, data_len);
+        return ReadEEPromRequest{
+            .length = len, .data_address = data_addr, .data_length = data_len};
+    }
+
+    auto operator==(const ReadEEPromRequest& other) const -> bool = default;
+};
+
+struct ReadEEPromResponse
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::read_eeprom_response> {
+    uint16_t length = 2 * sizeof(uint16_t) + 8;
+    uint16_t data_address;
+    uint16_t data_length;
+    std::array<uint8_t, 8> data;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(data_address, iter, limit);
+        iter = bit_utils::int_to_bytes(data_length, iter, limit);
+        iter = std::copy_n(data.begin(), data_length, iter);
+        return iter;
+    }
+
+    auto operator==(const ReadEEPromResponse& other) const -> bool = default;
+};
+
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 struct AddLightActionRequest
     : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::add_light_action> {
@@ -653,13 +737,14 @@ using HostCommTaskMessage = std::variant<
     AddLightActionRequest, ClearLightActionStagingQueueRequest,
     StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
     GetDeckLightResponse, AuxPortDetectionChange, AuxPresentRequeset,
-    AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest>;
+    AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest, WriteEEPromRequest,
+    ReadEEPromRequest, ReadEEPromResponse>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
                  DoorSwitchStateRequest, AuxPresentRequeset, AuxIDRequest,
-                 EstopButtonPresentRequest>;
+                 EstopButtonPresentRequest, ReadEEPromRequest>;
 
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
@@ -675,7 +760,7 @@ using Parser = binary_parse::Parser<
     DoorSwitchStateRequest, AddLightActionRequest,
     ClearLightActionStagingQueueRequest, StartLightActionRequest,
     SetDeckLightRequest, GetDeckLightRequest, AuxPresentRequeset, AuxIDRequest,
-    EstopButtonPresentRequest>;
+    EstopButtonPresentRequest, WriteEEPromRequest, ReadEEPromRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel

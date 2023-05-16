@@ -15,8 +15,6 @@
 
 static auto tasks = rear_panel_tasks::AllTask{};
 
-// TODO(ryan): CORETASKS compile in and process the other basic tasks
-/*
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
 
@@ -33,7 +31,6 @@ static auto i2c3_poll_task_builder =
 
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
-*/
 
 static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .estop_out = gpio::PinConfig{.port = ESTOP_MCU_OUT_PORT,
@@ -85,13 +82,11 @@ static auto animation_handler = light_control_task::Animation();
  * Start rear tasks.
  */
 void rear_panel_tasks::start_tasks(
-    light_control_task::LightControlInterface& light_hardware
-    // i2c::hardware::I2CBase& i2c3,
-    // eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
-) {
+    light_control_task::LightControlInterface& light_hardware,
+    i2c::hardware::I2CBase& i2c3,
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     auto& queues = queue_client::get_main_queues();
-    // TODO(ryan): CORETASKS compile in and process the other basic tasks
-    /*
+
     auto& i2c3_task = i2c3_task_builder.start(5, "i2c3", i2c3);
     i2c3_task_client.set_queue(&i2c3_task.get_queue());
 
@@ -101,7 +96,6 @@ void rear_panel_tasks::start_tasks(
 
     auto& eeprom_task = eeprom_task_builder.start(5, "eeprom", i2c3_task_client,
                                                   eeprom_hw_iface);
-    */
     auto comms = host_comms_control_task::start();
     queues.host_comms_queue = &comms.task->get_queue();
     tasks.host_comms_task = comms.task;
@@ -112,13 +106,13 @@ void rear_panel_tasks::start_tasks(
     tasks.light_control_task = &light_task;
     light_control_timer.start();
 
-    // tasks.i2c3_task = &i2c3_task;
-    // tasks.i2c3_poller_task = &i2c3_poller_task;
-    // tasks.eeprom_task = &eeprom_task;
+    tasks.i2c3_task = &i2c3_task;
+    tasks.i2c3_poller_task = &i2c3_poller_task;
+    tasks.eeprom_task = &eeprom_task;
 
-    // queues.i2c3_queue = &i2c3_task.get_queue();
-    // queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
-    // queues.eeprom_queue = &eeprom_task.get_queue();
+    queues.i2c3_queue = &i2c3_task.get_queue();
+    queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
+    queues.eeprom_queue = &eeprom_task.get_queue();
     auto& systemctl_task =
         system_task_builder.start(5, "system", gpio_drive_pins);
     tasks.system_task = &systemctl_task;
