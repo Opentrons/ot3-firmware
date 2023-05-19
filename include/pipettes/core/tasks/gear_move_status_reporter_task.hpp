@@ -62,12 +62,12 @@ class MoveStatusMessageHandler {
             .seq_id = message.seq_id,
             .current_position_um = end_position,
             .encoder_position_um = 0,
+            .position_flags = 0,
             .ack_id = static_cast<uint8_t>(message.ack_id),
+            .action = message.action,
             // TODO: In a follow-up PR, tip sense reporting will
             // actually update this value to true or false.
             .success = static_cast<uint8_t>(true),
-            .action = message.action,
-            .position_flags = 0,
             .gear_motor_id = message.gear_motor_id};
         can_client.send_can_message(can::ids::NodeId::host, msg);
         int32_t distance_traveled_um =
