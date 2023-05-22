@@ -447,6 +447,65 @@ struct DoorSwitchStateInfo
     auto operator==(const DoorSwitchStateInfo& other) const -> bool = default;
 };
 
+struct EstopStateRequest
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::estop_state_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, EstopStateRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return EstopStateRequest{.length = len};
+    }
+
+    auto operator==(const EstopStateRequest& other) const -> bool = default;
+};
+
+struct SyncStateRequest
+    : BinaryFormatMessage<rearpanel::ids::BinaryMessageId::sync_state_request> {
+    uint16_t length;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+        -> std::variant<std::monostate, SyncStateRequest> {
+        uint16_t type = 0;
+        uint16_t len = 0;
+        body = bit_utils::bytes_to_int(body, limit, type);
+        body = bit_utils::bytes_to_int(body, limit, len);
+        if (len > 0) {
+            return std::monostate{};
+        }
+        return SyncStateRequest{.length = len};
+    }
+
+    auto operator==(const SyncStateRequest& other) const -> bool = default;
+};
+
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+struct SyncStateResponse
+    : BinaryFormatMessage<
+          rearpanel::ids::BinaryMessageId::sync_state_resposne> {
+    uint16_t length = sizeof(bool);
+    bool engaged;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> Output {
+        auto iter =
+            bit_utils::int_to_bytes(uint16_t(message_type), body, limit);
+        iter = bit_utils::int_to_bytes(length, iter, limit);
+        iter = bit_utils::int_to_bytes(engaged, iter, limit);
+        return iter;
+    }
+    auto operator==(const SyncStateResponse& other) const -> bool = default;
+};
+
 struct WriteEEPromRequest
     : BinaryFormatMessage<
           rearpanel::ids::BinaryMessageId::write_eeprom_request> {
@@ -738,13 +797,15 @@ using HostCommTaskMessage = std::variant<
     StartLightActionRequest, SetDeckLightRequest, GetDeckLightRequest,
     GetDeckLightResponse, AuxPortDetectionChange, AuxPresentRequeset,
     AuxIDResponse, AuxIDRequest, EstopButtonPresentRequest, WriteEEPromRequest,
-    ReadEEPromRequest, ReadEEPromResponse>;
+    ReadEEPromRequest, ReadEEPromResponse, EstopStateRequest, SyncStateRequest,
+    SyncStateResponse>;
 
 using SystemTaskMessage =
     std::variant<std::monostate, EnterBootloader, EngageEstopRequest,
                  EngageSyncRequest, ReleaseEstopRequest, ReleaseSyncRequest,
                  DoorSwitchStateRequest, AuxPresentRequeset, AuxIDRequest,
-                 EstopButtonPresentRequest, ReadEEPromRequest>;
+                 EstopButtonPresentRequest, ReadEEPromRequest,
+                 EstopStateRequest, SyncStateRequest>;
 
 using LightControlTaskMessage =
     std::variant<std::monostate, UpdateLightControlMessage,
@@ -760,7 +821,8 @@ using Parser = binary_parse::Parser<
     DoorSwitchStateRequest, AddLightActionRequest,
     ClearLightActionStagingQueueRequest, StartLightActionRequest,
     SetDeckLightRequest, GetDeckLightRequest, AuxPresentRequeset, AuxIDRequest,
-    EstopButtonPresentRequest, WriteEEPromRequest, ReadEEPromRequest>;
+    EstopButtonPresentRequest, WriteEEPromRequest, ReadEEPromRequest,
+    EstopStateRequest, SyncStateRequest>;
 
 };  // namespace messages
 };  // namespace rearpanel
