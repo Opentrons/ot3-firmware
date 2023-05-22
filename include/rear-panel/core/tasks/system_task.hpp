@@ -90,7 +90,18 @@ class SystemMessageHandler {
                 .aux1_present = gpio::is_set(drive_pins.estop_aux1_det),
                 .aux2_present = gpio::is_set(drive_pins.estop_aux2_det)});
     }
-
+    void handle(const rearpanel::messages::EstopStateRequest&) const {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(
+            rearpanel::messages::EstopStateChange{
+                .engaged = gpio::is_set(drive_pins.estop_in)});
+    }
+    void handle(const rearpanel::messages::SyncStateRequest&) const {
+        auto queue_client = queue_client::get_main_queues();
+        queue_client.send_host_comms_queue(
+            rearpanel::messages::SyncStateResponse{
+                .engaged = gpio::is_set(drive_pins.sync_out)});
+    }
     void handle(rearpanel::messages::ReadEEPromRequest& msg) {
         auto read_req = eeprom::message::ReadEepromMessage{
             .message_index = 0,
