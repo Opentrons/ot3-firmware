@@ -134,6 +134,7 @@ class BrushedMotorInterruptHandler {
                         AckMessageId::complete_without_condition);
                 }
                 break;
+            case MoveStopCondition::ignore_stalls:
             case MoveStopCondition::sync_line:
                 // TODO write cap sensor move code
                 break;
@@ -279,6 +280,7 @@ class BrushedMotorInterruptHandler {
                 hardware.grip();
                 break;
             case MoveStopCondition::sync_line:
+            case MoveStopCondition::ignore_stalls:
                 // this is an unused move stop condition for the brushed motor
                 // just return with no condition
                 // TODO creat can bus error messages and send that instead

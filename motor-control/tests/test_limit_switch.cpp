@@ -37,7 +37,8 @@ TEST_CASE("Move with stop condition == limit switch") {
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
-                     .stop_condition = MoveStopCondition::limit_switch};
+                     .stop_condition =
+                         static_cast<uint8_t>(MoveStopCondition::limit_switch)};
 
     GIVEN("the move is in progress") {
         test_objs.queue.try_write_isr(msg1);
@@ -78,7 +79,8 @@ TEST_CASE("Move with stop condition == limit switch, case 2") {
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
-                     .stop_condition = MoveStopCondition::limit_switch};
+                     .stop_condition =
+                         static_cast<uint8_t>(MoveStopCondition::limit_switch)};
     GIVEN("the limit switch has not been triggered") {
         test_objs.queue.try_write_isr(msg1);
         test_objs.hw.set_mock_lim_sw(false);
@@ -109,12 +111,13 @@ TEST_CASE("Move with stop condition == limit switch, case 2") {
 TEST_CASE("Move with stop condition != limit switch") {
     HandlerContainer test_objs{};
     test_objs.handler.set_current_position(0x0);
-    Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to(.5),
-                     .acceleration = 0,
-                     .group_id = 1,
-                     .seq_id = 0,
-                     .stop_condition = MoveStopCondition::none};
+    Move msg1 =
+        Move{.duration = 2,
+             .velocity = convert_velocity_to(.5),
+             .acceleration = 0,
+             .group_id = 1,
+             .seq_id = 0,
+             .stop_condition = static_cast<uint8_t>(MoveStopCondition::none)};
     GIVEN("Move with stop condition = none in progress") {
         test_objs.queue.try_write_isr(msg1);
         test_objs.hw.set_mock_lim_sw(true);

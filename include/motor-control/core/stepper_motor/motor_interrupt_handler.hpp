@@ -76,19 +76,53 @@ class MotorInterruptHandler {
             hardware.step();
             update_hardware_step_tracker();
             if (stall_checker.step_itr(set_direction_pin())) {
-                if (!stall_checker.check_stall_itr(
-                        hardware.get_encoder_pulses())) {
+                if (stall_detected()) {
                     hardware.position_flags.clear_flag(
                         MotorPositionStatus::Flags::stepper_position_ok);
-                    if (stalled_during_movement()) {
-                        cancel_and_clear_moves(
-                            can::ids::ErrorCode::collision_detected,
-                            can::ids::ErrorSeverity::recoverable);
-                    }
+                    handle_stall_during_movement();
                 }
             }
             hardware.unstep();
         }
+    }
+
+    auto handle_stall_during_movement() -> void {
+        if (!has_active_move or
+            hardware.position_flags.check_flag(
+                MotorPositionStatus::Flags::stepper_position_ok) or
+            buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch)) {
+            return;
+        }
+
+        if (buffered_move.check_stop_condition(MoveStopCondition::stall)) {
+            // if expected, finish move and clear queue to prepare for position
+            // update
+            finish_current_move(AckMessageId::stopped_by_condition);
+            clear_queue_until_empty = true;
+        } else if (buffered_move.check_stop_condition(
+                       MoveStopCondition::ignore_stalls)) {
+            if (stall_handled) {
+                return;
+            }
+            // send a warning
+            status_queue_client.send_move_status_reporter_queue(
+                can::messages::ErrorMessage{
+                    .message_index = buffered_move.message_index,
+                    .severity = can::ids::ErrorSeverity::warning,
+                    .error_code = can::ids::ErrorCode::collision_detected});
+            status_queue_client.send_move_status_reporter_queue(
+                usage_messages::IncreaseErrorCount{
+                    .key = hardware.get_usage_eeprom_config()
+                               .get_error_count_key()});
+        } else {
+            cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+        }
+        stall_handled = true;
+    }
+
+    auto stall_detected() -> bool {
+        return !stall_checker.check_stall_itr(hardware.get_encoder_pulses());
     }
 
     auto estop_update() -> bool {
@@ -199,12 +233,13 @@ class MotorInterruptHandler {
         }
         if (has_active_move) {
             handle_update_position_queue_error();
-            if (buffered_move.stop_condition ==
-                    MoveStopCondition::limit_switch &&
+            if (buffered_move.check_stop_condition(
+                    MoveStopCondition::limit_switch) &&
                 homing_stopped()) {
                 return false;
             }
-            if (buffered_move.stop_condition == MoveStopCondition::sync_line &&
+            if (buffered_move.check_stop_condition(
+                    MoveStopCondition::sync_line) &&
                 sync_triggered()) {
                 return false;
             }
@@ -313,8 +348,8 @@ class MotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        if (has_active_move &&
-            buffered_move.stop_condition == MoveStopCondition::limit_switch) {
+        if (has_active_move && buffered_move.check_stop_condition(
+                                   MoveStopCondition::limit_switch)) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
         }
@@ -363,12 +398,14 @@ class MotorInterruptHandler {
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
         has_active_move = false;
+        tick_count = 0x0;
     }
 
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
+        stall_handled = false;
         if (buffered_move.group_id != NO_GROUP) {
             auto ack = buffered_move.build_ack(
                 hardware.get_step_tracker(), hardware.get_encoder_pulses(),
@@ -393,6 +430,7 @@ class MotorInterruptHandler {
         has_active_move = false;
         hardware.reset_encoder_pulses();
         stall_checker.reset_itr_counts(0);
+        stall_handled = false;
     }
 
     [[nodiscard]] static auto overflow(q31_31 current, q31_31 future) -> bool {
@@ -423,6 +461,8 @@ class MotorInterruptHandler {
     void set_buffered_move(MotorMoveMessage new_move) {
         buffered_move = new_move;
     }
+    bool clear_queue_until_empty = false;
+    bool stall_handled = false;
 
     /**
      * @brief While a move is NOT active, this function should be called
@@ -490,13 +530,6 @@ class MotorInterruptHandler {
         }
     }
 
-    [[nodiscard]] auto stalled_during_movement() const -> bool {
-        return has_active_move &&
-               buffered_move.stop_condition == MoveStopCondition::stall &&
-               !hardware.position_flags.check_flag(
-                   MotorPositionStatus::Flags::stepper_position_ok);
-    }
-
     auto address_negative_encoder() -> int32_t {
         auto pulses = hardware.get_encoder_pulses();
         if (pulses < 0) {
@@ -523,6 +556,5 @@ class MotorInterruptHandler {
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
-    bool clear_queue_until_empty = false;
 };
 }  // namespace motor_handler

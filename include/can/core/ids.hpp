@@ -224,6 +224,7 @@ enum class MoveStopCondition {
     encoder_position = 0x4,
     gripper_force = 0x8,
     stall = 0x10,
+    ignore_stalls = 0x20,
 };
 
 /** High-level type of pipette. */

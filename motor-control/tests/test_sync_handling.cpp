@@ -32,12 +32,13 @@ sq0_31 convert_velocity_to_f(float f) {
 
 TEST_CASE("Move with stop condition == cap sensor") {
     HandlerContainer test_objs{};
-    Move msg10 = Move{.duration = 2,
-                      .velocity = convert_velocity_to_f(.5),
-                      .acceleration = 0,
-                      .group_id = 1,
-                      .seq_id = 0,
-                      .stop_condition = MoveStopCondition::sync_line};
+    Move msg10 = Move{
+        .duration = 2,
+        .velocity = convert_velocity_to_f(.5),
+        .acceleration = 0,
+        .group_id = 1,
+        .seq_id = 0,
+        .stop_condition = static_cast<uint8_t>(MoveStopCondition::sync_line)};
 
     GIVEN("the move is in progress") {
         test_objs.queue.try_write_isr(msg10);
@@ -68,12 +69,13 @@ TEST_CASE("Move with stop condition == cap sensor") {
 }
 TEST_CASE("Move with stop condition == cap sensor, case 2") {
     HandlerContainer test_objs{};
-    Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to_f(.5),
-                     .acceleration = 0,
-                     .group_id = 1,
-                     .seq_id = 0,
-                     .stop_condition = MoveStopCondition::sync_line};
+    Move msg1 = Move{
+        .duration = 2,
+        .velocity = convert_velocity_to_f(.5),
+        .acceleration = 0,
+        .group_id = 1,
+        .seq_id = 0,
+        .stop_condition = static_cast<uint8_t>(MoveStopCondition::sync_line)};
     GIVEN("the sync line has not been set") {
         test_objs.queue.try_write_isr(msg1);
         test_objs.hw.set_mock_sync_line(false);
@@ -98,12 +100,13 @@ TEST_CASE("Move with stop condition == cap sensor, case 2") {
 TEST_CASE("Move with stop condition != cap sensor") {
     HandlerContainer test_objs{};
     test_objs.handler.set_current_position(0x0);
-    Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to_f(.5),
-                     .acceleration = 0,
-                     .group_id = 1,
-                     .seq_id = 0,
-                     .stop_condition = MoveStopCondition::none};
+    Move msg1 =
+        Move{.duration = 2,
+             .velocity = convert_velocity_to_f(.5),
+             .acceleration = 0,
+             .group_id = 1,
+             .seq_id = 0,
+             .stop_condition = static_cast<uint8_t>(MoveStopCondition::none)};
     GIVEN("Move with stop condition = none in progress") {
         test_objs.queue.try_write_isr(msg1);
         test_objs.hw.set_mock_sync_line(true);

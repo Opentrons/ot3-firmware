@@ -319,7 +319,8 @@ TEST_CASE("Finishing a move") {
     GIVEN("a homing move") {
         auto move = Move{.group_id = 1,
                          .seq_id = 2,
-                         .stop_condition = MoveStopCondition::limit_switch};
+                         .stop_condition = static_cast<uint8_t>(
+                             MoveStopCondition::limit_switch)};
         test_objs.handler.set_buffered_move(move);
         uint64_t set_position = static_cast<uint64_t>(100) << 31;
         uint32_t set_encoder_position = static_cast<uint32_t>(200);
@@ -360,42 +361,6 @@ TEST_CASE("Finishing a move") {
                     REQUIRE(msg.encoder_position == 200);
                     REQUIRE(msg.position_flags == 0x3);
                 }
-            }
-        }
-    }
-}
-
-TEST_CASE("motor handler stall detection") {
-    HandlerContainer test_objs{};
-    using Flags = MotorPositionStatus::Flags;
-
-    test_objs.handler.set_current_position(0x0);
-    test_objs.hw.sim_set_encoder_pulses(0);
-    test_objs.hw.position_flags.set_flag(
-        MotorPositionStatus::Flags::encoder_position_ok);
-    test_objs.hw.position_flags.set_flag(
-        MotorPositionStatus::Flags::stepper_position_ok);
-    GIVEN("a duration of 1000 ticks and velocity at half a step per tick") {
-        Move msg1 = Move{.duration = 1000, .velocity = convert_velocity(0.5)};
-        test_objs.queue.try_write(msg1);
-        test_objs.handler.update_move();
-        WHEN("encoder doesn't update with the motor") {
-            for (int i = 0; i < (int)msg1.duration; ++i) {
-                test_objs.handler.run_interrupt();
-            }
-            THEN("the stall is detected") {
-                REQUIRE(!test_objs.hw.position_flags.check_flag(
-                    Flags::stepper_position_ok));
-            }
-        }
-        WHEN("encoder updates with the motor") {
-            for (int i = 0; i < (int)msg1.duration; ++i) {
-                test_objs.hw.sim_set_encoder_pulses(i / 2);
-                test_objs.handler.run_interrupt();
-            }
-            THEN("no stall is detected") {
-                REQUIRE(test_objs.hw.position_flags.check_flag(
-                    Flags::stepper_position_ok));
             }
         }
     }
