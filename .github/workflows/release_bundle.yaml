@@ -42,6 +42,16 @@ jobs:
           name: 'firmware-applications-${{github.ref_name}}'
           path: |
             dist/applications/*
+      - name: 'Make images contain the refname'
+        run: |
+          for distpath in ./dist/*images ; do
+              pushd $distpath
+              for imagefile in ./*.hex ; do
+                  base=$(basename $imagefile .hex)
+                  mv $imagefile $base-${{github.ref_name}}.hex
+              done
+              popd
+          done
       - name: 'Upload all-images artifact'
         uses: actions/upload-artifact@v3
         with:
