@@ -448,10 +448,10 @@ SCENARIO("message serializing works") {
                               .seq_id = 2,
                               .current_position_um = 0x3456789a,
                               .encoder_position_um = 0x05803931,
-                              .ack_id = 0x1,
-                              .success = 0x1,
-                              .action = can::ids::PipetteTipActionType::clamp,
                               .position_flags = 0x0,
+                              .ack_id = 0x1,
+                              .action = can::ids::PipetteTipActionType::clamp,
+                              .success = 0x1,
                               .gear_motor_id = can::ids::GearMotorId::left};
         auto arr = std::array<uint8_t, MESSAGE_SIZE + 5>{0, 0, 0, 0, 0, 0, 0, 0,
                                                          0, 0, 0, 0, 0, 0, 0, 0,
@@ -474,10 +474,10 @@ SCENARIO("message serializing works") {
                 REQUIRE(body.data()[11] == 0x80);
                 REQUIRE(body.data()[12] == 0x39);
                 REQUIRE(body.data()[13] == 0x31);
-                REQUIRE(body.data()[14] == 0x1);
+                REQUIRE(body.data()[14] == 0x0);
                 REQUIRE(body.data()[15] == 0x1);
                 REQUIRE(body.data()[16] == 0x0);
-                REQUIRE(body.data()[17] == 0x0);
+                REQUIRE(body.data()[17] == 0x1);
             }
             THEN("the total message size is the expected value") {
                 REQUIRE(size == MESSAGE_SIZE);
