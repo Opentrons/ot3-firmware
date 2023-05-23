@@ -29,6 +29,10 @@ namespace fdc1004 {
 
 constexpr uint16_t ADDRESS = 0x50 << 1;
 
+// Max reading including the offset for the sensor is approximately
+// 115 pF.
+constexpr float MAX_CAPACITANCE_READING = 115.0F;
+
 enum class CHA : uint8_t {
     CIN1 = 0x0,
     CIN2 = 0x1,

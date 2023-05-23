@@ -181,6 +181,7 @@ typedef enum {
     can_sensoroutputbinding_none = 0x0,
     can_sensoroutputbinding_sync = 0x1,
     can_sensoroutputbinding_report = 0x2,
+    can_sensoroutputbinding_max_threshold_sync = 0x3,
 } CANSensorOutputBinding;
 
 /** How a sensor's threshold should be interpreted. */

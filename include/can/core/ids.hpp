@@ -190,6 +190,7 @@ enum class SensorOutputBinding {
     none = 0x0,
     sync = 0x1,
     report = 0x2,
+    max_threshold_sync = 0x3,
 };
 
 /** How a sensor's threshold should be interpreted. */
