@@ -87,8 +87,6 @@ class FDC1004 {
 
     auto set_bind_flags(uint8_t binding) -> void { sensor_binding = binding; }
 
-
-
     auto set_measurement_rate(fdc1004::MeasurementRate rate) -> void {
         measurement_rate = rate;
     }

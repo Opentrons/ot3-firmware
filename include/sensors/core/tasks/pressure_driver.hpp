@@ -292,7 +292,7 @@ class MMR920C04 {
                 hardware.set_sync();
             } else {
                 hardware.reset_sync();
-            }            
+            }
         }
         if (bind_sync) {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >

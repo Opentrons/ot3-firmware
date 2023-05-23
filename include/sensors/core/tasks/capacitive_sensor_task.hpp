@@ -146,8 +146,7 @@ class CapacitiveMessageHandler {
             static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));
         driver.set_max_bind_sync(
             m.binding &
-            static_cast<uint8_t>(can::ids::SensorOutputBinding::sync)
-        );
+            static_cast<uint8_t>(can::ids::SensorOutputBinding::sync));
         std::array tags{utils::ResponseTag::IS_PART_OF_POLL,
                         utils::ResponseTag::POLL_IS_CONTINUOUS};
         auto tags_as_int = utils::byte_from_tags(tags);
