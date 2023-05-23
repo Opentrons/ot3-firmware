@@ -132,6 +132,11 @@ struct UpdatePositionResponse {
     uint8_t position_flags;
 };
 
+struct UpdateGearMotorPositionResponse {
+    uint32_t message_index;
+    uint32_t stepper_position_counts;
+};
+
 const uint8_t NO_GROUP = 0xff;
 
 constexpr const int RADIX = 31;

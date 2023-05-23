@@ -95,6 +95,8 @@ enum class MessageId {
     gear_set_current_request = 0x505,
     gear_write_motor_driver_request = 0x506,
     gear_read_motor_driver_request = 0x507,
+    update_gear_motor_position_estimation_request = 0x508,
+    update_gear_motor_position_estimation_response = 0x509,
     read_sensor_request = 0x82,
     write_sensor_request = 0x83,
     baseline_sensor_request = 0x84,

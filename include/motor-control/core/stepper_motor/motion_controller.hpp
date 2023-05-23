@@ -198,14 +198,20 @@ class PipetteMotionController {
   public:
     using GenericQueue =
         freertos_message_queue::FreeRTOSMessageQueue<GearMotorMove>;
-    PipetteMotionController(lms::LinearMotionSystemConfig<MEConfig> lms_config,
-                            StepperMotorHardwareIface& hardware_iface,
-                            MotionConstraints constraints, GenericQueue& queue,
-                            can::ids::GearMotorId gear_motor_id)
+    using UpdateGearMotorPositionQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<
+            can::messages::UpdateGearMotorPositionEstimationRequest>;
+    PipetteMotionController(
+        lms::LinearMotionSystemConfig<MEConfig> lms_config,
+        StepperMotorHardwareIface& hardware_iface,
+        MotionConstraints constraints, GenericQueue& queue,
+        UpdateGearMotorPositionQueue& gear_motor_update_queue,
+        can::ids::GearMotorId gear_motor_id)
         : linear_motion_sys_config(lms_config),
           hardware(hardware_iface),
           motion_constraints(constraints),
           queue(queue),
+          gear_motor_update_queue(gear_motor_update_queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_usteps_per_mm(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
@@ -255,6 +261,15 @@ class PipetteMotionController {
         const can::messages::UpdateMotorPositionEstimationRequest&) -> bool {
         // Not supported for gear motors - no encoder!
         return false;
+    }
+
+    [[nodiscard]] auto update_gear_position(
+        const can::messages::UpdateGearMotorPositionEstimationRequest& can_msg)
+        -> bool {
+        if (!enabled) {
+            return false;
+        }
+        return gear_motor_update_queue.try_write(can_msg);
     }
 
     void stop() {
@@ -319,6 +334,8 @@ class PipetteMotionController {
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
+    UpdateGearMotorPositionQueue& gear_motor_update_queue;
+
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_step{0};
     bool enabled = false;

@@ -42,14 +42,17 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage, typename MotorHardware>
+          typename MotorMoveMessage, typename MotorHardware,
+          typename UpdatePositionMessage =
+              can::messages::UpdateMotorPositionEstimationRequest>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
-    using UpdatePositionQueue =
-        QueueImpl<can::messages::UpdateMotorPositionEstimationRequest>;
+    using UpdatePositionQueue = QueueImpl<UpdatePositionMessage>;
+    //    using UpdateGearPositionQueue =
+    //        QueueImpl<can::messages::UpdateGearMotorPositionEstimationRequest>;
 
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
@@ -61,7 +64,8 @@ class MotorInterruptHandler {
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
           stall_checker{stall},
-          update_position_queue(incoming_update_position_queue) {
+          update_position_queue(incoming_update_position_queue)
+    {
         hardware.unstep();
     }
     ~MotorInterruptHandler() = default;
@@ -282,6 +286,10 @@ class MotorInterruptHandler {
             if (update_position_queue.has_message_isr()) {
                 handle_update_position_queue();
             }
+            //            if
+            //            (update_gear_motor_position_queue.has_message_isr()) {
+            //                handle_update_gear_position_queue();
+            //            }
         }
         return false;
     }
@@ -467,6 +475,7 @@ class MotorInterruptHandler {
          */
         move_queue.reset();
         update_position_queue.reset();
+        //        update_gear_motor_position_queue.reset();
         position_tracker = 0;
         update_hardware_step_tracker();
         tick_count = 0x0;
@@ -542,10 +551,22 @@ class MotorInterruptHandler {
         }
     }
 
+//    auto build_gear_position_response(uint32_t msg_index, uint32_t stepper_position,
+//                                      uint32_t encoder_pulses, uint8_t position_flags) {
+//        if (encoder_pulses == NULL) {
+//            auto ack =
+//                motor_messages::UpdateGearMotorPositionEstimationResponse{
+//                    // add whatever msg this is to motor_messages
+//                    .message_index = msg.message_index,
+//                    .stepper_position_counts = stepper_position};
+//        }
+//        else {}
+//    }
+
     /**
      * @brief While a move is active, this function should be called to
-     * check if there is a pending UpdateMotorPositionEstimationRequest and send
-     * an error message over CAN if such a message exists.
+     * check if there is a pending UpdateMotorPositionEstimationRequest and
+     * send an error message over CAN if such a message exists.
      *
      */
     auto handle_update_position_queue_error() -> void {
@@ -597,6 +618,7 @@ class MotorInterruptHandler {
     MotorHardware& hardware;
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
+    //    UpdateGearPositionQueue& update_gear_motor_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
     bool clear_queue_until_empty = false;
     bool stall_handled = false;

@@ -198,6 +198,9 @@ using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 using UpdateMotorPositionEstimationRequest =
     Empty<MessageId::update_motor_position_estimation_request>;
 
+using UpdateGearMotorPositionEstimationRequest =
+    Empty<MessageId::update_gear_motor_position_estimation_request>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;
@@ -477,6 +480,22 @@ struct MotorPositionResponse : BaseMessage<MessageId::motor_position_response> {
     }
 
     auto operator==(const MotorPositionResponse& other) const -> bool = default;
+};
+
+struct UpdateGearMotorPositionEstimationResponse
+    : BaseMessage<MessageId::update_gear_motor_position_estimation_response> {
+    uint32_t message_index;
+    uint32_t current_position;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(current_position, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const UpdateGearMotorPositionEstimationResponse& other)
+        const -> bool = default;
 };
 
 // This response is the exact same payload as MotorPositionResponse
@@ -1504,7 +1523,8 @@ using ResponseMessageType = std::variant<
     SensorDiagnosticResponse, TaskInfoResponse, PipetteInfoResponse,
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
-    UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
+    UpdateMotorPositionEstimationResponse,
+    UpdateGearMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse>;
 
 }  // namespace can::messages
