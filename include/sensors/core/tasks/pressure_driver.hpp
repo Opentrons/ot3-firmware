@@ -295,8 +295,7 @@ class MMR920C04 {
                     can::messages::ErrorMessage{
                         .message_index = m.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = can::ids::ErrorCode::over_pressure
-                    });
+                        .error_code = can::ids::ErrorCode::over_pressure});
             } else {
                 hardware.reset_sync();
             }
