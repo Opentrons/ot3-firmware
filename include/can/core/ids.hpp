@@ -147,6 +147,7 @@ enum class ErrorCode {
     estop_released = 0xa,
     motor_busy = 0xb,
     stop_requested = 0xc,
+    over_pressure = 0xd,
 };
 
 /** Error Severity levels. */
