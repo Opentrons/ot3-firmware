@@ -13,6 +13,7 @@ add_executable(motor-control
         test_fixed_point_utils.cpp
         test_motor_driver.cpp
         test_limit_switch.cpp
+        test_limit_switch_backoff.cpp
         test_move_status_handling.cpp
         test_sync_handling.cpp
         test_brushed_motor_interrupt_handler.cpp

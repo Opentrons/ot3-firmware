@@ -271,19 +271,6 @@ class MotorInterruptHandler {
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
-            position_tracker = 0;
-            // since the buffered move start position isn't reliable here,
-            // and then end position will always be 0, we set the buffered move
-            // start position to the difference between the encoder pulse count
-            // at the beginning and end this way the usage tracker will know how
-            // far the motor moved.
-            buffered_move.start_encoder_position =
-                buffered_move.start_encoder_position -
-                hardware.get_encoder_pulses();
-//            hardware.reset_step_tracker();
-//            hardware.reset_encoder_pulses();
-//            hardware.disable_encoder();
-            stall_checker.reset_itr_counts(0);
             hardware.position_flags.set_flag(
                 can::ids::MotorPositionFlags::stepper_position_ok);
             if (stall_checker.has_encoder()) {
@@ -305,18 +292,18 @@ class MotorInterruptHandler {
             // at the beginning and end this way the usage tracker will know how
             // far the motor moved.
             buffered_move.start_encoder_position =
-                    buffered_move.start_encoder_position -
-                    hardware.get_encoder_pulses();
+                buffered_move.start_encoder_position -
+                hardware.get_encoder_pulses();
             hardware.reset_step_tracker();
             hardware.reset_encoder_pulses();
             hardware.disable_encoder();
 
             stall_checker.reset_itr_counts(0);
             hardware.position_flags.set_flag(
-                    can::ids::MotorPositionFlags::stepper_position_ok);
+                can::ids::MotorPositionFlags::stepper_position_ok);
             if (stall_checker.has_encoder()) {
                 hardware.position_flags.set_flag(
-                        can::ids::MotorPositionFlags::encoder_position_ok);
+                    can::ids::MotorPositionFlags::encoder_position_ok);
             }
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
@@ -383,8 +370,13 @@ class MotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        if (has_active_move && buffered_move.check_stop_condition(
-                                   MoveStopCondition::limit_switch)) {
+        if (has_active_move &&
+            buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch) &&
+            !hardware.position_flags.check_flag(
+                MotorPositionStatus::Flags::stepper_position_ok)) {
+            // if stepper position is unreliable when home (i.e. first home
+            // after boot), update position to a large positive value
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
         }

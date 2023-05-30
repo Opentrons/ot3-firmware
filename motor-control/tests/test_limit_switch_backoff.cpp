@@ -26,62 +26,60 @@ struct HandlerContainer {
 static constexpr sq0_31 default_velocity =
     0x1 << (TO_RADIX - 1);  // half a step per tick
 
-sq0_31 convert_velocity_to(float f) {
+sq0_31 convert_velocity(float f) {
     return sq0_31(f * static_cast<float>(1LL << TO_RADIX));
 }
 
-SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
+SCENARIO(
+    "MoveStopCondition::limit_switch_backoff with the limit switch released") {
     HandlerContainer test_objs{};
     Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to(-.5),
+                     .velocity = convert_velocity(.5),
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
-                     .stop_condition =
-                         static_cast<uint8_t>(MoveStopCondition::limit_switch)};
+                     .stop_condition = static_cast<uint8_t>(
+                         MoveStopCondition::limit_switch_backoff)};
 
     test_objs.queue.try_write_isr(msg1);
-    test_objs.handler.set_current_position(0x500);
-    test_objs.hw.set_mock_lim_sw(false);
+    test_objs.handler.set_current_position(0x0);
+    test_objs.hw.set_mock_lim_sw(true);
 
-    GIVEN("stepper position is not okay before the move") {
+    GIVEN("stepper and encoder position are not okay before the move") {
         test_objs.hw.position_flags.clear_flag(
             MotorPositionStatus::Flags::stepper_position_ok);
+        test_objs.hw.position_flags.clear_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
 
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
             REQUIRE(test_objs.handler.has_active_move);
 
-            THEN("position gets set to large positive number") {
-                REQUIRE(test_objs.handler.get_current_position() ==
-                        0x7FFFFFFFFFFFFFFF);
-            }
-
-            AND_WHEN("the limit switch has been triggered") {
+            THEN("the limit switch has been released") {
                 for (int i = 0; i < (int)msg1.duration; ++i) {
                     if (i == (int)msg1.duration - 1) {
                         test_objs.handler.set_current_position(
                             static_cast<uint64_t>(350) << 31);
                         test_objs.hw.sim_set_encoder_pulses(50);
-                        test_objs.hw.set_mock_lim_sw(true);
+                        test_objs.hw.set_mock_lim_sw(false);
                     }
                     test_objs.handler.run_interrupt();
                 }
-                THEN(
-                    "the move should be stopped with ack id = stopped "
-                    "by "
+                AND_THEN(
+                    "the move should be stopped with ack id = stopped by "
                     "condition") {
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
                     Ack read_ack =
                         std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::stopped_by_condition);
-                    REQUIRE(read_ack.encoder_position == 50);
-                    REQUIRE(read_ack.current_position_steps == 350);
+                    REQUIRE(read_ack.encoder_position == 0);
+                    REQUIRE(read_ack.current_position_steps == 0);
+                    REQUIRE(read_ack.position_flags == 0x3);
                 }
 
-                THEN("position should not be reset") {
-                    REQUIRE(!test_objs.handler.get_current_position() == 0);
+                THEN("position should be reset") {
+                    REQUIRE(test_objs.handler.get_current_position() == 0);
                 }
             }
         }
@@ -90,86 +88,81 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
     GIVEN("stepper position is okay before the move") {
         test_objs.hw.position_flags.set_flag(
             MotorPositionStatus::Flags::stepper_position_ok);
+        test_objs.hw.position_flags.set_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
 
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
             REQUIRE(test_objs.handler.has_active_move);
 
-            THEN("current position is not updated") {
-                REQUIRE(test_objs.handler.get_current_position() == 0x500);
-            }
-
-            AND_WHEN("the limit switch has been triggered") {
+            AND_WHEN("the limit switch has been released") {
                 for (int i = 0; i < (int)msg1.duration; ++i) {
                     if (i == (int)msg1.duration - 1) {
                         test_objs.handler.set_current_position(
                             static_cast<uint64_t>(350) << 31);
                         test_objs.hw.sim_set_encoder_pulses(50);
-                        test_objs.hw.set_mock_lim_sw(true);
+                        test_objs.hw.set_mock_lim_sw(false);
                     }
                     test_objs.handler.run_interrupt();
                 }
 
-                THEN(
-                    "the move should be stopped with ack id = stopped "
-                    "by "
+                AND_THEN(
+                    "the move should be stopped with ack id = stopped by "
                     "condition") {
                     REQUIRE(test_objs.reporter.messages.size() >= 1);
                     Ack read_ack =
                         std::get<Ack>(test_objs.reporter.messages.back());
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::stopped_by_condition);
-                    REQUIRE(read_ack.encoder_position == 50);
-                    REQUIRE(read_ack.current_position_steps == 350);
+                    REQUIRE(read_ack.encoder_position == 0);
+                    REQUIRE(read_ack.current_position_steps == 0);
+                    REQUIRE(read_ack.position_flags == 0x3);
                 }
 
-                THEN("position should not be reset") {
-                    REQUIRE(!test_objs.handler.get_current_position() == 0);
+                THEN("position should be reset") {
+                    REQUIRE(test_objs.handler.get_current_position() == 0);
                 }
             }
         }
     }
 }
 
-SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
+SCENARIO(
+    "MoveStopCondition::limit_switch_backoff and limit switch is not "
+    "released") {
     HandlerContainer test_objs{};
     Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity_to(-.5),
+                     .velocity = convert_velocity(.5),
                      .acceleration = 0,
                      .group_id = 1,
                      .seq_id = 0,
-                     .stop_condition =
-                         static_cast<uint8_t>(MoveStopCondition::limit_switch)};
+                     .stop_condition = static_cast<uint8_t>(
+                         MoveStopCondition::limit_switch_backoff)};
 
     test_objs.queue.try_write_isr(msg1);
-    test_objs.handler.set_current_position(0xFFFFFFFFFF);
-    test_objs.hw.set_mock_lim_sw(false);
+    test_objs.handler.set_current_position(0x0);
+    test_objs.hw.set_mock_lim_sw(true);
 
-    GIVEN("stepper position status is not okay") {
+    GIVEN("stepper and encoder positions are not okay") {
         test_objs.hw.position_flags.clear_flag(
             MotorPositionStatus::Flags::stepper_position_ok);
+        test_objs.hw.position_flags.clear_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
             REQUIRE(test_objs.handler.has_active_move);
 
-            THEN("position gets set to large positive number") {
-                REQUIRE(test_objs.handler.get_current_position() ==
-                        0x7FFFFFFFFFFFFFFF);
-            }
-
             AND_WHEN("the limit switch has not been triggered") {
-                for (int i = 0; i < (int)msg1.duration + 1; ++i) {
-                    if (i == (int)msg1.duration) {
-                        test_objs.handler.set_current_position(
-                            static_cast<uint64_t>(350) << 31);
-                        test_objs.hw.sim_set_encoder_pulses(50);
-                    }
+                for (int i = 0; i < (int)msg1.duration; ++i) {
                     test_objs.handler.run_interrupt();
                 }
 
+                test_objs.handler.set_current_position(
+                    static_cast<uint64_t>(350) << 31);
+                test_objs.hw.sim_set_encoder_pulses(50);
+                test_objs.handler.run_interrupt();
                 THEN(
-                    "the move should be stopped with ack id = stopped "
-                    "without "
+                    "the move should be stopped with ack id = stopped without "
                     "condition") {
                     REQUIRE(test_objs.reporter.messages.size() == 1);
                     Ack read_ack =
@@ -178,6 +171,7 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
                     REQUIRE(read_ack.current_position_steps == 350);
                     REQUIRE(read_ack.ack_id ==
                             AckMessageId::complete_without_condition);
+                    REQUIRE(read_ack.position_flags == 0x0);
                 }
                 THEN("position should not be reset") {
                     REQUIRE(!test_objs.handler.get_current_position() == 0);
@@ -186,32 +180,28 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
         }
     }
 
-    GIVEN("stepper position status is okay") {
+    GIVEN("stepper and encoder position statuses are okay") {
         test_objs.hw.position_flags.set_flag(
             MotorPositionStatus::Flags::stepper_position_ok);
+        test_objs.hw.position_flags.set_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
 
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
             REQUIRE(test_objs.handler.has_active_move);
 
-            THEN("current position is not updated") {
-                REQUIRE(test_objs.handler.get_current_position() ==
-                        0xFFFFFFFFFF);
-            }
-
             AND_WHEN("the limit switch has not been triggered") {
-                for (int i = 0; i < (int)msg1.duration + 1; ++i) {
-                    if (i == (int)msg1.duration) {
-                        test_objs.handler.set_current_position(
-                            static_cast<uint64_t>(350) << 31);
-                        test_objs.hw.sim_set_encoder_pulses(50);
-                    }
+                for (int i = 0; i < (int)msg1.duration; ++i) {
                     test_objs.handler.run_interrupt();
                 }
 
+                test_objs.handler.set_current_position(
+                    static_cast<uint64_t>(350) << 31);
+                test_objs.hw.sim_set_encoder_pulses(50);
+                test_objs.handler.run_interrupt();
+
                 THEN(
-                    "the move should be stopped with ack id = stopped "
-                    "without "
+                    "the move should be stopped with ack id = stopped without "
                     "condition") {
                     REQUIRE(test_objs.reporter.messages.size() == 1);
                     Ack read_ack =
@@ -220,45 +210,10 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
                             AckMessageId::complete_without_condition);
                     REQUIRE(read_ack.encoder_position == 50);
                     REQUIRE(read_ack.current_position_steps == 350);
+                    REQUIRE(read_ack.position_flags == 0x3);
                 }
                 THEN("position should not be reset") {
                     REQUIRE(!test_objs.handler.get_current_position() == 0);
-                }
-            }
-        }
-    }
-}
-
-SCENARIO("Not MoveStopCondition::limit_switch but limit switch triggered") {
-    HandlerContainer test_objs{};
-    test_objs.handler.set_current_position(0x0);
-    Move msg1 =
-        Move{.duration = 2,
-             .velocity = convert_velocity_to(.5),
-             .acceleration = 0,
-             .group_id = 1,
-             .seq_id = 0,
-             .stop_condition = static_cast<uint8_t>(MoveStopCondition::none)};
-    GIVEN("Move with stop condition = none in progress") {
-        test_objs.queue.try_write_isr(msg1);
-        test_objs.hw.set_mock_lim_sw(true);
-        WHEN("the first move is loaded") {
-            CHECK(!test_objs.handler.pulse());
-            THEN("position is not immediately changed") {
-                REQUIRE(test_objs.handler.get_current_position() == 0);
-            }
-            AND_WHEN("the move is finished") {
-                REQUIRE(!test_objs.handler.pulse());
-                REQUIRE(test_objs.handler.pulse());
-                REQUIRE(!test_objs.handler.pulse());
-                THEN(
-                    "the move should have ack_id complete_without_condition, "
-                    "and position = 4") {
-                    REQUIRE(test_objs.reporter.messages.size() >= 1);
-                    Ack read_ack =
-                        std::get<Ack>(test_objs.reporter.messages.back());
-                    REQUIRE(read_ack.ack_id ==
-                            AckMessageId::complete_without_condition);
                 }
             }
         }

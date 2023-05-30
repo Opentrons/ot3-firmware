@@ -336,19 +336,25 @@ TEST_CASE("Finishing a move") {
             auto msg = std::get<Ack>(test_objs.reporter.messages[0]);
             REQUIRE(msg.group_id == move.group_id);
             REQUIRE(msg.seq_id == move.seq_id);
-            REQUIRE(msg.current_position_steps == 0);
-            REQUIRE(msg.encoder_position == 0);
+            REQUIRE(msg.current_position_steps == 100);
+            REQUIRE(msg.encoder_position == 200);
             REQUIRE(msg.position_flags == 0x3);
 
-            AND_GIVEN("a followup move") {
+            AND_GIVEN("a backoff move") {
                 test_objs.reporter.messages.clear();
-                move = Move{.group_id = 1, .seq_id = 2};
+                move = Move{.group_id = 1,
+                            .seq_id = 3,
+                            .stop_condition = static_cast<uint8_t>(
+                                MoveStopCondition::limit_switch_backoff),
+                            .start_encoder_position =
+                                test_objs.hw.get_encoder_pulses()};
                 test_objs.handler.set_buffered_move(move);
-                uint64_t set_position = static_cast<uint64_t>(100) << 31;
-                uint32_t set_encoder_position = static_cast<uint32_t>(200);
+                uint64_t set_position = static_cast<uint64_t>(10) << 31;
+                uint32_t set_encoder_position = static_cast<uint32_t>(220);
                 test_objs.handler.set_current_position(set_position);
                 test_objs.hw.sim_set_encoder_pulses(set_encoder_position);
-                test_objs.handler.finish_current_move();
+                test_objs.hw.set_mock_lim_sw(false);
+                REQUIRE(test_objs.handler.backed_off());
 
                 THEN(
                     "the ack message should contain the correct information "
@@ -357,9 +363,35 @@ TEST_CASE("Finishing a move") {
                     auto msg = std::get<Ack>(test_objs.reporter.messages[0]);
                     REQUIRE(msg.group_id == move.group_id);
                     REQUIRE(msg.seq_id == move.seq_id);
-                    REQUIRE(msg.current_position_steps == 100);
-                    REQUIRE(msg.encoder_position == 200);
+                    REQUIRE(msg.current_position_steps == 0);
+                    REQUIRE(msg.encoder_position == 0);
                     REQUIRE(msg.position_flags == 0x3);
+                    REQUIRE(msg.start_encoder_position == -20);
+                }
+
+                AND_GIVEN("a subsequent move") {
+                    test_objs.reporter.messages.clear();
+                    move = Move{.group_id = 1, .seq_id = 2};
+                    test_objs.handler.set_buffered_move(move);
+                    uint64_t set_position = static_cast<uint64_t>(100) << 31;
+                    uint32_t set_encoder_position = static_cast<uint32_t>(200);
+                    test_objs.handler.set_current_position(set_position);
+                    test_objs.hw.sim_set_encoder_pulses(set_encoder_position);
+                    test_objs.handler.finish_current_move();
+
+                    THEN(
+                        "the ack message should contain the correct "
+                        "information "
+                        "when the move finishes") {
+                        REQUIRE(test_objs.reporter.messages.size() == 1);
+                        auto msg =
+                            std::get<Ack>(test_objs.reporter.messages[0]);
+                        REQUIRE(msg.group_id == move.group_id);
+                        REQUIRE(msg.seq_id == move.seq_id);
+                        REQUIRE(msg.current_position_steps == 100);
+                        REQUIRE(msg.encoder_position == 200);
+                        REQUIRE(msg.position_flags == 0x3);
+                    }
                 }
             }
         }
