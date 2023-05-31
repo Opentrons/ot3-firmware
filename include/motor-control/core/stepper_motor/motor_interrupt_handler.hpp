@@ -218,8 +218,7 @@ class MotorInterruptHandler {
             backed_off()) {
             return true;
         }
-        if (buffered_move.check_stop_condition(
-                MoveStopCondition::sync_line) &&
+        if (buffered_move.check_stop_condition(MoveStopCondition::sync_line) &&
             sync_triggered()) {
             return true;
         }

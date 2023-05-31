@@ -312,10 +312,10 @@ SCENARIO("motor handler stall detection") {
 
     GIVEN("a limit switch backoff move with a stall detected") {
         test_objs.hw.set_mock_lim_sw(true);
-        auto msg1 =
-            Move{.duration = 23,
-                 .velocity = default_velocity,
-                 .stop_condition = static_cast<uint8_t>(Stops::limit_switch_backoff)};
+        auto msg1 = Move{.duration = 23,
+                         .velocity = default_velocity,
+                         .stop_condition =
+                             static_cast<uint8_t>(Stops::limit_switch_backoff)};
         auto msg2 = Move{.duration = 10, .velocity = default_velocity};
         test_objs.queue.try_write(msg1);
         test_objs.queue.try_write(msg2);
