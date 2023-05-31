@@ -48,9 +48,12 @@ TEST_CASE("motor interrupt handler queue functionality") {
                 WHEN("a move is updated") {
                     CHECK(msg1.start_encoder_position == 0);
                     hardware.sim_set_encoder_pulses(300);
-                    THEN("the start encoder position should be updated to buffered move") {
+                    THEN(
+                        "the start encoder position should be updated to "
+                        "buffered move") {
                         handler.update_move();
-                        REQUIRE(handler.get_buffered_move().start_encoder_position == 300);
+                        REQUIRE(handler.get_buffered_move()
+                                    .start_encoder_position == 300);
                     }
                 }
                 WHEN("a movement stalls") {
