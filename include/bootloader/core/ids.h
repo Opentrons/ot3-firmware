@@ -145,6 +145,7 @@ typedef enum {
     can_errorcode_estop_released = 0xa,
     can_errorcode_motor_busy = 0xb,
     can_errorcode_stop_requested = 0xc,
+    can_errorcode_over_pressure = 0xd,
 } CANErrorCode;
 
 /** Tool types detected on Head. */

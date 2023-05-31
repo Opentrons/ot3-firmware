@@ -290,6 +290,12 @@ class MMR920C04 {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 mmr920C04::MAX_PRESSURE_READING) {
                 hardware.set_sync();
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = m.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::over_pressure});
             } else {
                 hardware.reset_sync();
             }
