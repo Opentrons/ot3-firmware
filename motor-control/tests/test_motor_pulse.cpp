@@ -327,6 +327,10 @@ TEST_CASE("Finishing a move") {
         test_objs.handler.set_current_position(set_position);
         test_objs.hw.sim_set_encoder_pulses(set_encoder_position);
         test_objs.hw.set_mock_lim_sw(true);
+        test_objs.hw.position_flags.clear_flag(
+            MotorPositionStatus::Flags::stepper_position_ok);
+        test_objs.hw.position_flags.clear_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
         REQUIRE(test_objs.handler.homing_stopped());
 
         THEN(
@@ -338,7 +342,7 @@ TEST_CASE("Finishing a move") {
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position_steps == 100);
             REQUIRE(msg.encoder_position == 200);
-            REQUIRE(msg.position_flags == 0x3);
+            REQUIRE(msg.position_flags == 0x0);
 
             AND_GIVEN("a backoff move") {
                 test_objs.reporter.messages.clear();

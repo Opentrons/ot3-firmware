@@ -227,7 +227,7 @@ enum class MoveStopCondition {
     gripper_force = 0x8,
     stall = 0x10,
     ignore_stalls = 0x20,
-    limit_switch_backoff = 0x30,
+    limit_switch_backoff = 0x40,
 };
 
 /** High-level type of pipette. */

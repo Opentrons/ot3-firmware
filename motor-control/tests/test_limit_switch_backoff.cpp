@@ -23,23 +23,17 @@ struct HandlerContainer {
         handler{queue, reporter, hw, stall, update_position_queue};
 };
 
-static constexpr sq0_31 default_velocity =
-    0x1 << (TO_RADIX - 1);  // half a step per tick
-
-sq0_31 convert_velocity(float f) {
-    return sq0_31(f * static_cast<float>(1LL << TO_RADIX));
-}
-
 SCENARIO(
     "MoveStopCondition::limit_switch_backoff with the limit switch released") {
     HandlerContainer test_objs{};
-    Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity(.5),
-                     .acceleration = 0,
-                     .group_id = 1,
-                     .seq_id = 0,
-                     .stop_condition = static_cast<uint8_t>(
-                         MoveStopCondition::limit_switch_backoff)};
+    Move msg1 =
+        Move{.duration = 2,
+             .velocity = int32_t(0.5 * static_cast<float>(1LL << TO_RADIX)),
+             .acceleration = 0,
+             .group_id = 1,
+             .seq_id = 0,
+             .stop_condition =
+                 static_cast<uint8_t>(MoveStopCondition::limit_switch_backoff)};
 
     test_objs.queue.try_write_isr(msg1);
     test_objs.handler.set_current_position(0x0);
@@ -131,13 +125,14 @@ SCENARIO(
     "MoveStopCondition::limit_switch_backoff and limit switch is not "
     "released") {
     HandlerContainer test_objs{};
-    Move msg1 = Move{.duration = 2,
-                     .velocity = convert_velocity(.5),
-                     .acceleration = 0,
-                     .group_id = 1,
-                     .seq_id = 0,
-                     .stop_condition = static_cast<uint8_t>(
-                         MoveStopCondition::limit_switch_backoff)};
+    Move msg1 =
+        Move{.duration = 2,
+             .velocity = int32_t(0.5 * static_cast<float>(1LL << TO_RADIX)),
+             .acceleration = 0,
+             .group_id = 1,
+             .seq_id = 0,
+             .stop_condition =
+                 static_cast<uint8_t>(MoveStopCondition::limit_switch_backoff)};
 
     test_objs.queue.try_write_isr(msg1);
     test_objs.handler.set_current_position(0x0);

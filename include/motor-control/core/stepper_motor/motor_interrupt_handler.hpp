@@ -91,7 +91,9 @@ class MotorInterruptHandler {
             hardware.position_flags.check_flag(
                 MotorPositionStatus::Flags::stepper_position_ok) or
             buffered_move.check_stop_condition(
-                MoveStopCondition::limit_switch)) {
+                MoveStopCondition::limit_switch) or
+            buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch_backoff)) {
             return;
         }
 
@@ -205,6 +207,25 @@ class MotorInterruptHandler {
     void start() { hardware.start_timer_interrupt(); }
     void stop() { hardware.stop_timer_interrupt(); }
 
+    [[nodiscard]] auto stop_condition_met() {
+        if (buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch) &&
+            homing_stopped()) {
+            return true;
+        }
+        if (buffered_move.check_stop_condition(
+                MoveStopCondition::limit_switch_backoff) &&
+            backed_off()) {
+            return true;
+        }
+        if (buffered_move.check_stop_condition(
+                MoveStopCondition::sync_line) &&
+            sync_triggered()) {
+            return true;
+        }
+        return false;
+    }
+
     // condense these
     [[nodiscard]] auto pulse() -> bool {
         /*
@@ -233,19 +254,7 @@ class MotorInterruptHandler {
         }
         if (has_active_move) {
             handle_update_position_queue_error();
-            if (buffered_move.check_stop_condition(
-                    MoveStopCondition::limit_switch) &&
-                homing_stopped()) {
-                return false;
-            }
-            if (buffered_move.check_stop_condition(
-                    MoveStopCondition::limit_switch_backoff) &&
-                backed_off()) {
-                return false;
-            }
-            if (buffered_move.check_stop_condition(
-                    MoveStopCondition::sync_line) &&
-                sync_triggered()) {
+            if (stop_condition_met()) {
                 return false;
             }
             if (can_step() && tick()) {
@@ -271,12 +280,6 @@ class MotorInterruptHandler {
 
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
-            hardware.position_flags.set_flag(
-                can::ids::MotorPositionFlags::stepper_position_ok);
-            if (stall_checker.has_encoder()) {
-                hardware.position_flags.set_flag(
-                    can::ids::MotorPositionFlags::encoder_position_ok);
-            }
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
