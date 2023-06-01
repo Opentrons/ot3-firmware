@@ -77,12 +77,18 @@ void MotorHardware::reset_encoder_pulses() {
 
 void MotorHardware::enable_encoder() {
     LOG("Starting encoder interrupt")
+    if (!enc_handle) {
+        return;
+    }
     if (!motor_hardware_encoder_running(enc_handle)) {
         reset_encoder_pulses();
         motor_hardware_start_encoder(enc_handle);
     }
 }
 void MotorHardware::disable_encoder() {
+    if (!enc_handle) {
+        return;
+    }
     motor_hardware_stop_encoder(enc_handle);
 }
 

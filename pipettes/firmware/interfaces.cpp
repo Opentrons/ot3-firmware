@@ -186,9 +186,9 @@ auto gear_motor::get_motor_hardware(
     -> gear_motor::GearHardware {
     return gear_motor::GearHardware{
         .left = motor_hardware::MotorHardware(pins.left_gear_motor, &htim6,
-                                              &htim2, gear_left_usage_config),
+                                              nullptr, gear_left_usage_config),
         .right = motor_hardware::MotorHardware(
-            pins.right_gear_motor, &htim6, &htim2, gear_right_usage_config)};
+            pins.right_gear_motor, &htim6, nullptr, gear_right_usage_config)};
 }
 
 auto gear_motor::get_motor_hardware_tasks(gear_motor::UnavailableGearHardware&)
