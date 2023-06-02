@@ -48,6 +48,8 @@ DMA_HandleTypeDef hdma_spi1_rx;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+
+extern void motor_callback_glue();
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
@@ -145,7 +147,13 @@ void FDCAN1_IT0_IRQHandler(void) {
 /**
  * @brief This function handles TIM7 global interrupt.
  */
-void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
+void TIM7_IRQHandler(void) { 
+    // We ONLY ever enable the Update interrupt, so for a small efficiency gain
+    // we always make the assumption that this interrupt was triggered by the
+    // TIM_IT_UPDATE source.
+    __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
+    motor_callback_glue();
+ }
 
 /**
  * @brief This function handles TIM2 global interrupt.
