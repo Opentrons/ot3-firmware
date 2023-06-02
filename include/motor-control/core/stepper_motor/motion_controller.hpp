@@ -40,7 +40,7 @@ class MotionController {
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_usteps_per_mm(), 31)),
           steps_per_um(convert_to_fixed_point_64_bit(
-                  linear_motion_sys_config.get_usteps_per_um(), 31)),
+              linear_motion_sys_config.get_usteps_per_um(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_um_per_step(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
