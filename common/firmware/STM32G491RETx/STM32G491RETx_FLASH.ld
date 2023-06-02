@@ -59,6 +59,27 @@ SECTIONS
     KEEP(*(.fw_update_flag_section))
   } > RAM
 
+  _siccmram = LOADADDR(.ccmram);
+  
+  /* CCM-RAM section 
+  * 
+  * IMPORTANT NOTE! 
+  * If initialized variables will be placed in this section,
+  * the startup code needs to be modified to copy the init-values.  
+  */
+  .ccmram :
+  {
+    . = ALIGN(4);
+    _sccmram = .;       /* create a global symbol at ccmram start */
+    *(.ccmram)
+    *(.ccmram*)
+    *(.text.*motor_handler*) 
+    *(.text.*motor_hardware*) 
+    
+    . = ALIGN(4);
+    _eccmram = .;       /* create a global symbol at ccmram end */
+  } >CCMRAM AT> ROM
+
   /* The program code and other data into "ROM" Rom type memory */
   .text :
   {
@@ -145,24 +166,6 @@ SECTIONS
     
   } >RAM AT> ROM
 
-  _siccmram = LOADADDR(.ccmram);
-  
-  /* CCM-RAM section 
-  * 
-  * IMPORTANT NOTE! 
-  * If initialized variables will be placed in this section,
-  * the startup code needs to be modified to copy the init-values.  
-  */
-  .ccmram :
-  {
-    . = ALIGN(4);
-    _sccmram = .;       /* create a global symbol at ccmram start */
-    *(.ccmram)
-    *(.ccmram*)
-    
-    . = ALIGN(4);
-    _eccmram = .;       /* create a global symbol at ccmram end */
-  } >CCMRAM AT> ROM
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);
