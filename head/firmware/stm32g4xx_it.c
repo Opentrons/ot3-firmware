@@ -147,6 +147,7 @@ void FDCAN1_IT0_IRQHandler(void) {
 /**
  * @brief This function handles TIM7 global interrupt.
  */
+__attribute__((section(".ccmram")))
 void TIM7_IRQHandler(void) { 
     // We ONLY ever enable the Update interrupt, so for a small efficiency gain
     // we always make the assumption that this interrupt was triggered by the
