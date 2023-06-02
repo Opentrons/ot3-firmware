@@ -45,7 +45,7 @@ struct LinearMotionSystemConfig {
         return (steps_per_rev * microstep) / (mech_config.get_mm_per_rev());
     }
     [[nodiscard]] constexpr auto get_usteps_per_um() const -> float {
-        return (steps_per_rev * microstep) / (mech_config.get_mm_per_rev()) * 1000.0;
+        return (steps_per_rev * microstep) / (mech_config.get_mm_per_rev() * 1000.0);
     }
     [[nodiscard]] constexpr auto get_um_per_step() const -> float {
         return (mech_config.get_mm_per_rev()) / (steps_per_rev * microstep) *
