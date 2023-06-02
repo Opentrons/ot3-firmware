@@ -73,6 +73,16 @@ SECTIONS
     _sccmram = .;       /* create a global symbol at ccmram start */
     *(.ccmram)
     *(.ccmram*)
+
+    /* NOTE ABOUT THE FOLLOWING SECTIONS
+    * 
+    * The CMAKE toolchain for cross-compilation MUST be configured
+    * with the option `-ffunction-sections` in order for this to work.
+    * This section matches the sections for the namespaces for motor
+    * functionality, and those namesapces are only broken out into
+    * individual linker sections if the function-sections option is enabled.
+    */
+
     *(.text.*motor_handler*) 
     *(.text.*motor_hardware*) 
     
