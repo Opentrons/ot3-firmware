@@ -20,7 +20,7 @@ using namespace can::ids;
 
 using stepper_timer_ticks = uint32_t;
 using brushed_timer_ticks = uint32_t;
-using um_per_tick = int32_t;
+using mm_per_tick = int32_t;
 using um_per_tick_sq = int32_t;
 
 /**
@@ -306,7 +306,7 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
     uint8_t seq_id;
     stepper_timer_ticks duration;
     um_per_tick_sq acceleration;
-    um_per_tick velocity;
+    mm_per_tick velocity;
     uint8_t request_stop_condition;
 
     template <bit_utils::ByteIterator Input, typename Limit>
@@ -315,7 +315,7 @@ struct AddLinearMoveRequest : BaseMessage<MessageId::add_move_request> {
         uint8_t seq_id = 0;
         stepper_timer_ticks duration = 0;
         um_per_tick_sq acceleration = 0;
-        um_per_tick velocity = 0;
+        mm_per_tick velocity = 0;
         uint8_t request_stop_condition = 0;
         uint32_t msg_ind = 0;
 
@@ -345,14 +345,14 @@ struct HomeRequest : BaseMessage<MessageId::home_request> {
     uint8_t group_id;
     uint8_t seq_id;
     stepper_timer_ticks duration;
-    um_per_tick velocity;
+    mm_per_tick velocity;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> HomeRequest {
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
         stepper_timer_ticks duration = 0;
-        um_per_tick velocity = 0;
+        mm_per_tick velocity = 0;
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
@@ -502,15 +502,15 @@ struct UpdateMotorPositionEstimationResponse
 
 struct SetMotionConstraints : BaseMessage<MessageId::set_motion_constraints> {
     uint32_t message_index;
-    um_per_tick min_velocity;
-    um_per_tick max_velocity;
+    mm_per_tick min_velocity;
+    mm_per_tick max_velocity;
     um_per_tick_sq min_acceleration;
     um_per_tick_sq max_acceleration;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> SetMotionConstraints {
-        um_per_tick min_velocity = 0;
-        um_per_tick max_velocity = 0;
+        mm_per_tick min_velocity = 0;
+        mm_per_tick max_velocity = 0;
         um_per_tick_sq min_acceleration = 0;
         um_per_tick_sq max_acceleration = 0;
         uint32_t msg_ind = 0;
@@ -536,8 +536,8 @@ using GetMotionConstraintsRequest =
 struct GetMotionConstraintsResponse
     : BaseMessage<MessageId::get_motion_constraints_response> {
     uint32_t message_index;
-    um_per_tick min_velocity;
-    um_per_tick max_velocity;
+    mm_per_tick min_velocity;
+    mm_per_tick max_velocity;
     um_per_tick_sq min_acceleration;
     um_per_tick_sq max_acceleration;
 
@@ -1249,7 +1249,7 @@ struct TipActionRequest
     uint8_t group_id;
     uint8_t seq_id;
     stepper_timer_ticks duration;
-    um_per_tick velocity;
+    mm_per_tick velocity;
     can::ids::PipetteTipActionType action;
     uint8_t request_stop_condition;
 
@@ -1258,7 +1258,7 @@ struct TipActionRequest
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
         stepper_timer_ticks duration = 0;
-        um_per_tick velocity = 0;
+        mm_per_tick velocity = 0;
         uint8_t _action = 0;
         uint8_t request_stop_condition = 0;
         uint32_t msg_ind = 0;

@@ -39,6 +39,8 @@ class MotionController {
           update_queue(update_queue),
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_usteps_per_mm(), 31)),
+          steps_per_um(convert_to_fixed_point_64_bit(
+                  linear_motion_sys_config.get_usteps_per_um(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_um_per_step(), 31)),
           um_per_encoder_pulse(convert_to_fixed_point_64_bit(
@@ -61,7 +63,7 @@ class MotionController {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
         steps_per_tick_sq acceleration_steps =
-            fixed_point_multiply(steps_per_mm, can_msg.acceleration);
+            fixed_point_multiply(steps_per_um, can_msg.acceleration);
         Move msg{
             .message_index = can_msg.message_index,
             .duration = can_msg.duration,
@@ -172,6 +174,7 @@ class MotionController {
     GenericQueue& queue;
     UpdatePositionQueue& update_queue;
     sq31_31 steps_per_mm{0};
+    sq31_31 steps_per_um{0};
     sq31_31 um_per_step{0};
     sq31_31 um_per_encoder_pulse{0};
     bool enabled = false;
