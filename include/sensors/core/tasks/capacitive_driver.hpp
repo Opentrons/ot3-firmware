@@ -80,6 +80,11 @@ class FDC1004 {
         hardware.reset_sync();
     }
 
+    void set_max_bind_sync(bool should_bind) {
+        max_capacitance_sync = should_bind;
+        hardware.reset_sync();
+    }
+
     auto set_bind_flags(uint8_t binding) -> void { sensor_binding = binding; }
 
     auto set_measurement_rate(fdc1004::MeasurementRate rate) -> void {
@@ -228,7 +233,7 @@ class FDC1004 {
             return;
         }
 
-        if (!bind_sync && !echoing) {
+        if (!bind_sync && !echoing && !max_capacitance_sync) {
             stop_continuous_polling(m.id.token);
             return;
         }
@@ -241,6 +246,13 @@ class FDC1004 {
         auto new_offset =
             fdc1004_utils::update_offset(capacitance, current_offset_pf);
         set_offset(new_offset);
+        if (max_capacitance_sync) {
+            if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
+                hardware.set_sync();
+            } else {
+                hardware.reset_sync();
+            }
+        }
         if (bind_sync) {
             if (capacitance > zero_threshold_pf) {
                 hardware.set_sync();
@@ -248,6 +260,7 @@ class FDC1004 {
                 hardware.reset_sync();
             }
         }
+
         if (echoing) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -344,6 +357,7 @@ class FDC1004 {
     uint16_t number_of_reads = 1;
     bool echoing = false;
     bool bind_sync = false;
+    bool max_capacitance_sync = false;
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
 

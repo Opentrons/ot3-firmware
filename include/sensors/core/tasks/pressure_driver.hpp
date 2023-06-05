@@ -69,6 +69,11 @@ class MMR920C04 {
         hardware.reset_sync();
     }
 
+    void set_max_bind_sync(bool should_bind) {
+        max_pressure_sync = should_bind;
+        hardware.reset_sync();
+    }
+
     auto get_threshold() -> int32_t { return threshold_pascals; }
 
     auto set_threshold(float threshold_pa,
@@ -265,7 +270,7 @@ class MMR920C04 {
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
         -> void {
-        if (!bind_sync && !echoing) {
+        if (!bind_sync && !echoing && !max_pressure_sync) {
             auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
         }
@@ -280,6 +285,21 @@ class MMR920C04 {
         save_pressure(shifted_data_store);
         auto pressure = mmr920C04::PressureResult::to_pressure(
             _registers.pressure_result.reading);
+
+        if (max_pressure_sync) {
+            if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
+                mmr920C04::MAX_PRESSURE_READING) {
+                hardware.set_sync();
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = m.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::over_pressure});
+            } else {
+                hardware.reset_sync();
+            }
+        }
         if (bind_sync) {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 threshold_pascals) {
@@ -433,14 +453,17 @@ class MMR920C04 {
     bool _initialized = false;
     bool echoing = false;
     bool bind_sync = false;
+    bool max_pressure_sync = false;
 
     float pressure_running_total = 0;
     float temperature_running_total = 0;
     uint16_t total_baseline_reads = 1;
-    // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
-    // sure this is an arbitrarily large number to enable continuous reads.
+
     float current_pressure_baseline_pa = 0;
     float current_temperature_baseline = 0;
+
+    // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
+    // sure this is an arbitrarily large number to enable continuous reads.
     float threshold_pascals = 100.0F;
     float offset_average = 0;
 

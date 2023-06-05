@@ -145,6 +145,7 @@ typedef enum {
     can_errorcode_estop_released = 0xa,
     can_errorcode_motor_busy = 0xb,
     can_errorcode_stop_requested = 0xc,
+    can_errorcode_over_pressure = 0xd,
 } CANErrorCode;
 
 /** Tool types detected on Head. */
@@ -181,6 +182,7 @@ typedef enum {
     can_sensoroutputbinding_none = 0x0,
     can_sensoroutputbinding_sync = 0x1,
     can_sensoroutputbinding_report = 0x2,
+    can_sensoroutputbinding_max_threshold_sync = 0x4,
 } CANSensorOutputBinding;
 
 /** How a sensor's threshold should be interpreted. */

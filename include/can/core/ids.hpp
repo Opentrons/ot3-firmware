@@ -147,6 +147,7 @@ enum class ErrorCode {
     estop_released = 0xa,
     motor_busy = 0xb,
     stop_requested = 0xc,
+    over_pressure = 0xd,
 };
 
 /** Error Severity levels. */
@@ -190,6 +191,7 @@ enum class SensorOutputBinding {
     none = 0x0,
     sync = 0x1,
     report = 0x2,
+    max_threshold_sync = 0x4,
 };
 
 /** How a sensor's threshold should be interpreted. */

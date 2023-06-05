@@ -29,6 +29,10 @@ namespace sensors {
 namespace mmr920C04 {
 constexpr uint16_t ADDRESS = 0x67 << 1;
 
+// The pressure range is approximately 3922.0F. We shouldn't
+// need to ever exceed this value.
+constexpr float MAX_PRESSURE_READING = 3922.0F;
+
 enum class SensorStatus : uint8_t {
     SHUTDOWN = 0x0,
     IDLE = 0xE5,
