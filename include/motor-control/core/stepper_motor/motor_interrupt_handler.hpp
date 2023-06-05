@@ -281,6 +281,7 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             hardware.reset_step_tracker();
+//            hardware.reset_encoder_pulses();
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -376,11 +377,7 @@ class MotorInterruptHandler {
         }
         if (has_active_move &&
             buffered_move.check_stop_condition(
-                MoveStopCondition::limit_switch) &&
-            !hardware.position_flags.check_flag(
-                MotorPositionStatus::Flags::stepper_position_ok)) {
-            // if stepper position is unreliable when home (i.e. first home
-            // after boot), update position to a large positive value
+                MoveStopCondition::limit_switch)) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
         }
