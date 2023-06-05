@@ -37,7 +37,7 @@ _Min_Stack_Size = 0x600;	/* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  CCMSRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 16K
+  CCMRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 16K
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 112K
   ROM    (rx)    : ORIGIN = 0x08008000,   LENGTH = 512K
 }
@@ -58,6 +58,37 @@ SECTIONS
   {
     KEEP(*(.fw_update_flag_section))
   } > RAM
+
+  _siccmram = LOADADDR(.ccmram);
+  
+  /* CCM-RAM section 
+  * 
+  * IMPORTANT NOTE! 
+  * If initialized variables will be placed in this section,
+  * the startup code needs to be modified to copy the init-values.  
+  */
+  .ccmram :
+  {
+    . = ALIGN(4);
+    _sccmram = .;       /* create a global symbol at ccmram start */
+    *(.ccmram)
+    *(.ccmram*)
+
+    /* NOTE ABOUT THE FOLLOWING SECTIONS
+    * 
+    * The CMAKE toolchain for cross-compilation MUST be configured
+    * with the option `-ffunction-sections` in order for this to work.
+    * This section matches the sections for the namespaces for motor
+    * functionality, and those namesapces are only broken out into
+    * individual linker sections if the function-sections option is enabled.
+    */
+
+    *(.text.*motor_handler*) 
+    *(.text.*motor_hardware*) 
+    
+    . = ALIGN(4);
+    _eccmram = .;       /* create a global symbol at ccmram end */
+  } >CCMRAM AT> ROM
 
   /* The program code and other data into "ROM" Rom type memory */
   .text :
@@ -144,6 +175,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
     
   } >RAM AT> ROM
+
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);
