@@ -374,13 +374,12 @@ class MotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        if (has_active_move &&
-            buffered_move.check_stop_condition(
-                MoveStopCondition::limit_switch)) {
+        if (has_active_move && buffered_move.check_stop_condition(
+                                   MoveStopCondition::limit_switch)) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
             hardware.position_flags.clear_flag(
-                    can::ids::MotorPositionFlags::stepper_position_ok);
+                can::ids::MotorPositionFlags::stepper_position_ok);
         }
     }
 
