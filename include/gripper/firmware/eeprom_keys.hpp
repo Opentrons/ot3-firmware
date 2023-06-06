@@ -12,5 +12,5 @@ extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev1;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev2;
 extern const eeprom::data_rev_task::DataTableUpdateMessage data_table_rev3;
 
-extern const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>
+extern const std::array<eeprom::data_rev_task::DataTableUpdateMessage, 3>
     table_updater;

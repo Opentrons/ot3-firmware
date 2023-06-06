@@ -8,10 +8,14 @@
 namespace eeprom {
 namespace data_rev_task {
 
+static constexpr int DTUMessMax = 10;
+
+
 struct DataTableUpdateMessage {
-    uint16_t data_rev;
+    uint16_t data_rev = 0;
+    size_t len = 0;
     // list of new data table key/length pairs to add to the table
-    std::vector<std::pair<types::address, types::data_length>> data_table;
+    std::array<std::pair<types::address, types::data_length>, DTUMessMax> data_table;
 };
 
 using TaskMessage = std::variant<std::monostate, DataTableUpdateMessage>;
@@ -41,9 +45,9 @@ class UpdateDataRevHandler : accessor::ReadListener {
     void visit(const DataTableUpdateMessage& m) {
         // we really want to do this sequentially or the table can be malformed
         if (m.data_rev == current_data_rev + 1) {
-            for (const auto& i : m.data_table) {
+            for (size_t i = 0; i < m.len; i++) {
                 // add the new data table entry
-                table_creator.create_data_part(i.first, i.second);
+                table_creator.create_data_part(m.data_table[i].first, m.data_table[i].second);
                 // wait for the table update to finish
                 while (!table_creator.table_ready()) {
                     vTaskDelay(10);
@@ -61,7 +65,8 @@ class UpdateDataRevHandler : accessor::ReadListener {
         // is fine since if it's set to that then it's already where we want it
         // to be as a default
         auto delivery_state =
-            std::vector<uint8_t>(addresses::data_revision_length, 0xFF);
+            std::array<uint8_t,addresses::data_revision_length>{};
+        delivery_state.fill(0xFF);
         if (std::equal(delivery_state.begin(), delivery_state.end(),
                        data_rev_backing.begin())) {
             data_rev_backing.fill(0x00);
@@ -101,23 +106,22 @@ class UpdateDataRevTask {
     /**
      * Task entry point.
      */
-    template <task::TaskClient EEPromClient>
+    template <task::TaskClient EEPromClient, size_t N>
     void operator()(
         EEPromClient* eeprom_client,
         dev_data::DevDataTailAccessor<EEPromClient>* tail_accessor,
-        const std::vector<eeprom::data_rev_task::DataTableUpdateMessage>*
+        const std::array<eeprom::data_rev_task::DataTableUpdateMessage, N> *
             table_updater) {
         auto handler = UpdateDataRevHandler(*eeprom_client, *tail_accessor);
-        for (const auto& i : *table_updater) {
+        for (size_t i = 0; i < N; i++) {
             while (!handler.ready()) {
                 vTaskDelay(10);
             }
-            handler.handle_message(i);
+            handler.handle_message((*table_updater)[i]);
         }
         tail_accessor->finish_data_rev();
         vTaskDelete(nullptr);
     }
-
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
   private:
