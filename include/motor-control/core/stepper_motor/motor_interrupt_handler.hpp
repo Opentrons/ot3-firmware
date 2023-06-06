@@ -281,7 +281,6 @@ class MotorInterruptHandler {
         if (limit_switch_triggered()) {
             position_tracker = 0;
             hardware.reset_step_tracker();
-//            hardware.reset_encoder_pulses();
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -380,6 +379,8 @@ class MotorInterruptHandler {
                 MoveStopCondition::limit_switch)) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
+            hardware.position_flags.clear_flag(
+                    can::ids::MotorPositionFlags::stepper_position_ok);
         }
     }
 
