@@ -64,18 +64,20 @@ auto motor_configs::driver_config_by_axis(TMC2160PipetteAxis which)
         case TMC2160PipetteAxis::linear_motor:
         default:
             return tmc2160::configs::TMC2160DriverConfig{
-                .registers = {.gconfig = {.en_pwm_mode = 1},
+                .registers = {.gconfig = {.en_pwm_mode = 0},
                               .ihold_irun = {.hold_current = 16,
                                              .run_current = 31,
                                              .hold_current_delay = 0x7},
                               .tpowerdown = {},
                               .tcoolthrs = {.threshold = 0},
-                              .thigh = {.threshold = 0xFFFFF},
-                              .chopconf = {.toff = 0x5,
-                                           .hstrt = 0x5,
+                              .thigh = {.threshold = 0x7},
+                              .chopconf = {.toff = 0x2,
+                                           .hstrt = 0x0,
                                            .hend = 0x3,
-                                           .tbl = 0x2,
-                                           .mres = 0x4},
+                                           .tbl = 0x0,
+                                           .tpfd = 0x2,
+                                           .mres = 0x4,
+                                           .intpol = 0x1},
                               .coolconf = {.sgt = 0x6},
                               .glob_scale = {.global_scaler = 0xff}},
                 .current_config =
