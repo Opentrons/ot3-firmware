@@ -13,29 +13,29 @@ static auto right_queue_client = gear_motor_tasks::QueueClient{};
 
 // left gear motor tasks
 static auto mc_task_builder_left = freertos_task::TaskStarter<
-    512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
+    256, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
 static auto tmc2160_driver_task_builder_left =
-    freertos_task::TaskStarter<512, tmc2160::tasks::gear::MotorDriverTask>{};
+    freertos_task::TaskStarter<256, tmc2160::tasks::gear::MotorDriverTask>{};
 
 static auto move_group_task_builder_left = freertos_task::TaskStarter<
-    512, pipettes::tasks::move_group_task::MoveGroupTask>{};
+    256, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_left = freertos_task::TaskStarter<
-    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+    256, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
 static auto right_usage_storage_task_builder =
-    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+    freertos_task::TaskStarter<256, usage_storage_task::UsageStorageTask>{};
 
 // right gear motor tasks
 static auto mc_task_builder_right = freertos_task::TaskStarter<
-    512, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
+    256, pipettes::tasks::motion_controller_task::MotionControllerTask>{};
 static auto tmc2160_driver_task_builder_right =
-    freertos_task::TaskStarter<512, tmc2160::tasks::gear::MotorDriverTask>{};
+    freertos_task::TaskStarter<256, tmc2160::tasks::gear::MotorDriverTask>{};
 
 static auto move_group_task_builder_right = freertos_task::TaskStarter<
-    512, pipettes::tasks::move_group_task::MoveGroupTask>{};
+    256, pipettes::tasks::move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder_right = freertos_task::TaskStarter<
-    512, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
+    256, pipettes::tasks::gear_move_status::MoveStatusReporterTask>{};
 static auto left_usage_storage_task_builder =
-    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+    freertos_task::TaskStarter<256, usage_storage_task::UsageStorageTask>{};
 
 void gear_motor_tasks::start_tasks(
     gear_motor_tasks::CanWriterTask& can_writer,
