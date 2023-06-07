@@ -8,7 +8,7 @@ import subprocess
 import os
 from itertools import chain
 
-VERSION_REGEX = re.compile("v([0-9])")
+VERSION_REGEX = re.compile("v([0-9]+)")
 SUBSYSTEMS = [
     "head",
     "gantry-x",
