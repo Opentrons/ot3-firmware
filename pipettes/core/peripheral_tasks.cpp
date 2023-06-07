@@ -19,9 +19,9 @@ using PollerWithTimer =
     i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
 
 static auto i2c1_poll_task_builder =
-    freertos_task::TaskStarter<512, PollerWithTimer>{};
+    freertos_task::TaskStarter<1024, PollerWithTimer>{};
 static auto i2c3_poll_task_builder =
-    freertos_task::TaskStarter<512, PollerWithTimer>{};
+    freertos_task::TaskStarter<1024, PollerWithTimer>{};
 static auto i2c1_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 static auto i2c3_poll_client =
