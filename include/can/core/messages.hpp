@@ -1268,7 +1268,7 @@ struct TipActionRequest
     uint8_t group_id;
     uint8_t seq_id;
     stepper_timer_ticks duration;
-    um_per_tick velocity;
+    mm_per_tick velocity;
     can::ids::PipetteTipActionType action;
     uint8_t request_stop_condition;
     um_per_tick_sq acceleration;
@@ -1278,7 +1278,7 @@ struct TipActionRequest
         uint8_t group_id = 0;
         uint8_t seq_id = 0;
         stepper_timer_ticks duration = 0;
-        um_per_tick velocity = 0;
+        mm_per_tick velocity = 0;
         uint8_t _action = 0;
         uint8_t request_stop_condition = 0;
         um_per_tick_sq acceleration = 0;

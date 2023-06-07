@@ -69,6 +69,7 @@ using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GearDisableMotorRequest,
     can::messages::GearEnableMotorRequest,
     can::messages::GetMotionConstraintsRequest,
+//    can::messages::UpdateGearMotorPositionEstimationRequest,
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::GetMotorUsageRequest>;
 

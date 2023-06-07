@@ -67,6 +67,8 @@ class MotorHardware : public StepperMotorHardwareIface {
     // downward interface - call from timer overflow handler
     void encoder_overflow(int32_t direction);
 
+    bool has_encoder() {return enc_handle;}
+
   private:
     debouncer::Debouncer estop = debouncer::Debouncer{};
     debouncer::Debouncer limit = debouncer::Debouncer{};

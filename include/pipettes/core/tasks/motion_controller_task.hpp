@@ -50,6 +50,8 @@ class MotionControllerMessageHandler {
         std::visit([this](auto m) { this->handle(m); }, message);
     }
 
+    int watch_variable = 0;
+
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
 
@@ -108,17 +110,15 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-    void handle(const can::messages::ReadLimitSwitchRequest& m) {
-        auto response = static_cast<uint8_t>(controller.read_limit_switch());
-        LOG("Received read limit switch: limit_switch=%d", response);
-        can::messages::ReadLimitSwitchResponse msg{
-            .message_index = m.message_index, .switch_status = response};
-        can_client.send_can_message(can::ids::NodeId::host, msg);
+    int watch_function() {
+        int a = 1;
+        int b = 1;
+        return a + b;
     }
 
-    void handle(
-        const can::messages::UpdateGearMotorPositionEstimationRequest& m) {
+    void handle(const can::messages::UpdateGearMotorPositionEstimationRequest& m) {
         if (!controller.update_gear_position(m)) {
+            watch_variable = watch_function();
             // If the motor controller can't ask the interrupt handler to
             // handle the message, we respond with the current status as-is.
             can::messages::UpdateGearMotorPositionEstimationResponse response{
@@ -127,6 +127,14 @@ class MotionControllerMessageHandler {
             };
             can_client.send_can_message(can::ids::NodeId::host, response);
         }
+    }
+
+    void handle(const can::messages::ReadLimitSwitchRequest& m) {
+        auto response = static_cast<uint8_t>(controller.read_limit_switch());
+        LOG("Received read limit switch: limit_switch=%d", response);
+        can::messages::ReadLimitSwitchResponse msg{
+            .message_index = m.message_index, .switch_status = response};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
     void handle(const can::messages::GetMotorUsageRequest& m) {
