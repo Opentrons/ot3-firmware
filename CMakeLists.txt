@@ -67,6 +67,8 @@ if (${CMAKE_CROSSCOMPILING})
     find_package(CrossGCC)
     find_package(OpenOCD)
 
+    add_compile_definitions(ENABLE_CCMRAM)
+
     configure_file(common/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
     configure_file(common/firmware/platform_specific_hal.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal.h)
 
