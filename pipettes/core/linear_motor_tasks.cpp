@@ -16,20 +16,20 @@ static auto tmc2160_queue_client =
     linear_motor_tasks::tmc2160_driver::QueueClient{};
 
 static auto mc_task_builder =
-    freertos_task::TaskStarter<512,
+    freertos_task::TaskStarter<256,
                                motion_controller_task::MotionControllerTask>{};
 static auto tmc2130_driver_task_builder =
-    freertos_task::TaskStarter<512, tmc2130::tasks::MotorDriverTask>{};
+    freertos_task::TaskStarter<256, tmc2130::tasks::MotorDriverTask>{};
 static auto tmc2160_driver_task_builder =
-    freertos_task::TaskStarter<512, tmc2160::tasks::MotorDriverTask>{};
+    freertos_task::TaskStarter<256, tmc2160::tasks::MotorDriverTask>{};
 static auto move_group_task_builder =
-    freertos_task::TaskStarter<512, move_group_task::MoveGroupTask>{};
+    freertos_task::TaskStarter<256, move_group_task::MoveGroupTask>{};
 static auto move_status_task_builder = freertos_task::TaskStarter<
-    512, move_status_reporter_task::MoveStatusReporterTask>{};
+    256, move_status_reporter_task::MoveStatusReporterTask>{};
 static auto linear_usage_storage_task_builder =
-    freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
+    freertos_task::TaskStarter<256, usage_storage_task::UsageStorageTask>{};
 static auto eeprom_data_rev_update_builder =
-    freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
+    freertos_task::TaskStarter<256, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 void linear_motor_tasks::start_tasks(
     linear_motor_tasks::CanWriterTask& can_writer,

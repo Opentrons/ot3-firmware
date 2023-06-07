@@ -8,30 +8,30 @@ static auto tasks = sensor_tasks::Tasks{};
 static auto queue_client = sensor_tasks::QueueClient{};
 
 static auto eeprom_task_builder =
-    freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
+    freertos_task::TaskStarter<256, eeprom::task::EEPromTask>{};
 
 static auto environment_sensor_task_builder =
-    freertos_task::TaskStarter<512, sensors::tasks::EnvironmentSensorTask,
+    freertos_task::TaskStarter<256, sensors::tasks::EnvironmentSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+    freertos_task::TaskStarter<256, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto capacitive_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
+    freertos_task::TaskStarter<256, sensors::tasks::CapacitiveSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto pressure_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
+    freertos_task::TaskStarter<256, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S0);
 
 static auto pressure_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
+    freertos_task::TaskStarter<256, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S1);
 
 static auto tip_notification_task_builder_front =
-    freertos_task::TaskStarter<512,
+    freertos_task::TaskStarter<256,
                                sensors::tasks::TipPresenceNotificationTask>{};
 
 void sensor_tasks::start_tasks(
