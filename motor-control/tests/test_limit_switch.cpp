@@ -1,4 +1,3 @@
-#include "can/core/ids.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
@@ -58,7 +57,7 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
 
         THEN("stepper position flag is cleared") {
             REQUIRE(!test_objs.hw.position_flags.check_flag(
-                can::ids::MotorPositionFlags::stepper_position_ok));
+                MotorPositionStatus::Flags::stepper_position_ok));
         }
 
         AND_WHEN("the limit switch has been triggered") {
@@ -85,7 +84,7 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
 
             THEN("the stepper position flag is still cleared") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
-                    can::ids::MotorPositionFlags::stepper_position_ok));
+                    MotorPositionStatus::Flags::stepper_position_ok));
             }
         }
     }
@@ -117,7 +116,7 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
         }
         THEN("stepper position flag is cleared") {
             REQUIRE(!test_objs.hw.position_flags.check_flag(
-                can::ids::MotorPositionFlags::stepper_position_ok));
+                MotorPositionStatus::Flags::stepper_position_ok));
         }
 
         AND_WHEN("the limit switch has not been triggered") {
