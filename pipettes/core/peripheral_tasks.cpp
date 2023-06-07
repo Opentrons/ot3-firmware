@@ -11,9 +11,9 @@ static auto i2c3_task_client =
     i2c::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto i2c1_task_builder =
-    freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
+    freertos_task::TaskStarter<256, i2c::tasks::I2CTask>{};
 static auto i2c3_task_builder =
-    freertos_task::TaskStarter<512, i2c::tasks::I2CTask>{};
+    freertos_task::TaskStarter<256, i2c::tasks::I2CTask>{};
 template <template <typename> typename QueueImpl>
 using PollerWithTimer =
     i2c::tasks::I2CPollerTask<QueueImpl, freertos_timer::FreeRTOSTimer>;
@@ -31,7 +31,7 @@ static auto spi_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
 
 static auto spi_task_builder =
-    freertos_task::TaskStarter<512, spi::tasks::Task>{};
+    freertos_task::TaskStarter<256, spi::tasks::Task>{};
 
 void peripheral_tasks::start_tasks(i2c::hardware::I2CBase& i2c3_interface,
                                    i2c::hardware::I2CBase& i2c1_interface,
