@@ -1,3 +1,4 @@
+#include "can/core/ids.hpp"
 #include "catch2/catch.hpp"
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
@@ -43,8 +44,7 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
     test_objs.queue.try_write_isr(msg1);
     test_objs.handler.set_current_position(0x500);
     test_objs.hw.set_mock_lim_sw(false);
-
-    test_objs.hw.position_flags.clear_flag(
+    test_objs.hw.position_flags.set_flag(
         MotorPositionStatus::Flags::stepper_position_ok);
 
     WHEN("the move is loaded") {
@@ -54,6 +54,11 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
         THEN("position gets set to large positive number") {
             REQUIRE(test_objs.handler.get_current_position() ==
                     0x7FFFFFFFFFFFFFFF);
+        }
+
+        THEN("stepper position flag is cleared") {
+            REQUIRE(!test_objs.hw.position_flags.check_flag(
+                can::ids::MotorPositionFlags::stepper_position_ok));
         }
 
         AND_WHEN("the limit switch has been triggered") {
@@ -77,6 +82,11 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
                 REQUIRE(read_ack.encoder_position == 50);
                 REQUIRE(read_ack.current_position_steps == 0);
             }
+
+            THEN("the stepper position flag is still cleared") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    can::ids::MotorPositionFlags::stepper_position_ok));
+            }
         }
     }
 }
@@ -94,6 +104,8 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
     test_objs.queue.try_write_isr(msg1);
     test_objs.handler.set_current_position(0xFFFFFFFFFF);
     test_objs.hw.set_mock_lim_sw(false);
+    test_objs.hw.position_flags.set_flag(
+        MotorPositionStatus::Flags::stepper_position_ok);
 
     WHEN("the move is loaded") {
         test_objs.handler.update_move();
@@ -102,6 +114,10 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
         THEN("position gets set to large positive number") {
             REQUIRE(test_objs.handler.get_current_position() ==
                     0x7FFFFFFFFFFFFFFF);
+        }
+        THEN("stepper position flag is cleared") {
+            REQUIRE(!test_objs.hw.position_flags.check_flag(
+                can::ids::MotorPositionFlags::stepper_position_ok));
         }
 
         AND_WHEN("the limit switch has not been triggered") {

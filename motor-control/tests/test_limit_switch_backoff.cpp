@@ -75,6 +75,13 @@ SCENARIO(
                 THEN("position should be reset") {
                     REQUIRE(test_objs.handler.get_current_position() == 0);
                 }
+
+                THEN("both stepper and encoder position should be ok") {
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::encoder_position_ok));
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::stepper_position_ok));
+                }
             }
         }
     }
@@ -115,6 +122,13 @@ SCENARIO(
 
                 THEN("position should be reset") {
                     REQUIRE(test_objs.handler.get_current_position() == 0);
+                }
+
+                THEN("both stepper and encoder position should be ok") {
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::encoder_position_ok));
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::stepper_position_ok));
                 }
             }
         }
@@ -171,6 +185,15 @@ SCENARIO(
                 THEN("position should not be reset") {
                     REQUIRE(!test_objs.handler.get_current_position() == 0);
                 }
+
+                THEN(
+                    "both stepper and encoder position should still be not "
+                    "ok") {
+                    REQUIRE(!test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::encoder_position_ok));
+                    REQUIRE(!test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::stepper_position_ok));
+                }
             }
         }
     }
@@ -209,6 +232,15 @@ SCENARIO(
                 }
                 THEN("position should not be reset") {
                     REQUIRE(!test_objs.handler.get_current_position() == 0);
+                }
+
+                THEN(
+                    "both stepper and encoder position should not have "
+                    "changed") {
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::encoder_position_ok));
+                    REQUIRE(test_objs.hw.position_flags.check_flag(
+                        MotorPositionStatus::Flags::stepper_position_ok));
                 }
             }
         }
