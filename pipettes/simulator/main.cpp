@@ -184,7 +184,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
         "mount,m", po::value<std::string>()->default_value("left"),
         "Which mount ('right' or 'left') to attach to. May be specified in an "
         "environment variable called MOUNT.");
-    envdesc.add_options()("MOUNT",
+    envdesc.add_options()("mount",
                           po::value<std::string>()->default_value("left"));
     auto can_arg_xform = can::sim::transport::add_options(cmdlinedesc, envdesc);
     auto eeprom_arg_xform =
@@ -203,7 +203,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
                       const std::string& input_val) -> std::string {
                       if (input_val == "MOUNT") {
                           return "mount";
-                      };
+                      }
                       auto can_xformed = can_arg_xform(input_val);
                       if (can_xformed != "") {
                           return can_xformed;
