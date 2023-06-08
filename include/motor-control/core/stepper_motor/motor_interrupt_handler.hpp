@@ -409,6 +409,9 @@ class MotorInterruptHandler {
         if (has_active_move) {
             message_index = buffered_move.message_index;
         }
+        if (err_code == can::ids::ErrorCode::collision_detected) {
+            build_and_send_ack(AckMessageId::position_error);
+        }
         status_queue_client.send_move_status_reporter_queue(
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
@@ -429,19 +432,22 @@ class MotorInterruptHandler {
         tick_count = 0x0;
     }
 
+    void build_and_send_ack(AckMessageId ack_msg_id) {
+        if (buffered_move.group_id != NO_GROUP) {
+            auto ack = buffered_move.build_ack(
+                hardware.get_step_tracker(), hardware.get_encoder_pulses(),
+                hardware.position_flags.get_flags(), ack_msg_id);
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(ack));
+        }
+    }
+
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
         has_active_move = false;
         tick_count = 0x0;
         stall_handled = false;
-        if (buffered_move.group_id != NO_GROUP) {
-            auto ack = buffered_move.build_ack(
-                hardware.get_step_tracker(), hardware.get_encoder_pulses(),
-                hardware.position_flags.get_flags(), ack_msg_id);
-
-            static_cast<void>(
-                status_queue_client.send_move_status_reporter_queue(ack));
-        }
+        build_and_send_ack(ack_msg_id);
         set_buffered_move(MotorMoveMessage{});
     }
 

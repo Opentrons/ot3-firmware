@@ -42,7 +42,8 @@ SCENARIO("motor handler stall detection") {
 
     GIVEN("a linear move which is not expecting a stall") {
         auto cond = GENERATE(Stops::none, Stops::sync_line);
-        auto msg1 = Move{.duration = 23,
+        auto msg1 = Move{.message_index = 101,
+                         .duration = 23,
                          .velocity = default_velocity,
                          .stop_condition = static_cast<uint8_t>(cond)};
         auto msg2 = Move{.duration = 10, .velocity = default_velocity};
@@ -60,20 +61,25 @@ SCENARIO("motor handler stall detection") {
             THEN("the stall is detected") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-                THEN("a unrecoverable collision error is raised") {
-                    REQUIRE(test_objs.reporter.messages.size() == 2);
-                    can::messages::ErrorMessage err =
-                        std::get<can::messages::ErrorMessage>(
-                            test_objs.reporter.messages.front());
-                    REQUIRE(err.message_index == 0);
-                    REQUIRE(err.error_code ==
-                            can::ids::ErrorCode::collision_detected);
-                    REQUIRE(err.severity ==
-                            can::ids::ErrorSeverity::unrecoverable);
-                    usage_messages::IncreaseErrorCount inc_error_count =
-                        std::get<usage_messages::IncreaseErrorCount>(
-                            test_objs.reporter.messages.back());
-                    std::ignore = inc_error_count;
+                THEN("a move complete with position error ack is sent") {
+                    Ack ack_msg = std::get<Ack>(test_objs.reporter.messages[0]);
+                    REQUIRE(ack_msg.ack_id == AckMessageId::position_error);
+                    REQUIRE(ack_msg.message_index == 101);
+
+                    THEN("a unrecoverable collision error is raised") {
+                        can::messages::ErrorMessage err =
+                            std::get<can::messages::ErrorMessage>(
+                                test_objs.reporter.messages[1]);
+                        REQUIRE(err.message_index == 101);
+                        REQUIRE(err.error_code ==
+                                can::ids::ErrorCode::collision_detected);
+                        REQUIRE(err.severity ==
+                                can::ids::ErrorSeverity::unrecoverable);
+                        usage_messages::IncreaseErrorCount inc_error_count =
+                            std::get<usage_messages::IncreaseErrorCount>(
+                                test_objs.reporter.messages[2]);
+                        std::ignore = inc_error_count;
+                    }
                 }
             }
         }
