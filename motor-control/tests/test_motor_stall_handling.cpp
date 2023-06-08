@@ -274,11 +274,48 @@ SCENARIO("motor handler stall detection") {
         }
     }
 
-    GIVEN("a home move") {
+    GIVEN("a home move with a stall detected") {
+        test_objs.hw.set_mock_lim_sw(false);
+        test_objs.hw.position_flags.clear_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
+        test_objs.hw.position_flags.clear_flag(
+            MotorPositionStatus::Flags::stepper_position_ok);
         auto msg1 =
             Move{.duration = 23,
                  .velocity = -default_velocity,
                  .stop_condition = static_cast<uint8_t>(Stops::limit_switch)};
+        auto msg2 = Move{.duration = 10, .velocity = default_velocity};
+        test_objs.queue.try_write(msg1);
+        test_objs.queue.try_write(msg2);
+        REQUIRE(test_objs.queue.get_size() == 2);
+        test_objs.handler.update_move();
+
+        WHEN("encoder doesn't update with the motor") {
+            REQUIRE(test_objs.queue.get_size() == 1);
+            REQUIRE(test_objs.reporter.messages.size() == 0);
+            for (int i = 0; i < (int)msg1.duration; ++i) {
+                test_objs.handler.run_interrupt();
+            }
+            THEN("the stall is detected") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    Flags::stepper_position_ok));
+                THEN("move completed and no error was raised") {
+                    REQUIRE(test_objs.reporter.messages.size() == 1);
+                    Ack ack_msg =
+                        std::get<Ack>(test_objs.reporter.messages.front());
+                    REQUIRE(ack_msg.ack_id ==
+                            AckMessageId::complete_without_condition);
+                }
+            }
+        }
+    }
+
+    GIVEN("a limit switch backoff move with a stall detected") {
+        test_objs.hw.set_mock_lim_sw(true);
+        auto msg1 = Move{.duration = 23,
+                         .velocity = default_velocity,
+                         .stop_condition =
+                             static_cast<uint8_t>(Stops::limit_switch_backoff)};
         auto msg2 = Move{.duration = 10, .velocity = default_velocity};
         test_objs.queue.try_write(msg1);
         test_objs.queue.try_write(msg2);
