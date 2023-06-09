@@ -62,7 +62,14 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
                                .active_setting = AUX1_ID_MCU_AS},
     .aux2_id = gpio::PinConfig{.port = AUX2_ID_MCU_PORT,
                                .pin = AUX2_ID_MCU_PIN,
-                               .active_setting = AUX2_ID_MCU_AS}};
+                               .active_setting = AUX2_ID_MCU_AS}
+#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    ,
+    .heartbeat_led = gpio::PinConfig{.port = HEARTBEAT_PORT,
+                                     .pin = HEARTBEAT_PIN,
+                                     .active_setting = HEARTBEAT_AS}
+#endif
+};
 
 static auto light_control_task_builder =
     freertos_task::TaskStarter<512, light_control_task::LightControlTask>{};
