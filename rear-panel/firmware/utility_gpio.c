@@ -102,7 +102,7 @@ void estop_input_gpio_init() {
 }
 
 void door_open_input_gpio_init() {
-       /* GPIO Ports Clock Enable */
+    /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /*Configure GPIO pin DOOR_OPEN : PB0 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -112,10 +112,38 @@ void door_open_input_gpio_init() {
     HAL_GPIO_Init(DOOR_OPEN_MCU_PORT, &GPIO_InitStruct);
 }
 
+void pgood_input_gpio_init() {
+    #if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    /* GPIO Ports Clock Enable */
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /*Configure GPIO pin PGOOD : PA8 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = PGOOD_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(PGOOD_MCU_PORT, &GPIO_InitStruct);
+    #endif
+}
+
+static void heartbeat_led_init() {
+    /*Configure GPIO pin*/
+#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = HEARTBEAT_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(HEARTBEAT_PORT, &GPIO_InitStruct);
+#endif
+}
+
+
 void utility_gpio_init(void) {
+    heartbeat_led_init();
     sync_drive_gpio_init();
     estop_output_gpio_init();
     estop_input_gpio_init();
     door_open_input_gpio_init();
     aux_input_gpio_init();
+    pgood_input_gpio_init();
 }
