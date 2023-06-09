@@ -32,7 +32,7 @@ static auto i2c3_poll_task_builder =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
-static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
+static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins {
     .estop_out = gpio::PinConfig{.port = ESTOP_MCU_OUT_PORT,
                                  .pin = ESTOP_MCU_OUT_PIN,
                                  .active_setting = ESTOP_MCU_OUT_AS},
@@ -60,14 +60,15 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .aux1_id = gpio::PinConfig{.port = AUX1_ID_MCU_PORT,
                                .pin = AUX1_ID_MCU_PIN,
                                .active_setting = AUX1_ID_MCU_AS},
-    .aux2_id = gpio::PinConfig{.port = AUX2_ID_MCU_PORT,
-                               .pin = AUX2_ID_MCU_PIN,
-                               .active_setting = AUX2_ID_MCU_AS}
+    .aux2_id = gpio::PinConfig {
+        .port = AUX2_ID_MCU_PORT, .pin = AUX2_ID_MCU_PIN,
+        .active_setting = AUX2_ID_MCU_AS
+    }
 #if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
-    ,
-    .heartbeat_led = gpio::PinConfig{.port = HEARTBEAT_PORT,
-                                     .pin = HEARTBEAT_PIN,
-                                     .active_setting = HEARTBEAT_AS}
+    , .heartbeat_led = gpio::PinConfig {
+        .port = HEARTBEAT_PORT, .pin = HEARTBEAT_PIN,
+        .active_setting = HEARTBEAT_AS
+    }
 #endif
 };
 

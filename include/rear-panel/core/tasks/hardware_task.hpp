@@ -103,7 +103,9 @@ class HardwareTask {
     void heartbeat(gpio::PinConfig heartbeat_led) {
         if (gpio::is_set(heartbeat_led)) {
             gpio::reset(heartbeat_led);
-        } else { gpio::set(heartbeat_led); }
+        } else {
+            gpio::set(heartbeat_led);
+        }
     }
 #endif
     /**
