@@ -84,6 +84,9 @@ static auto light_control_timer = light_control_task::timer::LightControlTimer(
 static auto hardware_task_builder =
     freertos_task::TaskStarter<512, hardware_task::HardwareTask>{};
 
+static auto heartbeat_task_builder =
+    freertos_task::TaskStarter<512, heartbeat_task::HeartbeatTask>{};
+
 static auto animation_handler = light_control_task::Animation();
 
 /**
@@ -130,6 +133,11 @@ void rear_panel_tasks::start_tasks(
         hardware_task_builder.start(5, "hardware", gpio_drive_pins);
     tasks.hardware_task = &hardwarectl_task;
     queues.hardware_queue = &hardwarectl_task.get_queue();
+#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    auto& heartbeat_task =
+        heartbeat_task_builder.start(5, "heartbeat", gpio_drive_pins);
+    tasks.heartbeat_task = &heartbeat_task;
+#endif
 }
 
 /**

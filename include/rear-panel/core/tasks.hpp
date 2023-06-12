@@ -12,6 +12,7 @@
 #include "rear-panel/core/messages.hpp"
 #include "rear-panel/core/queues.hpp"
 #include "rear-panel/core/tasks/hardware_task.hpp"
+#include "rear-panel/core/tasks/heartbeat_task.hpp"
 #include "rear-panel/core/tasks/host_comms_task.hpp"
 #include "rear-panel/core/tasks/light_control_task.hpp"
 #include "rear-panel/core/tasks/system_task.hpp"
@@ -54,6 +55,8 @@ struct AllTask {
 
     hardware_task::HardwareTask<freertos_message_queue::FreeRTOSMessageQueue>*
         hardware_task{nullptr};
+    heartbeat_task::HeartbeatTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        heartbeat_task{nullptr};
 };
 
 /**

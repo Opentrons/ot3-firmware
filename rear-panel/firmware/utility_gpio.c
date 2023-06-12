@@ -128,6 +128,7 @@ void pgood_input_gpio_init() {
 static void heartbeat_led_init() {
     /*Configure GPIO pin*/
 #if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = HEARTBEAT_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;

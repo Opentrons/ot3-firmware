@@ -99,15 +99,6 @@ class HardwareTask {
         };
     }
 
-#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
-    void heartbeat(gpio::PinConfig heartbeat_led) {
-        if (gpio::is_set(heartbeat_led)) {
-            gpio::reset(heartbeat_led);
-        } else {
-            gpio::set(heartbeat_led);
-        }
-    }
-#endif
     /**
      * Task entry point.
      */
@@ -132,9 +123,6 @@ class HardwareTask {
                 send_state_change_messages(new_state, current_state);
                 current_state = new_state;
             }
-#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
-            heartbeat(drive_pins->heartbeat_led);
-#endif
             vTaskDelay(100);
         }
     }
