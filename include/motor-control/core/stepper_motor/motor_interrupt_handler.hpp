@@ -409,13 +409,13 @@ class MotorInterruptHandler {
         if (has_active_move) {
             message_index = buffered_move.message_index;
         }
-        if (err_code == can::ids::ErrorCode::collision_detected) {
-            build_and_send_ack(AckMessageId::position_error);
-        }
         status_queue_client.send_move_status_reporter_queue(
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
+        if (err_code == can::ids::ErrorCode::collision_detected) {
+            build_and_send_ack(AckMessageId::position_error);
+        }
         status_queue_client.send_move_status_reporter_queue(
             usage_messages::IncreaseErrorCount{
                 .key =

@@ -61,20 +61,20 @@ SCENARIO("motor handler stall detection") {
             THEN("the stall is detected") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     Flags::stepper_position_ok));
-                THEN("a move complete with position error ack is sent") {
-                    Ack ack_msg = std::get<Ack>(test_objs.reporter.messages[0]);
-                    REQUIRE(ack_msg.ack_id == AckMessageId::position_error);
-                    REQUIRE(ack_msg.message_index == 101);
-
-                    THEN("a unrecoverable collision error is raised") {
-                        can::messages::ErrorMessage err =
-                            std::get<can::messages::ErrorMessage>(
-                                test_objs.reporter.messages[1]);
-                        REQUIRE(err.message_index == 101);
-                        REQUIRE(err.error_code ==
-                                can::ids::ErrorCode::collision_detected);
-                        REQUIRE(err.severity ==
-                                can::ids::ErrorSeverity::unrecoverable);
+                THEN("a unrecoverable collision error is raised") {
+                    can::messages::ErrorMessage err =
+                        std::get<can::messages::ErrorMessage>(
+                            test_objs.reporter.messages[0]);
+                    REQUIRE(err.message_index == 101);
+                    REQUIRE(err.error_code ==
+                            can::ids::ErrorCode::collision_detected);
+                    REQUIRE(err.severity ==
+                            can::ids::ErrorSeverity::unrecoverable);
+                    THEN("a move complete with position error ack is sent") {
+                        Ack ack_msg =
+                            std::get<Ack>(test_objs.reporter.messages[1]);
+                        REQUIRE(ack_msg.ack_id == AckMessageId::position_error);
+                        REQUIRE(ack_msg.message_index == 101);
                         usage_messages::IncreaseErrorCount inc_error_count =
                             std::get<usage_messages::IncreaseErrorCount>(
                                 test_objs.reporter.messages[2]);
