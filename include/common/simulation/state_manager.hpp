@@ -24,7 +24,9 @@
 #include <boost/bind.hpp>
 #include <boost/program_options.hpp>
 #include <deque>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -41,6 +43,8 @@ using namespace state_manager_parser;
 auto add_options(boost::program_options::options_description &cmdline_desc,
                  boost::program_options::options_description &env_desc)
     -> std::function<std::string(std::string)>;
+
+using Callback = std::function<void()>;
 
 /**
  * @brief Manages the datagram connection to the central state manager.
@@ -69,13 +73,19 @@ class StateManagerConnection {
     using MQueue = std::deque<StateMessage>;
     static constexpr size_t MaxReceive = 128;
     static constexpr int ConnectionTimeout = 5;
+    static constexpr int InstrumentPollPeriod = 1;
 
-    explicit StateManagerConnection(std::string host, uint32_t port)
+    explicit StateManagerConnection(
+        std::string host, uint32_t port,
+        std::optional<Callback> instrument_cb = std::nullopt)
         : _host(host),
           _port(port),
           _socket(_service),
           _connection_timer(_service,
-                            boost::asio::chrono::seconds(ConnectionTimeout)) {}
+                            boost::asio::chrono::seconds(ConnectionTimeout)),
+          _instrument_cb(instrument_cb),
+          _instrument_poller(
+              _service, boost::asio::chrono::seconds(InstrumentPollPeriod)) {}
     ~StateManagerConnection() { close(); }
     StateManagerConnection(const StateManagerConnection &) = delete;
     StateManagerConnection(const StateManagerConnection &&) = delete;
@@ -105,7 +115,10 @@ class StateManagerConnection {
                         boost::asio::placeholders::error,
                         boost::asio::placeholders::bytes_transferred));
         get_sync_state();
-        timer_kickoff();
+        connection_timer_kickoff();
+        if (_instrument_cb.has_value()) {
+            instrument_poller_kickoff();
+        }
         // Should run until the program is killed
         while (1) {
             _service.run();
@@ -157,7 +170,16 @@ class StateManagerConnection {
         send_message(message);
     }
 
-    auto current_sync_state() -> SyncPinState { return SyncPinState::LOW; }
+    auto poll_for_instruments() -> void {
+        std::array<uint8_t, 4> message = {4, 0x00, 0x00, 0x00};
+        send_message(message);
+    }
+
+    auto current_sync_state() -> SyncPinState { return _sync_pin_state; }
+
+    auto attached_instruments() -> attached_instruments::AttachedInstruments {
+        return _attached_instruments;
+    }
 
   private:
     /**
@@ -225,6 +247,17 @@ class StateManagerConnection {
                 _got_response = true;
                 LOG("Updated sync pin value: %d",
                     static_cast<int>(_sync_pin_state.load()));
+            } else if (std::holds_alternative<
+                           attached_instruments::AttachedInstruments>(
+                           response)) {
+                _attached_instruments =
+                    std::get<attached_instruments::AttachedInstruments>(
+                        response);
+                _got_response = true;
+
+                if (_instrument_cb.has_value()) {
+                    _instrument_cb.value()();
+                }
             }
 
             _socket.async_receive(
@@ -235,25 +268,44 @@ class StateManagerConnection {
         }
     }
 
-    auto handle_timer_expiration(const boost::system::error_code &error)
-        -> void {
+    auto handle_connection_timer_expiration(
+        const boost::system::error_code &error) -> void {
         std::ignore = error;
         if (!_got_response.load()) {
             LOG("Haven't heard from state manager. Retrying connection.");
             // We haven't gotten a response, so send a query to the state
             // manager and refresh this timer
             get_sync_state();
-            timer_kickoff();
+            connection_timer_kickoff();
         }
     }
 
-    auto timer_kickoff() -> void {
+    auto handle_instrument_poller_expiration(
+        const boost::system::error_code &error) -> void {
+        std::ignore = error;
+        if (_got_response.load()) {
+            // Poll the state manager for instruments
+            poll_for_instruments();
+            instrument_poller_kickoff();
+        }
+    }
+
+    auto connection_timer_kickoff() -> void {
         _connection_timer.cancel();
         _connection_timer.expires_after(
             boost::asio::chrono::seconds(ConnectionTimeout));
-        _connection_timer.async_wait(
-            boost::bind(&std::decay_t<decltype(*this)>::handle_timer_expiration,
-                        this, boost::asio::placeholders::error));
+        _connection_timer.async_wait(boost::bind(
+            &std::decay_t<decltype(*this)>::handle_connection_timer_expiration,
+            this, boost::asio::placeholders::error));
+    }
+
+    auto instrument_poller_kickoff() -> void {
+        _instrument_poller.cancel();
+        _instrument_poller.expires_after(
+            boost::asio::chrono::seconds(InstrumentPollPeriod));
+        _instrument_poller.async_wait(boost::bind(
+            &std::decay_t<decltype(*this)>::handle_instrument_poller_expiration,
+            this, boost::asio::placeholders::error));
     }
 
     auto open() -> bool {
@@ -296,16 +348,20 @@ class StateManagerConnection {
     std::array<uint8_t, MaxReceive> _rx_buf{};
     std::atomic<SyncPinState> _sync_pin_state = SyncPinState::LOW;
     std::atomic<bool> _got_response = false;
+    attached_instruments::AttachedInstruments _attached_instruments{};
     boost::asio::steady_timer _connection_timer;
+    std::optional<Callback> _instrument_cb;
+    boost::asio::steady_timer _instrument_poller;
 };
 
 template <synchronization::LockableProtocol CriticalSection>
-auto create(const boost::program_options::variables_map &options)
+auto create(const boost::program_options::variables_map &options,
+            std::optional<Callback> instrument_cb = std::nullopt)
     -> std::shared_ptr<StateManagerConnection<CriticalSection>> {
     auto host = options["state-mgr-host"].as<std::string>();
     auto port = options["state-mgr-port"].as<std::uint16_t>();
-    auto ret =
-        std::make_shared<StateManagerConnection<CriticalSection>>(host, port);
+    auto ret = std::make_shared<StateManagerConnection<CriticalSection>>(
+        host, port, instrument_cb);
     return ret;
 }
 

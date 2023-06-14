@@ -191,12 +191,19 @@ int main(int argc, char** argv) {
     auto options = handle_options(argc, argv);
 
     state_manager_connection = state_manager::create<
-        freertos_synchronization::FreeRTOSCriticalSection>(options);
+        freertos_synchronization::FreeRTOSCriticalSection>(options, [] {
+        auto* presence_task =
+            head_tasks::get_tasks().presence_sensing_driver_task;
+        if (presence_task) {
+            presence_task->notifier_callback();
+        }
+    });
     state_manager_task_control.start(5, "state mgr task",
                                      &state_manager_connection);
 
     motor_interface_right.provide_state_manager(state_manager_connection);
     motor_interface_left.provide_state_manager(state_manager_connection);
+    presence_sense_driver.provide_state_manager(state_manager_connection);
 
     motor_interface_right.provide_mech_config(motor_sys_config);
     motor_interface_left.provide_mech_config(motor_sys_config);
