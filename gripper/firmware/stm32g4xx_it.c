@@ -56,6 +56,9 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim15;
 
+extern void call_brushed_motor_handler();
+extern void call_motor_handler();
+
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
@@ -146,7 +149,14 @@ void FDCAN1_IT0_IRQHandler(void) {
  * @brief This function handles TIM1 update interrupt and TIM16 global
  * interrupt.
  */
-void TIM1_UP_TIM16_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
+ __attribute__((section(".ccmram")))
+void TIM1_UP_TIM16_IRQHandler(void) {
+    // We ONLY ever enable the Update interrupt, so for a small efficiency gain
+    // we always make the assumption that this interrupt was triggered by the
+    // TIM_IT_UPDATE source.
+    __HAL_TIM_CLEAR_IT(&htim1, TIM_IT_UPDATE);
+    call_brushed_motor_handler();
+ }
 
 /**
  * @brief This function handles TIM1 capture/compare interrupt.
@@ -169,7 +179,14 @@ void TIM8_UP_IRQHandler(void) { HAL_TIM_IRQHandler(&htim8); }
 /**
  * @brief This function handles TIM7 global interrupt.
  */
-void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
+__attribute__((section(".ccmram")))
+void TIM7_IRQHandler(void) {
+    // We ONLY ever enable the Update interrupt, so for a small efficiency gain
+    // we always make the assumption that this interrupt was triggered by the
+    // TIM_IT_UPDATE source.
+    __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
+    call_motor_handler();
+}
 
 extern void xPortSysTickHandler(void);
 void SysTick_Handler(void) {
