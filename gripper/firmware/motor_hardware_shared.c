@@ -177,6 +177,7 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef *htim) {
     }
 }
 
+__attribute__((section(".ccmram")))
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     // Check which version of the timer triggered this callback
     if (htim == &htim7 && timer_callback) {
