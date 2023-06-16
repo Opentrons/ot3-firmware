@@ -98,6 +98,7 @@ class HardwareTask {
             .aux2_id = aux2_id_bouncer.debounce_state(),
         };
     }
+
     /**
      * Task entry point.
      */

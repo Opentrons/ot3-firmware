@@ -32,7 +32,7 @@ static auto i2c3_poll_task_builder =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
-static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
+static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins {
     .estop_out = gpio::PinConfig{.port = ESTOP_MCU_OUT_PORT,
                                  .pin = ESTOP_MCU_OUT_PIN,
                                  .active_setting = ESTOP_MCU_OUT_AS},
@@ -60,9 +60,17 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
     .aux1_id = gpio::PinConfig{.port = AUX1_ID_MCU_PORT,
                                .pin = AUX1_ID_MCU_PIN,
                                .active_setting = AUX1_ID_MCU_AS},
-    .aux2_id = gpio::PinConfig{.port = AUX2_ID_MCU_PORT,
-                               .pin = AUX2_ID_MCU_PIN,
-                               .active_setting = AUX2_ID_MCU_AS}};
+    .aux2_id = gpio::PinConfig {
+        .port = AUX2_ID_MCU_PORT, .pin = AUX2_ID_MCU_PIN,
+        .active_setting = AUX2_ID_MCU_AS
+    }
+#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    , .heartbeat_led = gpio::PinConfig {
+        .port = HEARTBEAT_PORT, .pin = HEARTBEAT_PIN,
+        .active_setting = HEARTBEAT_AS
+    }
+#endif
+};
 
 static auto light_control_task_builder =
     freertos_task::TaskStarter<512, light_control_task::LightControlTask>{};
@@ -75,6 +83,9 @@ static auto light_control_timer = light_control_task::timer::LightControlTimer(
 
 static auto hardware_task_builder =
     freertos_task::TaskStarter<512, hardware_task::HardwareTask>{};
+
+static auto heartbeat_task_builder =
+    freertos_task::TaskStarter<512, heartbeat_task::HeartbeatTask>{};
 
 static auto animation_handler = light_control_task::Animation();
 
@@ -122,6 +133,11 @@ void rear_panel_tasks::start_tasks(
         hardware_task_builder.start(5, "hardware", gpio_drive_pins);
     tasks.hardware_task = &hardwarectl_task;
     queues.hardware_queue = &hardwarectl_task.get_queue();
+#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+    auto& heartbeat_task =
+        heartbeat_task_builder.start(5, "heartbeat", gpio_drive_pins);
+    tasks.heartbeat_task = &heartbeat_task;
+#endif
 }
 
 /**

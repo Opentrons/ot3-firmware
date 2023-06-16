@@ -81,4 +81,13 @@ void sync_drive_gpio_init();
 #define ESTOP_DETECT_AUX1_MCU_PORT GPIOB
 #define ESTOP_DETECT_AUX1_MCU_PIN GPIO_PIN_13
 
+#if !(PCBA_PRIMARY_REVISION == 'b' && PCBA_SECONDARY_REVISION == '1')
+// PGOOD_MCU_IN PA8
+#define PGOOD_MCU_PORT GPIOA
+#define PGOOD_MCU_PIN GPIO_PIN_8
+#define HEARTBEAT_PIN GPIO_PIN_9
+#define HEARTBEAT_PORT GPIOA
+#define HEARTBEAT_AS GPIO_PIN_SET
+#endif
+
 #pragma GCC diagnostic pop
