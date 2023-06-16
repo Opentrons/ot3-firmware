@@ -31,7 +31,7 @@ constexpr uint16_t ADDRESS = 0x67 << 1;
 
 // The pressure range is approximately 3922.0F. We shouldn't
 // need to ever exceed this value.
-constexpr float MAX_PRESSURE_READING = 3922.0F;
+constexpr float MAX_PRESSURE_READING = 392.2F;  // FIXME: 3922.0F
 
 enum class SensorStatus : uint8_t {
     SHUTDOWN = 0x0,
