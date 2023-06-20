@@ -10,6 +10,8 @@ add_executable(tests
     test_message_utils.cpp
     test_pid.cpp
     test_synchronization.cpp
+    test_sma.cpp
+    test_ema.cpp
 )
 
 target_include_directories(tests
