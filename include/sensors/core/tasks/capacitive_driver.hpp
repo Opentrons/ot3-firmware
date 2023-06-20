@@ -13,6 +13,8 @@
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
 
+#include "ot_utils/core/filters/sma.hpp"
+
 namespace sensors {
 
 namespace tasks {
@@ -241,11 +243,17 @@ class FDC1004 {
             fdc1004_utils::convert_reads(polling_results[0],
                                          polling_results[1]),
             1, current_offset_pf);
-        // TODO (lc 1-2-2022) we should figure out a better strategy for
-        // adjusting the capdac.
-        auto new_offset =
-            fdc1004_utils::update_offset(capacitance, current_offset_pf);
-        set_offset(new_offset);
+
+        if (data_unstable) {
+            filter.compute(capacitance);
+            data_unstable = filter.stop_filter();
+        } else {
+            auto new_offset =
+                fdc1004_utils::update_offset(capacitance, current_offset_pf);
+            set_offset(new_offset);
+        }
+
+
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
                 hardware.set_sync();
@@ -338,6 +346,7 @@ class FDC1004 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
 
+    ot_utils::filters::SimpleMovingAverage<int32_t> filter{};
     uint8_t sensor_binding{2};
     fdc1004::FDC1004RegisterMap _registers{};
     bool _initialized = false;
@@ -358,6 +367,7 @@ class FDC1004 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_capacitance_sync = false;
+    bool data_unstable = true;
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
 

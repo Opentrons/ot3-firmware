@@ -8,6 +8,7 @@ function(target_pipettes_core_common TARGET REVISION)
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/sensor_tasks.cpp)
     target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
     target_link_libraries(${TARGET} PUBLIC common-core)
+    target_include_directories(${TARGET} INTERFACE ${CMAKE_SOURCE_DIR}/cpp-utils/include)
 endfunction()
 
 function(target_pipettes_core_single TARGET REVISION)
