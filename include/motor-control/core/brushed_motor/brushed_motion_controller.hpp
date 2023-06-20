@@ -50,7 +50,9 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition = MoveStopCondition::none,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        enable_motor();
+        if (!enabled) {
+            enable_motor();
+        }
         queue.try_write(msg);
     }
 

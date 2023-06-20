@@ -158,9 +158,10 @@ class BrushedMotorInterruptHandler {
             }
         } else if (motor_state == ControlState::FORCE_CONTROLLING ||
                    motor_state == ControlState::FORCE_CONTROLLING_HOME) {
-            if (!is_idle && std::abs(hardware.get_encoder_pulses() -
-                                     hold_encoder_position) >
-                                error_conf.unwanted_movement_threshold) {
+            auto pulses = hardware.get_encoder_pulses();
+            if (!is_idle && pulses >= 0 &&
+                std::abs(pulses - hold_encoder_position) >
+                    error_conf.unwanted_movement_threshold) {
                 // we have likely dropped a labware or had a collision
                 auto err = motor_state == ControlState::FORCE_CONTROLLING
                                ? can::ids::ErrorCode::labware_dropped
