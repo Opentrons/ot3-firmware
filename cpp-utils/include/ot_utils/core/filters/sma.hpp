@@ -54,14 +54,17 @@ class SimpleMovingAverage {
     }
 
   private:
-    I window_divisor = fixed_point::convert_to_fixed_point<I>(
-        static_cast<float>(1.0 / WindowSize), Radix);
     I previous = 0;
     I running_average = 0;
     std::array<I, WindowSize> window{0};
     int current_index = 0;
-    I WHOLE_NUMBER_MASK = 0xFF << Radix;
     bool exceeded_window = false;
+
+    const I window_divisor = fixed_point::convert_to_fixed_point<I>(
+        static_cast<float>(1.0 / WindowSize), Radix);
+
+    const I WHOLE_NUMBER_MASK = 0xFF << Radix;
+
 };
 }  // namespace filters
 

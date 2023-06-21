@@ -26,12 +26,12 @@ class ExponentialMovingAverage {
 
   private:
     IntegerValue prior_average = 0;
-    float current_weight = static_cast<float>(1.0 / AlphaDivisor);
-    float prior_weight = 1 - current_weight;
-    IntegerValue fixed_point_current_weight =
+    const float current_weight = static_cast<float>(1.0 / AlphaDivisor);
+    const float prior_weight = 1 - current_weight;
+    const IntegerValue fixed_point_current_weight =
         fixed_point::convert_to_fixed_point<IntegerValue>(current_weight,
                                                           Radix);
-    IntegerValue fixed_point_prior_weight =
+    const IntegerValue fixed_point_prior_weight =
         fixed_point::convert_to_fixed_point<IntegerValue>(prior_weight, Radix);
 };
 }  // namespace filters
