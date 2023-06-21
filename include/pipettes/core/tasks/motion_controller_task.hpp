@@ -116,15 +116,15 @@ class MotionControllerMessageHandler {
         return a + b;
     }
 
-    void handle(const can::messages::UpdateGearMotorPositionEstimationRequest& m) {
+    void handle(
+        const can::messages::UpdateGearMotorPositionEstimationRequest& m) {
         if (!controller.update_gear_position(m)) {
             watch_variable = watch_function();
             // If the motor controller can't ask the interrupt handler to
             // handle the message, we respond with the current status as-is.
             can::messages::UpdateGearMotorPositionEstimationResponse response{
                 .message_index = m.message_index,
-                .current_position = controller.read_motor_position()
-            };
+                .current_position = controller.read_motor_position()};
             can_client.send_can_message(can::ids::NodeId::host, response);
         }
     }
@@ -144,58 +144,58 @@ class MotionControllerMessageHandler {
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
-    };
+};
+
+/**
+ * The task entry point.
+ */
+template <template <class> class QueueImpl>
+requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
+class MotionControllerTask {
+  public:
+    using Messages = TaskMessage;
+    using QueueType = QueueImpl<TaskMessage>;
+    MotionControllerTask(QueueType& queue) : queue{queue} {}
+    MotionControllerTask(const MotionControllerTask& c) = delete;
+    MotionControllerTask(const MotionControllerTask&& c) = delete;
+    auto operator=(const MotionControllerTask& c) = delete;
+    auto operator=(const MotionControllerTask&& c) = delete;
+    ~MotionControllerTask() = default;
 
     /**
-     * The task entry point.
+     * Task entry point.
      */
-    template <template <class> class QueueImpl>
-    requires MessageQueue<QueueImpl<TaskMessage>, TaskMessage>
-    class MotionControllerTask {
-      public:
-        using Messages = TaskMessage;
-        using QueueType = QueueImpl<TaskMessage>;
-        MotionControllerTask(QueueType& queue) : queue{queue} {}
-        MotionControllerTask(const MotionControllerTask& c) = delete;
-        MotionControllerTask(const MotionControllerTask&& c) = delete;
-        auto operator=(const MotionControllerTask& c) = delete;
-        auto operator=(const MotionControllerTask&& c) = delete;
-        ~MotionControllerTask() = default;
-
-        /**
-         * Task entry point.
-         */
-        template <lms::MotorMechanicalConfig MEConfig,
-                  can::message_writer_task::TaskClient CanClient,
-                  usage_storage_task::TaskClient UsageClient>
-        [[noreturn]] void operator()(
-            pipette_motion_controller::PipetteMotionController<MEConfig>*
-                controller,
-            CanClient* can_client, UsageClient* usage_client) {
-            auto handler = MotionControllerMessageHandler{
-                *controller, *can_client, *usage_client};
-            TaskMessage message{};
-            for (;;) {
-                if (queue.try_read(&message, queue.max_delay)) {
-                    handler.handle_message(message);
-                }
+    template <lms::MotorMechanicalConfig MEConfig,
+              can::message_writer_task::TaskClient CanClient,
+              usage_storage_task::TaskClient UsageClient>
+    [[noreturn]] void operator()(
+        pipette_motion_controller::PipetteMotionController<MEConfig>*
+            controller,
+        CanClient* can_client, UsageClient* usage_client) {
+        auto handler = MotionControllerMessageHandler{*controller, *can_client,
+                                                      *usage_client};
+        TaskMessage message{};
+        for (;;) {
+            if (queue.try_read(&message, queue.max_delay)) {
+                handler.handle_message(message);
             }
         }
+    }
 
-        [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
+    [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
-      private:
-        QueueType& queue;
-    };
+  private:
+    QueueType& queue;
+};
 
-    /**
-     * Concept describing a class that can message this task.
-     * @tparam Client
-     */
-    template <typename Client>
-    concept TaskClient = requires(Client client, const TaskMessage& m) {
-        {client.send_motion_controller_queue(m)};
-    };
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_motion_controller_queue(m)};
+};
 
 }  // namespace motion_controller_task
 }  // namespace tasks

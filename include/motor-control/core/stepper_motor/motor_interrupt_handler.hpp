@@ -62,8 +62,7 @@ class MotorInterruptHandler {
           status_queue_client(outgoing_queue),
           hardware(hardware_iface),
           stall_checker{stall},
-          update_position_queue(incoming_update_position_queue)
-    {
+          update_position_queue(incoming_update_position_queue) {
         hardware.unstep();
     }
     ~MotorInterruptHandler() = default;
@@ -538,12 +537,10 @@ class MotorInterruptHandler {
             if (!hardware.has_encoder()) {
                 auto ack = motor_messages::UpdateGearMotorPositionResponse{
                     .message_index = msg.message_index,
-                    .stepper_position_counts = hardware.get_step_tracker()
-                };
+                    .stepper_position_counts = hardware.get_step_tracker()};
                 static_cast<void>(
                     status_queue_client.send_move_status_reporter_queue(ack));
-            }
-            else {
+            } else {
                 auto ack = motor_messages::UpdatePositionResponse{
                     .message_index = msg.message_index,
                     .stepper_position_counts = hardware.get_step_tracker(),
