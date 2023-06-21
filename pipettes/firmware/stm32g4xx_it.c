@@ -119,7 +119,7 @@ void DebugMon_Handler(void) {}
 /******************************************************************************/
 
 void EXTI2_IRQHandler(void) {
-    __HAL_GPIO_EXTI_CLEAR_FLAG(GPIO_PIN_2);
+    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_2);
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
 }
 
