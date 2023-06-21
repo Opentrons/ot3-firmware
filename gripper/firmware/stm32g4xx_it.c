@@ -131,16 +131,19 @@ void DebugMon_Handler(void) {}
 /**
  * @brief This function handles DMA1 channel2 global interrupt.
  */
+ __attribute__((section(".ccmram")))
 void DMA1_Channel2_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_rx); }
 
 /**
  * @brief This function handles DMA1 channel3 global interrupt.
  */
+ __attribute__((section(".ccmram")))
 void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 
 /**
  * @brief This function handles FDCAN1 interrupt 0.
  */
+ __attribute__((section(".ccmram")))
 void FDCAN1_IT0_IRQHandler(void) {
     HAL_FDCAN_IRQHandler(can_get_device_handle());
 }
@@ -161,20 +164,27 @@ void TIM1_UP_TIM16_IRQHandler(void) {
 /**
  * @brief This function handles TIM1 capture/compare interrupt.
  */
+__attribute__((section(".ccmram")))
 void TIM1_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
 
 /**
  * @brief This function handles TIM3 global interrupt.
  */
+__attribute__((section(".ccmram")))
 void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
+__attribute__((section(".ccmram")))
 void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
+__attribute__((section(".ccmram")))
 void TIM4_IRQHandler(void) { HAL_TIM_IRQHandler(&htim4); }
+__attribute__((section(".ccmram")))
 void TIM1_BRK_TIM15_IRQHandler(void) { HAL_TIM_IRQHandler(&htim15); }
 
+__attribute__((section(".ccmram")))
 void TIM8_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim8); }
 
+__attribute__((section(".ccmram")))
 void TIM8_UP_IRQHandler(void) { HAL_TIM_IRQHandler(&htim8); }
 /**
  * @brief This function handles TIM7 global interrupt.
