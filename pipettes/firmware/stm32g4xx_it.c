@@ -119,14 +119,11 @@ void DebugMon_Handler(void) {}
 /******************************************************************************/
 
 void EXTI2_IRQHandler(void) {
-    __HAL_GPIO_EXTI_CLEAR_FLAG(EXTI_LINE_2);
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
 }
 
 void EXTI9_5_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_7)) {
-        // clear pending
-        __HAL_GPIO_EXTI_CLEAR_FLAG(GPIO_PIN_7);
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7); 
     }
 }
@@ -134,7 +131,6 @@ void EXTI9_5_IRQHandler(void) {
 
 void EXTI15_10_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12)) {
-        __HAL_GPIO_EXTI_CLEAR_FLAG(GPIO_PIN_12);
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
     }
 }
