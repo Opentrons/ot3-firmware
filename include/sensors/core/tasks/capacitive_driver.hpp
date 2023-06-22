@@ -239,15 +239,17 @@ class FDC1004 {
             stop_continuous_polling(m.id.token);
             return;
         }
-        auto capacitance = fdc1004_utils::convert_capacitance(
-            fdc1004_utils::convert_reads(polling_results[0],
-                                         polling_results[1]),
-            1, current_offset_pf);
+
+        auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0], polling_results[1]);
 
         if (data_unstable) {
-            filter.compute(capacitance);
+            raw_capacitance = filter.compute(raw_capacitance);
             data_unstable = filter.stop_filter();
-        } else {
+        }
+
+        auto capacitance = fdc1004_utils::convert_capacitance(raw_capacitance, 1, current_offset_pf);
+
+        if (!data_unstable) {
             auto new_offset =
                 fdc1004_utils::update_offset(capacitance, current_offset_pf);
             set_offset(new_offset);
