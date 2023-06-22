@@ -56,7 +56,7 @@ template <typename integer_t>
 requires std::is_integral_v<integer_t>
 auto fixed_point_multiply(std::size_t a, std::size_t b, int radix)
     -> integer_t {
-    using SizeUpType = size_up<integer_t>::type;
+    using SizeUpType = typename size_up<integer_t>::type;
     SizeUpType result = static_cast<SizeUpType>(a) * static_cast<SizeUpType>(b);
     return integer_t((result >> radix) & ~(1<<sizeof(integer_t)));
 }
