@@ -51,7 +51,7 @@ class MotorInterruptHandler {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
     using UpdatePositionQueue = QueueImpl<UpdatePositionMessage>;
-
+//    using PositionEstimateResponse = typename UpdatePositionMessage::Response;
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
@@ -534,21 +534,22 @@ class MotorInterruptHandler {
             }
             // We send an ack even if the position wasn't updated
 
-            if (!hardware.has_encoder()) {
-                auto ack = motor_messages::UpdateGearMotorPositionResponse{
-                    .message_index = msg.message_index,
-                    .stepper_position_counts = hardware.get_step_tracker()};
-                static_cast<void>(
-                    status_queue_client.send_move_status_reporter_queue(ack));
-            } else {
-                auto ack = motor_messages::UpdatePositionResponse{
-                    .message_index = msg.message_index,
-                    .stepper_position_counts = hardware.get_step_tracker(),
-                    .encoder_pulses = encoder_pulses,
-                    .position_flags = hardware.position_flags.get_flags()};
-                static_cast<void>(
-                    status_queue_client.send_move_status_reporter_queue(ack));
-            }
+//            if (!hardware.has_encoder()) {
+//                auto ack = motor_messages::UpdateGearMotorPositionResponse{
+//                    .message_index = msg.message_index,
+//                    .stepper_position_counts = hardware.get_step_tracker()};
+//                static_cast<void>(
+//                    status_queue_client.send_move_status_reporter_queue(ack));
+//            }
+//            else {
+            auto ack = UpdatePositionResponse{
+                .message_index = msg.message_index,
+                .stepper_position_counts = hardware.get_step_tracker(),
+                .encoder_pulses = encoder_pulses,
+                .position_flags = hardware.position_flags.get_flags()};
+            static_cast<void>(
+                status_queue_client.send_move_status_reporter_queue(ack));
+//            }
         }
     }
 

@@ -48,6 +48,18 @@ class MoveStatusMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
+    void handle_message(const motor_messages::UpdatePositionResponse& message) {
+        can::messages::UpdateGearMotorPositionEstimationResponse msg = {
+            .message_index = message.message_index,
+            .current_position = fixed_point_multiply(
+                um_per_step, message.stepper_position_counts),
+//            .encoder_position = fixed_point_multiply(
+//                um_per_encoder_pulse, message.encoder_pulses, radix_offset_0{}),
+//            .position_flags = message.position_flags
+        };
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     void handle_message(std::monostate&) {}
 
     /**
