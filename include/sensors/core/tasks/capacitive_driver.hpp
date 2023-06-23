@@ -9,11 +9,10 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
+#include "ot_utils/core/filters/sma.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
-
-#include "ot_utils/core/filters/sma.hpp"
 
 namespace sensors {
 
@@ -240,21 +239,22 @@ class FDC1004 {
             return;
         }
 
-        auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0], polling_results[1]);
+        auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0],
+                                                            polling_results[1]);
 
         if (data_unstable) {
             raw_capacitance = filter.compute(raw_capacitance);
             data_unstable = filter.stop_filter();
         }
 
-        auto capacitance = fdc1004_utils::convert_capacitance(raw_capacitance, 1, current_offset_pf);
+        auto capacitance = fdc1004_utils::convert_capacitance(
+            raw_capacitance, 1, current_offset_pf);
 
         if (!data_unstable) {
             auto new_offset =
                 fdc1004_utils::update_offset(capacitance, current_offset_pf);
             set_offset(new_offset);
         }
-
 
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
