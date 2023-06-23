@@ -60,7 +60,7 @@ int32_t MotorHardware::get_encoder_pulses() {
     // Since our overflow count is the high bits of a 32 bit value while
     // the counter is the low 16 bits (see below), we can just bit-pack
     // the value and everything will work.
-    if (!enc_handle) {
+    if (!enc_handle or !motor_hardware_encoder_running(enc_handle)) {
         return 0;
     }
     return (motor_encoder_overflow_count << 16) +
