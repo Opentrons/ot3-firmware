@@ -64,14 +64,15 @@ int32_t MotorHardware::get_encoder_pulses() {
         return 0;
     }
     return (motor_encoder_overflow_count << 16) +
-           motor_hardware_encoder_pulse_count(enc_handle);
+           motor_hardware_encoder_pulse_count(enc_handle) -
+           static_cast<int32_t>(encoder_reset_offset);
 }
 
 void MotorHardware::reset_encoder_pulses() {
     if (!enc_handle) {
         return;
     }
-    motor_hardware_reset_encoder_count(enc_handle);
+    motor_hardware_reset_encoder_count(enc_handle, encoder_reset_offset);
     motor_encoder_overflow_count = 0;
 }
 

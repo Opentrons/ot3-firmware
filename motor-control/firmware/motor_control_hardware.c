@@ -106,9 +106,9 @@ int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
     return pulses;
 }
 
-void motor_hardware_reset_encoder_count(void* enc_htim) {
+void motor_hardware_reset_encoder_count(void* enc_htim, uint16_t reset_value) {
     __HAL_TIM_CLEAR_FLAG((TIM_HandleTypeDef*)enc_htim, TIM_FLAG_UPDATE);
-    __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, 0);
+    __HAL_TIM_SET_COUNTER((TIM_HandleTypeDef*)enc_htim, reset_value);
 }
 
 uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t clear) {

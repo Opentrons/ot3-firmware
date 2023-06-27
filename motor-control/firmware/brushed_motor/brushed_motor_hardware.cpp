@@ -77,7 +77,7 @@ void BrushedMotorHardware::reset_encoder_pulses() {
     if (!enc_handle) {
         return;
     }
-    motor_hardware_reset_encoder_count(enc_handle);
+    motor_hardware_reset_encoder_count(enc_handle, 0);
     motor_encoder_overflow_count = 0;
 }
 
