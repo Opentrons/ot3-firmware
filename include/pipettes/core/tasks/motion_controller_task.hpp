@@ -110,16 +110,9 @@ class MotionControllerMessageHandler {
         controller.move(m);
     }
 
-    int watch_function() {
-        int a = 1;
-        int b = 1;
-        return a + b;
-    }
-
     void handle(
         const can::messages::UpdateGearMotorPositionEstimationRequest& m) {
         if (!controller.update_gear_position(m)) {
-            watch_variable = watch_function();
             // If the motor controller can't ask the interrupt handler to
             // handle the message, we respond with the current status as-is.
             can::messages::UpdateGearMotorPositionEstimationResponse response{
