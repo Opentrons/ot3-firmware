@@ -3,7 +3,7 @@
 #include "ot_utils/core/fixed_point.hpp"
 
 // Exponential Moving Average Algorithm
-// A infinite impulse response (IIR) or non-windowed
+// A infinite impulse response (IIR) or non-windowed filter
 namespace ot_utils {
 
 namespace filters {

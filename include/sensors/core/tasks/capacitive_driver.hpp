@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bitset>
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
@@ -69,6 +70,7 @@ class FDC1004 {
             }
             sensor_id = _id;
             update_capacitance_configuration();
+            filter.reset_filter();
         }
     }
 
@@ -242,15 +244,15 @@ class FDC1004 {
         auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0],
                                                             polling_results[1]);
 
-        if (data_unstable) {
+        if (data_unstable[int(sensor_id)]) {
             raw_capacitance = filter.compute(raw_capacitance);
-            data_unstable = filter.stop_filter();
+            data_unstable.set(int(sensor_id), filter.stop_filter());
         }
 
         auto capacitance = fdc1004_utils::convert_capacitance(
             raw_capacitance, 1, current_offset_pf);
 
-        if (!data_unstable) {
+        if (!data_unstable[int(sensor_id)]) {
             auto new_offset =
                 fdc1004_utils::update_offset(capacitance, current_offset_pf);
             set_offset(new_offset);
@@ -369,7 +371,7 @@ class FDC1004 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_capacitance_sync = false;
-    bool data_unstable = true;
+    std::bitset<2> data_unstable{"11"};
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
 

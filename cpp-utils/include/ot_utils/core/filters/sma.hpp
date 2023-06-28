@@ -53,6 +53,14 @@ class SimpleMovingAverage {
         return false;
     }
 
+    auto reset_filter() -> void {
+        previous = 0;
+        running_average = 0;
+        window = {0};
+        current_index = 0;
+        exceeded_window = false;
+    }
+
   private:
     I previous = 0;
     I running_average = 0;
