@@ -9,7 +9,11 @@ extern "C" {
 
 typedef void * HAL_I2C_HANDLE;
 
-HAL_I2C_HANDLE MX_I2C_Init();
+/**
+ * @brief Before using an I2C struct, it should be "registered" so that
+ * the callbacks can be associated with the HAL I2C handles.
+ */
+bool i2c_register_handle(HAL_I2C_HANDLE handle);
 
 /**
  * Wrapper around HAL_I2C_Master_Transmit
@@ -20,10 +24,6 @@ bool hal_i2c_master_transmit(HAL_I2C_HANDLE handle, uint16_t dev_address, uint8_
  * Wrapper around HAL_I2C_Master_Receive
  */
 bool hal_i2c_master_receive(HAL_I2C_HANDLE handle, uint16_t dev_address, uint8_t *data, uint16_t size, uint32_t timeout);
-
-HAL_I2C_HANDLE MX_I2C1_Init();
-HAL_I2C_HANDLE MX_I2C3_Init();
-int data_ready();
 
 /**
  * enable writing to the eeprom.
