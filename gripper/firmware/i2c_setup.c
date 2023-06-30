@@ -31,6 +31,11 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
             GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
         __HAL_RCC_I2C2_CLK_ENABLE();
+
+        HAL_NVIC_SetPriority(I2C2_EV_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
+        HAL_NVIC_SetPriority(I2C2_ER_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
     }
 
     if (hi2c->Instance == I2C3) {
@@ -45,6 +50,11 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c) {
             GPIOC,  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
             &GPIO_InitStruct);  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
         __HAL_RCC_I2C3_CLK_ENABLE();
+
+        HAL_NVIC_SetPriority(I2C3_EV_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(I2C3_EV_IRQn);
+        HAL_NVIC_SetPriority(I2C3_ER_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(I2C3_ER_IRQn);
     }
 }
 
@@ -140,4 +150,24 @@ void i2c_setup(I2CHandlerStruct* i2c_handles) {
 
     // write protect the eeprom.
     disable_eeprom_write();
+}
+
+void I2C2_EV_IRQHandler(void)
+{
+    HAL_I2C_EV_IRQHandler(&hi2c2);
+}
+
+void I2C2_ER_IRQHandler(void)
+{
+    HAL_I2C_ER_IRQHandler(&hi2c2);
+}
+
+void I2C3_EV_IRQHandler(void)
+{
+    HAL_I2C_EV_IRQHandler(&hi2c3);
+}
+
+void I2C3_ER_IRQHandler(void)
+{
+    HAL_I2C_ER_IRQHandler(&hi2c3);
 }
