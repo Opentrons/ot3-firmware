@@ -44,9 +44,7 @@ void MotorHardware::read_estop_in() {
     estop.debounce_update(gpio::is_set(pins.estop_in));
 }
 
-void MotorHardware::read_sync_in() {
-    sync.debounce_update(gpio::is_set(pins.sync_in));
-}
+void MotorHardware::read_sync_in() { sync = gpio::is_set(pins.sync_in); }
 
 void MotorHardware::set_LED(bool status) {
     if (status) {

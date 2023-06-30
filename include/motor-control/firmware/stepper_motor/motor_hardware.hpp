@@ -46,7 +46,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     auto is_timer_interrupt_running() -> bool final;
     auto check_limit_switch() -> bool final { return limit.debounce_state(); }
     auto check_estop_in() -> bool final { return estop.debounce_state(); }
-    auto check_sync_in() -> bool final { return sync.debounce_state(); }
+    auto check_sync_in() -> bool final { return sync; }
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
@@ -70,7 +70,7 @@ class MotorHardware : public StepperMotorHardwareIface {
   private:
     debouncer::Debouncer estop = debouncer::Debouncer{};
     debouncer::Debouncer limit = debouncer::Debouncer{};
-    debouncer::Debouncer sync = debouncer::Debouncer{};
+    std::atomic_bool sync = false;
     static constexpr uint16_t encoder_reset_offset = 20;
     HardwareConfig pins;
     void* tim_handle;
