@@ -244,15 +244,15 @@ class FDC1004 {
         auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0],
                                                             polling_results[1]);
 
-        if (data_unstable[int(sensor_id)]) {
+        if (!data_stable[int(sensor_id)]) {
             raw_capacitance = filter.compute(raw_capacitance);
-            data_unstable.set(int(sensor_id), filter.stop_filter());
+            data_stable.set(int(sensor_id), filter.stop_filter());
         }
 
         auto capacitance = fdc1004_utils::convert_capacitance(
             raw_capacitance, 1, current_offset_pf);
 
-        if (!data_unstable[int(sensor_id)]) {
+        if (data_stable[int(sensor_id)]) {
             auto new_offset =
                 fdc1004_utils::update_offset(capacitance, current_offset_pf);
             set_offset(new_offset);
@@ -371,7 +371,7 @@ class FDC1004 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_capacitance_sync = false;
-    std::bitset<2> data_unstable{"11"};
+    std::bitset<2> data_stable{"00"};
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
 
