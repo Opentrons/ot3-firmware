@@ -73,7 +73,7 @@ class MotorInterruptHandler {
     // clear step, direction, and sometimes enable pins
     void run_normal_interrupt() {
         if (pulse()) {
-            hardware.step();
+            set_hardware_step();
             update_hardware_step_tracker();
             if (stall_checker.step_itr(set_direction_pin())) {
                 if (stall_detected()) {
@@ -82,7 +82,6 @@ class MotorInterruptHandler {
                     handle_stall_during_movement();
                 }
             }
-            hardware.unstep();
         }
     }
 
@@ -578,6 +577,16 @@ class MotorInterruptHandler {
             static_cast<uint32_t>(position_tracker >> 31));
     }
 
+    void set_hardware_step() {
+        if(last_step_polarity) {
+            hardware.unstep();
+            last_step_polarity = false;
+        } else {
+            hardware.step();
+            last_step_polarity = true;
+        }
+    }
+
     uint64_t tick_count = 0x0;
     static constexpr const q31_31 tick_flag = 0x80000000;
     static constexpr const uint64_t overflow_flag = 0x8000000000000000;
@@ -589,5 +598,6 @@ class MotorInterruptHandler {
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
+    bool last_step_polarity = false;
 };
 }  // namespace motor_handler

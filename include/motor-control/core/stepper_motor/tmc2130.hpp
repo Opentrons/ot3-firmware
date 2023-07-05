@@ -321,7 +321,7 @@ struct __attribute__((packed, __may_alias__)) ChopConfig {
      * Enable double edge step pulses: If set, enable step impulse at each
      * step edge to reduce step frequency requirement
      */
-    uint32_t dedge : 1 = 0;
+    uint32_t dedge : 1 = 1;
     /**
      * Short to GND protectino disable:
      *
