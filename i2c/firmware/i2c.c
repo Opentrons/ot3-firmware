@@ -11,6 +11,7 @@
 typedef struct {
     I2C_HandleTypeDef *i2c_handle;
     TaskHandle_t task_to_notify;
+    bool should_retry;
 } NotificationHandle_t;
 
 static NotificationHandle_t _notification_handles[MAX_I2C_HANDLES];
@@ -35,6 +36,7 @@ static void initialize_notification_handles() {
         for(size_t i = 0; i < MAX_I2C_HANDLES; ++i) {
             _notification_handles[i].i2c_handle = NULL;
             _notification_handles[i].task_to_notify = NULL;
+            _notification_handles[i].should_retry = false;
         }
         _initialized = true;
     }
@@ -43,7 +45,7 @@ static void initialize_notification_handles() {
 /**
  * @brief Common handler for all I2C callbacks.
  */
-static void handle_i2c_callback(I2C_HandleTypeDef *i2c_handle) {
+static void handle_i2c_callback(I2C_HandleTypeDef *i2c_handle, bool error) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     NotificationHandle_t *instance = lookup_handle(i2c_handle);
     if(instance == NULL) {
@@ -56,6 +58,7 @@ static void handle_i2c_callback(I2C_HandleTypeDef *i2c_handle) {
     vTaskNotifyGiveFromISR(instance->task_to_notify, 
                             &xHigherPriorityTaskWoken);
     instance->task_to_notify = NULL;
+    instance->should_retry = error;
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
@@ -101,8 +104,7 @@ bool hal_i2c_master_transmit(HAL_I2C_HANDLE handle, uint16_t DevAddress, uint8_t
         tx_result = HAL_I2C_Master_Transmit_IT(i2c_handle,
                             DevAddress, data, size);
         notification_val = ulTaskNotifyTake(pdTRUE, timeout); // Wait for callback
-        if (__HAL_I2C_GET_FLAG(i2c_handle, I2C_FLAG_AF)) {
-            __HAL_I2C_CLEAR_FLAG(i2c_handle, I2C_FLAG_AF);
+        if (notification_handle->should_retry) {
             tx_result = HAL_BUSY;
         }
         if(notification_val != 1) {
@@ -134,8 +136,7 @@ bool hal_i2c_master_receive(HAL_I2C_HANDLE handle, uint16_t DevAddress, uint8_t 
         notification_handle->task_to_notify = xTaskGetCurrentTaskHandle();
         rx_result = HAL_I2C_Master_Receive_IT(i2c_handle, DevAddress, data, size);
         notification_val = ulTaskNotifyTake(pdTRUE, timeout); // Wait for callback
-        if (__HAL_I2C_GET_FLAG(i2c_handle, I2C_FLAG_AF)){
-            __HAL_I2C_CLEAR_FLAG(i2c_handle, I2C_FLAG_AF);
+        if (notification_handle->should_retry) {
             rx_result = HAL_BUSY;
         }
         if(notification_val != 1) {
@@ -151,22 +152,22 @@ bool hal_i2c_master_receive(HAL_I2C_HANDLE handle, uint16_t DevAddress, uint8_t 
 
 
 void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *i2c_handle){
-    handle_i2c_callback(i2c_handle);
+    handle_i2c_callback(i2c_handle, false);
 }
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *i2c_handle){
-    handle_i2c_callback(i2c_handle);
+    handle_i2c_callback(i2c_handle, false);
 }
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *i2c_handle) {
-    handle_i2c_callback(i2c_handle);
+    handle_i2c_callback(i2c_handle, false);
 }
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *i2c_handle) {
-    handle_i2c_callback(i2c_handle);
+    handle_i2c_callback(i2c_handle, false);
 }
 
 void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *i2c_handle)
 {
-    handle_i2c_callback(i2c_handle);
+    handle_i2c_callback(i2c_handle, true);
 }
