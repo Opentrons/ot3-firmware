@@ -61,8 +61,14 @@ int32_t MotorHardware::get_encoder_pulses() {
     if (!enc_handle) {
         return 0;
     }
-    return (motor_encoder_overflow_count << 16) +
-           motor_hardware_encoder_pulse_count(enc_handle) -
+    uint32_t pulses = motor_hardware_encoder_pulse_count(enc_handle);
+    if (pulses & ENCODER_OVERFLOW_PULSES_BIT) {
+        pulses &= ~(ENCODER_OVERFLOW_PULSES_BIT);
+        pulses += motor_hardware_encoder_is_counting_down(enc_handle)
+                      ? -(1 << 16)
+                      : (1 << 16);
+    }
+    return (motor_encoder_overflow_count << 16) + static_cast<int32_t>(pulses) -
            static_cast<int32_t>(encoder_reset_offset);
 }
 

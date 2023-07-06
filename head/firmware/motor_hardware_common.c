@@ -267,6 +267,8 @@ void encoder_init(TIM_HandleTypeDef *htim) {
     __HAL_TIM_ENABLE_IT(htim, TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(htim);
+    /* Enable UIFREMAP so the MSb of the count register reflects overflows */
+    __HAL_TIM_UIFREMAP_ENABLE(htim);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(htim, TIM_CHANNEL_ALL);
 }

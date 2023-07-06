@@ -94,16 +94,22 @@ bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
  * read a hal timer count value
  * if the timer is NULL return 0
  */
-uint16_t _get_hal_timer_count(void* htim) {
+uint32_t _get_hal_timer_count(void* htim) {
     if (htim != NULL) {
         return __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)htim);
     }
     return 0;
 }
 
-int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
-    int32_t pulses = _get_hal_timer_count(enc_htim);
-    return pulses;
+uint32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
+    return _get_hal_timer_count(enc_htim);;
+}
+
+bool motor_hardware_encoder_is_counting_down(void *encoder_handle) {
+    if(encoder_handle == NULL) {
+        return true;
+    }
+    return __HAL_TIM_IS_TIM_COUNTING_DOWN((TIM_HandleTypeDef*)encoder_handle);
 }
 
 void motor_hardware_reset_encoder_count(void* enc_htim, uint16_t reset_value) {
