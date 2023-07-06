@@ -6,7 +6,7 @@
  */
 
 #pragma once
-
+#include <cstdio>
 #include "motor-control/core/types.hpp"
 
 namespace stall_check {
@@ -52,7 +52,7 @@ class StallCheck {
      * @return True if the motor position is OK, false if the encoder
      * indicates a stall occurred.
      */
-    [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) const -> bool
+    [[nodiscard]] auto check_stall_itr(int32_t encoder_steps) -> bool
         __attribute__((optimize(3)));
 
     [[nodiscard]] auto has_encoder() const -> bool;
@@ -89,6 +89,18 @@ class StallCheck {
 
     sq31_31 _next_threshold_positive = 0;
     sq31_31 _next_threshold_negative = 0;
+    bool stall_state = true;
+    bool stall_state_bounce = true;
+    auto stall_update(bool new_state) -> void {
+        if (new_state == stall_state_bounce) {
+            stall_state = new_state;
+        }
+        stall_state_bounce = new_state;
+        printf("state %d, bounce %d, new %d\n", stall_state, stall_state_bounce, new_state);
+    }
+    [[nodiscard]] auto stall_debounce_state() const -> bool {
+        return stall_state;
+    }
 };
 
 }  // namespace stall_check
