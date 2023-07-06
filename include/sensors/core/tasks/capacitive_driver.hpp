@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <bitset>
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
@@ -9,6 +10,7 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
+#include "ot_utils/core/filters/sma.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
@@ -68,6 +70,7 @@ class FDC1004 {
             }
             sensor_id = _id;
             update_capacitance_configuration();
+            filter.reset_filter();
         }
     }
 
@@ -237,15 +240,24 @@ class FDC1004 {
             stop_continuous_polling(m.id.token);
             return;
         }
+
+        auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0],
+                                                            polling_results[1]);
+
+        if (!data_stable[int(sensor_id)]) {
+            raw_capacitance = filter.compute(raw_capacitance);
+            data_stable.set(int(sensor_id), filter.stop_filter());
+        }
+
         auto capacitance = fdc1004_utils::convert_capacitance(
-            fdc1004_utils::convert_reads(polling_results[0],
-                                         polling_results[1]),
-            1, current_offset_pf);
-        // TODO (lc 1-2-2022) we should figure out a better strategy for
-        // adjusting the capdac.
-        auto new_offset =
-            fdc1004_utils::update_offset(capacitance, current_offset_pf);
-        set_offset(new_offset);
+            raw_capacitance, 1, current_offset_pf);
+
+        if (data_stable[int(sensor_id)]) {
+            auto new_offset =
+                fdc1004_utils::update_offset(capacitance, current_offset_pf);
+            set_offset(new_offset);
+        }
+
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
                 hardware.set_sync();
@@ -338,6 +350,7 @@ class FDC1004 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
 
+    ot_utils::filters::SimpleMovingAverage<int32_t> filter{};
     uint8_t sensor_binding{2};
     fdc1004::FDC1004RegisterMap _registers{};
     bool _initialized = false;
@@ -358,6 +371,7 @@ class FDC1004 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_capacitance_sync = false;
+    std::bitset<2> data_stable{"00"};
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
 
