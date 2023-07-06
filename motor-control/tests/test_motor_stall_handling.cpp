@@ -43,7 +43,7 @@ SCENARIO("motor handler stall detection") {
     GIVEN("a linear move which is not expecting a stall") {
         auto cond = GENERATE(Stops::none, Stops::sync_line);
         auto msg1 = Move{.message_index = 101,
-                         .duration = 23,
+                         .duration = 33,
                          .velocity = default_velocity,
                          .stop_condition = static_cast<uint8_t>(cond)};
         auto msg2 = Move{.duration = 10, .velocity = default_velocity};
@@ -90,7 +90,7 @@ SCENARIO("motor handler stall detection") {
             static_cast<uint8_t>(GENERATE(Stops::none, Stops::sync_line));
         auto msg1 =
             Move{.message_index = 13,
-                 .duration = 26,
+                 .duration = 46,
                  .velocity = default_velocity,
                  .stop_condition = static_cast<uint8_t>(
                      static_cast<uint8_t>(Stops::ignore_stalls) ^ cond)};
@@ -104,7 +104,7 @@ SCENARIO("motor handler stall detection") {
         REQUIRE(test_objs.queue.get_size() == 2);
         test_objs.handler.update_move();
         WHEN("encoder doesn't update with the motor") {
-            for (int i = 0; i < 23; ++i) {
+            for (int i = 0; i < 33; ++i) {
                 test_objs.handler.run_interrupt();
             }
             THEN(
@@ -126,7 +126,7 @@ SCENARIO("motor handler stall detection") {
                 std::ignore = inc_error_count;
 
                 THEN("the move finishes") {
-                    for (int i = 22; i < (int)msg1.duration; i++) {
+                    for (int i = 32; i < (int)msg1.duration; i++) {
                         test_objs.handler.run_interrupt();
                     }
                     REQUIRE(test_objs.reporter.messages.size() == 3);
@@ -200,7 +200,7 @@ SCENARIO("motor handler stall detection") {
 
     GIVEN("a move with stall expected stop condition") {
         Move msg1 = Move{.message_index = 101,
-                         .duration = 23,
+                         .duration = 33,
                          .velocity = default_velocity,
                          .stop_condition = static_cast<uint8_t>(Stops::stall)};
         constexpr Move msg2 =
@@ -248,7 +248,7 @@ SCENARIO("motor handler stall detection") {
 
     GIVEN("a move with stall expected stop condition with ignore stalls flag") {
         Move msg1 = Move{.message_index = 102,
-                         .duration = 23,
+                         .duration = 33,
                          .velocity = default_velocity,
                          .stop_condition = static_cast<uint8_t>(
                              static_cast<uint8_t>(Stops::stall) ^
@@ -318,7 +318,7 @@ SCENARIO("motor handler stall detection") {
 
     GIVEN("a limit switch backoff move with a stall detected") {
         test_objs.hw.set_mock_lim_sw(true);
-        auto msg1 = Move{.duration = 23,
+        auto msg1 = Move{.duration = 33,
                          .velocity = default_velocity,
                          .stop_condition =
                              static_cast<uint8_t>(Stops::limit_switch_backoff)};

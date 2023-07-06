@@ -7,6 +7,7 @@
 
 #pragma once
 #include <cstdio>
+
 #include "motor-control/core/types.hpp"
 
 namespace stall_check {
@@ -96,7 +97,6 @@ class StallCheck {
             stall_state = new_state;
         }
         stall_state_bounce = new_state;
-        printf("state %d, bounce %d, new %d\n", stall_state, stall_state_bounce, new_state);
     }
     [[nodiscard]] auto stall_debounce_state() const -> bool {
         return stall_state;

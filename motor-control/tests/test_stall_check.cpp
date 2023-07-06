@@ -12,6 +12,8 @@ TEST_CASE("stall itr check functionality") {
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(11, -11);
+                // do this once before the REQUIRE to clear debounce
+                std::ignore = subject.check_stall_itr(encoder_ticks);
                 REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
@@ -23,6 +25,8 @@ TEST_CASE("stall itr check functionality") {
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(112, 134);
+                // do this once before the REQUIRE to clear debounce
+                std::ignore = subject.check_stall_itr(encoder_ticks);
                 REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
@@ -37,6 +41,8 @@ TEST_CASE("stall itr check functionality") {
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(1, 23);
+                // do this once before the REQUIRE to clear debounce
+                std::ignore = subject.check_stall_itr(encoder_ticks);
                 REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
@@ -48,6 +54,8 @@ TEST_CASE("stall itr check functionality") {
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(112, 134);
+                // do this once before the REQUIRE to clear debounce
+                std::ignore = subject.check_stall_itr(encoder_ticks);
                 REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
@@ -62,6 +70,8 @@ TEST_CASE("stall itr check functionality") {
             }
             THEN("unacceptable encoder positions are stalls") {
                 int32_t encoder_ticks = GENERATE(1129, 1331);
+                // do this once before the REQUIRE to clear debounce
+                std::ignore = subject.check_stall_itr(encoder_ticks);
                 REQUIRE(!subject.check_stall_itr(encoder_ticks));
             }
         }
@@ -110,6 +120,9 @@ TEST_CASE("stall check isr step handling") {
                 }
                 THEN("invalid encoder position returns false") {
                     encoder_position += stall_threshold_um + 10;
+                    // do this once before the REQUIRE to clear debounce
+                    std::ignore = subject.check_stall_itr(static_cast<int32_t>(
+                        encoder_position * encoder_tick_per_um));
                     REQUIRE(!subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
                 }
@@ -135,6 +148,9 @@ TEST_CASE("stall check isr step handling") {
                 }
                 THEN("invalid encoder position returns false") {
                     encoder_position -= stall_threshold_um + 10;
+                    // do this once before the REQUIRE to clear debounce
+                    std::ignore = subject.check_stall_itr(static_cast<int32_t>(
+                        encoder_position * encoder_tick_per_um));
                     REQUIRE(!subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
                 }
@@ -162,6 +178,9 @@ TEST_CASE("stall check isr step handling") {
                 float encoder_position = stepper_begin_um +
                                          (stall_threshold_um * stallchecks) +
                                          error;
+                // do this once before the REQUIRE to clear debounce
+                std::ignore = subject.check_stall_itr(static_cast<int32_t>(
+                    encoder_position * encoder_tick_per_um));
                 THEN("the position is not valid") {
                     REQUIRE(!subject.check_stall_itr(static_cast<int32_t>(
                         encoder_position * encoder_tick_per_um)));
