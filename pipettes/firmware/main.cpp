@@ -276,7 +276,8 @@ auto main() -> int {
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms2, spi_comms);
     initialize_motor_tasks(id, motor_config.driver_configs, gear_motion_control,
                            lmh_tsk, gmh_tsks);
-    encoder_background_timer.start() iWatchdog.start(6);
+    encoder_background_timer.start();
+    iWatchdog.start(6);
 
     vTaskStartScheduler();
 }
