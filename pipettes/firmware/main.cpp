@@ -18,6 +18,7 @@
 
 // todo check if needed
 #include "i2c/firmware/i2c_comms.hpp"
+#include "motor-control/core/stepper_motor/motor_encoder_background_timer.hpp"
 #include "pipettes/core/central_tasks.hpp"
 #include "pipettes/core/configs.hpp"
 #include "pipettes/core/gear_motor_tasks.hpp"
@@ -102,6 +103,9 @@ static auto plunger_interrupt = interfaces::linear_motor::get_interrupt(
 static auto linear_motion_control =
     interfaces::linear_motor::get_motion_control(linear_motor_hardware,
                                                  interrupt_queues);
+
+static auto encoder_background_timer =
+    motor_encoder::BackgroundTimer(plunger_interrupt, linear_motor_hardware);
 
 static auto gear_hardware =
     interfaces::gear_motor::get_motor_hardware(motor_config.hardware_pins);
@@ -272,8 +276,7 @@ auto main() -> int {
     peripheral_tasks::start_tasks(i2c_comms3, i2c_comms2, spi_comms);
     initialize_motor_tasks(id, motor_config.driver_configs, gear_motion_control,
                            lmh_tsk, gmh_tsks);
-
-    iWatchdog.start(6);
+    encoder_background_timer.start() iWatchdog.start(6);
 
     vTaskStartScheduler();
 }

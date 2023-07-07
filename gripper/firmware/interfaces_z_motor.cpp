@@ -5,6 +5,7 @@
 #include "gripper/firmware/eeprom_keys.hpp"
 #include "gripper/firmware/utility_gpio.h"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motor_encoder_background_timer.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2130.hpp"
 #include "motor-control/core/tasks/motor_hardware_task.hpp"
@@ -192,6 +193,9 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gripper_tasks::z_tasks::get_queues(), motor_hardware_iface,
     stallcheck, update_position_queue);
 
+static auto encoder_background_timer =
+    motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
+
 /**
  * Timer callback.
  */
@@ -206,6 +210,7 @@ void z_motor_iface::initialize() {
     }
     initialize_hardware_z();
     set_z_motor_timer_callback(call_motor_handler, call_enc_handler);
+    encoder_background_timer.start();
 }
 
 auto z_motor_iface::get_spi() -> spi::hardware::SpiDeviceBase& {

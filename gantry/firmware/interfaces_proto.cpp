@@ -11,6 +11,7 @@
 #include "gantry/core/utils.hpp"
 #include "gantry/firmware/eeprom_keys.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
+#include "motor-control/core/stepper_motor/motor_encoder_background_timer.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 #include "spi/firmware/spi_comms.hpp"
@@ -234,6 +235,9 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
     motor_queue, gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
     update_position_queue);
 
+static auto encoder_background_timer =
+    motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
+
 /**
  * Timer callback.
  */
@@ -275,6 +279,8 @@ void interfaces::initialize() {
 
     // Start the can bus
     canbus.start(can_bit_timings);
+
+    encoder_background_timer.start();
 
     iWatchdog.start(6);
 }
