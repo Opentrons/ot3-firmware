@@ -1,5 +1,7 @@
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
 
+#include <tuple>
+
 #include "common/core/logging.h"
 #include "common/firmware/gpio.hpp"
 #include "motor-control/firmware/motor_control_hardware.h"
@@ -61,13 +63,9 @@ int32_t MotorHardware::get_encoder_pulses() {
     if (!enc_handle) {
         return 0;
     }
-    uint32_t pulses = motor_hardware_encoder_pulse_count(enc_handle);
-    if (pulses & ENCODER_OVERFLOW_PULSES_BIT) {
-        pulses &= ~(ENCODER_OVERFLOW_PULSES_BIT);
-        pulses += motor_hardware_encoder_is_counting_down(enc_handle)
-                      ? -(1 << 16)
-                      : (1 << 16);
-    }
+    int8_t overflows = 0;
+    uint32_t pulses = motor_hardware_encoder_pulse_count_with_overflow(enc_handle, &overflows);
+    motor_encoder_overflow_count += overflows;
     return (motor_encoder_overflow_count << 16) + static_cast<int32_t>(pulses) -
            static_cast<int32_t>(encoder_reset_offset);
 }
