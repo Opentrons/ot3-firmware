@@ -62,8 +62,11 @@ int32_t BrushedMotorHardware::get_encoder_pulses() {
     if (!enc_handle) {
         return 0;
     }
-    return (motor_encoder_overflow_count << 16) +
-           (0xFF & motor_hardware_encoder_pulse_count(enc_handle));
+    int8_t overflows = 0;
+    uint32_t pulses = motor_hardware_encoder_pulse_count_with_overflow(
+        enc_handle, &overflows);
+    motor_encoder_overflow_count += overflows;
+    return (motor_encoder_overflow_count << 16) + (0xFF & pulses);
 }
 
 uint16_t BrushedMotorHardware::get_stopwatch_pulses(bool clear) {

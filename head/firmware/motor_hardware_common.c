@@ -327,14 +327,10 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM2_CLK_ENABLE();
         /* TIM2 interrupt Init */
-        HAL_NVIC_SetPriority(TIM2_IRQn, 7, 0);
-        HAL_NVIC_EnableIRQ(TIM2_IRQn);
     } else if (htim == &htim3) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM3_CLK_ENABLE();
         /* TIM3 interrupt Init */
-        HAL_NVIC_SetPriority(TIM3_IRQn, 7, 0);
-        HAL_NVIC_EnableIRQ(TIM3_IRQn);
     }
 }
 
