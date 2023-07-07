@@ -101,9 +101,21 @@ uint16_t _get_hal_timer_count(void* htim) {
     return 0;
 }
 
-int32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
-    int32_t pulses = _get_hal_timer_count(enc_htim);
-    return pulses;
+uint16_t motor_hardware_encoder_pulse_count(void* enc_htim) {
+    return _get_hal_timer_count(enc_htim);
+}
+
+uint16_t motor_hardware_encoder_pulse_count_with_overflow(void* encoder_handle, int8_t *overflows) {
+    if(encoder_handle == NULL) {
+        return 0;
+    }
+    TIM_HandleTypeDef *handle = encoder_handle;
+    uint32_t pulses = __HAL_TIM_GET_COUNTER(handle);
+    if( __HAL_TIM_GET_UIFCPY(pulses)) {
+        __HAL_TIM_CLEAR_IT(handle, TIM_FLAG_UPDATE);
+        *overflows = __HAL_TIM_IS_TIM_COUNTING_DOWN(handle) ? -1 : 1;
+    }
+    return pulses & 0xFFFF;
 }
 
 void motor_hardware_reset_encoder_count(void* enc_htim, uint16_t reset_value) {

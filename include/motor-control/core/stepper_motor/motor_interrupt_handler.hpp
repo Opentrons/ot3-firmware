@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "can/core/ids.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
@@ -32,7 +34,7 @@ using namespace motor_messages;
  * buffered_move -> The move message with all relevant info to complete a move.
  *
  * Attributes:
- * has_active_move -> True if there is an active move to check whether
+ * _has_active_move -> True if there is an active move to check whether
  * the motor can step or not. Otherwise False.
  * MoveQueue -> A FreeRTOS queue of any shape.
  *
@@ -87,7 +89,7 @@ class MotorInterruptHandler {
     }
 
     auto handle_stall_during_movement() -> void {
-        if (!has_active_move or
+        if (!_has_active_move or
             hardware.position_flags.check_flag(
                 MotorPositionStatus::Flags::stepper_position_ok) or
             buffered_move.check_stop_condition(
@@ -246,12 +248,12 @@ class MotorInterruptHandler {
          * This function is called from a timer interrupt. See
          * `motor_hardware.cpp`.
          */
-        if (!has_active_move && has_move_messages()) {
+        if (!_has_active_move && has_move_messages()) {
             update_move();
             handle_update_position_queue_error();
             return false;
         }
-        if (has_active_move) {
+        if (_has_active_move) {
             handle_update_position_queue_error();
             if (stop_condition_met()) {
                 return false;
@@ -362,8 +364,8 @@ class MotorInterruptHandler {
     }
 
     void update_move() {
-        has_active_move = move_queue.try_read_isr(&buffered_move);
-        if (has_active_move) {
+        _has_active_move = move_queue.try_read_isr(&buffered_move);
+        if (_has_active_move) {
             hardware.enable_encoder();
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();
@@ -373,8 +375,8 @@ class MotorInterruptHandler {
         } else {
             hardware.negative_direction();
         }
-        if (has_active_move && buffered_move.check_stop_condition(
-                                   MoveStopCondition::limit_switch)) {
+        if (_has_active_move && buffered_move.check_stop_condition(
+                                    MoveStopCondition::limit_switch)) {
             position_tracker = 0x7FFFFFFFFFFFFFFF;
             update_hardware_step_tracker();
             hardware.position_flags.clear_flag(
@@ -405,7 +407,7 @@ class MotorInterruptHandler {
         // to it so the hardware controller can know what move was running
         // when the cancel happened
         uint32_t message_index = 0;
-        if (has_active_move) {
+        if (_has_active_move) {
             message_index = buffered_move.message_index;
         }
         status_queue_client.send_move_status_reporter_queue(
@@ -427,7 +429,7 @@ class MotorInterruptHandler {
 
         // the queue will get reset during the stop message processing
         // we can't clear here from an interrupt context
-        has_active_move = false;
+        _has_active_move = false;
         tick_count = 0x0;
     }
 
@@ -443,7 +445,7 @@ class MotorInterruptHandler {
 
     void finish_current_move(
         AckMessageId ack_msg_id = AckMessageId::complete_without_condition) {
-        has_active_move = false;
+        _has_active_move = false;
         tick_count = 0x0;
         stall_handled = false;
         build_and_send_ack(ack_msg_id);
@@ -460,7 +462,7 @@ class MotorInterruptHandler {
         position_tracker = 0;
         update_hardware_step_tracker();
         tick_count = 0x0;
-        has_active_move = false;
+        _has_active_move = false;
         hardware.reset_encoder_pulses();
         stall_checker.reset_itr_counts(0);
         stall_handled = false;
@@ -486,16 +488,13 @@ class MotorInterruptHandler {
         position_tracker = pos_tracker;
         update_hardware_step_tracker();
     }
-    bool has_active_move = false;
-    bool in_estop = false;
+
     [[nodiscard]] auto get_buffered_move() const -> MotorMoveMessage {
         return buffered_move;
     }
     void set_buffered_move(MotorMoveMessage new_move) {
         buffered_move = new_move;
     }
-    bool clear_queue_until_empty = false;
-    bool stall_handled = false;
 
     /**
      * @brief While a move is NOT active, this function should be called
@@ -511,7 +510,7 @@ class MotorInterruptHandler {
             // 1. We are not moving
             // 2. The encoder position is valid
             // 3. We have an encoder (implicitly checked by 2)
-            if (!has_active_move &&
+            if (!_has_active_move &&
                 hardware.position_flags.check_flag(
                     MotorPositionStatus::Flags::encoder_position_ok)) {
                 encoder_pulses = address_negative_encoder();
@@ -572,6 +571,8 @@ class MotorInterruptHandler {
         return pulses;
     }
 
+    auto has_active_move() -> bool { return _has_active_move.load(); }
+
   private:
     void update_hardware_step_tracker() {
         hardware.set_step_tracker(
@@ -589,5 +590,9 @@ class MotorInterruptHandler {
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;
     MotorMoveMessage buffered_move = MotorMoveMessage{};
+    bool clear_queue_until_empty = false;
+    bool stall_handled = false;
+    bool in_estop = false;
+    std::atomic_bool _has_active_move = false;
 };
 }  // namespace motor_handler

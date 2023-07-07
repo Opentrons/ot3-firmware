@@ -72,6 +72,8 @@ inline static void TIM8_EncoderZ_Init(void)
     __HAL_TIM_ENABLE_IT(&htim8, TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(&htim8);
+    /* Enable UIFREMAP so the MSb of the count register reflects overflows */
+    __HAL_TIM_UIFREMAP_ENABLE(&htim8);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(&htim8, TIM_CHANNEL_ALL);
 }

@@ -76,8 +76,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     void* tim_handle;
     void* enc_handle;
     const UsageEEpromConfig& eeprom_config;
-    int32_t motor_encoder_overflow_count = 0;
+    std::atomic<int32_t> motor_encoder_overflow_count = 0;
     std::atomic<bool> cancel_request = false;
+    static constexpr uint32_t ENCODER_OVERFLOW_PULSES_BIT = 0x1 << 31;
 };
 
 };  // namespace motor_hardware

@@ -32,6 +32,7 @@
 #include "i2c/firmware/i2c_comms.hpp"
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motor.hpp"
+#include "motor-control/core/stepper_motor/motor_encoder_background_timer.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/stepper_motor/tmc2160.hpp"
 #include "motor-control/firmware/stepper_motor/motor_hardware.hpp"
@@ -288,6 +289,9 @@ static motor_handler::MotorInterruptHandler motor_interrupt_right(
     motor_queue_right, head_tasks::get_right_queues(), motor_hardware_right,
     stallcheck_right, update_position_queue_right);
 
+static auto encoder_background_timer_right =
+    motor_encoder::BackgroundTimer(motor_interrupt_right, motor_hardware_right);
+
 // engaging motors on boot
 static motor_class::Motor motor_right{
     linear_config,
@@ -309,6 +313,9 @@ static motor_hardware::MotorHardware motor_hardware_left(
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
     motor_queue_left, head_tasks::get_left_queues(), motor_hardware_left,
     stallcheck_left, update_position_queue_left);
+
+static auto encoder_background_timer_left =
+    motor_encoder::BackgroundTimer(motor_interrupt_left, motor_hardware_left);
 
 // engaging motors on boot
 static motor_class::Motor motor_left{
@@ -432,6 +439,9 @@ auto main() -> int {
                             i2c_comms3, eeprom_hw_iface);
 
     timer_for_notifier.start();
+
+    encoder_background_timer_left.start();
+    encoder_background_timer_right.start();
 
     iWatchdog.start(6);
 

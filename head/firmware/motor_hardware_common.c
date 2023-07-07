@@ -267,6 +267,8 @@ void encoder_init(TIM_HandleTypeDef *htim) {
     __HAL_TIM_ENABLE_IT(htim, TIM_IT_UPDATE);
     /* Set update event request source as: counter overflow */
     __HAL_TIM_URS_ENABLE(htim);
+    /* Enable UIFREMAP so the MSb of the count register reflects overflows */
+    __HAL_TIM_UIFREMAP_ENABLE(htim);
     /* Enable encoder interface */
     HAL_TIM_Encoder_Start_IT(htim, TIM_CHANNEL_ALL);
 }
@@ -325,14 +327,10 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM2_CLK_ENABLE();
         /* TIM2 interrupt Init */
-        HAL_NVIC_SetPriority(TIM2_IRQn, 7, 0);
-        HAL_NVIC_EnableIRQ(TIM2_IRQn);
     } else if (htim == &htim3) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM3_CLK_ENABLE();
         /* TIM3 interrupt Init */
-        HAL_NVIC_SetPriority(TIM3_IRQn, 7, 0);
-        HAL_NVIC_EnableIRQ(TIM3_IRQn);
     }
 }
 

@@ -53,7 +53,7 @@ class MotorInterruptDriver {
                         }
                         handler.run_interrupt();
 
-                    } while (handler.has_active_move);
+                    } while (handler.has_active_move());
                     LOG("Move completed. Stopping interrupt simulation..");
                 } else if (position_queue.has_message()) {
                     LOG("Running motor interrupt to update motor position from "

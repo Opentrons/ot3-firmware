@@ -201,7 +201,7 @@ TEST_CASE("Compute move sequence") {
             THEN("we do not move") {
                 static_cast<void>(test_objs.handler.pulse());
                 REQUIRE(!test_objs.handler.can_step());
-                REQUIRE(!test_objs.handler.has_active_move);
+                REQUIRE(!test_objs.handler.has_active_move());
             }
         }
         WHEN("a move duration is up, and there is a move in the queue") {
@@ -215,7 +215,7 @@ TEST_CASE("Compute move sequence") {
             THEN("we immediately switch to the new move") {
                 static_cast<void>(test_objs.handler.pulse());
                 REQUIRE(test_objs.handler.can_step());
-                REQUIRE(test_objs.handler.has_active_move);
+                REQUIRE(test_objs.handler.has_active_move());
                 REQUIRE(test_objs.handler.get_buffered_move().velocity ==
                         msg2.velocity);
                 REQUIRE(test_objs.handler.get_buffered_move().duration ==
@@ -258,7 +258,7 @@ TEST_CASE("moves that result in out of range positions") {
                     current_position);
             AND_THEN("the move should be finished") {
                 static_cast<void>(test_objs.handler.pulse());
-                REQUIRE(test_objs.handler.has_active_move == false);
+                REQUIRE(test_objs.handler.has_active_move() == false);
             }
         }
     }

@@ -48,7 +48,7 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
 
     WHEN("the move is loaded") {
         test_objs.handler.update_move();
-        REQUIRE(test_objs.handler.has_active_move);
+        REQUIRE(test_objs.handler.has_active_move());
 
         THEN("position gets set to large positive number") {
             REQUIRE(test_objs.handler.get_current_position() ==
@@ -108,7 +108,7 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
 
     WHEN("the move is loaded") {
         test_objs.handler.update_move();
-        REQUIRE(test_objs.handler.has_active_move);
+        REQUIRE(test_objs.handler.has_active_move());
 
         THEN("position gets set to large positive number") {
             REQUIRE(test_objs.handler.get_current_position() ==
