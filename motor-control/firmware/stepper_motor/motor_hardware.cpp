@@ -64,7 +64,7 @@ int32_t MotorHardware::get_encoder_pulses() {
         return 0;
     }
     int8_t overflows = 0;
-    uint32_t pulses = motor_hardware_encoder_pulse_count_with_overflow(
+    uint16_t pulses = motor_hardware_encoder_pulse_count_with_overflow(
         enc_handle, &overflows);
     motor_encoder_overflow_count += overflows;
     return (motor_encoder_overflow_count << 16) + static_cast<int32_t>(pulses) -

@@ -94,36 +94,28 @@ bool motor_hardware_stop_pwm(void* htim, uint32_t channel) {
  * read a hal timer count value
  * if the timer is NULL return 0
  */
-uint32_t _get_hal_timer_count(void* htim) {
+uint16_t _get_hal_timer_count(void* htim) {
     if (htim != NULL) {
         return __HAL_TIM_GET_COUNTER((TIM_HandleTypeDef*)htim);
     }
     return 0;
 }
 
-uint32_t motor_hardware_encoder_pulse_count(void* enc_htim) {
-    return _get_hal_timer_count(enc_htim) & 0xFFFF;
+uint16_t motor_hardware_encoder_pulse_count(void* enc_htim) {
+    return _get_hal_timer_count(enc_htim);
 }
 
-bool motor_hardware_encoder_is_counting_down(void *encoder_handle) {
-    if(encoder_handle == NULL) {
-        return true;
-    }
-    return __HAL_TIM_IS_TIM_COUNTING_DOWN((TIM_HandleTypeDef*)encoder_handle);
-}
-
-uint32_t motor_hardware_encoder_pulse_count_with_overflow(void* encoder_handle, int8_t *overflows) {
+uint16_t motor_hardware_encoder_pulse_count_with_overflow(void* encoder_handle, int8_t *overflows) {
     if(encoder_handle == NULL) {
         return 0;
     }
     TIM_HandleTypeDef *handle = encoder_handle;
     uint32_t pulses = __HAL_TIM_GET_COUNTER(handle);
     if( __HAL_TIM_GET_UIFCPY(pulses)) {
-        pulses &= 0xFFFF;
         __HAL_TIM_CLEAR_IT(handle, TIM_FLAG_UPDATE);
         *overflows = __HAL_TIM_IS_TIM_COUNTING_DOWN(handle) ? -1 : 1;
     }
-    return pulses;
+    return pulses & 0xFFFF;
 }
 
 void motor_hardware_reset_encoder_count(void* enc_htim, uint16_t reset_value) {
