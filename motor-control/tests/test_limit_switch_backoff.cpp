@@ -47,7 +47,7 @@ SCENARIO(
 
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
-            REQUIRE(test_objs.handler.has_active_move);
+            REQUIRE(test_objs.handler.has_active_move());
 
             THEN("the limit switch has been released") {
                 for (int i = 0; i < (int)msg1.duration; ++i) {
@@ -94,7 +94,7 @@ SCENARIO(
 
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
-            REQUIRE(test_objs.handler.has_active_move);
+            REQUIRE(test_objs.handler.has_active_move());
 
             AND_WHEN("the limit switch has been released") {
                 for (int i = 0; i < (int)msg1.duration; ++i) {
@@ -159,7 +159,7 @@ SCENARIO(
             MotorPositionStatus::Flags::encoder_position_ok);
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
-            REQUIRE(test_objs.handler.has_active_move);
+            REQUIRE(test_objs.handler.has_active_move());
 
             AND_WHEN("the limit switch has not been triggered") {
                 for (int i = 0; i < (int)msg1.duration; ++i) {
@@ -206,7 +206,7 @@ SCENARIO(
 
         WHEN("the move is loaded") {
             test_objs.handler.update_move();
-            REQUIRE(test_objs.handler.has_active_move);
+            REQUIRE(test_objs.handler.has_active_move());
 
             AND_WHEN("the limit switch has not been triggered") {
                 for (int i = 0; i < (int)msg1.duration; ++i) {
