@@ -136,6 +136,9 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
         GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
         HAL_GPIO_Init(G_MOT_ENC_PORT, &GPIO_InitStruct);
 
+        /* TIM2 interrupt Init */
+        HAL_NVIC_SetPriority(TIM2_IRQn, 7, 0);
+        HAL_NVIC_EnableIRQ(TIM2_IRQn);
     } else if (htim == &htim8) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM8_CLK_ENABLE();

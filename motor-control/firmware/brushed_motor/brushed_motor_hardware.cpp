@@ -62,10 +62,7 @@ int32_t BrushedMotorHardware::get_encoder_pulses() {
     if (!enc_handle) {
         return 0;
     }
-    int8_t overflows = 0;
-    uint32_t pulses = motor_hardware_encoder_pulse_count_with_overflow(
-        enc_handle, &overflows);
-    motor_encoder_overflow_count += overflows;
+    uint32_t pulses = motor_hardware_encoder_pulse_count(enc_handle);
     return (motor_encoder_overflow_count << 16) + (0xFF & pulses);
 }
 
