@@ -117,7 +117,7 @@ jobs:
       - name: 'Add latest firmware images'
         uses: 'ncipollo/release-action@v1.12.0'
         with:
-          artifacts: './firmware-*-images-${{giithub.ref_name}}/*.hex'
+          artifacts: './firmware-*-images-${{github.ref_name}}/*.hex'
           artifactContentType: text/plain
           allowUpdates: true
           omitBodyDuringUpdate: true
