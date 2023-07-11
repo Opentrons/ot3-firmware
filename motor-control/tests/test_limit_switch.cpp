@@ -55,9 +55,11 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
                     0x7FFFFFFFFFFFFFFF);
         }
 
-        THEN("stepper position flag is cleared") {
+        THEN("stepper and encoder position flags are cleared") {
             REQUIRE(!test_objs.hw.position_flags.check_flag(
                 MotorPositionStatus::Flags::stepper_position_ok));
+            REQUIRE(!test_objs.hw.position_flags.check_flag(
+                MotorPositionStatus::Flags::encoder_position_ok));
         }
 
         AND_WHEN("the limit switch has been triggered") {
@@ -70,6 +72,7 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
                 }
                 test_objs.handler.run_interrupt();
             }
+
             THEN(
                 "the move should be stopped with ack id = stopped "
                 "by "
@@ -79,12 +82,15 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
                     std::get<Ack>(test_objs.reporter.messages.back());
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
                 REQUIRE(read_ack.encoder_position == 50);
-                REQUIRE(read_ack.current_position_steps == 0);
+                REQUIRE(read_ack.current_position_steps == 350);
             }
-
-            THEN("the stepper position flag is still cleared") {
+            THEN(
+                "the stepper position flag and encoder position flags are "
+                "still cleared") {
                 REQUIRE(!test_objs.hw.position_flags.check_flag(
                     MotorPositionStatus::Flags::stepper_position_ok));
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    MotorPositionStatus::Flags::encoder_position_ok));
             }
         }
     }
@@ -114,9 +120,11 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
             REQUIRE(test_objs.handler.get_current_position() ==
                     0x7FFFFFFFFFFFFFFF);
         }
-        THEN("stepper position flag is cleared") {
+        THEN("stepper and encoder position flags are cleared") {
             REQUIRE(!test_objs.hw.position_flags.check_flag(
                 MotorPositionStatus::Flags::stepper_position_ok));
+            REQUIRE(!test_objs.hw.position_flags.check_flag(
+                MotorPositionStatus::Flags::encoder_position_ok));
         }
 
         AND_WHEN("the limit switch has not been triggered") {
@@ -143,6 +151,12 @@ SCENARIO("MoveStopCondition::limit_switch and limit switch is not triggered") {
             }
             THEN("position should not be reset") {
                 REQUIRE(!test_objs.handler.get_current_position() == 0);
+            }
+            THEN("stepper and encoder position flags should remained cleared") {
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    MotorPositionStatus::Flags::stepper_position_ok));
+                REQUIRE(!test_objs.hw.position_flags.check_flag(
+                    MotorPositionStatus::Flags::encoder_position_ok));
             }
         }
     }
