@@ -342,7 +342,7 @@ TEST_CASE("Finishing a move") {
             REQUIRE(msg.seq_id == move.seq_id);
             REQUIRE(msg.current_position_steps == 0);
             REQUIRE(msg.encoder_position == 200);
-            REQUIRE(msg.position_flags == 0x0);
+            REQUIRE(msg.position_flags == 0x2);
 
             AND_GIVEN("a backoff move") {
                 test_objs.reporter.messages.clear();
