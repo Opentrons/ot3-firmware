@@ -1,12 +1,11 @@
 #pragma once
 
 #include <array>
-#include <bitset>
 
 #ifdef ENABLE_CROSS_ONLY_HEADERS
 // TODO(fps 7/12/2023): This is super hacky and I hate throwing #ifdefs
 // in our nicely host-independent code but for now we really just need
-// the vTaskDelay function and hopefully sometime in the near future I 
+// the vTaskDelay function and hopefully sometime in the near future I
 // can refactor this file with a nice templated sleep function.
 #include "FreeRTOS.h"
 #endif
@@ -18,7 +17,6 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
-#include "ot_utils/core/filters/sma.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
@@ -60,7 +58,7 @@ class FDC1004 {
 #endif
             update_capacitance_configuration();
 #ifdef ENABLE_CROSS_ONLY_HEADERS
-            // Second delay to ensure IC is ready to start 
+            // Second delay to ensure IC is ready to start
             // readings (and also to avoid I2C bus traffic).
             vTaskDelay(100);
 #endif
@@ -86,7 +84,6 @@ class FDC1004 {
             }
             sensor_id = _id;
             update_capacitance_configuration();
-            filter.reset_filter();
         }
     }
 
@@ -242,19 +239,12 @@ class FDC1004 {
         auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0],
                                                             polling_results[1]);
 
-        if (!data_stable[int(sensor_id)]) {
-            raw_capacitance = filter.compute(raw_capacitance);
-            data_stable.set(int(sensor_id), filter.stop_filter());
-        }
-
         auto capacitance = fdc1004_utils::convert_capacitance(
             raw_capacitance, 1, current_offset_pf);
 
-        if (data_stable[int(sensor_id)]) {
-            auto new_offset =
-                fdc1004_utils::update_offset(capacitance, current_offset_pf);
-            set_offset(new_offset);
-        }
+        auto new_offset =
+            fdc1004_utils::update_offset(capacitance, current_offset_pf);
+        set_offset(new_offset);
 
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
@@ -349,7 +339,6 @@ class FDC1004 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
 
-    ot_utils::filters::SimpleMovingAverage<int32_t> filter{};
     uint8_t sensor_binding{2};
     fdc1004::FDC1004RegisterMap _registers{};
     bool _initialized = false;
@@ -370,7 +359,6 @@ class FDC1004 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_capacitance_sync = false;
-    std::bitset<2> data_stable{"11"};
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
 
