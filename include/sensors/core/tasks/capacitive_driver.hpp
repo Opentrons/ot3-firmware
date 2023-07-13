@@ -8,10 +8,12 @@
 // the vTaskDelay function and hopefully sometime in the near future I
 // can refactor this file with a nice templated sleep function.
 #include "FreeRTOS.h"
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define HACKY_TASK_SLEEP(___timeout___) vTaskDelay(___timeout___)
 
 #else
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define HACKY_TASK_SLEEP(___timeout___) (void)(___timeout___)
 #endif
 
@@ -204,7 +206,7 @@ class FDC1004 {
     }
 
     void handle_fdc_response(i2c::messages::TransactionResponse &m) {
-        uint16_t reg_int;
+        uint16_t reg_int = 0;
         static_cast<void>(bit_utils::bytes_to_int(
             m.read_buffer.cbegin(), m.read_buffer.cend(), reg_int));
         auto fdc = read_register<fdc1004::FDCConf>(reg_int).value();
