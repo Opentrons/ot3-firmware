@@ -69,7 +69,7 @@ SCENARIO("read capacitance sensor values without shared CINs") {
                 auto message_2 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
-                uint16_t expected_fdc_CIN1 = 0x580;
+                uint16_t expected_fdc_CIN1 = 0x5C0;
                 uint16_t actual_fdc_CIN1 = 0;
 
                 const auto* iter_1 =
@@ -100,7 +100,7 @@ SCENARIO("read capacitance sensor values without shared CINs") {
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         poller_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -108,36 +108,44 @@ SCENARIO("read capacitance sensor values without shared CINs") {
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_MSB));
-                    REQUIRE(read_message.second.address ==
-                            sensors::fdc1004::ADDRESS);
-                    REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_LSB));
+                                sensors::fdc1004::Registers::FDC_CONF));
                 }
                 AND_WHEN("we send just one response") {
                     sensors::utils::TaskMessage first =
                         test_mocks::launder_response(
                             read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             true));
+                            test_mocks::dummy_single_response(read_message,
+                                                              true));
                     sensor_not_shared.handle_message(first);
                     THEN("no can response is sent") {
                         REQUIRE(!can_queue.has_message());
                     }
                 }
-                AND_WHEN("we send two responses") {
+                AND_WHEN("we send the full responses") {
+                    i2c::messages::MaxMessageBuffer fdc_resp = {0x00, 0xFF};
+                    sensors::utils::TaskMessage fdc =
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_single_response(read_message,
+                                                              true, fdc_resp));
+                    sensor_not_shared.handle_message(fdc);
+                    REQUIRE(i2c_queue.get_size() == 1);
+                    auto msb_message =
+                        get_message_i2c<i2c::messages::Transact>(i2c_queue);
+                    msb_message.id.is_completed_poll = true;
                     sensors::utils::TaskMessage first =
                         test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             true));
+                            msb_message, response_queue,
+                            test_mocks::dummy_response(msb_message));
                     sensor_not_shared.handle_message(first);
+                    REQUIRE(i2c_queue.get_size() == 1);
+                    auto lsb_message =
+                        get_message_i2c<i2c::messages::Transact>(i2c_queue);
+                    lsb_message.id.is_completed_poll = true;
                     sensors::utils::TaskMessage second =
                         test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 1,
-                                                             true));
+                            lsb_message, response_queue,
+                            test_mocks::dummy_response(lsb_message));
                     sensor_not_shared.handle_message(second);
                     THEN("after the second, a response is sent") {
                         REQUIRE(can_queue.has_message());
@@ -159,7 +167,7 @@ SCENARIO("read capacitance sensor values without shared CINs") {
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         poller_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -167,14 +175,9 @@ SCENARIO("read capacitance sensor values without shared CINs") {
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_MSB));
+                                sensors::fdc1004::Registers::FDC_CONF));
                     REQUIRE(read_message.first.bytes_to_write == 1);
-                    REQUIRE(read_message.second.address ==
-                            sensors::fdc1004::ADDRESS);
-                    REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_LSB));
-                    REQUIRE(read_message.second.bytes_to_write == 1);
+                    REQUIRE(read_message.first.bytes_to_read == 2);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);
                 }
@@ -185,25 +188,41 @@ SCENARIO("read capacitance sensor values without shared CINs") {
                         i2c::messages::MaxMessageBuffer{0x7f, 0xff, 0, 0, 0};
                     auto buffer_b =
                         i2c::messages::MaxMessageBuffer{0xff, 0, 0, 0, 0};
-                    std::array<sensors::utils::TaskMessage, 4> responses{
+
+                    i2c::messages::MaxMessageBuffer fdc_resp = {0x00, 0xFF};
+                    sensors::utils::TaskMessage fdc =
                         test_mocks::launder_response(
                             read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             false, buffer_a)),
+                            test_mocks::dummy_single_response(read_message,
+                                                              true, fdc_resp));
+                    sensor_not_shared.handle_message(fdc);
+                    auto msb_message =
+                        get_message_i2c<i2c::messages::Transact>(i2c_queue);
+
+                    std::array<i2c::messages::TransactionResponse, 4> responses{
+                        test_mocks::launder_response(
+                            msb_message, response_queue,
+                            test_mocks::dummy_response(msb_message, buffer_a)),
                         test_mocks::launder_response(
                             read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 1,
-                                                             false, buffer_b)),
+                            test_mocks::dummy_response(msb_message, buffer_b)),
+                        test_mocks::launder_response(
+                            msb_message, response_queue,
+                            test_mocks::dummy_response(msb_message, buffer_a)),
                         test_mocks::launder_response(
                             read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             true, buffer_a)),
-                        test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 1,
-                                                             true, buffer_b))};
+                            test_mocks::dummy_response(msb_message, buffer_b))};
+
+                    responses[0].id.is_completed_poll = false;
+                    responses[1].id.is_completed_poll = false;
+                    responses[1].id.transaction_index = 1;
+                    responses[2].id.is_completed_poll = true;
+                    responses[3].id.transaction_index = 1;
+                    responses[3].id.is_completed_poll = true;
+
                     for (auto& response : responses) {
-                        sensor_not_shared.handle_message(response);
+                        sensors::utils::TaskMessage msg{response};
+                        sensor_not_shared.handle_message(msg);
                     }
                     can::message_writer_task::TaskMessage can_msg{};
 
@@ -220,29 +239,44 @@ SCENARIO("read capacitance sensor values without shared CINs") {
                 THEN(
                     "using the callback with -saturated data returns the "
                     "expected value") {
+                    i2c::messages::MaxMessageBuffer fdc_resp = {0x00, 0xFF};
+                    sensors::utils::TaskMessage fdc =
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_single_response(read_message,
+                                                              true, fdc_resp));
+                    sensor_not_shared.handle_message(fdc);
+                    auto msb_message =
+                        get_message_i2c<i2c::messages::Transact>(i2c_queue);
+
                     auto buffer_a =
                         i2c::messages::MaxMessageBuffer{0x80, 0x00, 0, 0, 0};
                     auto buffer_b =
                         i2c::messages::MaxMessageBuffer{0x00, 0, 0, 0, 0};
-                    std::array<sensors::utils::TaskMessage, 4> responses{
+                    std::array<i2c::messages::TransactionResponse, 4> responses{
+                        test_mocks::launder_response(
+                            msb_message, response_queue,
+                            test_mocks::dummy_response(msb_message, buffer_a)),
                         test_mocks::launder_response(
                             read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             false, buffer_a)),
+                            test_mocks::dummy_response(msb_message, buffer_b)),
+                        test_mocks::launder_response(
+                            msb_message, response_queue,
+                            test_mocks::dummy_response(msb_message, buffer_a)),
                         test_mocks::launder_response(
                             read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 1,
-                                                             false, buffer_b)),
-                        test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             true, buffer_a)),
-                        test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 1,
-                                                             true, buffer_b))};
+                            test_mocks::dummy_response(msb_message, buffer_b))};
+
+                    responses[0].id.is_completed_poll = false;
+                    responses[1].id.is_completed_poll = false;
+                    responses[1].id.transaction_index = 1;
+                    responses[2].id.is_completed_poll = true;
+                    responses[3].id.transaction_index = 1;
+                    responses[3].id.is_completed_poll = true;
+
                     for (auto& response : responses) {
-                        sensor_not_shared.handle_message(response);
+                        sensors::utils::TaskMessage msg{response};
+                        sensor_not_shared.handle_message(msg);
                     }
 
                     REQUIRE(can_queue.get_size() == 1);
@@ -272,20 +306,36 @@ SCENARIO("read capacitance sensor values without shared CINs") {
             auto buffer_a = i2c::messages::MaxMessageBuffer{200, 80, 0, 0, 0};
             auto buffer_b = i2c::messages::MaxMessageBuffer{100, 10, 0, 0, 0};
             auto read_message =
-                get_message<i2c::messages::MultiRegisterPollRead>(poller_queue);
+                get_message<i2c::messages::SingleRegisterPollRead>(
+                    poller_queue);
+
+            i2c::messages::MaxMessageBuffer fdc_resp = {0x00, 0xFF};
+            sensors::utils::TaskMessage fdc =
+                test_mocks::launder_response(read_message, response_queue,
+                                             test_mocks::dummy_single_response(
+                                                 read_message, true, fdc_resp));
+            sensor_not_shared.handle_message(fdc);
+            REQUIRE(i2c_queue.get_size() == 1);
+            auto msb_message =
+                get_message_i2c<i2c::messages::Transact>(i2c_queue);
+
             for (int i = 0; i < NUM_READS; i++) {
-                sensors::utils::TaskMessage first_resp =
+                i2c::messages::TransactionResponse first_resp =
                     test_mocks::launder_response(
-                        read_message, response_queue,
-                        test_mocks::dummy_multi_response(
-                            read_message, 0, (i == (NUM_READS - 1)), buffer_a));
-                sensors::utils::TaskMessage second_resp =
+                        msb_message, response_queue,
+                        test_mocks::dummy_response(msb_message, buffer_a));
+                i2c::messages::TransactionResponse second_resp =
                     test_mocks::launder_response(
-                        read_message, response_queue,
-                        test_mocks::dummy_multi_response(
-                            read_message, 1, (i == (NUM_READS - 1)), buffer_b));
-                sensor_not_shared.handle_message(first_resp);
-                sensor_not_shared.handle_message(second_resp);
+                        msb_message, response_queue,
+                        test_mocks::dummy_response(msb_message, buffer_b));
+                first_resp.id.transaction_index = 0;
+                second_resp.id.transaction_index = 1;
+                first_resp.id.is_completed_poll = (i == (NUM_READS - 1));
+                second_resp.id.is_completed_poll = (i == (NUM_READS - 1));
+                auto first_msg = sensors::utils::TaskMessage{first_resp};
+                auto second_msg = sensors::utils::TaskMessage{second_resp};
+                sensor_not_shared.handle_message(first_msg);
+                sensor_not_shared.handle_message(second_msg);
             }
             THEN("it should adjust the offset accordingly") {
                 // check for the offset
@@ -338,44 +388,28 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
         sensor_shared.initialize();
 
         WHEN("the driver receives the message") {
-            THEN(
-                "the i2c queue receives four register commands to initialize") {
-                REQUIRE(i2c_queue.get_size() == 4);
+            THEN("the i2c queue receives two register commands to initialize") {
+                REQUIRE(i2c_queue.get_size() == 2);
             }
             AND_WHEN("we inspect the configuration messages") {
                 auto message_1 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
                 auto message_2 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
-                auto message_3 =
-                    get_message_i2c<i2c::messages::Transact>(i2c_queue);
-                auto message_4 =
-                    get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
-                uint16_t expected_fdc_CIN1 = 0x580;
-                uint16_t expected_fdc_CIN2 = 0x540;
-                uint16_t actual_fdc_CIN1 = 0;
-                uint16_t actual_fdc_CIN2 = 0;
+                uint16_t expected_fdc_CIN = 0x5C0;
+                uint16_t actual_fdc_CIN = 0;
 
                 const auto* iter_1 =
-                    message_4.transaction.write_buffer.cbegin() + 1;
-                const auto* iter_2 =
                     message_2.transaction.write_buffer.cbegin() + 1;
                 static_cast<void>(bit_utils::bytes_to_int(
-                    iter_1, message_4.transaction.write_buffer.cend(),
-                    actual_fdc_CIN1));
-                static_cast<void>(bit_utils::bytes_to_int(
-                    iter_2, message_2.transaction.write_buffer.cend(),
-                    actual_fdc_CIN2));
-                THEN("We have FDC configurations for two CINs") {
-                    REQUIRE(actual_fdc_CIN1 == expected_fdc_CIN1);
-                    REQUIRE(actual_fdc_CIN2 == expected_fdc_CIN2);
+                    iter_1, message_2.transaction.write_buffer.cend(),
+                    actual_fdc_CIN));
+                THEN("We have FDC configurations for both CINs") {
+                    REQUIRE(actual_fdc_CIN == expected_fdc_CIN);
                 }
-                THEN("We set the configuration registers for both CINs") {
+                THEN("We set the configuration registers for the first CIN") {
                     REQUIRE(message_1.transaction.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::CONF_MEAS2));
-                    REQUIRE(message_3.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::CONF_MEAS1));
                 }
@@ -390,18 +424,16 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
         sensor_shared.handle_message(single_read_s1);
         WHEN("the handler function receives the message") {
             THEN(
-                "the i2c poller queue is populated with a poll request and two "
-                "i2c writes") {
+                "the i2c poller queue is populated with a poll request and one "
+                "i2c write") {
                 REQUIRE(poller_queue.get_size() == 1);
-                REQUIRE(i2c_queue.get_size() == 2);
+                REQUIRE(i2c_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         poller_queue);
                 auto message_1 =
-                    get_message_i2c<i2c::messages::Transact>(i2c_queue);
-                auto message_2 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -409,18 +441,27 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS2_MSB));
-                    REQUIRE(read_message.second.address ==
-                            sensors::fdc1004::ADDRESS);
-                    REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS2_LSB));
+                                sensors::fdc1004::Registers::FDC_CONF));
                     REQUIRE(message_1.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::CONF_MEAS2));
-                    REQUIRE(message_2.transaction.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::FDC_CONF));
+                }
+                AND_WHEN("the FDC response is read") {
+                    i2c::messages::MaxMessageBuffer fdc_resp = {0x00, 0xFF};
+                    sensors::utils::TaskMessage fdc =
+                        test_mocks::launder_response(
+                            read_message, response_queue,
+                            test_mocks::dummy_single_response(read_message,
+                                                              true, fdc_resp));
+                    sensor_shared.handle_message(fdc);
+                    THEN("a request to read CH2 MSB is sent") {
+                        REQUIRE(i2c_queue.get_size() == 1);
+                        auto message_msb =
+                            get_message_i2c<i2c::messages::Transact>(i2c_queue);
+                        REQUIRE(message_msb.transaction.write_buffer[0] ==
+                                static_cast<uint8_t>(
+                                    sensors::fdc1004::Registers::MEAS2_MSB));
+                    }
                 }
                 AND_WHEN(
                     "the handler function receives a second request for sensor "
@@ -441,26 +482,23 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
             sensor_shared.handle_message(single_read_s0);
 
             // throw out previous S1 call
-            static_cast<void>(get_message<i2c::messages::MultiRegisterPollRead>(
-                poller_queue));
             static_cast<void>(
-                get_message_i2c<i2c::messages::Transact>(i2c_queue));
+                get_message<i2c::messages::SingleRegisterPollRead>(
+                    poller_queue));
             static_cast<void>(
                 get_message_i2c<i2c::messages::Transact>(i2c_queue));
 
             THEN(
                 "the i2c poller queue is populated with a poll request and the "
-                "fdc register is updated") {
+                "CONF_MEAS1 register is updated") {
                 REQUIRE(poller_queue.get_size() == 1);
-                REQUIRE(i2c_queue.get_size() == 2);
+                REQUIRE(i2c_queue.get_size() == 1);
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         poller_queue);
                 auto message_1 =
-                    get_message_i2c<i2c::messages::Transact>(i2c_queue);
-                auto message_2 =
                     get_message_i2c<i2c::messages::Transact>(i2c_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -468,18 +506,10 @@ SCENARIO("read capacitance sensor values supporting shared CINs") {
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_MSB));
-                    REQUIRE(read_message.second.address ==
-                            sensors::fdc1004::ADDRESS);
-                    REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_LSB));
+                                sensors::fdc1004::Registers::FDC_CONF));
                     REQUIRE(message_1.transaction.write_buffer[0] ==
                             static_cast<uint8_t>(
                                 sensors::fdc1004::Registers::CONF_MEAS1));
-                    REQUIRE(message_2.transaction.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::FDC_CONF));
                 }
                 AND_WHEN(
                     "the handler function receives a second request for sensor "
@@ -755,7 +785,7 @@ SCENARIO("threshold configuration") {
             }
             AND_WHEN("we read the messages from the queue") {
                 auto read_message =
-                    get_message<i2c::messages::MultiRegisterPollRead>(
+                    get_message<i2c::messages::SingleRegisterPollRead>(
                         poller_queue);
 
                 THEN("The write and read command addresses are correct") {
@@ -763,14 +793,8 @@ SCENARIO("threshold configuration") {
                             sensors::fdc1004::ADDRESS);
                     REQUIRE(read_message.first.write_buffer[0] ==
                             static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_MSB));
+                                sensors::fdc1004::Registers::FDC_CONF));
                     REQUIRE(read_message.first.bytes_to_write == 1);
-                    REQUIRE(read_message.second.address ==
-                            sensors::fdc1004::ADDRESS);
-                    REQUIRE(read_message.second.write_buffer[0] ==
-                            static_cast<uint8_t>(
-                                sensors::fdc1004::Registers::MEAS1_LSB));
-                    REQUIRE(read_message.second.bytes_to_write == 1);
                     REQUIRE(read_message.delay_ms == 20);
                     REQUIRE(read_message.polling == NUM_READS);
                 }
@@ -779,32 +803,33 @@ SCENARIO("threshold configuration") {
                         i2c::messages::MaxMessageBuffer{0x7f, 0xff, 0, 0, 0};
                     auto buffer_b =
                         i2c::messages::MaxMessageBuffer{0xff, 0, 0, 0, 0};
-                    for (int i = 0; i < NUM_READS - 1; i++) {
-                        auto response_a = sensors::utils::TaskMessage(
-                            test_mocks::launder_response(
-                                read_message, response_queue,
-                                test_mocks::dummy_multi_response(
-                                    read_message, 0, false, buffer_a)));
+                    for (int i = 0; i < NUM_READS; i++) {
+                        std::array tags{
+                            sensors::utils::ResponseTag::IS_THRESHOLD_SENSE};
+                        i2c::messages::TransactionResponse first{
+                            .id =
+                                i2c::messages::TransactionIdentifier{
+                                    .token = sensors::utils::build_id(
+                                        sensors::fdc1004::ADDRESS,
+                                        static_cast<uint8_t>(
+                                            sensors::fdc1004::Registers::
+                                                MEAS1_MSB),
+                                        sensors::utils::byte_from_tags(tags)),
+                                    .is_completed_poll = 0,
+                                    .transaction_index = 0},
+                            .bytes_read = 2,
+                            .read_buffer = buffer_a};
+                        if (i == (NUM_READS - 1)) {
+                            first.id.is_completed_poll = true;
+                        }
+                        auto second = first;
+                        second.id.transaction_index = 1;
+                        second.read_buffer = buffer_b;
+                        auto response_a = sensors::utils::TaskMessage(first);
                         sensor.handle_message(response_a);
-                        auto response_b = sensors::utils::TaskMessage(
-                            test_mocks::launder_response(
-                                read_message, response_queue,
-                                test_mocks::dummy_multi_response(
-                                    read_message, 1, false, buffer_b)));
+                        auto response_b = sensors::utils::TaskMessage(second);
                         sensor.handle_message(response_b);
                     }
-                    auto final_response_a = sensors::utils::TaskMessage(
-                        test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 0,
-                                                             true, buffer_a)));
-                    auto final_response_b = sensors::utils::TaskMessage(
-                        test_mocks::launder_response(
-                            read_message, response_queue,
-                            test_mocks::dummy_multi_response(read_message, 1,
-                                                             true, buffer_b)));
-                    sensor.handle_message(final_response_a);
-                    sensor.handle_message(final_response_b);
                     THEN("the threshold is set to the proper value") {
                         REQUIRE(sensor.driver.get_threshold() ==
                                 Approx(15.375).epsilon(1e-4));
