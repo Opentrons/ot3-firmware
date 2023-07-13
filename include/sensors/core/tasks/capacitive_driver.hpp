@@ -8,6 +8,11 @@
 // the vTaskDelay function and hopefully sometime in the near future I
 // can refactor this file with a nice templated sleep function.
 #include "FreeRTOS.h"
+#define HACKY_TASK_SLEEP(___timeout___) vTaskDelay(___timeout___)
+
+#else
+
+#define HACKY_TASK_SLEEP(___timeout___) (void)(___timeout___)
 #endif
 
 #include "can/core/can_writer_task.hpp"
@@ -52,16 +57,12 @@ class FDC1004 {
             // not sure if we should have a separate can message to do that
             // holding off for this PR.
 
-#ifdef ENABLE_CROSS_ONLY_HEADERS
             // Initial delay to avoid I2C bus traffic.
-            vTaskDelay(100);
-#endif
+            HACKY_TASK_SLEEP(100);
             update_capacitance_configuration();
-#ifdef ENABLE_CROSS_ONLY_HEADERS
             // Second delay to ensure IC is ready to start
             // readings (and also to avoid I2C bus traffic).
-            vTaskDelay(100);
-#endif
+            HACKY_TASK_SLEEP(100);
             set_sample_rate();
             _initialized = true;
         }
@@ -367,29 +368,32 @@ class FDC1004 {
         uint8_t followup_address = 0;
         auto tags = utils::tags_from_token(m.id.token);
         i2c::messages::TransactionIdentifier id = m.id;
-        if (address == static_cast<uint8_t>(fdc1004::Registers::FDC_CONF)) {
-            // After CONF, read MSB for transaction index 0
-            followup_address =
-                (measure_mode == fdc1004::MeasureConfigMode::ONE)
-                    ? static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB)
-                    : static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
-            id.transaction_index = 0;
-        } else if (address ==
-                   static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB)) {
-            // After MSB, read LSB for index 1
-            followup_address =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
-            id.transaction_index = 1;
-        } else if (address ==
-                   static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB)) {
-            // After MSB, read LSB for index 1
-            followup_address =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
-            id.transaction_index = 1;
-        } else {
-            // Don't followup any other registers
-            return;
+        switch (address) {
+            case static_cast<uint8_t>(fdc1004::Registers::FDC_CONF):
+                // After CONF, read MSB for transaction index 0
+                followup_address =
+                    (measure_mode == fdc1004::MeasureConfigMode::ONE)
+                        ? static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB)
+                        : static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
+                id.transaction_index = 0;
+                break;
+            case static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB):
+                // After MSB, read LSB for index 1
+                followup_address =
+                    static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
+                id.transaction_index = 1;
+                break;
+            case static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB):
+                // After MSB, read LSB for index 1
+                followup_address =
+                    static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
+                id.transaction_index = 1;
+                break;
+            default:
+                // If this isn't one of the hardcoded regs, do nothing
+                return;
         }
+
         i2c::messages::MaxMessageBuffer buffer;
         buffer[0] = followup_address;
 
