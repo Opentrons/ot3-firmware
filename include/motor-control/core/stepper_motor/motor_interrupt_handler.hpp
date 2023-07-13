@@ -78,14 +78,21 @@ class MotorInterruptHandler {
             hardware.step();
             update_hardware_step_tracker();
             if (stall_checker.step_itr(set_direction_pin())) {
-                if (stall_detected()) {
-                    hardware.position_flags.clear_flag(
-                        MotorPositionStatus::Flags::stepper_position_ok);
+                if (check_for_stall()) {
                     handle_stall_during_movement();
                 }
             }
             hardware.unstep();
         }
+    }
+
+    auto check_for_stall() -> bool {
+        if (stall_detected()) {
+            hardware.position_flags.clear_flag(
+                MotorPositionStatus::Flags::stepper_position_ok);
+            return true;
+        }
+        return false;
     }
 
     auto handle_stall_during_movement() -> void {

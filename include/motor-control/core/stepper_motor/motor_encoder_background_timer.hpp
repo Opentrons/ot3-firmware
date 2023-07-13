@@ -31,7 +31,8 @@ class BackgroundTimer {
     auto callback() -> void {
         if (!_interrupt_handler.has_active_move()) {
             // Refresh the overflow counter if nothing else is doing it
-            std::ignore = _motor_hardware.get_encoder_pulses();
+            // and update position flag if needed
+            std::ignore = _interrupt_handler.check_for_stall();
         }
     }
 
