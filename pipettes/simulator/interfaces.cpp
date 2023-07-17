@@ -3,6 +3,8 @@
 #include "pipettes/core/configs.hpp"
 
 using namespace interfaces;
+using UpdateGearPositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
+    can::messages::UpdateGearMotorPositionEstimationRequest>;
 
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
