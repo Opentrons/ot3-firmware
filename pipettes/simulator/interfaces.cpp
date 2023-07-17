@@ -27,9 +27,9 @@ auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
         .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
+        .right_update_queue = UpdateGearPositionQueue{"Right PUpdate Queue"},
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
-        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
+        .left_update_queue = UpdateGearPositionQueue{"Left PUpdate Queue"}};
 }
 
 template <>
@@ -39,9 +39,9 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
         .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
+        .right_update_queue = UpdateGearPositionQueue{"Right PUpdate Queue"},
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
-        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
+        .left_update_queue = UpdateGearPositionQueue{"Left PUpdate Queue"}};
 }
 
 auto linear_motor::get_interrupt(
