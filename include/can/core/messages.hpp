@@ -486,11 +486,15 @@ struct UpdateGearMotorPositionEstimationResponse
     : BaseMessage<MessageId::update_gear_motor_position_estimation_response> {
     uint32_t message_index;
     uint32_t current_position;
+    int32_t encoder_position;
+    uint8_t position_flags;
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
         iter = bit_utils::int_to_bytes(current_position, iter, limit);
+        iter = bit_utils::int_to_bytes(encoder_position, iter, limit);
+        iter = bit_utils::int_to_bytes(position_flags, iter, limit);
         return iter - body;
     }
 
