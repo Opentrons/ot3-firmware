@@ -162,10 +162,7 @@ def test_current_position_no_gripper_or_pipettes(
         Axis.G,
     }
     assert all(
-        [
-            current_position_dict[key] is None
-            for key in [Axis.G, Axis.P_L, Axis.P_R]
-        ]
+        [current_position_dict[key] is None for key in [Axis.G, Axis.P_L, Axis.P_R]]
     )
 
 
