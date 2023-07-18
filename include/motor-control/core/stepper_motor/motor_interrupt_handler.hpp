@@ -276,6 +276,9 @@ class MotorInterruptHandler {
                         return true;
                     }
                 }
+                // update the stall check ideal encoder counts based on
+                // last known location
+                stall_checker.reset_itr_counts(hardware.get_step_tracker());
                 return false;
             }
         } else {
