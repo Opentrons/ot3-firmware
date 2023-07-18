@@ -97,16 +97,16 @@ set(pipette_srcs ${PIPETTE_FW_LINTABLE_SRCS}
 
 foreach_revision(
     PROJECT_NAME pipettes-single
-    REVISIONS b1 c2
-    SOURCES pipette_srcs pipette_srcs
+    REVISIONS b1 c2 d1
+    SOURCES pipette_srcs pipette_srcs pipette_srcs
     CALL_FOREACH_REV pipettes_single_loop
     )
 
 foreach_revision(
     PROJECT_NAME pipettes-multi
-    REVISIONS b1 c2
+    REVISIONS b1 c2 d1
     CALL_FOREACH_REV pipettes_multi_loop
-    SOURCES pipette_srcs pipette_srcs
+    SOURCES pipette_srcs pipette_srcs pipette_srcs
     )
 
 foreach_revision(
