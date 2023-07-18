@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional
 
-from opentrons.hardware_control.types import OT3Axis
+from opentrons.hardware_control.types import Axis
 
 from .hardware import (
     GantryX,
@@ -105,7 +105,7 @@ class OT3State:
         self.gripper = gripper
         self.sync_pin = SyncPin()
 
-    def _pos_dict(self) -> Dict[OT3Axis, Optional[Position]]:
+    def _pos_dict(self) -> Dict[Axis, Optional[Position]]:
         """Generates lookup dict for class's position properties."""
         left_pipette_pos = (
             self.left_pipette.position if self.left_pipette is not None else None
@@ -119,18 +119,18 @@ class OT3State:
         )
 
         return {
-            OT3Axis.Z_L: self.head.left_pipette_z_position,
-            OT3Axis.Z_R: self.head.right_pipette_z_position,
-            OT3Axis.X: self.gantry_x.position,
-            OT3Axis.Y: self.gantry_y.position,
-            OT3Axis.P_L: left_pipette_pos,
-            OT3Axis.P_R: right_pipette_pos,
-            OT3Axis.G: gripper_pos,
-            OT3Axis.Z_G: gripper_mount_pos,
+            Axis.Z_L: self.head.left_pipette_z_position,
+            Axis.Z_R: self.head.right_pipette_z_position,
+            Axis.X: self.gantry_x.position,
+            Axis.Y: self.gantry_y.position,
+            Axis.P_L: left_pipette_pos,
+            Axis.P_R: right_pipette_pos,
+            Axis.G: gripper_pos,
+            Axis.Z_G: gripper_mount_pos,
         }
 
     @property
-    def current_position(self) -> Dict[OT3Axis, Optional[int]]:
+    def current_position(self) -> Dict[Axis, Optional[int]]:
         """Returns dictionary with axis mapped to current position of said axis.
 
         If hardware is not attached for axis, then position value will be None.
@@ -144,7 +144,7 @@ class OT3State:
         }
 
     @property
-    def encoder_position(self) -> Dict[OT3Axis, Optional[int]]:
+    def encoder_position(self) -> Dict[Axis, Optional[int]]:
         """Returns dictionary with axis mapped to encoder position of said axis.
 
         If hardware is not attached for axis, then position value will be None.
@@ -158,7 +158,7 @@ class OT3State:
         }
 
     @property
-    def updatable_axes(self) -> List[OT3Axis]:
+    def updatable_axes(self) -> List[Axis]:
         """Returns a list of positions that are available to be updated."""
         return [key for key, value in self._pos_dict().items() if value is not None]
 
@@ -185,17 +185,17 @@ class OT3State:
             and self.right_pipette.model == PipetteModel.MULTI_96_1000
         )
 
-    def axis_current_position(self, axis: OT3Axis) -> Optional[int]:
+    def axis_current_position(self, axis: Axis) -> Optional[int]:
         """Returns current position or None for specified axis."""
         return self.current_position[axis]
 
-    def axis_encoder_position(self, axis: OT3Axis) -> Optional[int]:
+    def axis_encoder_position(self, axis: Axis) -> Optional[int]:
         """Returns encoder position or None for specified axis."""
         return self.encoder_position[axis]
 
     def update_position(
         self,
-        axis_to_update: OT3Axis,
+        axis_to_update: Axis,
         current_position: int,
         encoder_position: int,
     ) -> None:
@@ -210,7 +210,7 @@ class OT3State:
         pos_to_update.current_position = current_position
         pos_to_update.encoder_position = encoder_position
 
-    def pulse(self, axis: OT3Axis, direction: Direction) -> None:
+    def pulse(self, axis: Axis, direction: Direction) -> None:
         """Increments or decrements current and encoder position by 1 for axis."""
         log.info(f"SERVER: Pulsing {axis}")
         mod = 1 if direction == Direction.POSITIVE else -1
