@@ -65,13 +65,12 @@ class MoveStatusMessageHandler {
      * Handle Ack message
      */
     void handle_message(const motor_messages::GearMotorAck& message) {
-        uint32_t end_position =
-            fixed_point_multiply(um_per_step, message.current_position_steps);
         can::messages::TipActionResponse msg = {
             .message_index = message.message_index,
             .group_id = message.group_id,
             .seq_id = message.seq_id,
-            .current_position_um = end_position,
+            .current_position_um = fixed_point_multiply(
+                um_per_step, message.current_position_steps),
             .encoder_position_um = 0,
             .position_flags = 0,
             .ack_id = static_cast<uint8_t>(message.ack_id),
@@ -81,14 +80,6 @@ class MoveStatusMessageHandler {
             .success = static_cast<uint8_t>(true),
             .gear_motor_id = message.gear_motor_id};
         can_client.send_can_message(can::ids::NodeId::host, msg);
-        int32_t distance_traveled_um =
-            end_position -
-            fixed_point_multiply(um_per_step, message.start_step_position);
-        usage_client.send_usage_storage_queue(
-            usage_messages::IncreaseDistanceUsage{
-                .key = message.usage_key,
-                .distance_traveled_um =
-                    uint32_t(std::abs(distance_traveled_um))});
     }
 
     void handle_message(const can::messages::StopRequest& msg) {
