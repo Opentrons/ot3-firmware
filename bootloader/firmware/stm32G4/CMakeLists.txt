@@ -93,8 +93,8 @@ endmacro()
 foreach_revision(
     PROJECT_NAME bootloader-gripper
     CALL_FOREACH_REV gripper_bootloader_loop
-    REVISIONS a1 b1 c1
-    SOURCES gripper_sources gripper_sources gripper_sources
+    REVISIONS a1 b1 c1 c2
+    SOURCES gripper_sources gripper_sources gripper_sources gripper_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
