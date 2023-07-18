@@ -95,11 +95,13 @@ struct GearInterruptHandlers {
 struct GearInterruptDrivers {
     motor_interrupt_driver::MotorInterruptDriver<
         gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
-        sim_motor_hardware_iface::SimGearMotorHardwareIface, can::messages::UpdateGearMotorPositionEstimationRequest>
+        sim_motor_hardware_iface::SimGearMotorHardwareIface,
+        can::messages::UpdateGearMotorPositionEstimationRequest>
         left;
     motor_interrupt_driver::MotorInterruptDriver<
         gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
-        sim_motor_hardware_iface::SimGearMotorHardwareIface, can::messages::UpdateGearMotorPositionEstimationRequest>
+        sim_motor_hardware_iface::SimGearMotorHardwareIface,
+        can::messages::UpdateGearMotorPositionEstimationRequest>
         right;
 };
 

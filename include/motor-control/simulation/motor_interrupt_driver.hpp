@@ -18,7 +18,8 @@ class MotorInterruptDriver {
     using InterruptHandler = motor_handler::MotorInterruptHandler<
         freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
         MotorMoveMessage, MotorHardware, UpdatePositionMessage>;
-    using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<UpdatePositionMessage>;
+    using UpdatePositionQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<UpdatePositionMessage>;
 
   public:
     MotorInterruptDriver(InterruptQueue& q, InterruptHandler& h,
