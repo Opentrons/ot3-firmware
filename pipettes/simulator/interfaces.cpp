@@ -3,8 +3,6 @@
 #include "pipettes/core/configs.hpp"
 
 using namespace interfaces;
-using UpdateGearPositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
-    can::messages::UpdateGearMotorPositionEstimationRequest>;
 template <>
 auto interfaces::get_interrupt_queues<PipetteType::SINGLE_CHANNEL>()
     -> LowThroughputInterruptQueues {
@@ -165,7 +163,7 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                                   .min_acceleration = 1,
                                                   .max_acceleration = 2},
                 queues.left_motor_queue,
-                UpdateGearMotorPositionQueue & gear_motor_update_queue,
+                queues.left_update_queue,
                 can::ids::GearMotorId::left},
         .right = pipette_motion_controller::PipetteMotionController{
             configs::linear_motion_sys_config_by_axis(
@@ -176,7 +174,7 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                               .min_acceleration = 1,
                                               .max_acceleration = 2},
             queues.right_motor_queue,
-            UpdateGearMotorPositionQueue & gear_motor_update_queue,
+            queues.right_update_queue,
             can::ids::GearMotorId::right}};
 }
 
