@@ -216,6 +216,12 @@ class FDC1004 {
             // Start a single-shot, two-register transaction for the data.
             send_followup(m);
         } else {
+            // Double check that the configuration reg seems okay. If not, we
+            // should reconfigure it before re-requesting a reading.
+            if (!check_fdc_readback_ok(fdc)) {
+                update_capacitance_configuration();
+                set_sample_rate();
+            }
             i2c::messages::MaxMessageBuffer buffer = {
                 static_cast<uint8_t>(fdc1004::Registers::FDC_CONF)};
             // Retrigger the same exact reading
@@ -443,6 +449,17 @@ class FDC1004 {
             return 0;
         }
         return DELAY;
+    }
+
+    auto check_fdc_readback_ok(fdc1004::FDCConf fdc) -> bool {
+        auto &comp = _registers.fdc_conf;
+        // Check everything except for the readback status
+        return (comp.measure_mode_4 == fdc.measure_mode_4 &&
+                comp.measure_mode_3 == fdc.measure_mode_3 &&
+                comp.measure_mode_2 == fdc.measure_mode_2 &&
+                comp.measure_mode_1 == fdc.measure_mode_1 &&
+                comp.repeating_measurements == fdc.repeating_measurements &&
+                comp.measurement_rate == fdc.measurement_rate);
     }
 
     template <fdc1004::FDC1004Register Reg>
