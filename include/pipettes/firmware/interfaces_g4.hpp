@@ -31,7 +31,6 @@ template <typename Client>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client, motor_messages::Move,
     motor_hardware::MotorHardware>;
-
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,

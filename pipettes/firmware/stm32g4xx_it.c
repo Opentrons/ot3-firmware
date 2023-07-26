@@ -118,25 +118,17 @@ void DebugMon_Handler(void) {}
 /*  file (startup_stm32g4xxxx.s).                                             */
 /******************************************************************************/
 
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
 void EXTI2_IRQHandler(void) {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
 }
 
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
 void EXTI9_5_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_7)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7); 
     }
 }
 
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
+
 void EXTI15_10_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12)) {
         HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
@@ -145,17 +137,12 @@ void EXTI15_10_IRQHandler(void) {
 
 // TODO refer to schematic to check and see that the data ready
 // pin is the same across values.
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
+
 void DMA1_Channel2_IRQHandler(void)
 {
     HAL_DMA_IRQHandler(&hdma_spi1_rx);
 }
 
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
 void DMA1_Channel4_IRQHandler(void)
 {
     HAL_DMA_IRQHandler(&hdma_spi1_tx);
@@ -169,22 +156,13 @@ void FDCAN1_IT0_IRQHandler(void) { HAL_FDCAN_IRQHandler(can_get_device_handle())
 /**
  * @brief This function handles TIM7 global interrupt.
  */
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
 void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
 
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
 void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
 
 /**
  * @brief This function handles TIM6 global interrupt.
  */
-#ifdef ENABLE_CCMRAM
-__attribute__((section( ".ccmram" )))
-#endif
 void TIM6_DAC_IRQHandler(void){ HAL_TIM_IRQHandler(&htim6); }
 
 extern void xPortSysTickHandler(void);

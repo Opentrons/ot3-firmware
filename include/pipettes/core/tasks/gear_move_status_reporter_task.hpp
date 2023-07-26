@@ -65,7 +65,7 @@ class MoveStatusMessageHandler {
      * Handle Ack message
      */
     void handle_message(const motor_messages::GearMotorAck& message) {
-        auto end_position =
+        uint32_t end_position =
             fixed_point_multiply(um_per_step, message.current_position_steps);
         can::messages::TipActionResponse msg = {
             .message_index = message.message_index,

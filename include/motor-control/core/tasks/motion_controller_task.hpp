@@ -36,8 +36,6 @@ class MotionControllerMessageHandler {
     auto operator=(const MotionControllerMessageHandler&& c) = delete;
     ~MotionControllerMessageHandler() = default;
 
-    int watch_var = 0;
-
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->handle(m); }, message);
     }
