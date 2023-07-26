@@ -42,15 +42,14 @@ using namespace motor_messages;
  */
 
 template <template <class> class QueueImpl, class StatusClient,
-          typename MotorMoveMessage, typename MotorHardware,
-          typename UpdatePositionMessage =
-              can::messages::UpdateMotorPositionEstimationRequest>
+          typename MotorMoveMessage, typename MotorHardware>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
   public:
     using MoveQueue = QueueImpl<MotorMoveMessage>;
-    using UpdatePositionQueue = QueueImpl<UpdatePositionMessage>;
+    using UpdatePositionQueue =
+        QueueImpl<can::messages::UpdateMotorPositionEstimationRequest>;
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
@@ -511,7 +510,7 @@ class MotorInterruptHandler {
      * message and update the motor position if such a message exists.
      */
     auto handle_update_position_queue() -> void {
-        UpdatePositionMessage msg = {};
+        can::messages::UpdateMotorPositionEstimationRequest msg = {};
 
         if (update_position_queue.try_read_isr(&msg)) {
             auto encoder_pulses = hardware.get_encoder_pulses();
@@ -533,7 +532,7 @@ class MotorInterruptHandler {
                     MotorPositionStatus::Flags::stepper_position_ok);
             }
             // We send an ack even if the position wasn't updated
-            auto ack = UpdatePositionResponse{
+            auto ack = motor_messages::UpdatePositionResponse{
                 .message_index = msg.message_index,
                 .stepper_position_counts = hardware.get_step_tracker(),
                 .encoder_pulses = encoder_pulses,
@@ -554,7 +553,7 @@ class MotorInterruptHandler {
             return;
         }
 
-        UpdatePositionMessage msg = {};
+        can::messages::UpdateMotorPositionEstimationRequest msg = {};
         if (update_position_queue.try_read_isr(&msg)) {
             auto response = can::messages::ErrorMessage{
                 .message_index = msg.message_index,

@@ -9,21 +9,20 @@
 
 namespace motor_interrupt_driver {
 
-template <class StatusClient, typename MotorMoveMessage, class MotorHardware,
-          typename UpdatePositionMessage =
-              can::messages::UpdateMotorPositionEstimationRequest>
+template <class StatusClient, typename MotorMoveMessage, class MotorHardware>
 class MotorInterruptDriver {
     using InterruptQueue =
         freertos_message_queue::FreeRTOSMessageQueue<MotorMoveMessage>;
+    using MotorPositionUpdateQueue =
+        freertos_message_queue::FreeRTOSMessageQueue<
+            can::messages::UpdateMotorPositionEstimationRequest>;
     using InterruptHandler = motor_handler::MotorInterruptHandler<
         freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
-        MotorMoveMessage, MotorHardware, UpdatePositionMessage>;
-    using UpdatePositionQueue =
-        freertos_message_queue::FreeRTOSMessageQueue<UpdatePositionMessage>;
+        MotorMoveMessage, MotorHardware>;
 
   public:
     MotorInterruptDriver(InterruptQueue& q, InterruptHandler& h,
-                         MotorHardware& iface, UpdatePositionQueue& pq)
+                         MotorHardware& iface, MotorPositionUpdateQueue& pq)
         : task_entry{q, h, iface, pq}, task(task_entry) {
         task.start(5, "sim_motor_isr");
     }
@@ -31,7 +30,7 @@ class MotorInterruptDriver {
   private:
     struct TaskEntry {
         TaskEntry(InterruptQueue& q, InterruptHandler& h,
-                  MotorHardware& motor_iface, UpdatePositionQueue& pq)
+                  MotorHardware& motor_iface, MotorPositionUpdateQueue& pq)
             : queue{q}, handler{h}, iface{motor_iface}, position_queue{pq} {}
 
         void operator()() {
@@ -69,7 +68,7 @@ class MotorInterruptDriver {
         InterruptQueue& queue;
         InterruptHandler& handler;
         MotorHardware& iface;
-        UpdatePositionQueue& position_queue;
+        MotorPositionUpdateQueue& position_queue;
     };
 
     TaskEntry task_entry;

@@ -17,8 +17,6 @@ using PipetteMotionControlType =
     pipette_motion_controller::PipetteMotionController<lms::LeadScrewConfig>;
 using UpdatePositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
     can::messages::UpdateMotorPositionEstimationRequest>;
-using UpdateGearPositionQueue = freertos_message_queue::FreeRTOSMessageQueue<
-    can::messages::UpdateGearMotorPositionEstimationRequest>;
 
 struct LowThroughputInterruptQueues {
     MoveQueue plunger_queue;
@@ -29,9 +27,9 @@ struct HighThroughputInterruptQueues {
     MoveQueue plunger_queue;
     UpdatePositionQueue plunger_update_queue;
     GearMoveQueue right_motor_queue;
-    UpdateGearPositionQueue right_update_queue;
+    UpdatePositionQueue right_update_queue;
     GearMoveQueue left_motor_queue;
-    UpdateGearPositionQueue left_update_queue;
+    UpdatePositionQueue left_update_queue;
 };
 
 namespace gear_motor {

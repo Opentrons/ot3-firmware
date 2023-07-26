@@ -29,9 +29,6 @@ class MotionControllerMessageHandler {
   public:
     using MotorControllerType =
         pipette_motion_controller::PipetteMotionController<MEConfig>;
-    using UpdateGearMotorPositionQueue =
-        freertos_message_queue::FreeRTOSMessageQueue<
-            can::messages::UpdateGearMotorPositionEstimationRequest>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client,
                                    UsageClient& usage_client)
@@ -49,8 +46,6 @@ class MotionControllerMessageHandler {
     void handle_message(const TaskMessage& message) {
         std::visit([this](auto m) { this->handle(m); }, message);
     }
-
-    int watch_variable = 0;
 
   private:
     void handle(std::monostate m) { static_cast<void>(m); }
@@ -108,18 +103,6 @@ class MotionControllerMessageHandler {
             "acceleration=%d, groupid=%d, seqid=%d\n",
             m.velocity, m.acceleration, m.group_id, m.seq_id);
         controller.move(m);
-    }
-
-    void handle(
-        const can::messages::UpdateGearMotorPositionEstimationRequest& m) {
-        if (!controller.update_gear_position(m)) {
-            // If the motor controller can't ask the interrupt handler to
-            // handle the message, we respond with the current status as-is.
-            can::messages::UpdateGearMotorPositionEstimationResponse response{
-                .message_index = m.message_index,
-                .current_position = controller.read_motor_position()};
-            can_client.send_can_message(can::ids::NodeId::host, response);
-        }
     }
 
     void handle(const can::messages::ReadLimitSwitchRequest& m) {

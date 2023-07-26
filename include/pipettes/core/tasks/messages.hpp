@@ -14,14 +14,12 @@ using MotionControlTaskMessage = std::variant<
     std::monostate, can::messages::TipActionRequest,
     can::messages::GearDisableMotorRequest,
     can::messages::GearEnableMotorRequest,
-    can::messages::UpdateGearMotorPositionEstimationRequest,
     can::messages::GetMotionConstraintsRequest,
     can::messages::SetMotionConstraints, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::GetMotorUsageRequest>;
 
 using MoveStatusReporterTaskMessage =
     std::variant<std::monostate, motor_messages::GearMotorAck,
-                 motor_messages::UpdateGearMotorPositionResponse,
                  motor_messages::UpdatePositionResponse,
                  can::messages::StopRequest, can::messages::ErrorMessage,
                  usage_messages::IncreaseErrorCount>;

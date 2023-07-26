@@ -34,8 +34,7 @@ using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
-    motor_messages::GearMotorMove, motor_hardware::MotorHardware,
-    can::messages::UpdateGearMotorPositionEstimationRequest>;
+    motor_messages::GearMotorMove, motor_hardware::MotorHardware>;
 
 template <PipetteType P>
 auto get_interrupt_queues()

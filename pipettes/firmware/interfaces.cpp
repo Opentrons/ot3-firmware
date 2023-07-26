@@ -33,9 +33,9 @@ auto interfaces::get_interrupt_queues<PipetteType::NINETY_SIX_CHANNEL>()
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
         .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .right_update_queue = UpdateGearPositionQueue{"Right PUpdate Queue"},
+        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
-        .left_update_queue = UpdateGearPositionQueue{"Left PUpdate Queue"}};
+        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
 template <>
@@ -45,9 +45,9 @@ auto interfaces::get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
         .plunger_queue = MoveQueue{"Linear Motor Queue"},
         .plunger_update_queue = UpdatePositionQueue{"Linear Update Queue"},
         .right_motor_queue = GearMoveQueue{"Right Gear Motor Queue"},
-        .right_update_queue = UpdateGearPositionQueue{"Right PUpdate Queue"},
+        .right_update_queue = UpdatePositionQueue{"Right PUpdate Queue"},
         .left_motor_queue = GearMoveQueue{"Left Gear Motor Queue"},
-        .left_update_queue = UpdateGearPositionQueue{"Left PUpdate Queue"}};
+        .left_update_queue = UpdatePositionQueue{"Left PUpdate Queue"}};
 }
 
 void linear_motor::encoder_interrupt(motor_hardware::MotorHardware& hw,
@@ -215,16 +215,14 @@ auto gear_motor::get_motion_control(gear_motor::GearHardware& hw,
                                                   .max_velocity = 2,
                                                   .min_acceleration = 1,
                                                   .max_acceleration = 2},
-                queues.left_motor_queue, queues.left_update_queue,
-                can::ids::GearMotorId::left},
+                queues.left_motor_queue, can::ids::GearMotorId::left},
         .right = pipette_motion_controller::PipetteMotionController{
             configs::gear_motion_sys_config(), hw.right,
             motor_messages::MotionConstraints{.min_velocity = 1,
                                               .max_velocity = 2,
                                               .min_acceleration = 1,
                                               .max_acceleration = 2},
-            queues.right_motor_queue, queues.right_update_queue,
-            can::ids::GearMotorId::right}};
+            queues.right_motor_queue, can::ids::GearMotorId::right}};
 }
 
 auto gear_motor::get_motion_control(gear_motor::UnavailableGearHardware&,

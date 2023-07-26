@@ -30,7 +30,6 @@ using MoveGroupTaskMessage =
 
 using MoveStatusReporterTaskMessage = std::variant<
     std::monostate, motor_messages::Ack, motor_messages::UpdatePositionResponse,
-    motor_messages::UpdateGearMotorPositionResponse,
     can::messages::ErrorMessage, can::messages::StopRequest,
     usage_messages::IncreaseForceTimeUsage, usage_messages::IncreaseErrorCount>;
 

@@ -21,8 +21,7 @@ template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
     freertos_message_queue::FreeRTOSMessageQueue, Client,
     motor_messages::GearMotorMove,
-    sim_motor_hardware_iface::SimGearMotorHardwareIface,
-    can::messages::UpdateGearMotorPositionEstimationRequest>;
+    sim_motor_hardware_iface::SimGearMotorHardwareIface>;
 
 template <PipetteType P>
 auto get_interrupt_queues()
@@ -95,13 +94,11 @@ struct GearInterruptHandlers {
 struct GearInterruptDrivers {
     motor_interrupt_driver::MotorInterruptDriver<
         gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
-        sim_motor_hardware_iface::SimGearMotorHardwareIface,
-        can::messages::UpdateGearMotorPositionEstimationRequest>
+        sim_motor_hardware_iface::SimGearMotorHardwareIface>
         left;
     motor_interrupt_driver::MotorInterruptDriver<
         gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
-        sim_motor_hardware_iface::SimGearMotorHardwareIface,
-        can::messages::UpdateGearMotorPositionEstimationRequest>
+        sim_motor_hardware_iface::SimGearMotorHardwareIface>
         right;
 };
 
