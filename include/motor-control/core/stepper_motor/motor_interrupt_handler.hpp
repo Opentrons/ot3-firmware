@@ -50,7 +50,6 @@ class MotorInterruptHandler {
     using MoveQueue = QueueImpl<MotorMoveMessage>;
     using UpdatePositionQueue =
         QueueImpl<can::messages::UpdateMotorPositionEstimationRequest>;
-
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
@@ -289,6 +288,7 @@ class MotorInterruptHandler {
     auto homing_stopped() -> bool {
         if (limit_switch_triggered()) {
             position_tracker = 0;
+            hardware.reset_step_tracker();
             finish_current_move(AckMessageId::stopped_by_condition);
             return true;
         }
@@ -515,7 +515,7 @@ class MotorInterruptHandler {
      * message and update the motor position if such a message exists.
      */
     auto handle_update_position_queue() -> void {
-        can::messages::UpdateMotorPositionEstimationRequest msg;
+        can::messages::UpdateMotorPositionEstimationRequest msg = {};
 
         if (update_position_queue.try_read_isr(&msg)) {
             auto encoder_pulses = hardware.get_encoder_pulses();
@@ -549,8 +549,8 @@ class MotorInterruptHandler {
 
     /**
      * @brief While a move is active, this function should be called to
-     * check if there is a pending UpdateMotorPositionEstimationRequest and send
-     * an error message over CAN if such a message exists.
+     * check if there is a pending UpdateMotorPositionEstimationRequest and
+     * send an error message over CAN if such a message exists.
      *
      */
     auto handle_update_position_queue_error() -> void {
@@ -558,7 +558,7 @@ class MotorInterruptHandler {
             return;
         }
 
-        can::messages::UpdateMotorPositionEstimationRequest msg;
+        can::messages::UpdateMotorPositionEstimationRequest msg = {};
         if (update_position_queue.try_read_isr(&msg)) {
             auto response = can::messages::ErrorMessage{
                 .message_index = msg.message_index,

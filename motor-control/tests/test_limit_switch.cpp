@@ -82,7 +82,7 @@ SCENARIO("MoveStopCondition::limit_switch with the limit switch triggered") {
                     std::get<Ack>(test_objs.reporter.messages.back());
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
                 REQUIRE(read_ack.encoder_position == 50);
-                REQUIRE(read_ack.current_position_steps == 350);
+                REQUIRE(read_ack.current_position_steps == 0);
             }
             THEN(
                 "the stepper position flag and encoder position flags are "

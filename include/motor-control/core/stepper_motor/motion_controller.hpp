@@ -206,6 +206,8 @@ class PipetteMotionController {
           hardware(hardware_iface),
           motion_constraints(constraints),
           queue(queue),
+          steps_per_um(convert_to_fixed_point_64_bit(
+              linear_motion_sys_config.get_usteps_per_um(), 31)),
           steps_per_mm(convert_to_fixed_point_64_bit(
               linear_motion_sys_config.get_usteps_per_mm(), 31)),
           um_per_step(convert_to_fixed_point_64_bit(
@@ -229,11 +231,13 @@ class PipetteMotionController {
     void move(const can::messages::TipActionRequest& can_msg) {
         steps_per_tick velocity_steps =
             fixed_point_multiply(steps_per_mm, can_msg.velocity);
+        steps_per_tick_sq acceleration_steps =
+            fixed_point_multiply(steps_per_um, can_msg.acceleration);
         GearMotorMove msg{
             can_msg.message_index,
             can_msg.duration,
             velocity_steps,
-            0,
+            acceleration_steps,
             can_msg.group_id,
             can_msg.seq_id,
             can_msg.request_stop_condition,
@@ -317,6 +321,8 @@ class PipetteMotionController {
     StepperMotorHardwareIface& hardware;
     MotionConstraints motion_constraints;
     GenericQueue& queue;
+
+    sq31_31 steps_per_um{0};
     sq31_31 steps_per_mm{0};
     sq31_31 um_per_step{0};
     bool enabled = false;

@@ -62,7 +62,7 @@ class MoveStatusMessageHandler {
             .seq_id = message.seq_id,
             .current_position_um = end_position,
             .encoder_position_um = 0,
-            .position_flags = 0,
+            .position_flags = message.position_flags,
             .ack_id = static_cast<uint8_t>(message.ack_id),
             .action = message.action,
             // TODO: In a follow-up PR, tip sense reporting will
