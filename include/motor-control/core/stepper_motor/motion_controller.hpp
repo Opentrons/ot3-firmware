@@ -109,7 +109,6 @@ class MotionController {
 
     void stop() {
         queue.reset();
-        disable_motor();
         if (hardware.is_timer_interrupt_running()) {
             hardware.request_cancel();
         }
