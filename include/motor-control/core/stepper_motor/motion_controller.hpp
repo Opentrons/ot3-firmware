@@ -260,7 +260,6 @@ class PipetteMotionController {
 
     void stop() {
         queue.reset();
-        disable_motor();
         // if the timer interrupt is running, cancel it. if it isn't running,
         // don't submit a cancel because then the cancel won't be read until
         // the timer starts the next time.
