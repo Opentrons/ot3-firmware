@@ -60,10 +60,16 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
 
                     THEN("Encoder value is reset and homed ack is sent") {
                         REQUIRE(test_objs.hw.get_encoder_pulses() == 0);
+                        REQUIRE(test_objs.hw.position_flags.check_flag(
+                            MotorPositionStatus::Flags::encoder_position_ok));
                         REQUIRE(test_objs.reporter.messages.size() >= 1);
                         Ack read_ack =
                             std::get<Ack>(test_objs.reporter.messages.back());
                         REQUIRE(read_ack.encoder_position == 0);
+                        REQUIRE(
+                            read_ack.position_flags ==
+                            static_cast<uint8_t>(MotorPositionStatus::Flags::
+                                                     encoder_position_ok));
                         REQUIRE(read_ack.ack_id ==
                                 AckMessageId::stopped_by_condition);
                         REQUIRE(test_objs.handler.is_idle);
@@ -72,13 +78,19 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             }
         }
         WHEN("Home message times out") {
+            test_objs.hw.position_flags.set_flag(
+                MotorPositionStatus::Flags::encoder_position_ok);
             test_objs.reporter.messages.clear();
             while (test_objs.reporter.messages.size() == 0) {
                 test_objs.handler.run_interrupt();
             }
+            // position flag gets cleared
+            REQUIRE(!test_objs.hw.position_flags.check_flag(
+                MotorPositionStatus::Flags::encoder_position_ok));
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(read_ack.position_flags == 0x0);
         }
     }
 
@@ -88,6 +100,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                                .group_id = 0,
                                .seq_id = 0,
                                .stop_condition = MoveStopCondition::none};
+        test_objs.hw.position_flags.set_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
         test_objs.queue.try_write_isr(msg);
 
         WHEN("A brushed move message is received and loaded") {
@@ -123,6 +137,10 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                             Ack read_ack = std::get<Ack>(
                                 test_objs.reporter.messages.back());
                             REQUIRE(read_ack.encoder_position == 30000);
+                            REQUIRE(read_ack.position_flags ==
+                                    static_cast<uint8_t>(
+                                        MotorPositionStatus::Flags::
+                                            encoder_position_ok));
                             REQUIRE(read_ack.ack_id ==
                                     AckMessageId::complete_without_condition);
                         }
@@ -140,6 +158,10 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            // encoder position is still valid
+            REQUIRE(read_ack.position_flags ==
+                    static_cast<uint8_t>(
+                        MotorPositionStatus::Flags::encoder_position_ok));
         }
     }
     GIVEN("A message to move") {
@@ -153,6 +175,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
         int32_t last_pid_output = test_objs.hw.get_pid_controller_output();
         REQUIRE(last_pid_output == 0.0);
         test_objs.hw.set_encoder_value(0);
+        test_objs.hw.position_flags.set_flag(
+            MotorPositionStatus::Flags::encoder_position_ok);
         test_objs.queue.try_write_isr(msg);
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
@@ -198,10 +222,13 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 REQUIRE(test_objs.reporter.messages.size() >= 1);
                 Ack read_ack =
                     std::get<Ack>(test_objs.reporter.messages.back());
-                // check if position is withen acceptable parameters
+                // check if position is within acceptable parameters
                 REQUIRE(
                     std::abs(read_ack.encoder_position - msg.encoder_position) <
                     int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
+                REQUIRE(read_ack.position_flags ==
+                        static_cast<uint8_t>(
+                            MotorPositionStatus::Flags::encoder_position_ok));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
             }
         }
@@ -213,6 +240,9 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(read_ack.position_flags ==
+                    static_cast<uint8_t>(
+                        MotorPositionStatus::Flags::encoder_position_ok));
         }
     }
 }

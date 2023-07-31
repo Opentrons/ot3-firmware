@@ -298,6 +298,8 @@ class BrushedMotorInterruptHandler {
         // start position to the difference between the encoder pulse count at
         // the beginning and end this way the usage tracker will know how far
         // the motor moved.
+        hardware.position_flags.set_flag(
+            can::ids::MotorPositionFlags::encoder_position_ok);
         buffered_move.start_encoder_position =
             buffered_move.start_encoder_position -
             hardware.get_encoder_pulses();
@@ -366,12 +368,19 @@ class BrushedMotorInterruptHandler {
             // brushed_motor_controller::stop which would drop the labware.
             if (motor_state == ControlState::FORCE_CONTROLLING) {
                 hardware.set_stay_enabled(true);
+            } else {
+                // clear encoder status if homing failed
+                if (ack_msg_id != AckMessageId::stopped_by_condition) {
+                    hardware.position_flags.clear_flag(
+                        can::ids::MotorPositionFlags::encoder_position_ok);
+                }
             }
         }
 
         if (buffered_move.group_id != NO_GROUP) {
-            auto ack = buffered_move.build_ack(hardware.get_encoder_pulses(), 0,
-                                               ack_msg_id);
+            auto ack = buffered_move.build_ack(
+                hardware.get_encoder_pulses(),
+                hardware.position_flags.get_flags(), ack_msg_id);
 
             static_cast<void>(
                 status_queue_client.send_brushed_move_status_reporter_queue(
