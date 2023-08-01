@@ -1005,6 +1005,8 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
     uint8_t seq_id;
     brushed_timer_ticks duration;
     uint32_t duty_cycle;
+    int32_t encoder_position_um;
+    uint8_t stay_engaged;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GripperGripRequest {
@@ -1012,6 +1014,8 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
         uint8_t seq_id = 0;
         brushed_timer_ticks duration = 0;
         uint32_t duty_cycle = 0;
+        int32_t encoder_position_um = 0;
+        uint8_t stay_engaged = 0;
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
@@ -1019,12 +1023,16 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+        body = bit_utils::bytes_to_int(body, limit, encoder_position_um);
+        body = bit_utils::bytes_to_int(body, limit, stay_engaged);
 
         return GripperGripRequest{.message_index = msg_ind,
                                   .group_id = group_id,
                                   .seq_id = seq_id,
                                   .duration = duration,
-                                  .duty_cycle = duty_cycle};
+                                  .duty_cycle = duty_cycle,
+                                  .encoder_position_um = encoder_position_um,
+                                  .stay_engaged = stay_engaged};
     }
 
     auto operator==(const GripperGripRequest& other) const -> bool = default;

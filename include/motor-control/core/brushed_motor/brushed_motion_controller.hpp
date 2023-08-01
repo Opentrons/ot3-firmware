@@ -48,6 +48,7 @@ class MotionController {
             .duty_cycle = can_msg.duty_cycle,
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
+            .stay_engaged = can_msg.stay_engaged,
             .stop_condition = MoveStopCondition::none,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {

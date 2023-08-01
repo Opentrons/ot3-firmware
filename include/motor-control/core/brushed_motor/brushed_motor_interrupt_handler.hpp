@@ -251,6 +251,8 @@ class BrushedMotorInterruptHandler {
                         .seconds = uint16_t(
                             hardware.get_stopwatch_pulses(true) / 2600)});
             }
+            hardware.set_stay_enabled(
+                static_cast<bool>(buffered_move.stay_engaged));
             motor_state = ControlState::ACTIVE;
             buffered_move.start_encoder_position =
                 hardware.get_encoder_pulses();
@@ -260,7 +262,6 @@ class BrushedMotorInterruptHandler {
         }
         // clear the old states
         hardware.reset_control();
-        hardware.set_stay_enabled(false);
         timeout_ticks = 0;
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
@@ -321,16 +322,6 @@ class BrushedMotorInterruptHandler {
         uint32_t message_index = 0;
         if (motor_state == ControlState::ACTIVE) {
             message_index = buffered_move.message_index;
-        }
-
-        // if we think we dropped a labware we don't want the controller
-        // to stop the motor in case we only slipped or collided and still
-        // have the labware in the jaws
-        // likewise if the estop is hit and the motor is gripping something
-        if (err_code == can::ids::ErrorCode::labware_dropped ||
-            (motor_state == ControlState::FORCE_CONTROLLING &&
-             err_code == can::ids::ErrorCode::estop_detected)) {
-            hardware.set_stay_enabled(true);
         }
 
         status_queue_client.send_brushed_move_status_reporter_queue(

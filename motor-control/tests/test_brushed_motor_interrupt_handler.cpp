@@ -37,6 +37,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         .duty_cycle = 50,
                         .group_id = 0,
                         .seq_id = 0,
+                        .stay_engaged = 0,
                         .stop_condition = MoveStopCondition::limit_switch};
         test_objs.queue.try_write_isr(msg);
 
@@ -49,6 +50,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             THEN("The motor hardware proceeds to home") {
                 /* motor shouldn't be gripping */
                 REQUIRE(!test_objs.hw.get_is_gripping());
+                REQUIRE(!test_objs.hw.get_stay_enabled());
                 test_objs.hw.set_encoder_value(1000);
                 test_objs.hw.set_limit_switch(true);
 
@@ -67,6 +69,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         REQUIRE(read_ack.ack_id ==
                                 AckMessageId::stopped_by_condition);
                         REQUIRE(test_objs.handler.is_idle);
+                        REQUIRE(!test_objs.hw.get_stay_enabled());
                     }
                 }
             }
@@ -79,6 +82,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(!test_objs.hw.get_stay_enabled());
         }
     }
 
@@ -87,6 +91,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                                .duty_cycle = 50,
                                .group_id = 0,
                                .seq_id = 0,
+                               .stay_engaged = 1,
                                .stop_condition = MoveStopCondition::none};
         test_objs.queue.try_write_isr(msg);
 
@@ -99,6 +104,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             THEN("The motor hardware proceeds to grip") {
                 /* motor should be gripping */
                 REQUIRE(test_objs.hw.get_is_gripping());
+                REQUIRE(test_objs.hw.get_stay_enabled());
                 test_objs.hw.set_encoder_value(30000);
 
                 AND_WHEN("The encoder speed timer overflows") {
@@ -125,6 +131,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                             REQUIRE(read_ack.encoder_position == 30000);
                             REQUIRE(read_ack.ack_id ==
                                     AckMessageId::complete_without_condition);
+                            REQUIRE(test_objs.hw.get_stay_enabled());
                         }
                     }
                 }
@@ -140,6 +147,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(test_objs.hw.get_stay_enabled());
         }
     }
     GIVEN("A message to move") {
@@ -226,6 +234,7 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
                         .duty_cycle = 50,
                         .group_id = 0,
                         .seq_id = 0,
+                        .stay_engaged = 1,
                         .stop_condition = MoveStopCondition::limit_switch};
         test_objs.queue.try_write_isr(msg);
         WHEN("Estop is pressed") {
@@ -233,6 +242,7 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
             for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                 test_objs.handler.run_interrupt();
             }
+            REQUIRE(test_objs.hw.get_stay_enabled());
             test_objs.hw.set_estop_in(true);
             test_objs.handler.run_interrupt();
             THEN("Errors are sent") {
@@ -242,6 +252,7 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
+                REQUIRE(test_objs.hw.get_stay_enabled());
             }
         }
     }
@@ -255,6 +266,7 @@ SCENARIO("labware dropped during grip move") {
                                .duty_cycle = 50,
                                .group_id = 0,
                                .seq_id = 0,
+                               .stay_engaged = 1,
                                .stop_condition = MoveStopCondition::none};
         test_objs.queue.try_write_isr(msg);
         WHEN("grip is complete") {
@@ -263,6 +275,7 @@ SCENARIO("labware dropped during grip move") {
             for (uint32_t i = 0; i <= 100; i++) {
                 test_objs.handler.run_interrupt();
             }
+            REQUIRE(test_objs.hw.get_stay_enabled());
             test_objs.handler.set_enc_idle_state(true);
             test_objs.handler.run_interrupt();
             THEN("Move complete message is sent") {
@@ -303,6 +316,7 @@ SCENARIO("collision while homed") {
                         .duty_cycle = 50,
                         .group_id = 0,
                         .seq_id = 0,
+                        .stay_engaged = 0,
                         .stop_condition = MoveStopCondition::limit_switch};
         test_objs.queue.try_write_isr(msg);
         WHEN("home is complete") {
