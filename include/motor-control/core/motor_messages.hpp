@@ -107,6 +107,7 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t group_id;
     uint8_t seq_id;
     int32_t encoder_position;
+    uint8_t stay_engaged = 0;
     MoveStopCondition stop_condition = MoveStopCondition::none;
     int32_t start_encoder_position;
     uint16_t usage_key;
