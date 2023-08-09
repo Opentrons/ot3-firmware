@@ -160,7 +160,9 @@ void gripper_tasks::QueueClient::send_pressure_sensor_queue_front(
 void gripper_tasks::QueueClient::send_pressure_sensor_queue_rear(
     const sensors::utils::TaskMessage&) {}
 
-void gripper_tasks::QueueClient::send_tip_notification_queue(
+void gripper_tasks::QueueClient::send_tip_notification_queue_rear(
+    const sensors::tip_presence::TaskMessage&) {}
+void gripper_tasks::QueueClient::send_tip_notification_queue_front(
     const sensors::tip_presence::TaskMessage&) {}
 
 /**

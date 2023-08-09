@@ -1233,17 +1233,36 @@ struct BindSensorOutputResponse
         -> bool = default;
 };
 
-using TipStatusQueryRequest = Empty<MessageId::get_tip_status_request>;
+struct TipStatusQueryRequest : BaseMessage<MessageId::get_tip_status_request> {
+    uint32_t message_index;
+    can::ids::SensorId sensor_id;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> TipStatusQueryRequest {
+        uint32_t msg_ind = 0;
+        uint8_t _id = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, _id);
+        return TipStatusQueryRequest{
+            .message_index = msg_ind,
+            .sensor_id = static_cast<can::ids::SensorId>(_id)};
+    }
+    auto operator==(const TipStatusQueryRequest& other) const -> bool = default;
+};
 
 struct PushTipPresenceNotification
     : BaseMessage<MessageId::tip_presence_notification> {
     uint32_t message_index;
     uint8_t ejector_flag_status;
+    can::ids::SensorId sensor_id{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
         iter = bit_utils::int_to_bytes(ejector_flag_status, iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
         return iter - body;
     }
 

@@ -57,7 +57,15 @@ class SensorHandler {
     }
 
     void visit(const can::messages::TipStatusQueryRequest &m) {
-        client.send_tip_notification_queue(m);
+        switch (m.sensor_id) {
+            case can::ids::SensorId::S0: {
+                client.send_tip_notification_queue_rear(m);
+                break;
+            }
+            default:
+                client.send_tip_notification_queue_front(m);
+                break;
+        }
     }
 
     void send_to_queue(can::ids::SensorType type, can::ids::SensorId id,

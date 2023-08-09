@@ -121,7 +121,7 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                     gpio::PinConfig{
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                         .port = GPIOC,
-                        .pin = GPIO_PIN_12,
+                        .pin = GPIO_PIN_7,
                         .active_setting = GPIO_PIN_RESET}},
         .secondary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
@@ -138,7 +138,7 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
             .tip_sense = gpio::PinConfig{
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .port = GPIOC,
-                .pin = GPIO_PIN_7,
+                .pin = GPIO_PIN_12,
                 .active_setting = GPIO_PIN_RESET}}};
     return pins;
 }

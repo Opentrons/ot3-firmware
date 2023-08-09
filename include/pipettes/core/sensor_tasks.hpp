@@ -72,8 +72,11 @@ struct Tasks {
         freertos_message_queue::FreeRTOSMessageQueue>*
         pressure_sensor_task_front{nullptr};
     sensors::tasks::TipPresenceNotificationTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* tip_notification_task{
-        nullptr};
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        tip_notification_task_rear{nullptr};
+    sensors::tasks::TipPresenceNotificationTask<
+        freertos_message_queue::FreeRTOSMessageQueue>*
+        tip_notification_task_front{nullptr};
 };
 
 /**
@@ -96,7 +99,10 @@ struct QueueClient : can::message_writer::MessageWriter {
 
     void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
 
-    void send_tip_notification_queue(
+    void send_tip_notification_queue_rear(
+        const sensors::tip_presence::TaskMessage& m);
+
+    void send_tip_notification_queue_front(
         const sensors::tip_presence::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
@@ -112,7 +118,11 @@ struct QueueClient : can::message_writer::MessageWriter {
     freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
         pressure_sensor_queue_front{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<
-        sensors::tip_presence::TaskMessage>* tip_notification_queue{nullptr};
+        sensors::tip_presence::TaskMessage>* tip_notification_queue_rear{
+        nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<
+        sensors::tip_presence::TaskMessage>* tip_notification_queue_front{
+        nullptr};
 };
 
 /**
