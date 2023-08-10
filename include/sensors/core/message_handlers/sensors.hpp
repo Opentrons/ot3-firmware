@@ -63,7 +63,7 @@ class SensorHandler {
                 break;
             }
             case can::ids::SensorId::S1: {
-                client.send_tip_notificaiton_queue_front(m);
+                client.send_tip_notification_queue_front(m);
                 break;
             }
             default:
