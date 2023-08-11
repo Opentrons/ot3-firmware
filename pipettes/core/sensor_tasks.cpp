@@ -235,7 +235,9 @@ void sensor_tasks::QueueClient::send_tip_notification_queue_rear(
 
 void sensor_tasks::QueueClient::send_tip_notification_queue_front(
     const sensors::tip_presence::TaskMessage& m) {
-    tip_notification_queue_front->try_write(m);
+    if (tip_notification_queue_front != nullptr) {
+        tip_notification_queue_front->try_write(m);
+    }
 }
 
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }
