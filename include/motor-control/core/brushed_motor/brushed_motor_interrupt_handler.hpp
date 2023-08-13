@@ -142,29 +142,31 @@ class BrushedMotorInterruptHandler {
     void execute_idle_move() {
         if (has_messages()) {
             update_and_start_move();
-        } else if (motor_state == ControlState::POSITION_CONTROLLING) {
-            int32_t move_delta =
-                hardware.get_encoder_pulses() - hold_encoder_position;
-            controlled_move_to(move_delta);
-            // we use a value higher than the acceptable position here to allow
-            // the pid loop the opportunity to maintain small movements that
-            // occur from motion and vibration
-            if (move_delta > error_conf.unwanted_movement_threshold) {
-                cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
-                motor_state = ControlState::ERROR;
-            }
-        } else if (motor_state == ControlState::FORCE_CONTROLLING ||
-                   motor_state == ControlState::FORCE_CONTROLLING_HOME) {
-            auto pulses = hardware.get_encoder_pulses();
-            if (!is_idle && pulses >= 0 &&
-                std::abs(pulses - hold_encoder_position) >
+        } else if (!error_handled) {
+            // has not reported an error yet
+            if (motor_state == ControlState::POSITION_CONTROLLING) {
+                int32_t move_delta =
+                        hardware.get_encoder_pulses() - hold_encoder_position;
+                controlled_move_to(move_delta);
+                // we use a value higher than the acceptable position here to allow
+                // the pid loop the opportunity to maintain small movements that
+                // occur from motion and vibration
+                if (move_delta > error_conf.unwanted_movement_threshold) {
+                    cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+                    error_handled = true;
+                }
+            } else if (motor_state != ControlState::UNHOMED) {
+                auto pulses = hardware.get_encoder_pulses();
+                if (!is_idle && pulses >= 0 &&
+                    std::abs(pulses - hold_encoder_position) >
                     error_conf.unwanted_movement_threshold) {
-                // we have likely dropped a labware or had a collision
-                auto err = motor_state == ControlState::FORCE_CONTROLLING
+                    // we have likely dropped a labware or had a collision
+                    auto err = motor_state == ControlState::FORCE_CONTROLLING
                                ? can::ids::ErrorCode::labware_dropped
                                : can::ids::ErrorCode::collision_detected;
-                cancel_and_clear_moves(err);
-                motor_state = ControlState::ERROR;
+                    cancel_and_clear_moves(err);
+                    error_handled = true;
+                }
             }
         }
     }
