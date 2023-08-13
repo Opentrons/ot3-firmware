@@ -24,14 +24,11 @@ using namespace motor_messages;
  *
  */
 
-enum class ControlState {
-    FORCE_CONTROLLING_HOME,
-    FORCE_CONTROLLING,
-    POSITION_CONTROLLING,
-    IDLE,
-    ACTIVE,
-    ERROR,
-    ESTOP
+enum class ControlState : uint8_t {
+    UNHOMED = 0x0,
+    FORCE_CONTROLLING_HOME = 0x1,
+    FORCE_CONTROLLING = 0x2,
+    POSITION_CONTROLLING = 0x3
 };
 
 static constexpr uint32_t HOLDOFF_TICKS =
