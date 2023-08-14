@@ -149,7 +149,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
                GPIO_Pin ==
                    pins_for_sensor.secondary.value().tip_sense.value().pin) {
         static_cast<void>(
-            sensor_queue_client.tip_notification_queue_front->try_write_isr(
+            if(sensor_queue_client.tip_notification_queue_front) sensor_queue_client.tip_notification_queue_front->try_write_isr(
                 sensors::tip_presence::TipStatusChangeDetected{}));
     }
 }
