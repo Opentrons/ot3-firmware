@@ -118,7 +118,8 @@ class BrushedMotorInterruptHandler {
                 controlled_move_to(move_delta);
                 if (std::abs(move_delta) <
                     error_conf.acceptable_position_error) {
-                    finish_current_move(true, AckMessageId::stopped_by_condition);
+                    finish_current_move(true,
+                                        AckMessageId::stopped_by_condition);
                 }
                 break;
             }
@@ -146,24 +147,25 @@ class BrushedMotorInterruptHandler {
             // has not reported an error yet
             if (motor_state == ControlState::POSITION_CONTROLLING) {
                 int32_t move_delta =
-                        hardware.get_encoder_pulses() - hold_encoder_position;
+                    hardware.get_encoder_pulses() - hold_encoder_position;
                 controlled_move_to(move_delta);
-                // we use a value higher than the acceptable position here to allow
-                // the pid loop the opportunity to maintain small movements that
-                // occur from motion and vibration
+                // we use a value higher than the acceptable position here to
+                // allow the pid loop the opportunity to maintain small
+                // movements that occur from motion and vibration
                 if (move_delta > error_conf.unwanted_movement_threshold) {
-                    cancel_and_clear_moves(can::ids::ErrorCode::collision_detected);
+                    cancel_and_clear_moves(
+                        can::ids::ErrorCode::collision_detected);
                     error_handled = true;
                 }
             } else if (motor_state != ControlState::UNHOMED) {
                 auto pulses = hardware.get_encoder_pulses();
                 if (!is_idle && pulses >= 0 &&
                     std::abs(pulses - hold_encoder_position) >
-                    error_conf.unwanted_movement_threshold) {
+                        error_conf.unwanted_movement_threshold) {
                     // we have likely dropped a labware or had a collision
                     auto err = motor_state == ControlState::FORCE_CONTROLLING
-                               ? can::ids::ErrorCode::labware_dropped
-                               : can::ids::ErrorCode::collision_detected;
+                                   ? can::ids::ErrorCode::labware_dropped
+                                   : can::ids::ErrorCode::collision_detected;
                     cancel_and_clear_moves(err);
                     error_handled = true;
                 }
@@ -263,7 +265,8 @@ class BrushedMotorInterruptHandler {
         hardware.reset_control();
         timeout_ticks = 0;
         error_handled = false;
-        hardware.set_stay_enabled(static_cast<bool>(buffered_move.stay_engaged));
+        hardware.set_stay_enabled(
+            static_cast<bool>(buffered_move.stay_engaged));
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
                 motor_state = ControlState::FORCE_CONTROLLING_HOME;
@@ -276,7 +279,8 @@ class BrushedMotorInterruptHandler {
                     buffered_move.encoder_position) {
                     LOG("Attempting to add a gripper move to our current "
                         "position");
-                    finish_current_move(true, AckMessageId::stopped_by_condition);
+                    finish_current_move(true,
+                                        AckMessageId::stopped_by_condition);
                 }
                 break;
             case MoveStopCondition::none:
@@ -292,7 +296,8 @@ class BrushedMotorInterruptHandler {
                 // this is an unused move stop condition for the brushed motor
                 // just return with no condition
                 // TODO creat can bus error messages and send that instead
-                finish_current_move(false, AckMessageId::complete_without_condition);
+                finish_current_move(false,
+                                    AckMessageId::complete_without_condition);
                 break;
         }
     }
@@ -346,11 +351,12 @@ class BrushedMotorInterruptHandler {
 
         // only update hold position when the move is valid
         if (update_hold_position) {
-            // use the commanded move position as the hold position if posiiton controling
-            // otherwise, we can use the actual jaw encoder position
-            hold_encoder_position = motor_state == ControlState::POSITION_CONTROLLING
-                                    ? buffered_move.encoder_position
-                                    : hardware.get_encoder_pulses();
+            // use the commanded move position as the hold position if posiiton
+            // controling otherwise, we can use the actual jaw encoder position
+            hold_encoder_position =
+                motor_state == ControlState::POSITION_CONTROLLING
+                    ? buffered_move.encoder_position
+                    : hardware.get_encoder_pulses();
         }
 
         if (buffered_move.group_id != NO_GROUP) {

@@ -107,25 +107,22 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     bool cancel_request = false;
     bool timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
-        motor_hardware::UsageEEpromConfig{
-            std::array<UsageRequestSet, 3>{
-                UsageRequestSet{
-                    .eeprom_key = 0x0,
-                    .type_key =
-                             uint16_t(can::ids::MotorUsageValueType::linear_motor_distance),
-                    .length = usage_storage_task::distance_data_usage_len},
-                UsageRequestSet{
-                    .eeprom_key = 0x1,
-                    .type_key = uint16_t(
-                            can::ids::MotorUsageValueType::force_application_time),
-                    .length = usage_storage_task::force_time_data_usage_len},
-                UsageRequestSet {
-                    .eeprom_key = 0x2,
-                    .type_key =
-                             uint16_t(can::ids::MotorUsageValueType::total_error_count),
-                    .length = usage_storage_task::error_count_usage_len
-                }}};
-
+        motor_hardware::UsageEEpromConfig{std::array<UsageRequestSet, 3>{
+            UsageRequestSet{
+                .eeprom_key = 0x0,
+                .type_key = uint16_t(
+                    can::ids::MotorUsageValueType::linear_motor_distance),
+                .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet{
+                .eeprom_key = 0x1,
+                .type_key = uint16_t(
+                    can::ids::MotorUsageValueType::force_application_time),
+                .length = usage_storage_task::force_time_data_usage_len},
+            UsageRequestSet{
+                .eeprom_key = 0x2,
+                .type_key =
+                    uint16_t(can::ids::MotorUsageValueType::total_error_count),
+                .length = usage_storage_task::error_count_usage_len}}};
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {
