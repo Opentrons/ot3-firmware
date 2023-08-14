@@ -42,7 +42,7 @@ class TipPresenceNotificationHandler {
                 .message_index = m.message_index,
                 .ejector_flag_status =
                     static_cast<uint8_t>(hardware.check_tip_presence()),
-                .sensor_id = this->sensor_id});
+                .sensor_id = sensor_id});
     }
 
   private:
