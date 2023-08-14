@@ -5,8 +5,9 @@ template <can::message_writer_task::TaskClient CanClient>
 class TipPresenceNotificationHandler {
   public:
     explicit TipPresenceNotificationHandler(
-        CanClient &can_client, sensors::hardware::SensorHardwareBase &hardware)
-        : can_client{can_client}, hardware{hardware} {}
+        CanClient &can_client, sensors::hardware::SensorHardwareBase &hardware,
+        const can::ids::SensorId &id)
+        : can_client{can_client}, hardware{hardware}, sensor_id{id} {}
     TipPresenceNotificationHandler(const TipPresenceNotificationHandler &) =
         delete;
     TipPresenceNotificationHandler(const TipPresenceNotificationHandler &&) =
@@ -29,7 +30,9 @@ class TipPresenceNotificationHandler {
             can::messages::PushTipPresenceNotification{
                 .message_index = 0,
                 .ejector_flag_status =
-                    static_cast<uint8_t>(hardware.check_tip_presence())});
+                    static_cast<uint8_t>(hardware.check_tip_presence()),
+                .sensor_id = sensor_id,
+            });
     }
 
     void visit(const can::messages::TipStatusQueryRequest &m) {
@@ -38,12 +41,14 @@ class TipPresenceNotificationHandler {
             can::messages::PushTipPresenceNotification{
                 .message_index = m.message_index,
                 .ejector_flag_status =
-                    static_cast<uint8_t>(hardware.check_tip_presence())});
+                    static_cast<uint8_t>(hardware.check_tip_presence()),
+                .sensor_id = sensor_id});
     }
 
   private:
     CanClient &can_client;
     sensors::hardware::SensorHardwareBase &hardware;
+    can::ids::SensorId sensor_id;
 };
 
 /**
@@ -56,7 +61,8 @@ class TipPresenceNotificationTask {
   public:
     using Messages = tip_presence::TaskMessage;
     using QueueType = QueueImpl<Messages>;
-    TipPresenceNotificationTask(QueueType &queue) : queue{queue} {}
+    TipPresenceNotificationTask(QueueType &queue, can::ids::SensorId id)
+        : queue{queue}, sensor_id{id} {}
     TipPresenceNotificationTask(const TipPresenceNotificationTask &c) = delete;
     TipPresenceNotificationTask(const TipPresenceNotificationTask &&c) = delete;
     auto operator=(const TipPresenceNotificationTask &c) = delete;
@@ -70,7 +76,8 @@ class TipPresenceNotificationTask {
     [[noreturn]] void operator()(
         CanClient *can_client,
         sensors::hardware::SensorHardwareBase *hardware) {
-        auto handler = TipPresenceNotificationHandler{*can_client, *hardware};
+        auto handler =
+            TipPresenceNotificationHandler{*can_client, *hardware, sensor_id};
         Messages message{};
         for (;;) {
             if (queue.try_read(&message, queue.max_delay)) {
@@ -83,6 +90,7 @@ class TipPresenceNotificationTask {
 
   private:
     QueueType &queue;
+    can::ids::SensorId sensor_id;
 };
 
 }  // namespace tasks

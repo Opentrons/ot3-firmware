@@ -30,9 +30,13 @@ static auto pressure_sensor_task_builder_front =
     freertos_task::TaskStarter<512, sensors::tasks::PressureSensorTask,
                                can::ids::SensorId>(can::ids::SensorId::S1);
 
+static auto tip_notification_task_builder_rear =
+    freertos_task::TaskStarter<256, sensors::tasks::TipPresenceNotificationTask,
+                               can::ids::SensorId>(can::ids::SensorId::S0);
+
 static auto tip_notification_task_builder_front =
-    freertos_task::TaskStarter<256,
-                               sensors::tasks::TipPresenceNotificationTask>{};
+    freertos_task::TaskStarter<256, sensors::tasks::TipPresenceNotificationTask,
+                               can::ids::SensorId>(can::ids::SensorId::S1);
 
 void sensor_tasks::start_tasks(
     sensor_tasks::CanWriterTask& can_writer,
@@ -70,14 +74,14 @@ void sensor_tasks::start_tasks(
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
             sensor_hardware_primary, queues);
-    auto& tip_notification_task = tip_notification_task_builder_front.start(
-        5, "tip notification", queues, sensor_hardware_primary);
+    auto& tip_notification_task_rear = tip_notification_task_builder_rear.start(
+        5, "tip notification sensor s0", queues, sensor_hardware_primary);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
-    tasks.tip_notification_task = &tip_notification_task;
+    tasks.tip_notification_task_rear = &tip_notification_task_rear;
 
     queues.set_queue(&can_writer.get_queue());
     queues.eeprom_queue = &eeprom_task.get_queue();
@@ -85,7 +89,8 @@ void sensor_tasks::start_tasks(
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
     queues.pressure_sensor_queue_rear = &pressure_sensor_task_rear.get_queue();
-    queues.tip_notification_queue = &tip_notification_task.get_queue();
+    queues.tip_notification_queue_rear =
+        &tip_notification_task_rear.get_queue();
 }
 
 void sensor_tasks::start_tasks(
@@ -119,6 +124,8 @@ void sensor_tasks::start_tasks(
                                   ? i2c3_task_client
                                   : i2c2_task_client;
     auto shared_cap_task = PIPETTE_TYPE == EIGHT_CHANNEL ? true : false;
+    auto front_tip_presence_sensor =
+        PIPETTE_TYPE == NINETY_SIX_CHANNEL ? true : false;
 
     auto& eeprom_task = eeprom_task_builder.start(
         5, "eeprom", eeprom_i2c_client, eeprom_hardware);
@@ -134,14 +141,14 @@ void sensor_tasks::start_tasks(
         capacitive_sensor_task_builder_rear.start(
             5, "capacitive sensor s0", i2c3_task_client, i2c3_poller_client,
             sensor_hardware_primary, queues, shared_cap_task);
-    auto& tip_notification_task = tip_notification_task_builder_front.start(
-        5, "tip notification", queues, sensor_hardware_primary);
+    auto& tip_notification_task_rear = tip_notification_task_builder_rear.start(
+        5, "tip notification sensor s0", queues, sensor_hardware_primary);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
     tasks.pressure_sensor_task_front = &pressure_sensor_task_front;
-    tasks.tip_notification_task = &tip_notification_task;
+    tasks.tip_notification_task_rear = &tip_notification_task_rear;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
 
     queues.set_queue(&can_writer.get_queue());
@@ -152,7 +159,8 @@ void sensor_tasks::start_tasks(
     queues.pressure_sensor_queue_rear = &pressure_sensor_task_rear.get_queue();
     queues.pressure_sensor_queue_front =
         &pressure_sensor_task_front.get_queue();
-    queues.tip_notification_queue = &tip_notification_task.get_queue();
+    queues.tip_notification_queue_rear =
+        &tip_notification_task_rear.get_queue();
 
     if (shared_cap_task) {
         // There is only one cap sensor on the eight channel and so the "front"
@@ -169,6 +177,17 @@ void sensor_tasks::start_tasks(
         tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
         queues.capacitive_sensor_queue_front =
             &capacitive_sensor_task_front.get_queue();
+    }
+    if (front_tip_presence_sensor) {
+        // the eight channel only has one tip presence sensor, so the front
+        // task should only be started if we have a 96 channel pipette
+        auto& tip_notification_task_front =
+            tip_notification_task_builder_front.start(
+                5, "tip notification sensor s1", queues,
+                sensor_hardware_secondary);
+        tasks.tip_notification_task_front = &tip_notification_task_front;
+        queues.tip_notification_queue_front =
+            &tip_notification_task_front.get_queue();
     }
 }
 
@@ -216,9 +235,18 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue_front(
     }
 }
 
-void sensor_tasks::QueueClient::send_tip_notification_queue(
+void sensor_tasks::QueueClient::send_tip_notification_queue_rear(
     const sensors::tip_presence::TaskMessage& m) {
-    tip_notification_queue->try_write(m);
+    if (tip_notification_queue_rear != nullptr) {
+        tip_notification_queue_rear->try_write(m);
+    }
+}
+
+void sensor_tasks::QueueClient::send_tip_notification_queue_front(
+    const sensors::tip_presence::TaskMessage& m) {
+    if (tip_notification_queue_front != nullptr) {
+        tip_notification_queue_front->try_write(m);
+    }
 }
 
 auto sensor_tasks::get_tasks() -> Tasks& { return tasks; }

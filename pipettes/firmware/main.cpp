@@ -142,15 +142,19 @@ static auto tail_accessor =
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == tip_sense_gpio_primary.pin) {
-        static_cast<void>(
-            sensor_queue_client.tip_notification_queue->try_write_isr(
-                sensors::tip_presence::TipStatusChangeDetected{}));
+        if (sensor_queue_client.tip_notification_queue_rear != nullptr) {
+            static_cast<void>(
+                sensor_queue_client.tip_notification_queue_rear->try_write_isr(
+                    sensors::tip_presence::TipStatusChangeDetected{}));
+        }
     } else if (ok_for_secondary &&
                GPIO_Pin ==
                    pins_for_sensor.secondary.value().tip_sense.value().pin) {
-        static_cast<void>(
-            sensor_queue_client.tip_notification_queue->try_write_isr(
-                sensors::tip_presence::TipStatusChangeDetected{}));
+        if (sensor_queue_client.tip_notification_queue_front != nullptr) {
+            static_cast<void>(
+                sensor_queue_client.tip_notification_queue_front->try_write_isr(
+                    sensors::tip_presence::TipStatusChangeDetected{}));
+        }
     }
 }
 
