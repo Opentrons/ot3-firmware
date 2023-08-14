@@ -141,7 +141,7 @@ class MotionController {
     }
 
     auto get_jaw_state() -> BrushedMotorState {
-        return hardware.get_motor_state;
+        return hardware.get_motor_state();
     }
 
   private:
