@@ -134,6 +134,11 @@ struct UpdatePositionResponse {
     uint8_t position_flags;
 };
 
+struct GripperJawStateResponse {
+    uint32_t message_index;
+    uint8_t jaw_state;
+};
+
 const uint8_t NO_GROUP = 0xff;
 
 constexpr const int RADIX = 31;

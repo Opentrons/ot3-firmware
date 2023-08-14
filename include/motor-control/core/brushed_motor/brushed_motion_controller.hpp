@@ -140,6 +140,8 @@ class MotionController {
         usage_client.send_usage_storage_queue(req);
     }
 
+    void get_jaw_state() {}
+
   private:
     lms::LinearMotionSystemConfig<MEConfig> linear_motion_sys_config;
     BrushedMotorHardwareIface& hardware;

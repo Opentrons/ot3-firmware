@@ -31,7 +31,8 @@ using MoveGroupTaskMessage =
 using MoveStatusReporterTaskMessage = std::variant<
     std::monostate, motor_messages::Ack, motor_messages::UpdatePositionResponse,
     can::messages::ErrorMessage, can::messages::StopRequest,
-    usage_messages::IncreaseForceTimeUsage, usage_messages::IncreaseErrorCount>;
+    usage_messages::IncreaseForceTimeUsage, usage_messages::IncreaseErrorCount,
+    can::messages::GripperJawStateResponse>;
 
 using BrushedMotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::SetBrushedMotorVrefRequest,
@@ -45,7 +46,7 @@ using BrushedMotionControllerTaskMessage = std::variant<
     can::messages::AddBrushedLinearMoveRequest, can::messages::StopRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest,
     can::messages::SetGripperErrorToleranceRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::GripperJawStateRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,

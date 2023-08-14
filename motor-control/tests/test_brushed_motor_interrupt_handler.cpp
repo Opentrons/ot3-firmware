@@ -87,8 +87,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                                 AckMessageId::stopped_by_condition);
                         REQUIRE(test_objs.handler.is_idle);
                         REQUIRE(!test_objs.hw.get_stay_enabled());
-                        REQUIRE(test_objs.handler.motor_state ==
-                                ControlState::FORCE_CONTROLLING_HOME);
+                        REQUIRE(test_objs.hw.get_motor_state() ==
+                                BrushedMotorState::FORCE_CONTROLLING_HOME);
                     }
                 }
             }
@@ -102,8 +102,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
             REQUIRE(!test_objs.hw.get_stay_enabled());
-            REQUIRE(test_objs.handler.motor_state ==
-                    ControlState::FORCE_CONTROLLING_HOME);
+            REQUIRE(test_objs.hw.get_motor_state() ==
+                    BrushedMotorState::FORCE_CONTROLLING_HOME);
         }
     }
 
@@ -147,8 +147,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                             REQUIRE(read_ack.ack_id ==
                                     AckMessageId::complete_without_condition);
                             REQUIRE(test_objs.hw.get_stay_enabled());
-                            REQUIRE(test_objs.handler.motor_state ==
-                                    ControlState::FORCE_CONTROLLING);
+                            REQUIRE(test_objs.hw.get_motor_state() ==
+                                    BrushedMotorState::FORCE_CONTROLLING);
                         }
                     }
                 }
@@ -165,8 +165,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
             REQUIRE(test_objs.hw.get_stay_enabled());
-            REQUIRE(test_objs.handler.motor_state ==
-                    ControlState::FORCE_CONTROLLING);
+            REQUIRE(test_objs.hw.get_motor_state() ==
+                    BrushedMotorState::FORCE_CONTROLLING);
         }
     }
     GIVEN("A message to move") {
@@ -223,8 +223,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                                  move_msg.encoder_position) <
                         int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
-                REQUIRE(test_objs.handler.motor_state ==
-                        ControlState::POSITION_CONTROLLING);
+                REQUIRE(test_objs.hw.get_motor_state() ==
+                        BrushedMotorState::POSITION_CONTROLLING);
                 REQUIRE(!test_objs.hw.get_stay_enabled());
             }
         }
@@ -236,8 +236,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
-            REQUIRE(test_objs.handler.motor_state ==
-                    ControlState::POSITION_CONTROLLING);
+            REQUIRE(test_objs.hw.get_motor_state() ==
+                    BrushedMotorState::POSITION_CONTROLLING);
             REQUIRE(!test_objs.hw.get_stay_enabled());
         }
     }
@@ -269,8 +269,8 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
                     "persist") {
                     REQUIRE(test_objs.handler.in_estop);
                     REQUIRE(test_objs.hw.get_stay_enabled());
-                    REQUIRE(test_objs.handler.motor_state ==
-                            ControlState::FORCE_CONTROLLING);
+                    REQUIRE(test_objs.hw.get_motor_state() ==
+                            BrushedMotorState::FORCE_CONTROLLING);
                 }
             }
         }
@@ -447,13 +447,13 @@ SCENARIO("A collision during position controlled move") {
 
 SCENARIO("handler recovers from error state") {
     BrushedMotorContainer test_objs{};
-    auto og_motor_state = GENERATE(ControlState::FORCE_CONTROLLING_HOME,
-                                   ControlState::FORCE_CONTROLLING,
-                                   ControlState::POSITION_CONTROLLING);
+    auto og_motor_state = GENERATE(BrushedMotorState::FORCE_CONTROLLING_HOME,
+                                   BrushedMotorState::FORCE_CONTROLLING,
+                                   BrushedMotorState::POSITION_CONTROLLING);
     auto stay_engaged = GENERATE(true, false);
 
     GIVEN("an error occurred during an idle move") {
-        test_objs.handler.motor_state = og_motor_state;
+        test_objs.hw.set_motor_state(og_motor_state);
         test_objs.hw.set_stay_enabled(stay_engaged);
         test_objs.handler.error_handled = true;
 
@@ -463,9 +463,9 @@ SCENARIO("handler recovers from error state") {
             THEN(
                 "motor state should become un-homed only if stay engaged is "
                 "falsy") {
-                REQUIRE(
-                    test_objs.handler.motor_state ==
-                    (!stay_engaged ? ControlState::UNHOMED : og_motor_state));
+                REQUIRE(test_objs.hw.get_motor_state() ==
+                        (!stay_engaged ? BrushedMotorState::UNHOMED
+                                       : og_motor_state));
             }
             THEN("a stop requested warning is issued") {
                 // TODO: do we need to increase the error count if it's only
@@ -487,8 +487,8 @@ SCENARIO("handler recovers from error state") {
                     "error state is cleared and the new move is being "
                     "executed") {
                     REQUIRE(!test_objs.handler.error_handled);
-                    REQUIRE(test_objs.handler.motor_state ==
-                            ControlState::FORCE_CONTROLLING);
+                    REQUIRE(test_objs.hw.get_motor_state() ==
+                            BrushedMotorState::FORCE_CONTROLLING);
                     REQUIRE(test_objs.handler.has_active_move());
                     REQUIRE(test_objs.hw.get_stay_enabled());
                 }

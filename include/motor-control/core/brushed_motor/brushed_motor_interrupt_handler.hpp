@@ -24,13 +24,6 @@ using namespace motor_messages;
  *
  */
 
-enum class ControlState : uint8_t {
-    UNHOMED = 0x0,
-    FORCE_CONTROLLING_HOME = 0x1,
-    FORCE_CONTROLLING = 0x2,
-    POSITION_CONTROLLING = 0x3
-};
-
 static constexpr uint32_t HOLDOFF_TICKS =
     32;  // hold off for 1 ms (with a 32k Hz timer)
 // using the logic analyzer it takes about 0.2-0.3 ms for the output
@@ -144,8 +137,9 @@ class BrushedMotorInterruptHandler {
         if (has_messages()) {
             update_and_start_move();
         } else if (!error_handled) {
+            auto motor_state = hardware.get_motor_state();
             // has not reported an error yet
-            if (motor_state == ControlState::POSITION_CONTROLLING) {
+            if (motor_state == BrushedMotorState::POSITION_CONTROLLING) {
                 int32_t move_delta =
                     hardware.get_encoder_pulses() - hold_encoder_position;
                 controlled_move_to(move_delta);
@@ -157,15 +151,16 @@ class BrushedMotorInterruptHandler {
                         can::ids::ErrorCode::collision_detected);
                     error_handled = true;
                 }
-            } else if (motor_state != ControlState::UNHOMED) {
+            } else if (motor_state != BrushedMotorState::UNHOMED) {
                 auto pulses = hardware.get_encoder_pulses();
                 if (!is_idle && pulses >= 0 &&
                     std::abs(pulses - hold_encoder_position) >
                         error_conf.unwanted_movement_threshold) {
                     // we have likely dropped a labware or had a collision
-                    auto err = motor_state == ControlState::FORCE_CONTROLLING
-                                   ? can::ids::ErrorCode::labware_dropped
-                                   : can::ids::ErrorCode::collision_detected;
+                    auto err =
+                        motor_state == BrushedMotorState::FORCE_CONTROLLING
+                            ? can::ids::ErrorCode::labware_dropped
+                            : can::ids::ErrorCode::collision_detected;
                     cancel_and_clear_moves(err);
                     error_handled = true;
                 }
@@ -198,7 +193,7 @@ class BrushedMotorInterruptHandler {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
         } else if (hardware.has_cancel_request()) {
             if (!hardware.get_stay_enabled()) {
-                motor_state = ControlState::UNHOMED;
+                hardware.set_motor_state(BrushedMotorState::UNHOMED);
             }
             cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
                                    can::ids::ErrorSeverity::warning);
@@ -231,8 +226,9 @@ class BrushedMotorInterruptHandler {
         // this function is called when the timer overflows, which happens 25
         // seconds after movement stops. if we're in force mode, increase the
         // usage in eeprom otherwise do nothing.
-        if (motor_state == ControlState::FORCE_CONTROLLING ||
-            motor_state == ControlState::FORCE_CONTROLLING_HOME) {
+        auto motor_state = hardware.get_motor_state();
+        if (motor_state == BrushedMotorState::FORCE_CONTROLLING ||
+            motor_state == BrushedMotorState::FORCE_CONTROLLING_HOME) {
             status_queue_client.send_brushed_move_status_reporter_queue(
                 usage_messages::IncreaseForceTimeUsage{
                     .key = hardware.get_usage_eeprom_config()
@@ -244,8 +240,9 @@ class BrushedMotorInterruptHandler {
     void update_and_start_move() {
         _has_active_move = queue.try_read_isr(&buffered_move);
         if (_has_active_move) {
-            if (motor_state == ControlState::FORCE_CONTROLLING ||
-                motor_state == ControlState::FORCE_CONTROLLING_HOME) {
+            auto motor_state = hardware.get_motor_state();
+            if (motor_state == BrushedMotorState::FORCE_CONTROLLING ||
+                motor_state == BrushedMotorState::FORCE_CONTROLLING_HOME) {
                 // if we've been applying force before the new move is called
                 // add that force application time to the usage storage
                 status_queue_client.send_brushed_move_status_reporter_queue(
@@ -269,12 +266,14 @@ class BrushedMotorInterruptHandler {
             static_cast<bool>(buffered_move.stay_engaged));
         switch (buffered_move.stop_condition) {
             case MoveStopCondition::limit_switch:
-                motor_state = ControlState::FORCE_CONTROLLING_HOME;
+                hardware.set_motor_state(
+                    BrushedMotorState::FORCE_CONTROLLING_HOME);
                 tick = 0;
                 hardware.ungrip();
                 break;
             case MoveStopCondition::encoder_position:
-                motor_state = ControlState::POSITION_CONTROLLING;
+                hardware.set_motor_state(
+                    BrushedMotorState::POSITION_CONTROLLING);
                 if (hardware.get_encoder_pulses() ==
                     buffered_move.encoder_position) {
                     LOG("Attempting to add a gripper move to our current "
@@ -286,7 +285,7 @@ class BrushedMotorInterruptHandler {
             case MoveStopCondition::none:
             case MoveStopCondition::gripper_force:
             case MoveStopCondition::stall:
-                motor_state = ControlState::FORCE_CONTROLLING;
+                hardware.set_motor_state(BrushedMotorState::FORCE_CONTROLLING);
                 tick = 0;
                 hardware.grip();
                 break;
@@ -354,7 +353,8 @@ class BrushedMotorInterruptHandler {
             // use the commanded move position as the hold position if posiiton
             // controling otherwise, we can use the actual jaw encoder position
             hold_encoder_position =
-                motor_state == ControlState::POSITION_CONTROLLING
+                hardware.get_motor_state() ==
+                        BrushedMotorState::POSITION_CONTROLLING
                     ? buffered_move.encoder_position
                     : hardware.get_encoder_pulses();
         }
@@ -393,7 +393,6 @@ class BrushedMotorInterruptHandler {
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
     uint32_t timeout_ticks = 0;
-    ControlState motor_state = ControlState::UNHOMED;
     bool error_handled = false;
     bool in_estop = false;
 

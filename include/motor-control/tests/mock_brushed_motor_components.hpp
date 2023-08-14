@@ -87,8 +87,12 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void disable_encoder() final {}
     void enable_encoder() final {}
 
+    void set_motor_state(BrushedMotorState state) { motor_state = state; }
+    auto get_motor_state() -> BrushedMotorState { return motor_state; }
+
   private:
     bool stay_enabled = false;
+    BrushedMotorState motor_state = BrushedMotorState::UNHOMED;
     PWM_DIRECTION move_dir = PWM_DIRECTION::unset;
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
