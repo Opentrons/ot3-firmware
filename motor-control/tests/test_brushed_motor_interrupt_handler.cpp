@@ -253,6 +253,7 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
             for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                 test_objs.handler.run_interrupt();
             }
+            REQUIRE(!test_objs.handler.in_estop);
             REQUIRE(test_objs.hw.get_stay_enabled());
             test_objs.hw.set_estop_in(true);
             test_objs.handler.run_interrupt();
@@ -439,6 +440,58 @@ SCENARIO("A collision during position controlled move") {
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(test_objs.handler.error_handled);
                 REQUIRE(!test_objs.hw.get_stay_enabled());
+            }
+        }
+    }
+}
+
+SCENARIO("handler recovers from error state") {
+    BrushedMotorContainer test_objs{};
+    auto og_motor_state = GENERATE(ControlState::FORCE_CONTROLLING_HOME,
+                                   ControlState::FORCE_CONTROLLING,
+                                   ControlState::POSITION_CONTROLLING);
+    auto stay_engaged = GENERATE(true, false);
+
+    GIVEN("an error occurred during an idle move") {
+        test_objs.handler.motor_state = og_motor_state;
+        test_objs.hw.set_stay_enabled(stay_engaged);
+        test_objs.handler.error_handled = true;
+
+        WHEN("a cancel request is received") {
+            test_objs.hw.request_cancel();
+            test_objs.handler.run_interrupt();
+            THEN(
+                "motor state should become un-homed only if stay engaged is "
+                "falsy") {
+                REQUIRE(
+                    test_objs.handler.motor_state ==
+                    (!stay_engaged ? ControlState::UNHOMED : og_motor_state));
+            }
+            THEN("a stop requested warning is issued") {
+                // TODO: do we need to increase the error count if it's only
+                // warning about a stop request?
+                REQUIRE(test_objs.reporter.messages.size() == 2);
+                can::messages::ErrorMessage err =
+                    std::get<can::messages::ErrorMessage>(
+                        test_objs.reporter.messages.front());
+                REQUIRE(err.error_code == can::ids::ErrorCode::stop_requested);
+                REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
+            }
+            THEN("error handled is not cleared, yet") {
+                REQUIRE(test_objs.handler.error_handled);
+            }
+            AND_WHEN("a new message is loaded and executed") {
+                test_objs.queue.try_write_isr(grip_msg);
+                test_objs.handler.update_and_start_move();
+                THEN(
+                    "error state is cleared and the new move is being "
+                    "executed") {
+                    REQUIRE(!test_objs.handler.error_handled);
+                    REQUIRE(test_objs.handler.motor_state ==
+                            ControlState::FORCE_CONTROLLING);
+                    REQUIRE(test_objs.handler.has_active_move());
+                    REQUIRE(test_objs.hw.get_stay_enabled());
+                }
             }
         }
     }
