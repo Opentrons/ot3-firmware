@@ -124,6 +124,8 @@ void sensor_tasks::start_tasks(
                                   ? i2c3_task_client
                                   : i2c2_task_client;
     auto shared_cap_task = PIPETTE_TYPE == EIGHT_CHANNEL ? true : false;
+    auto front_tip_presence_sensor =
+        PIPETTE_TYPE == NINETY_SIX_CHANNEL ? true : false;
 
     auto& eeprom_task = eeprom_task_builder.start(
         5, "eeprom", eeprom_i2c_client, eeprom_hardware);
@@ -141,16 +143,12 @@ void sensor_tasks::start_tasks(
             sensor_hardware_primary, queues, shared_cap_task);
     auto& tip_notification_task_rear = tip_notification_task_builder_rear.start(
         5, "tip notification sensor s0", queues, sensor_hardware_primary);
-    auto& tip_notification_task_front =
-        tip_notification_task_builder_front.start(
-            5, "tip notification sensor s1", queues, sensor_hardware_secondary);
 
     tasks.eeprom_task = &eeprom_task;
     tasks.environment_sensor_task = &environment_sensor_task;
     tasks.pressure_sensor_task_rear = &pressure_sensor_task_rear;
     tasks.pressure_sensor_task_front = &pressure_sensor_task_front;
     tasks.tip_notification_task_rear = &tip_notification_task_rear;
-    tasks.tip_notification_task_front = &tip_notification_task_front;
     tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
 
     queues.set_queue(&can_writer.get_queue());
@@ -163,8 +161,6 @@ void sensor_tasks::start_tasks(
         &pressure_sensor_task_front.get_queue();
     queues.tip_notification_queue_rear =
         &tip_notification_task_rear.get_queue();
-    queues.tip_notification_queue_front =
-        &tip_notification_task_front.get_queue();
 
     if (shared_cap_task) {
         // There is only one cap sensor on the eight channel and so the "front"
@@ -181,6 +177,17 @@ void sensor_tasks::start_tasks(
         tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
         queues.capacitive_sensor_queue_front =
             &capacitive_sensor_task_front.get_queue();
+    }
+    if (front_tip_presence_sensor) {
+        // the eight channel only has one tip presence sensor, so the front
+        // task should only be started if we have a 96 channel pipette
+        auto& tip_notification_task_front =
+            tip_notification_task_builder_front.start(
+                5, "tip notification sensor s1", queues,
+                sensor_hardware_secondary);
+        tasks.tip_notification_task_front = &tip_notification_task_front;
+        queues.tip_notification_queue_front =
+            &tip_notification_task_front.get_queue();
     }
 }
 
