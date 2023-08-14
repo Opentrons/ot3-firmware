@@ -237,7 +237,9 @@ void sensor_tasks::QueueClient::send_pressure_sensor_queue_front(
 
 void sensor_tasks::QueueClient::send_tip_notification_queue_rear(
     const sensors::tip_presence::TaskMessage& m) {
-    tip_notification_queue_rear->try_write(m);
+    if (tip_notification_queue_rear != nullptr) {
+        tip_notification_queue_rear->try_write(m);
+    }
 }
 
 void sensor_tasks::QueueClient::send_tip_notification_queue_front(
