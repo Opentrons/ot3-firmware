@@ -116,6 +116,14 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
+    void handle(const can::messages::GripperJawStateRequest& m) {
+        auto jaw_state = controller.get_jaw_state();
+        can::messages::GripperJawStateResponse msg{
+            .message_index = m.message_index,
+            .jaw_state = static_cast<uint8_t>(jaw_state)};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     brushed_motion_controller::MotionController<MEConfig>& controller;
     CanClient& can_client;
     UsageClient& usage_client;
