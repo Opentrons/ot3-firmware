@@ -15,9 +15,11 @@ class FreeRTOSMutex {
 
     ~FreeRTOSMutex() { vSemaphoreDelete(handle); }
 
-    bool acquire() { return xSemaphoreTake(handle, portMAX_DELAY) == pdTRUE; }
+    auto acquire() -> bool {
+        return xSemaphoreTake(handle, portMAX_DELAY) == pdTRUE;
+    }
 
-    bool release() { return xSemaphoreGive(handle) == pdTRUE; }
+    auto release() -> bool { return xSemaphoreGive(handle) == pdTRUE; }
 
     auto get_count() -> int { return uxSemaphoreGetCount(handle); }
 

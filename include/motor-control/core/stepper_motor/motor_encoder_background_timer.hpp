@@ -30,7 +30,8 @@ class BackgroundTimer {
     auto stop() -> void { _timer.stop(); }
 
     auto callback() -> void {
-        freertos_synchronization::FreeRTOSCriticalSectionRAII();
+        auto critical_section =
+            freertos_synchronization::FreeRTOSCriticalSectionRAII();
         if (!_interrupt_handler.has_active_move()) {
             // Refresh the overflow counter if nothing else is doing it
             // and update position flag if needed
