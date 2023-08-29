@@ -3,6 +3,7 @@
 #include <concepts>
 #include <cstdint>
 #include <tuple>
+
 #include "common/core/freertos_synchronization.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
