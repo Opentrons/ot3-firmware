@@ -3,7 +3,7 @@
 #include <concepts>
 #include <cstdint>
 #include <tuple>
-
+#include "common/core/freertos_synchronization.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
 
@@ -29,6 +29,7 @@ class BackgroundTimer {
     auto stop() -> void { _timer.stop(); }
 
     auto callback() -> void {
+        freertos_synchronization::FreeRTOSCriticalSectionRAII();
         if (!_interrupt_handler.has_active_move()) {
             // Refresh the overflow counter if nothing else is doing it
             // and update position flag if needed
