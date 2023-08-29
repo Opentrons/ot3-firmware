@@ -86,6 +86,13 @@ class MotorDriverMessageHandler {
         }
     }
 
+    void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
+        // LOG?
+        uint32_t data = 0;
+        driver.read(tmc2130::registers::Registers::DRVSTATUS, data,
+                    m.message_index);
+    }
+
     void handle(const can::messages::WriteMotorCurrentRequest& m) {
         LOG("Received write motor current request: hold_current=%d, "
             "run_current=%d",

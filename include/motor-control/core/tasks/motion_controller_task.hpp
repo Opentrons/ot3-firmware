@@ -8,6 +8,7 @@
 #include "motor-control/core/linear_motion_system.hpp"
 #include "motor-control/core/stepper_motor/motion_controller.hpp"
 #include "motor-control/core/tasks/messages.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 
 namespace motion_controller_task {
 
@@ -18,16 +19,19 @@ using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
  */
 template <lms::MotorMechanicalConfig MEConfig,
           can::message_writer_task::TaskClient CanClient,
-          usage_storage_task::TaskClient UsageClient>
+          usage_storage_task::TaskClient UsageClient,
+          tmc::tasks::TaskClient DriverClient>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client,
-                                   UsageClient& usage_client)
+                                   UsageClient& usage_client,
+                                   DriverClient& driver_client)
         : controller{controller},
           can_client{can_client},
-          usage_client{usage_client} {}
+          usage_client{usage_client},
+          driver_client{driver_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -140,9 +144,20 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
+    // set error flag here (C++ atomic)?! Disable subsystem (enable brakes)?!
+    // cancel_and_clear_moves(can::ids::ErrorCode::motor_driver_error)?
+    void handle(const can::messages::MotorDriverErrorEncountered& m) {
+        controller.stop(); // also request_cancel()?
+        can::messages::ReadMotorDriverErrorStatus msg{
+            .message_index = m.message_index // need?
+        };
+        driver_client.send_motor_driver_queue(msg);
+    }
+
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
+    DriverClient& driver_client;
 };
 
 /**
@@ -166,12 +181,13 @@ class MotionControllerTask {
      */
     template <lms::MotorMechanicalConfig MEConfig,
               can::message_writer_task::TaskClient CanClient,
-              usage_storage_task::TaskClient UsageClient>
+              usage_storage_task::TaskClient UsageClient,
+              tmc::tasks::TaskClient DriverClient>
     [[noreturn]] void operator()(
         motion_controller::MotionController<MEConfig>* controller,
-        CanClient* can_client, UsageClient* usage_client) {
+        CanClient* can_client, UsageClient* usage_client, DriverClient* driver_client) {
         auto handler = MotionControllerMessageHandler{*controller, *can_client,
-                                                      *usage_client};
+                                                      *usage_client, *driver_client};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
@@ -186,6 +202,11 @@ class MotionControllerTask {
     }
 
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
+
+    void run_diag0_interrupt(void) {
+        can::messages::MotorDriverErrorEncountered msg{};
+        queue.try_write(msg);
+    }
 
   private:
     QueueType& queue;

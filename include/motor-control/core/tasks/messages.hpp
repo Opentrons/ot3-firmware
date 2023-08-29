@@ -14,12 +14,14 @@ using MotionControlTaskMessage = std::variant<
     can::messages::MotorPositionRequest, can::messages::ReadLimitSwitchRequest,
     can::messages::HomeRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest,
+    can::messages::MotorDriverErrorEncountered>;
 
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
                  can::messages::WriteMotorDriverRegister,
-                 can::messages::WriteMotorCurrentRequest>;
+                 can::messages::WriteMotorCurrentRequest,
+                 can::messages::ReadMotorDriverErrorStatus>;
 
 using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,

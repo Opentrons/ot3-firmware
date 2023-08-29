@@ -85,6 +85,16 @@ class MotorDriverMessageHandler {
         }
     }
 
+    // need a response handler? Eh, should get handled by TransactResponse
+    // ensure specific error is returned
+    // just use above method?!
+    void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
+        // LOG?
+        uint32_t data = 0;
+        driver.read(tmc2160::registers::Registers::DRVSTATUS, data,
+                    m.message_index);
+    }
+
     void handle(const can::messages::WriteMotorCurrentRequest& m) {
         LOG("Received write motor current request: hold_current=%d, "
             "run_current=%d",
@@ -144,6 +154,15 @@ class MotorDriverTask {
 
   private:
     QueueType& queue;
+};
+
+/**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_motor_driver_queue(m)};
 };
 
 }  // namespace tasks

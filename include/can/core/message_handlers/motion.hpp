@@ -18,7 +18,7 @@ class MotionHandler {
                      GetMotionConstraintsRequest, SetMotionConstraints,
                      ReadLimitSwitchRequest, MotorPositionRequest,
                      UpdateMotorPositionEstimationRequest,
-                     GetMotorUsageRequest>;
+                     GetMotorUsageRequest, MotorDriverErrorEncountered>;
 
     MotionHandler(MotionTaskClient &motion_client)
         : motion_client{motion_client} {}

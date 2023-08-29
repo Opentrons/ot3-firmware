@@ -17,6 +17,8 @@ static auto queues = gantry::queues::QueueClient{utils::get_node_id()};
 
 static auto spi_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
+//check how spi_task_client is used here
+//we want an interrupt from spi, see past work
 
 static auto mc_task_builder =
     freertos_task::TaskStarter<512,
@@ -30,6 +32,7 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
 
 static auto spi_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
+//look at this class's setup, functionality
 
 template <template <typename> typename QueueImpl>
 using PollerWithTimer =
@@ -54,18 +57,18 @@ static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 /**
  * Start gantry ::tasks.
  */
-void gantry::tasks::start_tasks(
+auto gantry::tasks::start_tasks(
     can::bus::CanBus& can_bus,
     motion_controller::MotionController<lms::BeltConfig>& motion_controller,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2160::configs::TMC2160DriverConfig& driver_configs,
     motor_hardware_task::MotorHardwareTask& mh_tsk,
     i2c::hardware::I2CBase& i2c2,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) -> interfaces::diag0_handler {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
     auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, ::queues, ::queues);
+                                         motion_controller, ::queues, ::queues, ::queues);
     auto& tmc2160_driver = motor_driver_task_builder.start(
         5, "tmc2160 driver", driver_configs, ::queues, spi_task_client);
     auto& move_group =
@@ -75,7 +78,7 @@ void gantry::tasks::start_tasks(
         ::queues);
 
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
-    spi_task_client.set_queue(&spi_task.get_queue());
+    spi_task_client.set_queue(&spi_task.get_queue()); // Writer class queue set here!
 
     auto& i2c2_task = i2c2_task_builder.start(5, "i2c2", i2c2);
     i2c2_task_client.set_queue(&i2c2_task.get_queue());
@@ -115,6 +118,14 @@ void gantry::tasks::start_tasks(
     ::queues.usage_storage_queue = &usage_storage_task.get_queue();
 
     mh_tsk.start_task();
+
+    return gantry::tasks::call_run_diag0_interrupt;
+}
+
+void gantry::tasks::call_run_diag0_interrupt() {
+    if (gantry::tasks::get_tasks().motion_controller) {
+        return gantry::tasks::get_tasks().motion_controller->run_diag0_interrupt();
+    }
 }
 
 gantry::queues::QueueClient::QueueClient(can::ids::NodeId this_fw)

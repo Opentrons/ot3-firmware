@@ -90,7 +90,12 @@ struct motion_controller::HardwareConfig motor_pins_x {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
         .pin = GPIO_PIN_10,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_5,
+        .active_setting = GPIO_PIN_RESET} //confirm RESET not SET. See Driver RM
 };
 
 struct motion_controller::HardwareConfig motor_pins_y {
@@ -129,11 +134,17 @@ struct motion_controller::HardwareConfig motor_pins_y {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOA,
         .pin = GPIO_PIN_10,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET},
+    .diag0 = {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = GPIOC,
+        .pin = GPIO_PIN_5,
+        .active_setting = GPIO_PIN_RESET} //confirm RESET not SET. See Driver RM
 };
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
-    .registers = {.gconfig = {.en_pwm_mode = 0},
+    .registers = {.gconfig = {.en_pwm_mode = 0,
+                              .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -172,7 +183,8 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
     }};
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
-    .registers = {.gconfig = {.en_pwm_mode = 0},
+    .registers = {.gconfig = {.en_pwm_mode = 0,
+                              .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -295,13 +307,13 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-void interfaces::initialize() {
+void interfaces::initialize(diag0_handler* call_diag0_handler) {
     // Initialize SPI
     if (initialize_spi(get_axis_type()) != HAL_OK) {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler, enc_overflow_callback);
+    initialize_timer(call_motor_handler, call_diag0_handler, enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

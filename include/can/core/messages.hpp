@@ -198,6 +198,8 @@ using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 using UpdateMotorPositionEstimationRequest =
     Empty<MessageId::update_motor_position_estimation_request>;
 
+using MotorDriverErrorEncountered = Empty<MessageId::motor_driver_error_encountered>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;
@@ -595,6 +597,22 @@ struct ReadMotorDriverRegister
     }
 
     auto operator==(const ReadMotorDriverRegister& other) const
+        -> bool = default;
+};
+
+struct ReadMotorDriverErrorStatus
+    : BaseMessage<MessageId::read_motor_driver_error_status> {
+    uint32_t message_index;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit) -> ReadMotorDriverErrorStatus {
+        uint32_t msg_ind = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        return ReadMotorDriverErrorStatus{.message_index = msg_ind};
+    }
+
+    auto operator==(const ReadMotorDriverErrorStatus& other) const
         -> bool = default;
 };
 
