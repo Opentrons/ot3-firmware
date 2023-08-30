@@ -23,14 +23,16 @@ using TMC2130MotorDispatchTarget = can::dispatch::DispatchParseTarget<
         linear_motor_tasks::tmc2130_driver::QueueClient>,
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
-    can::messages::WriteMotorCurrentRequest>;
+    can::messages::WriteMotorCurrentRequest,
+    can::messages::ReadMotorDriverErrorStatus>;
 
 using TMC2160MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::MotorHandler<
         linear_motor_tasks::tmc2160_driver::QueueClient>,
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
-    can::messages::WriteMotorCurrentRequest>;
+    can::messages::WriteMotorCurrentRequest,
+    can::messages::ReadMotorDriverErrorStatus>;
 
 using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::GearMotorHandler<
@@ -62,7 +64,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest,
+    can::messages::MotorDriverErrorEncountered>;
 
 using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,

@@ -28,7 +28,8 @@ using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::MotorHandler<head_tasks::MotorQueueClient>,
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
-    can::messages::WriteMotorCurrentRequest>;
+    can::messages::WriteMotorCurrentRequest,
+    can::messages::ReadMotorDriverErrorStatus>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<
         head_tasks::MotorQueueClient>,
@@ -43,7 +44,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest,
+    can::messages::MotorDriverErrorEncountered>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         head_tasks::HeadQueueClient>,
