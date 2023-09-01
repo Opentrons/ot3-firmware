@@ -12,8 +12,8 @@
 
 namespace brushed_move_group_task {
 
-constexpr std::size_t max_groups = 6;
-constexpr std::size_t max_moves_per_group = 5;
+constexpr std::size_t max_groups = 3;
+constexpr std::size_t max_moves_per_group = 12;
 
 using MoveGroupType =
     move_group::MoveGroupManager<max_groups, max_moves_per_group,
