@@ -111,9 +111,9 @@ foreach_revision(
 
 foreach_revision(
     PROJECT_NAME pipettes-96
-    REVISIONS b1 c1
+    REVISIONS b1 c1 d2
     CALL_FOREACH_REV pipettes_96_loop
-    SOURCES pipette_srcs pipette_srcs
+    SOURCES pipette_srcs pipette_srcs pipette_srcs
     )
 
 alias_for_revision(PROJECT_NAME pipettes-single REVISION b1 REVISION_ALIAS rev1)

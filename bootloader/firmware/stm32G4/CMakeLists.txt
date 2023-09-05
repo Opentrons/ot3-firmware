@@ -150,8 +150,8 @@ foreach_revision(
 foreach_revision(
     PROJECT_NAME bootloader-pipettes-96
     CALL_FOREACH_REV pipettes_ninety_six_bootloader_loop
-    REVISIONS b1 c1
-    SOURCES _pipette_sources _pipette_sources
+    REVISIONS b1 c1 d2
+    SOURCES _pipette_sources _pipette_sources _pipette_sources
     NO_CREATE_IMAGE_HEX
     NO_CREATE_INSTALL_RULES
     )
