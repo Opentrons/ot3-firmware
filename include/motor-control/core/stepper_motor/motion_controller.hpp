@@ -73,7 +73,7 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled) {
+        if (!enabled && velocity_steps != 0) {
             enable_motor();
         }
         queue.try_write(msg);
