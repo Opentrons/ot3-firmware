@@ -138,10 +138,10 @@ class BrushedMotorInterruptHandler {
             update_and_start_move();
         } else if (!error_handled) {
             auto motor_state = hardware.get_motor_state();
+            auto pulses = hardware.get_encoder_pulses();
             // has not reported an error yet
             if (motor_state == BrushedMotorState::POSITION_CONTROLLING) {
-                int32_t move_delta =
-                    hardware.get_encoder_pulses() - hold_encoder_position;
+                int32_t move_delta = pulses - hold_encoder_position;
                 controlled_move_to(move_delta);
                 // we use a value higher than the acceptable position here to
                 // allow the pid loop the opportunity to maintain small
@@ -149,6 +149,7 @@ class BrushedMotorInterruptHandler {
                 if (move_delta > error_conf.unwanted_movement_threshold) {
                     cancel_and_clear_moves(
                         can::ids::ErrorCode::collision_detected);
+                    report_position(pulses);
                     error_handled = true;
                 }
             } else if (motor_state != BrushedMotorState::UNHOMED) {
@@ -162,6 +163,7 @@ class BrushedMotorInterruptHandler {
                             ? can::ids::ErrorCode::labware_dropped
                             : can::ids::ErrorCode::collision_detected;
                     cancel_and_clear_moves(err);
+                    report_position(pulses);
                     error_handled = true;
                 }
             }
@@ -299,6 +301,21 @@ class BrushedMotorInterruptHandler {
                                     AckMessageId::complete_without_condition);
                 break;
         }
+    }
+
+    void report_position(int32_t pulses) {
+        // this message is used only to report encoder position on the can bus
+        // when the move fails, and will not be used nor handled by the host
+        uint32_t message_index = 0;
+        if (_has_active_move) {
+            message_index = buffered_move.message_index;
+        }
+        status_queue_client.send_brushed_move_status_reporter_queue(
+            motor_messages::UpdatePositionResponse{
+                .message_index = message_index,
+                .stepper_position_counts = 0,
+                .encoder_pulses = pulses,
+                .position_flags = 0});
     }
 
     void homing_stopped() {
