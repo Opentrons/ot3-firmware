@@ -33,7 +33,6 @@ SCENARIO("debouncing gpio pins works") {
     }
 }
 
-
 SCENARIO("debouncing with holdoff cnt works") {
     GIVEN("a state value and bounce value") {
         debouncer::Debouncer subject{.holdoff_cnt = 2};
@@ -48,9 +47,7 @@ SCENARIO("debouncing with holdoff cnt works") {
             subject.debounce_update(true);
             THEN("state updates on the third tick") {
                 REQUIRE(subject.debounce_state() == true);
-                THEN("cnt gets reset") {
-                    CHECK(subject.cnt == 0);
-                }
+                THEN("cnt gets reset") { CHECK(subject.cnt == 0); }
             }
             WHEN("reset is called") {
                 subject.reset();
@@ -72,11 +69,11 @@ SCENARIO("debouncing with holdoff cnt works") {
             subject.debounce_update(false);
             subject.debounce_update(false);
             THEN("state stays the same on the first two ticks") {
-            REQUIRE(subject.debounce_state() == true);
+                REQUIRE(subject.debounce_state() == true);
             }
             subject.debounce_update(false);
             THEN("state updates on the third tick") {
-            REQUIRE(subject.debounce_state() == false);
+                REQUIRE(subject.debounce_state() == false);
             }
         }
         WHEN("switching from set to unset before holdoff cnt is reached") {

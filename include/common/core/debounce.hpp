@@ -15,7 +15,7 @@ struct Debouncer {
         // will and we can set it to the new state.
 
         if (new_state == state_bounce) {
-            cnt ++;
+            cnt++;
             if (cnt == holdoff_cnt) {
                 // update state only when cnt reaches the holdoff count
                 state = new_state;
