@@ -309,13 +309,18 @@ SCENARIO("labware dropped during grip move") {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::labware_dropped);
                 REQUIRE(test_objs.handler.error_handled);
                 REQUIRE(test_objs.hw.get_stay_enabled());
+                // position reported
+                motor_messages::UpdatePositionResponse pos_response =
+                    std::get<motor_messages::UpdatePositionResponse>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(pos_response.encoder_pulses == 40000);
             }
         }
     }
@@ -354,7 +359,7 @@ SCENARIO("collision while homed") {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -362,6 +367,11 @@ SCENARIO("collision while homed") {
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(test_objs.handler.error_handled);
                 REQUIRE(!test_objs.hw.get_stay_enabled());
+                // position reported
+                motor_messages::UpdatePositionResponse pos_response =
+                    std::get<motor_messages::UpdatePositionResponse>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(pos_response.encoder_pulses == 40000);
             }
         }
     }
@@ -432,7 +442,7 @@ SCENARIO("A collision during position controlled move") {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
@@ -440,6 +450,11 @@ SCENARIO("A collision during position controlled move") {
                         can::ids::ErrorCode::collision_detected);
                 REQUIRE(test_objs.handler.error_handled);
                 REQUIRE(!test_objs.hw.get_stay_enabled());
+                // position reported
+                motor_messages::UpdatePositionResponse pos_response =
+                    std::get<motor_messages::UpdatePositionResponse>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(pos_response.encoder_pulses == 200000);
             }
         }
     }
