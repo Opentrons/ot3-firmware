@@ -275,6 +275,8 @@ class MMR920C04 {
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
         }
 
+        bool echo_this_time = echoing;
+
         // Pressure is always a three-byte value
         static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
                                                   m.read_buffer.cend(),
@@ -290,6 +292,7 @@ class MMR920C04 {
             if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
                 mmr920C04::MAX_PRESSURE_READING) {
                 hardware.set_sync();
+                echo_this_time = true;
                 can_client.send_can_message(
                     can::ids::NodeId::host,
                     can::messages::ErrorMessage{
@@ -309,7 +312,7 @@ class MMR920C04 {
             }
         }
 
-        if (echoing) {
+        if (echo_this_time) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
