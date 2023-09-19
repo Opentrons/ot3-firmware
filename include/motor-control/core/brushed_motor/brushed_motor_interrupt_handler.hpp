@@ -149,7 +149,7 @@ class BrushedMotorInterruptHandler {
                 // movements that occur from motion and vibration
                 enc_errored.debounce_update(
                     move_delta > error_conf.unwanted_movement_threshold);
-                if (enc_errored.debounce_state() == true) {
+                if (enc_errored.debounce_state()) {
                     // enc value errored for 3 consecutive ticks
                     cancel_and_clear_moves(
                         can::ids::ErrorCode::collision_detected);
@@ -163,7 +163,7 @@ class BrushedMotorInterruptHandler {
                     std::abs(pulses - hold_encoder_position) >
                         error_conf.unwanted_movement_threshold);
 
-                if (enc_errored.debounce_state() == true) {
+                if (enc_errored.debounce_state()) {
                     // enc value errored for 3 consecutive ticks
                     // we have likely dropped a labware or had a collision
                     auto err =
