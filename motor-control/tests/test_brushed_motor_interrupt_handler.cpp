@@ -435,10 +435,11 @@ SCENARIO("A collision during position controlled move") {
             }
             test_objs.reporter.messages.clear();
             THEN("Movement starts again") {
+                REQUIRE(!test_objs.handler.has_active_move());
                 test_objs.hw.set_encoder_value(200000);
                 test_objs.handler.set_enc_idle_state(false);
-                // Burn through the holdoff ticks
-                for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                // Burn through the 2 x holdoff ticks
+                for (uint32_t i = 0; i <= HOLDOFF_TICKS * 2; i++) {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
@@ -455,6 +456,44 @@ SCENARIO("A collision during position controlled move") {
                     std::get<motor_messages::UpdatePositionResponse>(
                         test_objs.reporter.messages.back());
                 REQUIRE(pos_response.encoder_pulses == 200000);
+            }
+        }
+    }
+}
+
+SCENARIO("handler encounter error during idle move") {
+    BrushedMotorContainer test_objs{};
+    auto og_motor_state = GENERATE(BrushedMotorState::FORCE_CONTROLLING_HOME,
+                                   BrushedMotorState::FORCE_CONTROLLING,
+                                   BrushedMotorState::POSITION_CONTROLLING);
+
+    GIVEN("the encoder value begins to error during an idle move") {
+        test_objs.hw.set_motor_state(og_motor_state);
+        test_objs.hw.set_encoder_value(200000);
+        test_objs.handler.set_enc_idle_state(false);
+
+        WHEN("the first idle move is executed and an error is detected") {
+            test_objs.handler.execute_idle_move();
+            THEN("error is noted but not handled") {
+                REQUIRE(!test_objs.handler.error_handled);
+            }
+            WHEN(
+                "idle move is executed the second time and the error is still "
+                "detected") {
+                test_objs.handler.execute_idle_move();
+                THEN("error is handled") {
+                    REQUIRE(test_objs.handler.error_handled);
+                }
+            }
+            WHEN(
+                "idle move is executed the second time and but the error is no "
+                "longer detected") {
+                test_objs.handler.set_enc_idle_state(true);
+                test_objs.hw.set_encoder_value(0);
+                test_objs.handler.execute_idle_move();
+                THEN("error is not handled") {
+                    REQUIRE(!test_objs.handler.error_handled);
+                }
             }
         }
     }
