@@ -170,6 +170,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
                               .freewheel = 0,
                               .pwm_reg = 0x7,
                               .pwm_lim = 0xC},
+                  .drvconf = {.ot_select = 0x0},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {
@@ -210,6 +211,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
                               .freewheel = 0,
                               .pwm_reg = 0x7,
                               .pwm_lim = 0xC},
+                  .drvconf = {.ot_select = 0x0},
                   .glob_scale = {.global_scaler = 0xA7}},
     .current_config =
         {

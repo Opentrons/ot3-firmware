@@ -634,6 +634,24 @@ struct ReadMotorDriverRegisterResponse
         -> bool = default;
 };
 
+struct ReadMotorDriverErrorRegisterResponse
+    : BaseMessage<MessageId::read_motor_driver_error_register_response> {
+    uint32_t message_index;
+    uint8_t reg_address;
+    uint32_t data;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(reg_address, iter, limit);
+        iter = bit_utils::int_to_bytes(data, iter, limit);
+        return iter - body;
+    }
+
+    auto operator==(const ReadMotorDriverErrorRegisterResponse& other) const
+        -> bool = default;
+};
+
 struct WriteMotorCurrentRequest
     : BaseMessage<MessageId::write_motor_current_request> {
     uint32_t message_index;
@@ -1519,6 +1537,7 @@ using ResponseMessageType = std::variant<
     BindSensorOutputResponse, GripperInfoResponse, TipActionResponse,
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
-    PushTipPresenceNotification, GetMotorUsageResponse>;
+    PushTipPresenceNotification, GetMotorUsageResponse,
+    ReadMotorDriverErrorRegisterResponse>;
 
 }  // namespace can::messages

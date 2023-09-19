@@ -80,17 +80,19 @@ class MotorDriverMessageHandler {
     void handle(const can::messages::ReadMotorDriverRegister& m) {
         LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
+        bool error_response = false;
         if (tmc2130::registers::is_valid_address(m.reg_address)) {
             driver.read(tmc2130::registers::Registers(m.reg_address), data,
-                        m.message_index);
+                        m.message_index, error_response);
         }
     }
 
     void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
         // LOG?
         uint32_t data = 0;
+        bool error_response = true;
         driver.read(tmc2130::registers::Registers::DRVSTATUS, data,
-                    m.message_index);
+                    m.message_index, error_response);
     }
 
     void handle(const can::messages::WriteMotorCurrentRequest& m) {

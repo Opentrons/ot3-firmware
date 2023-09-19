@@ -147,10 +147,10 @@ class MotionControllerMessageHandler {
     // set error flag here (C++ atomic)?! Disable subsystem (enable brakes)?!
     // cancel_and_clear_moves(can::ids::ErrorCode::motor_driver_error)?
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
+        // check if gpio is low before making controller calls
         controller.stop(); // also request_cancel()?
         can::messages::ReadMotorDriverErrorStatus msg{
-            .message_index = m.message_index // need?
-        };
+            .message_index = m.message_index};
         driver_client.send_motor_driver_queue(msg);
     }
 
@@ -203,9 +203,15 @@ class MotionControllerTask {
 
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
+    // also create top level query msg
     void run_diag0_interrupt(void) {
-        can::messages::MotorDriverErrorEncountered msg{};
-        queue.try_write(msg);
+        can::messages::MotorDriverErrorEncountered msg{
+            .message_index = 0}; //fixed msg index, see elsewhere
+        bool sent = queue.try_write_isr(msg); //error begins here
+        if (!sent) { // improve
+            sent = queue.try_write_isr(msg);
+        }
+        // handler.handle_message(msg); ?
     }
 
   private:
