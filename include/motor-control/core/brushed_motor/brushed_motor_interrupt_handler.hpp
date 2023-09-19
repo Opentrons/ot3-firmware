@@ -5,6 +5,7 @@
 
 #include "can/core/ids.hpp"
 #include "can/core/messages.hpp"
+#include "common/core/debounce.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "motor-control/core/brushed_motor/driver_interface.hpp"
@@ -146,7 +147,10 @@ class BrushedMotorInterruptHandler {
                 // we use a value higher than the acceptable position here to
                 // allow the pid loop the opportunity to maintain small
                 // movements that occur from motion and vibration
-                if (move_delta > error_conf.unwanted_movement_threshold) {
+                enc_errored.debounce_update(
+                    move_delta > error_conf.unwanted_movement_threshold);
+                if (enc_errored.debounce_state()) {
+                    // enc value errored for 3 consecutive ticks
                     cancel_and_clear_moves(
                         can::ids::ErrorCode::collision_detected);
                     report_position(pulses);
@@ -154,9 +158,13 @@ class BrushedMotorInterruptHandler {
                 }
             } else if (motor_state != BrushedMotorState::UNHOMED) {
                 auto pulses = hardware.get_encoder_pulses();
-                if (!is_idle && pulses >= 0 &&
+                enc_errored.debounce_update(
+                    !is_idle && pulses >= 0 &&
                     std::abs(pulses - hold_encoder_position) >
-                        error_conf.unwanted_movement_threshold) {
+                        error_conf.unwanted_movement_threshold);
+
+                if (enc_errored.debounce_state()) {
+                    // enc value errored for 3 consecutive ticks
                     // we have likely dropped a labware or had a collision
                     auto err =
                         motor_state == BrushedMotorState::FORCE_CONTROLLING
@@ -241,22 +249,23 @@ class BrushedMotorInterruptHandler {
 
     void update_and_start_move() {
         _has_active_move = queue.try_read_isr(&buffered_move);
-        if (_has_active_move) {
-            auto motor_state = hardware.get_motor_state();
-            if (motor_state == BrushedMotorState::FORCE_CONTROLLING ||
-                motor_state == BrushedMotorState::FORCE_CONTROLLING_HOME) {
-                // if we've been applying force before the new move is called
-                // add that force application time to the usage storage
-                status_queue_client.send_brushed_move_status_reporter_queue(
-                    usage_messages::IncreaseForceTimeUsage{
-                        .key = hardware.get_usage_eeprom_config()
-                                   .get_force_application_time_key(),
-                        .seconds = uint16_t(
-                            hardware.get_stopwatch_pulses(true) / 2600)});
-            }
-            buffered_move.start_encoder_position =
-                hardware.get_encoder_pulses();
+        if (!_has_active_move) {
+            return;
         }
+        auto motor_state = hardware.get_motor_state();
+        if (motor_state == BrushedMotorState::FORCE_CONTROLLING ||
+            motor_state == BrushedMotorState::FORCE_CONTROLLING_HOME) {
+            // if we've been applying force before the new move is called
+            // add that force application time to the usage storage
+            status_queue_client.send_brushed_move_status_reporter_queue(
+                usage_messages::IncreaseForceTimeUsage{
+                    .key = hardware.get_usage_eeprom_config()
+                               .get_force_application_time_key(),
+                    .seconds =
+                        uint16_t(hardware.get_stopwatch_pulses(true) / 2600)});
+        }
+        buffered_move.start_encoder_position = hardware.get_encoder_pulses();
+
         if (buffered_move.duty_cycle != 0U) {
             driver_hardware.update_pwm_settings(buffered_move.duty_cycle);
         }
@@ -264,6 +273,7 @@ class BrushedMotorInterruptHandler {
         hardware.reset_control();
         timeout_ticks = 0;
         error_handled = false;
+        enc_errored.reset();
         hardware.set_stay_enabled(
             static_cast<bool>(buffered_move.stay_engaged));
         switch (buffered_move.stop_condition) {
@@ -424,5 +434,6 @@ class BrushedMotorInterruptHandler {
     uint32_t current_control_pwm = 0;
     bool clear_queue_until_empty = false;
     std::atomic_bool _has_active_move = false;
+    debouncer::Debouncer enc_errored = debouncer::Debouncer{};
 };
 }  // namespace brushed_motor_handler
