@@ -60,8 +60,8 @@ class BrushedMotorInterruptDriver {
                         }
                         handler.run_interrupt();
 
-                    } while (handler.motor_state ==
-                             brushed_motor_handler::ControlState::ACTIVE);
+                    } while (iface.get_motor_state() ==
+                             BrushedMotorState::FORCE_CONTROLLING);
                     LOG("Move completed. Stopping interrupt simulation..");
                 }
             }
