@@ -471,7 +471,7 @@ class MMR920C04 {
      * Time required before raising a Max Pressure error. The pressure must
      * exceed the threshold for the entirety of this period.
      */
-    static constexpr uint16_t MAX_PRESSURE_TIME_MS = 500;
+    static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
 
     mmr920C04::MeasurementRate measurement_mode_rate =
         mmr920C04::MeasurementRate::MEASURE_4;
