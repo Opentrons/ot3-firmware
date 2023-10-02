@@ -156,7 +156,7 @@ static void sync_drive_gpio_init() {
     PipetteHardwarePin sync_in_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_in);
     /* GPIO Ports Clock Enable */
-    enable_gpio_port(GPIOB);
+    enable_gpio_port(sync_in_hardware.port);
 
     /*Configure GPIO pin*/
     GPIO_InitTypeDef sync_in_init = {0};
@@ -168,7 +168,7 @@ static void sync_drive_gpio_init() {
     PipetteHardwarePin sync_out_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_out);
 
-    enable_gpio_port(GPIOC);
+    enable_gpio_port(sync_out_hardware.port);
 
     GPIO_InitTypeDef sync_out_init = {0};
     sync_out_init.Pin = sync_out_hardware.pin;
