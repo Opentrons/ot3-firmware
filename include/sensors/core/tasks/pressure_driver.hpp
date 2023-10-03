@@ -404,7 +404,7 @@ class MMR920C04 {
                     .offset_average = pressure_fixed_point});
             set_threshold(current_pressure_baseline_pa,
                           can::ids::SensorThresholdMode::auto_baseline,
-                          m.message_index, true);
+                          m.message_index, false);
         } else {
             auto message = can::messages::ReadFromSensorResponse{
                 .message_index = m.message_index,
