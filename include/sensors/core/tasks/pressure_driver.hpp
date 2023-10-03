@@ -154,6 +154,13 @@ class MMR920C04 {
         max_pressure_required_readings =
             MAX_PRESSURE_TIME_MS / mode_delay_with_buffer;
         max_pressure_consecutive_readings = 0;
+        // mode delay is in milliseconds per sample, logging rate in logs per
+        // second. Need to get samples per log, so take inverse of the delay *
+        // the logging rate with the logging rate adjusted to seconds per sample
+        overpressure_logging_counter_max =
+            static_cast<size_t>(1000.0 / (mode_delay_with_buffer *
+                                          OVERPRESSURE_BACKGROUND_LOGGING_HZ));
+        overpressure_logging_counter = 0;
         auto command_data =
             build_register_command(_registers.low_pass_pressure_command);
         if (filter_setting == mmr920C04::FilterSetting::NO_FILTER) {
@@ -297,6 +304,11 @@ class MMR920C04 {
                 std::fabs(pressure - current_pressure_baseline_pa) >=
                 mmr920C04::MAX_PRESSURE_READING;
             bool over_threshold = false;
+            overpressure_logging_counter = (overpressure_logging_counter + 1) %
+                                           overpressure_logging_counter_max;
+            if (overpressure_logging_counter == 0) {
+                echo_this_time = true;
+            }
             if (this_tick_over_threshold) {
                 max_pressure_consecutive_readings =
                     std::min(max_pressure_consecutive_readings + 1,
@@ -472,6 +484,17 @@ class MMR920C04 {
      * exceed the threshold for the entirety of this period.
      */
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
+
+    /**
+     * Desired logging frequency for pressure data during overpressure
+     * monitoring.
+     */
+    static constexpr float OVERPRESSURE_BACKGROUND_LOGGING_HZ = 50;
+
+    /** Track how many readings it has been since the last logging event. */
+    size_t overpressure_logging_counter = 0;
+    /** How many readings to read before logging one.*/
+    size_t overpressure_logging_counter_max = 0;
 
     mmr920C04::MeasurementRate measurement_mode_rate =
         mmr920C04::MeasurementRate::MEASURE_4;
