@@ -12,6 +12,8 @@ static void enable_gpio_port(void* port) {
         __HAL_RCC_GPIOB_CLK_ENABLE();
     } else if (port == GPIOC) {
         __HAL_RCC_GPIOC_CLK_ENABLE();
+    } else if (port == GPIOD) {
+        __HAL_RCC_GPIOD_CLK_ENABLE();
     }
 }
 
