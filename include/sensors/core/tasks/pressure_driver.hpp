@@ -400,7 +400,7 @@ class MMR920C04 {
                 can::ids::NodeId::host,
                 can::messages::BaselineSensorResponse{
                     .message_index = m.message_index,
-                    .sensor = can::ids::SensorType::pressure_temperature,
+                    .sensor = can::ids::SensorType::pressure,
                     .offset_average = pressure_fixed_point});
             set_threshold(current_pressure_baseline_pa,
                           can::ids::SensorThresholdMode::auto_baseline,
