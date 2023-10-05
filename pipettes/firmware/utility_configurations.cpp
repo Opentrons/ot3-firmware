@@ -122,7 +122,7 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                         .port = GPIOC,
                         .pin = GPIO_PIN_7,
-                        .active_setting = GPIO_PIN_RESET}},
+                        .active_setting = GPIO_PIN_SET}},
         .secondary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -139,7 +139,7 @@ auto utility_configs::sensor_configurations<PipetteType::NINETY_SIX_CHANNEL>()
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .port = GPIOC,
                 .pin = GPIO_PIN_12,
-                .active_setting = GPIO_PIN_RESET}}};
+                .active_setting = GPIO_PIN_SET}}};
     return pins;
 }
 
@@ -166,7 +166,7 @@ auto utility_configs::sensor_configurations<
                         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                         .port = GPIOC,
                         .pin = GPIO_PIN_12,
-                        .active_setting = GPIO_PIN_RESET}},
+                        .active_setting = GPIO_PIN_SET}},
         .secondary = sensors::hardware::SensorHardwareConfiguration{
             .sync_out =
                 {// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -183,6 +183,6 @@ auto utility_configs::sensor_configurations<
                 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
                 .port = GPIOC,
                 .pin = GPIO_PIN_7,
-                .active_setting = GPIO_PIN_RESET}}};
+                .active_setting = GPIO_PIN_SET}}};
     return pins;
 }
