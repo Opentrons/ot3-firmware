@@ -14,6 +14,7 @@ using CanMessageTuple = std::tuple<can::messages::ReadMotorDriverRegister,
                                    can::messages::ReadMotorDriverErrorStatus>;
 using GearCanMessageTuple =
     std::tuple<can::messages::GearReadMotorDriverRegister,
+               can::messages::ReadMotorDriverErrorStatus,
                can::messages::GearWriteMotorDriverRegister,
                can::messages::GearWriteMotorCurrentRequest>;
 using CanMessage =

@@ -54,13 +54,13 @@ class MotorHardware : public StepperMotorHardwareIface {
     void set_LED(bool status) final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
-    auto has_cancel_request() -> bool final {
-        return cancel_request.exchange(false);
+    auto has_cancel_request() -> uint8_t final {
+        return cancel_request.exchange(0);
     }
     void disable_encoder() final;
     void enable_encoder() final;
 
-    void request_cancel() final { cancel_request.store(true); }
+    void request_cancel(uint8_t error_severity) final { cancel_request.store(error_severity); }
 
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
@@ -78,7 +78,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void* enc_handle;
     const UsageEEpromConfig& eeprom_config;
     std::atomic<int32_t> motor_encoder_overflow_count = 0;
-    std::atomic<bool> cancel_request = false;
+    std::atomic<uint8_t> cancel_request = 0;
     static constexpr uint32_t ENCODER_OVERFLOW_PULSES_BIT = 0x1 << 31;
 };
 

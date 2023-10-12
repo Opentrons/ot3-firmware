@@ -9,6 +9,7 @@
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stall_check.hpp"
 #include "motor-control/core/tasks/move_status_reporter_task.hpp"
+#include "motor-control/core/tasks/tmc_motor_driver_common.hpp"
 
 namespace motor_handler {
 
@@ -41,7 +42,7 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
-template <template <class> class QueueImpl, class StatusClient,
+template <template <class> class QueueImpl, class StatusClient, class DriverClient,
           typename MotorMoveMessage, typename MotorHardware>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
@@ -54,11 +55,13 @@ class MotorInterruptHandler {
     MotorInterruptHandler() = delete;
     MotorInterruptHandler(MoveQueue& incoming_move_queue,
                           StatusClient& outgoing_queue,
+                          DriverClient& driver_queue,
                           MotorHardware& hardware_iface,
                           stall_check::StallCheck& stall,
                           UpdatePositionQueue& incoming_update_position_queue)
         : move_queue(incoming_move_queue),
           status_queue_client(outgoing_queue),
+          driver_client(driver_queue),
           hardware(hardware_iface),
           stall_checker{stall},
           update_position_queue(incoming_update_position_queue) {
@@ -178,6 +181,7 @@ class MotorInterruptHandler {
 
     void run_interrupt() {
         // handle various error states
+        uint8_t has_cancel_request = hardware.has_cancel_request();
         if (clear_queue_until_empty) {
             // If we were executing a move when estop asserted, and
             // what's in the queue is the remaining enqueued moves from
@@ -196,9 +200,12 @@ class MotorInterruptHandler {
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
-        } else if (hardware.has_cancel_request()) {
-            cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
-                                   can::ids::ErrorSeverity::warning);
+        } else if (has_cancel_request) { // consider stall detected error. Don't see issue
+            if (has_cancel_request == static_cast<uint8_t>(can::ids::ErrorSeverity::unrecoverable)) {
+                cancel_and_clear_moves();
+            } else {
+                cancel_and_clear_moves(can::ids::ErrorCode::stop_requested, can::ids::ErrorSeverity::warning);
+            }
         } else {
             // Normal Move logic
             run_normal_interrupt();
@@ -399,7 +406,7 @@ class MotorInterruptHandler {
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
     }
-    void cancel_and_clear_moves(
+    void cancel_and_clear_moves( // use this! Change input args
         can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware,
         can::ids::ErrorSeverity severity =
             can::ids::ErrorSeverity::unrecoverable) {
@@ -414,6 +421,11 @@ class MotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
+        // only send when motor driver error
+        if (err_code == can::ids::ErrorCode::hardware) {
+            driver_client.send_motor_driver_queue(
+                can::messages::ReadMotorDriverErrorStatus{.message_index = message_index});
+        }
         if (err_code == can::ids::ErrorCode::collision_detected) {
             build_and_send_ack(AckMessageId::position_error);
         }
@@ -586,6 +598,7 @@ class MotorInterruptHandler {
     q31_31 position_tracker{0};
     MoveQueue& move_queue;
     StatusClient& status_queue_client;
+    DriverClient& driver_client;
     MotorHardware& hardware;
     stall_check::StallCheck& stall_checker;
     UpdatePositionQueue& update_position_queue;

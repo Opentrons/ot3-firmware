@@ -100,14 +100,14 @@ class MotionController {
         enabled = false;
     }
 
-    void stop() {
+    void stop(can::ids::ErrorSeverity error_severity = can::ids::ErrorSeverity::warning) {
         queue.reset();
         // if we're gripping something we need to flag this so we don't drop it
         if (!hardware.get_stay_enabled()) {
             disable_motor();
         }
         if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel();
+            hardware.request_cancel(static_cast<uint8_t>(error_severity));
         }
     }
 

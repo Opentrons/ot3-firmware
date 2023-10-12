@@ -80,19 +80,20 @@ class MotorDriverMessageHandler {
     void handle(const can::messages::ReadMotorDriverRegister& m) {
         LOG("Received read motor driver request: addr=%d", m.reg_address);
         uint32_t data = 0;
-        bool error_response = false;
         if (tmc2130::registers::is_valid_address(m.reg_address)) {
-            driver.read(tmc2130::registers::Registers(m.reg_address), data,
-                        m.message_index, error_response);
+            auto converted_addr = static_cast<uint8_t>(m.reg_address);
+            uint32_t token = spi::utils::build_token(converted_addr);
+            driver.read(token, data, m.message_index);
         }
     }
 
     void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
         // LOG?
         uint32_t data = 0;
-        bool error_response = true;
-        driver.read(tmc2130::registers::Registers::DRVSTATUS, data,
-                    m.message_index, error_response);
+        auto converted_addr = static_cast<uint8_t>(tmc2130::registers::Registers::DRVSTATUS);
+        std::array tags{spi::utils::ResponseTag::IS_ERROR_RESPONSE};
+        uint32_t token = spi::utils::build_token(converted_addr, spi::utils::byte_from_tags(tags));
+        driver.read(token, data, m.message_index);
     }
 
     void handle(const can::messages::WriteMotorCurrentRequest& m) {

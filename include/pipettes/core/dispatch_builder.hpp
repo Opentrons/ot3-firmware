@@ -38,6 +38,7 @@ using GearMotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::motor::GearMotorHandler<
         gear_motor_tasks::QueueClient>,
     can::messages::GearReadMotorDriverRegister,
+    can::messages::ReadMotorDriverErrorStatus,
     can::messages::GearWriteMotorDriverRegister,
     can::messages::GearWriteMotorCurrentRequest>;
 

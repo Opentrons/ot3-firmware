@@ -78,10 +78,10 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
-    auto has_cancel_request() -> bool final {
-        return cancel_request.exchange(false);
+    auto has_cancel_request() -> uint8_t final {
+        return cancel_request.exchange(0);
     }
-    void request_cancel() final { cancel_request.store(true); }
+    void request_cancel(uint8_t error_severity) final { cancel_request.store(error_severity); }
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
     }
@@ -98,7 +98,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     ot_utils::pid::PID controller_loop;
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
-    std::atomic<bool> cancel_request = false;
+    std::atomic<uint8_t> cancel_request = 0;
     const UsageEEpromConfig& eeprom_config;
     void* stopwatch_handle;
 };

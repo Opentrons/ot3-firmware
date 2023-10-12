@@ -244,7 +244,7 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
+    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
     update_position_queue);
 
 static auto encoder_background_timer =

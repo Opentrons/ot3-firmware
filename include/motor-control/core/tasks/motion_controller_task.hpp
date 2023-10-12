@@ -148,16 +148,26 @@ class MotionControllerMessageHandler {
     // cancel_and_clear_moves(can::ids::ErrorCode::motor_driver_error)?
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
         // check if gpio is low before making controller calls
-        controller.stop(); // also request_cancel()?
-        can::messages::ReadMotorDriverErrorStatus msg{
-            .message_index = m.message_index};
-        driver_client.send_motor_driver_queue(msg);
+        //if (!driver_error_handled()) {
+            controller.stop(can::ids::ErrorSeverity::unrecoverable);
+            if (!controller.is_timer_interrupt_running()){
+                can_client.send_can_message(can::ids::NodeId::host,
+                    can::messages::ErrorMessage{.message_index = m.message_index,
+                                                .severity = can::ids::ErrorSeverity::unrecoverable,
+                                                .error_code = can::ids::ErrorCode::hardware});
+                driver_client.send_motor_driver_queue(
+                    can::messages::ReadMotorDriverErrorStatus{.message_index = m.message_index});
+            }
+        //}
     }
+
+    bool driver_error_handled() { return driver_error_handled_flag.exchange(true); }
 
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
+    std::atomic<bool> driver_error_handled_flag = false;
 };
 
 /**
@@ -205,17 +215,18 @@ class MotionControllerTask {
 
     // also create top level query msg
     void run_diag0_interrupt(void) {
-        can::messages::MotorDriverErrorEncountered msg{
-            .message_index = 0}; //fixed msg index, see elsewhere
-        bool sent = queue.try_write_isr(msg); //error begins here
-        if (!sent) { // improve
-            sent = queue.try_write_isr(msg);
+        if (!driver_error_handled()) {
+            sent = true;
+            // static_cast<void>(queue.try_write_isr(can::messages::MotorDriverErrorEncountered{.message_index = 0}));
         }
-        // handler.handle_message(msg); ?
     }
+
+    bool driver_error_handled() { return driver_error_handled_flag.exchange(true); }
 
   private:
     QueueType& queue;
+    std::atomic<bool> driver_error_handled_flag = false;
+    bool sent = false;
 };
 
 /**
