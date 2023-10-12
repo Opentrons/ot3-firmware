@@ -216,8 +216,7 @@ class MotionControllerTask {
     // also create top level query msg
     void run_diag0_interrupt(void) {
         if (!driver_error_handled()) {
-            sent = true;
-            // static_cast<void>(queue.try_write_isr(can::messages::MotorDriverErrorEncountered{.message_index = 0}));
+            static_cast<void>(queue.try_write_isr(can::messages::MotorDriverErrorEncountered{.message_index = 0}));
         }
     }
 
@@ -226,7 +225,6 @@ class MotionControllerTask {
   private:
     QueueType& queue;
     std::atomic<bool> driver_error_handled_flag = false;
-    bool sent = false;
 };
 
 /**
