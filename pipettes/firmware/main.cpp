@@ -138,11 +138,12 @@ static auto tail_accessor =
     eeprom::dev_data::DevDataTailAccessor{sensor_queue_client};
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == tip_sense_gpio_primary.pin &&
-        sensor_queue_client.tip_notification_queue_rear != nullptr) {
-        static_cast<void>(
-            sensor_queue_client.tip_notification_queue_rear->try_write_isr(
-                sensors::tip_presence::TipStatusChangeDetected{}));
+    if (GPIO_Pin == tip_sense_gpio_primary.pin) {
+        if (sensor_queue_client.tip_notification_queue_rear != nullptr) {
+            static_cast<void>(
+                sensor_queue_client.tip_notification_queue_rear->try_write_isr(
+                    sensors::tip_presence::TipStatusChangeDetected{}));
+        }
     }
 }
 
