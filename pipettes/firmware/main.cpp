@@ -130,9 +130,6 @@ static auto pins_for_sensor =
 static auto sensor_hardware_container =
     utility_configs::get_sensor_hardware_container(pins_for_sensor);
 
-static auto ok_for_secondary =
-    pins_for_sensor.secondary.has_value() &&
-    pins_for_sensor.secondary.value().tip_sense.has_value();
 static auto tip_sense_gpio_primary = pins_for_sensor.primary.tip_sense.value();
 
 static auto& sensor_queue_client = sensor_tasks::get_queues();
@@ -145,14 +142,6 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         if (sensor_queue_client.tip_notification_queue_rear != nullptr) {
             static_cast<void>(
                 sensor_queue_client.tip_notification_queue_rear->try_write_isr(
-                    sensors::tip_presence::TipStatusChangeDetected{}));
-        }
-    } else if (ok_for_secondary &&
-               GPIO_Pin ==
-                   pins_for_sensor.secondary.value().tip_sense.value().pin) {
-        if (sensor_queue_client.tip_notification_queue_front != nullptr) {
-            static_cast<void>(
-                sensor_queue_client.tip_notification_queue_front->try_write_isr(
                     sensors::tip_presence::TipStatusChangeDetected{}));
         }
     }
