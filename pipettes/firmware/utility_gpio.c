@@ -26,6 +26,7 @@ static void tip_sense_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     enable_gpio_port(GPIOC);
     if (pipette_type == NINETY_SIX_CHANNEL) {
         /*Configure GPIO pin :
@@ -33,13 +34,11 @@ static void tip_sense_gpio_init() {
          * PC7, rear tip sense
          * */
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_7;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     } else {
         /*Configure GPIO pin : C2 */
         GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Pin = GPIO_PIN_2;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
