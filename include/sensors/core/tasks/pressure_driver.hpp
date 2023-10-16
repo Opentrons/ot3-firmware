@@ -489,7 +489,7 @@ class MMR920C04 {
      * Desired logging frequency for pressure data during overpressure
      * monitoring.
      */
-    static constexpr float OVERPRESSURE_BACKGROUND_LOGGING_HZ = 150;
+    static constexpr float OVERPRESSURE_BACKGROUND_LOGGING_HZ = 60;
 
     /** Track how many readings it has been since the last logging event. */
     size_t overpressure_logging_counter = 0;
