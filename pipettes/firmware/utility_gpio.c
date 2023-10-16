@@ -52,10 +52,13 @@ static void tip_sense_gpio_init() {
  * @retval None
  */
 static void nvic_priority_enable_init() {
-    IRQn_Type block_2 = get_interrupt_line(gpio_block_2);
-    /* EXTI interrupt init block tip sense*/
-    HAL_NVIC_SetPriority(block_2, 10, 0);
-    HAL_NVIC_EnableIRQ(block_2);
+    PipetteType pipette_type = get_pipette_type();
+
+    if (pipette_type != NINETY_SIX_CHANNEL) {
+        IRQn_Type block_2 = get_interrupt_line(gpio_block_2);
+        /* EXTI interrupt init block tip sense*/
+        HAL_NVIC_SetPriority(block_2, 10, 0);
+        HAL_NVIC_EnableIRQ(block_2);
 }
 
 /**
