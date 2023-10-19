@@ -96,11 +96,8 @@ class MotorDriverMessageHandler {
         }
     }
 
-    // need a response handler? Yes, send response once when interrupt and twice when response received
-    // ensure specific error is returned
-    // just use above method?!
     void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
-        // LOG?
+        LOG("Received read motor driver error register request");
         uint32_t data = 0;
         auto converted_addr = static_cast<uint8_t>(tmc2160::registers::Registers::DRVSTATUS);
         std::array tags{spi::utils::ResponseTag::IS_ERROR_RESPONSE};

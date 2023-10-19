@@ -60,10 +60,10 @@ class Writer {
             .id = _transaction_id,
             .transaction = {.txBuffer = txBuffer, .cs_interface = cs_intf},
             .response_writer = ResponseWriter(response_queue)};
-        queue->try_write(message); // this is a FreeRTOSMessageQueue
+        queue->try_write(message);
 
         message.id.requires_response = true;
-        return queue->try_write(message); // why twice? transmit and receive
+        return queue->try_write(message);
     }
 
     /**

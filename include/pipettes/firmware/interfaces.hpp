@@ -67,7 +67,7 @@ namespace linear_motor {
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    LowThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>; // how to accomodate 2130?
+    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>;
 auto get_interrupt(motor_hardware::MotorHardware& hw,
                    HighThroughputInterruptQueues& queues,
                    stall_check::StallCheck& stall)

@@ -60,7 +60,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
         // Diag0
         GPIO_InitStruct.Pin = GPIO_PIN_5;
         GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-        GPIO_InitStruct.Pull = GPIO_PULLUP; // confirm correct
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
 }

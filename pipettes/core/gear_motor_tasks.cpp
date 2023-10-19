@@ -129,7 +129,7 @@ void gear_motor_tasks::QueueClient::send_motion_controller_queue(
 }
 
 void gear_motor_tasks::QueueClient::send_motor_driver_queue(
-    const tmc2160::tasks::gear::TaskMessage& m) { // const tmc::tasks::TaskMessage& m
+    const tmc2160::tasks::gear::TaskMessage& m) {
     driver_queue->try_write(m);
 }
 

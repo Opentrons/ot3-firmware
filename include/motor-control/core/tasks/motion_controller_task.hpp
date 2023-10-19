@@ -144,8 +144,6 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
-    // set error flag here (C++ atomic)?! Disable subsystem (enable brakes)?!
-    // cancel_and_clear_moves(can::ids::ErrorCode::motor_driver_error)?
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
         // check if gpio is low before making controller calls
         controller.stop(can::ids::ErrorSeverity::unrecoverable);
@@ -153,7 +151,7 @@ class MotionControllerMessageHandler {
             can_client.send_can_message(can::ids::NodeId::host,
                 can::messages::ErrorMessage{.message_index = m.message_index,
                                             .severity = can::ids::ErrorSeverity::unrecoverable,
-                                            .error_code = can::ids::ErrorCode::hardware});
+                                            .error_code = can::ids::ErrorCode::hardware}); // make this motor_driver_error instead of hardware?
             driver_client.send_motor_driver_queue(
                 can::messages::ReadMotorDriverErrorStatus{.message_index = m.message_index});
         }

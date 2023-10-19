@@ -4,6 +4,7 @@
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
+#include "motor-control/tests/mock_motor_driver_client.hpp"
 
 using namespace motor_handler;
 
@@ -16,11 +17,13 @@ struct HandlerContainer {
         can::messages::UpdateMotorPositionEstimationRequest>
         update_position_queue{};
     test_mocks::MockMoveStatusReporterClient reporter{};
+    test_mocks::MockMotorDriverClient driver{};
     stall_check::StallCheck stall{10, 10, 10};
     MotorInterruptHandler<test_mocks::MockMessageQueue,
-                          test_mocks::MockMoveStatusReporterClient, Move,
+                          test_mocks::MockMoveStatusReporterClient, 
+                          test_mocks::MockMotorDriverClient, Move,
                           test_mocks::MockMotorHardware>
-        handler{queue, reporter, hw, stall, update_position_queue};
+        handler{queue, reporter, driver, hw, stall, update_position_queue};
 };
 
 SCENARIO(

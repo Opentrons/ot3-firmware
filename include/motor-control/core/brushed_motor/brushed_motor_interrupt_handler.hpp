@@ -196,8 +196,7 @@ class BrushedMotorInterruptHandler {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             motor_state = ControlState::ESTOP;
         } else if (hardware.has_cancel_request()) {
-            cancel_and_clear_moves();
-            // cancel_and_clear_moves(can::ids::ErrorCode::stop_requested, can::ids::ErrorSeverity::warning);
+            cancel_and_clear_moves(can::ids::ErrorCode::stop_requested, can::ids::ErrorSeverity::warning);
             motor_state = ControlState::IDLE;
         } else if (tick < HOLDOFF_TICKS) {
             tick++;

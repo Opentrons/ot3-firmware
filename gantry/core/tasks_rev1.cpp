@@ -17,8 +17,6 @@ static auto queues = gantry::queues::QueueClient{utils::get_node_id()};
 
 static auto spi_task_client =
     spi::writer::Writer<freertos_message_queue::FreeRTOSMessageQueue>();
-//check how spi_task_client is used here
-//we want an interrupt from spi, see past work
 
 static auto mc_task_builder =
     freertos_task::TaskStarter<512,
@@ -32,7 +30,6 @@ static auto move_status_task_builder = freertos_task::TaskStarter<
 
 static auto spi_task_builder =
     freertos_task::TaskStarter<512, spi::tasks::Task>{};
-//look at this class's setup, functionality
 
 template <template <typename> typename QueueImpl>
 using PollerWithTimer =
@@ -78,7 +75,7 @@ auto gantry::tasks::start_tasks(
         ::queues);
 
     auto& spi_task = spi_task_builder.start(5, "spi task", spi_device);
-    spi_task_client.set_queue(&spi_task.get_queue()); // Writer class queue set here!
+    spi_task_client.set_queue(&spi_task.get_queue());
 
     auto& i2c2_task = i2c2_task_builder.start(5, "i2c2", i2c2);
     i2c2_task_client.set_queue(&i2c2_task.get_queue());

@@ -95,7 +95,7 @@ struct motion_controller::HardwareConfig motor_pins_x {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOC,
         .pin = GPIO_PIN_5,
-        .active_setting = GPIO_PIN_RESET} //confirm RESET not SET. See Driver RM
+        .active_setting = GPIO_PIN_RESET}
 };
 
 struct motion_controller::HardwareConfig motor_pins_y {
@@ -139,7 +139,7 @@ struct motion_controller::HardwareConfig motor_pins_y {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOC,
         .pin = GPIO_PIN_5,
-        .active_setting = GPIO_PIN_RESET} //confirm RESET not SET. See Driver RM
+        .active_setting = GPIO_PIN_RESET}
 };
 
 static tmc2130::configs::TMC2130DriverConfig gantry_x_driver_configs{

@@ -108,10 +108,10 @@ class MotionController {
     }
 
     void stop(can::ids::ErrorSeverity error_severity = can::ids::ErrorSeverity::warning) {
-        queue.reset(); // empties queue
+        queue.reset();
         disable_motor();
         if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel(static_cast<uint8_t>(error_severity)); // use ErrorSeverity, converted to uint_8! // see if/how checked. Calls cancel_and_clear_moves!
+            hardware.request_cancel(static_cast<uint8_t>(error_severity));
         }
     }
 
@@ -140,10 +140,10 @@ class MotionController {
     }
 
     void disable_motor() {
-        hardware.deactivate_motor(); // sets e-stop pin and resets enable pin
+        hardware.deactivate_motor();
         hardware.position_flags.clear_flag(
             can::ids::MotorPositionFlags::stepper_position_ok);
-        enabled = false; // see if/how checked
+        enabled = false;
     }
 
     void set_motion_constraints(
@@ -265,7 +265,7 @@ class PipetteMotionController {
         // if the timer interrupt is running, cancel it. if it isn't running,
         // don't submit a cancel because then the cancel won't be read until
         // the timer starts the next time.
-        if (hardware.is_timer_interrupt_running()) { // should always be true, right?
+        if (hardware.is_timer_interrupt_running()) {
             hardware.request_cancel(static_cast<uint8_t>(error_severity));
         }
     }

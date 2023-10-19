@@ -200,7 +200,7 @@ class MotorInterruptHandler {
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
-        } else if (has_cancel_request) { // consider stall detected error. Don't see issue
+        } else if (has_cancel_request) {
             if (has_cancel_request == static_cast<uint8_t>(can::ids::ErrorSeverity::unrecoverable)) {
                 cancel_and_clear_moves();
             } else {
@@ -406,7 +406,7 @@ class MotorInterruptHandler {
     [[nodiscard]] auto set_direction_pin() const -> bool {
         return (buffered_move.velocity > 0);
     }
-    void cancel_and_clear_moves( // use this! Change input args
+    void cancel_and_clear_moves(
         can::ids::ErrorCode err_code = can::ids::ErrorCode::hardware,
         can::ids::ErrorSeverity severity =
             can::ids::ErrorSeverity::unrecoverable) {
@@ -421,7 +421,6 @@ class MotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
-        // only send when motor driver error
         if (err_code == can::ids::ErrorCode::hardware) {
             driver_client.send_motor_driver_queue(
                 can::messages::ReadMotorDriverErrorStatus{.message_index = message_index});

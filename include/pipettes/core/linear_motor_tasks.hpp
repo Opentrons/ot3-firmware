@@ -126,7 +126,7 @@ struct Tasks {
 /**
  * Queues related specifically to the the tmc2130 driver.
  */
-struct QueueClient : can::message_writer::MessageWriter { // USE THIS! See where/how it's used
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient()
         : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 
@@ -165,7 +165,7 @@ struct Tasks {
 /**
  * Queues related specifically to the the tmc2160 driver.
  */
-struct QueueClient : can::message_writer::MessageWriter { // AND THIS!
+struct QueueClient : can::message_writer::MessageWriter {
     QueueClient()
         : can::message_writer::MessageWriter{can::ids::NodeId::pipette_left} {}
 

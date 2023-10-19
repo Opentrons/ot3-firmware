@@ -39,12 +39,12 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     void reset_encoder_pulses() final { test_pulses = 0; }
     int32_t get_encoder_pulses() final { return test_pulses; }
     void sim_set_encoder_pulses(int32_t pulses) { test_pulses = pulses; }
-    auto has_cancel_request() -> bool final {
-        bool old_request = cancel_request;
-        cancel_request = false;
+    auto has_cancel_request() -> uint8_t final {
+        uint8_t old_request = cancel_request;
+        cancel_request = 0;
         return old_request;
     }
-    void request_cancel() final { cancel_request = true; }
+    void request_cancel(uint8_t error_severity) final { cancel_request = error_severity; }
     void sim_set_timer_interrupt_running(bool is_running) {
         mock_timer_interrupt_running = is_running;
     }
@@ -65,7 +65,7 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
     bool mock_dir_value = false;
     uint8_t finished_move_id = 0x0;
     int32_t test_pulses = 0x0;
-    bool cancel_request = false;
+    uint8_t cancel_request = 0;
     bool mock_timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
         motor_hardware::UsageEEpromConfig{
