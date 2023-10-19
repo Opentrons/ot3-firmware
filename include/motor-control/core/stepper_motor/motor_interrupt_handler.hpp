@@ -586,6 +586,14 @@ class MotorInterruptHandler {
 
     auto has_active_move() -> bool { return _has_active_move.load(); }
 
+    /**
+     * @brief Returns whether the motor has an active move *and*
+     * the velocity is nonzero.
+     */
+    auto is_moving() -> bool {
+        return has_active_move() && buffered_move.velocity != 0;
+    }
+
   private:
     void update_hardware_step_tracker() {
         hardware.set_step_tracker(

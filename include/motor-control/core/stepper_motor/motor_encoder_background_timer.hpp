@@ -32,7 +32,7 @@ class BackgroundTimer {
     auto callback() -> void {
         auto critical_section =
             freertos_synchronization::FreeRTOSCriticalSectionRAII();
-        if (!_interrupt_handler.has_active_move()) {
+        if (!_interrupt_handler.is_moving()) {
             // Refresh the overflow counter if nothing else is doing it
             // and update position flag if needed
             std::ignore = _interrupt_handler.check_for_stall();
