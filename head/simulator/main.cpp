@@ -94,7 +94,7 @@ static stall_check::StallCheck stallcheck_right(
     linear_config.get_usteps_per_mm() / 1000.0F, utils::STALL_THRESHOLD_UM);
 
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
-    motor_queue_right, head_tasks::get_right_queues(), motor_interface_right,
+    motor_queue_right, head_tasks::get_right_queues(), head_tasks::get_right_queues(), motor_interface_right,
     stallcheck_right, update_position_queue_right);
 
 static stall_check::StallCheck stallcheck_left(
@@ -117,7 +117,7 @@ static motor_class::Motor motor_right{
     motor_queue_right, update_position_queue_right};
 
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
-    motor_queue_left, head_tasks::get_left_queues(), motor_interface_left,
+    motor_queue_left, head_tasks::get_left_queues(), head_tasks::get_left_queues(), motor_interface_left,
     stallcheck_left, update_position_queue_left);
 
 static motor_class::Motor motor_left{

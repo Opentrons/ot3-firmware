@@ -89,14 +89,16 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), motor_interface, stallcheck,
+    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(), motor_interface, stallcheck,
     update_position_queue);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,
                                                       motor_interface,
                                                       update_position_queue);
-void interfaces::initialize() {}
+void interfaces::initialize(diag0_handler* call_diag0_handler) {
+    static_cast<void>(call_diag0_handler);
+}
 
 static po::variables_map options{};
 
