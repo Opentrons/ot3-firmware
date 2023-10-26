@@ -49,6 +49,7 @@ set(GRIPPER_SRCS_B1
         ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
 )
 set(GRIPPER_SRCS_C1 ${GRIPPER_SRCS_B1})
+set(GRIPPER_SRCS_C2 ${GRIPPER_SRCS_C1})
 
 macro(gripper_loop)
     set(_driver_suffix ${PROJECT_NAME}_${REVISION})
@@ -88,8 +89,8 @@ endmacro()
 
 foreach_revision(
     PROJECT_NAME gripper
-    REVISIONS a1 b1 c1
-    SOURCES GRIPPER_SRCS_A1 GRIPPER_SRCS_B1 GRIPPER_SRCS_C1
+    REVISIONS a1 b1 c1 c2
+    SOURCES GRIPPER_SRCS_A1 GRIPPER_SRCS_B1 GRIPPER_SRCS_C1 GRIPPER_SRCS_C2
     CALL_FOREACH_REV gripper_loop)
 
 alias_for_revision(PROJECT_NAME gripper REVISION a1 REVISION_ALIAS proto)

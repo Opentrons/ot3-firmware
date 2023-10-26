@@ -18,6 +18,30 @@ auto gear_config = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
 auto error_config =
     error_tolerance_config::BrushedMotorErrorTolerance{gear_config};
 
+auto constexpr home_msg =
+    BrushedMove{.duration = 5 * 32000,
+                .duty_cycle = 50,
+                .group_id = 0,
+                .seq_id = 0,
+                .stay_engaged = 0,
+                .stop_condition = MoveStopCondition::limit_switch};
+
+auto constexpr grip_msg =
+    BrushedMove{.duration = 5 * 32000,
+                .duty_cycle = 50,
+                .group_id = 0,
+                .seq_id = 0,
+                .stay_engaged = 1,
+                .stop_condition = MoveStopCondition::none};
+
+auto constexpr move_msg =
+    BrushedMove{.duration = 5 * 32000,
+                .duty_cycle = 0,
+                .group_id = 0,
+                .seq_id = 0,
+                .encoder_position = 61054,  // ~1cm
+                .stop_condition = MoveStopCondition::encoder_position};
+
 struct BrushedMotorContainer {
     test_mocks::MockBrushedMotorHardware hw{};
     test_mocks::MockMessageQueue<motor_messages::BrushedMove> queue{};
@@ -32,13 +56,7 @@ struct BrushedMotorContainer {
 SCENARIO("Brushed motor interrupt handler handle move messages") {
     BrushedMotorContainer test_objs{};
     GIVEN("A message to home") {
-        auto msg =
-            BrushedMove{.duration = 5 * 32000,
-                        .duty_cycle = 50,
-                        .group_id = 0,
-                        .seq_id = 0,
-                        .stop_condition = MoveStopCondition::limit_switch};
-        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(home_msg);
 
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
@@ -49,6 +67,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             THEN("The motor hardware proceeds to home") {
                 /* motor shouldn't be gripping */
                 REQUIRE(!test_objs.hw.get_is_gripping());
+                REQUIRE(!test_objs.hw.get_stay_enabled());
                 test_objs.hw.set_encoder_value(1000);
                 test_objs.hw.set_limit_switch(true);
 
@@ -67,6 +86,9 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                         REQUIRE(read_ack.ack_id ==
                                 AckMessageId::stopped_by_condition);
                         REQUIRE(test_objs.handler.is_idle);
+                        REQUIRE(!test_objs.hw.get_stay_enabled());
+                        REQUIRE(test_objs.hw.get_motor_state() ==
+                                BrushedMotorState::FORCE_CONTROLLING_HOME);
                     }
                 }
             }
@@ -79,16 +101,14 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(!test_objs.hw.get_stay_enabled());
+            REQUIRE(test_objs.hw.get_motor_state() ==
+                    BrushedMotorState::FORCE_CONTROLLING_HOME);
         }
     }
 
     GIVEN("A message to grip") {
-        auto msg = BrushedMove{.duration = 5 * 32000,
-                               .duty_cycle = 50,
-                               .group_id = 0,
-                               .seq_id = 0,
-                               .stop_condition = MoveStopCondition::none};
-        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(grip_msg);
 
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
@@ -99,6 +119,7 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             THEN("The motor hardware proceeds to grip") {
                 /* motor should be gripping */
                 REQUIRE(test_objs.hw.get_is_gripping());
+                REQUIRE(test_objs.hw.get_stay_enabled());
                 test_objs.hw.set_encoder_value(30000);
 
                 AND_WHEN("The encoder speed timer overflows") {
@@ -125,6 +146,9 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                             REQUIRE(read_ack.encoder_position == 30000);
                             REQUIRE(read_ack.ack_id ==
                                     AckMessageId::complete_without_condition);
+                            REQUIRE(test_objs.hw.get_stay_enabled());
+                            REQUIRE(test_objs.hw.get_motor_state() ==
+                                    BrushedMotorState::FORCE_CONTROLLING);
                         }
                     }
                 }
@@ -140,20 +164,16 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(test_objs.hw.get_stay_enabled());
+            REQUIRE(test_objs.hw.get_motor_state() ==
+                    BrushedMotorState::FORCE_CONTROLLING);
         }
     }
     GIVEN("A message to move") {
-        auto msg =
-            BrushedMove{.duration = 5 * 32000,
-                        .duty_cycle = 0,
-                        .group_id = 0,
-                        .seq_id = 0,
-                        .encoder_position = 61054,  // ~1cm
-                        .stop_condition = MoveStopCondition::encoder_position};
         int32_t last_pid_output = test_objs.hw.get_pid_controller_output();
         REQUIRE(last_pid_output == 0.0);
         test_objs.hw.set_encoder_value(0);
-        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(move_msg);
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
             for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
@@ -199,10 +219,13 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                 Ack read_ack =
                     std::get<Ack>(test_objs.reporter.messages.back());
                 // check if position is withen acceptable parameters
-                REQUIRE(
-                    std::abs(read_ack.encoder_position - msg.encoder_position) <
-                    int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
+                REQUIRE(std::abs(read_ack.encoder_position -
+                                 move_msg.encoder_position) <
+                        int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
+                REQUIRE(test_objs.hw.get_motor_state() ==
+                        BrushedMotorState::POSITION_CONTROLLING);
+                REQUIRE(!test_objs.hw.get_stay_enabled());
             }
         }
         WHEN("move message times out") {
@@ -213,6 +236,9 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
             REQUIRE(test_objs.reporter.messages.size() == 1);
             Ack read_ack = std::get<Ack>(test_objs.reporter.messages.back());
             REQUIRE(read_ack.ack_id == AckMessageId::timeout);
+            REQUIRE(test_objs.hw.get_motor_state() ==
+                    BrushedMotorState::POSITION_CONTROLLING);
+            REQUIRE(!test_objs.hw.get_stay_enabled());
         }
     }
 }
@@ -220,19 +246,15 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
 SCENARIO("estop pressed during Brushed motor interrupt handler") {
     BrushedMotorContainer test_objs{};
 
-    GIVEN("A message to home") {
-        auto msg =
-            BrushedMove{.duration = 5 * 32000,
-                        .duty_cycle = 50,
-                        .group_id = 0,
-                        .seq_id = 0,
-                        .stop_condition = MoveStopCondition::limit_switch};
-        test_objs.queue.try_write_isr(msg);
+    GIVEN("A message to grip") {
+        test_objs.queue.try_write_isr(grip_msg);
         WHEN("Estop is pressed") {
             // Burn through the startup ticks
             for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
                 test_objs.handler.run_interrupt();
             }
+            REQUIRE(!test_objs.handler.in_estop);
+            REQUIRE(test_objs.hw.get_stay_enabled());
             test_objs.hw.set_estop_in(true);
             test_objs.handler.run_interrupt();
             THEN("Errors are sent") {
@@ -242,6 +264,14 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::estop_detected);
+                THEN(
+                    "motor should stay engaged and motor state should "
+                    "persist") {
+                    REQUIRE(test_objs.handler.in_estop);
+                    REQUIRE(test_objs.hw.get_stay_enabled());
+                    REQUIRE(test_objs.hw.get_motor_state() ==
+                            BrushedMotorState::FORCE_CONTROLLING);
+                }
             }
         }
     }
@@ -251,18 +281,14 @@ SCENARIO("labware dropped during grip move") {
     BrushedMotorContainer test_objs{};
 
     GIVEN("A message to grip") {
-        auto msg = BrushedMove{.duration = 5 * 32000,
-                               .duty_cycle = 50,
-                               .group_id = 0,
-                               .seq_id = 0,
-                               .stop_condition = MoveStopCondition::none};
-        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(grip_msg);
         WHEN("grip is complete") {
             test_objs.hw.set_encoder_value(1200);
             // Burn through the startup ticks
             for (uint32_t i = 0; i <= 100; i++) {
                 test_objs.handler.run_interrupt();
             }
+            REQUIRE(test_objs.hw.get_stay_enabled());
             test_objs.handler.set_enc_idle_state(true);
             test_objs.handler.run_interrupt();
             THEN("Move complete message is sent") {
@@ -272,6 +298,7 @@ SCENARIO("labware dropped during grip move") {
 
                 REQUIRE(read_ack.ack_id ==
                         AckMessageId::complete_without_condition);
+                REQUIRE(!test_objs.handler.error_handled);
             }
             test_objs.reporter.messages.clear();
             THEN("Movement starts again") {
@@ -282,13 +309,18 @@ SCENARIO("labware dropped during grip move") {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code == can::ids::ErrorCode::labware_dropped);
-
-                REQUIRE(test_objs.hw.get_stay_enabled() == true);
+                REQUIRE(test_objs.handler.error_handled);
+                REQUIRE(test_objs.hw.get_stay_enabled());
+                // position reported
+                motor_messages::UpdatePositionResponse pos_response =
+                    std::get<motor_messages::UpdatePositionResponse>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(pos_response.encoder_pulses == 40000);
             }
         }
     }
@@ -298,13 +330,7 @@ SCENARIO("collision while homed") {
     BrushedMotorContainer test_objs{};
 
     GIVEN("A message to home") {
-        auto msg =
-            BrushedMove{.duration = 5 * 32000,
-                        .duty_cycle = 50,
-                        .group_id = 0,
-                        .seq_id = 0,
-                        .stop_condition = MoveStopCondition::limit_switch};
-        test_objs.queue.try_write_isr(msg);
+        test_objs.queue.try_write_isr(home_msg);
         WHEN("home is complete") {
             test_objs.hw.set_encoder_value(1200);
             // Burn through the startup ticks
@@ -322,6 +348,7 @@ SCENARIO("collision while homed") {
                 REQUIRE(read_ack.encoder_position == 0);
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
                 REQUIRE(test_objs.handler.is_idle);
+                REQUIRE(!test_objs.handler.error_handled);
             }
             test_objs.reporter.messages.clear();
             THEN("Movement starts again") {
@@ -332,14 +359,19 @@ SCENARIO("collision while homed") {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
-
-                REQUIRE(test_objs.hw.get_stay_enabled() == false);
+                REQUIRE(test_objs.handler.error_handled);
+                REQUIRE(!test_objs.hw.get_stay_enabled());
+                // position reported
+                motor_messages::UpdatePositionResponse pos_response =
+                    std::get<motor_messages::UpdatePositionResponse>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(pos_response.encoder_pulses == 40000);
             }
         }
     }
@@ -347,17 +379,10 @@ SCENARIO("collision while homed") {
 
 SCENARIO("A collision during position controlled move") {
     BrushedMotorContainer test_objs{};
-    auto msg =
-        BrushedMove{.duration = 5 * 32000,
-                    .duty_cycle = 0,
-                    .group_id = 0,
-                    .seq_id = 0,
-                    .encoder_position = 61054,  // ~1cm
-                    .stop_condition = MoveStopCondition::encoder_position};
     int32_t last_pid_output = test_objs.hw.get_pid_controller_output();
     REQUIRE(last_pid_output == 0.0);
     test_objs.hw.set_encoder_value(0);
-    test_objs.queue.try_write_isr(msg);
+    test_objs.queue.try_write_isr(move_msg);
     WHEN("A brushed move message is received and loaded") {
         // Burn through the startup ticks
         for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
@@ -402,28 +427,125 @@ SCENARIO("A collision during position controlled move") {
                 Ack read_ack =
                     std::get<Ack>(test_objs.reporter.messages.back());
                 // check if position is withen acceptable parameters
-                REQUIRE(
-                    std::abs(read_ack.encoder_position - msg.encoder_position) <
-                    int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
+                REQUIRE(std::abs(read_ack.encoder_position -
+                                 move_msg.encoder_position) <
+                        int32_t(gear_config.get_encoder_pulses_per_mm() * 2));
                 REQUIRE(read_ack.ack_id == AckMessageId::stopped_by_condition);
+                REQUIRE(!test_objs.handler.error_handled);
             }
             test_objs.reporter.messages.clear();
             THEN("Movement starts again") {
+                REQUIRE(!test_objs.handler.has_active_move());
                 test_objs.hw.set_encoder_value(200000);
                 test_objs.handler.set_enc_idle_state(false);
-                // Burn through the holdoff ticks
-                for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                // Burn through the 2 x holdoff ticks
+                for (uint32_t i = 0; i <= HOLDOFF_TICKS * 2; i++) {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
-                REQUIRE(test_objs.reporter.messages.size() == 2);
+                REQUIRE(test_objs.reporter.messages.size() == 3);
                 can::messages::ErrorMessage err =
                     std::get<can::messages::ErrorMessage>(
                         test_objs.reporter.messages.front());
                 REQUIRE(err.error_code ==
                         can::ids::ErrorCode::collision_detected);
+                REQUIRE(test_objs.handler.error_handled);
+                REQUIRE(!test_objs.hw.get_stay_enabled());
+                // position reported
+                motor_messages::UpdatePositionResponse pos_response =
+                    std::get<motor_messages::UpdatePositionResponse>(
+                        test_objs.reporter.messages.back());
+                REQUIRE(pos_response.encoder_pulses == 200000);
+            }
+        }
+    }
+}
 
-                REQUIRE(test_objs.hw.get_stay_enabled() == false);
+SCENARIO("handler encounter error during idle move") {
+    BrushedMotorContainer test_objs{};
+    auto og_motor_state = GENERATE(BrushedMotorState::FORCE_CONTROLLING_HOME,
+                                   BrushedMotorState::FORCE_CONTROLLING,
+                                   BrushedMotorState::POSITION_CONTROLLING);
+
+    GIVEN("the encoder value begins to error during an idle move") {
+        test_objs.hw.set_motor_state(og_motor_state);
+        test_objs.hw.set_encoder_value(200000);
+        test_objs.handler.set_enc_idle_state(false);
+
+        WHEN("the first idle move is executed and an error is detected") {
+            test_objs.handler.execute_idle_move();
+            THEN("error is noted but not handled") {
+                REQUIRE(!test_objs.handler.error_handled);
+            }
+            WHEN(
+                "idle move is executed the second time and the error is still "
+                "detected") {
+                test_objs.handler.execute_idle_move();
+                THEN("error is handled") {
+                    REQUIRE(test_objs.handler.error_handled);
+                }
+            }
+            WHEN(
+                "idle move is executed the second time and but the error is no "
+                "longer detected") {
+                test_objs.handler.set_enc_idle_state(true);
+                test_objs.hw.set_encoder_value(0);
+                test_objs.handler.execute_idle_move();
+                THEN("error is not handled") {
+                    REQUIRE(!test_objs.handler.error_handled);
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("handler recovers from error state") {
+    BrushedMotorContainer test_objs{};
+    auto og_motor_state = GENERATE(BrushedMotorState::FORCE_CONTROLLING_HOME,
+                                   BrushedMotorState::FORCE_CONTROLLING,
+                                   BrushedMotorState::POSITION_CONTROLLING);
+    auto stay_engaged = GENERATE(true, false);
+
+    GIVEN("an error occurred during an idle move") {
+        test_objs.hw.set_motor_state(og_motor_state);
+        test_objs.hw.set_stay_enabled(stay_engaged);
+        test_objs.handler.error_handled = true;
+
+        WHEN("a cancel request is received") {
+            test_objs.hw.request_cancel();
+            test_objs.handler.run_interrupt();
+            THEN(
+                "motor state should become un-homed only if stay engaged is "
+                "falsy") {
+                REQUIRE(test_objs.hw.get_motor_state() ==
+                        (!stay_engaged ? BrushedMotorState::UNHOMED
+                                       : og_motor_state));
+            }
+            THEN("a stop requested warning is issued") {
+                // TODO: do we need to increase the error count if it's only
+                // warning about a stop request?
+                REQUIRE(test_objs.reporter.messages.size() == 2);
+                can::messages::ErrorMessage err =
+                    std::get<can::messages::ErrorMessage>(
+                        test_objs.reporter.messages.front());
+                REQUIRE(err.error_code == can::ids::ErrorCode::stop_requested);
+                REQUIRE(err.severity == can::ids::ErrorSeverity::warning);
+            }
+            THEN("error handled is not cleared, yet") {
+                REQUIRE(test_objs.handler.error_handled);
+            }
+            AND_WHEN("a new message is loaded and executed") {
+                test_objs.queue.try_write_isr(grip_msg);
+                test_objs.handler.update_and_start_move();
+                THEN(
+                    "error state is cleared and the new move is being "
+                    "executed") {
+                    REQUIRE(!test_objs.handler.error_handled);
+                    REQUIRE(test_objs.hw.get_motor_state() ==
+                            BrushedMotorState::FORCE_CONTROLLING);
+                    REQUIRE(test_objs.handler.has_active_move());
+                    REQUIRE(test_objs.hw.get_stay_enabled());
+                }
             }
         }
     }

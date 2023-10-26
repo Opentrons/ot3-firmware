@@ -50,7 +50,7 @@ using BrushedMotionDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::DisableMotorRequest, can::messages::EnableMotorRequest,
     can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest,
     can::messages::SetGripperErrorToleranceRequest,
-    can::messages::GetMotorUsageRequest>;
+    can::messages::GetMotorUsageRequest, can::messages::GripperJawStateRequest>;
 using BrushedMoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::BrushedMoveGroupHandler<
         g_tasks::QueueClient>,

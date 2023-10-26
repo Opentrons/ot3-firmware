@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from enum import Enum, unique
 from typing import Any, Optional, Type
 
-from opentrons.hardware_control.types import OT3Axis
+from opentrons.hardware_control.types import Axis
 
 from .ot3_state import OT3State
 from .util import Direction, MoveMessageHardware, SyncPinState
@@ -69,7 +69,7 @@ class Message(ABC):
 class MoveMessage(Message):
     """Message for moving OT3 axis in specified direction."""
 
-    axis: OT3Axis
+    axis: Axis
     direction: Direction
 
     @staticmethod
@@ -126,7 +126,7 @@ class SyncPinMessage(Message):
 class GetAxisLocationMessage(Message):
     """Message to get current location of axis."""
 
-    axis: OT3Axis
+    axis: Axis
 
     @staticmethod
     def build_message(message_content: bytes) -> GetAxisLocationMessage:

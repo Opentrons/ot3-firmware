@@ -1,7 +1,21 @@
 #pragma once
 
 #include <array>
-#include <bitset>
+
+#ifdef ENABLE_CROSS_ONLY_HEADERS
+// TODO(fps 7/12/2023): This is super hacky and I hate throwing #ifdefs
+// in our nicely host-independent code but for now we really just need
+// the vTaskDelay function and hopefully sometime in the near future I
+// can refactor this file with a nice templated sleep function.
+#include "FreeRTOS.h"
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define HACKY_TASK_SLEEP(___timeout___) vTaskDelay(___timeout___)
+
+#else
+
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define HACKY_TASK_SLEEP(___timeout___) (void)(___timeout___)
+#endif
 
 #include "can/core/can_writer_task.hpp"
 #include "can/core/ids.hpp"
@@ -10,7 +24,6 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
-#include "ot_utils/core/filters/sma.hpp"
 #include "sensors/core/fdc1004.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/utils.hpp"
@@ -38,19 +51,23 @@ class FDC1004 {
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
     auto initialize() -> void {
-        // FIXME we should grab device id and compare it to the static
-        // device id in code.
+        if (!_initialized) {
+            // FIXME we should grab device id and compare it to the static
+            // device id in code.
 
-        // We should send a message that the sensor is in a ready state,
-        // not sure if we should have a separate can message to do that
-        // holding off for this PR.
-        if (shared_sensor) {
-            measure_mode = fdc1004::MeasureConfigMode::TWO;
+            // We should send a message that the sensor is in a ready state,
+            // not sure if we should have a separate can message to do that
+            // holding off for this PR.
+
+            // Initial delay to avoid I2C bus traffic.
+            HACKY_TASK_SLEEP(100);
             update_capacitance_configuration();
+            // Second delay to ensure IC is ready to start
+            // readings (and also to avoid I2C bus traffic).
+            HACKY_TASK_SLEEP(100);
+            set_sample_rate();
+            _initialized = true;
         }
-        measure_mode = fdc1004::MeasureConfigMode::ONE;
-        update_capacitance_configuration();
-        _initialized = true;
     }
 
     auto register_map() -> fdc1004::FDC1004RegisterMap & { return _registers; }
@@ -70,7 +87,6 @@ class FDC1004 {
             }
             sensor_id = _id;
             update_capacitance_configuration();
-            filter.reset_filter();
         }
     }
 
@@ -100,7 +116,6 @@ class FDC1004 {
         // mode.
         current_offset_pf = -1;
         set_offset(0);
-        set_sample_rate();
     }
 
     void reset_limited() {
@@ -116,13 +131,10 @@ class FDC1004 {
         _registers.fdc_conf.measurement_rate =
             static_cast<uint8_t>(measurement_rate);
         _registers.fdc_conf.repeating_measurements = 1;
-        if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
-            _registers.fdc_conf.measure_mode_1 = 0;
-            _registers.fdc_conf.measure_mode_2 = 1;
-        } else {
-            _registers.fdc_conf.measure_mode_1 = 1;
-            _registers.fdc_conf.measure_mode_2 = 0;
-        }
+        // Enable both measurements no matter what. We check the Ready
+        // bits anyways and the data doesn't overwrite, so there's no danger.
+        _registers.fdc_conf.measure_mode_1 = 1;
+        _registers.fdc_conf.measure_mode_2 = 1;
         _registers.fdc_conf.padding_0 = 0;
         _registers.fdc_conf.padding_1 = 0;
         set_register(_registers.fdc_conf);
@@ -164,66 +176,57 @@ class FDC1004 {
     auto poll_limited_capacitance(uint16_t number_reads, can::ids::SensorId _id,
                                   uint8_t tags) -> void {
         set_sensor_id(_id);
-        auto converted_msb_addr =
-            static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
-        auto converted_lsb_addr =
-            static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
-        if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
-            converted_msb_addr =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
-            converted_lsb_addr =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
-            poller.multi_register_poll(
-                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
-                number_reads, DELAY, own_queue,
-                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
-        } else {
-            poller.multi_register_poll(
-                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
-                number_reads, DELAY, own_queue,
-                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
-        }
+        poller.single_register_poll(
+            fdc1004::ADDRESS,
+            static_cast<uint8_t>(fdc1004::Registers::FDC_CONF), 2, number_reads,
+            DELAY, own_queue,
+            utils::build_id(fdc1004::ADDRESS,
+                            static_cast<uint8_t>(fdc1004::Registers::FDC_CONF),
+                            tags));
     }
 
     auto poll_continuous_capacitance(can::ids::SensorId _id, uint8_t tags,
                                      uint8_t binding) -> void {
         set_sensor_id(_id);
         auto delay = delay_or_disable(binding);
-        auto converted_msb_addr =
-            static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
-        auto converted_lsb_addr =
-            static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
-        if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
-            converted_msb_addr =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
-            converted_lsb_addr =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
-            poller.continuous_multi_register_poll(
-                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
-                delay, own_queue,
-                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
-        } else {
-            poller.continuous_multi_register_poll(
-                fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
-                delay, own_queue,
-                utils::build_id(fdc1004::ADDRESS, converted_msb_addr, tags));
-        }
+        poller.continuous_single_register_poll(
+            fdc1004::ADDRESS,
+            static_cast<uint8_t>(fdc1004::Registers::FDC_CONF), 2, delay,
+            own_queue,
+            utils::build_id(fdc1004::ADDRESS,
+                            static_cast<uint8_t>(fdc1004::Registers::FDC_CONF),
+                            tags));
     }
 
     auto stop_continuous_polling(uint32_t transaction_id) -> void {
-        auto converted_msb_addr =
-            static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB);
-        auto converted_lsb_addr =
-            static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
-        if (measure_mode == fdc1004::MeasureConfigMode::TWO) {
-            converted_msb_addr =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
-            converted_lsb_addr =
-                static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
+        poller.continuous_single_register_poll(
+            fdc1004::ADDRESS,
+            static_cast<uint8_t>(fdc1004::Registers::FDC_CONF), 2, STOP_DELAY,
+            own_queue, transaction_id);
+    }
+
+    void handle_fdc_response(i2c::messages::TransactionResponse &m) {
+        uint16_t reg_int = 0;
+        static_cast<void>(bit_utils::bytes_to_int(
+            m.read_buffer.cbegin(), m.read_buffer.cend(), reg_int));
+        auto fdc = read_register<fdc1004::FDCConf>(reg_int).value();
+        auto measurement_done =
+            fdc1004_utils::measurement_ready(fdc, measure_mode);
+        if (measurement_done) {
+            // Start a single-shot, two-register transaction for the data.
+            send_followup(m);
+        } else {
+            // Double check that the configuration reg seems okay. If not, we
+            // should reconfigure it before re-requesting a reading.
+            if (!check_fdc_readback_ok(fdc)) {
+                update_capacitance_configuration();
+                set_sample_rate();
+            }
+            i2c::messages::MaxMessageBuffer buffer = {
+                static_cast<uint8_t>(fdc1004::Registers::FDC_CONF)};
+            // Retrigger the same exact reading
+            writer.transact(fdc1004::ADDRESS, 1, buffer, 2, m.id, own_queue);
         }
-        poller.continuous_multi_register_poll(
-            fdc1004::ADDRESS, converted_msb_addr, 2, converted_lsb_addr, 2,
-            STOP_DELAY, own_queue, transaction_id);
     }
 
     void handle_ongoing_response(i2c::messages::TransactionResponse &m) {
@@ -233,6 +236,7 @@ class FDC1004 {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             polling_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
+            send_followup(m);
             return;
         }
 
@@ -244,19 +248,12 @@ class FDC1004 {
         auto raw_capacitance = fdc1004_utils::convert_reads(polling_results[0],
                                                             polling_results[1]);
 
-        if (!data_stable[int(sensor_id)]) {
-            raw_capacitance = filter.compute(raw_capacitance);
-            data_stable.set(int(sensor_id), filter.stop_filter());
-        }
-
         auto capacitance = fdc1004_utils::convert_capacitance(
             raw_capacitance, 1, current_offset_pf);
 
-        if (data_stable[int(sensor_id)]) {
-            auto new_offset =
-                fdc1004_utils::update_offset(capacitance, current_offset_pf);
-            set_offset(new_offset);
-        }
+        auto new_offset =
+            fdc1004_utils::update_offset(capacitance, current_offset_pf);
+        set_offset(new_offset);
 
         if (max_capacitance_sync) {
             if (capacitance > fdc1004::MAX_CAPACITANCE_READING) {
@@ -291,6 +288,7 @@ class FDC1004 {
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
             baseline_results[m.id.transaction_index]));
         if (m.id.transaction_index == 0) {
+            send_followup(m);
             return;
         }
         measurement += fdc1004_utils::convert_reads(baseline_results[0],
@@ -350,7 +348,6 @@ class FDC1004 {
     OwnQueue &own_queue;
     hardware::SensorHardwareBase &hardware;
 
-    ot_utils::filters::SimpleMovingAverage<int32_t> filter{};
     uint8_t sensor_binding{2};
     fdc1004::FDC1004RegisterMap _registers{};
     bool _initialized = false;
@@ -371,9 +368,48 @@ class FDC1004 {
     bool echoing = false;
     bool bind_sync = false;
     bool max_capacitance_sync = false;
-    std::bitset<2> data_stable{"00"};
     std::array<uint16_t, 2> baseline_results{};
     std::array<uint16_t, 2> polling_results{};
+
+    auto send_followup(i2c::messages::TransactionResponse &m) -> void {
+        auto address = utils::reg_from_id<uint8_t>(m.id.token);
+        uint8_t followup_address = 0;
+        auto tags = utils::tags_from_token(m.id.token);
+        i2c::messages::TransactionIdentifier id = m.id;
+        switch (address) {
+            case static_cast<uint8_t>(fdc1004::Registers::FDC_CONF):
+                // After CONF, read MSB for transaction index 0
+                followup_address =
+                    (measure_mode == fdc1004::MeasureConfigMode::ONE)
+                        ? static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB)
+                        : static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB);
+                id.transaction_index = 0;
+                break;
+            case static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB):
+                // After MSB, read LSB for index 1
+                followup_address =
+                    static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB);
+                id.transaction_index = 1;
+                break;
+            case static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB):
+                // After MSB, read LSB for index 1
+                followup_address =
+                    static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB);
+                id.transaction_index = 1;
+                break;
+            default:
+                // If this isn't one of the hardcoded regs, do nothing
+                return;
+        }
+
+        i2c::messages::MaxMessageBuffer buffer;
+        buffer[0] = followup_address;
+
+        // Overwrite the token to get the updated address
+        id.token = utils::build_id(fdc1004::ADDRESS, followup_address, tags);
+        // This maintains the entire transaction ID of the original request.
+        writer.transact(fdc1004::ADDRESS, 1, buffer, 2, id, own_queue);
+    }
 
     auto build_mode_1_configuration_register() -> fdc1004::ConfMeasure1 {
         _registers.config_measure_1.CHA =
@@ -413,6 +449,17 @@ class FDC1004 {
             return 0;
         }
         return DELAY;
+    }
+
+    auto check_fdc_readback_ok(fdc1004::FDCConf fdc) -> bool {
+        auto &comp = _registers.fdc_conf;
+        // Check everything except for the readback status
+        return (comp.measure_mode_4 == fdc.measure_mode_4 &&
+                comp.measure_mode_3 == fdc.measure_mode_3 &&
+                comp.measure_mode_2 == fdc.measure_mode_2 &&
+                comp.measure_mode_1 == fdc.measure_mode_1 &&
+                comp.repeating_measurements == fdc.repeating_measurements &&
+                comp.measurement_rate == fdc.measurement_rate);
     }
 
     template <fdc1004::FDC1004Register Reg>

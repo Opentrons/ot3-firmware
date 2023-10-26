@@ -250,8 +250,8 @@ macro(rearpanel_loop)
 endmacro()
 
 foreach_revision(PROJECT_NAME rear-panel
-  REVISIONS b1 b2
-  SOURCES rearpanel_b1_srcs rearpanel_b1_srcs
+  REVISIONS b1 b2 c1
+  SOURCES rearpanel_b1_srcs rearpanel_b1_srcs rearpanel_b1_srcs
   CALL_FOREACH_REV rearpanel_loop
   NO_CREATE_IMAGE_HEX
   NO_CREATE_APPLICATION_HEX

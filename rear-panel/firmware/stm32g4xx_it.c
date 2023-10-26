@@ -45,6 +45,9 @@
 
 /* External variables
    --------------------------------------------------------*/
+#if !(PCBA_PRIMARY_REVISION == 'b')
+extern TIM_HandleTypeDef htim1;
+#endif
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim15;
@@ -119,8 +122,11 @@ void DebugMon_Handler(void) {}
 /******************************************************************************/
 
 /**
- * @brief This function handles TIM2,3,15 global interrupt.
+ * @brief This function handles TIM1,2,3,15 global interrupt.
  */
+#if !(PCBA_PRIMARY_REVISION == 'b')
+void TIM1_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
+#endif
 void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
 
 void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }

@@ -70,6 +70,10 @@ template <std::ranges::range Tags>
     return bool(token & (1 << static_cast<size_t>(tag)));
 }
 
+[[nodiscard]] inline constexpr auto tags_from_token(uint32_t token) -> uint8_t {
+    return static_cast<uint8_t>(token & 0xff);
+}
+
 [[nodiscard]] inline constexpr auto build_id(uint16_t address, uint8_t reg,
                                              uint8_t tags = 0) -> uint32_t {
     return (static_cast<uint32_t>(address) << 16) |

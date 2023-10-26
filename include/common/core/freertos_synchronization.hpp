@@ -15,9 +15,11 @@ class FreeRTOSMutex {
 
     ~FreeRTOSMutex() { vSemaphoreDelete(handle); }
 
-    bool acquire() { return xSemaphoreTake(handle, portMAX_DELAY) == pdTRUE; }
+    auto acquire() -> bool {
+        return xSemaphoreTake(handle, portMAX_DELAY) == pdTRUE;
+    }
 
-    bool release() { return xSemaphoreGive(handle) == pdTRUE; }
+    auto release() -> bool { return xSemaphoreGive(handle) == pdTRUE; }
 
     auto get_count() -> int { return uxSemaphoreGetCount(handle); }
 
@@ -69,10 +71,10 @@ class FreeRTOSCriticalSection {
   public:
     FreeRTOSCriticalSection() = default;
     FreeRTOSCriticalSection(const FreeRTOSCriticalSection &) = delete;
-    FreeRTOSCriticalSection(const FreeRTOSCriticalSection &&) = delete;
+    FreeRTOSCriticalSection(FreeRTOSCriticalSection &&) = delete;
     auto operator=(const FreeRTOSCriticalSection &)
         -> FreeRTOSCriticalSection & = delete;
-    auto operator=(const FreeRTOSCriticalSection &&)
+    auto operator=(FreeRTOSCriticalSection &&)
         -> FreeRTOSCriticalSection && = delete;
     ~FreeRTOSCriticalSection() = default;
 
@@ -81,6 +83,18 @@ class FreeRTOSCriticalSection {
 
     // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     void release() { taskEXIT_CRITICAL(); }
+};
+
+class FreeRTOSCriticalSectionRAII {
+  public:
+    FreeRTOSCriticalSectionRAII() { taskENTER_CRITICAL(); }
+    FreeRTOSCriticalSectionRAII(const FreeRTOSCriticalSectionRAII &) = delete;
+    FreeRTOSCriticalSectionRAII(FreeRTOSCriticalSectionRAII &&) = delete;
+    auto operator=(const FreeRTOSCriticalSectionRAII &)
+        -> FreeRTOSCriticalSectionRAII & = delete;
+    auto operator=(FreeRTOSCriticalSectionRAII &&)
+        -> FreeRTOSCriticalSectionRAII && = delete;
+    ~FreeRTOSCriticalSectionRAII() { taskEXIT_CRITICAL(); }
 };
 
 }  // namespace freertos_synchronization

@@ -1041,6 +1041,8 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
     uint8_t seq_id;
     brushed_timer_ticks duration;
     uint32_t duty_cycle;
+    int32_t encoder_position_um;
+    uint8_t stay_engaged;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> GripperGripRequest {
@@ -1048,6 +1050,8 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
         uint8_t seq_id = 0;
         brushed_timer_ticks duration = 0;
         uint32_t duty_cycle = 0;
+        int32_t encoder_position_um = 0;
+        uint8_t stay_engaged = 0;
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
@@ -1055,12 +1059,16 @@ struct GripperGripRequest : BaseMessage<MessageId::gripper_grip_request> {
         body = bit_utils::bytes_to_int(body, limit, seq_id);
         body = bit_utils::bytes_to_int(body, limit, duration);
         body = bit_utils::bytes_to_int(body, limit, duty_cycle);
+        body = bit_utils::bytes_to_int(body, limit, encoder_position_um);
+        body = bit_utils::bytes_to_int(body, limit, stay_engaged);
 
         return GripperGripRequest{.message_index = msg_ind,
                                   .group_id = group_id,
                                   .seq_id = seq_id,
                                   .duration = duration,
-                                  .duty_cycle = duty_cycle};
+                                  .duty_cycle = duty_cycle,
+                                  .encoder_position_um = encoder_position_um,
+                                  .stay_engaged = stay_engaged};
     }
 
     auto operator==(const GripperGripRequest& other) const -> bool = default;
@@ -1267,11 +1275,14 @@ struct PushTipPresenceNotification
     : BaseMessage<MessageId::tip_presence_notification> {
     uint32_t message_index;
     uint8_t ejector_flag_status;
+    can::ids::SensorId sensor_id{};
 
     template <bit_utils::ByteIterator Output, typename Limit>
     auto serialize(Output body, Limit limit) const -> uint8_t {
         auto iter = bit_utils::int_to_bytes(message_index, body, limit);
         iter = bit_utils::int_to_bytes(ejector_flag_status, iter, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(sensor_id), iter,
+                                       limit);
         return iter - body;
     }
 
@@ -1288,6 +1299,7 @@ struct TipActionRequest
     mm_per_tick velocity;
     can::ids::PipetteTipActionType action;
     uint8_t request_stop_condition;
+    um_per_tick_sq acceleration;
 
     template <bit_utils::ByteIterator Input, typename Limit>
     static auto parse(Input body, Limit limit) -> TipActionRequest {
@@ -1297,6 +1309,7 @@ struct TipActionRequest
         mm_per_tick velocity = 0;
         uint8_t _action = 0;
         uint8_t request_stop_condition = 0;
+        um_per_tick_sq acceleration = 0;
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
@@ -1306,6 +1319,7 @@ struct TipActionRequest
         body = bit_utils::bytes_to_int(body, limit, velocity);
         body = bit_utils::bytes_to_int(body, limit, _action);
         body = bit_utils::bytes_to_int(body, limit, request_stop_condition);
+        body = bit_utils::bytes_to_int(body, limit, acceleration);
 
         return TipActionRequest{
             .message_index = msg_ind,
@@ -1314,7 +1328,8 @@ struct TipActionRequest
             .duration = duration,
             .velocity = velocity,
             .action = static_cast<can::ids::PipetteTipActionType>(_action),
-            .request_stop_condition = request_stop_condition};
+            .request_stop_condition = request_stop_condition,
+            .acceleration = acceleration};
     }
 
     auto operator==(const TipActionRequest& other) const -> bool = default;
@@ -1522,6 +1537,26 @@ struct GetMotorUsageResponse
 
     auto operator==(const GetMotorUsageResponse& other) const -> bool = default;
 };
+
+using GripperJawStateRequest = Empty<MessageId::gripper_jaw_state_request>;
+
+struct GripperJawStateResponse
+    : BaseMessage<MessageId::gripper_jaw_state_response> {
+    uint32_t message_index;
+    uint8_t jaw_state;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint8_t>(jaw_state), iter,
+                                       limit);
+        return iter - body;
+    }
+
+    auto operator==(const GripperJawStateResponse& other) const
+        -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -1538,6 +1573,6 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse,
-    ReadMotorDriverErrorRegisterResponse>;
+    ReadMotorDriverErrorRegisterResponse, GripperJawStateResponse>;
 
 }  // namespace can::messages

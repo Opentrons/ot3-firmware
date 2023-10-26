@@ -48,6 +48,7 @@ class MotionController {
             .duty_cycle = can_msg.duty_cycle,
             .group_id = can_msg.group_id,
             .seq_id = can_msg.seq_id,
+            .stay_engaged = can_msg.stay_engaged,
             .stop_condition = MoveStopCondition::none,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
         if (!enabled) {
@@ -104,10 +105,9 @@ class MotionController {
         queue.reset();
         // if we're gripping something we need to flag this so we don't drop it
         if (!hardware.get_stay_enabled()) {
-            disable_motor();
-        }
-        if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel(static_cast<uint8_t>(error_severity));
+            if (hardware.is_timer_interrupt_running()) {
+                hardware.request_cancel(static_cast<uint8_t>(error_severity));
+            }
         }
     }
 
@@ -137,6 +137,10 @@ class MotionController {
             .message_index = message_index,
             .usage_conf = hardware.get_usage_eeprom_config()};
         usage_client.send_usage_storage_queue(req);
+    }
+
+    auto get_jaw_state() -> BrushedMotorState {
+        return hardware.get_motor_state();
     }
 
   private:

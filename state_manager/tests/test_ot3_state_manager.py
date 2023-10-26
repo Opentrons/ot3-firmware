@@ -5,7 +5,7 @@ from typing import AsyncGenerator, Generator
 from unittest.mock import Mock, patch
 
 import pytest
-from opentrons.hardware_control.types import OT3Axis
+from opentrons.hardware_control.types import Axis
 
 from state_manager.messages import MoveMessage
 from state_manager.ot3_state import OT3State
@@ -65,7 +65,7 @@ async def test_message_received(
     ot3_state: OT3State,
 ) -> None:
     """Confirm that pulse messages work correctly."""
-    move_message_bytes = MoveMessage(OT3Axis.X, Direction.POSITIVE).to_bytes()
+    move_message_bytes = MoveMessage(Axis.X, Direction.POSITIVE).to_bytes()
     client.send_message(move_message_bytes)
     await asyncio.wait_for(server.is_connected(), 15.0)
     datagram_received_data_arg_content = patched_object.call_args.args[0]

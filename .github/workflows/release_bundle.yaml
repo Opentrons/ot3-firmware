@@ -103,10 +103,10 @@ jobs:
           replacesArtifacts: true
           allowUpdates: true
 
-      - name: 'Add firmware images artifact'
+      - name: 'Add firmware category zips'
         uses: 'ncipollo/release-action@v1.12.0'
         with:
-          artifacts: ./firmware-images-${{github.ref_name}}.zip
+          artifacts: ./firmware-*-${{github.ref_name}}.zip
           artifactContentType: application/zip
           allowUpdates: true
           omitBodyDuringUpdate: true
@@ -114,44 +114,11 @@ jobs:
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
 
-      - name: 'Add firmware robot images artifact'
+      - name: 'Add latest firmware images'
         uses: 'ncipollo/release-action@v1.12.0'
         with:
-          artifacts: ./firmware-robot-images-${{github.ref_name}}.zip
-          artifactContentType: application/zip
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
-
-      - name: 'Add firmware pipette images artifact'
-        uses: 'ncipollo/release-action@v1.12.0'
-        with:
-          artifacts: ./firmware-pipette-images-${{github.ref_name}}.zip
-          artifactContentType: application/zip
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
-
-      - name: 'Add firmware gripper images artifact'
-        uses: 'ncipollo/release-action@v1.12.0'
-        with:
-          artifacts: ./firmware-gripper-images-${{github.ref_name}}.zip
-          artifactContentType: application/zip
-          allowUpdates: true
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
-
-      - name: 'Add firmware applications artifact'
-        uses: 'ncipollo/release-action@v1.12.0'
-        with:
-          artifacts: ./firmware-applications-${{github.ref_name}}.zip
-          artifactContentType: application/zip
+          artifacts: './firmware-*-images-${{github.ref_name}}/*.hex'
+          artifactContentType: text/plain
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true

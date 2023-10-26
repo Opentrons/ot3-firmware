@@ -43,6 +43,7 @@ struct GearMotorAck : public Ack {
     uint32_t start_step_position;
     can::ids::PipetteTipActionType action;
     can::ids::GearMotorId gear_motor_id;
+    uint8_t position_flags;
 };
 
 struct Move {  // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -106,6 +107,7 @@ struct BrushedMove {  // NOLINT(cppcoreguidelines-pro-type-member-init)
     uint8_t group_id;
     uint8_t seq_id;
     int32_t encoder_position;
+    uint8_t stay_engaged = 0;
     MoveStopCondition stop_condition = MoveStopCondition::none;
     int32_t start_encoder_position;
     uint16_t usage_key;
@@ -130,6 +132,11 @@ struct UpdatePositionResponse {
     uint32_t stepper_position_counts;
     int32_t encoder_pulses;
     uint8_t position_flags;
+};
+
+struct GripperJawStateResponse {
+    uint32_t message_index;
+    uint8_t jaw_state;
 };
 
 const uint8_t NO_GROUP = 0xff;

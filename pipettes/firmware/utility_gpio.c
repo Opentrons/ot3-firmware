@@ -12,6 +12,8 @@ static void enable_gpio_port(void* port) {
         __HAL_RCC_GPIOB_CLK_ENABLE();
     } else if (port == GPIOC) {
         __HAL_RCC_GPIOC_CLK_ENABLE();
+    } else if (port == GPIOD) {
+        __HAL_RCC_GPIOD_CLK_ENABLE();
     }
 }
 
@@ -24,7 +26,6 @@ static void tip_sense_gpio_init() {
     PipetteType pipette_type = get_pipette_type();
     
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     enable_gpio_port(GPIOC);
     if (pipette_type == NINETY_SIX_CHANNEL) {
@@ -32,10 +33,12 @@ static void tip_sense_gpio_init() {
          * PC12, front tip sense
          * PC7, rear tip sense
          * */
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_7;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     } else {
         /*Configure GPIO pin : C2 */
+        GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
         GPIO_InitStruct.Pin = GPIO_PIN_2;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     }
@@ -51,24 +54,12 @@ static void tip_sense_gpio_init() {
 static void nvic_priority_enable_init() {
     PipetteType pipette_type = get_pipette_type();
 
-    if (pipette_type == NINETY_SIX_CHANNEL) {
-        IRQn_Type block_9_5 = get_interrupt_line(gpio_block_9_5);
-        IRQn_Type block_15_10 = get_interrupt_line(gpio_block_15_10);
-        /* EXTI interrupt init tip sense rear*/
-        HAL_NVIC_SetPriority(block_9_5, 10, 0);
-        HAL_NVIC_EnableIRQ(block_9_5);
-
-        /* EXTI interrupt init tip sense front*/
-        HAL_NVIC_SetPriority(block_15_10, 10, 0);
-        HAL_NVIC_EnableIRQ(block_15_10);
-    } else {
+    if (pipette_type != NINETY_SIX_CHANNEL) {
         IRQn_Type block_2 = get_interrupt_line(gpio_block_2);
         /* EXTI interrupt init block tip sense*/
         HAL_NVIC_SetPriority(block_2, 10, 0);
         HAL_NVIC_EnableIRQ(block_2);
-
     }
-
 }
 
 /**
@@ -156,7 +147,7 @@ static void sync_drive_gpio_init() {
     PipetteHardwarePin sync_in_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_in);
     /* GPIO Ports Clock Enable */
-    enable_gpio_port(GPIOB);
+    enable_gpio_port(sync_in_hardware.port);
 
     /*Configure GPIO pin*/
     GPIO_InitTypeDef sync_in_init = {0};
@@ -168,7 +159,7 @@ static void sync_drive_gpio_init() {
     PipetteHardwarePin sync_out_hardware =
         pipette_hardware_get_gpio(pipette_type, pipette_hardware_device_sync_out);
 
-    enable_gpio_port(GPIOC);
+    enable_gpio_port(sync_out_hardware.port);
 
     GPIO_InitTypeDef sync_out_init = {0};
     sync_out_init.Pin = sync_out_hardware.pin;

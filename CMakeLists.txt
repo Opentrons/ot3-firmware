@@ -69,6 +69,8 @@ if (${CMAKE_CROSSCOMPILING})
 
     add_compile_definitions(ENABLE_CCMRAM)
 
+    add_compile_definitions(ENABLE_CROSS_ONLY_HEADERS)
+
     configure_file(common/firmware/platform_specific_hal_conf.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal_conf.h)
     configure_file(common/firmware/platform_specific_hal.h.in ${CMAKE_BINARY_DIR}/generated/platform_specific_hal.h)
 

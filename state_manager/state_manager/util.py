@@ -5,7 +5,7 @@ from __future__ import annotations
 import enum
 from enum import Enum, unique
 
-from opentrons.hardware_control.types import OT3Axis
+from opentrons.hardware_control.types import Axis
 
 
 class Direction(int, enum.Enum):
@@ -44,27 +44,27 @@ class SyncPinState(int, enum.Enum):
 
 @unique
 class MoveMessageHardware(Enum):
-    """Enum representing a mapping of an integer hardware id to an OT3Axis object."""
+    """Enum representing a mapping of an integer hardware id to an Axis object."""
 
-    def __init__(self, hw_id: int, axis: OT3Axis) -> None:
+    def __init__(self, hw_id: int, axis: Axis) -> None:
         """Create a MoveMessageHardware object."""
         self.hw_id = hw_id
         self.axis = axis
 
     # hw_id, axis
-    X_AXIS = 0x0000, OT3Axis.X
-    Y_AXIS = 0x0001, OT3Axis.Y
-    Z_L_AXIS = 0x0002, OT3Axis.Z_L
-    Z_R_AXIS = 0x0003, OT3Axis.Z_R
-    Z_G_AXIS = 0x0004, OT3Axis.Z_G
-    P_L_AXIS = 0x0005, OT3Axis.P_L
-    P_R_AXIS = 0x0006, OT3Axis.P_R
-    G_AXIS = 0x0007, OT3Axis.G
-    Q_AXIS = 0x0008, OT3Axis.Q
+    X_AXIS = 0x0000, Axis.X
+    Y_AXIS = 0x0001, Axis.Y
+    Z_L_AXIS = 0x0002, Axis.Z_L
+    Z_R_AXIS = 0x0003, Axis.Z_R
+    Z_G_AXIS = 0x0004, Axis.Z_G
+    P_L_AXIS = 0x0005, Axis.P_L
+    P_R_AXIS = 0x0006, Axis.P_R
+    G_AXIS = 0x0007, Axis.G
+    Q_AXIS = 0x0008, Axis.Q
 
     @classmethod
-    def from_axis(cls, axis: OT3Axis) -> MoveMessageHardware:
-        """Get MoveMessageHardware connected to passed OT3Axis object."""
+    def from_axis(cls, axis: Axis) -> MoveMessageHardware:
+        """Get MoveMessageHardware connected to passed Axis object."""
         for val in cls:
             if val.axis == axis:
                 return val

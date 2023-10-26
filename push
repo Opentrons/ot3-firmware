@@ -122,6 +122,9 @@ def push(host, repo_path=None, build=True, restart=True):
         return -1
 
 def _push_from_argparse(args):
+    if args.key:
+        _SSH_EXTRA_OPTS.append('-i')
+        _SSH_EXTRA_OPTS.append(args.key)
     return push(args.host, os.path.abspath(args.repo_path), not args.no_build, not args.no_restart)
 
 def _arg_parser(parent=None):
@@ -147,6 +150,11 @@ def _arg_parser(parent=None):
         '--no-restart',
         action='store_true',
         help='Skip restarting robot server'
+    )
+    parser.add_argument(
+        '--key',
+        type=str,
+        help='Private SSH key to use'
     )
     return parser
 

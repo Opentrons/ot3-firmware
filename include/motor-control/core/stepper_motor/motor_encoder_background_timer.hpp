@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <tuple>
 
+#include "common/core/freertos_synchronization.hpp"
 #include "motor-control/core/motor_hardware_interface.hpp"
 #include "ot_utils/freertos/freertos_timer.hpp"
 
@@ -29,9 +30,12 @@ class BackgroundTimer {
     auto stop() -> void { _timer.stop(); }
 
     auto callback() -> void {
-        if (!_interrupt_handler.has_active_move()) {
+        auto critical_section =
+            freertos_synchronization::FreeRTOSCriticalSectionRAII();
+        if (!_interrupt_handler.is_moving()) {
             // Refresh the overflow counter if nothing else is doing it
-            std::ignore = _motor_hardware.get_encoder_pulses();
+            // and update position flag if needed
+            std::ignore = _interrupt_handler.check_for_stall();
         }
     }
 

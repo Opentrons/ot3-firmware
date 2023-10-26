@@ -1,22 +1,27 @@
-/**PB11 DECK_LED DRIVE 
-	AF1 = TIM2_CH4
-//PC6 BLUE DRIVE 
-	AF2 = TIM3_CH1
-	AF4 = TIM8_CH1
+/**PB11 DECK_LED DRIVE
+    AF1 = TIM2_CH4 (REVB)
+    AF6 = TIM1_CH3 (REVC)
+//PC6 BLUE DRIVE
+    AF2 = TIM3_CH1
+    AF4 = TIM8_CH1
 //PC7 WHITE DRIVE
-	AF2 = TIM3_CH2
-	AF4 = TIM8_CH2
+    AF2 = TIM3_CH2
+    AF4 = TIM8_CH2
 //PB14 GREEN Drive
-	AF1 = TIM15_CH1
+    AF1 = TIM15_CH1 (REVB)
+    AF1 = TIM2_CH4 (REVC)
 //PB15 RED Drive
-	AF1 = TIM15_CH2
+    AF1 = TIM15_CH2
 **/
 #include "rear-panel/firmware/led_hardware.h"
 #include "common/firmware/errors.h"
 
 #include "platform_specific_hal_conf.h"
 #include "system_stm32g4xx.h"
-
+#if !(PCBA_PRIMARY_REVISION == 'b')
+TIM_HandleTypeDef htim1;
+TIM_OC_InitTypeDef htim1_sConfigOC = {0};
+#endif
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim15;
@@ -53,6 +58,13 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_pwm)
     /* Peripheral clock enable */
     __HAL_RCC_TIM15_CLK_ENABLE();
   }
+#if !(PCBA_PRIMARY_REVISION == 'b')
+  else if(htim_pwm->Instance==TIM1)
+  {
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM1_CLK_ENABLE();
+  }
+#endif
 
 }
 
@@ -81,7 +93,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-        
+
         GPIO_InitStruct.Pin = GPIO_PIN_7;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -91,16 +103,17 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
     } else if (htim->Instance == TIM15) {
         __HAL_RCC_GPIOB_CLK_ENABLE();
         /**TIM3 GPIO Configuration
-        PB14     ------> TIM15_CH1
+        PB14     ------> TIM15_CH1 (Not on Rev C)
         PB15     ------> TIM15_CH2
         */
+        #if PCBA_PRIMARY_REVISION == 'b'
         GPIO_InitStruct.Pin = GPIO_PIN_14;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF1_TIM15;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-        
+        #endif
         GPIO_InitStruct.Pin = GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -108,11 +121,97 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim) {
         GPIO_InitStruct.Alternate = GPIO_AF1_TIM15;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
+    #if !(PCBA_PRIMARY_REVISION == 'b')
+    else if (htim->Instance == TIM1) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        /**TIM3 GPIO Configuration
+        PA10     ------> TIM1_CH3
+        */
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Alternate = GPIO_AF6_TIM1;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+    #endif
 }
- 
+
+#if !(PCBA_PRIMARY_REVISION == 'b')
+/**
+ * @brief TIM1 Initialization Function for DECK LED (RevC)
+ * @param None
+ * @retval None
+ */
+static void MX_TIM1_Init(void) {
+    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+    htim1.State = HAL_TIM_STATE_RESET;
+    htim1.Instance = TIM1;
+    /*
+     * Setting counter clock frequency to 2 kHz
+     */
+    htim1.Init.Prescaler =
+        calc_prescaler(SystemCoreClock, LED_TIMER_FREQ);
+    htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim1.Init.Period = LED_PWM_WIDTH - 1;
+    htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim1.Init.RepetitionCounter = 0;
+    htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim1) != HAL_OK) {
+        Error_Handler();
+    }
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK) {
+        Error_Handler();
+    }
+    if (HAL_TIM_PWM_Init(&htim1) != HAL_OK) {
+        Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) !=
+        HAL_OK) {
+        Error_Handler();
+    }
+    htim1_sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    /* Set duty cycle at 0% */
+    htim1_sConfigOC.Pulse = 0;
+    htim1_sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    htim1_sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    htim1_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    htim1_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+    htim1_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+    if (HAL_TIM_PWM_ConfigChannel(&htim1, &htim1_sConfigOC, TIM_CHANNEL_3) !=
+        HAL_OK) {
+        Error_Handler();
+    }
+    sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+    sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+    sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+    sBreakDeadTimeConfig.DeadTime = 0;
+    sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+    sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+    sBreakDeadTimeConfig.BreakFilter = 0;
+    sBreakDeadTimeConfig.BreakAFMode = TIM_BREAK_AFMODE_INPUT;
+    sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
+    sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
+    sBreakDeadTimeConfig.Break2Filter = 0;
+    sBreakDeadTimeConfig.Break2AFMode = TIM_BREAK_AFMODE_INPUT;
+    sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+    if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) !=
+        HAL_OK) {
+        Error_Handler();
+    }
+    HAL_TIM_MspPostInit(&htim1);
+}
+#endif
 
 /**
- * @brief TIM2 Initialization Function for DECK LED
+ * @brief TIM2 Initialization Function for DECK LED (RevB) or Green LED (RevC)
  * @param None
  * @retval None
  */
@@ -306,10 +405,12 @@ static void MX_TIM15_Init(void) {
     htim15_sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     htim15_sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
     htim15_sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+    #if PCBA_PRIMARY_REVISION == 'b'
     if (HAL_TIM_PWM_ConfigChannel(&htim15, &htim15_sConfigOC, TIM_CHANNEL_1) !=
         HAL_OK) {
         Error_Handler();
     }
+    #endif
     if (HAL_TIM_PWM_ConfigChannel(&htim15, &htim15_sConfigOC, TIM_CHANNEL_2) !=
         HAL_OK) {
         Error_Handler();
@@ -336,29 +437,40 @@ static void MX_TIM15_Init(void) {
 
 
 void led_hw_update_pwm(uint32_t duty_cycle, LED_DEVICE led) {
-	
-	switch(led) {
-		case DECK_LED:
-			htim2.Instance->CCR4 = duty_cycle;
-			break;
-		case BLUE_UI_LED:
-			htim3.Instance->CCR1 = duty_cycle;
-			break;
-		case WHITE_UI_LED:
-			htim3.Instance->CCR2 = duty_cycle;
-			break;
-		case GREEN_UI_LED:
-			htim15.Instance->CCR1=duty_cycle;
-			break;
-		case RED_UI_LED:
-			htim15.Instance->CCR2=duty_cycle;
-			break;
+
+    switch(led) {
+        case DECK_LED:
+            #if PCBA_PRIMARY_REVISION == 'b'
+            htim2.Instance->CCR4 = duty_cycle;
+            #else
+            htim1.Instance->CCR3 = duty_cycle;
+            #endif
+            break;
+        case BLUE_UI_LED:
+            htim3.Instance->CCR1 = duty_cycle;
+            break;
+        case WHITE_UI_LED:
+            htim3.Instance->CCR2 = duty_cycle;
+            break;
+        case GREEN_UI_LED:
+            #if PCBA_PRIMARY_REVISION == 'b'
+            htim15.Instance->CCR1=duty_cycle;
+            #else
+            htim2.Instance->CCR4 = duty_cycle;
+            #endif
+            break;
+        case RED_UI_LED:
+            htim15.Instance->CCR2=duty_cycle;
+            break;
         default:
             break;
-	}
+    }
 }
 
 void led_hw_initialize_leds() {
+    #if !(PCBA_PRIMARY_REVISION == 'b')
+    MX_TIM1_Init();
+    #endif
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_TIM15_Init();
@@ -373,7 +485,11 @@ void led_hw_initialize_leds() {
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2);
-    
+    #if PCBA_PRIMARY_REVISION == 'b'
+    HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_1);
+    #else
+
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    #endif
 }

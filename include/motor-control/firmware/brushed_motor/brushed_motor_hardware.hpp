@@ -88,6 +88,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void disable_encoder() final {}
     void enable_encoder() final {}
 
+    void set_motor_state(BrushedMotorState state) final { motor_state = state; }
+    auto get_motor_state() -> BrushedMotorState final { return motor_state; }
+
   private:
     bool stay_enabled = false;
     debouncer::Debouncer estop = debouncer::Debouncer{};
@@ -101,6 +104,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     std::atomic<uint8_t> cancel_request = 0;
     const UsageEEpromConfig& eeprom_config;
     void* stopwatch_handle;
+    BrushedMotorState motor_state = BrushedMotorState::UNHOMED;
 };
 
 };  // namespace motor_hardware

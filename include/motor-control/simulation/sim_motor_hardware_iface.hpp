@@ -185,6 +185,9 @@ class SimBrushedMotorHardwareIface
     void disable_encoder() final {}
     void enable_encoder() final {}
 
+    void set_motor_state(BrushedMotorState state) final { motor_state = state; }
+    auto get_motor_state() -> BrushedMotorState final { return motor_state; }
+
   private:
     bool stay_enabled = false;
     bool limit_switch_status = false;
@@ -199,6 +202,7 @@ class SimBrushedMotorHardwareIface
     MoveMessageHardware _id;
     bool estop_detected = false;
     std::atomic<uint8_t> cancel_request = 0;
+    BrushedMotorState motor_state = BrushedMotorState::UNHOMED;
     motor_hardware::UsageEEpromConfig eeprom_config{
         std::array<UsageRequestSet, 1>{UsageRequestSet{
             .eeprom_key = 0,

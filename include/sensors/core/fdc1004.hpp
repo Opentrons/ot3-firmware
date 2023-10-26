@@ -129,7 +129,7 @@ template <typename Reg>
 // This is used to mask the value before writing it to the sensor.
 concept FDC1004Register =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
-                 std::remove_cvref_t<Registers&>> &&
+                 std::remove_cvref_t<Registers &>> &&
     std::integral<decltype(Reg::value_mask)>;
 
 template <typename Reg>
@@ -559,5 +559,21 @@ inline auto update_offset(float capacitance_pf, float current_offset_pf)
 
     return static_cast<float>(capdac) * CAPDAC_PF_PER_LSB;
 }
+
+inline auto measurement_ready(fdc1004::FDCConf &fdc,
+                              fdc1004::MeasureConfigMode mode) -> bool {
+    switch (mode) {
+        case fdc1004::MeasureConfigMode::ONE:
+            return fdc.measure_mode_1_status;
+        case fdc1004::MeasureConfigMode::TWO:
+            return fdc.measure_mode_2_status;
+        case fdc1004::MeasureConfigMode::THREE:
+            return fdc.measure_mode_3_status;
+        case fdc1004::MeasureConfigMode::FOUR:
+            return fdc.measure_mode_4_status;
+    }
+    return false;
+}
+
 }  // namespace fdc1004_utils
 };  // namespace sensors

@@ -87,8 +87,12 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void disable_encoder() final {}
     void enable_encoder() final {}
 
+    void set_motor_state(BrushedMotorState state) { motor_state = state; }
+    auto get_motor_state() -> BrushedMotorState { return motor_state; }
+
   private:
     bool stay_enabled = false;
+    BrushedMotorState motor_state = BrushedMotorState::UNHOMED;
     PWM_DIRECTION move_dir = PWM_DIRECTION::unset;
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
@@ -107,12 +111,22 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     uint8_t cancel_request = 0;
     bool timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
-        motor_hardware::UsageEEpromConfig{
-            std::array<UsageRequestSet, 1>{UsageRequestSet{
-                .eeprom_key = 0,
+        motor_hardware::UsageEEpromConfig{std::array<UsageRequestSet, 3>{
+            UsageRequestSet{
+                .eeprom_key = 0x0,
                 .type_key = uint16_t(
                     can::ids::MotorUsageValueType::linear_motor_distance),
-                .length = usage_storage_task::distance_data_usage_len}}};
+                .length = usage_storage_task::distance_data_usage_len},
+            UsageRequestSet{
+                .eeprom_key = 0x1,
+                .type_key = uint16_t(
+                    can::ids::MotorUsageValueType::force_application_time),
+                .length = usage_storage_task::force_time_data_usage_len},
+            UsageRequestSet{
+                .eeprom_key = 0x2,
+                .type_key =
+                    uint16_t(can::ids::MotorUsageValueType::total_error_count),
+                .length = usage_storage_task::error_count_usage_len}}};
 };
 
 class MockBrushedMotorDriverIface : public BrushedMotorDriverIface {

@@ -1,7 +1,7 @@
 """Test message functionality"""
 
 import pytest
-from opentrons.hardware_control.types import OT3Axis
+from opentrons.hardware_control.types import Axis
 
 from state_manager.messages import (
     GetAxisLocationMessage,
@@ -63,92 +63,92 @@ def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
     (
         pytest.param(
             b"\x00\x00\x00\x00",
-            MoveMessage(OT3Axis.X, Direction.NEGATIVE),
+            MoveMessage(Axis.X, Direction.NEGATIVE),
             id="MOVE_X_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x00\x01",
-            MoveMessage(OT3Axis.X, Direction.POSITIVE),
+            MoveMessage(Axis.X, Direction.POSITIVE),
             id="MOVE_X_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x01\x00",
-            MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
+            MoveMessage(Axis.Y, Direction.NEGATIVE),
             id="MOVE_Y_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x01\x01",
-            MoveMessage(OT3Axis.Y, Direction.POSITIVE),
+            MoveMessage(Axis.Y, Direction.POSITIVE),
             id="MOVE_Y_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x02\x00",
-            MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
+            MoveMessage(Axis.Z_L, Direction.NEGATIVE),
             id="MOVE_Z_L_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x02\x01",
-            MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
+            MoveMessage(Axis.Z_L, Direction.POSITIVE),
             id="MOVE_Z_L_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x03\x00",
-            MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
+            MoveMessage(Axis.Z_R, Direction.NEGATIVE),
             id="MOVE_Z_R_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x03\x01",
-            MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
+            MoveMessage(Axis.Z_R, Direction.POSITIVE),
             id="MOVE_Z_R_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x04\x00",
-            MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
+            MoveMessage(Axis.Z_G, Direction.NEGATIVE),
             id="MOVE_Z_G_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x04\x01",
-            MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
+            MoveMessage(Axis.Z_G, Direction.POSITIVE),
             id="MOVE_Z_G_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x05\x00",
-            MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
+            MoveMessage(Axis.P_L, Direction.NEGATIVE),
             id="MOVE_P_L_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x05\x01",
-            MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
+            MoveMessage(Axis.P_L, Direction.POSITIVE),
             id="MOVE_P_L_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x06\x00",
-            MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
+            MoveMessage(Axis.P_R, Direction.NEGATIVE),
             id="MOVE_P_R_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x06\x01",
-            MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
+            MoveMessage(Axis.P_R, Direction.POSITIVE),
             id="MOVE_P_R_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x07\x00",
-            MoveMessage(OT3Axis.G, Direction.NEGATIVE),
+            MoveMessage(Axis.G, Direction.NEGATIVE),
             id="MOVE_G_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x07\x01",
-            MoveMessage(OT3Axis.G, Direction.POSITIVE),
+            MoveMessage(Axis.G, Direction.POSITIVE),
             id="MOVE_G_POSITIVE",
         ),
         pytest.param(
             b"\x00\x00\x08\x00",
-            MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
+            MoveMessage(Axis.Q, Direction.NEGATIVE),
             id="MOVE_Q_NEGATIVE",
         ),
         pytest.param(
             b"\x00\x00\x08\x01",
-            MoveMessage(OT3Axis.Q, Direction.POSITIVE),
+            MoveMessage(Axis.Q, Direction.POSITIVE),
             id="MOVE_Q_POSITIVE",
         ),
         pytest.param(
@@ -163,47 +163,47 @@ def test_bad_messages(message: bytes, error: str, ot3_state: OT3State) -> None:
         ),
         pytest.param(
             b"\x02\x00\x00\x00",
-            GetAxisLocationMessage(OT3Axis.X),
+            GetAxisLocationMessage(Axis.X),
             id="GET_LOCATION_X",
         ),
         pytest.param(
             b"\x02\x00\x01\x00",
-            GetAxisLocationMessage(OT3Axis.Y),
+            GetAxisLocationMessage(Axis.Y),
             id="GET_LOCATION_Y",
         ),
         pytest.param(
             b"\x02\x00\x02\x00",
-            GetAxisLocationMessage(OT3Axis.Z_L),
+            GetAxisLocationMessage(Axis.Z_L),
             id="GET_LOCATION_Z_L",
         ),
         pytest.param(
             b"\x02\x00\x03\x00",
-            GetAxisLocationMessage(OT3Axis.Z_R),
+            GetAxisLocationMessage(Axis.Z_R),
             id="GET_LOCATION_Z_R",
         ),
         pytest.param(
             b"\x02\x00\x04\x00",
-            GetAxisLocationMessage(OT3Axis.Z_G),
+            GetAxisLocationMessage(Axis.Z_G),
             id="GET_LOCATION_Z_G",
         ),
         pytest.param(
             b"\x02\x00\x05\x00",
-            GetAxisLocationMessage(OT3Axis.P_L),
+            GetAxisLocationMessage(Axis.P_L),
             id="GET_LOCATION_P_L",
         ),
         pytest.param(
             b"\x02\x00\x06\x00",
-            GetAxisLocationMessage(OT3Axis.P_R),
+            GetAxisLocationMessage(Axis.P_R),
             id="GET_LOCATION_P_R",
         ),
         pytest.param(
             b"\x02\x00\x07\x00",
-            GetAxisLocationMessage(OT3Axis.G),
+            GetAxisLocationMessage(Axis.G),
             id="GET_LOCATION_G",
         ),
         pytest.param(
             b"\x02\x00\x08\x00",
-            GetAxisLocationMessage(OT3Axis.Q),
+            GetAxisLocationMessage(Axis.Q),
             id="GET_LOCATION_Q",
         ),
         pytest.param(
@@ -222,92 +222,92 @@ def test_message_parsing(message: bytes, expected_message: Message) -> None:
     "message, expected_bytes",
     (
         pytest.param(
-            MoveMessage(OT3Axis.X, Direction.NEGATIVE),
+            MoveMessage(Axis.X, Direction.NEGATIVE),
             b"\x00\x00\x00\x00",
             id="MOVE_X_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.X, Direction.POSITIVE),
+            MoveMessage(Axis.X, Direction.POSITIVE),
             b"\x00\x00\x00\x01",
             id="MOVE_X_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Y, Direction.NEGATIVE),
+            MoveMessage(Axis.Y, Direction.NEGATIVE),
             b"\x00\x00\x01\x00",
             id="MOVE_Y_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Y, Direction.POSITIVE),
+            MoveMessage(Axis.Y, Direction.POSITIVE),
             b"\x00\x00\x01\x01",
             id="MOVE_Y_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Z_L, Direction.NEGATIVE),
+            MoveMessage(Axis.Z_L, Direction.NEGATIVE),
             b"\x00\x00\x02\x00",
             id="MOVE_Z_L_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Z_L, Direction.POSITIVE),
+            MoveMessage(Axis.Z_L, Direction.POSITIVE),
             b"\x00\x00\x02\x01",
             id="MOVE_Z_L_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Z_R, Direction.NEGATIVE),
+            MoveMessage(Axis.Z_R, Direction.NEGATIVE),
             b"\x00\x00\x03\x00",
             id="MOVE_Z_R_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Z_R, Direction.POSITIVE),
+            MoveMessage(Axis.Z_R, Direction.POSITIVE),
             b"\x00\x00\x03\x01",
             id="MOVE_Z_R_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Z_G, Direction.NEGATIVE),
+            MoveMessage(Axis.Z_G, Direction.NEGATIVE),
             b"\x00\x00\x04\x00",
             id="MOVE_Z_G_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Z_G, Direction.POSITIVE),
+            MoveMessage(Axis.Z_G, Direction.POSITIVE),
             b"\x00\x00\x04\x01",
             id="MOVE_Z_G_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.P_L, Direction.NEGATIVE),
+            MoveMessage(Axis.P_L, Direction.NEGATIVE),
             b"\x00\x00\x05\x00",
             id="MOVE_P_L_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.P_L, Direction.POSITIVE),
+            MoveMessage(Axis.P_L, Direction.POSITIVE),
             b"\x00\x00\x05\x01",
             id="MOVE_P_L_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.P_R, Direction.NEGATIVE),
+            MoveMessage(Axis.P_R, Direction.NEGATIVE),
             b"\x00\x00\x06\x00",
             id="MOVE_P_R_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.P_R, Direction.POSITIVE),
+            MoveMessage(Axis.P_R, Direction.POSITIVE),
             b"\x00\x00\x06\x01",
             id="MOVE_P_R_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.G, Direction.NEGATIVE),
+            MoveMessage(Axis.G, Direction.NEGATIVE),
             b"\x00\x00\x07\x00",
             id="MOVE_G_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.G, Direction.POSITIVE),
+            MoveMessage(Axis.G, Direction.POSITIVE),
             b"\x00\x00\x07\x01",
             id="MOVE_G_POSITIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Q, Direction.NEGATIVE),
+            MoveMessage(Axis.Q, Direction.NEGATIVE),
             b"\x00\x00\x08\x00",
             id="MOVE_Q_NEGATIVE",
         ),
         pytest.param(
-            MoveMessage(OT3Axis.Q, Direction.POSITIVE),
+            MoveMessage(Axis.Q, Direction.POSITIVE),
             b"\x00\x00\x08\x01",
             id="MOVE_Q_POSITIVE",
         ),
@@ -322,47 +322,47 @@ def test_message_parsing(message: bytes, expected_message: Message) -> None:
             id="SYNC_HIGH",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.X),
+            GetAxisLocationMessage(Axis.X),
             b"\x02\x00\x00\x00",
             id="GET_LOCATION_X",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.Y),
+            GetAxisLocationMessage(Axis.Y),
             b"\x02\x00\x01\x00",
             id="GET_LOCATION_Y",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.Z_L),
+            GetAxisLocationMessage(Axis.Z_L),
             b"\x02\x00\x02\x00",
             id="GET_LOCATION_Z_L",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.Z_R),
+            GetAxisLocationMessage(Axis.Z_R),
             b"\x02\x00\x03\x00",
             id="GET_LOCATION_Z_R",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.Z_G),
+            GetAxisLocationMessage(Axis.Z_G),
             b"\x02\x00\x04\x00",
             id="GET_LOCATION_Z_G",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.P_L),
+            GetAxisLocationMessage(Axis.P_L),
             b"\x02\x00\x05\x00",
             id="GET_LOCATION_P_L",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.P_R),
+            GetAxisLocationMessage(Axis.P_R),
             b"\x02\x00\x06\x00",
             id="GET_LOCATION_P_R",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.G),
+            GetAxisLocationMessage(Axis.G),
             b"\x02\x00\x07\x00",
             id="GET_LOCATION_G",
         ),
         pytest.param(
-            GetAxisLocationMessage(OT3Axis.Q),
+            GetAxisLocationMessage(Axis.Q),
             b"\x02\x00\x08\x00",
             id="GET_LOCATION_Q",
         ),
@@ -381,8 +381,8 @@ def test_convert_message_to_bytes(message: Message, expected_bytes: bytes) -> No
 @pytest.mark.parametrize(
     "message,expected_val",
     (
-        pytest.param(MoveMessage(OT3Axis.X, Direction.POSITIVE), 1, id="pos_pulse"),
-        pytest.param(MoveMessage(OT3Axis.X, Direction.NEGATIVE), -1, id="neg_pulse"),
+        pytest.param(MoveMessage(Axis.X, Direction.POSITIVE), 1, id="pos_pulse"),
+        pytest.param(MoveMessage(Axis.X, Direction.NEGATIVE), -1, id="neg_pulse"),
     ),
 )
 def test_valid_handle_move_message(
@@ -392,18 +392,18 @@ def test_valid_handle_move_message(
     print(message.to_bytes())
     ack = handle_message(message.to_bytes(), ot3_state)
     assert ack is None
-    assert ot3_state.axis_current_position(OT3Axis.X) == expected_val
+    assert ot3_state.axis_current_position(Axis.X) == expected_val
 
 
 def test_valid_handle_get_location_message(ot3_state: OT3State) -> None:
     """Confirm that get location messages work correctly."""
-    pulse_x_pos = MoveMessage(OT3Axis.X, Direction.POSITIVE).to_bytes()
+    pulse_x_pos = MoveMessage(Axis.X, Direction.POSITIVE).to_bytes()
     for _ in range(5):
         ack = handle_message(pulse_x_pos, ot3_state)
         assert ack is None
-    assert ot3_state.axis_current_position(OT3Axis.X) == 5
+    assert ot3_state.axis_current_position(Axis.X) == 5
     expected = b"\x02\x00\x005"
-    ack = handle_message(GetAxisLocationMessage(OT3Axis.X).to_bytes(), ot3_state)
+    ack = handle_message(GetAxisLocationMessage(Axis.X).to_bytes(), ot3_state)
     assert ack is not None
     assert ack.to_bytes() == expected
 

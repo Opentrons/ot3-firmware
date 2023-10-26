@@ -147,9 +147,13 @@ class MMR920C04 {
     }
 
     auto poll_continuous_pressure(uint8_t tags) -> void {
-        auto mode_delay_with_buffer =
+        // in milliseconds
+        uint16_t mode_delay_with_buffer =
             MeasurementTimings[static_cast<int>(measurement_mode_rate)] +
             DEFAULT_DELAY_BUFFER;
+        max_pressure_required_readings =
+            MAX_PRESSURE_TIME_MS / mode_delay_with_buffer;
+        max_pressure_consecutive_readings = 0;
         auto command_data =
             build_register_command(_registers.low_pass_pressure_command);
         if (filter_setting == mmr920C04::FilterSetting::NO_FILTER) {
@@ -275,6 +279,8 @@ class MMR920C04 {
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
         }
 
+        bool echo_this_time = echoing;
+
         // Pressure is always a three-byte value
         static_cast<void>(bit_utils::bytes_to_int(m.read_buffer.cbegin(),
                                                   m.read_buffer.cend(),
@@ -287,8 +293,21 @@ class MMR920C04 {
             _registers.pressure_result.reading);
 
         if (max_pressure_sync) {
-            if (std::fabs(pressure) - std::fabs(current_pressure_baseline_pa) >
-                mmr920C04::MAX_PRESSURE_READING) {
+            bool this_tick_over_threshold =
+                std::fabs(pressure - current_pressure_baseline_pa) >=
+                mmr920C04::MAX_PRESSURE_READING;
+            bool over_threshold = false;
+            if (this_tick_over_threshold) {
+                max_pressure_consecutive_readings =
+                    std::min(max_pressure_consecutive_readings + 1,
+                             max_pressure_required_readings);
+                over_threshold = (max_pressure_consecutive_readings ==
+                                  max_pressure_required_readings);
+                echo_this_time = true;
+            } else {
+                max_pressure_consecutive_readings = 0;
+            }
+            if (over_threshold) {
                 hardware.set_sync();
                 can_client.send_can_message(
                     can::ids::NodeId::host,
@@ -309,7 +328,7 @@ class MMR920C04 {
             }
         }
 
-        if (echoing) {
+        if (echo_this_time) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::ReadFromSensorResponse{
@@ -381,7 +400,7 @@ class MMR920C04 {
                 can::ids::NodeId::host,
                 can::messages::BaselineSensorResponse{
                     .message_index = m.message_index,
-                    .sensor = can::ids::SensorType::pressure_temperature,
+                    .sensor = can::ids::SensorType::pressure,
                     .offset_average = pressure_fixed_point});
             set_threshold(current_pressure_baseline_pa,
                           can::ids::SensorThresholdMode::auto_baseline,
@@ -447,6 +466,13 @@ class MMR920C04 {
     static constexpr float DEFAULT_DELAY_BUFFER =
         1.0;  // in msec (TODO might need to change to fit in uint16_t)
     static constexpr uint16_t STOP_DELAY = 0;
+
+    /**
+     * Time required before raising a Max Pressure error. The pressure must
+     * exceed the threshold for the entirety of this period.
+     */
+    static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
+
     mmr920C04::MeasurementRate measurement_mode_rate =
         mmr920C04::MeasurementRate::MEASURE_4;
 
@@ -461,6 +487,9 @@ class MMR920C04 {
 
     float current_pressure_baseline_pa = 0;
     float current_temperature_baseline = 0;
+
+    size_t max_pressure_consecutive_readings = 0;
+    size_t max_pressure_required_readings = 0;
 
     // TODO(fs, 2022-11-11): Need to figure out a realistic threshold. Pretty
     // sure this is an arbitrarily large number to enable continuous reads.

@@ -44,8 +44,14 @@ class CapacitiveMessageHandler {
 
     void visit(i2c::messages::TransactionResponse &m) {
         auto reg_id = utils::reg_from_id<uint8_t>(m.id.token);
+        if (reg_id == static_cast<uint8_t>(fdc1004::Registers::FDC_CONF)) {
+            driver.handle_fdc_response(m);
+            return;
+        }
         if ((reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS1_MSB)) &&
-            (reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB))) {
+            (reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS2_MSB)) &&
+            (reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS1_LSB)) &&
+            (reg_id != static_cast<uint8_t>(fdc1004::Registers::MEAS2_LSB))) {
             return;
         }
 

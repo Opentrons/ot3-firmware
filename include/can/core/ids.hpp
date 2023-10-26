@@ -72,6 +72,8 @@ enum class MessageId {
     brushed_motor_conf_request = 0x45,
     brushed_motor_conf_response = 0x46,
     set_gripper_error_tolerance = 0x47,
+    gripper_jaw_state_request = 0x48,
+    gripper_jaw_state_response = 0x49,
     acknowledgement = 0x50,
     read_presence_sensing_voltage_request = 0x600,
     read_presence_sensing_voltage_response = 0x601,

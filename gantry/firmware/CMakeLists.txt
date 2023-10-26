@@ -53,6 +53,7 @@ set(GANTRY_X_B1_SRCS
     ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_x_rev1_hardware_config.c
 )
 set(GANTRY_X_C1_SRCS ${GANTRY_X_B1_SRCS})
+set(GANTRY_X_C2_SRCS ${GANTRY_X_C1_SRCS})
 
 set(GANTRY_Y_A1_SRCS
     ${GANTRY_BASE_SOURCES}
@@ -65,6 +66,7 @@ set(GANTRY_Y_B1_SRCS
     ${CMAKE_SOURCE_DIR}/gantry/firmware/axis_y_rev1_hardware_config.c
 )
 set(GANTRY_Y_C1_SRCS ${GANTRY_Y_B1_SRCS})
+set(GANTRY_Y_C2_SRCS ${GANTRY_Y_C1_SRCS})
 
 macro(gantry_loop_internal)
     set(_gli_options)
@@ -122,14 +124,14 @@ endmacro()
 foreach_revision(
     PROJECT_NAME gantry-x
     CALL_FOREACH_REV gantry_loop_internal_x
-    REVISIONS a1 b1 c1
-    SOURCES GANTRY_X_A1_SRCS GANTRY_X_B1_SRCS GANTRY_X_C1_SRCS
+    REVISIONS a1 b1 c1 c2
+    SOURCES GANTRY_X_A1_SRCS GANTRY_X_B1_SRCS GANTRY_X_C1_SRCS GANTRY_X_C2_SRCS
     )
 foreach_revision(
     PROJECT_NAME gantry-y
     CALL_FOREACH_REV gantry_loop_internal_y
-    REVISIONS a1 b1 c1
-    SOURCES GANTRY_Y_A1_SRCS GANTRY_Y_B1_SRCS GANTRY_Y_C1_SRCS
+    REVISIONS a1 b1 c1 c2
+    SOURCES GANTRY_Y_A1_SRCS GANTRY_Y_B1_SRCS GANTRY_Y_C1_SRCS GANTRY_Y_C2_SRCS
     )
 
 
