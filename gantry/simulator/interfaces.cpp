@@ -89,8 +89,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(), motor_interface, stallcheck,
-    update_position_queue);
+    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(),
+    motor_interface, stallcheck, update_position_queue);
 
 static motor_interrupt_driver::MotorInterruptDriver A(motor_queue,
                                                       motor_interrupt,

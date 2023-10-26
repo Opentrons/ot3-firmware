@@ -90,7 +90,9 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     auto has_cancel_request() -> uint8_t final {
         return cancel_request.exchange(0);
     }
-    void request_cancel(uint8_t error_severity) final { cancel_request.store(error_severity); }
+    void request_cancel(uint8_t error_severity) final {
+        cancel_request.store(error_severity);
+    }
     auto get_usage_eeprom_config()
         -> motor_hardware::UsageEEpromConfig & final {
         return eeprom_config;
@@ -180,7 +182,9 @@ class SimBrushedMotorHardwareIface
     auto has_cancel_request() -> uint8_t final {
         return cancel_request.exchange(0);
     }
-    void request_cancel(uint8_t error_severity) final { cancel_request.store(error_severity); }
+    void request_cancel(uint8_t error_severity) final {
+        cancel_request.store(error_severity);
+    }
 
     void disable_encoder() final {}
     void enable_encoder() final {}
@@ -270,7 +274,9 @@ class SimGearMotorHardwareIface
     auto has_cancel_request() -> uint8_t final {
         return cancel_request.exchange(0);
     }
-    void request_cancel(uint8_t error_severity) final { cancel_request.store(error_severity); }
+    void request_cancel(uint8_t error_severity) final {
+        cancel_request.store(error_severity);
+    }
 
     auto get_usage_eeprom_config()
         -> motor_hardware::UsageEEpromConfig & final {

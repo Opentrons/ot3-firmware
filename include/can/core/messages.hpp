@@ -198,7 +198,8 @@ using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 using UpdateMotorPositionEstimationRequest =
     Empty<MessageId::update_motor_position_estimation_request>;
 
-using MotorDriverErrorEncountered = Empty<MessageId::motor_driver_error_encountered>;
+using MotorDriverErrorEncountered =
+    Empty<MessageId::motor_driver_error_encountered>;
 
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;

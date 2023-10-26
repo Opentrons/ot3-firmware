@@ -286,8 +286,9 @@ static stall_check::StallCheck stallcheck_right(
 static motor_hardware::MotorHardware motor_hardware_right(
     pin_configurations_right, &htim7, &htim2, right_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_right(
-    motor_queue_right, head_tasks::get_right_queues(), head_tasks::get_right_queues(), motor_hardware_right,
-    stallcheck_right, update_position_queue_right);
+    motor_queue_right, head_tasks::get_right_queues(),
+    head_tasks::get_right_queues(), motor_hardware_right, stallcheck_right,
+    update_position_queue_right);
 
 static auto encoder_background_timer_right =
     motor_encoder::BackgroundTimer(motor_interrupt_right, motor_hardware_right);
@@ -311,8 +312,9 @@ static stall_check::StallCheck stallcheck_left(
 static motor_hardware::MotorHardware motor_hardware_left(
     pin_configurations_left, &htim7, &htim3, left_usage_config);
 static motor_handler::MotorInterruptHandler motor_interrupt_left(
-    motor_queue_left, head_tasks::get_left_queues(), head_tasks::get_left_queues(), motor_hardware_left,
-    stallcheck_left, update_position_queue_left);
+    motor_queue_left, head_tasks::get_left_queues(),
+    head_tasks::get_left_queues(), motor_hardware_left, stallcheck_left,
+    update_position_queue_left);
 
 static auto encoder_background_timer_left =
     motor_encoder::BackgroundTimer(motor_interrupt_left, motor_hardware_left);

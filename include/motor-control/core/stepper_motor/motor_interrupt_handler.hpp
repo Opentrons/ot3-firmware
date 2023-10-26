@@ -42,8 +42,8 @@ using namespace motor_messages;
  * Note: The position tracker should never be allowed to go below zero.
  */
 
-template <template <class> class QueueImpl, class StatusClient, class DriverClient,
-          typename MotorMoveMessage, typename MotorHardware>
+template <template <class> class QueueImpl, class StatusClient,
+          class DriverClient, typename MotorMoveMessage, typename MotorHardware>
 requires MessageQueue<QueueImpl<MotorMoveMessage>, MotorMoveMessage> &&
     std::is_base_of_v<motor_hardware::MotorHardwareIface, MotorHardware>
 class MotorInterruptHandler {
@@ -207,10 +207,12 @@ class MotorInterruptHandler {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
         } else if (has_cancel_request) {
-            if (has_cancel_request == static_cast<uint8_t>(can::ids::ErrorSeverity::unrecoverable)) {
+            if (has_cancel_request ==
+                static_cast<uint8_t>(can::ids::ErrorSeverity::unrecoverable)) {
                 cancel_and_clear_moves();
             } else {
-                cancel_and_clear_moves(can::ids::ErrorCode::stop_requested, can::ids::ErrorSeverity::warning);
+                cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
+                                       can::ids::ErrorSeverity::warning);
             }
         } else {
             // Normal Move logic
@@ -431,7 +433,8 @@ class MotorInterruptHandler {
                                         .error_code = err_code});
         if (err_code == can::ids::ErrorCode::hardware) {
             driver_client.send_motor_driver_queue(
-                can::messages::ReadMotorDriverErrorStatus{.message_index = message_index});
+                can::messages::ReadMotorDriverErrorStatus{.message_index =
+                                                              message_index});
         }
         if (err_code == can::ids::ErrorCode::collision_detected) {
             build_and_send_ack(AckMessageId::position_error);

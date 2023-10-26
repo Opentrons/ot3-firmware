@@ -62,11 +62,13 @@ auto gantry::tasks::start_tasks(
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     motor_hardware_task::MotorHardwareTask& mh_tsk,
     i2c::hardware::I2CBase& i2c2,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) -> interfaces::diag0_handler {
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
+    -> interfaces::diag0_handler {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
-    auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, ::queues, ::queues, ::queues);
+    auto& motion =
+        mc_task_builder.start(5, "motion controller", motion_controller,
+                              ::queues, ::queues, ::queues);
     auto& tmc2130_driver = motor_driver_task_builder.start(
         5, "tmc2130 driver", driver_configs, ::queues, spi_task_client);
     auto& move_group =
@@ -122,7 +124,8 @@ auto gantry::tasks::start_tasks(
 
 void gantry::tasks::call_run_diag0_interrupt() {
     if (gantry::tasks::get_tasks().motion_controller) {
-        return gantry::tasks::get_tasks().motion_controller->run_diag0_interrupt();
+        return gantry::tasks::get_tasks()
+            .motion_controller->run_diag0_interrupt();
     }
 }
 

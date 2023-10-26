@@ -101,7 +101,8 @@ class MotionController {
         enabled = false;
     }
 
-    void stop(can::ids::ErrorSeverity error_severity = can::ids::ErrorSeverity::warning) {
+    void stop(can::ids::ErrorSeverity error_severity =
+                  can::ids::ErrorSeverity::warning) {
         queue.reset();
         // if we're gripping something we need to flag this so we don't drop it
         if (!hardware.get_stay_enabled()) {

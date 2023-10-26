@@ -2,9 +2,9 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
 #include "motor-control/core/usage_messages.hpp"
+#include "motor-control/tests/mock_motor_driver_client.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
-#include "motor-control/tests/mock_motor_driver_client.hpp"
 
 using namespace motor_handler;
 
@@ -24,10 +24,9 @@ struct HandlerContainer {
     test_mocks::MockMoveStatusReporterClient reporter{};
     test_mocks::MockMotorDriverClient driver{};
     stall_check::StallCheck stall{tick_per_um, tick_per_um, stall_threshold_um};
-    MotorInterruptHandler<test_mocks::MockMessageQueue,
-                          test_mocks::MockMoveStatusReporterClient, 
-                          test_mocks::MockMotorDriverClient, Move,
-                          test_mocks::MockMotorHardware>
+    MotorInterruptHandler<
+        test_mocks::MockMessageQueue, test_mocks::MockMoveStatusReporterClient,
+        test_mocks::MockMotorDriverClient, Move, test_mocks::MockMotorHardware>
         handler{queue, reporter, driver, hw, stall, update_position_queue};
 };
 

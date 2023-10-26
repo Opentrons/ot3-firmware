@@ -49,8 +49,9 @@ void linear_motor_tasks::start_tasks(
     auto& motion_tasks = linear_motor_tasks::get_tasks();
 
     // Linear Motor Tasks
-    auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues, queues, tmc2130_queues);
+    auto& motion =
+        mc_task_builder.start(5, "motion controller", motion_controller, queues,
+                              queues, tmc2130_queues);
     auto& tmc2130_driver = tmc2130_driver_task_builder.start(
         5, "tmc2130 driver", linear_driver_configs, queues, spi_writer);
     auto& move_group =
@@ -100,8 +101,9 @@ void linear_motor_tasks::start_tasks(
     auto& motion_tasks = linear_motor_tasks::get_tasks();
 
     // Linear Motor Tasks
-    auto& motion = mc_task_builder.start(5, "motion controller",
-                                         motion_controller, queues, queues, tmc2160_queues);
+    auto& motion =
+        mc_task_builder.start(5, "motion controller", motion_controller, queues,
+                              queues, tmc2160_queues);
     auto& tmc2160_driver = tmc2160_driver_task_builder.start(
         5, "tmc2160 driver", linear_driver_configs, queues, spi_writer);
     auto& move_group =

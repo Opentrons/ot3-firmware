@@ -55,7 +55,8 @@ class TMC2160 {
 
     auto read(uint32_t token, uint32_t command_data, uint32_t message_index)
         -> void {
-        _spi_manager.read(token, command_data, _task_queue, _cs_intf, message_index);
+        _spi_manager.read(token, command_data, _task_queue, _cs_intf,
+                          message_index);
     }
 
     auto write(Registers addr, uint32_t command_data) -> bool {

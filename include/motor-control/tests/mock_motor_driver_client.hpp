@@ -7,8 +7,7 @@
 namespace test_mocks {
 
 struct MockMotorDriverClient {
-    void send_motor_driver_queue(
-        const tmc::tasks::TaskMessage& m) {
+    void send_motor_driver_queue(const tmc::tasks::TaskMessage& m) {
         messages.push_back(m);
     }
 

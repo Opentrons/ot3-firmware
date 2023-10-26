@@ -60,7 +60,9 @@ class MotorHardware : public StepperMotorHardwareIface {
     void disable_encoder() final;
     void enable_encoder() final;
 
-    void request_cancel(uint8_t error_severity) final { cancel_request.store(error_severity); }
+    void request_cancel(uint8_t error_severity) final {
+        cancel_request.store(error_severity);
+    }
 
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;

@@ -9,7 +9,8 @@
 
 namespace motor_interrupt_driver {
 
-template <class StatusClient, class DriverClient, typename MotorMoveMessage, class MotorHardware>
+template <class StatusClient, class DriverClient, typename MotorMoveMessage,
+          class MotorHardware>
 class MotorInterruptDriver {
     using InterruptQueue =
         freertos_message_queue::FreeRTOSMessageQueue<MotorMoveMessage>;
@@ -17,8 +18,8 @@ class MotorInterruptDriver {
         freertos_message_queue::FreeRTOSMessageQueue<
             can::messages::UpdateMotorPositionEstimationRequest>;
     using InterruptHandler = motor_handler::MotorInterruptHandler<
-        freertos_message_queue::FreeRTOSMessageQueue, StatusClient, DriverClient,
-        MotorMoveMessage, MotorHardware>;
+        freertos_message_queue::FreeRTOSMessageQueue, StatusClient,
+        DriverClient, MotorMoveMessage, MotorHardware>;
 
   public:
     MotorInterruptDriver(InterruptQueue& q, InterruptHandler& h,

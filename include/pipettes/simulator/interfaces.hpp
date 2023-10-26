@@ -14,8 +14,8 @@ namespace interfaces {
 
 template <typename Client, typename DriverClient>
 using MotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
-    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient, motor_messages::Move,
-    sim_motor_hardware_iface::SimMotorHardwareIface>;
+    freertos_message_queue::FreeRTOSMessageQueue, Client, DriverClient,
+    motor_messages::Move, sim_motor_hardware_iface::SimMotorHardwareIface>;
 
 template <typename Client>
 using GearMotorInterruptHandlerType = motor_handler::MotorInterruptHandler<
@@ -61,29 +61,39 @@ auto get_interrupt_queues<PipetteType::THREE_EIGHTY_FOUR_CHANNEL>()
 namespace linear_motor {
 
 auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-                                 LowThroughputInterruptQueues& queues,
-                                 stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>;
+                   LowThroughputInterruptQueues& queues,
+                   stall_check::StallCheck& stall)
+    -> MotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient>;
 
 auto get_interrupt(sim_motor_hardware_iface::SimMotorHardwareIface& hw,
-                                 HighThroughputInterruptQueues& queues,
-                                 stall_check::StallCheck& stall)
-    -> MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient>;
+                   HighThroughputInterruptQueues& queues,
+                   stall_check::StallCheck& stall)
+    -> MotorInterruptHandlerType<
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient>;
 
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     LowThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient>& handler)
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
+                              linear_motor_tasks::tmc2130_driver::QueueClient>&
+        handler)
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2130_driver::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 
 auto get_interrupt_driver(
     sim_motor_hardware_iface::SimMotorHardwareIface& hw,
     HighThroughputInterruptQueues& queues,
-    MotorInterruptHandlerType<linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient>& handler)
+    MotorInterruptHandlerType<linear_motor_tasks::QueueClient,
+                              linear_motor_tasks::tmc2160_driver::QueueClient>&
+        handler)
     -> motor_interrupt_driver::MotorInterruptDriver<
-        linear_motor_tasks::QueueClient, linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::Move,
+        linear_motor_tasks::QueueClient,
+        linear_motor_tasks::tmc2160_driver::QueueClient, motor_messages::Move,
         sim_motor_hardware_iface::SimMotorHardwareIface>;
 
 auto get_motor_hardware() -> sim_motor_hardware_iface::SimMotorHardwareIface;
@@ -106,11 +116,13 @@ struct GearInterruptHandlers {
 
 struct GearInterruptDrivers {
     motor_interrupt_driver::MotorInterruptDriver<
-        gear_motor_tasks::QueueClient, gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
+        gear_motor_tasks::QueueClient, gear_motor_tasks::QueueClient,
+        motor_messages::GearMotorMove,
         sim_motor_hardware_iface::SimGearMotorHardwareIface>
         left;
     motor_interrupt_driver::MotorInterruptDriver<
-        gear_motor_tasks::QueueClient, gear_motor_tasks::QueueClient, motor_messages::GearMotorMove,
+        gear_motor_tasks::QueueClient, gear_motor_tasks::QueueClient,
+        motor_messages::GearMotorMove,
         sim_motor_hardware_iface::SimGearMotorHardwareIface>
         right;
 };

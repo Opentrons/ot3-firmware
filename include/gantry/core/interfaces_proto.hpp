@@ -14,7 +14,7 @@ extern "C" typedef void (*diag0_handler)(void);
 /**
  * Initialize the hardware portability layer.
  */
-void initialize(diag0_handler* call_diag0_handler);
+void initialize(diag0_handler *call_diag0_handler);
 
 /**
  * Get the CAN bus interface.

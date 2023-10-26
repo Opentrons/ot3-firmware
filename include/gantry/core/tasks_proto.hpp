@@ -36,7 +36,8 @@ auto start_tasks(
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     motor_hardware_task::MotorHardwareTask& mh_tsk,
     i2c::hardware::I2CBase& i2c2,
-    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) -> interfaces::diag0_handler;
+    eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface)
+    -> interfaces::diag0_handler;
 
 void call_run_diag0_interrupt();
 

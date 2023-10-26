@@ -86,11 +86,12 @@ struct motion_controller::HardwareConfig motor_pins_x {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
-        .active_setting = GPIO_PIN_RESET},
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
     .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOC,
@@ -130,11 +131,12 @@ struct motion_controller::HardwareConfig motor_pins_y {
             .port = GPIOB,
             .pin = GPIO_PIN_7,
             .active_setting = GPIO_PIN_RESET},
-    .estop_in = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOA,
-        .pin = GPIO_PIN_10,
-        .active_setting = GPIO_PIN_RESET},
+    .estop_in =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOA,
+            .pin = GPIO_PIN_10,
+            .active_setting = GPIO_PIN_RESET},
     .diag0 = {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOC,
@@ -143,8 +145,7 @@ struct motion_controller::HardwareConfig motor_pins_y {
 };
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
-    .registers = {.gconfig = {.en_pwm_mode = 0,
-                              .diag0_error = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -184,8 +185,7 @@ static tmc2160::configs::TMC2160DriverConfig motor_driver_config_x{
     }};
 
 static tmc2160::configs::TMC2160DriverConfig motor_driver_config_y{
-    .registers = {.gconfig = {.en_pwm_mode = 0,
-                              .diag0_error = 1},
+    .registers = {.gconfig = {.en_pwm_mode = 0, .diag0_error = 1},
                   .ihold_irun = {.hold_current = 16,
                                  .run_current = 31,
                                  .hold_current_delay = 0x7},
@@ -271,8 +271,8 @@ static stall_check::StallCheck stallcheck(
  * Handler of motor interrupts.
  */
 static motor_handler::MotorInterruptHandler motor_interrupt(
-    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(), motor_hardware_iface, stallcheck,
-    update_position_queue);
+    motor_queue, gantry::queues::get_queues(), gantry::queues::get_queues(),
+    motor_hardware_iface, stallcheck, update_position_queue);
 
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
@@ -315,7 +315,8 @@ void interfaces::initialize(diag0_handler* call_diag0_handler) {
         Error_Handler();
     }
 
-    initialize_timer(call_motor_handler, call_diag0_handler, enc_overflow_callback);
+    initialize_timer(call_motor_handler, call_diag0_handler,
+                     enc_overflow_callback);
 
     // Start the can bus
     canbus.start(can_bit_timings);

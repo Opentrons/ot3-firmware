@@ -147,13 +147,18 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
         // check if gpio is low before making controller calls
         controller.stop(can::ids::ErrorSeverity::unrecoverable);
-        if (!controller.is_timer_interrupt_running()){
-            can_client.send_can_message(can::ids::NodeId::host,
-                can::messages::ErrorMessage{.message_index = m.message_index,
-                                            .severity = can::ids::ErrorSeverity::unrecoverable,
-                                            .error_code = can::ids::ErrorCode::hardware}); // make this motor_driver_error instead of hardware?
+        if (!controller.is_timer_interrupt_running()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code = can::ids::ErrorCode::
+                        hardware});  // make this motor_driver_error instead of
+                                     // hardware?
             driver_client.send_motor_driver_queue(
-                can::messages::ReadMotorDriverErrorStatus{.message_index = m.message_index});
+                can::messages::ReadMotorDriverErrorStatus{.message_index =
+                                                              m.message_index});
         }
     }
 
@@ -188,9 +193,10 @@ class MotionControllerTask {
               tmc::tasks::TaskClient DriverClient>
     [[noreturn]] void operator()(
         motion_controller::MotionController<MEConfig>* controller,
-        CanClient* can_client, UsageClient* usage_client, DriverClient* driver_client) {
-        auto handler = MotionControllerMessageHandler{*controller, *can_client,
-                                                      *usage_client, *driver_client};
+        CanClient* can_client, UsageClient* usage_client,
+        DriverClient* driver_client) {
+        auto handler = MotionControllerMessageHandler{
+            *controller, *can_client, *usage_client, *driver_client};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
@@ -209,11 +215,15 @@ class MotionControllerTask {
     // also create top level query msg
     void run_diag0_interrupt(void) {
         if (!driver_error_handled()) {
-            static_cast<void>(queue.try_write_isr(can::messages::MotorDriverErrorEncountered{.message_index = 0}));
+            static_cast<void>(
+                queue.try_write_isr(can::messages::MotorDriverErrorEncountered{
+                    .message_index = 0}));
         }
     }
 
-    bool driver_error_handled() { return driver_error_handled_flag.exchange(true); }
+    bool driver_error_handled() {
+        return driver_error_handled_flag.exchange(true);
+    }
 
   private:
     QueueType& queue;

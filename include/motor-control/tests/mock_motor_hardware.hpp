@@ -44,7 +44,9 @@ class MockMotorHardware : public motor_hardware::StepperMotorHardwareIface {
         cancel_request = 0;
         return old_request;
     }
-    void request_cancel(uint8_t error_severity) final { cancel_request = error_severity; }
+    void request_cancel(uint8_t error_severity) final {
+        cancel_request = error_severity;
+    }
     void sim_set_timer_interrupt_running(bool is_running) {
         mock_timer_interrupt_running = is_running;
     }

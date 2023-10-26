@@ -3,9 +3,9 @@
 #include "common/tests/mock_message_queue.hpp"
 #include "motor-control/core/motor_messages.hpp"
 #include "motor-control/core/stepper_motor/motor_interrupt_handler.hpp"
+#include "motor-control/tests/mock_motor_driver_client.hpp"
 #include "motor-control/tests/mock_motor_hardware.hpp"
 #include "motor-control/tests/mock_move_status_reporter_client.hpp"
-#include "motor-control/tests/mock_motor_driver_client.hpp"
 
 using namespace motor_handler;
 

@@ -91,9 +91,11 @@ class MotorDriverMessageHandler {
     void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
         LOG("Received read motor driver error register request");
         uint32_t data = 0;
-        auto converted_addr = static_cast<uint8_t>(tmc2160::registers::Registers::DRVSTATUS);
+        auto converted_addr =
+            static_cast<uint8_t>(tmc2160::registers::Registers::DRVSTATUS);
         std::array tags{spi::utils::ResponseTag::IS_ERROR_RESPONSE};
-        uint32_t token = spi::utils::build_token(converted_addr, spi::utils::byte_from_tags(tags));
+        uint32_t token = spi::utils::build_token(
+            converted_addr, spi::utils::byte_from_tags(tags));
         driver.read(token, data, m.message_index);
     }
 
