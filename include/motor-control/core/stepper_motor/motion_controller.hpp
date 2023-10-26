@@ -115,7 +115,7 @@ class MotionController {
         }
     }
 
-    bool is_timer_interrupt_running() {
+    auto is_timer_interrupt_running() -> bool {
         return hardware.is_timer_interrupt_running();
     }
 

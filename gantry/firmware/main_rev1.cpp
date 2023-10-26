@@ -16,7 +16,7 @@
 #include "gantry/core/tasks_rev1.hpp"
 #include "i2c/firmware/i2c_comms.hpp"
 
-static interfaces::diag0_handler call_diag0_handler = NULL;
+static interfaces::diag0_handler call_diag0_handler = nullptr;
 
 static auto i2c_comms2 = i2c::hardware::I2C();
 static auto i2c_handles = I2CHandlerStruct{};

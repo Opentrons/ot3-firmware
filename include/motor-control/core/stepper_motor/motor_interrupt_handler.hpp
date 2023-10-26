@@ -206,7 +206,7 @@ class MotorInterruptHandler {
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
-        } else if (has_cancel_request) {
+        } else if (has_cancel_request != 0u) {
             if (has_cancel_request ==
                 static_cast<uint8_t>(can::ids::ErrorSeverity::unrecoverable)) {
                 cancel_and_clear_moves();

@@ -9,7 +9,7 @@
 
 namespace interfaces {
 
-extern "C" typedef void (*diag0_handler)(void);
+extern "C" using diag0_handler = void (*)(); // typedef void (*diag0_handler)(void)
 
 /**
  * Initialize the hardware portability layer.

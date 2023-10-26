@@ -213,7 +213,7 @@ class MotionControllerTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
     // also create top level query msg
-    void run_diag0_interrupt(void) {
+    void run_diag0_interrupt() {
         if (!driver_error_handled()) {
             static_cast<void>(
                 queue.try_write_isr(can::messages::MotorDriverErrorEncountered{
@@ -221,7 +221,7 @@ class MotionControllerTask {
         }
     }
 
-    bool driver_error_handled() {
+    auto driver_error_handled() -> bool {
         return driver_error_handled_flag.exchange(true);
     }
 
