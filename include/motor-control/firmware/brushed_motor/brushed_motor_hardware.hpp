@@ -84,6 +84,9 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void request_cancel(uint8_t error_severity) final {
         cancel_request.store(error_severity);
     }
+    void clear_cancel_request() final {
+        cancel_request.store(0);
+    }
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
     }

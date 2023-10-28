@@ -79,6 +79,9 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void request_cancel(uint8_t error_severity) final {
         cancel_request = error_severity;
     }
+    void clear_cancel_request() final {
+        cancel_request = 0;
+    }
     void set_timer_interrupt_running(bool is_running) {
         timer_interrupt_running = is_running;
     }

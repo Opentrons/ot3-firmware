@@ -145,27 +145,38 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
-        // check if gpio is low before making controller calls
-        controller.stop(can::ids::ErrorSeverity::unrecoverable);
-        if (!controller.is_timer_interrupt_running()) {
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ErrorMessage{
-                    .message_index = m.message_index,
-                    .severity = can::ids::ErrorSeverity::unrecoverable,
-                    .error_code = can::ids::ErrorCode::
-                        hardware});  // make this motor_driver_error instead of
-                                     // hardware?
-            driver_client.send_motor_driver_queue(
-                can::messages::ReadMotorDriverErrorStatus{.message_index =
-                                                              m.message_index});
+        if (!driver_error_handled()) {
+            // check if gpio is low before making controller calls
+            controller.stop(can::ids::ErrorSeverity::unrecoverable);
+            if (!controller.is_timer_interrupt_running()) {
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = m.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code = can::ids::ErrorCode::motor_driver_error_detected});
+                driver_client.send_motor_driver_queue(
+                    can::messages::ReadMotorDriverErrorStatus{.message_index =
+                                                                m.message_index});
+            }
         }
+    }
+
+    void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
+        static_cast<void>(m);
+        driver_error_handled_flag.exchange(false);
+        controller.clear_cancel_request();
+    }
+
+    auto driver_error_handled() -> bool {
+        return driver_error_handled_flag.exchange(true);
     }
 
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
+    std::atomic<bool> driver_error_handled_flag = false;
 };
 
 /**
@@ -214,20 +225,13 @@ class MotionControllerTask {
 
     // also create top level query msg
     void run_diag0_interrupt() {
-        if (!driver_error_handled()) {
-            static_cast<void>(
-                queue.try_write_isr(can::messages::MotorDriverErrorEncountered{
-                    .message_index = 0}));
-        }
-    }
-
-    auto driver_error_handled() -> bool {
-        return driver_error_handled_flag.exchange(true);
+        static_cast<void>(
+            queue.try_write_isr(can::messages::MotorDriverErrorEncountered{
+                .message_index = 0}));
     }
 
   private:
     QueueType& queue;
-    std::atomic<bool> driver_error_handled_flag = false;
 };
 
 /**

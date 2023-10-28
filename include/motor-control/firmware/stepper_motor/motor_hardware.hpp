@@ -54,14 +54,17 @@ class MotorHardware : public StepperMotorHardwareIface {
     void set_LED(bool status) final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;
-    auto has_cancel_request() -> uint8_t final {
-        return cancel_request.exchange(0);
-    }
     void disable_encoder() final;
     void enable_encoder() final;
 
+    auto has_cancel_request() -> uint8_t final {
+        return cancel_request.exchange(0);
+    }
     void request_cancel(uint8_t error_severity) final {
         cancel_request.store(error_severity);
+    }
+    void clear_cancel_request() final {
+        cancel_request.store(0);
     }
 
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {

@@ -115,6 +115,10 @@ class MotionController {
         }
     }
 
+    void clear_cancel_request() {
+        hardware.clear_cancel_request();
+    }
+
     auto is_timer_interrupt_running() -> bool {
         return hardware.is_timer_interrupt_running();
     }
@@ -134,6 +138,7 @@ class MotionController {
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
 
     void enable_motor() {
+        // check motor driver error register
         hardware.start_timer_interrupt();
         hardware.activate_motor();
         enabled = true;

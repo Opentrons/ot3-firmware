@@ -201,6 +201,9 @@ using UpdateMotorPositionEstimationRequest =
 using MotorDriverErrorEncountered =
     Empty<MessageId::motor_driver_error_encountered>;
 
+using ResetMotorDriverErrorHandling =
+    Empty<MessageId::reset_motor_driver_error_handling>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;

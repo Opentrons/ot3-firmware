@@ -100,6 +100,7 @@ class MotorHardwareIface {
 
     virtual auto has_cancel_request() -> uint8_t = 0;
     virtual void request_cancel(uint8_t error_severity) = 0;
+    virtual void clear_cancel_request() = 0;
     virtual auto get_usage_eeprom_config() -> const UsageEEpromConfig& = 0;
 
     // This variable can remain public because the only public methods

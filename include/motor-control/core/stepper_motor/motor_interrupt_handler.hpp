@@ -209,7 +209,7 @@ class MotorInterruptHandler {
         } else if (has_cancel_request != 0U) {
             if (has_cancel_request ==
                 static_cast<uint8_t>(can::ids::ErrorSeverity::unrecoverable)) {
-                cancel_and_clear_moves();
+                cancel_and_clear_moves(can::ids::ErrorCode::motor_driver_error_detected); // use cancel_request.code?
             } else {
                 cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
                                        can::ids::ErrorSeverity::warning);
@@ -431,7 +431,7 @@ class MotorInterruptHandler {
             can::messages::ErrorMessage{.message_index = message_index,
                                         .severity = severity,
                                         .error_code = err_code});
-        if (err_code == can::ids::ErrorCode::hardware) {
+        if (err_code == can::ids::ErrorCode::motor_driver_error_detected) {
             driver_client.send_motor_driver_queue(
                 can::messages::ReadMotorDriverErrorStatus{.message_index =
                                                               message_index});
