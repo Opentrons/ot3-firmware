@@ -71,16 +71,22 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     PWM_DIRECTION get_direction() { return move_dir; }
     void set_stay_enabled(bool state) { stay_enabled = state; }
     auto get_stay_enabled() -> bool { return stay_enabled; }
-    auto has_cancel_request() -> uint8_t final {
-        uint8_t old_request = cancel_request;
-        cancel_request = 0;
+    auto has_cancel_request() -> CancelRequest final {
+        CancelRequest old_request = cancel_request;
+        CancelRequest exchange_request{};
+        cancel_request = exchange_request;
         return old_request;
     }
-    void request_cancel(uint8_t error_severity) final {
-        cancel_request = error_severity;
+    void request_cancel(can::ids::ErrorSeverity error_severity,
+                        can::ids::ErrorCode error_code) final {
+        CancelRequest update_request{
+            .severity = static_cast<uint8_t>(error_severity),
+            .code = static_cast<uint8_t>(error_code)};
+        cancel_request = update_request;
     }
     void clear_cancel_request() final {
-        cancel_request = 0;
+        CancelRequest clear_request{};
+        cancel_request = clear_request;
     }
     void set_timer_interrupt_running(bool is_running) {
         timer_interrupt_running = is_running;
@@ -113,7 +119,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     // when the "motor" instantly goes to top speed then instantly stops
     ot_utils::pid::PID controller_loop{0.008,         0.0045, 0.000015,
                                        1.F / 32000.0, 7,      -7};
-    uint8_t cancel_request = 0;
+    CancelRequest cancel_request = {};
     bool timer_interrupt_running = true;
     motor_hardware::UsageEEpromConfig eeprom_config =
         motor_hardware::UsageEEpromConfig{std::array<UsageRequestSet, 3>{

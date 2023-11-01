@@ -44,7 +44,8 @@ SCENARIO("a move is cancelled due to a stop request") {
             test_objs.handler.run_interrupt();
             test_objs.handler.run_interrupt();
             CHECK(test_objs.hw.steps_taken() == 1);
-            test_objs.hw.request_cancel(1);
+            test_objs.hw.request_cancel(can::ids::ErrorSeverity::warning,
+                                        can::ids::ErrorCode::stop_requested);
             test_objs.handler.run_interrupt();
             THEN("An error and increase error count is sent") {
                 REQUIRE(test_objs.reporter.messages.size() == 2);

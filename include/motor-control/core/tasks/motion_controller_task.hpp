@@ -147,17 +147,19 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
         if (!driver_error_handled()) {
             // check if gpio is low before making controller calls
-            controller.stop(can::ids::ErrorSeverity::unrecoverable);
+            controller.stop(can::ids::ErrorSeverity::unrecoverable,
+                            can::ids::ErrorCode::motor_driver_error_detected);
             if (!controller.is_timer_interrupt_running()) {
                 can_client.send_can_message(
                     can::ids::NodeId::host,
                     can::messages::ErrorMessage{
                         .message_index = m.message_index,
                         .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code = can::ids::ErrorCode::motor_driver_error_detected});
+                        .error_code =
+                            can::ids::ErrorCode::motor_driver_error_detected});
                 driver_client.send_motor_driver_queue(
-                    can::messages::ReadMotorDriverErrorStatus{.message_index =
-                                                                m.message_index});
+                    can::messages::ReadMotorDriverErrorStatus{
+                        .message_index = m.message_index});
             }
         }
     }
@@ -225,9 +227,8 @@ class MotionControllerTask {
 
     // also create top level query msg
     void run_diag0_interrupt() {
-        static_cast<void>(
-            queue.try_write_isr(can::messages::MotorDriverErrorEncountered{
-                .message_index = 0}));
+        static_cast<void>(queue.try_write_isr(
+            can::messages::MotorDriverErrorEncountered{.message_index = 0}));
     }
 
   private:

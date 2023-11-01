@@ -72,6 +72,12 @@ class UsageEEpromConfig {
     size_t num_keys = 0;
 };
 
+// std::optional usage? See HardwareConfig struct
+struct __attribute__((packed)) CancelRequest {
+    uint8_t severity;
+    uint8_t code;
+};
+
 class MotorHardwareIface {
   public:
     MotorHardwareIface() = default;
@@ -98,8 +104,9 @@ class MotorHardwareIface {
     virtual void enable_encoder() = 0;
     virtual void disable_encoder() = 0;
 
-    virtual auto has_cancel_request() -> uint8_t = 0;
-    virtual void request_cancel(uint8_t error_severity) = 0;
+    virtual auto has_cancel_request() -> CancelRequest = 0;
+    virtual void request_cancel(can::ids::ErrorSeverity error_severity,
+                                can::ids::ErrorCode error_code) = 0;
     virtual void clear_cancel_request() = 0;
     virtual auto get_usage_eeprom_config() -> const UsageEEpromConfig& = 0;
 

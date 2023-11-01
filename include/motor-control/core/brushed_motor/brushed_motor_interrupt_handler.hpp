@@ -201,7 +201,7 @@ class BrushedMotorInterruptHandler {
         } else if (estop_triggered()) {
             in_estop = true;
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
-        } else if (hardware.has_cancel_request() != 0U) {
+        } else if (hardware.has_cancel_request().code != 0U) {
             if (!hardware.get_stay_enabled()) {
                 hardware.set_motor_state(BrushedMotorState::UNHOMED);
             }

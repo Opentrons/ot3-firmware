@@ -45,6 +45,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
           controller_loop{config.pid_kp,  config.pid_ki,
                           config.pid_kd,  1.F / config.encoder_interrupt_freq,
                           config.wl_high, config.wl_low},
+          cancel_request(),
           eeprom_config{eeprom_config},
           stopwatch_handle{stopwatch_handle} {}
     BrushedMotorHardware(const BrushedMotorHardware&) = delete;
@@ -78,14 +79,21 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
-    auto has_cancel_request() -> uint8_t final {
-        return cancel_request.exchange(0);
+    // need any std::optional usage?
+    auto has_cancel_request() -> CancelRequest final {
+        CancelRequest exchange_request;
+        return cancel_request.exchange(exchange_request);
     }
-    void request_cancel(uint8_t error_severity) final {
-        cancel_request.store(error_severity);
+    void request_cancel(can::ids::ErrorSeverity error_severity,
+                        can::ids::ErrorCode error_code) final {
+        CancelRequest update_request{
+            .severity = static_cast<uint8_t>(error_severity),
+            .code = static_cast<uint8_t>(error_code)};
+        cancel_request.store(update_request);
     }
     void clear_cancel_request() final {
-        cancel_request.store(0);
+        CancelRequest clear_request;
+        cancel_request.store(clear_request);
     }
     auto get_usage_eeprom_config() -> const UsageEEpromConfig& final {
         return eeprom_config;
@@ -106,7 +114,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     ot_utils::pid::PID controller_loop;
     std::atomic<ControlDirection> control_dir = ControlDirection::unset;
-    std::atomic<uint8_t> cancel_request = 0;
+    std::atomic<CancelRequest> cancel_request;
     const UsageEEpromConfig& eeprom_config;
     void* stopwatch_handle;
     BrushedMotorState motor_state = BrushedMotorState::UNHOMED;

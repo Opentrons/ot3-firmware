@@ -160,6 +160,7 @@ enum class ErrorCode {
 
 /** Error Severity levels. */
 enum class ErrorSeverity {
+    none = 0x0,
     warning = 0x1,
     recoverable = 0x2,
     unrecoverable = 0x3,

@@ -512,7 +512,8 @@ SCENARIO("handler recovers from error state") {
         test_objs.handler.error_handled = true;
 
         WHEN("a cancel request is received") {
-            test_objs.hw.request_cancel(1);
+            test_objs.hw.request_cancel(can::ids::ErrorSeverity::warning,
+                                        can::ids::ErrorCode::stop_requested);
             test_objs.handler.run_interrupt();
             THEN(
                 "motor state should become un-homed only if stay engaged is "

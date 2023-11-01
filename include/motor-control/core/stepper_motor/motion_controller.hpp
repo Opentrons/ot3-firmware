@@ -107,17 +107,17 @@ class MotionController {
         return update_queue.try_write(can_msg);
     }
 
-    void stop(can::ids::ErrorSeverity error_severity =
-                  can::ids::ErrorSeverity::warning) {
+    void stop(
+        can::ids::ErrorSeverity error_severity =
+            can::ids::ErrorSeverity::warning,
+        can::ids::ErrorCode error_code = can::ids::ErrorCode::stop_requested) {
         queue.reset();
         if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel(static_cast<uint8_t>(error_severity));
+            hardware.request_cancel(error_severity, error_code);
         }
     }
 
-    void clear_cancel_request() {
-        hardware.clear_cancel_request();
-    }
+    void clear_cancel_request() { hardware.clear_cancel_request(); }
 
     auto is_timer_interrupt_running() -> bool {
         return hardware.is_timer_interrupt_running();
@@ -268,14 +268,16 @@ class PipetteMotionController {
         return false;
     }
 
-    void stop(can::ids::ErrorSeverity error_severity =
-                  can::ids::ErrorSeverity::warning) {
+    void stop(
+        can::ids::ErrorSeverity error_severity =
+            can::ids::ErrorSeverity::warning,
+        can::ids::ErrorCode error_code = can::ids::ErrorCode::stop_requested) {
         queue.reset();
         // if the timer interrupt is running, cancel it. if it isn't running,
         // don't submit a cancel because then the cancel won't be read until
         // the timer starts the next time.
         if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel(static_cast<uint8_t>(error_severity));
+            hardware.request_cancel(error_severity, error_code);
         }
     }
 
