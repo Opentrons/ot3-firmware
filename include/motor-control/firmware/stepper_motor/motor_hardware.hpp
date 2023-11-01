@@ -31,8 +31,7 @@ class MotorHardware : public StepperMotorHardwareIface {
         : pins(config),
           tim_handle(timer_handle),
           enc_handle(encoder_handle),
-          eeprom_config(eeprom_config),
-          cancel_request() {}
+          eeprom_config(eeprom_config) {}
     MotorHardware(const MotorHardware&) = delete;
     auto operator=(const MotorHardware&) -> MotorHardware& = delete;
     MotorHardware(MotorHardware&&) = delete;
@@ -60,7 +59,7 @@ class MotorHardware : public StepperMotorHardwareIface {
 
     // need any std::optional usage?
     auto has_cancel_request() -> CancelRequest final {
-        CancelRequest exchange_request;
+        CancelRequest exchange_request = {};
         return cancel_request.exchange(exchange_request);
     }
     void request_cancel(can::ids::ErrorSeverity error_severity,
@@ -71,7 +70,7 @@ class MotorHardware : public StepperMotorHardwareIface {
         cancel_request.store(update_request);
     }
     void clear_cancel_request() final {
-        CancelRequest clear_request;
+        CancelRequest clear_request = {};
         cancel_request.store(clear_request);
     }
 
@@ -91,7 +90,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void* enc_handle;
     const UsageEEpromConfig& eeprom_config;
     std::atomic<int32_t> motor_encoder_overflow_count = 0;
-    std::atomic<CancelRequest> cancel_request;
+    std::atomic<CancelRequest> cancel_request = {};
     static constexpr uint32_t ENCODER_OVERFLOW_PULSES_BIT = 0x1 << 31;
 };
 
