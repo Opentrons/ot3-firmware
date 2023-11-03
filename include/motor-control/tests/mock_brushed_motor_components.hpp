@@ -79,7 +79,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
         return old_request;
     }
     void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                        can::ids::ErrorCode error_code) final {
+                            can::ids::ErrorCode error_code) final {
         CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
             .code = static_cast<uint8_t>(error_code)};

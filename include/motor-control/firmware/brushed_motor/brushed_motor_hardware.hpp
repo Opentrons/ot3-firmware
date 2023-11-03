@@ -62,7 +62,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
-    bool read_tmc_diag0() final;
+    auto read_tmc_diag0() -> bool final;
     void grip() final;
     void ungrip() final;
     void stop_pwm() final;

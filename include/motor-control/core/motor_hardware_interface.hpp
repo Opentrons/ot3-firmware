@@ -96,7 +96,7 @@ class MotorHardwareIface {
     virtual void read_limit_switch() = 0;
     virtual void read_estop_in() = 0;
     virtual void read_sync_in() = 0;
-    virtual bool read_tmc_diag0() = 0;
+    virtual auto read_tmc_diag0() -> bool = 0;
     virtual auto get_encoder_pulses() -> int32_t = 0;
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;

@@ -189,7 +189,9 @@ class MotionControllerMessageHandler {
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
-    std::atomic<bool> driver_error_handled_flag = false; // can get rid of this if indefinite interrupt trigger issue gets resolved
+    std::atomic<bool> driver_error_handled_flag =
+        false;  // can get rid of this if indefinite interrupt trigger issue
+                // gets resolved
 };
 
 /**

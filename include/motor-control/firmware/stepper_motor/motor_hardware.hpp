@@ -51,7 +51,7 @@ class MotorHardware : public StepperMotorHardwareIface {
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
-    bool read_tmc_diag0() final;
+    auto read_tmc_diag0() -> bool final;
     void set_LED(bool status) final;
     auto get_encoder_pulses() -> int32_t final;
     void reset_encoder_pulses() final;

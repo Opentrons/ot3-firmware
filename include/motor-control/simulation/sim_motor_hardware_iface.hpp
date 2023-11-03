@@ -51,6 +51,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return false; }
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
@@ -87,11 +88,11 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
     bool check_estop_in() final { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
-    auto has_cancel_request() -> motor_hardware::CancelRequest final {
+    auto get_cancel_request() -> motor_hardware::CancelRequest final {
         motor_hardware::CancelRequest exchange_request;
         return cancel_request.exchange(exchange_request);
     }
-    void request_cancel(can::ids::ErrorSeverity error_severity,
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
                         can::ids::ErrorCode error_code) final {
         motor_hardware::CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
@@ -148,6 +149,7 @@ class SimBrushedMotorHardwareIface
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return false; }
     void trigger_limit_switch() { limit_switch_status = true; }
     void grip() final {}
     void ungrip() final {}
@@ -188,11 +190,11 @@ class SimBrushedMotorHardwareIface
         return ret;
     }
 
-    auto has_cancel_request() -> motor_hardware::CancelRequest final {
+    auto get_cancel_request() -> motor_hardware::CancelRequest final {
         motor_hardware::CancelRequest exchange_request;
         return cancel_request.exchange(exchange_request);
     }
-    void request_cancel(can::ids::ErrorSeverity error_severity,
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
                         can::ids::ErrorCode error_code) final {
         motor_hardware::CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
@@ -256,6 +258,7 @@ class SimGearMotorHardwareIface
     void read_limit_switch() final {}
     void read_estop_in() final {}
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return false; }
     void set_LED(bool) final {}
     void trigger_limit_switch() { limit_switch_status = true; }
     bool check_sync_in() final {
@@ -288,11 +291,11 @@ class SimGearMotorHardwareIface
     bool check_estop_in() final { return estop_detected; }
 
     void set_estop(bool estop_pressed) { estop_detected = estop_pressed; }
-    auto has_cancel_request() -> motor_hardware::CancelRequest final {
+    auto get_cancel_request() -> motor_hardware::CancelRequest final {
         motor_hardware::CancelRequest exchange_request;
         return cancel_request.exchange(exchange_request);
     }
-    void request_cancel(can::ids::ErrorSeverity error_severity,
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
                         can::ids::ErrorCode error_code) final {
         motor_hardware::CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
