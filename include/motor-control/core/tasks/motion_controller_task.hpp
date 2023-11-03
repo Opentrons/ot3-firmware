@@ -178,6 +178,7 @@ class MotionControllerMessageHandler {
         static_cast<void>(m);
         driver_error_handled_flag.exchange(false);
         controller.clear_cancel_request();
+        // send MotorDriverErrorCleared msg to host
     }
 
     auto driver_error_handled() -> bool {
@@ -188,7 +189,7 @@ class MotionControllerMessageHandler {
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
-    std::atomic<bool> driver_error_handled_flag = false;
+    std::atomic<bool> driver_error_handled_flag = false; // can get rid of this if indefinite interrupt trigger issue gets resolved
 };
 
 /**
