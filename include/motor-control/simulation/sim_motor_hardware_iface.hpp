@@ -93,7 +93,7 @@ class SimMotorHardwareIface : public motor_hardware::StepperMotorHardwareIface {
         return cancel_request.exchange(exchange_request);
     }
     void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                        can::ids::ErrorCode error_code) final {
+                            can::ids::ErrorCode error_code) final {
         motor_hardware::CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
             .code = static_cast<uint8_t>(error_code)};
@@ -195,7 +195,7 @@ class SimBrushedMotorHardwareIface
         return cancel_request.exchange(exchange_request);
     }
     void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                        can::ids::ErrorCode error_code) final {
+                            can::ids::ErrorCode error_code) final {
         motor_hardware::CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
             .code = static_cast<uint8_t>(error_code)};
@@ -296,7 +296,7 @@ class SimGearMotorHardwareIface
         return cancel_request.exchange(exchange_request);
     }
     void set_cancel_request(can::ids::ErrorSeverity error_severity,
-                        can::ids::ErrorCode error_code) final {
+                            can::ids::ErrorCode error_code) final {
         motor_hardware::CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
             .code = static_cast<uint8_t>(error_code)};
