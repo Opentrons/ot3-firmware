@@ -34,6 +34,7 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
     can::messages::GetMotorUsageRequest,
+    can::messages::RouteMotorDriverInterrupt,
     can::messages::MotorDriverErrorEncountered,
     can::messages::ResetMotorDriverErrorHandling>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<

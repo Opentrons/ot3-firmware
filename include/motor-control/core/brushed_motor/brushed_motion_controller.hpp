@@ -109,7 +109,7 @@ class MotionController {
         // if we're gripping something we need to flag this so we don't drop it
         if (!hardware.get_stay_enabled()) {
             if (hardware.is_timer_interrupt_running()) {
-                hardware.request_cancel(error_severity, error_code);
+                hardware.set_cancel_request(error_severity, error_code);
             }
         }
     }

@@ -198,6 +198,9 @@ using MotorPositionRequest = Empty<MessageId::motor_position_request>;
 using UpdateMotorPositionEstimationRequest =
     Empty<MessageId::update_motor_position_estimation_request>;
 
+using RouteMotorDriverInterrupt =
+    Empty<MessageId::route_motor_driver_interrupt>;
+
 using MotorDriverErrorEncountered =
     Empty<MessageId::motor_driver_error_encountered>;
 

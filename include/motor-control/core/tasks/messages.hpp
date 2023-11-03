@@ -15,6 +15,7 @@ using MotionControlTaskMessage = std::variant<
     can::messages::HomeRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
     can::messages::GetMotorUsageRequest,
+    can::messages::RouteMotorDriverInterrupt,
     can::messages::MotorDriverErrorEncountered,
     can::messages::ResetMotorDriverErrorHandling>;
 

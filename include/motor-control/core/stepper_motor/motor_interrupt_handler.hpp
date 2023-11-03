@@ -188,7 +188,7 @@ class MotorInterruptHandler {
     void run_interrupt() {
         // handle various error states
         motor_hardware::CancelRequest cancel_request =
-            hardware.has_cancel_request();
+            hardware.get_cancel_request();
         if (clear_queue_until_empty) {
             // If we were executing a move when estop asserted, and
             // what's in the queue is the remaining enqueued moves from
@@ -207,9 +207,10 @@ class MotorInterruptHandler {
         } else if (estop_triggered()) {
             cancel_and_clear_moves(can::ids::ErrorCode::estop_detected);
             in_estop = true;
-        } else if (cancel_request.code !=
-                   0U) {  // is this correct? Should be zero-initialized. Check,
-                          // confirm!
+        } else if (static_cast<can::ids::ErrorCode>(cancel_request.code) !=
+                   can::ids::ErrorCode::ok) {  // is this correct? Should be
+                                               // zero-initialized. Check,
+                                               // confirm!
             cancel_and_clear_moves(
                 static_cast<can::ids::ErrorCode>(cancel_request.code),
                 static_cast<can::ids::ErrorSeverity>(cancel_request.severity));

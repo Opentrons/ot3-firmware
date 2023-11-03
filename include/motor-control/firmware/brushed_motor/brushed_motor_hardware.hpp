@@ -62,6 +62,7 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void read_limit_switch() final;
     void read_estop_in() final;
     void read_sync_in() final;
+    bool read_tmc_diag0() final;
     void grip() final;
     void ungrip() final;
     void stop_pwm() final;
@@ -79,12 +80,12 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
     // need any std::optional usage?
-    auto has_cancel_request() -> CancelRequest final {
+    auto get_cancel_request() -> CancelRequest final {
         CancelRequest exchange_request = {};
         return cancel_request.exchange(exchange_request);
     }
-    void request_cancel(can::ids::ErrorSeverity error_severity,
-                        can::ids::ErrorCode error_code) final {
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
+                            can::ids::ErrorCode error_code) final {
         CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
             .code = static_cast<uint8_t>(error_code)};

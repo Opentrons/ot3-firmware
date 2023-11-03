@@ -144,9 +144,19 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
+    void handle(const can::messages::RouteMotorDriverInterrupt& m) {
+        static_cast<void>(m);
+        if (controller.read_tmc_diag0()) {  // debounce needed?
+            handle_message(
+                can::messages::MotorDriverErrorEncountered{.message_index = 0});
+        } else {
+            handle_message(can::messages::ResetMotorDriverErrorHandling{
+                .message_index = 0});
+        }
+    }
+
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
         if (!driver_error_handled()) {
-            // check if gpio is low before making controller calls
             controller.stop(can::ids::ErrorSeverity::unrecoverable,
                             can::ids::ErrorCode::motor_driver_error_detected);
             if (!controller.is_timer_interrupt_running()) {
@@ -225,10 +235,9 @@ class MotionControllerTask {
 
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
-    // also create top level query msg
     void run_diag0_interrupt() {
         static_cast<void>(queue.try_write_isr(
-            can::messages::MotorDriverErrorEncountered{.message_index = 0}));
+            can::messages::RouteMotorDriverInterrupt{.message_index = 0}));
     }
 
   private:

@@ -42,6 +42,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     void stop_pwm() final { move_dir = PWM_DIRECTION::unset; }
     auto check_sync_in() -> bool final { return sync_val; }
     void read_sync_in() final {}
+    bool read_tmc_diag0() final { return diag0_val; }
 
     auto get_encoder_pulses() -> int32_t final {
         return (motor_encoder_overflow_count << 16) + enc_val;
@@ -71,13 +72,13 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     PWM_DIRECTION get_direction() { return move_dir; }
     void set_stay_enabled(bool state) { stay_enabled = state; }
     auto get_stay_enabled() -> bool { return stay_enabled; }
-    auto has_cancel_request() -> CancelRequest final {
+    auto get_cancel_request() -> CancelRequest final {
         CancelRequest old_request = cancel_request;
         CancelRequest exchange_request{};
         cancel_request = exchange_request;
         return old_request;
     }
-    void request_cancel(can::ids::ErrorSeverity error_severity,
+    void set_cancel_request(can::ids::ErrorSeverity error_severity,
                         can::ids::ErrorCode error_code) final {
         CancelRequest update_request{
             .severity = static_cast<uint8_t>(error_severity),
@@ -108,6 +109,7 @@ class MockBrushedMotorHardware : public BrushedMotorHardwareIface {
     int32_t motor_encoder_overflow_count = 0;
     bool ls_val = false;
     bool sync_val = false;
+    bool diag0_val = false;
     bool estop_in_val = false;
     bool is_gripping = false;
     bool motor_enabled = false;

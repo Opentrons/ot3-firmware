@@ -96,6 +96,7 @@ class MotorHardwareIface {
     virtual void read_limit_switch() = 0;
     virtual void read_estop_in() = 0;
     virtual void read_sync_in() = 0;
+    virtual bool read_tmc_diag0() = 0;
     virtual auto get_encoder_pulses() -> int32_t = 0;
     virtual void reset_encoder_pulses() = 0;
     virtual void start_timer_interrupt() = 0;
@@ -104,9 +105,9 @@ class MotorHardwareIface {
     virtual void enable_encoder() = 0;
     virtual void disable_encoder() = 0;
 
-    virtual auto has_cancel_request() -> CancelRequest = 0;
-    virtual void request_cancel(can::ids::ErrorSeverity error_severity,
-                                can::ids::ErrorCode error_code) = 0;
+    virtual auto get_cancel_request() -> CancelRequest = 0;
+    virtual void set_cancel_request(can::ids::ErrorSeverity error_severity,
+                                    can::ids::ErrorCode error_code) = 0;
     virtual void clear_cancel_request() = 0;
     virtual auto get_usage_eeprom_config() -> const UsageEEpromConfig& = 0;
 

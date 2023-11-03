@@ -113,7 +113,7 @@ class MotionController {
         can::ids::ErrorCode error_code = can::ids::ErrorCode::stop_requested) {
         queue.reset();
         if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel(error_severity, error_code);
+            hardware.set_cancel_request(error_severity, error_code);
         }
     }
 
@@ -136,6 +136,8 @@ class MotionController {
     }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
+
+    auto read_tmc_diag0() -> bool { return hardware.read_tmc_diag0(); }
 
     void enable_motor() {
         // check motor driver error register
@@ -277,13 +279,15 @@ class PipetteMotionController {
         // don't submit a cancel because then the cancel won't be read until
         // the timer starts the next time.
         if (hardware.is_timer_interrupt_running()) {
-            hardware.request_cancel(error_severity, error_code);
+            hardware.set_cancel_request(error_severity, error_code);
         }
     }
 
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }
+
+    auto read_tmc_diag0() -> bool { return hardware.read_tmc_diag0(); }
 
     void enable_motor() {
         hardware.start_timer_interrupt();

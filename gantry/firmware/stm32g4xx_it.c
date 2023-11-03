@@ -147,7 +147,7 @@ void FDCAN1_IT0_IRQHandler(void) {
  */
 void TIM7_IRQHandler(void) { HAL_TIM_IRQHandler(&htim7); }
 void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
-void EXTI9_5_IRQHandler(void) { HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5); } // source this from somewhere?
+void EXTI9_5_IRQHandler(void) { HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5); }
 
 
 extern void xPortSysTickHandler(void);

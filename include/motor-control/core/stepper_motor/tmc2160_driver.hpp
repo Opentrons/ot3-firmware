@@ -163,9 +163,6 @@ class TMC2160 {
             case Registers::DRVSTATUS:
                 update_driver_status(0);
                 break;
-            // case Registers::DRV_CONF:
-            //     update_drv_conf(0);
-            //     break;
             default:
                 break;
         }
@@ -318,9 +315,9 @@ class TMC2160 {
      * be read, so this function gets it from the actual device.
      */
     auto update_glob_scaler(uint32_t data) -> void {
-        auto ret = read_register<GConfig>(data);
+        auto ret = read_register<GConfig>(data);  // should be GlobalScalar
         if (ret.has_value()) {
-            _registers.gconfig = ret.value();
+            _registers.gconfig = ret.value();  // should be glob_scale
         }
     }
 
