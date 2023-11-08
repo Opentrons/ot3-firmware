@@ -162,7 +162,7 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
-        if (!driver_error_handled()) {
+        // if (!driver_error_handled()) {
             controller.stop(can::ids::ErrorSeverity::unrecoverable,
                             can::ids::ErrorCode::motor_driver_error_detected);
             if (!controller.is_timer_interrupt_running()) {
@@ -177,7 +177,7 @@ class MotionControllerMessageHandler {
                     can::messages::ReadMotorDriverErrorStatus{
                         .message_index = m.message_index});
             }
-        }
+        // }
     }
 
     void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
