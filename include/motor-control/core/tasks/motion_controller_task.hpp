@@ -59,7 +59,7 @@ class MotionControllerMessageHandler {
         if (controller.read_tmc_diag0()) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
-                can::messages::MotorDriverInErrorState{.message_index = 0});
+                can::messages::MotorDriverInErrorState{.message_index = m.message_index});
         } else {
             controller.enable_motor();
             can_client.send_can_message(can::ids::NodeId::host,
@@ -105,7 +105,7 @@ class MotionControllerMessageHandler {
         if (controller.read_tmc_diag0()) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
-                can::messages::MotorDriverInErrorState{.message_index = 0});
+                can::messages::MotorDriverInErrorState{.message_index = m.message_index});
         } else {
             controller.move(m);
         }
@@ -118,7 +118,7 @@ class MotionControllerMessageHandler {
         if (controller.read_tmc_diag0()) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
-                can::messages::MotorDriverInErrorState{.message_index = 0});
+                can::messages::MotorDriverInErrorState{.message_index = m.message_index});
         } else {
             controller.move(m);
         }
