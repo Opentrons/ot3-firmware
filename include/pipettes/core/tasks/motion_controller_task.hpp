@@ -61,14 +61,14 @@ class MotionControllerMessageHandler {
         LOG("Received enable motor request");
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
-        if (!controller.read_tmc_diag0()) {
-            controller.enable_motor();
-            can_client.send_can_message(can::ids::NodeId::host,
-                                        can::messages::ack_from_request(m));
-        } else {
+        if (controller.read_tmc_diag0()) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::MotorDriverInErrorState{.message_index = 0});
+        } else {
+            controller.enable_motor();
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::ack_from_request(m));
         }
     }
 
@@ -108,7 +108,13 @@ class MotionControllerMessageHandler {
         LOG("Motion Controller Received a tip action request: velocity=%d, "
             "acceleration=%d, groupid=%d, seqid=%d\n",
             m.velocity, m.acceleration, m.group_id, m.seq_id);
-        controller.move(m);
+        if (controller.read_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::MotorDriverInErrorState{.message_index = 0});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::ReadLimitSwitchRequest& m) {

@@ -56,14 +56,14 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
-        if (!controller.read_tmc_diag0()) {
-            controller.enable_motor();
-            can_client.send_can_message(can::ids::NodeId::host,
-                                        can::messages::ack_from_request(m));
-        } else {
+        if (controller.read_tmc_diag0()) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
                 can::messages::MotorDriverInErrorState{.message_index = 0});
+        } else {
+            controller.enable_motor();
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::ack_from_request(m));
         }
     }
 
@@ -102,14 +102,26 @@ class MotionControllerMessageHandler {
             "groupid=%d, seqid=%d, duration=%d, stopcondition=%d",
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
-        controller.move(m);
+        if (controller.read_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::MotorDriverInErrorState{.message_index = 0});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::HomeRequest& m) {
         LOG("Motion Controller Received home request: velocity=%d, "
             "groupid=%d, seqid=%d\n",
             m.velocity, m.group_id, m.seq_id);
-        controller.move(m);
+        if (controller.read_tmc_diag0()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::MotorDriverInErrorState{.message_index = 0});
+        } else {
+            controller.move(m);
+        }
     }
 
     void handle(const can::messages::ReadLimitSwitchRequest& m) {
@@ -162,41 +174,31 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::MotorDriverErrorEncountered& m) {
-        // if (!driver_error_handled()) {
-            controller.stop(can::ids::ErrorSeverity::unrecoverable,
-                            can::ids::ErrorCode::motor_driver_error_detected);
-            if (!controller.is_timer_interrupt_running()) {
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ErrorMessage{
-                        .message_index = m.message_index,
-                        .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code =
-                            can::ids::ErrorCode::motor_driver_error_detected});
-                driver_client.send_motor_driver_queue(
-                    can::messages::ReadMotorDriverErrorStatus{
-                        .message_index = m.message_index});
-            }
-        // }
+        controller.stop(can::ids::ErrorSeverity::unrecoverable,
+                        can::ids::ErrorCode::motor_driver_error_detected);
+        if (!controller.is_timer_interrupt_running()) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = m.message_index,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected});
+            driver_client.send_motor_driver_queue(
+                can::messages::ReadMotorDriverErrorStatus{.message_index =
+                                                              m.message_index});
+        }
     }
 
     void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
         static_cast<void>(m);
-        driver_error_handled_flag.exchange(false);
         controller.clear_cancel_request();
-    }
-
-    auto driver_error_handled() -> bool {
-        return driver_error_handled_flag.exchange(true);
     }
 
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
-    std::atomic<bool> driver_error_handled_flag =
-        false;  // can get rid of this if indefinite interrupt trigger issue
-                // gets resolved
 };
 
 /**

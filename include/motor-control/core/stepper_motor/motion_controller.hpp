@@ -73,7 +73,7 @@ class MotionController {
             .seq_id = can_msg.seq_id,
             .stop_condition = can_msg.request_stop_condition,
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled && !read_tmc_diag0()) {
+        if (!enabled) {
             enable_motor();
         }
         queue.try_write(msg);
@@ -92,7 +92,7 @@ class MotionController {
             .stop_condition =
                 static_cast<uint8_t>(MoveStopCondition::limit_switch),
             .usage_key = hardware.get_usage_eeprom_config().get_distance_key()};
-        if (!enabled && !read_tmc_diag0()) {
+        if (!enabled) {
             enable_motor();
         }
         queue.try_write(msg);
@@ -257,7 +257,7 @@ class PipetteMotionController {
             can_msg.action,
             gear_motor_id};
 
-        if (!enabled && !read_tmc_diag0()) {
+        if (!enabled) {
             enable_motor();
         }
         queue.try_write(msg);
