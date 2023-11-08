@@ -61,9 +61,15 @@ class MotionControllerMessageHandler {
         LOG("Received enable motor request");
         // TODO only toggle the enable pin once since all motors share
         // a single enable pin line.
-        controller.enable_motor();
-        can_client.send_can_message(can::ids::NodeId::host,
-                                    can::messages::ack_from_request(m));
+        if (!controller.read_tmc_diag0()) {
+            controller.enable_motor();
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::ack_from_request(m));
+        } else {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::MotorDriverInErrorState{.message_index = 0});
+        }
     }
 
     void handle(const can::messages::GearDisableMotorRequest& m) {

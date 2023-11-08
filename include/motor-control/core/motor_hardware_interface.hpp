@@ -72,7 +72,6 @@ class UsageEEpromConfig {
     size_t num_keys = 0;
 };
 
-// std::optional usage? See HardwareConfig struct
 struct __attribute__((packed)) CancelRequest {
     uint8_t severity;
     uint8_t code;

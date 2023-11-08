@@ -207,6 +207,8 @@ using MotorDriverErrorEncountered =
 using ResetMotorDriverErrorHandling =
     Empty<MessageId::reset_motor_driver_error_handling>;
 
+using MotorDriverInErrorState = Empty<MessageId::motor_driver_in_error_state>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;
@@ -1580,6 +1582,7 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse,
-    ReadMotorDriverErrorRegisterResponse, GripperJawStateResponse>;
+    ReadMotorDriverErrorRegisterResponse, GripperJawStateResponse,
+    MotorDriverInErrorState>;
 
 }  // namespace can::messages

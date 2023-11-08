@@ -56,9 +56,15 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
-        controller.enable_motor();
-        can_client.send_can_message(can::ids::NodeId::host,
-                                    can::messages::ack_from_request(m));
+        if (!controller.read_tmc_diag0()) {
+            controller.enable_motor();
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::ack_from_request(m));
+        } else {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::MotorDriverInErrorState{.message_index = 0});
+        }
     }
 
     void handle(const can::messages::DisableMotorRequest& m) {
@@ -178,7 +184,6 @@ class MotionControllerMessageHandler {
         static_cast<void>(m);
         driver_error_handled_flag.exchange(false);
         controller.clear_cancel_request();
-        // send MotorDriverErrorCleared msg to host
     }
 
     auto driver_error_handled() -> bool {

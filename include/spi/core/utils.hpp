@@ -35,8 +35,7 @@ template <std::ranges::range Tags>
 }
 
 [[nodiscard]] inline constexpr auto tag_in_token(uint32_t token,
-                                                 ResponseTag tag)
-    -> bool {  // utilize
+                                                 ResponseTag tag) -> bool {
     return bool(token &
                 (1 << (static_cast<size_t>(tag) + static_cast<size_t>(8))));
 }
@@ -47,8 +46,7 @@ template <std::ranges::range Tags>
 }
 
 template <typename RegType>
-[[nodiscard]] inline constexpr auto reg_from_token(uint32_t id)
-    -> RegType {  // utilize? If not, discard
+[[nodiscard]] inline constexpr auto reg_from_token(uint32_t id) -> RegType {
     return static_cast<RegType>(static_cast<uint8_t>(id & 0xff));
 }
 }  // namespace utils

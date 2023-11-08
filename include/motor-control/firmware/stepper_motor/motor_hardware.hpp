@@ -58,7 +58,6 @@ class MotorHardware : public StepperMotorHardwareIface {
     void disable_encoder() final;
     void enable_encoder() final;
 
-    // need any std::optional usage?
     auto get_cancel_request() -> CancelRequest final {
         CancelRequest exchange_request = {};
         return cancel_request.exchange(exchange_request);

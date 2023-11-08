@@ -79,7 +79,6 @@ class BrushedMotorHardware : public BrushedMotorHardwareIface {
     void reset_control() final;
     void set_stay_enabled(bool state) final { stay_enabled = state; }
     auto get_stay_enabled() -> bool final { return stay_enabled; }
-    // need any std::optional usage?
     auto get_cancel_request() -> CancelRequest final {
         CancelRequest exchange_request = {};
         return cancel_request.exchange(exchange_request);
