@@ -164,16 +164,18 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
         static_cast<void>(m);
-        diag0_debounce_count++;
-        if (diag0_debounce_count > 500) {
-            diag0_debounce_count = 0;
-            if (controller.read_tmc_diag0()) {  // debounce needed? But need to act immediately?!
+        if (diag0_debounced) {
+            diag0_debounced = false;
+            if (controller.read_tmc_diag0()) {  // debounce needed?
                 handle_message(
                     can::messages::MotorDriverErrorEncountered{.message_index = 0});
             } else {
                 handle_message(can::messages::ResetMotorDriverErrorHandling{
                     .message_index = 0});
             }
+        } else {
+            vTaskDelay(3000); // Is this ok to use? Need to act immediately?! Just decrease this?
+            diag0_debounced = true;
         }
     }
 
@@ -211,7 +213,7 @@ class MotionControllerMessageHandler {
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
-    std::atomic<uint16_t> diag0_debounce_count = 0;
+    std::atomic<bool> diag0_debounced = false;
 };
 
 /**
