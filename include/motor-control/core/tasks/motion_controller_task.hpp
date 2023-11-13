@@ -211,7 +211,7 @@ class MotionControllerMessageHandler {
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
-    std::atomic<uint8_t> diag0_debounce_count = 0;
+    std::atomic<uint16_t> diag0_debounce_count = 0;
 };
 
 /**
