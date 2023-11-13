@@ -192,8 +192,9 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
         static_cast<void>(m);
-        controller.enable_motor();
+        controller.enable_motor(); // needed?
         controller.clear_cancel_request();
+        can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = 0}); // delete
     }
 
     MotorControllerType& controller;
