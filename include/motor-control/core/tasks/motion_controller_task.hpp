@@ -165,7 +165,8 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
         static_cast<void>(m);
         diag0_debounce_count++;
-        if (diag0_debounce_count > 50) {
+        if (diag0_debounce_count > 500) {
+            diag0_debounce_count = 0;
             if (controller.read_tmc_diag0()) {  // debounce needed? But need to act immediately?!
                 handle_message(
                     can::messages::MotorDriverErrorEncountered{.message_index = 0});
