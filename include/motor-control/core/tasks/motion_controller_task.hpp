@@ -164,12 +164,15 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
         static_cast<void>(m);
-        if (controller.read_tmc_diag0()) {  // debounce needed?
-            handle_message(
-                can::messages::MotorDriverErrorEncountered{.message_index = 0});
-        } else {
-            handle_message(can::messages::ResetMotorDriverErrorHandling{
-                .message_index = 0});
+        diag0_debounce_count++;
+        if (diag0_debounce_count > 50) {
+            if (controller.read_tmc_diag0()) {  // debounce needed? But need to act immediately?!
+                handle_message(
+                    can::messages::MotorDriverErrorEncountered{.message_index = 0});
+            } else {
+                handle_message(can::messages::ResetMotorDriverErrorHandling{
+                    .message_index = 0});
+            }
         }
     }
 
@@ -207,6 +210,7 @@ class MotionControllerMessageHandler {
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
+    std::atomic<uint8_t> diag0_debounce_count = 0;
 };
 
 /**
