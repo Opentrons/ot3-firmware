@@ -194,7 +194,13 @@ class MotionControllerMessageHandler {
         static_cast<void>(m);
         controller.enable_motor(); // needed?
         controller.clear_cancel_request();
-        can_client.send_can_message(can::ids::NodeId::host, can::messages::ErrorMessage{.message_index = 0}); // delete
+        can_client.send_can_message(
+            can::ids::NodeId::host,
+            can::messages::ErrorMessage{
+                .message_index = 0,
+                .severity = can::ids::ErrorSeverity::none,
+                .error_code =
+                    can::ids::ErrorCode::motor_driver_error_detected}); // delete
     }
 
     MotorControllerType& controller;
