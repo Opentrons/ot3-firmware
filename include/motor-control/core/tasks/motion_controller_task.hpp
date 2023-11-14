@@ -228,6 +228,8 @@ class MotionControllerMessageHandler {
                     .severity = can::ids::ErrorSeverity::unrecoverable,
                     .error_code =
                         can::ids::ErrorCode::motor_driver_error_detected}); // delete
+        // TickTypet currentTick = xTaskGetTickCount();
+        // while(xTaskGetTickCount() – currentTick < pdMSTO_TICKS(1000))
         vTaskDelay(pdMS_TO_TICKS(200)); // Need to act immediately?! Just decrease this?
         debounce_count++;
         if (debounce_count > 10) { // send msg immediately, reset flags after delay?!
@@ -240,9 +242,10 @@ class MotionControllerMessageHandler {
             }
             diag0_debounced = false;
             debounce_count = 0;
+        } else {
+            // Run this by Seth
+            motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
         }
-        // Pull queue in via constructor?! Run by Seth
-        motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
     }
 
     MotorControllerType& controller;
