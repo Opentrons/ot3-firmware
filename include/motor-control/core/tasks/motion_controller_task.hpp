@@ -177,6 +177,13 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
         // delay after first message, check/act on pin after delay. Deal with/discard all messgaes during delay
         if (!diag0_debounced) {
+            can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = 1,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected}); // delete
             motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
             diag0_debounced = true;
         }
@@ -214,6 +221,13 @@ class MotionControllerMessageHandler {
 
     // combine with Route msg?
     void handle(const can::messages::DebounceMotorDriverError& m) {
+        can_client.send_can_message(
+                can::ids::NodeId::host,
+                can::messages::ErrorMessage{
+                    .message_index = static_cast<uint32_t>(debounce_count) + 2,
+                    .severity = can::ids::ErrorSeverity::unrecoverable,
+                    .error_code =
+                        can::ids::ErrorCode::motor_driver_error_detected}); // delete
         vTaskDelay(300); // Need to act immediately?! Just decrease this?
         debounce_count++;
         if (debounce_count > 10) {
