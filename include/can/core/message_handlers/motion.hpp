@@ -19,7 +19,7 @@ class MotionHandler {
                      ReadLimitSwitchRequest, MotorPositionRequest,
                      UpdateMotorPositionEstimationRequest, GetMotorUsageRequest,
                      RouteMotorDriverInterrupt, MotorDriverErrorEncountered,
-                     ResetMotorDriverErrorHandling>;
+                     ResetMotorDriverErrorHandling, DebounceMotorDriverError>;
 
     MotionHandler(MotionTaskClient &motion_client)
         : motion_client{motion_client} {}

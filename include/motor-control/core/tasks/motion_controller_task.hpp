@@ -15,23 +15,35 @@ namespace motion_controller_task {
 using TaskMessage = motor_control_task_messages::MotionControlTaskMessage;
 
 /**
+ * Concept describing a class that can message this task.
+ * @tparam Client
+ */
+template <typename Client>
+concept TaskClient = requires(Client client, const TaskMessage& m) {
+    {client.send_motion_controller_queue(m)};
+};
+
+/**
  * The message queue message handler.
  */
 template <lms::MotorMechanicalConfig MEConfig,
           can::message_writer_task::TaskClient CanClient,
           usage_storage_task::TaskClient UsageClient,
-          tmc::tasks::TaskClient DriverClient>
+          tmc::tasks::TaskClient DriverClient,
+          TaskClient MotionClient>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
     MotionControllerMessageHandler(MotorControllerType& controller,
                                    CanClient& can_client,
                                    UsageClient& usage_client,
-                                   DriverClient& driver_client)
+                                   DriverClient& driver_client,
+                                   MotionClient& motion_client)
         : controller{controller},
           can_client{can_client},
           usage_client{usage_client},
-          driver_client{driver_client} {}
+          driver_client{driver_client},
+          motion_client{motion_client} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -163,18 +175,9 @@ class MotionControllerMessageHandler {
     }
 
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
-        static_cast<void>(m);
-        if (diag0_debounced) {
-            diag0_debounced = false;
-            if (controller.read_tmc_diag0()) {  // debounce needed?
-                handle_message(
-                    can::messages::MotorDriverErrorEncountered{.message_index = 0});
-            } else {
-                handle_message(can::messages::ResetMotorDriverErrorHandling{
-                    .message_index = 0});
-            }
-        } else {
-            vTaskDelay(3000); // Is this ok to use? Need to act immediately?! Just decrease this?
+        // delay after first message, check/act on pin after delay. Deal with/discard all messgaes during delay
+        if (!diag0_debounced) {
+            motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
             diag0_debounced = true;
         }
     }
@@ -198,8 +201,8 @@ class MotionControllerMessageHandler {
 
     void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
         static_cast<void>(m);
-        controller.enable_motor(); // needed?
         controller.clear_cancel_request();
+        controller.enable_motor(); // needed?
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::ErrorMessage{
@@ -209,11 +212,32 @@ class MotionControllerMessageHandler {
                     can::ids::ErrorCode::motor_driver_error_detected}); // delete
     }
 
+    // combine with Route msg?
+    void handle(const can::messages::DebounceMotorDriverError& m) {
+        vTaskDelay(300); // Need to act immediately?! Just decrease this?
+        debounce_count++;
+        if (debounce_count > 10) {
+            if (controller.read_tmc_diag0()) {
+                handle_message(
+                    can::messages::MotorDriverErrorEncountered{.message_index = m.message_index});
+            } else {
+                handle_message(can::messages::ResetMotorDriverErrorHandling{
+                    .message_index = m.message_index});
+            }
+            diag0_debounced = false;
+            debounce_count = 0;
+        }
+        // Pull queue in via constructor?! Run by Seth
+        motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{});
+    }
+
     MotorControllerType& controller;
     CanClient& can_client;
     UsageClient& usage_client;
     DriverClient& driver_client;
+    MotionClient& motion_client;
     std::atomic<bool> diag0_debounced = false;
+    std::atomic<uint8_t> debounce_count = 0;
 };
 
 /**
@@ -238,13 +262,14 @@ class MotionControllerTask {
     template <lms::MotorMechanicalConfig MEConfig,
               can::message_writer_task::TaskClient CanClient,
               usage_storage_task::TaskClient UsageClient,
-              tmc::tasks::TaskClient DriverClient>
+              tmc::tasks::TaskClient DriverClient,
+              TaskClient MotionClient>
     [[noreturn]] void operator()(
         motion_controller::MotionController<MEConfig>* controller,
         CanClient* can_client, UsageClient* usage_client,
-        DriverClient* driver_client) {
+        DriverClient* driver_client, MotionClient* motion_client) {
         auto handler = MotionControllerMessageHandler{
-            *controller, *can_client, *usage_client, *driver_client};
+            *controller, *can_client, *usage_client, *driver_client, *motion_client};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
@@ -267,15 +292,6 @@ class MotionControllerTask {
 
   private:
     QueueType& queue;
-};
-
-/**
- * Concept describing a class that can message this task.
- * @tparam Client
- */
-template <typename Client>
-concept TaskClient = requires(Client client, const TaskMessage& m) {
-    {client.send_motion_controller_queue(m)};
 };
 
 }  // namespace motion_controller_task

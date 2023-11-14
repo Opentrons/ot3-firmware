@@ -68,7 +68,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GetMotorUsageRequest,
     can::messages::RouteMotorDriverInterrupt,
     can::messages::MotorDriverErrorEncountered,
-    can::messages::ResetMotorDriverErrorHandling>;
+    can::messages::ResetMotorDriverErrorHandling,
+    can::messages::DebounceMotorDriverError>;
 
 using GearMotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     gear_motion_handler::GearMotorMotionHandler<gear_motor_tasks::QueueClient>,

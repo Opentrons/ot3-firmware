@@ -47,7 +47,8 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::GetMotorUsageRequest,
     can::messages::RouteMotorDriverInterrupt,
     can::messages::MotorDriverErrorEncountered,
-    can::messages::ResetMotorDriverErrorHandling>;
+    can::messages::ResetMotorDriverErrorHandling,
+    can::messages::DebounceMotorDriverError>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         head_tasks::HeadQueueClient>,

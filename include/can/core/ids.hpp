@@ -67,6 +67,7 @@ enum class MessageId {
     reset_motor_driver_error_handling = 0x39,
     route_motor_driver_interrupt = 0x3a,
     motor_driver_in_error_state = 0x3b,
+    debounce_motor_driver_error = 0x3c,
     set_brushed_motor_vref_request = 0x40,
     set_brushed_motor_pwm_request = 0x41,
     gripper_grip_request = 0x42,

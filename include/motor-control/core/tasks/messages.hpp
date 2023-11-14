@@ -17,7 +17,8 @@ using MotionControlTaskMessage = std::variant<
     can::messages::GetMotorUsageRequest,
     can::messages::RouteMotorDriverInterrupt,
     can::messages::MotorDriverErrorEncountered,
-    can::messages::ResetMotorDriverErrorHandling>;
+    can::messages::ResetMotorDriverErrorHandling,
+    can::messages::DebounceMotorDriverError>;
 
 using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,

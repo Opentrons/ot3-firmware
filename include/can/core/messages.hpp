@@ -209,6 +209,8 @@ using ResetMotorDriverErrorHandling =
 
 using MotorDriverInErrorState = Empty<MessageId::motor_driver_in_error_state>;
 
+using DebounceMotorDriverError = Empty<MessageId::debounce_motor_driver_error>;
+
 struct WriteToEEPromRequest : BaseMessage<MessageId::write_eeprom> {
     uint32_t message_index;
     eeprom::types::address address;
