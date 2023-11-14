@@ -228,9 +228,9 @@ class MotionControllerMessageHandler {
                     .severity = can::ids::ErrorSeverity::unrecoverable,
                     .error_code =
                         can::ids::ErrorCode::motor_driver_error_detected}); // delete
-        vTaskDelay(30); // Need to act immediately?! Just decrease this?
+        vTaskDelay(20); // Need to act immediately?! Just decrease this?
         debounce_count++;
-        if (debounce_count > 100) {
+        if (debounce_count > 50) {
             if (controller.read_tmc_diag0()) {
                 handle_message(
                     can::messages::MotorDriverErrorEncountered{.message_index = m.message_index});
