@@ -228,7 +228,7 @@ class MotionControllerMessageHandler {
             debounce_count = 0;
         }
         // Pull queue in via constructor?! Run by Seth
-        motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{});
+        motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
     }
 
     MotorControllerType& controller;
