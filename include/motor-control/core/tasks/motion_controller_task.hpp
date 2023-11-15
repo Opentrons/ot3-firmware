@@ -176,16 +176,9 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
+    //get rid of this method
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
-        // delay after first message, check/act on pin after delay. Deal with/discard all messgaes during delay
         if (!diag0_debounced) {
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ErrorMessage{
-                    .message_index = 1,
-                    .severity = can::ids::ErrorSeverity::unrecoverable,
-                    .error_code =
-                        can::ids::ErrorCode::motor_driver_error_detected}); // delete
             motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
             diag0_debounced = true;
         }
@@ -211,28 +204,20 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
         static_cast<void>(m);
         controller.clear_cancel_request();
-        controller.enable_motor(); // needed?
         can_client.send_can_message(
             can::ids::NodeId::host,
             can::messages::ErrorMessage{
-                .message_index = 0,
+                .message_index = m.message_index,
                 .severity = can::ids::ErrorSeverity::none,
                 .error_code =
                     can::ids::ErrorCode::motor_driver_error_detected}); // delete
     }
 
-    // combine with Route msg?
     void handle(const can::messages::DebounceMotorDriverError& m) {
-        can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::ErrorMessage{
-                    .message_index = static_cast<uint32_t>(debounce_count) + 2,
-                    .severity = can::ids::ErrorSeverity::unrecoverable,
-                    .error_code =
-                        can::ids::ErrorCode::motor_driver_error_detected}); // delete
-        vTaskDelay(pdMS_TO_TICKS(200)); // Need to act immediately?! Just decrease this?!
+        // delay after first message, check/act on pin after delay. Deal with/discard all messgaes during delay
+        vTaskDelay(pdMS_TO_TICKS(100)); // Need to act immediately?! Just decrease this?!
         debounce_count++;
-        if (debounce_count > 10) { // send msg immediately, reset flags after delay?!
+        if (debounce_count > 9) { // send msg immediately, reset flags after delay?!
             if (controller.read_tmc_diag0()) {
                 motion_client.send_motion_controller_queue(can::messages::MotorDriverErrorEncountered{.message_index = m.message_index});
             } else {
@@ -241,7 +226,6 @@ class MotionControllerMessageHandler {
             diag0_debounced = false;
             debounce_count = 0;
         } else {
-            // Run pulling motion_client by Seth
             motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
         }
     }
