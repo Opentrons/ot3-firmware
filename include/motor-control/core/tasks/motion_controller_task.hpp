@@ -176,7 +176,7 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
-    //get rid of this method
+    // use this method, get rid of debounce message
     void handle(const can::messages::RouteMotorDriverInterrupt& m) {
         if (!diag0_debounced) {
             motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
@@ -213,11 +213,12 @@ class MotionControllerMessageHandler {
                     can::ids::ErrorCode::motor_driver_error_detected}); // delete
     }
 
+    // no debouncing needed in final product
+    // make messages non-CAN, should be trivial, everything takes std::monostate
     void handle(const can::messages::DebounceMotorDriverError& m) {
-        // delay after first message, check/act on pin after delay. Deal with/discard all messgaes during delay
-        vTaskDelay(pdMS_TO_TICKS(100)); // Need to act immediately?! Just decrease this?!
+        vTaskDelay(pdMS_TO_TICKS(100));
         debounce_count++;
-        if (debounce_count > 9) { // send msg immediately, reset flags after delay?!
+        if (debounce_count > 9) {
             if (controller.read_tmc_diag0()) {
                 motion_client.send_motion_controller_queue(can::messages::MotorDriverErrorEncountered{.message_index = m.message_index});
             } else {
