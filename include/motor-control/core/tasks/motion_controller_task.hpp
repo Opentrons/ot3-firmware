@@ -38,12 +38,14 @@ class MotionControllerMessageHandler {
                                    CanClient& can_client,
                                    UsageClient& usage_client,
                                    DriverClient& driver_client,
-                                   MotionClient& motion_client)
+                                   MotionClient& motion_client,
+                                   std::atomic<bool>& diag0_debounced)
         : controller{controller},
           can_client{can_client},
           usage_client{usage_client},
           driver_client{driver_client},
-          motion_client{motion_client} {}
+          motion_client{motion_client},
+          diag0_debounced{diag0_debounced} {}
     MotionControllerMessageHandler(const MotionControllerMessageHandler& c) =
         delete;
     MotionControllerMessageHandler(const MotionControllerMessageHandler&& c) =
@@ -230,7 +232,7 @@ class MotionControllerMessageHandler {
                         can::ids::ErrorCode::motor_driver_error_detected}); // delete
         // TickTypet currentTick = xTaskGetTickCount();
         // while(xTaskGetTickCount() – currentTick < pdMSTO_TICKS(1000))
-        vTaskDelay(pdMS_TO_TICKS(200)); // Need to act immediately?! Just decrease this?
+        vTaskDelay(pdMS_TO_TICKS(200)); // Need to act immediately?! Just decrease this?!
         debounce_count++;
         if (debounce_count > 10) { // send msg immediately, reset flags after delay?!
             if (controller.read_tmc_diag0()) {
@@ -243,7 +245,7 @@ class MotionControllerMessageHandler {
             diag0_debounced = false;
             debounce_count = 0;
         } else {
-            // Run this by Seth
+            // Run pulling motion_client by Seth
             motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
         }
     }
@@ -253,7 +255,7 @@ class MotionControllerMessageHandler {
     UsageClient& usage_client;
     DriverClient& driver_client;
     MotionClient& motion_client;
-    std::atomic<bool> diag0_debounced = false;
+    std::atomic<bool>& diag0_debounced;
     std::atomic<uint8_t> debounce_count = 0;
 };
 
@@ -286,7 +288,7 @@ class MotionControllerTask {
         CanClient* can_client, UsageClient* usage_client,
         DriverClient* driver_client, MotionClient* motion_client) {
         auto handler = MotionControllerMessageHandler{
-            *controller, *can_client, *usage_client, *driver_client, *motion_client};
+            *controller, *can_client, *usage_client, *driver_client, *motion_client, diag0_debounced};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
@@ -303,12 +305,16 @@ class MotionControllerTask {
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
     void run_diag0_interrupt() {
-        static_cast<void>(queue.try_write_isr(
-            can::messages::RouteMotorDriverInterrupt{.message_index = 0}));
+        if (!diag0_debounced) {
+            static_cast<void>(queue.try_write_isr(
+                can::messages::DebounceMotorDriverError{.message_index = 0}));
+            diag0_debounced = true;
+        }
     }
 
   private:
     QueueType& queue;
+    std::atomic<bool> diag0_debounced = false;
 };
 
 }  // namespace motion_controller_task
