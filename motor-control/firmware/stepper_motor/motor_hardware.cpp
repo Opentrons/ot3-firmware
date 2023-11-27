@@ -23,8 +23,8 @@ void MotorHardware::activate_motor() {
 void MotorHardware::deactivate_motor() {
     if (pins.ebrake.has_value()) {
         gpio::set(pins.ebrake.value());
+        motor_hardware_delay(10);
     }
-    motor_hardware_delay(10);
     gpio::reset(pins.enable);
 }
 void MotorHardware::start_timer_interrupt() {
