@@ -176,15 +176,26 @@ class MotionControllerMessageHandler {
         controller.send_usage_data(m.message_index, usage_client);
     }
 
-    // use this method, get rid of debounce message
-    void handle(const can::messages::RouteMotorDriverInterrupt& m) {
-        if (!diag0_debounced) {
-            motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
-            diag0_debounced = true;
+    // no debouncing needed in final product
+    // make messages non-CAN, should be trivial, everything takes std::monostate
+    /*
+    void handle(const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+        debounce_count++;
+        if (debounce_count > 9) {
+            if (controller.read_tmc_diag0()) {
+                motion_client.send_motion_controller_queue(motor_control_task_messages::MotorDriverErrorEncountered{.message_index = m.message_index});
+            } else {
+                motion_client.send_motion_controller_queue(motor_control_task_messages::ResetMotorDriverErrorHandling{.message_index = m.message_index});
+            }
+            diag0_debounced = false;
+            debounce_count = 0;
+        } else {
+            motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index});
         }
     }
 
-    void handle(const can::messages::MotorDriverErrorEncountered& m) {
+    void handle(const motor_control_task_messages::MotorDriverErrorEncountered& m) {
         controller.stop(can::ids::ErrorSeverity::unrecoverable,
                         can::ids::ErrorCode::motor_driver_error_detected);
         if (!controller.is_timer_interrupt_running()) {
@@ -201,7 +212,7 @@ class MotionControllerMessageHandler {
         }
     }
 
-    void handle(const can::messages::ResetMotorDriverErrorHandling& m) {
+    void handle(const motor_control_task_messages::ResetMotorDriverErrorHandling& m) {
         static_cast<void>(m);
         controller.clear_cancel_request();
         can_client.send_can_message(
@@ -212,22 +223,25 @@ class MotionControllerMessageHandler {
                 .error_code =
                     can::ids::ErrorCode::motor_driver_error_detected}); // delete
     }
+    */
 
-    // no debouncing needed in final product
-    // make messages non-CAN, should be trivial, everything takes std::monostate
-    void handle(const can::messages::DebounceMotorDriverError& m) {
-        vTaskDelay(pdMS_TO_TICKS(100));
-        debounce_count++;
-        if (debounce_count > 9) {
-            if (controller.read_tmc_diag0()) {
-                motion_client.send_motion_controller_queue(can::messages::MotorDriverErrorEncountered{.message_index = m.message_index});
-            } else {
-                motion_client.send_motion_controller_queue(can::messages::ResetMotorDriverErrorHandling{.message_index = m.message_index});
+    void handle(const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
+        if (controller.read_tmc_diag0()) {
+            controller.stop(can::ids::ErrorSeverity::unrecoverable,
+                            can::ids::ErrorCode::motor_driver_error_detected);
+            if (!controller.is_timer_interrupt_running()) {
+                can_client.send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = m.message_index,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code =
+                            can::ids::ErrorCode::motor_driver_error_detected});
+                driver_client.send_motor_driver_queue(
+                    can::messages::ReadMotorDriverErrorStatus{.message_index = m.message_index});
             }
-            diag0_debounced = false;
-            debounce_count = 0;
         } else {
-            motion_client.send_motion_controller_queue(can::messages::DebounceMotorDriverError{.message_index = m.message_index});
+            controller.clear_cancel_request();
         }
     }
 
@@ -285,17 +299,48 @@ class MotionControllerTask {
 
     [[nodiscard]] auto get_queue() const -> QueueType& { return queue; }
 
+    /*
     void run_diag0_interrupt() {
         if (!diag0_debounced) {
-            static_cast<void>(queue.try_write_isr(
-                can::messages::DebounceMotorDriverError{.message_index = 0}));
+            static_cast<void>(queue.try_write_isr(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = 0}));
             diag0_debounced = true;
         }
+    }
+
+    void run_diag0_interrupt() {
+        if (controller->read_tmc_diag0()) {
+            controller->stop(can::ids::ErrorSeverity::unrecoverable,
+                            can::ids::ErrorCode::motor_driver_error_detected);
+            if (!controller->is_timer_interrupt_running()) {
+                can_client->send_can_message(
+                    can::ids::NodeId::host,
+                    can::messages::ErrorMessage{
+                        .message_index = 0,
+                        .severity = can::ids::ErrorSeverity::unrecoverable,
+                        .error_code =
+                            can::ids::ErrorCode::motor_driver_error_detected});
+                driver_client->send_motor_driver_queue(
+                    can::messages::ReadMotorDriverErrorStatus{.message_index = 0});
+            }
+        } else {
+            controller->clear_cancel_request();
+        }
+    }
+    */
+
+    void run_diag0_interrupt() {
+        static_cast<void>(queue.try_write_isr(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = 0}));
     }
 
   private:
     QueueType& queue;
     std::atomic<bool> diag0_debounced = false;
+    // static motion_controller::MotionController<lms::MotorMechanicalConfig>* controller = nullptr;
+    // static can::message_writer_task::TaskClient* can_client = nullptr;
+    // static tmc::tasks::TaskClient* driver_client = nullptr;
+    // static member object for motion controller (a nullable pointer)
+    // Can that much calling of motion controller be done in interrupt??
+    // do what impacts the least
 };
 
 }  // namespace motion_controller_task

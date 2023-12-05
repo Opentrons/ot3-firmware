@@ -33,11 +33,7 @@ using MotionControllerDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::SetMotionConstraints, can::messages::ReadLimitSwitchRequest,
     can::messages::MotorPositionRequest,
     can::messages::UpdateMotorPositionEstimationRequest,
-    can::messages::GetMotorUsageRequest,
-    can::messages::RouteMotorDriverInterrupt,
-    can::messages::MotorDriverErrorEncountered,
-    can::messages::ResetMotorDriverErrorHandling,
-    can::messages::DebounceMotorDriverError>;
+    can::messages::GetMotorUsageRequest>;
 using SystemDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::system::SystemMessageHandler<
         gripper_tasks::QueueClient>,
