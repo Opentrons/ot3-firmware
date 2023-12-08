@@ -124,6 +124,20 @@ class MotionControllerMessageHandler {
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 
+    void handle(const can::messages::SetGripperJawHoldoffRequest& m) {
+        controller.set_idle_holdoff(m);
+        can_client.send_can_message(can::ids::NodeId::host,
+                                    can::messages::ack_from_request(m));
+    }
+
+    void handle(const can::messages::GripperJawHoldoffRequest& m) {
+        auto ticks = controller.get_idle_holdoff();
+        can::messages::GripperJawHoldoffResponse msg{
+                .message_index = m.message_index,
+                .holdoff_ticks = ticks};
+        can_client.send_can_message(can::ids::NodeId::host, msg);
+    }
+
     brushed_motion_controller::MotionController<MEConfig>& controller;
     CanClient& can_client;
     UsageClient& usage_client;

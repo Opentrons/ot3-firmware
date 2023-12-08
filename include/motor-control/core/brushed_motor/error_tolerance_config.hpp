@@ -8,6 +8,11 @@ namespace error_tolerance_config {
 static constexpr double ACCEPTABLE_DISTANCE_TOLERANCE_MM = 2;
 static constexpr double UNWANTED_MOVEMENT_DISTANCE_MM = 2;
 
+// hold off for 1 ms (with a 32k Hz timer)
+// using the logic analyzer it takes about 0.2-0.3 ms for the output
+// to stablize after changing directions of the PWM
+static constexpr uint32_t IDLE_HOLDOFF_TICKS = 32;
+
 class BrushedMotorErrorTolerance {
   public:
     BrushedMotorErrorTolerance(
@@ -19,6 +24,7 @@ class BrushedMotorErrorTolerance {
         unwanted_movement_threshold =
             int32_t(gear_conf.get_encoder_pulses_per_mm() *
                     UNWANTED_MOVEMENT_DISTANCE_MM);
+        idle_holdoff_ticks = uint32_t(IDLE_HOLDOFF_TICKS);
     }
 
     void update_tolerance(double pos_error, double unwanted_movement) {
@@ -27,9 +33,14 @@ class BrushedMotorErrorTolerance {
         unwanted_movement_threshold =
             int32_t(gear_conf.get_encoder_pulses_per_mm() * unwanted_movement);
     }
+
+    void update_idle_holdoff_ticks(uint32_t holdoff_ticks) {
+        idle_holdoff_ticks = holdoff_ticks;
+    }
     lms::LinearMotionSystemConfig<lms::GearBoxConfig>& gear_conf;
     int32_t acceptable_position_error = 0;
     int32_t unwanted_movement_threshold = 0;
+    uint32_t idle_holdoff_ticks = 0;
 };
 
 }  // namespace error_tolerance_config

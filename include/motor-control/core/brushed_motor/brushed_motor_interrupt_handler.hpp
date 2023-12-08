@@ -25,11 +25,6 @@ using namespace motor_messages;
  *
  */
 
-static constexpr uint32_t HOLDOFF_TICKS =
-    32;  // hold off for 1 ms (with a 32k Hz timer)
-// using the logic analyzer it takes about 0.2-0.3 ms for the output
-// to stablize after changing directions of the PWM
-
 template <template <class> class QueueImpl,
           move_status_reporter_task::BrushedTaskClient StatusClient>
 requires MessageQueue<QueueImpl<BrushedMove>, BrushedMove>
@@ -207,7 +202,7 @@ class BrushedMotorInterruptHandler {
             }
             cancel_and_clear_moves(can::ids::ErrorCode::stop_requested,
                                    can::ids::ErrorSeverity::warning);
-        } else if (tick < HOLDOFF_TICKS) {
+        } else if (tick < error_conf.idle_holdoff_ticks) {
             tick++;
         } else if (_has_active_move) {
             execute_active_move();
@@ -221,7 +216,7 @@ class BrushedMotorInterruptHandler {
          * the encoder is idle */
         return !(buffered_move.stop_condition ==
                      MoveStopCondition::limit_switch ||
-                 tick < HOLDOFF_TICKS);
+                 tick < error_conf.idle_holdoff_ticks);
     }
 
     void set_enc_idle_state(bool val) {

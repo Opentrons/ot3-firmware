@@ -131,6 +131,14 @@ class MotionController {
                                  S15Q16_RADIX));
     }
 
+    void set_idle_holdoff(const can::messages::SetGripperJawHoldoffRequest& can_msg) {
+        error_config.update_idle_holdoff_ticks(can_msg.holdoff_ticks);
+    }
+
+    auto get_idle_holdoff() -> uint32_t {
+        return error_config.idle_holdoff_ticks;
+    }
+
     template <usage_storage_task::TaskClient UsageClient>
     void send_usage_data(uint32_t message_index, UsageClient& usage_client) {
         usage_messages::GetUsageRequest req = {

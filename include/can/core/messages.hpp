@@ -1521,6 +1521,46 @@ struct GripperJawStateResponse
         -> bool = default;
 };
 
+struct SetGripperJawHoldoffRequest
+        : BaseMessage<MessageId::set_gripper_jaw_holdoff_request> {
+    uint32_t message_index;
+    uint32_t holdoff_ticks;
+
+    template <bit_utils::ByteIterator Input, typename Limit>
+    static auto parse(Input body, Limit limit)
+    -> SetGripperJawHoldoffRequest {
+        uint32_t holdoff_ticks = 0;
+        uint32_t msg_ind = 0;
+
+        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+        body = bit_utils::bytes_to_int(body, limit, holdoff_ticks);
+        return SetGripperJawHoldoffRequest{
+                .message_index = msg_ind,
+                .holdoff_ticks = holdoff_ticks};
+    }
+    auto operator==(const SetGripperJawHoldoffRequest& other) const
+    -> bool = default;
+};
+
+using GripperJawHoldoffRequest = Empty<MessageId::gripper_jaw_holdoff_request>;
+
+struct GripperJawHoldoffResponse
+        : BaseMessage<MessageId::gripper_jaw_holdoff_response> {
+    uint32_t message_index;
+    uint32_t holdoff_ticks;
+
+    template <bit_utils::ByteIterator Output, typename Limit>
+    auto serialize(Output body, Limit limit) const -> uint8_t {
+        auto iter = bit_utils::int_to_bytes(message_index, body, limit);
+        iter = bit_utils::int_to_bytes(static_cast<uint32_t>(holdoff_ticks), iter,
+                                       limit);
+        return iter - body;
+    }
+
+    auto operator==(const GripperJawHoldoffResponse& other) const
+    -> bool = default;
+};
+
 /**
  * A variant of all message types we might send..
  */
@@ -1537,6 +1577,6 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse,
-    GripperJawStateResponse>;
+    GripperJawStateResponse, GripperJawHoldoffResponse>;
 
 }  // namespace can::messages
