@@ -41,8 +41,9 @@ void z_tasks::start_task(
     AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
     eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
         tail_accessor) {
-    auto& motion = mc_task_builder.start(5, "z mc", z_motor.motion_controller,
-                                         z_queues, z_queues, z_queues, z_queues);
+    auto& motion =
+        mc_task_builder.start(5, "z mc", z_motor.motion_controller, z_queues,
+                              z_queues, z_queues, z_queues);
     auto& move_group =
         move_group_task_builder.start(5, "move group", z_queues, z_queues);
     auto& tmc2130_driver = motor_driver_task_builder.start(

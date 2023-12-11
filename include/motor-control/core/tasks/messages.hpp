@@ -37,11 +37,14 @@ struct Empty : BaseMessage<MId> {
     auto operator==(const Empty&) const -> bool = default;
 };
 
-using RouteMotorDriverInterrupt = Empty<MessageId::route_motor_driver_interrupt>;
+using RouteMotorDriverInterrupt =
+Empty<MessageId::route_motor_driver_interrupt>;
 
-using MotorDriverErrorEncountered = Empty<MessageId::motor_driver_error_encountered>;
+using MotorDriverErrorEncountered =
+Empty<MessageId::motor_driver_error_encountered>;
 
-using ResetMotorDriverErrorHandling = Empty<MessageId::reset_motor_driver_error_handling>;
+using ResetMotorDriverErrorHandling =
+Empty<MessageId::reset_motor_driver_error_handling>;
 
 struct RouteMotorDriverInterrupt {
     uint32_t message_index;
@@ -82,9 +85,8 @@ struct MotorDriverErrorEncountered {
 struct ResetMotorDriverErrorHandling {
     uint32_t message_index;
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> ResetMotorDriverErrorHandling {
-        uint32_t msg_ind = 0;
-        body = bit_utils::bytes_to_int(body, limit, msg_ind);
+    static auto parse(Input body, Limit limit) -> ResetMotorDriverErrorHandling
+{ uint32_t msg_ind = 0; body = bit_utils::bytes_to_int(body, limit, msg_ind);
         return ResetMotorDriverErrorHandling{.message_index = msg_ind};
     }
 
@@ -94,7 +96,8 @@ struct ResetMotorDriverErrorHandling {
         return iter - body;
     }
 
-    auto operator==(const ResetMotorDriverErrorHandling&) const -> bool = default;
+    auto operator==(const ResetMotorDriverErrorHandling&) const -> bool =
+default;
 };*/
 // needs a member 'id'. This seems to just be becoming a CAN msg!
 

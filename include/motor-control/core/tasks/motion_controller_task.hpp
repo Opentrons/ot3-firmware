@@ -29,8 +29,7 @@ concept TaskClient = requires(Client client, const TaskMessage& m) {
 template <lms::MotorMechanicalConfig MEConfig,
           can::message_writer_task::TaskClient CanClient,
           usage_storage_task::TaskClient UsageClient,
-          tmc::tasks::TaskClient DriverClient,
-          TaskClient MotionClient>
+          tmc::tasks::TaskClient DriverClient, TaskClient MotionClient>
 class MotionControllerMessageHandler {
   public:
     using MotorControllerType = motion_controller::MotionController<MEConfig>;
@@ -71,9 +70,9 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::EnableMotorRequest& m) {
         LOG("Received enable motor request");
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::MotorDriverInErrorState{.message_index = m.message_index});
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::MotorDriverInErrorState{
+                                            .message_index = m.message_index});
         } else {
             controller.enable_motor();
             can_client.send_can_message(can::ids::NodeId::host,
@@ -117,9 +116,9 @@ class MotionControllerMessageHandler {
             m.velocity, m.acceleration, m.group_id, m.seq_id, m.duration,
             m.request_stop_condition);
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::MotorDriverInErrorState{.message_index = m.message_index});
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::MotorDriverInErrorState{
+                                            .message_index = m.message_index});
         } else {
             controller.move(m);
         }
@@ -130,9 +129,9 @@ class MotionControllerMessageHandler {
             "groupid=%d, seqid=%d\n",
             m.velocity, m.group_id, m.seq_id);
         if (controller.read_tmc_diag0()) {
-            can_client.send_can_message(
-                can::ids::NodeId::host,
-                can::messages::MotorDriverInErrorState{.message_index = m.message_index});
+            can_client.send_can_message(can::ids::NodeId::host,
+                                        can::messages::MotorDriverInErrorState{
+                                            .message_index = m.message_index});
         } else {
             controller.move(m);
         }
@@ -179,24 +178,24 @@ class MotionControllerMessageHandler {
     // no debouncing needed in final product
     // make messages non-CAN, should be trivial, everything takes std::monostate
     /*
-    void handle(const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
-        vTaskDelay(pdMS_TO_TICKS(100));
-        debounce_count++;
-        if (debounce_count > 9) {
-            if (controller.read_tmc_diag0()) {
-                motion_client.send_motion_controller_queue(motor_control_task_messages::MotorDriverErrorEncountered{.message_index = m.message_index});
-            } else {
-                motion_client.send_motion_controller_queue(motor_control_task_messages::ResetMotorDriverErrorHandling{.message_index = m.message_index});
+    void handle(const motor_control_task_messages::RouteMotorDriverInterrupt& m)
+    { vTaskDelay(pdMS_TO_TICKS(100)); debounce_count++; if (debounce_count > 9)
+    { if (controller.read_tmc_diag0()) {
+                motion_client.send_motion_controller_queue(motor_control_task_messages::MotorDriverErrorEncountered{.message_index
+    = m.message_index}); } else {
+                motion_client.send_motion_controller_queue(motor_control_task_messages::ResetMotorDriverErrorHandling{.message_index
+    = m.message_index});
             }
             diag0_debounced = false;
             debounce_count = 0;
         } else {
-            motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index});
+            motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index
+    = m.message_index});
         }
     }
 
-    void handle(const motor_control_task_messages::MotorDriverErrorEncountered& m) {
-        controller.stop(can::ids::ErrorSeverity::unrecoverable,
+    void handle(const motor_control_task_messages::MotorDriverErrorEncountered&
+    m) { controller.stop(can::ids::ErrorSeverity::unrecoverable,
                         can::ids::ErrorCode::motor_driver_error_detected);
         if (!controller.is_timer_interrupt_running()) {
             can_client.send_can_message(
@@ -212,7 +211,8 @@ class MotionControllerMessageHandler {
         }
     }
 
-    void handle(const motor_control_task_messages::ResetMotorDriverErrorHandling& m) {
+    void handle(const
+    motor_control_task_messages::ResetMotorDriverErrorHandling& m) {
         static_cast<void>(m);
         controller.clear_cancel_request();
         can_client.send_can_message(
@@ -221,11 +221,13 @@ class MotionControllerMessageHandler {
                 .message_index = m.message_index,
                 .severity = can::ids::ErrorSeverity::none,
                 .error_code =
-                    can::ids::ErrorCode::motor_driver_error_detected}); // delete
+                    can::ids::ErrorCode::motor_driver_error_detected}); //
+    delete
     }
     */
 
-    void handle(const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
+    void handle(
+        const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
         if (controller.read_tmc_diag0()) {
             controller.stop(can::ids::ErrorSeverity::unrecoverable,
                             can::ids::ErrorCode::motor_driver_error_detected);
@@ -238,7 +240,8 @@ class MotionControllerMessageHandler {
                         .error_code =
                             can::ids::ErrorCode::motor_driver_error_detected});
                 driver_client.send_motor_driver_queue(
-                    can::messages::ReadMotorDriverErrorStatus{.message_index = m.message_index});
+                    can::messages::ReadMotorDriverErrorStatus{
+                        .message_index = m.message_index});
             }
         } else {
             controller.clear_cancel_request();
@@ -276,14 +279,14 @@ class MotionControllerTask {
     template <lms::MotorMechanicalConfig MEConfig,
               can::message_writer_task::TaskClient CanClient,
               usage_storage_task::TaskClient UsageClient,
-              tmc::tasks::TaskClient DriverClient,
-              TaskClient MotionClient>
+              tmc::tasks::TaskClient DriverClient, TaskClient MotionClient>
     [[noreturn]] void operator()(
         motion_controller::MotionController<MEConfig>* controller,
         CanClient* can_client, UsageClient* usage_client,
         DriverClient* driver_client, MotionClient* motion_client) {
         auto handler = MotionControllerMessageHandler{
-            *controller, *can_client, *usage_client, *driver_client, *motion_client, diag0_debounced};
+            *controller,    *can_client,    *usage_client,
+            *driver_client, *motion_client, diag0_debounced};
         TaskMessage message{};
         bool first_run = true;
         for (;;) {
@@ -302,8 +305,8 @@ class MotionControllerTask {
     /*
     void run_diag0_interrupt() {
         if (!diag0_debounced) {
-            static_cast<void>(queue.try_write_isr(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = 0}));
-            diag0_debounced = true;
+            static_cast<void>(queue.try_write_isr(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index
+    = 0})); diag0_debounced = true;
         }
     }
 
@@ -320,7 +323,8 @@ class MotionControllerTask {
                         .error_code =
                             can::ids::ErrorCode::motor_driver_error_detected});
                 driver_client->send_motor_driver_queue(
-                    can::messages::ReadMotorDriverErrorStatus{.message_index = 0});
+                    can::messages::ReadMotorDriverErrorStatus{.message_index =
+    0});
             }
         } else {
             controller->clear_cancel_request();
@@ -329,16 +333,18 @@ class MotionControllerTask {
     */
 
     void run_diag0_interrupt() {
-        static_cast<void>(queue.try_write_isr(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = 0}));
+        static_cast<void>(queue.try_write_isr(
+            motor_control_task_messages::RouteMotorDriverInterrupt{
+                .message_index = 0}));
     }
 
   private:
     QueueType& queue;
     std::atomic<bool> diag0_debounced = false;
-    // static motion_controller::MotionController<lms::MotorMechanicalConfig>* controller = nullptr;
-    // static can::message_writer_task::TaskClient* can_client = nullptr;
-    // static tmc::tasks::TaskClient* driver_client = nullptr;
-    // static member object for motion controller (a nullable pointer)
+    // static motion_controller::MotionController<lms::MotorMechanicalConfig>*
+    // controller = nullptr; static can::message_writer_task::TaskClient*
+    // can_client = nullptr; static tmc::tasks::TaskClient* driver_client =
+    // nullptr; static member object for motion controller (a nullable pointer)
     // Can that much calling of motion controller be done in interrupt??
     // do what impacts the least
 };

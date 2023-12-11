@@ -145,9 +145,9 @@ void head_tasks::start_tasks(
     head_queues.eeprom_queue = &eeprom_task.get_queue();
 #endif
     // Start the left motor tasks
-    auto& left_motion =
-        left_mc_task_builder.start(5, "left mc", left_motion_controller,
-                                   left_queues, left_queues, left_queues, left_queues);
+    auto& left_motion = left_mc_task_builder.start(
+        5, "left mc", left_motion_controller, left_queues, left_queues,
+        left_queues, left_queues);
     auto& left_tmc2160_driver = left_motor_driver_task_builder.start(
         5, "left motor driver", left_driver_configs, left_queues,
         spi3_task_client);
@@ -183,9 +183,9 @@ void head_tasks::start_tasks(
 #endif
 
     // Start the right motor tasks
-    auto& right_motion =
-        right_mc_task_builder.start(5, "right mc", right_motion_controller,
-                                    right_queues, right_queues, right_queues, right_queues);
+    auto& right_motion = right_mc_task_builder.start(
+        5, "right mc", right_motion_controller, right_queues, right_queues,
+        right_queues, right_queues);
     auto& right_tmc2160_driver = right_motor_driver_task_builder.start(
         5, "right motor driver", right_driver_configs, right_queues,
         spi2_task_client);

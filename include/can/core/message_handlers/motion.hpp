@@ -17,7 +17,8 @@ class MotionHandler {
         std::variant<std::monostate, DisableMotorRequest, EnableMotorRequest,
                      GetMotionConstraintsRequest, SetMotionConstraints,
                      ReadLimitSwitchRequest, MotorPositionRequest,
-                     UpdateMotorPositionEstimationRequest, GetMotorUsageRequest>;
+                     UpdateMotorPositionEstimationRequest,
+                     GetMotorUsageRequest>;
 
     MotionHandler(MotionTaskClient &motion_client)
         : motion_client{motion_client} {}
@@ -36,10 +37,11 @@ class MotionHandler {
 
     /*
     void handle_message(const auto &m) {
-        motion_client.send_motion_controller_queue(utils::variant_cast(m)); // try to compile, talk with Seth
+        motion_client.send_motion_controller_queue(utils::variant_cast(m)); //
+    try to compile, talk with Seth
     }
     */
-    
+
     void handle_message(const auto &m) {
         motion_client.send_motion_controller_queue(m);
     }
