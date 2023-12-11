@@ -133,8 +133,7 @@ class MotionControllerMessageHandler {
     void handle(const can::messages::GripperJawHoldoffRequest& m) {
         auto ticks = controller.get_idle_holdoff();
         can::messages::GripperJawHoldoffResponse msg{
-                .message_index = m.message_index,
-                .holdoff_ticks = ticks};
+            .message_index = m.message_index, .holdoff_ticks = ticks};
         can_client.send_can_message(can::ids::NodeId::host, msg);
     }
 

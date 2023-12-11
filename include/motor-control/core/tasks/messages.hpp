@@ -46,7 +46,8 @@ using BrushedMotionControllerTaskMessage = std::variant<
     can::messages::ReadLimitSwitchRequest, can::messages::MotorPositionRequest,
     can::messages::SetGripperErrorToleranceRequest,
     can::messages::GetMotorUsageRequest, can::messages::GripperJawStateRequest,
-    can::messages::SetGripperJawHoldoffRequest, can::messages::GripperJawHoldoffRequest>;
+    can::messages::SetGripperJawHoldoffRequest,
+    can::messages::GripperJawHoldoffRequest>;
 
 using BrushedMoveGroupTaskMessage = std::variant<
     std::monostate, can::messages::ClearAllMoveGroupsRequest,

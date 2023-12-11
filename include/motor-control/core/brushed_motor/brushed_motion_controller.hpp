@@ -131,7 +131,8 @@ class MotionController {
                                  S15Q16_RADIX));
     }
 
-    void set_idle_holdoff(const can::messages::SetGripperJawHoldoffRequest& can_msg) {
+    void set_idle_holdoff(
+        const can::messages::SetGripperJawHoldoffRequest& can_msg) {
         error_config.update_idle_holdoff_ticks(can_msg.holdoff_ticks);
     }
 
