@@ -412,6 +412,10 @@ class BrushedMotorInterruptHandler {
 
     auto has_active_move() -> bool { return _has_active_move.load(); }
 
+    [[nodiscard]] auto get_idle_holdoff_ticks() const -> uint32_t {
+        return error_conf.idle_holdoff_ticks;
+    }
+
     std::atomic<bool> is_idle = true;
     uint32_t tick = 0;
     uint32_t timeout_ticks = 0;

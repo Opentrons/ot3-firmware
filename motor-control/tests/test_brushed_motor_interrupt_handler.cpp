@@ -60,7 +60,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
 
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
-            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+            for (uint32_t i = 0;
+                 i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                 test_objs.handler.run_interrupt();
             }
 
@@ -73,7 +74,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
 
                 AND_WHEN("The limit switch is hit") {
                     // Burn through the ticks since they reset with new move
-                    for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                    for (uint32_t i = 0;
+                         i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                         test_objs.handler.run_interrupt();
                     }
 
@@ -112,7 +114,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
 
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
-            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+            for (uint32_t i = 0;
+                 i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                 test_objs.handler.run_interrupt();
             }
 
@@ -129,7 +132,9 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
                     THEN(
                         "Encoder speed tracker is holding off for a 1 ms (32 "
                         "ticks)") {
-                        for (uint32_t i = 0; i < HOLDOFF_TICKS; i++) {
+                        for (uint32_t i = 0;
+                             i < test_objs.handler.get_idle_holdoff_ticks();
+                             i++) {
                             REQUIRE(!test_objs.handler.is_sensing());
                             REQUIRE(test_objs.reporter.messages.size() == 0);
                             test_objs.handler.run_interrupt();
@@ -176,7 +181,8 @@ SCENARIO("Brushed motor interrupt handler handle move messages") {
         test_objs.queue.try_write_isr(move_msg);
         WHEN("A brushed move message is received and loaded") {
             // Burn through the startup ticks
-            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+            for (uint32_t i = 0;
+                 i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                 test_objs.handler.run_interrupt();
             }
             THEN("The motor hardware proceeds to move") {
@@ -250,7 +256,8 @@ SCENARIO("estop pressed during Brushed motor interrupt handler") {
         test_objs.queue.try_write_isr(grip_msg);
         WHEN("Estop is pressed") {
             // Burn through the startup ticks
-            for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+            for (uint32_t i = 0;
+                 i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                 test_objs.handler.run_interrupt();
             }
             REQUIRE(!test_objs.handler.in_estop);
@@ -305,7 +312,8 @@ SCENARIO("labware dropped during grip move") {
                 test_objs.hw.set_encoder_value(40000);
                 test_objs.handler.set_enc_idle_state(false);
                 // Burn through the holdoff ticks
-                for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                for (uint32_t i = 0;
+                     i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
@@ -355,7 +363,8 @@ SCENARIO("collision while homed") {
                 test_objs.hw.set_encoder_value(40000);
                 test_objs.handler.set_enc_idle_state(false);
                 // Burn through the holdoff ticks
-                for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+                for (uint32_t i = 0;
+                     i <= test_objs.handler.get_idle_holdoff_ticks(); i++) {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
@@ -385,7 +394,8 @@ SCENARIO("A collision during position controlled move") {
     test_objs.queue.try_write_isr(move_msg);
     WHEN("A brushed move message is received and loaded") {
         // Burn through the startup ticks
-        for (uint32_t i = 0; i <= HOLDOFF_TICKS; i++) {
+        for (uint32_t i = 0; i <= test_objs.handler.get_idle_holdoff_ticks();
+             i++) {
             test_objs.handler.run_interrupt();
         }
         THEN("The motor hardware proceeds to move") {
@@ -439,7 +449,8 @@ SCENARIO("A collision during position controlled move") {
                 test_objs.hw.set_encoder_value(200000);
                 test_objs.handler.set_enc_idle_state(false);
                 // Burn through the 2 x holdoff ticks
-                for (uint32_t i = 0; i <= HOLDOFF_TICKS * 2; i++) {
+                for (uint32_t i = 0;
+                     i <= test_objs.handler.get_idle_holdoff_ticks() * 2; i++) {
                     test_objs.handler.run_interrupt();
                 }
                 // An error and increase error count is sent
