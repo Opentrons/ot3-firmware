@@ -11,7 +11,9 @@
 
 namespace z_motor_iface {
 
-void initialize();
+extern "C" using diag0_handler = void(*)();
+
+void initialize(diag0_handler *call_diag0_handler);
 
 /**
  * Access to the z motor.

@@ -282,6 +282,12 @@ class PipetteMotionController {
         }
     }
 
+    void clear_cancel_request() { hardware.clear_cancel_request(); }
+
+    auto is_timer_interrupt_running() -> bool {
+        return hardware.is_timer_interrupt_running();
+    }
+
     auto read_limit_switch() -> bool { return hardware.check_limit_switch(); }
 
     auto check_read_sync_line() -> bool { return hardware.check_sync_in(); }

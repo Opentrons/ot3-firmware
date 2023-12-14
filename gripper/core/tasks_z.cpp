@@ -34,13 +34,13 @@ static auto z_usage_storage_task_builder =
     freertos_task::TaskStarter<512, usage_storage_task::UsageStorageTask>{};
 #endif
 
-void z_tasks::start_task(
+auto z_tasks::start_task(
     motor_class::Motor<lms::LeadScrewConfig>& z_motor,
     spi::hardware::SpiDeviceBase& spi_device,
     tmc2130::configs::TMC2130DriverConfig& driver_configs,
     AllTask& gripper_tasks, gripper_tasks::QueueClient& main_queues,
     eeprom::dev_data::DevDataTailAccessor<gripper_tasks::QueueClient>&
-        tail_accessor) {
+        tail_accessor) -> z_motor_iface::diag0_handler {
     auto& motion =
         mc_task_builder.start(5, "z mc", z_motor.motion_controller, z_queues,
                               z_queues, z_queues, z_queues);
@@ -78,6 +78,14 @@ void z_tasks::start_task(
     z_queues.z_usage_storage_queue = &z_usage_storage_task.get_queue();
 #endif
     spi_task_client.set_queue(&spi_task.get_queue());
+
+    return z_tasks::call_run_diag0_interrupt;
+}
+
+void z_tasks::call_run_diag0_interrupt() {
+    if (get_all_tasks().motion_controller) {
+        return get_all_tasks().motion_controller->run_diag0_interrupt();
+    }
 }
 
 z_tasks::QueueClient::QueueClient()

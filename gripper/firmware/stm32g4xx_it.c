@@ -198,6 +198,10 @@ void TIM7_IRQHandler(void) {
     call_motor_handler();
 }
 
+void EXTI2_IRQHandler(void) {
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
 extern void xPortSysTickHandler(void);
 void SysTick_Handler(void) {
     HAL_IncTick();

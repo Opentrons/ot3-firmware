@@ -4,6 +4,7 @@
 
 static motor_interrupt_callback timer_callback = NULL;
 static z_encoder_overflow_callback z_enc_overflow_callback = NULL;
+static diag0_interrupt_callback* diag0_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
 static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
 static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
@@ -11,11 +12,19 @@ static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
 static stopwatch_overflow_callback gripper_force_stopwatch_overflow_callback = NULL;
 
 
+void MX_GPIO_Init(void) {
+    HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+}
+
 void set_z_motor_timer_callback(
         motor_interrupt_callback callback,
+        diag0_interrupt_callback* diag0_int_callback,
         z_encoder_overflow_callback enc_callback) {
     timer_callback = callback;
     z_enc_overflow_callback = enc_callback;
+    diag0_callback = diag0_int_callback;
+    MX_GPIO_Init();
 }
 
 void set_brushed_motor_timer_callback(
@@ -213,4 +222,13 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
     }
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == GPIO_PIN_2) {
+        if (diag0_callback != NULL) {
+            if (*diag0_callback != NULL) {
+                (*diag0_callback)();
+            }
+        }
+    }
+}
 
