@@ -47,7 +47,7 @@ auto start_tasks(can::bus::CanBus& can_bus,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface,
                  motor_hardware_task::MotorHardwareTask& zmh_tsk,
                  motor_hardware_task::MotorHardwareTask& gmh_tsk)
-                 -> z_motor_iface::diag0_handler;
+    -> z_motor_iface::diag0_handler;
 
 /**
  * Access to all the message queues in the system.

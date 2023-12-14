@@ -103,11 +103,12 @@ struct motion_controller::HardwareConfig motor_pins {
             .port = ESTOP_IN_PORT,
             .pin = ESTOP_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
-    .diag0 = {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        .port = GPIOB,
-        .pin = GPIO_PIN_2,
-        .active_setting = GPIO_PIN_RESET},
+    .diag0 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOB,
+            .pin = GPIO_PIN_2,
+            .active_setting = GPIO_PIN_RESET},
     .ebrake = ebrake
 };
 
@@ -217,7 +218,8 @@ void z_motor_iface::initialize(diag0_handler* call_diag0_handler) {
         Error_Handler();
     }
     initialize_hardware_z();
-    set_z_motor_timer_callback(call_motor_handler, call_diag0_handler, call_enc_handler);
+    set_z_motor_timer_callback(call_motor_handler, call_diag0_handler,
+                               call_enc_handler);
     encoder_background_timer.start();
 }
 

@@ -123,8 +123,8 @@ auto gripper_tasks::start_tasks(
     queues.capacitive_sensor_queue_rear =
         &capacitive_sensor_task_rear.get_queue();
 
-    auto diag0_handler = z_tasks::start_task(z_motor, spi_device, driver_configs, tasks, queues,
-                        tail_accessor);
+    auto diag0_handler = z_tasks::start_task(
+        z_motor, spi_device, driver_configs, tasks, queues, tail_accessor);
 
     g_tasks::start_task(grip_motor, tasks, queues, tail_accessor);
 
