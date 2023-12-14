@@ -16,7 +16,7 @@ auto gear_config = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
     .microstep = 0,
     .encoder_pulses_per_rev = 512};
 auto error_config =
-    error_tolerance_config::BrushedMotorErrorTolerance{gear_config};
+    error_tolerance_config::BrushedMotorErrorTolerance{gear_config, 32000};
 
 auto constexpr home_msg =
     BrushedMove{.duration = 5 * 32000,

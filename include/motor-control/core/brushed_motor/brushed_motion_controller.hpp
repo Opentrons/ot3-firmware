@@ -133,11 +133,13 @@ class MotionController {
 
     void set_idle_holdoff(
         const can::messages::SetGripperJawHoldoffRequest& can_msg) {
-        error_config.update_idle_holdoff_ticks(can_msg.holdoff_ticks);
+        error_config.update_idle_holdoff_ticks(
+            fixed_point_to_float(can_msg.holdoff_ms, S15Q16_RADIX));
     }
 
-    auto get_idle_holdoff() -> uint32_t {
-        return error_config.idle_holdoff_ticks;
+    auto get_idle_holdoff_ms() -> uint32_t {
+        return convert_to_fixed_point(error_config.get_holdoff_ms(),
+                                      S15Q16_RADIX);
     }
 
     template <usage_storage_task::TaskClient UsageClient>

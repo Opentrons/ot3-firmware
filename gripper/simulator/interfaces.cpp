@@ -119,7 +119,8 @@ static auto gear_conf = lms::LinearMotionSystemConfig<lms::GearBoxConfig>{
     .microstep = 0,
     .encoder_pulses_per_rev = 512};
 
-static error_tolerance_config::BrushedMotorErrorTolerance error_conf(gear_conf);
+static error_tolerance_config::BrushedMotorErrorTolerance error_conf(gear_conf,
+                                                                     32000);
 
 static auto grip_motor = brushed_motor::BrushedMotor(
     gear_conf, brushed_motor_hardware_iface, brushed_motor_driver_iface,
