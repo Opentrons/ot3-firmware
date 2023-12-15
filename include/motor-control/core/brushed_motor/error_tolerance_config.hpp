@@ -39,7 +39,7 @@ class BrushedMotorErrorTolerance {
         idle_holdoff_ticks = uint32_t(timer_freq / 1000 * holdoff_ms);
     }
 
-    auto get_holdoff_ms() -> double {
+    [[nodiscard]] auto get_holdoff_ms() const -> double {
         return double(idle_holdoff_ticks * 1000 / timer_freq);
     }
 
