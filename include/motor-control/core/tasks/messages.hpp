@@ -119,7 +119,7 @@ using MotorDriverTaskMessage =
     std::variant<std::monostate, can::messages::ReadMotorDriverRegister,
                  can::messages::WriteMotorDriverRegister,
                  can::messages::WriteMotorCurrentRequest,
-                 can::messages::ReadMotorDriverErrorStatus>;
+                 can::messages::ReadMotorDriverErrorStatusRequest>;
 
 using MoveGroupTaskMessage =
     std::variant<std::monostate, can::messages::AddLinearMoveRequest,

@@ -240,7 +240,7 @@ class MotionControllerMessageHandler {
                         .error_code =
                             can::ids::ErrorCode::motor_driver_error_detected});
                 driver_client.send_motor_driver_queue(
-                    can::messages::ReadMotorDriverErrorStatus{
+                    can::messages::ReadMotorDriverErrorStatusRequest{
                         .message_index = m.message_index});
             }
         } else {

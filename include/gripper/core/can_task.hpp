@@ -19,7 +19,7 @@ using MotorDispatchTarget = can::dispatch::DispatchParseTarget<
     can::messages::ReadMotorDriverRegister,
     can::messages::WriteMotorDriverRegister,
     can::messages::WriteMotorCurrentRequest,
-    can::messages::ReadMotorDriverErrorStatus>;
+    can::messages::ReadMotorDriverErrorStatusRequest>;
 using MoveGroupDispatchTarget = can::dispatch::DispatchParseTarget<
     can::message_handlers::move_group::MoveGroupHandler<z_tasks::QueueClient>,
     can::messages::AddLinearMoveRequest,

@@ -60,7 +60,7 @@ class MotorDriverMessageHandler {
                 m.rxBuffer);
             if (spi::utils::tag_in_token(
                     m.id.token, spi::utils::ResponseTag::IS_ERROR_RESPONSE)) {
-                can::messages::ReadMotorDriverErrorRegisterResponse
+                can::messages::ReadMotorDriverErrorStatusResponse
                     response_msg{
                         .message_index = m.id.message_index,
                         .reg_address = static_cast<uint8_t>(m.id.token),
@@ -99,7 +99,7 @@ class MotorDriverMessageHandler {
         }
     }
 
-    void handle(const can::messages::ReadMotorDriverErrorStatus& m) {
+    void handle(const can::messages::ReadMotorDriverErrorStatusRequest& m) {
         LOG("Received read motor driver error register request");
         uint32_t data = 0;
         std::array tags{spi::utils::ResponseTag::IS_ERROR_RESPONSE};

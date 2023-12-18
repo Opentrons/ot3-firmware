@@ -433,7 +433,7 @@ class MotorInterruptHandler {
                                         .error_code = err_code});
         if (err_code == can::ids::ErrorCode::motor_driver_error_detected) {
             driver_client.send_motor_driver_queue(
-                can::messages::ReadMotorDriverErrorStatus{.message_index =
+                can::messages::ReadMotorDriverErrorStatusRequest{.message_index =
                                                               message_index});
         }
         if (err_code == can::ids::ErrorCode::collision_detected) {

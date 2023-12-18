@@ -618,24 +618,24 @@ struct ReadMotorDriverRegisterResponse
         -> bool = default;
 };
 
-struct ReadMotorDriverErrorStatus
-    : BaseMessage<MessageId::read_motor_driver_error_status> {
+struct ReadMotorDriverErrorStatusRequest
+    : BaseMessage<MessageId::read_motor_driver_error_status_request> {
     uint32_t message_index;
 
     template <bit_utils::ByteIterator Input, typename Limit>
-    static auto parse(Input body, Limit limit) -> ReadMotorDriverErrorStatus {
+    static auto parse(Input body, Limit limit) -> ReadMotorDriverErrorStatusRequest {
         uint32_t msg_ind = 0;
 
         body = bit_utils::bytes_to_int(body, limit, msg_ind);
-        return ReadMotorDriverErrorStatus{.message_index = msg_ind};
+        return ReadMotorDriverErrorStatusRequest{.message_index = msg_ind};
     }
 
-    auto operator==(const ReadMotorDriverErrorStatus& other) const
+    auto operator==(const ReadMotorDriverErrorStatusRequest& other) const
         -> bool = default;
 };
 
-struct ReadMotorDriverErrorRegisterResponse
-    : BaseMessage<MessageId::read_motor_driver_error_register_response> {
+struct ReadMotorDriverErrorStatusResponse
+    : BaseMessage<MessageId::read_motor_driver_error_status_response> {
     uint32_t message_index;
     uint8_t reg_address;
     uint32_t data;
@@ -648,7 +648,7 @@ struct ReadMotorDriverErrorRegisterResponse
         return iter - body;
     }
 
-    auto operator==(const ReadMotorDriverErrorRegisterResponse& other) const
+    auto operator==(const ReadMotorDriverErrorStatusResponse& other) const
         -> bool = default;
 };
 
@@ -1573,7 +1573,7 @@ using ResponseMessageType = std::variant<
     PeripheralStatusResponse, BrushedMotorConfResponse,
     UpdateMotorPositionEstimationResponse, BaselineSensorResponse,
     PushTipPresenceNotification, GetMotorUsageResponse,
-    ReadMotorDriverErrorRegisterResponse, GripperJawStateResponse,
+    ReadMotorDriverErrorStatusResponse, GripperJawStateResponse,
     MotorDriverInErrorState>;
 
 }  // namespace can::messages

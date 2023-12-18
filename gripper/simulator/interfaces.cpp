@@ -135,7 +135,8 @@ static brushed_motor_handler::BrushedMotorInterruptHandler
 static brushed_motor_interrupt_driver::BrushedMotorInterruptDriver G(
     brushed_motor_queue, brushed_motor_interrupt, brushed_motor_hardware_iface);
 
-void z_motor_iface::initialize() {
+void z_motor_iface::initialize(diag0_handler *call_diag0_handler) {
+    static_cast<void>(call_diag0_handler);
     motor_interface.provide_mech_config(z_motor_sys_config);
 };
 
