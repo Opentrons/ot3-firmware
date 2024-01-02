@@ -170,6 +170,18 @@ struct MockBrushedMotionController {
             fixed_point_to_float(can_msg.max_unwanted_movement_mm,
                                  S15Q16_RADIX));
     }
+
+    void set_idle_holdoff(
+        const can::messages::SetGripperJawHoldoffRequest& can_msg) {
+        error_config.update_idle_holdoff_ticks(
+            fixed_point_to_float(can_msg.holdoff_ms, S15Q16_RADIX));
+    }
+
+    [[nodiscard]] auto get_idle_holdoff_ms() const -> uint32_t {
+        return convert_to_fixed_point(error_config.get_holdoff_ms(),
+                                      S15Q16_RADIX);
+    }
+
     BrushedMotorErrorTolerance& error_config;
 };
 

@@ -16,6 +16,7 @@
 
 constexpr uint32_t PWM_MAX = 60;
 constexpr uint32_t PWM_MIN = 7;
+auto constexpr pwm_freq = double(GRIPPER_JAW_PWM_FREQ_HZ);
 
 struct motor_hardware::UsageEEpromConfig brushed_usage_config {
     std::array<UsageRequestSet, 3> {
@@ -74,7 +75,7 @@ struct motor_hardware::BrushedHardwareConfig brushed_motor_conf {
             .port = ESTOP_IN_PORT,
             .pin = ESTOP_IN_PIN,
             .active_setting = GPIO_PIN_RESET},
-    .encoder_interrupt_freq = double(GRIPPER_JAW_PWM_FREQ_HZ),
+    .encoder_interrupt_freq = pwm_freq,
 
     /* the expected behavior with these pid values is that the motor runs at
      * full power until it's about 2mm away and then it slows down on that
@@ -137,7 +138,7 @@ static lms::LinearMotionSystemConfig<lms::GearBoxConfig> gear_config{
     .encoder_pulses_per_rev = 512};
 
 static error_tolerance_config::BrushedMotorErrorTolerance error_conf(
-    gear_config);
+    gear_config, pwm_freq);
 
 static brushed_motor::BrushedMotor grip_motor(gear_config,
                                               brushed_motor_hardware_iface,
