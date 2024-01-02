@@ -62,9 +62,12 @@ void estop_input_gpio_init() {
     /*Configure GPIO pin EStopin : PB4 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    HAL_NVIC_SetPriority(EXTI4_IRQn, 6, 0);
+    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 
 

@@ -48,6 +48,7 @@ void TIM3_IRQHandler(void);
 void TIM7_IRQHandler(void);
 void TIM8_CC_IRQHandler(void);
 void TIM8_UP_IRQHandler(void);
+void EXTI15_10_IRQHandler(void);
 
 #ifdef __cplusplus
 }

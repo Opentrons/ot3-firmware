@@ -411,6 +411,14 @@ class EEPromHardwareInterface
 };
 static auto eeprom_hw_iface = EEPromHardwareInterface();
 
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    // disengage motor whenever estop is engaged
+    if (GPIO_Pin == pin_configurations_left.estop_in.pin) {
+        motor_left.motion_controller.disable_motor();
+        motor_right.motion_controller.disable_motor();
+    }
+}
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
