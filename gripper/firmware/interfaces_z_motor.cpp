@@ -196,13 +196,6 @@ static motor_handler::MotorInterruptHandler motor_interrupt(
 static auto encoder_background_timer =
     motor_encoder::BackgroundTimer(motor_interrupt, motor_hardware_iface);
 
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    // disengage motor whenever estop is engaged
-    if (GPIO_Pin == ESTOP_IN_PIN) {
-        z_motor.motion_controller.disable_motor();
-    }
-}
-
 /**
  * Timer callback.
  */
@@ -210,13 +203,17 @@ extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 extern "C" void call_enc_handler(int32_t direction) {
     motor_hardware_iface.encoder_overflow(direction);
 }
+extern "C" void disengage_z_callback_glue(void) {
+    motor_hardware_iface.deactivate_motor();
+}
 
 void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
     initialize_hardware_z();
-    set_z_motor_timer_callback(call_motor_handler, call_enc_handler);
+    set_z_motor_timer_callback(call_motor_handler, call_enc_handler,
+                               disengage_z_callback_glue);
     encoder_background_timer.start();
 }
 

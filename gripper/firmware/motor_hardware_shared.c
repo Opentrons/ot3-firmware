@@ -9,13 +9,16 @@ static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
 static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
     NULL;
 static stopwatch_overflow_callback gripper_force_stopwatch_overflow_callback = NULL;
+static z_motor_disengage_callback disengage_z_callback = NULL;
 
 
 void set_z_motor_timer_callback(
         motor_interrupt_callback callback,
-        z_encoder_overflow_callback enc_callback) {
+        z_encoder_overflow_callback enc_callback,
+        z_motor_disengage_callback disengage_callback) {
     timer_callback = callback;
     z_enc_overflow_callback = enc_callback;
+    disengage_z_callback = disengage_callback;
 }
 
 void set_brushed_motor_timer_callback(
@@ -214,3 +217,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
 }
 
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == Z_MOT_ENABLE_PIN && disengage_z_callback) {
+        disengage_z_callback();
+    }
+}

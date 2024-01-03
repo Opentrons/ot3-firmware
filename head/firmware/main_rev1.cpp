@@ -341,6 +341,10 @@ extern "C" void left_enc_overflow_callback_glue(int32_t direction) {
 extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
     motor_hardware_right.encoder_overflow(direction);
 }
+extern "C" void motor_disengage_callback_glue() {
+    motor_hardware_left.deactivate_motor();
+    motor_hardware_right.deactivate_motor();
+}
 
 static auto psd = presence_sensing_driver::PresenceSensingHardware{
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -411,14 +415,6 @@ class EEPromHardwareInterface
 };
 static auto eeprom_hw_iface = EEPromHardwareInterface();
 
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    // disengage motor whenever estop is engaged
-    if (GPIO_Pin == pin_configurations_left.estop_in.pin) {
-        motor_left.motion_controller.disable_motor();
-        motor_right.motion_controller.disable_motor();
-    }
-}
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -426,7 +422,8 @@ auto main() -> int {
     app_update_clear_flags();
 
     initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
-                     right_enc_overflow_callback_glue);
+                     right_enc_overflow_callback_glue,
+                     motor_disengage_callback_glue);
 
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
