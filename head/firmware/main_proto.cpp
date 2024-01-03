@@ -1,6 +1,7 @@
 #include <array>
 #include <cstdio>
 #include <cstring>
+#include <tuple>
 
 // clang-format off
 #include "FreeRTOS.h"
@@ -39,6 +40,9 @@
 #include "spi/firmware/spi_comms.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
+
+static head_tasks::diag0_handler call_diag0_z_handler = nullptr;
+static head_tasks::diag0_handler call_diag0_a_handler = nullptr;
 
 static auto can_bus_1 = can::hal::bus::HalCanBus(
     can_get_device_handle(),
@@ -146,7 +150,13 @@ struct motor_hardware::HardwareConfig pin_configurations_left {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET},
+    .diag0 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_13,
+            .active_setting = GPIO_PIN_RESET}
 };
 
 struct motor_hardware::HardwareConfig pin_configurations_right {
@@ -190,14 +200,22 @@ struct motor_hardware::HardwareConfig pin_configurations_right {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         .port = GPIOB,
         .pin = GPIO_PIN_4,
-        .active_setting = GPIO_PIN_RESET}
+        .active_setting = GPIO_PIN_RESET},
+    .diag0 =
+        {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = GPIOC,
+            .pin = GPIO_PIN_15,
+            .active_setting = GPIO_PIN_RESET}
 };
 
 // TODO clean up the head main file by using interfaces.
 static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 1},
+            .gconfig = {.en_pwm_mode = 1,
+                        .diag0_error = 1,
+                        .diag0_otpw = 1},
             .ihold_irun = {.hold_current = 0xB,
                            .run_current = 0x19,
                            .hold_current_delay = 0x7},
@@ -224,7 +242,9 @@ static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_right{
 static tmc2130::configs::TMC2130DriverConfig motor_driver_configs_left{
     .registers =
         {
-            .gconfig = {.en_pwm_mode = 1},
+            .gconfig = {.en_pwm_mode = 1,
+                        .diag0_error = 1,
+                        .diag0_otpw = 1},
             .ihold_irun = {.hold_current = 0xB,
                            .run_current = 0x19,
                            .hold_current_delay = 0x7},
@@ -395,7 +415,7 @@ auto main() -> int {
 
     app_update_clear_flags();
     initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
-                     right_enc_overflow_callback_glue);
+                     right_enc_overflow_callback_glue, &call_diag0_z_handler, &call_diag0_a_handler);
 
     if (initialize_spi(&hspi2) != HAL_OK) {
         Error_Handler();
@@ -409,8 +429,7 @@ auto main() -> int {
 
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);
-
-    head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
+    std::tie(call_diag0_z_handler, call_diag0_a_handler) = head_tasks::start_tasks(can_bus_1, motor_left.motion_controller,
                             motor_right.motion_controller, psd, spi_comms2,
                             spi_comms3, motor_driver_configs_left,
                             motor_driver_configs_right, rmh_tsk, lmh_tsk,
