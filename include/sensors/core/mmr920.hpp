@@ -4,7 +4,7 @@
 
 #include "motor-control/core/utils.hpp"
 /*
- * MMR920C04 Pressure Sensor
+ * MMR920 Pressure Sensor
  *
  * Datasheet:
  * https://nmbtc.com/wp-content/uploads/2021/03/mmr920_leaflet_e_rev1.pdf
@@ -26,12 +26,16 @@
  * Leaving them alone for now.
  */
 namespace sensors {
-namespace mmr920C04 {
+namespace mmr920 {
 constexpr uint16_t ADDRESS = 0x67 << 1;
 
-// Pressure cannot be measured beyond +/-8226.4F
+// Pressure cannot be measured beyond +/-8226.4F on the old sensors
+// New sensors have double the threshold but half the fidelity
+#if PCBA_PRIMARY_REVISION == 'e'
 constexpr float MAX_PRESSURE_READING = 16452.8F;
-
+#else
+constexpr float MAX_PRESSURE_READING = 8226.4F;
+#endif
 enum class SensorStatus : uint8_t {
     SHUTDOWN = 0x0,
     IDLE = 0xE5,
@@ -96,7 +100,7 @@ template <typename Reg>
 // Struct has a valid register address
 // Struct has an integer with the total number of bits in a register.
 // This is used to mask the value before writing it to the sensor.
-concept MMR920C04CommandRegister =
+concept MMR920CommandRegister =
     std::same_as<std::remove_cvref_t<decltype(Reg::address)>,
                  std::remove_cvref_t<Registers&>> &&
     std::integral<decltype(Reg::value_mask)>;
@@ -265,8 +269,11 @@ struct PressureResult {
     static constexpr float CMH20_TO_PASCALS = 98.0665;
     // conversion factor of a given 3 byte measurement to Pascals
     static constexpr float PA_PER_COUNT =
+#if PCBA_PRIMARY_REVISION == 'e'
         2 * 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
-
+#else
+        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+#endif
     uint32_t reading : 32 = 0;
 
     [[nodiscard]] static auto to_pressure(uint32_t reg) -> float {
@@ -325,7 +332,7 @@ struct StatusResult {
     return convert_to_fixed_point(reading, S15Q16_RADIX);
 }
 
-struct MMR920C04RegisterMap {
+struct MMR920RegisterMap {
     Reset reset = {};
     Idle idle = {};
     MeasureMode1 measure_mode_1 = {};
@@ -347,5 +354,5 @@ using RegisterSerializedType = uint8_t;
 // Command Registers are all 8 bits
 // Type definition to allow type aliasing for pointer dereferencing
 using RegisterSerializedTypeA = __attribute__((__may_alias__)) uint8_t;
-};  // namespace mmr920C04
+};  // namespace mmr920
 };  // namespace sensors
