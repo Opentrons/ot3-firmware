@@ -30,7 +30,7 @@ namespace mmr920C04 {
 constexpr uint16_t ADDRESS = 0x67 << 1;
 
 // Pressure cannot be measured beyond +/-8226.4F
-constexpr float MAX_PRESSURE_READING = 8226.4F;
+constexpr float MAX_PRESSURE_READING = 16452.8F;
 
 enum class SensorStatus : uint8_t {
     SHUTDOWN = 0x0,
@@ -263,8 +263,9 @@ struct __attribute__((packed, __may_alias__)) StatusCommand {
 struct PressureResult {
     // Pascals per 1 cmH20
     static constexpr float CMH20_TO_PASCALS = 98.0665;
+    // conversion factor of a given 3 byte measurement to Pascals
     static constexpr float PA_PER_COUNT =
-        1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
+        2 * 1e-5 * CMH20_TO_PASCALS;  // 1.0e-5cmH2O/count * 98.0665Pa/cmH2O
 
     uint32_t reading : 32 = 0;
 
