@@ -57,8 +57,8 @@ SCENARIO("Testing the pressure sensor driver") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::MMR920 driver(writer, poller, queue_client,
-                                     pressure_queue, hardware, sensor_id);
+    sensors::tasks::MMR920 driver(writer, poller, queue_client, pressure_queue,
+                                  hardware, sensor_id);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
 
@@ -69,8 +69,8 @@ SCENARIO("Testing the pressure sensor driver") {
                 i2c::messages::TransactionIdentifier{
                     .token = sensors::utils::build_id(
                         sensors::mmr920::ADDRESS,
-                        static_cast<uint8_t>(sensors::mmr920::Registers::
-                                                 LOW_PASS_PRESSURE_READ),
+                        static_cast<uint8_t>(
+                            sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                         0x1),
                     .is_completed_poll = 1,
                     .transaction_index = 0},
@@ -137,8 +137,8 @@ SCENARIO("Testing the pressure sensor driver") {
                 i2c::messages::TransactionIdentifier{
                     .token = sensors::utils::build_id(
                         sensors::mmr920::ADDRESS,
-                        static_cast<uint8_t>(sensors::mmr920::Registers::
-                                                 LOW_PASS_PRESSURE_READ),
+                        static_cast<uint8_t>(
+                            sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                         sensors::utils::byte_from_tags(tags_for_baseline)),
                     .is_completed_poll = 1,
                     .transaction_index = 0},

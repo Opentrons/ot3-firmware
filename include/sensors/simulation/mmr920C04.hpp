@@ -16,10 +16,8 @@ class MMR920 : public I2CRegisterMap<uint8_t, uint32_t> {
               mmr920::ADDRESS,
               {{static_cast<uint8_t>(mmr920::Registers::STATUS), 0xED},
                {static_cast<uint8_t>(mmr920::Registers::MEASURE_MODE_1), 0},
-               {static_cast<uint8_t>(mmr920::Registers::PRESSURE_READ),
-                6000},
-               {static_cast<uint8_t>(
-                    mmr920::Registers::LOW_PASS_PRESSURE_READ),
+               {static_cast<uint8_t>(mmr920::Registers::PRESSURE_READ), 6000},
+               {static_cast<uint8_t>(mmr920::Registers::LOW_PASS_PRESSURE_READ),
                 6000},
                {static_cast<uint8_t>(mmr920::Registers::TEMPERATURE_READ),
                 3200}}) {}

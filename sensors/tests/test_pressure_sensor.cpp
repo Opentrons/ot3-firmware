@@ -65,8 +65,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 i2c::messages::TransactionIdentifier{
                     .token = sensors::utils::build_id(
                         sensors::mmr920::ADDRESS,
-                        static_cast<uint8_t>(sensors::mmr920::Registers::
-                                                 LOW_PASS_PRESSURE_READ),
+                        static_cast<uint8_t>(
+                            sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                         0x1),
                     .is_completed_poll = 1,
                     .transaction_index = 0},
@@ -139,8 +139,7 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 sensors::utils::ResponseTag::IS_THRESHOLD_SENSE};
             response_details.id.token = sensors::utils::build_id(
                 sensors::mmr920::ADDRESS,
-                static_cast<uint8_t>(
-                    sensors::mmr920::Registers::MACRAM_WRITE),
+                static_cast<uint8_t>(sensors::mmr920::Registers::MACRAM_WRITE),
                 sensors::utils::byte_from_tags(tags_for_baseline));
             auto response_read = sensors::utils::TaskMessage(response_details);
             sensor.handle_message(response_read);

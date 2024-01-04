@@ -307,10 +307,8 @@ int main(int argc, char** argv) {
     auto fake_sensor_hw_secondary =
         std::make_shared<sim_mocks::MockSensorHardware>();
     fake_sensor_hw_secondary->provide_state_manager(state_manager_connection);
-    auto pressuresensor_i2c1 =
-        std::make_shared<mmr920_simulator::MMR920>();
-    auto pressuresensor_i2c3 =
-        std::make_shared<mmr920_simulator::MMR920>();
+    auto pressuresensor_i2c1 = std::make_shared<mmr920_simulator::MMR920>();
+    auto pressuresensor_i2c3 = std::make_shared<mmr920_simulator::MMR920>();
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
         {hdcsensor->get_address(), *hdcsensor},
         {pressuresensor_i2c1->get_address(), *pressuresensor_i2c1}};

@@ -33,9 +33,9 @@ template <class I2CQueueWriter, class I2CQueuePoller,
 class MMR920 {
   public:
     MMR920(I2CQueueWriter &writer, I2CQueuePoller &poller,
-              CanClient &can_client, OwnQueue &own_queue,
-              sensors::hardware::SensorHardwareBase &hardware,
-              const can::ids::SensorId &id)
+           CanClient &can_client, OwnQueue &own_queue,
+           sensors::hardware::SensorHardwareBase &hardware,
+           const can::ids::SensorId &id)
         : writer(writer),
           poller(poller),
           can_client(can_client),
@@ -50,9 +50,7 @@ class MMR920 {
      */
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
-    auto register_map() -> mmr920::MMR920RegisterMap & {
-        return _registers;
-    }
+    auto register_map() -> mmr920::MMR920RegisterMap & { return _registers; }
 
     auto get_sensor_type() -> SensorType { return SensorType::pressure; }
 
@@ -161,8 +159,8 @@ class MMR920 {
         }
 
         poller.continuous_single_register_poll(
-            mmr920::ADDRESS, command_data, 3, mode_delay_with_buffer,
-            own_queue, utils::build_id(mmr920::ADDRESS, command_data, tags));
+            mmr920::ADDRESS, command_data, 3, mode_delay_with_buffer, own_queue,
+            utils::build_id(mmr920::ADDRESS, command_data, tags));
     }
 
     auto poll_continuous_temperature(uint8_t tags) -> void {
@@ -173,8 +171,8 @@ class MMR920 {
             build_register_command(_registers.temperature_command);
 
         poller.continuous_single_register_poll(
-            mmr920::ADDRESS, command_data, 3, mode_delay_with_buffer,
-            own_queue, utils::build_id(mmr920::ADDRESS, command_data, tags));
+            mmr920::ADDRESS, command_data, 3, mode_delay_with_buffer, own_queue,
+            utils::build_id(mmr920::ADDRESS, command_data, tags));
     }
 
     auto set_measure_mode(mmr920::MeasurementRate rate) -> bool {
@@ -233,8 +231,8 @@ class MMR920 {
     }
 
     auto send_status(uint32_t message_index) -> void {
-        auto status = mmr920::StatusResult::to_status(
-            _registers.status_result.reading);
+        auto status =
+            mmr920::StatusResult::to_status(_registers.status_result.reading);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
             .sensor = get_sensor_type(),
@@ -267,9 +265,8 @@ class MMR920 {
     }
 
     void stop_continuous_polling(uint32_t transaction_id, uint8_t reg_id) {
-        poller.continuous_single_register_poll(mmr920::ADDRESS, reg_id, 3,
-                                               STOP_DELAY, own_queue,
-                                               transaction_id);
+        poller.continuous_single_register_poll(
+            mmr920::ADDRESS, reg_id, 3, STOP_DELAY, own_queue, transaction_id);
     }
 
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
@@ -335,8 +332,7 @@ class MMR920 {
                     .message_index = m.message_index,
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
-                    .sensor_data =
-                        mmr920::reading_to_fixed_point(pressure)});
+                    .sensor_data = mmr920::reading_to_fixed_point(pressure)});
         }
     }
 
@@ -378,8 +374,7 @@ class MMR920 {
 
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
-        auto pressure =
-            mmr920::PressureResult::to_pressure(shifted_data_store);
+        auto pressure = mmr920::PressureResult::to_pressure(shifted_data_store);
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
