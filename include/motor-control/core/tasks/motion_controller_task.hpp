@@ -228,23 +228,31 @@ class MotionControllerMessageHandler {
 
     void handle(
         const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
-        if (controller.read_tmc_diag0()) {
-            controller.stop(can::ids::ErrorSeverity::unrecoverable,
-                            can::ids::ErrorCode::motor_driver_error_detected);
-            if (!controller.is_timer_interrupt_running()) {
-                can_client.send_can_message(
-                    can::ids::NodeId::host,
-                    can::messages::ErrorMessage{
-                        .message_index = m.message_index,
-                        .severity = can::ids::ErrorSeverity::unrecoverable,
-                        .error_code =
-                            can::ids::ErrorCode::motor_driver_error_detected});
-                driver_client.send_motor_driver_queue(
-                    can::messages::ReadMotorDriverErrorStatusRequest{
-                        .message_index = m.message_index});
+        vTaskDelay(pdMS_TO_TICKS(100));
+        debounce_count++;
+        if (debounce_count > 9) {
+            if (controller.read_tmc_diag0()) {
+                controller.stop(can::ids::ErrorSeverity::unrecoverable,
+                                can::ids::ErrorCode::motor_driver_error_detected);
+                if (!controller.is_timer_interrupt_running()) {
+                    can_client.send_can_message(
+                        can::ids::NodeId::host,
+                        can::messages::ErrorMessage{
+                            .message_index = m.message_index,
+                            .severity = can::ids::ErrorSeverity::unrecoverable,
+                            .error_code =
+                                can::ids::ErrorCode::motor_driver_error_detected});
+                    driver_client.send_motor_driver_queue(
+                        can::messages::ReadMotorDriverErrorStatusRequest{
+                            .message_index = m.message_index});
+                }
+            } else {
+                controller.clear_cancel_request();
             }
+            diag0_debounced = false;
+            debounce_count = 0;
         } else {
-            controller.clear_cancel_request();
+            motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index});
         }
     }
 
@@ -333,9 +341,10 @@ class MotionControllerTask {
     */
 
     void run_diag0_interrupt() {
-        static_cast<void>(queue.try_write_isr(
-            motor_control_task_messages::RouteMotorDriverInterrupt{
-                .message_index = 0}));
+        if (!diag0_debounced){
+            static_cast<void>(queue.try_write_isr(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = 0}));
+            diag0_debounced = true;
+        }
     }
 
   private:
