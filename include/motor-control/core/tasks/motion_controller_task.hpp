@@ -228,8 +228,6 @@ class MotionControllerMessageHandler {
 
     void handle(
         const motor_control_task_messages::RouteMotorDriverInterrupt& m) {
-        vTaskDelay(pdMS_TO_TICKS(100));
-        debounce_count++;
         if (debounce_count > 9) {
             if (controller.read_tmc_diag0()) {
                 controller.stop(can::ids::ErrorSeverity::unrecoverable,
@@ -252,7 +250,9 @@ class MotionControllerMessageHandler {
             diag0_debounced = false;
             debounce_count = 0;
         } else {
+            debounce_count++;
             motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index});
+            vTaskDelay(pdMS_TO_TICKS(100));
         }
     }
 
