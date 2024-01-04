@@ -38,7 +38,6 @@ add_executable(
         )
 
 add_revision(TARGET bootloader-simulator REVISION a1)
-add_revision(TARGET bootloader-simulator REVISION e1)
 
 target_compile_options(
         bootloader-simulator
