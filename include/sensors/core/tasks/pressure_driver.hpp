@@ -9,7 +9,7 @@
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
 #include "i2c/core/messages.hpp"
-#include "sensors/core/mmr920C04.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/core/sensor_hardware_interface.hpp"
 #include "sensors/core/sensors.hpp"
 #include "sensors/core/utils.hpp"
@@ -30,9 +30,9 @@ using namespace can::ids;
 
 template <class I2CQueueWriter, class I2CQueuePoller,
           can::message_writer_task::TaskClient CanClient, class OwnQueue>
-class MMR920C04 {
+class MMR920 {
   public:
-    MMR920C04(I2CQueueWriter &writer, I2CQueuePoller &poller,
+    MMR920(I2CQueueWriter &writer, I2CQueuePoller &poller,
               CanClient &can_client, OwnQueue &own_queue,
               sensors::hardware::SensorHardwareBase &hardware,
               const can::ids::SensorId &id)
@@ -44,13 +44,13 @@ class MMR920C04 {
           sensor_id(id) {}
 
     /**
-     * @brief Check if the MMR92C04 has been initialized.
+     * @brief Check if the MMR92 has been initialized.
      * @return true if the config registers have been written at least once,
      * false otherwise.
      */
     [[nodiscard]] auto initialized() const -> bool { return _initialized; }
 
-    auto register_map() -> mmr920C04::MMR920C04RegisterMap & {
+    auto register_map() -> mmr920::MMR920RegisterMap & {
         return _registers;
     }
 
@@ -59,7 +59,7 @@ class MMR920C04 {
     auto get_host_id() -> NodeId { return NodeId::host; }
 
     void set_filter(uint8_t should_filter) {
-        filter_setting = static_cast<mmr920C04::FilterSetting>(should_filter);
+        filter_setting = static_cast<mmr920::FilterSetting>(should_filter);
     }
 
     void set_echoing(bool should_echo) { echoing = should_echo; }
@@ -93,16 +93,16 @@ class MMR920C04 {
         }
     }
 
-    auto write(mmr920C04::Registers reg, uint8_t command_data) -> bool {
-        return writer.write(mmr920C04::ADDRESS, static_cast<uint8_t>(reg),
+    auto write(mmr920::Registers reg, uint8_t command_data) -> bool {
+        return writer.write(mmr920::ADDRESS, static_cast<uint8_t>(reg),
                             command_data);
     }
 
-    auto transact(mmr920C04::Registers reg) -> bool {
+    auto transact(mmr920::Registers reg) -> bool {
         std::array reg_buf{static_cast<uint8_t>(reg)};
         return writer.transact(
-            mmr920C04::ADDRESS, reg_buf, 3, own_queue,
-            utils::build_id(mmr920C04::ADDRESS, static_cast<uint8_t>(reg)));
+            mmr920::ADDRESS, reg_buf, 3, own_queue,
+            utils::build_id(mmr920::ADDRESS, static_cast<uint8_t>(reg)));
     }
 
     auto write_config() -> bool {
@@ -121,15 +121,15 @@ class MMR920C04 {
             DEFAULT_DELAY_BUFFER;
         auto command_data =
             build_register_command(_registers.low_pass_pressure_command);
-        if (filter_setting == mmr920C04::FilterSetting::NO_FILTER) {
+        if (filter_setting == mmr920::FilterSetting::NO_FILTER) {
             command_data = build_register_command(_registers.pressure_command);
         }
         total_baseline_reads = number_reads;
 
         poller.single_register_poll(
-            mmr920C04::ADDRESS, command_data, 3, number_reads,
+            mmr920::ADDRESS, command_data, 3, number_reads,
             mode_delay_with_buffer, own_queue,
-            utils::build_id(mmr920C04::ADDRESS, command_data, tags));
+            utils::build_id(mmr920::ADDRESS, command_data, tags));
     }
 
     auto poll_limited_temperature(uint16_t number_reads, uint8_t tags) -> void {
@@ -141,9 +141,9 @@ class MMR920C04 {
         total_baseline_reads = number_reads;
 
         poller.single_register_poll(
-            mmr920C04::ADDRESS, command_data, 3, number_reads,
+            mmr920::ADDRESS, command_data, 3, number_reads,
             mode_delay_with_buffer, own_queue,
-            utils::build_id(mmr920C04::ADDRESS, command_data, tags));
+            utils::build_id(mmr920::ADDRESS, command_data, tags));
     }
 
     auto poll_continuous_pressure(uint8_t tags) -> void {
@@ -156,13 +156,13 @@ class MMR920C04 {
         max_pressure_consecutive_readings = 0;
         auto command_data =
             build_register_command(_registers.low_pass_pressure_command);
-        if (filter_setting == mmr920C04::FilterSetting::NO_FILTER) {
+        if (filter_setting == mmr920::FilterSetting::NO_FILTER) {
             command_data = build_register_command(_registers.pressure_command);
         }
 
         poller.continuous_single_register_poll(
-            mmr920C04::ADDRESS, command_data, 3, mode_delay_with_buffer,
-            own_queue, utils::build_id(mmr920C04::ADDRESS, command_data, tags));
+            mmr920::ADDRESS, command_data, 3, mode_delay_with_buffer,
+            own_queue, utils::build_id(mmr920::ADDRESS, command_data, tags));
     }
 
     auto poll_continuous_temperature(uint8_t tags) -> void {
@@ -173,29 +173,29 @@ class MMR920C04 {
             build_register_command(_registers.temperature_command);
 
         poller.continuous_single_register_poll(
-            mmr920C04::ADDRESS, command_data, 3, mode_delay_with_buffer,
-            own_queue, utils::build_id(mmr920C04::ADDRESS, command_data, tags));
+            mmr920::ADDRESS, command_data, 3, mode_delay_with_buffer,
+            own_queue, utils::build_id(mmr920::ADDRESS, command_data, tags));
     }
 
-    auto set_measure_mode(mmr920C04::MeasurementRate rate) -> bool {
+    auto set_measure_mode(mmr920::MeasurementRate rate) -> bool {
         measurement_mode_rate = rate;
         switch (rate) {
-            case mmr920C04::MeasurementRate::MEASURE_1:
+            case mmr920::MeasurementRate::MEASURE_1:
                 if (set_register(_registers.measure_mode_1)) {
                     return true;
                 }
                 return false;
-            case mmr920C04::MeasurementRate::MEASURE_2:
+            case mmr920::MeasurementRate::MEASURE_2:
                 if (set_register(_registers.measure_mode_2)) {
                     return true;
                 }
                 return false;
-            case mmr920C04::MeasurementRate::MEASURE_3:
+            case mmr920::MeasurementRate::MEASURE_3:
                 if (set_register(_registers.measure_mode_3)) {
                     return true;
                 }
                 return false;
-            case mmr920C04::MeasurementRate::MEASURE_4:
+            case mmr920::MeasurementRate::MEASURE_4:
                 if (set_register(_registers.measure_mode_4)) {
                     return true;
                 }
@@ -205,7 +205,7 @@ class MMR920C04 {
         }
     }
 
-    auto reset(mmr920C04::Reset reg) -> bool {
+    auto reset(mmr920::Reset reg) -> bool {
         if (set_register(reg)) {
             _registers.reset = reg;
             return true;
@@ -233,7 +233,7 @@ class MMR920C04 {
     }
 
     auto send_status(uint32_t message_index) -> void {
-        auto status = mmr920C04::StatusResult::to_status(
+        auto status = mmr920::StatusResult::to_status(
             _registers.status_result.reading);
         auto message = can::messages::ReadFromSensorResponse{
             .message_index = message_index,
@@ -262,12 +262,12 @@ class MMR920C04 {
     }
 
     void reset_readings() {
-        writer.write(mmr920C04::ADDRESS,
-                     static_cast<uint8_t>(mmr920C04::Registers::RESET));
+        writer.write(mmr920::ADDRESS,
+                     static_cast<uint8_t>(mmr920::Registers::RESET));
     }
 
     void stop_continuous_polling(uint32_t transaction_id, uint8_t reg_id) {
-        poller.continuous_single_register_poll(mmr920C04::ADDRESS, reg_id, 3,
+        poller.continuous_single_register_poll(mmr920::ADDRESS, reg_id, 3,
                                                STOP_DELAY, own_queue,
                                                transaction_id);
     }
@@ -275,7 +275,7 @@ class MMR920C04 {
     auto handle_ongoing_pressure_response(i2c::messages::TransactionResponse &m)
         -> void {
         if (!bind_sync && !echoing && !max_pressure_sync) {
-            auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
+            auto reg_id = utils::reg_from_id<mmr920::Registers>(m.id.token);
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
         }
 
@@ -289,13 +289,13 @@ class MMR920C04 {
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
         save_pressure(shifted_data_store);
-        auto pressure = mmr920C04::PressureResult::to_pressure(
+        auto pressure = mmr920::PressureResult::to_pressure(
             _registers.pressure_result.reading);
 
         if (max_pressure_sync) {
             bool this_tick_over_threshold =
                 std::fabs(pressure - current_pressure_baseline_pa) >=
-                mmr920C04::MAX_PRESSURE_READING;
+                mmr920::MAX_PRESSURE_READING;
             bool over_threshold = false;
             if (this_tick_over_threshold) {
                 max_pressure_consecutive_readings =
@@ -336,14 +336,14 @@ class MMR920C04 {
                     .sensor = can::ids::SensorType::pressure,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        mmr920C04::reading_to_fixed_point(pressure)});
+                        mmr920::reading_to_fixed_point(pressure)});
         }
     }
 
     auto handle_ongoing_temperature_response(
         i2c::messages::TransactionResponse &m) -> void {
         if (!bind_sync && !echoing) {
-            auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
+            auto reg_id = utils::reg_from_id<mmr920::Registers>(m.id.token);
             stop_continuous_polling(m.id.token, static_cast<uint8_t>(reg_id));
         }
 
@@ -357,7 +357,7 @@ class MMR920C04 {
         save_temperature(shifted_data_store);
 
         if (echoing) {
-            auto temperature = mmr920C04::TemperatureResult::to_temperature(
+            auto temperature = mmr920::TemperatureResult::to_temperature(
                 _registers.temperature_result.reading);
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -366,7 +366,7 @@ class MMR920C04 {
                     .sensor = can::ids::SensorType::pressure_temperature,
                     .sensor_id = sensor_id,
                     .sensor_data =
-                        mmr920C04::reading_to_fixed_point(temperature)});
+                        mmr920::reading_to_fixed_point(temperature)});
         }
     }
 
@@ -379,7 +379,7 @@ class MMR920C04 {
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
         auto pressure =
-            mmr920C04::PressureResult::to_pressure(shifted_data_store);
+            mmr920::PressureResult::to_pressure(shifted_data_store);
         pressure_running_total += pressure;
 
         if (!m.id.is_completed_poll) {
@@ -389,7 +389,7 @@ class MMR920C04 {
         auto current_pressure_baseline_pa =
             pressure_running_total / total_baseline_reads;
         auto pressure_fixed_point =
-            mmr920C04::reading_to_fixed_point(current_pressure_baseline_pa);
+            mmr920::reading_to_fixed_point(current_pressure_baseline_pa);
 
         // FIXME This should be tied to the set threshold
         // command so we can completely remove the base line sensor
@@ -425,7 +425,7 @@ class MMR920C04 {
         uint32_t shifted_data_store = temporary_data_store >> 8;
 
         auto temperature =
-            mmr920C04::TemperatureResult::to_temperature(shifted_data_store);
+            mmr920::TemperatureResult::to_temperature(shifted_data_store);
         temperature_running_total += temperature;
 
         if (!m.id.is_completed_poll) {
@@ -435,7 +435,7 @@ class MMR920C04 {
         auto current_temperature_baseline =
             temperature_running_total / total_baseline_reads;
         auto offset_fixed_point =
-            mmr920C04::reading_to_fixed_point(current_temperature_baseline);
+            mmr920::reading_to_fixed_point(current_temperature_baseline);
         if (echoing) {
             can_client.send_can_message(
                 can::ids::NodeId::host,
@@ -457,9 +457,9 @@ class MMR920C04 {
     hardware::SensorHardwareBase &hardware;
     const can::ids::SensorId &sensor_id;
 
-    mmr920C04::MMR920C04RegisterMap _registers{};
-    mmr920C04::FilterSetting filter_setting =
-        mmr920C04::FilterSetting::LOW_PASS_FILTER;
+    mmr920::MMR920RegisterMap _registers{};
+    mmr920::FilterSetting filter_setting =
+        mmr920::FilterSetting::LOW_PASS_FILTER;
 
     static constexpr std::array<float, 4> MeasurementTimings{0.405, 0.81, 1.62,
                                                              3.24};  // in msec
@@ -473,8 +473,8 @@ class MMR920C04 {
      */
     static constexpr uint16_t MAX_PRESSURE_TIME_MS = 200;
 
-    mmr920C04::MeasurementRate measurement_mode_rate =
-        mmr920C04::MeasurementRate::MEASURE_4;
+    mmr920::MeasurementRate measurement_mode_rate =
+        mmr920::MeasurementRate::MEASURE_4;
 
     bool _initialized = false;
     bool echoing = false;
@@ -498,20 +498,20 @@ class MMR920C04 {
 
     uint32_t temporary_data_store = 0x0;
 
-    template <mmr920C04::MMR920C04CommandRegister Reg>
+    template <mmr920::MMR920CommandRegister Reg>
     requires registers::WritableRegister<Reg>
     auto build_register_command(Reg &reg) -> uint8_t {
         return static_cast<uint8_t>(reg.address);
     }
 
-    template <mmr920C04::MMR920C04CommandRegister Reg>
+    template <mmr920::MMR920CommandRegister Reg>
     requires registers::WritableRegister<Reg>
     auto set_register(Reg &reg) -> bool {
         auto value =
             // Ignore the typical linter warning because we're only using
             // this on __packed structures that mimic hardware registers
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            *reinterpret_cast<mmr920C04::RegisterSerializedTypeA *>(&reg);
+            *reinterpret_cast<mmr920::RegisterSerializedTypeA *>(&reg);
         value &= Reg::value_mask;
         return write(Reg::address, value);
     }

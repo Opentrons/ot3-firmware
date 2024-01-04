@@ -27,7 +27,7 @@
 #include "pipettes/simulator/interfaces.hpp"
 #include "sensors/simulation/fdc1004.hpp"
 #include "sensors/simulation/hdc3020.hpp"
-#include "sensors/simulation/mmr920C04.hpp"
+#include "sensors/simulation/mmr920.hpp"
 #include "sensors/simulation/mock_hardware.hpp"
 #include "spi/simulation/spi.hpp"
 #include "task.h"
@@ -308,9 +308,9 @@ int main(int argc, char** argv) {
         std::make_shared<sim_mocks::MockSensorHardware>();
     fake_sensor_hw_secondary->provide_state_manager(state_manager_connection);
     auto pressuresensor_i2c1 =
-        std::make_shared<mmr920C04_simulator::MMR920C04>();
+        std::make_shared<mmr920_simulator::MMR920>();
     auto pressuresensor_i2c3 =
-        std::make_shared<mmr920C04_simulator::MMR920C04>();
+        std::make_shared<mmr920_simulator::MMR920>();
     i2c::hardware::SimI2C::DeviceMap sensor_map_i2c1 = {
         {hdcsensor->get_address(), *hdcsensor},
         {pressuresensor_i2c1->get_address(), *pressuresensor_i2c1}};

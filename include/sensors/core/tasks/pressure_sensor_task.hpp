@@ -48,24 +48,24 @@ class PressureMessageHandler {
     void visit(const std::monostate &) {}
 
     void visit(i2c::messages::TransactionResponse &m) {
-        auto reg_id = utils::reg_from_id<mmr920C04::Registers>(m.id.token);
-        if ((reg_id != mmr920C04::Registers::LOW_PASS_PRESSURE_READ) &&
-            (reg_id != mmr920C04::Registers::PRESSURE_READ) &&
-            (reg_id != mmr920C04::Registers::TEMPERATURE_READ) &&
-            (reg_id != mmr920C04::Registers::STATUS)) {
+        auto reg_id = utils::reg_from_id<mmr920::Registers>(m.id.token);
+        if ((reg_id != mmr920::Registers::LOW_PASS_PRESSURE_READ) &&
+            (reg_id != mmr920::Registers::PRESSURE_READ) &&
+            (reg_id != mmr920::Registers::TEMPERATURE_READ) &&
+            (reg_id != mmr920::Registers::STATUS)) {
             return;
         }
         // may not be routed to baseline function like we suspect
         if (utils::tag_in_token(m.id.token,
                                 utils::ResponseTag::POLL_IS_CONTINUOUS)) {
-            if (reg_id == mmr920C04::Registers::TEMPERATURE_READ) {
+            if (reg_id == mmr920::Registers::TEMPERATURE_READ) {
                 driver.handle_ongoing_temperature_response(m);
             } else {
                 driver.handle_ongoing_pressure_response(m);
             }
             LOG("continuous transaction response");
         } else {
-            if (reg_id == mmr920C04::Registers::TEMPERATURE_READ) {
+            if (reg_id == mmr920::Registers::TEMPERATURE_READ) {
                 driver.handle_baseline_temperature_response(m);
             } else {
                 driver.handle_baseline_pressure_response(m);
@@ -92,8 +92,8 @@ class PressureMessageHandler {
     void visit(const can::messages::WriteToSensorRequest &m) {
         LOG("Received request to write data %d to %d sensor\n", m.data,
             m.sensor);
-        if (mmr920C04::is_valid_address(m.reg_address)) {
-            driver.write(mmr920C04::Registers(m.reg_address), m.data);
+        if (mmr920::is_valid_address(m.reg_address)) {
+            driver.write(mmr920::Registers(m.reg_address), m.data);
         }
         driver.get_can_client().send_can_message(
             can::ids::NodeId::host, can::messages::ack_from_request(m));
@@ -165,7 +165,7 @@ class PressureMessageHandler {
         static_cast<void>(m);
     }
 
-    MMR920C04<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
+    MMR920<I2CQueueWriter, I2CQueuePoller, CanClient, OwnQueue> driver;
 };
 
 /**

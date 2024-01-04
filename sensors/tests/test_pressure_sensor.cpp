@@ -8,7 +8,7 @@
 #include "i2c/core/writer.hpp"
 #include "i2c/tests/mock_response_queue.hpp"
 #include "motor-control/core/utils.hpp"
-#include "sensors/core/mmr920C04.hpp"
+#include "sensors/core/mmr920.hpp"
 #include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "sensors/core/utils.hpp"
 #include "sensors/tests/mock_hardware.hpp"
@@ -64,8 +64,8 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
             .id =
                 i2c::messages::TransactionIdentifier{
                     .token = sensors::utils::build_id(
-                        sensors::mmr920C04::ADDRESS,
-                        static_cast<uint8_t>(sensors::mmr920C04::Registers::
+                        sensors::mmr920::ADDRESS,
+                        static_cast<uint8_t>(sensors::mmr920::Registers::
                                                  LOW_PASS_PRESSURE_READ),
                         0x1),
                     .is_completed_poll = 1,
@@ -88,9 +88,9 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 sensors::utils::ResponseTag::IS_PART_OF_POLL,
                 sensors::utils::ResponseTag::POLL_IS_CONTINUOUS};
             response_details.id.token = sensors::utils::build_id(
-                sensors::mmr920C04::ADDRESS,
+                sensors::mmr920::ADDRESS,
                 static_cast<uint8_t>(
-                    sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ),
+                    sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                 sensors::utils::byte_from_tags(tags_for_continuous));
             auto response_read = sensors::utils::TaskMessage(response_details);
             sensor.handle_message(response_read);
@@ -117,9 +117,9 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 sensors::utils::ResponseTag::IS_PART_OF_POLL,
                 sensors::utils::ResponseTag::IS_THRESHOLD_SENSE};
             response_details.id.token = sensors::utils::build_id(
-                sensors::mmr920C04::ADDRESS,
+                sensors::mmr920::ADDRESS,
                 static_cast<uint8_t>(
-                    sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ),
+                    sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                 sensors::utils::byte_from_tags(tags_for_baseline));
             auto response_read = sensors::utils::TaskMessage(response_details);
             sensor.handle_message(response_read);
@@ -138,9 +138,9 @@ SCENARIO("Receiving messages through the pressure sensor message handler") {
                 sensors::utils::ResponseTag::IS_PART_OF_POLL,
                 sensors::utils::ResponseTag::IS_THRESHOLD_SENSE};
             response_details.id.token = sensors::utils::build_id(
-                sensors::mmr920C04::ADDRESS,
+                sensors::mmr920::ADDRESS,
                 static_cast<uint8_t>(
-                    sensors::mmr920C04::Registers::MACRAM_WRITE),
+                    sensors::mmr920::Registers::MACRAM_WRITE),
                 sensors::utils::byte_from_tags(tags_for_baseline));
             auto response_read = sensors::utils::TaskMessage(response_details);
             sensor.handle_message(response_read);

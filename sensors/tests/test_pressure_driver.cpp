@@ -57,7 +57,7 @@ SCENARIO("Testing the pressure sensor driver") {
     queue_client.set_queue(&can_queue);
     writer.set_queue(&i2c_queue);
     poller.set_queue(&i2c_poll_queue);
-    sensors::tasks::MMR920C04 driver(writer, poller, queue_client,
+    sensors::tasks::MMR920 driver(writer, poller, queue_client,
                                      pressure_queue, hardware, sensor_id);
 
     can::message_writer_task::TaskMessage empty_can_msg{};
@@ -68,8 +68,8 @@ SCENARIO("Testing the pressure sensor driver") {
             .id =
                 i2c::messages::TransactionIdentifier{
                     .token = sensors::utils::build_id(
-                        sensors::mmr920C04::ADDRESS,
-                        static_cast<uint8_t>(sensors::mmr920C04::Registers::
+                        sensors::mmr920::ADDRESS,
+                        static_cast<uint8_t>(sensors::mmr920::Registers::
                                                  LOW_PASS_PRESSURE_READ),
                         0x1),
                     .is_completed_poll = 1,
@@ -87,7 +87,7 @@ SCENARIO("Testing the pressure sensor driver") {
                 REQUIRE(
                     poller_command.first.write_buffer[0] ==
                     static_cast<uint8_t>(
-                        sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ));
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ));
             }
         }
         WHEN("A response is sent to the handle baseline function") {
@@ -136,8 +136,8 @@ SCENARIO("Testing the pressure sensor driver") {
             .id =
                 i2c::messages::TransactionIdentifier{
                     .token = sensors::utils::build_id(
-                        sensors::mmr920C04::ADDRESS,
-                        static_cast<uint8_t>(sensors::mmr920C04::Registers::
+                        sensors::mmr920::ADDRESS,
+                        static_cast<uint8_t>(sensors::mmr920::Registers::
                                                  LOW_PASS_PRESSURE_READ),
                         sensors::utils::byte_from_tags(tags_for_baseline)),
                     .is_completed_poll = 1,
@@ -175,15 +175,15 @@ SCENARIO("Testing the pressure sensor driver") {
                 REQUIRE(
                     read_command.first.write_buffer[0] ==
                     static_cast<uint8_t>(
-                        sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ));
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ));
             }
         }
         WHEN("the driver receives a response higher than the threshold") {
             auto id = i2c::messages::TransactionIdentifier{
                 .token = sensors::utils::build_id(
-                    sensors::mmr920C04::ADDRESS,
+                    sensors::mmr920::ADDRESS,
                     static_cast<uint8_t>(
-                        sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ),
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                     tags_as_int),
                 .is_completed_poll = false,
                 .transaction_index = static_cast<uint8_t>(0)};
@@ -218,7 +218,7 @@ SCENARIO("Testing the pressure sensor driver") {
                 REQUIRE(
                     read_command.first.write_buffer[0] ==
                     static_cast<uint8_t>(
-                        sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ));
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ));
                 REQUIRE(read_command.polling == 3);
             }
         }
@@ -236,9 +236,9 @@ SCENARIO("Testing the pressure sensor driver") {
         WHEN("pressure driver receives the requested sensor readings") {
             auto id = i2c::messages::TransactionIdentifier{
                 .token = sensors::utils::build_id(
-                    sensors::mmr920C04::ADDRESS,
+                    sensors::mmr920::ADDRESS,
                     static_cast<uint8_t>(
-                        sensors::mmr920C04::Registers::LOW_PASS_PRESSURE_READ),
+                        sensors::mmr920::Registers::LOW_PASS_PRESSURE_READ),
                     tags_as_int),
                 .is_completed_poll = false,
                 .transaction_index = static_cast<uint8_t>(0)};
