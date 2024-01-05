@@ -203,17 +203,13 @@ extern "C" void call_motor_handler(void) { motor_interrupt.run_interrupt(); }
 extern "C" void call_enc_handler(int32_t direction) {
     motor_hardware_iface.encoder_overflow(direction);
 }
-extern "C" void disengage_z_callback_glue(void) {
-    motor_hardware_iface.deactivate_motor();
-}
 
 void z_motor_iface::initialize() {
     if (initialize_spi() != HAL_OK) {
         Error_Handler();
     }
     initialize_hardware_z();
-    set_z_motor_timer_callback(call_motor_handler, call_enc_handler,
-                               disengage_z_callback_glue);
+    set_z_motor_timer_callback(call_motor_handler, call_enc_handler);
     encoder_background_timer.start();
 }
 

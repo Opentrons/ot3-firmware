@@ -341,10 +341,6 @@ extern "C" void left_enc_overflow_callback_glue(int32_t direction) {
 extern "C" void right_enc_overflow_callback_glue(int32_t direction) {
     motor_hardware_right.encoder_overflow(direction);
 }
-extern "C" void motor_disengage_callback_glue() {
-    motor_hardware_left.deactivate_motor();
-    motor_hardware_right.deactivate_motor();
-}
 
 static auto psd = presence_sensing_driver::PresenceSensingHardware{
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
@@ -422,8 +418,7 @@ auto main() -> int {
     app_update_clear_flags();
 
     initialize_timer(motor_callback_glue, left_enc_overflow_callback_glue,
-                     right_enc_overflow_callback_glue,
-                     motor_disengage_callback_glue);
+                     right_enc_overflow_callback_glue);
 
     i2c_setup(&i2c_handles);
     i2c_comms3.set_handle(i2c_handles.i2c3);

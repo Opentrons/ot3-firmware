@@ -1,7 +1,6 @@
 #include "motor_hardware.h"
 #include "system_stm32g4xx.h"
 
-
 static motor_interrupt_callback timer_callback = NULL;
 static z_encoder_overflow_callback z_enc_overflow_callback = NULL;
 static brushed_motor_interrupt_callback brushed_timer_callback = NULL;
@@ -9,16 +8,13 @@ static encoder_overflow_callback gripper_enc_overflow_callback = NULL;
 static encoder_idle_state_callback gripper_enc_idle_state_overflow_callback =
     NULL;
 static stopwatch_overflow_callback gripper_force_stopwatch_overflow_callback = NULL;
-static z_motor_disengage_callback disengage_z_callback = NULL;
 
 
 void set_z_motor_timer_callback(
         motor_interrupt_callback callback,
-        z_encoder_overflow_callback enc_callback,
-        z_motor_disengage_callback disengage_callback) {
+        z_encoder_overflow_callback enc_callback) {
     timer_callback = callback;
     z_enc_overflow_callback = enc_callback;
-    disengage_z_callback = disengage_callback;
 }
 
 void set_brushed_motor_timer_callback(
@@ -218,7 +214,11 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
 
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if (GPIO_Pin == Z_MOT_ENABLE_PIN && disengage_z_callback) {
-        disengage_z_callback();
+    if (GPIO_Pin == ESTOP_IN_PIN) {
+        #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
+            HAL_GPIO_WritePin(EBRAKE_PORT, EBRAKE_PIN, GPIO_PIN_RESET);
+        #endif
+        // this keeps the motor disengaged when estop is released
+        HAL_GPIO_WritePin(Z_MOT_ENABLE_PORT, Z_MOT_ENABLE_PIN, GPIO_PIN_RESET);
     }
 }

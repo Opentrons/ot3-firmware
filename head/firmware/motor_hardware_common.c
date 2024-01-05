@@ -22,8 +22,6 @@ motor_interrupt_callback motor_callback = NULL;
 encoder_overflow_callback left_enc_overflow_callback = NULL;
 encoder_overflow_callback right_enc_overflow_callback = NULL;
 
-disable_motor_callback motor_disengage_callback = NULL;
-
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (hspi->Instance == SPI2) {
@@ -338,19 +336,24 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef *htim) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     // disengage motor whenever estop is engaged
-    if (GPIO_Pin == GPIO_PIN_4 && motor_disengage_callback) {
-        motor_disengage_callback();
+    if (GPIO_Pin == GPIO_PIN_4) {
+        #if PCBA_PRIMARY_REVISION != 'b' && PCBA_PRIMARY_REVISION != 'a'
+            // right & left brake
+            HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_5, GPIO_PIN_RESET);
+        #endif
+
+        // disable both left and right enable pins
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
     }
 }
 
 void initialize_timer(motor_interrupt_callback callback,
                       encoder_overflow_callback l_f_callback,
-                      encoder_overflow_callback r_f_callback,
-                      disable_motor_callback disengage_callback) {
+                      encoder_overflow_callback r_f_callback) {
     motor_callback = callback;
     left_enc_overflow_callback = l_f_callback;
     right_enc_overflow_callback = r_f_callback;
-    motor_disengage_callback = disengage_callback;
     MX_GPIO_Init();
     Encoder_GPIO_Init();
     encoder_init(&htim2);
