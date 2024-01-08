@@ -114,6 +114,7 @@ add_subdir_for_archs(SUBDIR gantry ARCHS cortex-m4)
 add_subdir_for_archs(SUBDIR head ARCHS cortex-m4)
 add_subdir_for_archs(SUBDIR gripper ARCHS cortex-m4)
 add_subdir_for_archs(SUBDIR pipettes ARCHS cortex-m4 cortex-m33)
+add_subdir_for_archs(SUBDIR hepa-uv ARCHS cortex-m4)
 list(REMOVE_DUPLICATES LINT_TARGETS)
 
 message(VERBOSE "Checking if cross-compiling.")
@@ -141,6 +142,7 @@ file(GLOB_RECURSE SOURCES_FOR_FORMAT
         ./spi/*.hpp ./spi/*.cpp
         ./eeprom/*.hpp ./eeprom/*.cpp ./rear-panel/*.hpp
         ./rear-panel/*.cpp
+        ./hepa-uv/*.cpp
         )
 
 # Targets for formatting. These are here rather than in individual target CMakeLists (e.g.
