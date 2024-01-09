@@ -5,6 +5,7 @@
 #include "eeprom/core/dev_data.hpp"
 #include "hepa-uv/core/can_task.hpp"
 #include "hepa-uv/firmware/eeprom_keys.hpp"
+#include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
 #include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
 #include "motor-control/core/tasks/motion_controller_task.hpp"
@@ -13,6 +14,12 @@
 #include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
+
+#pragma GCC diagnostic push
+// NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
+#pragma GCC diagnostic ignored "-Wvolatile"
+#include "hepa-uv/firmware/utility_gpio.h"
+#pragma GCC diagnostic pop
 
 static auto tasks = hepauv_tasks::AllTask{};
 static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::gripper};
@@ -55,13 +62,30 @@ static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
+// PushButtonBlink Test Task
+static auto heartbeat_task_builder =
+    freertos_task::TaskStarter<512, heartbeat_task::HeartbeatTask>{};
+
+static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins {
+    .push_button_led = gpio::PinConfig {
+        .port = LED_DRIVE_PORT,
+        .pin = LED_DRIVE_PIN,
+        .active_setting = GPIO_PIN_SET
+    },
+    .push_button = gpio::PinConfig {
+        .port = HEPA_NO_MCU_PORT,
+        .pin = HEPA_NO_MCU_PIN,
+        .active_setting = GPIO_PIN_SET
+    }
+};
+
+
 /**
  * Start gripper tasks.
  */
 void hepauv_tasks::start_tasks(
     can::bus::CanBus& can_bus,
     i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
-    sensors::hardware::SensorHardwareBase& sensor_hardware,
     eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface) {
     auto& can_writer = can_task::start_writer(can_bus);
     can_task::start_reader(can_bus);
@@ -86,22 +110,12 @@ void hepauv_tasks::start_tasks(
     auto& eeprom_data_rev_update_task = eeprom_data_rev_update_builder.start(
         5, "data_rev_update", queues, tail_accessor, table_updater);
 #endif
-    auto& capacitive_sensor_task_front =
-        capacitive_sensor_task_builder_front.start(
-            5, "cap sensor S1", i2c2_task_client, i2c2_poll_client,
-            sensor_hardware, queues);
-    auto& capacitive_sensor_task_rear =
-        capacitive_sensor_task_builder_rear.start(
-            5, "cap sensor S0", i2c3_task_client, i2c3_poll_client,
-            sensor_hardware, queues);
 
     tasks.i2c2_task = &i2c2_task;
     tasks.i2c3_task = &i2c3_task;
     tasks.i2c2_poller_task = &i2c2_poller_task;
     tasks.i2c3_poller_task = &i2c3_poller_task;
     tasks.eeprom_task = &eeprom_task;
-    tasks.capacitive_sensor_task_front = &capacitive_sensor_task_front;
-    tasks.capacitive_sensor_task_rear = &capacitive_sensor_task_rear;
 #if PCBA_PRIMARY_REVISION != 'b'
     tasks.update_data_rev_task = &eeprom_data_rev_update_task;
 #endif
@@ -111,10 +125,11 @@ void hepauv_tasks::start_tasks(
     queues.i2c2_poller_queue = &i2c2_poller_task.get_queue();
     queues.i2c3_poller_queue = &i2c3_poller_task.get_queue();
     queues.eeprom_queue = &eeprom_task.get_queue();
-    queues.capacitive_sensor_queue_front =
-        &capacitive_sensor_task_front.get_queue();
-    queues.capacitive_sensor_queue_rear =
-        &capacitive_sensor_task_rear.get_queue();
+
+    // PushButtonBlink Test Task
+    auto& heartbeat_task =
+        heartbeat_task_builder.start(5, "heartbeat", gpio_drive_pins);
+    tasks.heartbeat_task = &heartbeat_task;
 }
 
 hepauv_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)

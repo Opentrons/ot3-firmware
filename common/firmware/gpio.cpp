@@ -25,3 +25,11 @@ auto gpio::is_set(const gpio::PinConfig& pc)
     -> bool {
     return gpio_is_set(pc.port, pc.pin, pc.active_setting);
 }
+
+#ifdef ENABLE_CCMRAM
+__attribute__((section( ".ccmram" )))
+#endif
+auto gpio::read_pin(const gpio::PinConfig& pc)
+    -> uint8_t {
+    return gpio_read(pc.port, pc.pin);
+}

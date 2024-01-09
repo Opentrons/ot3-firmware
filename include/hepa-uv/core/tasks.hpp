@@ -1,6 +1,4 @@
 #pragma once
-#include "can/core/can_writer_task.hpp"
-#include "can/core/ids.hpp"
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "eeprom/core/dev_data.hpp"
@@ -30,6 +28,7 @@
 #include "spi/core/spi.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
+#include "hepa-uv/core/heartbeat_task.hpp"
 
 namespace hepauv_tasks {
 
@@ -38,7 +37,6 @@ namespace hepauv_tasks {
  */
 void start_tasks(can::bus::CanBus& can_bus,
                  i2c::hardware::I2CBase& i2c2, i2c::hardware::I2CBase& i2c3,
-                 sensors::hardware::SensorHardwareBase& sensor_hardware,
                  eeprom::hardware_iface::EEPromHardwareIface& eeprom_hw_iface);
 
 /**
@@ -146,6 +144,10 @@ struct AllTask {
     usage_storage_task::UsageStorageTask<
         freertos_message_queue::FreeRTOSMessageQueue>* z_usage_storage_task{
         nullptr};
+
+    // PushButtonBlink Test task
+    heartbeat_task::HeartbeatTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        heartbeat_task{nullptr};
 };
 
 /**

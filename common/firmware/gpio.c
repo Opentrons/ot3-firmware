@@ -43,3 +43,10 @@ __attribute__((section( ".ccmram" )))
 bool gpio_is_set(void* port, uint16_t pin, uint8_t active_setting) {
     return HAL_GPIO_ReadPin(port, pin) == active_setting;
 }
+
+#ifdef ENABLE_CCMRAM
+__attribute__((section( ".ccmram" )))
+#endif
+uint8_t gpio_read(void* port, uint16_t pin) {
+    return HAL_GPIO_ReadPin(port, pin);
+}
