@@ -13,7 +13,6 @@ auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
 /** The parsed message handler */
 static auto gripper_info_handler =
     gripper_info::GripperInfoMessageHandler{main_queues, main_queues};
-static auto sensor_handler = sensors::handlers::SensorHandler{main_queues};
 
 /** Handler of system messages. */
 static auto system_message_handler =
@@ -40,9 +39,6 @@ static auto eeprom_dispatch_target =
 static auto gripper_info_dispatch_target =
     can_task::GripperInfoDispatchTarget{gripper_info_handler};
 
-static auto sensor_dispatch_target =
-    can_task::SensorDispatchTarget{sensor_handler};
-
 struct CheckForNodeId {
     can::ids::NodeId node_id;
     auto operator()(uint32_t arbitration_id) const {
@@ -50,7 +46,7 @@ struct CheckForNodeId {
         auto _node_id = arb.node_id();
         return ((_node_id == node_id) ||
                 (_node_id == can::ids::NodeId::broadcast) ||
-                (_node_id == can::ids::NodeId::gripper));
+                (_node_id == can::ids::NodeId::hepa_filter));
     }
 };
 
@@ -60,12 +56,10 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
         auto arb = can::arbitration_id::ArbitrationId(arbitration_id);
         auto node_id = arb.node_id();
         return ((node_id == can::ids::NodeId::broadcast) ||
-                (node_id == can::ids::NodeId::gripper) ||
-                (node_id == can::ids::NodeId::gripper_z) ||
-                (node_id == can::ids::NodeId::gripper_g));
+                (node_id == can::ids::NodeId::hepa_filter));
     },
     system_dispatch_target, gripper_info_dispatch_target,
-    eeprom_dispatch_target, sensor_dispatch_target);
+    eeprom_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};
@@ -100,18 +94,8 @@ void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo0, filter,
                         can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
-    // Accept any gripper
-    filter.node_id(can::ids::NodeId::gripper);
-    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                        can::arbitration_id::ArbitrationId::node_id_bit_mask);
-
-    // Accept gripper z
-    filter.node_id(can::ids::NodeId::gripper_z);
-    can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
-                        can::arbitration_id::ArbitrationId::node_id_bit_mask);
-
-    // Accept gripper g
-    filter.node_id(can::ids::NodeId::gripper_g);
+    // TODO: add HEPA/UV filter
+    filter.node_id(can::ids::NodeId::hepa_filter);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                         can::arbitration_id::ArbitrationId::node_id_bit_mask);
 

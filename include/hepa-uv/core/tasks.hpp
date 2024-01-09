@@ -9,26 +9,10 @@
 #include "i2c/core/tasks/i2c_poller_task.hpp"
 #include "i2c/core/tasks/i2c_task.hpp"
 #include "i2c/core/writer.hpp"
-#include "motor-control/core/brushed_motor/brushed_motor.hpp"
-#include "motor-control/core/linear_motion_system.hpp"
-#include "motor-control/core/stepper_motor/motor.hpp"
-#include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
-#include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
-#include "motor-control/core/tasks/brushed_move_group_task.hpp"
-#include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/motor_hardware_task.hpp"
-#include "motor-control/core/tasks/move_group_task.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
-#include "motor-control/core/tasks/usage_storage_task.hpp"
-#include "sensors/core/sensor_hardware_interface.hpp"
-#include "sensors/core/tasks/capacitive_sensor_task.hpp"
-#include "sensors/core/tasks/environmental_sensor_task.hpp"
-#include "sensors/core/tasks/pressure_sensor_task.hpp"
 #include "spi/core/spi.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
-#include "hepa-uv/core/heartbeat_task.hpp"
+#include "hepa-uv/core/pushbutton_task.hpp"
 
 namespace hepauv_tasks {
 
@@ -45,32 +29,8 @@ void start_tasks(can::bus::CanBus& can_bus,
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient(can::ids::NodeId this_fw);
 
-    void send_brushed_motion_controller_queue(
-        const brushed_motion_controller_task::TaskMessage& m);
-
     void send_eeprom_queue(const eeprom::task::TaskMessage& m);
 
-    void send_capacitive_sensor_queue_front(
-        const sensors::utils::TaskMessage& m);
-
-    void send_capacitive_sensor_queue_rear(
-        const sensors::utils::TaskMessage& m);
-
-    void send_environment_sensor_queue(const sensors::utils::TaskMessage& m);
-
-    void send_pressure_sensor_queue_front(const sensors::utils::TaskMessage& m);
-    void send_pressure_sensor_queue_rear(const sensors::utils::TaskMessage& m);
-
-    void send_tip_notification_queue_rear(
-        const sensors::tip_presence::TaskMessage& m);
-    void send_tip_notification_queue_front(
-        const sensors::tip_presence::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
-        nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c::writer::TaskMessage>*
         i2c2_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<i2c::writer::TaskMessage>*
@@ -81,10 +41,6 @@ struct QueueClient : can::message_writer::MessageWriter {
         i2c3_poller_queue{nullptr};
     freertos_message_queue::FreeRTOSMessageQueue<eeprom::task::TaskMessage>*
         eeprom_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
-        capacitive_sensor_queue_front{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<sensors::utils::TaskMessage>*
-        capacitive_sensor_queue_rear{nullptr};
 };
 
 /**
@@ -93,30 +49,8 @@ struct QueueClient : can::message_writer::MessageWriter {
 struct AllTask {
     can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
-    tmc2130::tasks::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* tmc2130_driver{nullptr};
-    motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* motion_controller{
-        nullptr};
-    move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* move_status_reporter{
-        nullptr};
-    move_group_task::MoveGroupTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* move_group{nullptr};
-    brushed_motor_driver_task::MotorDriverTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* brushed_motor_driver{
-        nullptr};
-    brushed_motion_controller_task::MotionControllerTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        brushed_motion_controller{nullptr};
     spi::tasks::Task<freertos_message_queue::FreeRTOSMessageQueue>* spi_task{
         nullptr};
-    brushed_move_group_task::MoveGroupTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* brushed_move_group{
-        nullptr};
-    move_status_reporter_task::MoveStatusReporterTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        brushed_move_status_reporter{nullptr};
     i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
         i2c2_task{nullptr};
     i2c::tasks::I2CTask<freertos_message_queue::FreeRTOSMessageQueue>*
@@ -129,25 +63,13 @@ struct AllTask {
         nullptr};
     eeprom::task::EEPromTask<freertos_message_queue::FreeRTOSMessageQueue>*
         eeprom_task{nullptr};
-    sensors::tasks::CapacitiveSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        capacitive_sensor_task_front{nullptr};
-    sensors::tasks::CapacitiveSensorTask<
-        freertos_message_queue::FreeRTOSMessageQueue>*
-        capacitive_sensor_task_rear{nullptr};
-    eeprom::data_rev_task::UpdateDataRevTask<
+   eeprom::data_rev_task::UpdateDataRevTask<
         freertos_message_queue::FreeRTOSMessageQueue>* update_data_rev_task{
-        nullptr};
-    usage_storage_task::UsageStorageTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* jaw_usage_storage_task{
-        nullptr};
-    usage_storage_task::UsageStorageTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* z_usage_storage_task{
         nullptr};
 
     // PushButtonBlink Test task
-    heartbeat_task::HeartbeatTask<freertos_message_queue::FreeRTOSMessageQueue>*
-        heartbeat_task{nullptr};
+    pushbutton_task::PushButtonTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        pushbutton_task{nullptr};
 };
 
 /**
@@ -162,84 +84,6 @@ struct AllTask {
  */
 [[nodiscard]] auto get_main_queues() -> QueueClient&;
 
-namespace z_tasks {
-
-struct QueueClient : can::message_writer::MessageWriter {
-    QueueClient();
-
-    void send_motion_controller_queue(
-        const motion_controller_task::TaskMessage& m);
-
-    void send_motor_driver_queue(const tmc2130::tasks::TaskMessage& m);
-
-    void send_move_group_queue(const move_group_task::TaskMessage& m);
-
-    void send_move_status_reporter_queue(
-        const move_status_reporter_task::TaskMessage& m);
-
-    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        motion_controller_task::TaskMessage>* motion_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<tmc2130::tasks::TaskMessage>*
-        tmc2130_driver_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<move_group_task::TaskMessage>*
-        move_group_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        move_status_reporter_task::TaskMessage>* move_status_report_queue{
-        nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<spi::tasks::TaskMessage>*
-        spi_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        usage_storage_task::TaskMessage>* z_usage_storage_queue{nullptr};
-};
-
 [[nodiscard]] auto get_queues() -> QueueClient&;
-
-}  // namespace z_tasks
-
-namespace g_tasks {
-
-void start_task(
-    brushed_motor::BrushedMotor<lms::GearBoxConfig>& grip_motor,
-    AllTask& hepauv_tasks, hepauv_tasks::QueueClient& main_queues,
-    eeprom::dev_data::DevDataTailAccessor<hepauv_tasks::QueueClient>&
-        tail_accessor);
-
-struct QueueClient : can::message_writer::MessageWriter {
-    QueueClient();
-
-    void send_brushed_motor_driver_queue(
-        const brushed_motor_driver_task::TaskMessage& m);
-
-    void send_brushed_motion_controller_queue(
-        const brushed_motion_controller_task::TaskMessage& m);
-
-    void send_brushed_move_group_queue(
-        const brushed_move_group_task::TaskMessage& m);
-
-    void send_brushed_move_status_reporter_queue(
-        const move_status_reporter_task::TaskMessage& m);
-
-    void send_usage_storage_queue(const usage_storage_task::TaskMessage& m);
-
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_motor_driver_task::TaskMessage>* brushed_motor_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_motion_controller_task::TaskMessage>* brushed_motion_queue{
-        nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        brushed_move_group_task::TaskMessage>* brushed_move_group_queue{
-        nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        move_status_reporter_task::TaskMessage>*
-        brushed_move_status_report_queue{nullptr};
-    freertos_message_queue::FreeRTOSMessageQueue<
-        usage_storage_task::TaskMessage>* g_usage_storage_queue{nullptr};
-};
-
-[[nodiscard]] auto get_queues() -> QueueClient&;
-
-}  // namespace g_tasks
 
 }  // namespace hepauv_tasks

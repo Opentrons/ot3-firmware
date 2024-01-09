@@ -6,12 +6,6 @@
 #include "hepa-uv/core/can_task.hpp"
 #include "hepa-uv/firmware/eeprom_keys.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
-#include "motor-control/core/tasks/brushed_motion_controller_task.hpp"
-#include "motor-control/core/tasks/brushed_motor_driver_task.hpp"
-#include "motor-control/core/tasks/motion_controller_task.hpp"
-#include "motor-control/core/tasks/move_group_task.hpp"
-#include "motor-control/core/tasks/move_status_reporter_task.hpp"
-#include "motor-control/core/tasks/tmc2130_motor_driver_task.hpp"
 #include "spi/core/tasks/spi_task.hpp"
 #include "spi/core/writer.hpp"
 
@@ -22,7 +16,7 @@
 #pragma GCC diagnostic pop
 
 static auto tasks = hepauv_tasks::AllTask{};
-static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::gripper};
+static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::hepa_filter};
 
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};
@@ -50,21 +44,13 @@ static auto i2c2_poll_client =
 static auto i2c3_poll_client =
     i2c::poller::Poller<freertos_message_queue::FreeRTOSMessageQueue>{};
 
-static auto capacitive_sensor_task_builder_front =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
-                               can::ids::SensorId>(can::ids::SensorId::S1);
-
-static auto capacitive_sensor_task_builder_rear =
-    freertos_task::TaskStarter<512, sensors::tasks::CapacitiveSensorTask,
-                               can::ids::SensorId>(can::ids::SensorId::S0);
-
 static auto tail_accessor = eeprom::dev_data::DevDataTailAccessor{queues};
 static auto eeprom_data_rev_update_builder =
     freertos_task::TaskStarter<512, eeprom::data_rev_task::UpdateDataRevTask>{};
 
 // PushButtonBlink Test Task
-static auto heartbeat_task_builder =
-    freertos_task::TaskStarter<512, heartbeat_task::HeartbeatTask>{};
+static auto pushbutton_task_builder =
+    freertos_task::TaskStarter<512, pushbutton_task::PushButtonTask>{};
 
 static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins {
     .push_button_led = gpio::PinConfig {
@@ -137,9 +123,9 @@ void hepauv_tasks::start_tasks(
     queues.eeprom_queue = &eeprom_task.get_queue();
 
     // PushButtonBlink Test Task
-    auto& heartbeat_task =
-        heartbeat_task_builder.start(5, "heartbeat", gpio_drive_pins);
-    tasks.heartbeat_task = &heartbeat_task;
+    auto& pushbutton_task =
+        pushbutton_task_builder.start(5, "pushbutton", gpio_drive_pins);
+    tasks.pushbutton_task = &pushbutton_task;
 }
 
 hepauv_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)
@@ -149,29 +135,6 @@ void hepauv_tasks::QueueClient::send_eeprom_queue(
     const eeprom::task::TaskMessage& m) {
     eeprom_queue->try_write(m);
 }
-
-void hepauv_tasks::QueueClient::send_capacitive_sensor_queue_front(
-    const sensors::utils::TaskMessage& m) {
-    capacitive_sensor_queue_front->try_write(m);
-}
-
-void hepauv_tasks::QueueClient::send_capacitive_sensor_queue_rear(
-    const sensors::utils::TaskMessage& m) {
-    capacitive_sensor_queue_rear->try_write(m);
-}
-
-// gripper does not have environment nor pressure sensor
-void hepauv_tasks::QueueClient::send_environment_sensor_queue(
-    const sensors::utils::TaskMessage&) {}
-void hepauv_tasks::QueueClient::send_pressure_sensor_queue_front(
-    const sensors::utils::TaskMessage&) {}
-void hepauv_tasks::QueueClient::send_pressure_sensor_queue_rear(
-    const sensors::utils::TaskMessage&) {}
-
-void hepauv_tasks::QueueClient::send_tip_notification_queue_rear(
-    const sensors::tip_presence::TaskMessage&) {}
-void hepauv_tasks::QueueClient::send_tip_notification_queue_front(
-    const sensors::tip_presence::TaskMessage&) {}
 
 /**
  * Access to the tasks singleton

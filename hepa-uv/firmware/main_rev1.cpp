@@ -34,8 +34,8 @@ static auto iWatchdog = iwdg::IndependentWatchDog{};
 static auto canbus = can::hal::bus::HalCanBus(
     can_get_device_handle(),
     gpio::PinConfig{// NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-                    .port = HEPA_B_CTRL_PORT,
-                    .pin = HEPA_B_CTRL_PIN,
+                    .port = LED_DRIVE_PORT,
+                    .pin = LED_DRIVE_PIN,
                     .active_setting = GPIO_PIN_RESET});
 // Unfortunately, these numbers need to be literals or defines
 // to get the compile-time checks to work so we can't actually
