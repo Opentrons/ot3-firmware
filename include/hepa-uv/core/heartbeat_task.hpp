@@ -42,8 +42,11 @@ class HeartbeatTask {
     [[noreturn]] void operator()(
         gpio_drive_hardware::GpioDrivePins* drive_pins) {
         for (;;) {
-            uint8_t val = gpio::read_pin(drive_pins->push_button);
-            heartbeat(drive_pins->push_button_led, val);
+            uint8_t door_open = gpio::read_pin(drive_pins->door_open);
+            uint8_t reed_switch = gpio::read_pin(drive_pins->reed_switch);
+            uint8_t push_button = gpio::read_pin(drive_pins->push_button);
+            uint8_t led_value = (door_open == 0 && push_button == 1) ? 1 : 0;
+            heartbeat(drive_pins->push_button_led, led_value);
             vTaskDelay(200 * portTICK_PERIOD_MS);
         }
     }

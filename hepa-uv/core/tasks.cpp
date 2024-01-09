@@ -76,6 +76,16 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins {
         .port = HEPA_NO_MCU_PORT,
         .pin = HEPA_NO_MCU_PIN,
         .active_setting = GPIO_PIN_SET
+    },
+    .reed_switch = gpio::PinConfig {
+        .port = REED_SW_MCU_PORT,
+        .pin = REED_SW_MCU_PIN,
+        .active_setting = GPIO_PIN_SET
+    },
+    .door_open = gpio::PinConfig {
+        .port = DOOR_OPEN_MCU_PORT,
+        .pin = DOOR_OPEN_MCU_PIN,
+        .active_setting = GPIO_PIN_SET
     }
 };
 

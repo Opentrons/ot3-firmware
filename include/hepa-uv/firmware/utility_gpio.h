@@ -99,6 +99,3 @@ void utility_gpio_init();
 // UV_W_CTRL PB2
 #define UV_W_CTRL_PORT GPIOB
 #define UV_W_CTRL_PIN GPIO_PIN_2
-
-// Test
-#define HEPA_LED_SET GPIO_PIN_SET
