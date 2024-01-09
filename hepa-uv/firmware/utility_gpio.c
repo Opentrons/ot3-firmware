@@ -68,9 +68,43 @@ void aux_input_gpio_init(void) {
     HAL_GPIO_Init(AUX_ID_MCU_PORT, &GPIO_InitStruct);
 }
 
+/**
+ * @brief Hepa Push Button GPIO Initialization Function
+ * @param None
+ * @retval None
+*/
+void hepa_push_button_input_gpio_init(void) {
+    /*Configure Ports Clock Enable*/
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /*Configure GPIO pin HEPA_NO_MCU : PB10 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = HEPA_NO_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(HEPA_NO_MCU_PORT, &GPIO_InitStruct);
+}
+
+/**
+ * @brief UV Push Button GPIO Initialization Function
+ * @param None
+ * @retval None
+*/
+void uv_push_button_gpio_init(void) {
+    /*Configure Ports Clock Enable*/
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /*Configure GPIO pin UV_NO_MCU : PC2 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = UV_NO_MCU_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(UV_NO_MCU_PORT, &GPIO_InitStruct);
+}
+
 void utility_gpio_init(void) {
     LED_drive_gpio_init();
     door_open_input_gpio_init();
     reed_switch_input_gpio_init();
     aux_input_gpio_init();
+    hepa_push_button_input_gpio_init();
+    uv_push_button_gpio_init();
 }
