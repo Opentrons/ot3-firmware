@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "stm32g4xx_hal_gpio.h"
+#include "platform_specific_hal_conf.h"
 
 
 #ifdef __cplusplus
