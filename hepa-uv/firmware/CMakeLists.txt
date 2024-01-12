@@ -10,7 +10,7 @@ set(CAN_FW_DIR "${CMAKE_SOURCE_DIR}/can/firmware")
 set(REVISIONS hepa-rev1)
 
 # Add source files that should be checked by clang-tidy here
-set(HEPAUV_FW_LINTABLE_SRCS
+set(HEPA_UV_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
@@ -31,20 +31,15 @@ set(HEPAUV_FW_NON_LINTABLE_SRCS
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.c
         )
 
-set(HEPAUV_SRCS_A1
-        ${HEPAUV_FW_LINTABLE_SRCS}
-        ${HEPAUV_FW_NON_LINTABLE_SRCS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/main_proto.cpp
-        )
 set(HEPAUV_SRCS_B1
-        ${HEPAUV_FW_LINTABLE_SRCS}
+        ${HEPA_UV_FW_LINTABLE_SRCS}
         ${HEPAUV_FW_NON_LINTABLE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/main_rev1.cpp
 )
 set(HEPAUV_SRCS_C1 ${HEPAUV_SRCS_B1})
 set(HEPAUV_SRCS_C2 ${HEPAUV_SRCS_C1})
 
-macro(hepauv_loop)
+macro(hepa_uv_loop)
     set(_driver_suffix ${PROJECT_NAME}_${REVISION})
     add_STM32G4_driver(${_driver_suffix})
     add_STM32G4_freertos(${_driver_suffix})
@@ -84,10 +79,10 @@ foreach_revision(
     PROJECT_NAME hepa-uv
     REVISIONS b1
     SOURCES HEPAUV_SRCS_B1
-    CALL_FOREACH_REV hepauv_loop)
+    CALL_FOREACH_REV hepa_uv_loop)
 
 alias_for_revision(PROJECT_NAME hepa-uv REVISION b1 REVISION_ALIAS rev1)
 
 add_clang_tidy_target(
-    TARGET_NAME hepa-lint
-    LINT_SOURCES ${HEPAUV_FW_LINTABLE_SRCS})
+    TARGET_NAME hepa-uv-lint
+    LINT_SOURCES ${HEPA_UV_FW_LINTABLE_SRCS})

@@ -8,6 +8,7 @@ include(AddBuildAndTestTarget)
 add_executable(
         hepa-uv
         test_main.cpp
+        test_leds.cpp
 )
 
 target_include_directories(hepa-uv PUBLIC ${CMAKE_SOURCE_DIR}/include)
