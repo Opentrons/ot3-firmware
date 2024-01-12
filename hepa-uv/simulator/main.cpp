@@ -71,7 +71,6 @@ int main(int argc, char** argv) {
     LOG_INIT("HEPA/UV", []() -> const char* {
         return pcTaskGetName(xTaskGetCurrentTaskHandle());
     });
-    const uint32_t TEMPORARY_SERIAL = 0x103321;
     auto options = handle_options(argc, argv);
 
     state_manager_connection = state_manager::create<
