@@ -25,6 +25,7 @@
 #include "FreeRTOSConfig.h"
 #include "can/firmware/hal_can.h"
 #include "stm32g4xx_hal.h"
+
 /** @addtogroup STM32G4xx_HAL_Examples
  * @{
  */
@@ -36,22 +37,14 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
-/* Private variables
-   ---------------------------------------------------------*/
+/* Private variables ---------------------------------------------------------*/
 
-/* Private function prototypes
-   -----------------------------------------------*/
-/* Private functions
-   ---------------------------------------------------------*/
+/* Private function prototypes -----------------------------------------------*/
+/* Private functions ---------------------------------------------------------*/
 
-/* External variables
-   --------------------------------------------------------*/
+/* External variables --------------------------------------------------------*/
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi1_rx;
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim15;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -123,6 +116,14 @@ void DebugMon_Handler(void) {}
 /******************************************************************************/
 
 /**
+ * @brief  This function handles PPP interrupt request.
+ * @param  None
+ * @retval None
+ */
+/*void PPP_IRQHandler(void)
+{
+}*/
+/**
  * @brief This function handles DMA1 channel2 global interrupt.
  */
  __attribute__((section(".ccmram")))
@@ -141,35 +142,6 @@ void DMA1_Channel3_IRQHandler(void) { HAL_DMA_IRQHandler(&hdma_spi1_tx); }
 void FDCAN1_IT0_IRQHandler(void) {
     HAL_FDCAN_IRQHandler(can_get_device_handle());
 }
-
-/**
- * @brief This function handles TIM1 update interrupt and TIM16 global
- * interrupt.
- */
- __attribute__((section(".ccmram")))
-void TIM1_UP_TIM16_IRQHandler(void) {
-    // We ONLY ever enable the Update interrupt, so for a small efficiency gain
-    // we always make the assumption that this interrupt was triggered by the
-    // TIM_IT_UPDATE source.
-    // __HAL_TIM_CLEAR_IT(&htim1, TIM_IT_UPDATE);
-    //call_brushed_motor_handler();
-    HAL_TIM_IRQHandler(&htim1);
- }
-
-/**
- * @brief This function handles TIM1 capture/compare interrupt.
- */
-__attribute__((section(".ccmram")))
-void TIM1_CC_IRQHandler(void) { HAL_TIM_IRQHandler(&htim1); }
-
-__attribute__((section(".ccmram")))
-void TIM2_IRQHandler(void) { HAL_TIM_IRQHandler(&htim2); }
-
-__attribute__((section(".ccmram")))
-void TIM3_IRQHandler(void) { HAL_TIM_IRQHandler(&htim3); }
-
-__attribute__((section(".ccmram")))
-void TIM1_BRK_TIM15_IRQHandler(void) { HAL_TIM_IRQHandler(&htim15); }
 
 extern void xPortSysTickHandler(void);
 void SysTick_Handler(void) {
