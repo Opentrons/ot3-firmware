@@ -140,13 +140,13 @@
       ]
     },
     {
-      "name": "hepa-filter",
-      "displayName": "hepa-filter binary",
-      "description": "Build the hepa-filter cross binary",
+      "name": "hepa-uv",
+      "displayName": "hepa-uv binary",
+      "description": "Build the hepa-uv cross binary",
       "configurePreset": "cross",
       "jobs": 4,
       "targets": [
-        "hepa-filter"
+        "hepa-uv"
       ]
     },
 
@@ -224,7 +224,7 @@
         "bootloader-pipettes-single-applications",
         "bootloader-pipettes-multi-applications",
         "bootloader-pipettes-96-applications",
-        "bootloader-hepa-filter-applications"
+        "bootloader-hepa-uv-applications"
       ]
     },
     {
@@ -243,7 +243,7 @@
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
         "gripper-simulator",
-        "hepa-filter-simulator"
+        "hepa-uv-simulator"
       ]
     },
     {
@@ -262,7 +262,7 @@
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
         "gripper-simulator",
-        "hepa-filter-simulator"
+        "hepa-uv-simulator"
       ]
     }
   ]

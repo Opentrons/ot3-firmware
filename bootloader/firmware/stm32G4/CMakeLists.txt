@@ -156,7 +156,7 @@ foreach_revision(
     NO_CREATE_INSTALL_RULES
     )
 
-set(hepauv_sources ${_g4_sources} ${CMAKE_CURRENT_SOURCE_DIR}/hepauv_startup.c)
+set(hepauv_sources ${_g4_sources})
 
 macro(hepauv_bootloader_loop)
   target_link_libraries(${REVISION_TARGET}
@@ -164,8 +164,7 @@ macro(hepauv_bootloader_loop)
       STM32G4xx_Drivers_Bootloader
       bootloader-core)
 
-  # TODO: fix node id
-  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_gripper)
+  target_compile_definitions(${REVISION_TARGET} PUBLIC node_id_hepa_uv)
 endmacro()
 
 foreach_revision(
