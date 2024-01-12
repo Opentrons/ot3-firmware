@@ -2,9 +2,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "platform_specific_hal_conf.h"
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus

@@ -6,9 +6,6 @@
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#pragma GCC diagnostic ignored "-Wvolatile"
-#include "hepa-uv/firmware/utility_gpio.h"
-#pragma GCC diagnostic pop
 
 static auto tasks = hepauv_tasks::AllTask{};
 static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::hepa_uv};
