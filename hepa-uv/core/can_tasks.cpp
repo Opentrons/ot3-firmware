@@ -1,6 +1,5 @@
 #include <span>
 
-#include "eeprom/core/message_handler.hpp"
 #include "hepa-uv/core/can_task.hpp"
 
 using namespace can::dispatch;
@@ -9,10 +8,6 @@ static auto& main_queues = hepauv_tasks::get_main_queues();
 
 auto can_sender_queue = freertos_message_queue::FreeRTOSMessageQueue<
     can::message_writer_task::TaskMessage>{};
-
-/** The parsed message handler */
-static auto gripper_info_handler =
-    gripper_info::GripperInfoMessageHandler{main_queues, main_queues};
 
 /** Handler of system messages. */
 static auto system_message_handler =
@@ -26,18 +21,6 @@ static auto system_message_handler =
         revision_get()->secondary};
 static auto system_dispatch_target =
     can_task::SystemDispatchTarget{system_message_handler};
-
-/** Handler for eeprom messages.*/
-static auto eeprom_message_handler =
-    eeprom::message_handler::EEPromHandler{main_queues, main_queues};
-static auto eeprom_dispatch_target =
-    can::dispatch::DispatchParseTarget<decltype(eeprom_message_handler),
-                                       can::messages::WriteToEEPromRequest,
-                                       can::messages::ReadFromEEPromRequest>{
-        eeprom_message_handler};
-
-static auto gripper_info_dispatch_target =
-    can_task::GripperInfoDispatchTarget{gripper_info_handler};
 
 struct CheckForNodeId {
     can::ids::NodeId node_id;
@@ -58,8 +41,7 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
         return ((node_id == can::ids::NodeId::broadcast) ||
                 (node_id == can::ids::NodeId::hepa_uv));
     },
-    system_dispatch_target, gripper_info_dispatch_target,
-    eeprom_dispatch_target);
+    system_dispatch_target);
 
 auto static reader_message_buffer =
     freertos_message_buffer::FreeRTOSMessageBuffer<1024>{};

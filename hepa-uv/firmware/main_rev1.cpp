@@ -20,11 +20,8 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
-#include "hepa-uv/core/interfaces.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
-#include "i2c/firmware/i2c_comms.hpp"
-#include "sensors/firmware/sensor_hardware.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -56,31 +53,6 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
-/**
- * I2C handles
- */
-static auto i2c_comms2 = i2c::hardware::I2C();
-static auto i2c_comms3 = i2c::hardware::I2C();
-static auto i2c_handles = I2CHandlerStruct{};
-
-static constexpr auto eeprom_chip =
-    eeprom::hardware_iface::EEPromChipType::ST_M24128_BF;
-
-class EEPromHardwareInterface
-    : public eeprom::hardware_iface::EEPromHardwareIface {
-  public:
-    EEPromHardwareInterface()
-        : eeprom::hardware_iface::EEPromHardwareIface(eeprom_chip) {}
-    void set_write_protect(bool enable) final {
-        if (enable) {
-            disable_eeprom_write();
-        } else {
-            enable_eeprom_write();
-        }
-    }
-};
-static auto eeprom_hw_iface = EEPromHardwareInterface();
-
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -88,14 +60,9 @@ auto main() -> int {
 
     app_update_clear_flags();
 
-    i2c_setup(&i2c_handles);
-    i2c_comms2.set_handle(i2c_handles.i2c2);
-    i2c_comms3.set_handle(i2c_handles.i2c3);
-
     canbus.start(can_bit_timings);
 
-    hepauv_tasks::start_tasks(
-        canbus, i2c_comms2, i2c_comms3, eeprom_hw_iface);
+    hepauv_tasks::start_tasks(canbus);
 
     iWatchdog.start(6);
 

@@ -1,4 +1,4 @@
-function(target_hepauv_core TARGET)
+function(target_hepa_uv_core TARGET)
     target_sources(${TARGET} PUBLIC
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/can_tasks.cpp
             ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/tasks.cpp)

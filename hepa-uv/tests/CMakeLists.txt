@@ -6,18 +6,17 @@ include(Catch)
 include(AddBuildAndTestTarget)
 
 add_executable(
-        gripper
+        hepa-uv
         test_main.cpp
-        test_linear_motion_config.cpp
 )
 
-target_include_directories(gripper PUBLIC ${CMAKE_SOURCE_DIR}/include)
-set_target_properties(gripper
+target_include_directories(hepa-uv PUBLIC ${CMAKE_SOURCE_DIR}/include)
+set_target_properties(hepa-uv
         PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED TRUE)
 
-target_compile_options(gripper
+target_compile_options(hepa-uv
         PUBLIC
         -Wall
         -Werror
@@ -30,11 +29,11 @@ target_compile_options(gripper
         $<$<COMPILE_LANGUAGE:CXX>:-Wctor-dtor-privacy>
         $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
 )
-add_revision(TARGET gripper REVISION a1)
+add_revision(TARGET hepa-uv REVISION b1)
 
-target_link_libraries(gripper Catch2::Catch2)
+target_link_libraries(hepa-uv Catch2::Catch2)
 
-catch_discover_tests(gripper)
-add_build_and_test_target(gripper)
+catch_discover_tests(hepa-uv)
+add_build_and_test_target(hepa-uv)
 
-add_coverage(gripper)
+add_coverage(hepa-uv)
