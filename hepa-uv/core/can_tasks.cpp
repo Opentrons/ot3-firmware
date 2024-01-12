@@ -46,7 +46,7 @@ struct CheckForNodeId {
         auto _node_id = arb.node_id();
         return ((_node_id == node_id) ||
                 (_node_id == can::ids::NodeId::broadcast) ||
-                (_node_id == can::ids::NodeId::hepa_filter));
+                (_node_id == can::ids::NodeId::hepa_uv));
     }
 };
 
@@ -56,7 +56,7 @@ static auto main_dispatcher = can::dispatch::Dispatcher(
         auto arb = can::arbitration_id::ArbitrationId(arbitration_id);
         auto node_id = arb.node_id();
         return ((node_id == can::ids::NodeId::broadcast) ||
-                (node_id == can::ids::NodeId::hepa_filter));
+                (node_id == can::ids::NodeId::hepa_uv));
     },
     system_dispatch_target, gripper_info_dispatch_target,
     eeprom_dispatch_target);
@@ -95,7 +95,7 @@ void callback(void*, uint32_t identifier, uint8_t* data, uint8_t length) {
                         can::arbitration_id::ArbitrationId::node_id_bit_mask);
 
     // TODO: add HEPA/UV filter
-    filter.node_id(can::ids::NodeId::hepa_filter);
+    filter.node_id(can::ids::NodeId::hepa_uv);
     can_bus->add_filter(CanFilterType::mask, CanFilterConfig::to_fifo1, filter,
                         can::arbitration_id::ArbitrationId::node_id_bit_mask);
 

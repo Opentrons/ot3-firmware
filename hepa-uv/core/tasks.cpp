@@ -16,7 +16,7 @@
 #pragma GCC diagnostic pop
 
 static auto tasks = hepauv_tasks::AllTask{};
-static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::hepa_filter};
+static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::hepa_uv};
 
 static auto eeprom_task_builder =
     freertos_task::TaskStarter<512, eeprom::task::EEPromTask>{};

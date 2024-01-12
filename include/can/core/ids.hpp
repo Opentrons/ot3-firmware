@@ -126,14 +126,14 @@ enum class NodeId {
     gripper = 0x20,
     gripper_z = 0x21,
     gripper_g = 0x22,
-    hepa_filter = 0x80,
+    hepa_uv = 0x32,
     pipette_left_bootloader = 0x6f,
     pipette_right_bootloader = 0x7f,
     gantry_x_bootloader = 0x3f,
     gantry_y_bootloader = 0x4f,
     head_bootloader = 0x5f,
     gripper_bootloader = 0x2f,
-    hepa_filter_bootloader = 0x8f,
+    hepa_uv_bootloader = 0x3e,
 };
 
 /** Common error codes. */
