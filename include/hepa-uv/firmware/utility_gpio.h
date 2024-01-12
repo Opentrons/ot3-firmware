@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "platform_specific_hal_conf.h"
 #include "stm32g4xx_hal_gpio.h"
 
 
