@@ -44,7 +44,7 @@ void door_open_input_gpio_init() {
 void reed_switch_input_gpio_init() {
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
-    /*Configure GPIO pin DOOR_OPEN_MCU : PC11 */
+    /*Configure GPIO pin REED_SW_MCU : PC11 */
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = REED_SW_MCU_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -100,6 +100,30 @@ void uv_push_button_gpio_init(void) {
     HAL_GPIO_Init(UV_NO_MCU_PORT, &GPIO_InitStruct);
 }
 
+/**
+ * @brief NVIC EXTI interrupt priority Initialization
+ * @param None
+ * @retval None
+ */
+static void nvic_priority_enable_init() {
+    /* EXTI interrupt init DOOR_OPEN_MCU : PC7*/
+    // PC7 -> GPIO_EXTI6 (EXTI9_5_IRQn)
+    HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+    /* EXTI interrupt init REED_SW_MCU : PC11*/
+    /* EXTI interrupt init HEPA_NO_MCU : PB10*/
+    // PC11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
+    // PB11 -> GPIO_EXTI11 (EXTI15_10_IRQn)
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 7, 0);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+    /* EXTI interrupt init UV_NO_MCU : PC2*/
+    // PC2 -> GPIO_EXTI2 (EXTI2_IRQn)
+    HAL_NVIC_SetPriority(EXTI2_IRQn, 7, 0);
+    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+}
+
 void utility_gpio_init(void) {
     LED_drive_gpio_init();
     door_open_input_gpio_init();
@@ -107,4 +131,5 @@ void utility_gpio_init(void) {
     aux_input_gpio_init();
     hepa_push_button_input_gpio_init();
     uv_push_button_gpio_init();
+    nvic_priority_enable_init();
 }
