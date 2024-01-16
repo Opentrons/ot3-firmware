@@ -251,8 +251,8 @@ class MotionControllerMessageHandler {
             debounce_count = 0;
         } else {
             debounce_count++;
-            motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index});
             vTaskDelay(pdMS_TO_TICKS(100));
+            motion_client.send_motion_controller_queue(motor_control_task_messages::RouteMotorDriverInterrupt{.message_index = m.message_index});
         }
     }
 
