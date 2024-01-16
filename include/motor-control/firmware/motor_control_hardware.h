@@ -24,6 +24,7 @@ uint16_t motor_hardware_encoder_pulse_count(void* encoder_handle);
 uint16_t motor_hardware_encoder_pulse_count_with_overflow(void* encoder_handle, int8_t *overflows);
 void motor_hardware_reset_encoder_count(void* encoder_handle, uint16_t reset_value);
 uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t clear);
+void motor_hardware_delay(uint32_t delay);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

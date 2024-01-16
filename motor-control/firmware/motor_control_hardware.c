@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "platform_specific_hal_conf.h"
 #include "stm32g4xx_hal_tim.h"
+#include "stm32g4xx_hal.h"
 #include "task.h"
 
 HAL_StatusTypeDef custom_stop_pwm_it(TIM_HandleTypeDef* htim,
@@ -130,4 +131,9 @@ uint16_t motor_hardware_get_stopwatch_pulses(void* stopwatch_handle, uint8_t cle
     }
     return count;
 }
+
+void motor_hardware_delay(uint32_t delay) {
+    HAL_Delay(delay);
+}
+
 
