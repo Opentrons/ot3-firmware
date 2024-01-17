@@ -16,11 +16,10 @@ void start_tasks(can::bus::CanBus& can_bus);
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient(can::ids::NodeId this_fw);
 
-    void send_interrupt_message(
-        const hepa_task::TaskMessage& m);
+    void send_interrupt_message(const hepa_task::TaskMessage& m);
 
-    freertos_message_queue::FreeRTOSMessageQueue<
-        hepa_task::TaskMessage>* hepa_queue{nullptr};
+    freertos_message_queue::FreeRTOSMessageQueue<hepa_task::TaskMessage>*
+        hepa_queue{nullptr};
 };
 
 /**
@@ -30,8 +29,8 @@ struct AllTask {
     can::message_writer_task::MessageWriterTask<
         freertos_message_queue::FreeRTOSMessageQueue>* can_writer{nullptr};
 
-    hepa_task::HepaTask<
-        freertos_message_queue::FreeRTOSMessageQueue>* hepa_task_handler{nullptr};
+    hepa_task::HepaTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        hepa_task_handler{nullptr};
 };
 
 /**

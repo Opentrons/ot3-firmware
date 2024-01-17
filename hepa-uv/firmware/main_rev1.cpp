@@ -20,9 +20,9 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
-#include "hepa-uv/core/messages.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -64,7 +64,8 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         case UV_NO_MCU_PIN:
             if (hepa_queue_client.hepa_queue != nullptr) {
                 static_cast<void>(hepa_queue_client.hepa_queue->try_write_isr(
-                    interrupt_task_messages::GPIOInterruptChanged{.pin = GPIO_Pin }));
+                    interrupt_task_messages::GPIOInterruptChanged{
+                        .pin = GPIO_Pin}));
             }
             // send to uv queue here
             break;

@@ -4,8 +4,8 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
-#include "messages.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
+#include "messages.hpp"
 
 namespace hepa_task {
 
@@ -13,16 +13,14 @@ using TaskMessage = interrupt_task_messages::TaskMessage;
 
 class HepaMessageHandler {
   public:
-    explicit HepaMessageHandler(
-        gpio_drive_hardware::GpioDrivePins& drive_pins)
+    explicit HepaMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins)
         : drive_pins{drive_pins} {}
     HepaMessageHandler(const HepaMessageHandler &) = delete;
     HepaMessageHandler(const HepaMessageHandler &&) = delete;
-    auto operator=(const HepaMessageHandler &)
-        -> HepaMessageHandler & = delete;
+    auto operator=(const HepaMessageHandler &) -> HepaMessageHandler & = delete;
     auto operator=(const HepaMessageHandler &&)
         -> HepaMessageHandler && = delete;
-    ~HepaMessageHandler() { }
+    ~HepaMessageHandler() {}
 
     void handle_message(const TaskMessage &m) {
         std::visit([this](auto o) { this->visit(o); }, m);
@@ -35,7 +33,7 @@ class HepaMessageHandler {
     void visit(const interrupt_task_messages::GPIOInterruptChanged &m) {
         if (m.pin == drive_pins.hepa_push_button.pin) {
             hepa_push_button = !hepa_push_button;
-             // handle state changes here
+            // handle state changes here
             if (hepa_push_button) {
                 gpio::set(drive_pins.hepa_on_off);
             } else {
@@ -50,7 +48,7 @@ class HepaMessageHandler {
     bool hepa_push_button = false;
     bool hepa_fan_on = false;
 
-    gpio_drive_hardware::GpioDrivePins& drive_pins;
+    gpio_drive_hardware::GpioDrivePins &drive_pins;
 };
 
 /**
@@ -62,8 +60,7 @@ class HepaTask {
   public:
     using Messages = TaskMessage;
     using QueueType = QueueImpl<TaskMessage>;
-    HepaTask(QueueType &queue)
-        : queue{queue} {}
+    HepaTask(QueueType &queue) : queue{queue} {}
     HepaTask(const HepaTask &c) = delete;
     HepaTask(const HepaTask &&c) = delete;
     auto operator=(const HepaTask &c) = delete;
@@ -74,7 +71,7 @@ class HepaTask {
      * Task entry point.
      */
     [[noreturn]] void operator()(
-        gpio_drive_hardware::GpioDrivePins* drive_pins) {
+        gpio_drive_hardware::GpioDrivePins *drive_pins) {
         auto handler = HepaMessageHandler{*drive_pins};
         TaskMessage message{};
         for (;;) {

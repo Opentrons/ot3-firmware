@@ -13,7 +13,6 @@ struct GPIOInterruptChanged {
     uint8_t state;
 };
 
-using TaskMessage =
-    std::variant<std::monostate, GPIOInterruptChanged>;
+using TaskMessage = std::variant<std::monostate, GPIOInterruptChanged>;
 
 }  // namespace interrupt_task_messages
