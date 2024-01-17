@@ -140,6 +140,17 @@
       ]
     },
     {
+      "name": "hepa-uv",
+      "displayName": "hepa-uv binary",
+      "description": "Build the hepa-uv cross binary",
+      "configurePreset": "cross",
+      "jobs": 4,
+      "targets": [
+        "hepa-uv"
+      ]
+    },
+
+    {
       "name": "gantry",
       "displayName": "gantry binaries",
       "description": "build the gantry binary targets",
@@ -212,7 +223,8 @@
         "bootloader-gripper-applications",
         "bootloader-pipettes-single-applications",
         "bootloader-pipettes-multi-applications",
-        "bootloader-pipettes-96-applications"
+        "bootloader-pipettes-96-applications",
+        "bootloader-hepa-uv-applications"
       ]
     },
     {
@@ -230,7 +242,8 @@
         "pipettes-single-simulator",
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
-        "gripper-simulator"
+        "gripper-simulator",
+        "hepa-uv-simulator"
       ]
     },
     {
@@ -248,7 +261,8 @@
         "pipettes-single-simulator",
         "pipettes-multi-simulator",
         "pipettes-96-simulator",
-        "gripper-simulator"
+        "gripper-simulator",
+        "hepa-uv-simulator"
       ]
     }
   ]

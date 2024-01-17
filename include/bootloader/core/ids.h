@@ -127,12 +127,14 @@ typedef enum {
     can_nodeid_gripper = 0x20,
     can_nodeid_gripper_z = 0x21,
     can_nodeid_gripper_g = 0x22,
+    can_nodeid_hepa_uv = 0x32,
     can_nodeid_pipette_left_bootloader = 0x6f,
     can_nodeid_pipette_right_bootloader = 0x7f,
     can_nodeid_gantry_x_bootloader = 0x3f,
     can_nodeid_gantry_y_bootloader = 0x4f,
     can_nodeid_head_bootloader = 0x5f,
     can_nodeid_gripper_bootloader = 0x2f,
+    can_nodeid_hepa_uv_bootloader = 0x3e,
 } CANNodeId;
 
 /** Common error codes. */

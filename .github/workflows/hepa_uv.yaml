@@ -1,0 +1,122 @@
+name: "HEPA/UV build/test"
+on:
+  pull_request:
+    paths:
+      - "hepa-uv/**"
+      - "common/**"
+      - "can/**"
+      - "include/**"
+      - "!include/pipettes/**"
+      - "!include/gantry/**"
+      - "!include/head/**"
+      - "cmake/*"
+      - "!cmake/Arduino*"
+      - "CMakeLists.txt"
+      - "hepa-uv/CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".clang-format"
+      - ".clang-tidy"
+  push:
+    paths:
+      - "hepa-uv/**"
+      - "common/**"
+      - "can/**"
+      - "spi/**"
+      - "include/**"
+      - "!include/pipettes/**"
+      - "!include/gantry/**"
+      - "!include/head/**"
+      - "cmake/*"
+      - "!cmake/Arduino*"
+      - "CMakeLists.txt"
+      - "hepa-uv/CMakeLists.txt"
+      - "CMakePresets.json"
+      - ".clang-format"
+      - ".clang-tidy"
+      - ".github/workflows/hepa_uv.yaml"
+    branches:
+      - "*"
+    tags:
+      - "hepa_uv@*"
+  workflow_dispatch:
+
+env:
+  ci: 1
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  cross-compile-check:
+    name: "Cross-Compile/Check"
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 20
+    steps:
+      - uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - uses: "actions/cache@v3"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
+      - name: "Configure"
+        run: cmake --preset=cross . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - name: "Format"
+        run: cmake --build ./build-cross --target hepa-uv-format-ci
+      - name: "Build"
+        run: cmake --build ./build-cross --target hepa-uv-images hepa-uv-applications
+      - name: "Lint"
+        run: cmake --build ./build-cross --target hepa-uv-lint
+
+  host-compile-test:
+    name: "Host-Compile/Test"
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 10
+    steps:
+      - name: Update and install gcc-10 & g++-10
+        run: |
+          sudo apt update
+          sudo apt install gcc-10 g++-10
+
+      - name: Checkout ot3-firmware repository
+        uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+          path: ot3-firmware
+
+      - name: Checkout opentrons repository
+        uses: actions/checkout@v3
+        with:
+          repository: "Opentrons/opentrons"
+          path: opentrons
+
+      - name: Cache stm32-tools
+        uses: "actions/cache@v3"
+        with:
+          path: "./stm32-tools"
+          key: ${{ runner.os }}-${{ hashFiles('**/cmake/*') }}-${{ secrets.CACHE_VERSION }}
+
+      - name: "Configure"
+        run: cmake --preset=host-gcc10 .
+        working-directory: ot3-firmware
+
+      - name: 'Build and test'
+        run: cmake --build ./build-host --target hepa-uv-build-and-test
+        working-directory: ot3-firmware
+
+      - name: 'Setup state_manager'
+        run: cmake --build ./build-host/ --target state-manager-setup
+        working-directory: ot3-firmware
+
+      - name: 'Build simulator'
+        run: cmake --build ./build-host --target hepa-uv-simulator
+        working-directory: ot3-firmware
+
+      - name: "Upload artifacts"
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: "hepa-uv-simulator-${{github.ref_name}}"
+          path: |
+            build-host/hepa-uv/simulator/hepa-uv-simulator
