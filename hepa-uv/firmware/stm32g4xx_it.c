@@ -115,14 +115,26 @@ void DebugMon_Handler(void) {}
 /*  file (startup_stm32g4xxxx.s).                                             */
 /******************************************************************************/
 
-/**
- * @brief  This function handles PPP interrupt request.
- * @param  None
- * @retval None
- */
-/*void PPP_IRQHandler(void)
-{
-}*/
+void EXTI2_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_2)) {
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+    }
+}
+
+void EXTI9_5_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_7)) {
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+    }
+}
+
+void EXTI15_10_IRQHandler(void) {
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_10)) {
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+    } else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_11)) {
+        HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+    }
+}
+
 /**
  * @brief This function handles DMA1 channel2 global interrupt.
  */

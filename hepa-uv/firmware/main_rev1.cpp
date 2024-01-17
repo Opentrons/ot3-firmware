@@ -22,6 +22,7 @@
 #include "common/firmware/utility_gpio.h"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
+#include "hepa-uv/core/messages.hpp"
 
 static auto iWatchdog = iwdg::IndependentWatchDog{};
 
@@ -52,6 +53,25 @@ static auto canbus = can::hal::bus::HalCanBus(
 static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
+
+static auto& hepa_queue_client = hepauv_tasks::get_main_queues();
+
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    switch (GPIO_Pin) {
+        case DOOR_OPEN_MCU_PIN:
+        case REED_SW_MCU_PIN:
+        case HEPA_NO_MCU_PIN:
+        case UV_NO_MCU_PIN:
+            if (hepa_queue_client.hepa_queue != nullptr) {
+                static_cast<void>(hepa_queue_client.hepa_queue->try_write_isr(
+                    interrupt_task_messages::GPIOInterruptChanged{.pin = GPIO_Pin }));
+            }
+            // send to uv queue here
+            break;
+        default:
+            break;
+    }
+}
 
 auto main() -> int {
     HardwareInit();
