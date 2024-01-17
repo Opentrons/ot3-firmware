@@ -18,7 +18,6 @@ void utility_gpio_init();
 
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
-#include "platform_specific_hal_conf.h"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #pragma GCC diagnostic pop
 
