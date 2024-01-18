@@ -4,6 +4,7 @@
 #include "common/core/bit_utils.hpp"
 #include "common/core/logging.h"
 #include "common/core/message_queue.hpp"
+#include "common/firmware/gpio.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "messages.hpp"
 
