@@ -1,0 +1,74 @@
+name: "build simulators"
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ot3-firmware
+
+jobs:
+  build-simulators:
+    strategy:
+      matrix:
+        target: [
+          bootloader,
+          gantry-x,
+          gantry-y,
+          gripper,
+          head,
+          hepa-uv,
+          pipettes-single,
+          pipettes-multi,
+          pipettes-96,
+        ]
+    name: ${{ matrix.target }} simulator
+    runs-on: "ubuntu-20.04"
+    timeout-minutes: 10
+    steps:
+      - name: Checkout ot3-firmware repo
+        uses: actions/checkout@v4
+        with:
+          path: ot3-firmware
+
+      - name: Checkout github actions directory
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions
+          sparse-checkout-cone-mode: false
+          path: actions
+
+      - name: Setup main
+        uses: ./actions/.github/actions/main-setup
+        with:
+          cache-version: ${{ secrets.CACHE_VERSION }}
+
+      - name: Configure
+        run: cmake --preset=host-gcc10 .
+
+      - name: setup state manager
+        run: cmake --build ./build-host --target state-manager-setup
+
+      - name: Build Simulator
+        run: cmake --build ./build-host --target ${{ matrix.target }}-simulator
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-simulator-${{ github.ref_name }}
+          path: |
+            ${{
+                format(
+                  'ot3-firmware/build-host/{0}/simulator/{1}-simulator',
+                  contains(matrix.target, 'gantry') && 'gantry' || contains(matrix.target, 'pipettes') && 'pipettes' || matrix.target,
+                  matrix.target
+                )
+            }}
