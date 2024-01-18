@@ -28,6 +28,7 @@ add_library(freertos-hepa-uv STATIC ${FREERTOS_SOURCES})
 
 set(HEPA_UV_SIMULATOR_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/gpio.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
         )
 
