@@ -47,6 +47,8 @@ target_compile_definitions(hepa-uv-simulator PUBLIC ENABLE_LOGGING)
 
 target_can_simlib(hepa-uv-simulator)
 
+target_hepa_uv_core(hepa-uv-simulator)
+
 target_link_libraries(hepa-uv-simulator PRIVATE can-core common-simulation freertos-hepa-uv pthread Boost::boost Boost::program_options state_manager)
 
 set_target_properties(hepa-uv-simulator

@@ -2,13 +2,15 @@
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "hepa-uv/core/hepa_task.hpp"
+#include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 
 namespace hepauv_tasks {
 
 /**
  * Start hepa-uv tasks.
  */
-void start_tasks(can::bus::CanBus& can_bus);
+void start_tasks(can::bus::CanBus& can_bus,
+                 gpio_drive_hardware::GpioDrivePins& gpio_drive_pins);
 
 /**
  * Access to all the message queues in the system.
