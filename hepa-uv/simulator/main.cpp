@@ -69,6 +69,7 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
 static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{};
 
 int main(int argc, char** argv) {
+    // TODO: (ba, 2024-01-18): Fix the simulator later on
     signal(SIGINT, signal_handler);
 
     LOG_INIT("HEPA/UV", []() -> const char* {
