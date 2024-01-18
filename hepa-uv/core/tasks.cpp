@@ -17,6 +17,9 @@ static auto queues = hepauv_tasks::QueueClient{can::ids::NodeId::hepa_uv};
 static auto hepa_task_builder =
     freertos_task::TaskStarter<512, hepa_task::HepaTask>{};
 
+static auto uv_task_builder =
+    freertos_task::TaskStarter<512, uv_task::UVTask>{};
+
 /**
  * Start hepa_uv tasks.
  */
@@ -27,20 +30,28 @@ void hepauv_tasks::start_tasks(
     can_task::start_reader(can_bus);
 
     auto& hepa_task = hepa_task_builder.start(5, "hepa_fan", gpio_drive_pins);
+    auto& uv_task = uv_task_builder.start(5, "uv_ballast", gpio_drive_pins);
 
     tasks.hepa_task_handler = &hepa_task;
+    tasks.uv_task_handler = &uv_task;
     tasks.can_writer = &can_writer;
 
     queues.set_queue(&can_writer.get_queue());
     queues.hepa_queue = &hepa_task.get_queue();
+    queues.uv_queue = &uv_task.get_queue();
 }
 
 hepauv_tasks::QueueClient::QueueClient(can::ids::NodeId this_fw)
     : can::message_writer::MessageWriter{this_fw} {}
 
-void hepauv_tasks::QueueClient::send_interrupt_message(
+void hepauv_tasks::QueueClient::send_hepa_message(
     const hepa_task::TaskMessage& m) {
     hepa_queue->try_write(m);
+}
+
+void hepauv_tasks::QueueClient::send_uv_message(
+    const uv_task::TaskMessage& m) {
+    uv_queue->try_write(m);
 }
 
 /**
