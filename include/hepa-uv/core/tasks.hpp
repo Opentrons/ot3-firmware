@@ -2,6 +2,7 @@
 #include "can/core/message_writer.hpp"
 #include "common/core/freertos_timer.hpp"
 #include "hepa-uv/core/hepa_task.hpp"
+#include "hepa-uv/core/uv_task.hpp"
 #include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 
 namespace hepauv_tasks {
@@ -18,10 +19,14 @@ void start_tasks(can::bus::CanBus& can_bus,
 struct QueueClient : can::message_writer::MessageWriter {
     QueueClient(can::ids::NodeId this_fw);
 
-    void send_interrupt_message(const hepa_task::TaskMessage& m);
+    void send_hepa_message(const hepa_task::TaskMessage& m);
+    void send_uv_message(const hepa_task::TaskMessage& m);
 
     freertos_message_queue::FreeRTOSMessageQueue<hepa_task::TaskMessage>*
         hepa_queue{nullptr};
+
+    freertos_message_queue::FreeRTOSMessageQueue<uv_task::TaskMessage>*
+        uv_queue{nullptr};
 };
 
 /**
@@ -33,6 +38,9 @@ struct AllTask {
 
     hepa_task::HepaTask<freertos_message_queue::FreeRTOSMessageQueue>*
         hepa_task_handler{nullptr};
+
+    uv_task::UVTask<freertos_message_queue::FreeRTOSMessageQueue>*
+        uv_task_handler{nullptr};
 };
 
 /**
