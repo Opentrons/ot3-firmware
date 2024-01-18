@@ -49,8 +49,7 @@ void hepauv_tasks::QueueClient::send_hepa_message(
     hepa_queue->try_write(m);
 }
 
-void hepauv_tasks::QueueClient::send_uv_message(
-    const uv_task::TaskMessage& m) {
+void hepauv_tasks::QueueClient::send_uv_message(const uv_task::TaskMessage& m) {
     uv_queue->try_write(m);
 }
 

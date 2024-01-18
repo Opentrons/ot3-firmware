@@ -41,7 +41,6 @@ struct AllTask {
 
     uv_task::UVTask<freertos_message_queue::FreeRTOSMessageQueue>*
         uv_task_handler{nullptr};
-
 };
 
 /**

@@ -91,7 +91,7 @@ static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
         .pin = UV_ON_OFF_MCU_PIN,
         .active_setting = UV_ON_OFF_AS}};
 
-static auto& hepa_queue_client = hepauv_tasks::get_main_queues();
+static auto& hepauv_queues = hepauv_tasks::get_main_queues();
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     switch (GPIO_Pin) {
@@ -99,12 +99,16 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         case REED_SW_MCU_PIN:
         case HEPA_NO_MCU_PIN:
         case UV_NO_MCU_PIN:
-            if (hepa_queue_client.hepa_queue != nullptr) {
-                static_cast<void>(hepa_queue_client.hepa_queue->try_write_isr(
+            if (hepauv_queues.hepa_queue != nullptr) {
+                static_cast<void>(hepauv_queues.hepa_queue->try_write_isr(
                     interrupt_task_messages::GPIOInterruptChanged{
                         .pin = GPIO_Pin}));
             }
-            // send to uv queue here
+            if (hepauv_queues.uv_queue != nullptr) {
+                static_cast<void>(hepauv_queues.uv_queue->try_write_isr(
+                    interrupt_task_messages::GPIOInterruptChanged{
+                        .pin = GPIO_Pin}));
+            }
             break;
         default:
             break;

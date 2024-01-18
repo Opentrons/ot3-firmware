@@ -15,7 +15,12 @@ using TaskMessage = interrupt_task_messages::TaskMessage;
 class HepaMessageHandler {
   public:
     explicit HepaMessageHandler(gpio_drive_hardware::GpioDrivePins &drive_pins)
-        : drive_pins{drive_pins} {}
+        : drive_pins{drive_pins} {
+        // get current state
+        hepa_push_button = gpio::is_set(drive_pins.hepa_push_button);
+        // turn off the HEPA fan
+        gpio::reset(drive_pins.hepa_on_off);
+    }
     HepaMessageHandler(const HepaMessageHandler &) = delete;
     HepaMessageHandler(const HepaMessageHandler &&) = delete;
     auto operator=(const HepaMessageHandler &) -> HepaMessageHandler & = delete;
