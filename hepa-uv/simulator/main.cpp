@@ -11,6 +11,7 @@
 #include "common/core/freertos_task.hpp"
 #include "common/simulation/state_manager.hpp"
 #include "hepa-uv/core/tasks.hpp"
+#include "hepa-uv/firmware/gpio_drive_hardware.hpp"
 #include "task.h"
 
 namespace po = boost::program_options;
@@ -65,7 +66,10 @@ auto handle_options(int argc, char** argv) -> po::variables_map {
     return vm;
 }
 
+static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{};
+
 int main(int argc, char** argv) {
+    // TODO: (ba, 2024-01-18): Fix the simulator later on
     signal(SIGINT, signal_handler);
 
     LOG_INIT("HEPA/UV", []() -> const char* {
@@ -80,7 +84,7 @@ int main(int argc, char** argv) {
 
     static auto canbus =
         can::sim::bus::SimCANBus(can::sim::transport::create(options));
-    hepauv_tasks::start_tasks(canbus);
+    hepauv_tasks::start_tasks(canbus, gpio_drive_pins);
 
     vTaskStartScheduler();
 }

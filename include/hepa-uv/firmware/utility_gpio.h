@@ -19,6 +19,7 @@ void utility_gpio_init();
 #pragma GCC diagnostic push
 // NOLINTNEXTLINE(clang-diagnostic-unknown-warning-option)
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic pop
 
 
 /* ---- Generic Pins ---- */
@@ -30,11 +31,11 @@ void utility_gpio_init();
 // DOOR_OPEN_MCU PC7
 #define DOOR_OPEN_MCU_PORT GPIOC
 #define DOOR_OPEN_MCU_PIN GPIO_PIN_7
-#define DOOR_OPEN_MCU_AS GPIO_PIN_SET
+#define DOOR_OPEN_MCU_AS GPIO_PIN_RESET
 // REED_SW_MCU PC11
 #define REED_SW_MCU_PORT GPIOC
 #define REED_SW_MCU_PIN GPIO_PIN_11
-#define REED_SW_MCU_AS GPIO_PIN_SET
+#define REED_SW_MCU_AS GPIO_PIN_RESET
 // AUX_ID_MCU PC12
 #define AUX_ID_MCU_PORT GPIOC
 #define AUX_ID_MCU_PIN GPIO_PIN_12
@@ -55,6 +56,7 @@ void utility_gpio_init();
 // HEPA_ON/OFF PA7
 #define HEPA_ON_OFF_PORT GPIOA
 #define HEPA_ON_OFF_PIN GPIO_PIN_7
+#define HEPA_ON_OFF_AS GPIO_PIN_RESET
 // HEPA_R_CTRL PA9
 #define HEPA_R_CTRL_PORT GPIOA
 #define HEPA_R_CTRL_PIN GPIO_PIN_9
@@ -77,6 +79,7 @@ void utility_gpio_init();
 // UV_ON_OFF_MCU PA4
 #define UV_ON_OFF_MCU_PORT GPIOA
 #define UV_ON_OFF_MCU_PIN GPIO_PIN_4
+#define UV_ON_OFF_AS GPIO_PIN_RESET
 // UV_NO_MCU PC2
 #define UV_NO_MCU_PORT GPIOC
 #define UV_NO_MCU_PIN GPIO_PIN_2

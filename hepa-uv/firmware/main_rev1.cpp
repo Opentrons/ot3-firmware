@@ -20,6 +20,7 @@
 #include "common/firmware/gpio.hpp"
 #include "common/firmware/iwdg.hpp"
 #include "common/firmware/utility_gpio.h"
+#include "hepa-uv/core/messages.hpp"
 #include "hepa-uv/core/tasks.hpp"
 #include "hepa-uv/firmware/utility_gpio.h"
 
@@ -53,6 +54,63 @@ static constexpr auto can_bit_timings =
     can::bit_timings::BitTimings<170 * can::bit_timings::MHZ, 100,
                                  500 * can::bit_timings::KHZ, 800>{};
 
+static auto gpio_drive_pins = gpio_drive_hardware::GpioDrivePins{
+    .door_open =
+        gpio::PinConfig{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = DOOR_OPEN_MCU_PORT,
+            .pin = DOOR_OPEN_MCU_PIN,
+            .active_setting = DOOR_OPEN_MCU_AS},
+    .reed_switch =
+        gpio::PinConfig{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = REED_SW_MCU_PORT,
+            .pin = REED_SW_MCU_PIN,
+            .active_setting = REED_SW_MCU_AS},
+    .hepa_push_button =
+        gpio::PinConfig{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = HEPA_NO_MCU_PORT,
+            .pin = HEPA_NO_MCU_PIN,
+        },
+    .uv_push_button =
+        gpio::PinConfig{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = UV_NO_MCU_PORT,
+            .pin = UV_NO_MCU_PIN,
+        },
+    .hepa_on_off =
+        gpio::PinConfig{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+            .port = HEPA_ON_OFF_PORT,
+            .pin = HEPA_ON_OFF_PIN,
+            .active_setting = HEPA_ON_OFF_AS},
+    .uv_on_off = gpio::PinConfig{
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        .port = UV_ON_OFF_MCU_PORT,
+        .pin = UV_ON_OFF_MCU_PIN,
+        .active_setting = UV_ON_OFF_AS}};
+
+static auto& hepa_queue_client = hepauv_tasks::get_main_queues();
+
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    switch (GPIO_Pin) {
+        case DOOR_OPEN_MCU_PIN:
+        case REED_SW_MCU_PIN:
+        case HEPA_NO_MCU_PIN:
+        case UV_NO_MCU_PIN:
+            if (hepa_queue_client.hepa_queue != nullptr) {
+                static_cast<void>(hepa_queue_client.hepa_queue->try_write_isr(
+                    interrupt_task_messages::GPIOInterruptChanged{
+                        .pin = GPIO_Pin}));
+            }
+            // send to uv queue here
+            break;
+        default:
+            break;
+    }
+}
+
 auto main() -> int {
     HardwareInit();
     RCC_Peripheral_Clock_Select();
@@ -62,7 +120,7 @@ auto main() -> int {
 
     canbus.start(can_bit_timings);
 
-    hepauv_tasks::start_tasks(canbus);
+    hepauv_tasks::start_tasks(canbus, gpio_drive_pins);
 
     iWatchdog.start(6);
 
