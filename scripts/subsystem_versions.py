@@ -17,6 +17,7 @@ SUBSYSTEMS = [
     "pipettes-single",
     "pipettes-multi",
     "pipettes-96",
+    "hepa-uv",
 ]
 USB_SUBSYSTEMS = [
     "rear-panel",
