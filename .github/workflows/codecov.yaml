@@ -58,7 +58,7 @@ jobs:
         run: cmake --build --preset tests --target lcov-geninfo
 
       - name: Convert coverage to xml
-        run: lcov_cobertura ot3-firmware/build-host/lcov/data/capture/all_targets.info
+        run: lcov_cobertura lcov/data/capture/all_targets.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
