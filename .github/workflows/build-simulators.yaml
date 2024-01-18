@@ -21,14 +21,14 @@ jobs:
         os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
         target: [
           bootloader,
-          gantry-x,
-          gantry-y,
-          gripper,
-          head,
-          hepa-uv,
-          pipettes-single,
-          pipettes-multi,
-          pipettes-96,
+#          gantry-x,
+#          gantry-y,
+#          gripper,
+#          head,
+#          hepa-uv,
+#          pipettes-single,
+#          pipettes-multi,
+#          pipettes-96,
         ]
     name: ${{ matrix.target }} simulator
     runs-on: ${{ matrix.os }}

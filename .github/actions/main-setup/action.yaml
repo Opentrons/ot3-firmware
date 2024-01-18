@@ -9,7 +9,8 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Update and install gcc-10 & g++-10
+    - if: ${{ runner.os == 'Linux' }}
+      name: Update and install gcc-10 & g++-10
       shell: bash
       run: |
         sudo apt update
