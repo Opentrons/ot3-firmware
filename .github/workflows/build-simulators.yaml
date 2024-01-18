@@ -52,8 +52,13 @@ jobs:
         with:
           cache-version: ${{ secrets.CACHE_VERSION }}
 
-      - name: Configure
+      - if: ${{ runner.os == 'Linux' }}
+        name: Configure
         run: cmake --preset=host-gcc10 .
+
+      - name: Configure
+        run: cmake --preset=host .
+        if: ${{ runner.os != 'Linux' }}
 
       - name: setup state manager
         run: cmake --build ./build-host --target state-manager-setup
