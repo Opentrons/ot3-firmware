@@ -73,11 +73,12 @@ class UVMessageHandler {
         if (door_closed && reed_switch_set && uv_push_button) {
             gpio::set(drive_pins.uv_on_off);
             // start the turn off timer
+            if (_timer.is_running()) _timer.stop();
             _timer.start();
             uv_fan_on = true;
         } else {
             gpio::reset(drive_pins.uv_on_off);
-            _timer.stop();
+            if (_timer.is_running()) _timer.stop();
             uv_fan_on = false;
         }
 
