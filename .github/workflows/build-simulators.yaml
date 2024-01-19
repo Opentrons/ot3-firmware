@@ -64,11 +64,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-simulator-${{ github.ref_name }}
-          path: |
-            ${{
-                format(
-                  'ot3-firmware/build-host/{0}/simulator/{1}-simulator',
-                  contains(matrix.target, 'gantry') && 'gantry' || contains(matrix.target, 'pipettes') && 'pipettes' || matrix.target,
-                  matrix.target
-                )
-            }}
+          path: ./ot3-firmware/build-host/*/simulator/*-simulator
