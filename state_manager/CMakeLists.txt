@@ -34,7 +34,7 @@ add_custom_command(
 	DEPENDS pyproject.toml poetry.lock
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.8
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.10
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi install
 )
 
@@ -87,7 +87,7 @@ target_include_directories(state_manager INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(
 	state-manager-setup
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.8
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.10
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi install
 	WORKING_DIRECTORY ../../state_manager
 )
@@ -97,7 +97,7 @@ add_dependencies(state-manager-headers state-manager-setup)
 add_custom_target(
 	state-manager-update
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi config virtualenvs.path ${VIRTUAL_ENVIRONMENTS_ROOT_PATH} --local
-	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.8
+	COMMAND ${Poetry_EXECUTABLE} --no-ansi env use 3.10
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi update
 	COMMAND ${Poetry_EXECUTABLE} --no-ansi install
 	WORKING_DIRECTORY ../../state_manager
