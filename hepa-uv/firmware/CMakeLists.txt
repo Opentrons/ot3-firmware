@@ -12,6 +12,7 @@ set(REVISIONS hepa-rev1)
 # Add source files that should be checked by clang-tidy here
 set(HEPA_UV_FW_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/freertos_idle_timer_task.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/light_control_task/light_control_hardware.cpp
         ${COMMON_EXECUTABLE_DIR}/system/iwdg.cpp
         ${CAN_FW_DIR}/hal_can_bus.cpp
         ${CAN_FW_DIR}/utils.c
@@ -23,6 +24,7 @@ set(HEPAUV_FW_NON_LINTABLE_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/stm32g4xx_it.c
         ${CMAKE_CURRENT_SOURCE_DIR}/clocking.c
         ${CMAKE_CURRENT_SOURCE_DIR}/utility_gpio.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/led_hardware.c
         ${CMAKE_CURRENT_SOURCE_DIR}/can.c
         ${CMAKE_CURRENT_SOURCE_DIR}/i2c_setup.c
         ${COMMON_EXECUTABLE_DIR}/errors/errors.c
